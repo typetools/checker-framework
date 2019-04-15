@@ -352,7 +352,18 @@ public class QualifierDefaults {
      * @param type the type to annotate
      */
     public void annotate(Element elt, AnnotatedTypeMirror type) {
-        applyDefaultsElement(elt, type);
+        applyDefaultsElement(elt, type, false);
+    }
+
+    /**
+     * Applies default annotations to a type given an {@link javax.lang.model.element.Element}.
+     * Assumes {@code elt} is a type declaration.
+     *
+     * @param elt the element from which the type was obtained
+     * @param type the type to annotate
+     */
+    public void annotateAsTypeDecl(Element elt, AnnotatedTypeMirror type) {
+        applyDefaultsElement(elt, type, true);
     }
 
     /**
@@ -362,7 +373,18 @@ public class QualifierDefaults {
      * @param type the type to annotate
      */
     public void annotate(Tree tree, AnnotatedTypeMirror type) {
-        applyDefaults(tree, type);
+        applyDefaults(tree, type, false);
+    }
+
+    /**
+     * Applies default annotations to a type given a {@link com.sun.source.tree.Tree}. Assumes
+     * {@code tree} is a type declaration.
+     *
+     * @param tree the tree from which the type was obtained
+     * @param type the type to annotate
+     */
+    public void annotateAsTypeDecl(Tree tree, AnnotatedTypeMirror type) {
+        applyDefaults(tree, type, true);
     }
 
     /**
@@ -438,10 +460,10 @@ public class QualifierDefaults {
      *
      * @param tree the tree associated with the type
      * @param type the type to which defaults will be applied
-     * @see #applyDefaultsElement(javax.lang.model.element.Element,
-     *     org.checkerframework.framework.type.AnnotatedTypeMirror)
+     * @param isTypeDecl is the element a type declaration
+     * @see #applyDefaultsElement(Element, AnnotatedTypeMirror, boolean)
      */
-    private void applyDefaults(Tree tree, AnnotatedTypeMirror type) {
+    private void applyDefaults(Tree tree, AnnotatedTypeMirror type, boolean isTypeDecl) {
 
         // The location to take defaults from.
         Element elt;
@@ -453,7 +475,7 @@ public class QualifierDefaults {
             case IDENTIFIER:
                 elt = TreeUtils.elementFromUse((IdentifierTree) tree);
                 if (ElementUtils.isTypeDeclaration(elt)) {
-                    // If the Idenitifer is a type, then use the scope of the tree.
+                    // If the identifier is a type, then use the scope of the tree.
                     elt = nearestEnclosingExceptLocal(tree);
                 }
                 break;
@@ -465,20 +487,6 @@ public class QualifierDefaults {
                 // TODO cases for array access, etc. -- every expression tree
                 // (The above probably means that we should use defaults in the
                 // scope of the declaration of the array.  Is that right?  -MDE)
-
-            case CLASS:
-                if (((ClassTree) tree).getExtendsClause() != null) {
-                    Element extendsElt =
-                            TreeUtils.elementFromTree(((ClassTree) tree).getExtendsClause());
-                    applyDefaultsToElement(extendsElt, type);
-                }
-                for (Tree implicitClause : ((ClassTree) tree).getImplementsClause()) {
-                    Element implementsElt = TreeUtils.elementFromTree(implicitClause);
-                    applyDefaultsToElement(implementsElt, type);
-                }
-                elt = nearestEnclosingExceptLocal(tree);
-                break;
-
             default:
                 // If no associated symbol was found, use the tree's (lexical)
                 // scope.
@@ -488,16 +496,6 @@ public class QualifierDefaults {
         // System.out.println("applyDefaults on tree " + tree +
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
-        applyDefaultsToElement(elt, type);
-    }
-
-    /**
-     * Applies default annotations to {@code type}.
-     *
-     * @param elt the element associated with the type
-     * @param type the type to which defaults will be applied
-     */
-    void applyDefaultsToElement(Element elt, AnnotatedTypeMirror type) {
         boolean defaultTypeVarLocals =
                 (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
                         && ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
@@ -507,7 +505,7 @@ public class QualifierDefaults {
                         && elt != null
                         && elt.getKind() == ElementKind.LOCAL_VARIABLE
                         && type.getKind() == TypeKind.TYPEVAR;
-        applyDefaultsElement(elt, type);
+        applyDefaultsElement(elt, type, isTypeDecl);
         applyToTypeVar = false;
     }
 
@@ -707,10 +705,11 @@ public class QualifierDefaults {
      * @checker_framework.manual #annotating-libraries Annotating libraries
      */
     private void applyDefaultsElement(
-            final Element annotationScope, final AnnotatedTypeMirror type) {
+            final Element annotationScope, final AnnotatedTypeMirror type, boolean isTypeDecl) {
         DefaultSet defaults = defaultsAt(annotationScope);
         DefaultApplierElement applier =
-                createDefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
+                createDefaultApplierElement(
+                        atypeFactory, annotationScope, type, applyToTypeVar, isTypeDecl);
 
         for (Default def : defaults) {
             applier.applyDefault(def);
@@ -731,8 +730,10 @@ public class QualifierDefaults {
             AnnotatedTypeFactory atypeFactory,
             Element annotationScope,
             AnnotatedTypeMirror type,
-            boolean applyToTypeVar) {
-        return new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
+            boolean applyToTypeVar,
+            boolean isTypeDecl) {
+        return new DefaultApplierElement(
+                atypeFactory, annotationScope, type, applyToTypeVar, isTypeDecl);
     }
 
     public static class DefaultApplierElement {
@@ -762,16 +763,20 @@ public class QualifierDefaults {
         */
         private final AnnotatedTypeVariable defaultableTypeVar;
 
+        private final boolean isTypeDecl;
+
         public DefaultApplierElement(
                 AnnotatedTypeFactory atypeFactory,
                 Element scope,
                 AnnotatedTypeMirror type,
-                boolean applyToTypeVar) {
+                boolean applyToTypeVar,
+                boolean isTypeDecl) {
             this.atypeFactory = atypeFactory;
             this.scope = scope;
             this.type = type;
             this.impl = new DefaultApplierElementImpl();
             this.defaultableTypeVar = applyToTypeVar ? (AnnotatedTypeVariable) type : null;
+            this.isTypeDecl = isTypeDecl;
         }
 
         /**
@@ -845,16 +850,10 @@ public class QualifierDefaults {
 
                 switch (location) {
                     case TYPE_DECLARATION:
-                        {
-                            if (scope != null
-                                    && (scope.getKind() == ElementKind.CLASS
-                                            || scope.getKind() == ElementKind.INTERFACE
-                                            || scope.getKind() == ElementKind.ENUM)
-                                    && t == type) {
-                                addAnnotation(t, qual);
-                            }
-                            break;
+                        if (isTypeDecl && ElementUtils.isTypeDeclaration(scope) && t == type) {
+                            addAnnotation(t, qual);
                         }
+                        break;
                     case FIELD:
                         {
                             if (scope != null

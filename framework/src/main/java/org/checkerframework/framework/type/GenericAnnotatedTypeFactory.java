@@ -161,6 +161,9 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     private boolean shouldDefaultTypeVarLocals;
 
+    /** Should the type be calculated as a type declaration? */
+    private boolean isTypeDecl = false;
+
     /** An empty store. */
     // Set in postInit only
     protected Store emptyStore;
@@ -1290,6 +1293,33 @@ public abstract class GenericAnnotatedTypeFactory<
         analysis.visualizeCFG();
     }
 
+    @Override
+    public AnnotatedTypeMirror getAnnotatedTypeAsTypeDecl(Element elt) {
+        boolean oldShouldCache = shouldCache;
+        shouldCache = false;
+        isTypeDecl = true;
+        AnnotatedTypeMirror type = getAnnotatedType(elt);
+        isTypeDecl = false;
+        shouldCache = oldShouldCache;
+        return type;
+    }
+
+    @Override
+    public AnnotatedTypeMirror getAnnotatedTypeAsTypeDecl(Tree tree) {
+        boolean oldShouldCache = shouldCache;
+        shouldCache = false;
+        isTypeDecl = true;
+        AnnotatedTypeMirror type;
+        if (tree.getKind() == Kind.CLASS) {
+            type = getAnnotatedType(tree);
+        } else {
+            type = getAnnotatedTypeFromTypeTree(tree);
+        }
+        isTypeDecl = false;
+        shouldCache = oldShouldCache;
+        return type;
+    }
+
     /**
      * Returns the type of the left-hand side of an assignment without applying local variable
      * defaults to type variables.
@@ -1459,7 +1489,11 @@ public abstract class GenericAnnotatedTypeFactory<
 
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type, null);
-        defaults.annotate(tree, type);
+        if (isTypeDecl) {
+            defaults.annotateAsTypeDecl(tree, type);
+        } else {
+            defaults.annotate(tree, type);
+        }
 
         if (iUseFlow) {
             Value as = getInferredValueFor(tree);
@@ -1530,7 +1564,11 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         typeAnnotator.visit(type, null);
-        defaults.annotate(elt, type);
+        if (isTypeDecl) {
+            defaults.annotateAsTypeDecl(elt, type);
+        } else {
+            defaults.annotate(elt, type);
+        }
         if (dependentTypesHelper != null) {
             dependentTypesHelper.standardizeVariable(type, elt);
         }

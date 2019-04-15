@@ -19,6 +19,6 @@ public class TypeDeclDefaultTest extends FrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"typedecldefault"};
+        return new String[] {"typedecldefault", "all-systems"};
     }
 }

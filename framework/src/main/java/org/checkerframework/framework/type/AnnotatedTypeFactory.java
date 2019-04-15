@@ -1023,6 +1023,37 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Returns an AnnotatedTypeMirror representing the annotated type of {@code elt} as a type
+     * declaration.
+     *
+     * <p>It is not possible to tell whether an element is a use of a type or a declaration, so this
+     * method differentiates the two.
+     *
+     * @param elt element whose type is requested
+     * @return the annotated type of {@code elt} as a type declaration
+     */
+    public AnnotatedTypeMirror getAnnotatedTypeAsTypeDecl(Element elt) {
+        return getAnnotatedType(elt);
+    }
+
+    /**
+     * Returns an AnnotatedTypeMirror representing the annotated type of {@code tree} as a type
+     * declaration.
+     *
+     * <p>It is possible to tell whether a tree is a type declaration, but extends and implements
+     * clauses should also be treated as type declarations so defaults are applied correctly. (Also,
+     * {@link #getAnnotatedType(Element)} converts elements to ClassTrees if one is available, so
+     * even if the tree is a class declaration, that doesn't mean that it should be treated as a
+     * type declaration.)
+     *
+     * @param tree element whose type is requested
+     * @return the annotated type of {@code tree} as a type declaration
+     */
+    public AnnotatedTypeMirror getAnnotatedTypeAsTypeDecl(Tree tree) {
+        return getAnnotatedType(tree);
+    }
+
+    /**
      * Returns an AnnotatedTypeMirror representing the annotated type of {@code elt}.
      *
      * @param elt the element

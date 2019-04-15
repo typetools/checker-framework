@@ -228,7 +228,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             // isValidUse determines the erasure of the types.
             AnnotatedDeclaredType elemType =
                     (AnnotatedDeclaredType)
-                            atypeFactory.getAnnotatedType(type.getUnderlyingType().asElement());
+                            atypeFactory.getAnnotatedTypeAsTypeDecl(
+                                    type.getUnderlyingType().asElement());
 
             if (!visitor.isValidUse(elemType, type, tree)) {
                 reportInvalidAnnotationsOnUse(type, tree);

@@ -269,7 +269,7 @@ class SupertypeFinder {
             if (classTree.getExtendsClause() != null) {
                 AnnotatedDeclaredType adt =
                         (AnnotatedDeclaredType)
-                                atypeFactory.getAnnotatedTypeFromTypeTree(
+                                atypeFactory.getAnnotatedTypeAsTypeDecl(
                                         classTree.getExtendsClause());
                 supertypes.add(adt);
             } else if (!ElementUtils.isObject(TreeUtils.elementFromDeclaration(classTree))) {
@@ -279,7 +279,7 @@ class SupertypeFinder {
             for (Tree implemented : classTree.getImplementsClause()) {
                 AnnotatedDeclaredType adt =
                         (AnnotatedDeclaredType)
-                                atypeFactory.getAnnotatedTypeFromTypeTree(implemented);
+                                atypeFactory.getAnnotatedTypeAsTypeDecl(implemented);
                 supertypes.add(adt);
             }
 
