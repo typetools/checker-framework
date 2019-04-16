@@ -273,7 +273,7 @@ public class NullnessTransfer
     }
 
     /** Refine the given result to @NonNull. */
-    void refineToNonNull(TransferResult<NullnessValue, NullnessStore> result) {
+    protected void refineToNonNull(TransferResult<NullnessValue, NullnessStore> result) {
         NullnessValue oldResultValue = result.getResultValue();
         NullnessValue refinedResultValue =
                 analysis.createSingleAnnotationValue(NONNULL, oldResultValue.getUnderlyingType());
