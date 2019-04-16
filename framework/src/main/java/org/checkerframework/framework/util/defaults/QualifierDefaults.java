@@ -763,20 +763,30 @@ public class QualifierDefaults {
         */
         private final AnnotatedTypeVariable defaultableTypeVar;
 
-        private final boolean isTypeDecl;
+        /** Should the TYPE_DECLARATION defaults be applied? */
+        private final boolean applyTypeDeclDefaults;
 
+        /**
+         * Creates DefaultApplierElement.
+         *
+         * @param atypeFactory AnnotatedTypeFactory
+         * @param scope element used to find location
+         * @param type AnnotatedTypeMirror to which the defaults are applied
+         * @param applyToTypeVar should the defaults be applied to type variables
+         * @param applyTypeDeclDefaults should the TYPE_DECLARATION defaults be applied
+         */
         public DefaultApplierElement(
                 AnnotatedTypeFactory atypeFactory,
                 Element scope,
                 AnnotatedTypeMirror type,
                 boolean applyToTypeVar,
-                boolean isTypeDecl) {
+                boolean applyTypeDeclDefaults) {
             this.atypeFactory = atypeFactory;
             this.scope = scope;
             this.type = type;
             this.impl = new DefaultApplierElementImpl();
             this.defaultableTypeVar = applyToTypeVar ? (AnnotatedTypeVariable) type : null;
-            this.isTypeDecl = isTypeDecl;
+            this.applyTypeDeclDefaults = applyTypeDeclDefaults;
         }
 
         /**
@@ -850,7 +860,9 @@ public class QualifierDefaults {
 
                 switch (location) {
                     case TYPE_DECLARATION:
-                        if (isTypeDecl && ElementUtils.isTypeDeclaration(scope) && t == type) {
+                        if (applyTypeDeclDefaults
+                                && ElementUtils.isTypeDeclaration(scope)
+                                && t == type) {
                             addAnnotation(t, qual);
                         }
                         break;
