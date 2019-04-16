@@ -26,6 +26,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
+import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -151,6 +152,13 @@ public class FlowExpressions {
         } else if (receiverNode instanceof NarrowingConversionNode) {
             // ignore narrowing
             return internalReprOf(provider, ((NarrowingConversionNode) receiverNode).getOperand());
+        } else if (receiverNode instanceof BinaryOperationNode) {
+            BinaryOperationNode bopn = (BinaryOperationNode) receiverNode;
+            return new BinaryAccess(
+                    bopn.getType(),
+                    bopn,
+                    internalReprOf(provider, bopn.getLeftOperand(), allowNonDeterministic),
+                    internalReprOf(provider, bopn.getRightOperand(), allowNonDeterministic));
         } else if (receiverNode instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiverNode;
             receiver = new ClassName(cn.getType());
@@ -1105,6 +1113,85 @@ public class FlowExpressions {
             }
             result.append(")");
             return result.toString();
+        }
+    }
+
+    public static class BinaryAccess extends Receiver {
+
+        BinaryOperationNode receiverNode;
+        Receiver left;
+        Receiver right;
+
+        public BinaryAccess(
+                TypeMirror type, BinaryOperationNode receiverNode, Receiver left, Receiver right) {
+            super(type);
+            this.receiverNode = receiverNode;
+            this.left = left;
+            this.right = right;
+        }
+
+        public BinaryOperationNode getReceierNode() {
+            return receiverNode;
+        }
+
+        public Receiver getLeft() {
+            return left;
+        }
+
+        public Receiver getRight() {
+            return right;
+        }
+
+        @Override
+        public boolean containsOfClass(Class<? extends Receiver> clazz) {
+            if (getClass().equals(clazz)) {
+                return true;
+            }
+            return right.containsOfClass(clazz) || left.containsOfClass(clazz);
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
+            return right.isUnassignableByOtherCode() && left.isUnassignableByOtherCode();
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return isUnassignableByOtherCode();
+        }
+
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            if (!(other instanceof BinaryAccess)) {
+                return false;
+            }
+            if (!receiverNode.getClass().equals(((BinaryAccess) other).receiverNode.getClass())) {
+                return false;
+            }
+            return right.syntacticEquals(((BinaryAccess) other).right)
+                    && left.syntacticEquals(((BinaryAccess) other).left);
+        }
+
+        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+            return right.containsModifiableAliasOf(store, other)
+                    || left.containsModifiableAliasOf(store, other);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(receiverNode, left, right);
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof BinaryAccess)) {
+                return false;
+            }
+            if (!receiverNode.getClass().equals(((BinaryAccess) other).receiverNode.getClass())) {
+                return false;
+            }
+            return right.equals(((BinaryAccess) other).right)
+                    && left.equals(((BinaryAccess) other).left);
         }
     }
 
