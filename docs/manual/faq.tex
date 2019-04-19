@@ -969,7 +969,7 @@ There is also a separate FAQ for the type annotations syntax
 The \emph{receiver} of a method is the \<this> formal parameter, sometimes
 also called the ``current object''.  Within the method declaration, \<this>
 is used to refer to the receiver formal parameter.  At a method call, the
-receiver actual argument is written before the method name.
+receiver actual argument is written before a period and the method name.
 
 The method \<compareTo> takes \emph{two} formal parameters.  At a call site
 like \<x.compareTo(y)>, the two arguments are \<x> and \<y>.  It is
@@ -1014,6 +1014,10 @@ outer class.  The receiver is distinct from the object being constructed.
 In a method of a top-level class, the receiver is named \<this>.  In a
 constructor of an inner class, the receiver is named \<Outer.this> and the
 result is named \<this>.
+
+A method in an anonymous class has a receiver, but it is not possible to
+write the receiver in the formal parameter list because there is no name
+for the type of \<this>.
 
 
 \subsectionAndLabel{What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?}{faq-annotation-after-type}
@@ -1128,9 +1132,8 @@ to require that the receiver has a certain property is to use a type
 annotation on the receiver of the method.  (Slightly more formally, the
 property being checked is compatibility between the annotation on the type
 of the formal parameter receiver and the annotation on the type of the
-actual receiver.)  If you do not know what ``receiver'' means, see the next
-question.
-
+actual receiver.)  If you do not know what ``receiver'' means, see
+Section~\ref{faq-receiver}.
 
 Another example of a type-and-declaration annotation that represents poor
 design is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As discussed

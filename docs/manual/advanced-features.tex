@@ -644,29 +644,100 @@ suppress the warning if the code is correct.
 \sectionAndLabel{Automatic type refinement (flow-sensitive type qualifier inference)}{type-refinement}
 
 The
-checkers soundly treat local variables and expressions within a method body as having a
+checkers treat expressions within a method body as having a
 subtype of their declared or defaulted (Section~\ref{defaults})
 type.
-This functionality
-reduces your burden of annotating types in your program and
-eliminates some false positive warnings, but it
-never introduces unsoundness nor causes an error to be missed.
-This functionality works within a method, but you still need to
-annotate method signatures (parameter and return type) and field types.
+As a result, you usually do not need to write type qualifiers on local variables.
 
-By default all checkers
-automatically incorporate type refinement.  Most of the time, users don't
-have to think about, and may not even notice, type refinement.
-(And most readers can skip reading this section of the manual, except
-possibly the examples in Section~\ref{type-refinement-examples}.)
-The
-checkers simply do the right thing even when a programmer omits an
-annotation on a local variable, or when a programmer writes an
-unnecessarily general type in a declaration.
+
+\subsectionAndLabel{Type refinement examples}{type-refinement-examples}
+
+Here is an example for the Nullness Checker
+(\chapterpageref{nullness-checker}).
+Within the body
+of the \<if> test, the type of \<myVar> is \<@NonNull String>, even though
+\<myVar> is declared as \<@Nullable String>.
+
+\begin{Verbatim}
+  @Nullable String myVar;
+  ...                   // myVar has type @Nullable String
+  myVar.hashCode();     // warning: possible dereference of null
+  ...
+  if (myVar != null) {
+    ...                 // myVar has type @NonNull String
+    myVar.hashCode();   // no warning
+  }
+\end{Verbatim}
+
+Here is another example.
+Note that the same expression may yield a
+warning or not depending on its context (that is, depending on the current
+type refinement).
+
+\begin{Verbatim}
+  @Nullable String myVar;
+  ...                   // myVar has type @Nullable String
+  myVar = "hello";
+  ...                   // myVar has type @NonNull String
+  myVar.hashCode();     // no warning
+  ...
+  myVar = myMap.get(someKey);
+  ...                   // myVar has type @Nullable String
+  myVar.hashCode();     // warning: posible dereference of null
+\end{Verbatim}
+
+Flow-sensitive type refinement applies to every checker, including new
+checkers that you write.  Here is an example for the Regex Checker
+(\chapterpageref{regex-checker}):
+
+\begin{Verbatim}
+  void m2(@Unannotated String s) {
+    s = RegexUtil.asRegex(s, 2);  // asRegex throws an exception if its argument is not
+                                  // a regex with the given number of capturing groups
+    ...   // s now has type "@Regex(2) String"
+  }
+\end{Verbatim}
+
+
+\subsectionAndLabel{Type refinement behavior}{type-refinement-behavior}
+
+The checker treats a variable or expression as a subtype of its declared type:
+\begin{itemize}
+\item
+starting at the time that it is
+assigned a value, a run-time check is performed (e.g., via an assertion or
+\code{if} statement), or a method establishes a postcondition (e.g., as
+expressed by \refqualclass{checker/nullness/qual}{EnsuresNonNull}).
+\item
+until its value might change (e.g.,
+via an assignment, or because a method call might have a side effect).
+\end{itemize}
+
+The checker never treats a variable as
+a supertype of its declared type.  For example, an expression with declared type \refqualclass{checker/nullness/qual}{NonNull}
+type is never treated as possibly-null, and such an assignment is always illegal.
+
+Type refinement eliminates some false positive warnings.
+Type refinement also
+reduces your burden of writing type qualifiers in your program,
+since you do not need to annotate local variables.
 
 The functionality has a variety of names:  automatic type refinement,
 flow-sensitive type qualifier inference, local type inference, and
 sometimes just ``flow''.
+
+
+\subsectionAndLabel{Which types are refined}{type-refinement-which-types}
+
+By default, all checkers automatically incorporate type refinement.
+
+You generally do not need to annotate the top-level type of a local variable.
+You do need to annotate its type arguments or array element types.
+(Type refinement does not change them, because doing so does not produce a
+subtype, as explained in see Section~\ref{covariant-type-parameters} and
+Section~\ref{invariant-arrays}.)
+Type refinement works within a method, so you still need to
+annotate method signatures (parameter and return type) and field types.
 
 If you find examples where you think a value should be inferred to have
 (or not have) a
@@ -675,120 +746,59 @@ report (see Section~\ref{reporting-bugs}) that includes a small piece of
 Java code that reproduces the problem.
 
 
-\subsectionAndLabel{Type refinement examples}{type-refinement-examples}
+\subsubsectionAndLabel{Fields and flow-sensitive analysis}{type-refinement-fields}
 
-Suppose you write
+Flow sensitivity analysis infers the type of fields in some restricted cases:
 
-\begin{Verbatim}
-  @Nullable String myVar;
-  ...
-  if (myVar != null) {
-    myVar.hashCode();
-  }
-\end{Verbatim}
-
-\noindent
-The Nullness Checker issues a warning whenever a method such as
-\<hashCode()> is called on a possibly-null value, which  may result in a
-null pointer exception.
-However, the Nullness Checker does not issue a warning for the call
-\<myVar.hashCode()>
-in the code above.
-Within the body
-of the \<if> test, the type of \<myVar> is \<@NonNull String>, even though
-\<myVar> is declared as \<@Nullable String>.
-
-Here is another example:
-
-\begin{Verbatim}
-  @Nullable String myVar;
-  ...                   // myVar has type @Nullable String
-  myVar = "hello";
-  ...                   // myVar has type @NonNull String
-  myVar.hashCode();
-  ...
-  myVar = myMap.get(someKey);
-  ...                   // myVar has type @Nullable String
-\end{Verbatim}
-
-\noindent
-The Nullness Checker does not issue a warning for
-the call \<myVar.hashCode()> above because after the assignment,
-the type-checker
-treats \<myVar> as having type \<@NonNull String>, which is more precise
-than the programmer-written type.
-
-
-Flow-sensitive type refinement applies to every checker, including new
-checkers that you write.  Here is an example for the Regex Checker
-(\chapterpageref{regex-checker}):
-
-\begin{Verbatim}
-  void m2(@Unannotated String s) {
-    s = RegexUtil.asRegex(s, 2);  // asRegex throws error if arg is not a regex
-                                  // with the given number of capturing groups
-    ...   // s now has type "@Regex(2) String"
-  }
-\end{Verbatim}
-
-
-As a further example,
-consider this code, along with comments indicating whether the
-Nullness Checker (Chapter~\ref{nullness-checker}) issues a warning.  Note that the same expression may yield a
-warning or not depending on its context.
-
-\begin{Verbatim}
-  // Requires an argument of type @NonNull String
-  void parse(@NonNull String toParse) { ... }
-
-  // Argument does NOT have a @NonNull type
-  void lex(@Nullable String toLex) {
-    parse(toLex);        // warning:  toLex might be null
-    if (toLex != null) {
-      parse(toLex);      // no warning:  toLex is known to be non-null
-    }
-    parse(toLex);        // warning:  toLex might be null
-    toLex = new String(...);
-    parse(toLex);        // no warning:  toLex is known to be non-null
-  }
-\end{Verbatim}
-
-This example shows the general rules for when
-the Nullness Checker (Chapter~\ref{nullness-checker}) can automatically
-determine that certain variables are non-null, even if they were explicitly
-or by default annotated as nullable.
-The checker treats a variable or expression as \refqualclass{checker/nullness/qual}{NonNull}:
 \begin{itemize}
+
 \item
-starting at the time that it is either
-assigned a non-null value or checked against null (e.g., via an assertion,
-\code{if} statement, or being dereferenced)
+A final initialized field:
+Type inference is performed for final fields that are initialized to a
+compile-time constant at the declaration site; so the type of \code{protocol}
+is \code{@NonNull String} in the following declaration:
+
+\begin{Verbatim}
+    public final String protocol = "https";
+\end{Verbatim}
+
+Such an inferred type may leak to the public interface of the class.
+If you wish to override such behavior, you can explicitly insert the desired
+annotation, e.g.,
+
+\begin{Verbatim}
+    public final @Nullable String protocol = "https";
+\end{Verbatim}
+
 \item
-until it might be re-assigned (e.g.,
-via an assignment that might affect this variable, or via a method call
-that might affect this variable).
+Within method bodies:
+Type inference is performed for fields in the context of method bodies,
+like local variables or any other expression.
+Consider the following example, where \code{updatedAt} is a nullable
+field:
+
+\begin{Verbatim}
+class DBObject {
+  @Nullable Date updatedAt;
+
+  void m() {
+    // updatedAt is @Nullable, so warning about .getTime()
+    ... updatedAt.getTime() ... // warning about possible NullPointerException
+
+    if (updatedAt == null) {
+      updatedAt = new Date();
+    }
+
+    // updatedAt is now @NonNull, so .getTime() call is OK
+    ... updatedAt.getTime() ...
+  }
+}
+\end{Verbatim}
+
+A method call may invalidate inferences about field types; see
+Section~\ref{type-refinement-purity}.
+
 \end{itemize}
-
-
-The inference indicates when a variable can be treated as having a subtype
-of its declared type --- for instance, when an otherwise nullable type can be
-treated as a \refqualclass{checker/nullness/qual}{NonNull} one.  The inference never treats a variable as
-a supertype of its declared type (e.g., an expression with declared type \refqualclass{checker/nullness/qual}{NonNull}
-type is never inferred to be treated as possibly-null).
-
-
-
-\subsectionAndLabel{Types that are not refined}{type-refinement-types-that-are-not-refined}
-
-Array element types and generic arguments are never changed by type
-refinement.  Changing these components of a type never yields a subtype of
-the declared type.
-For example, \code{List<Number>} is \emph{not} a
-subtype of \code{List<Object>}.  Similarly, the Checker Framework does not
-treat \code{Number[]} as a subtype of
-\code{Object[]}.
-For details, see Section~\ref{covariant-type-parameters} and
-Section~\ref{invariant-arrays}.
 
 
 \subsectionAndLabel{Run-time tests and type refinement}{type-refinement-runtime-tests}
@@ -903,86 +913,13 @@ Type systems that cannot support a run-time test are:
 
 
 
-\subsectionAndLabel{Fields and flow-sensitive analysis}{type-refinement-fields}
-
-Flow sensitivity analysis infers the type of fields in some restricted cases:
-
-\begin{itemize}
-
-\item
-A final initialized field:
-Type inference is performed for final fields that are initialized to a
-compile-time constant at the declaration site; so the type of \code{protocol}
-is \code{@NonNull String} in the following declaration:
-
-\begin{Verbatim}
-    public final String protocol = "https";
-\end{Verbatim}
-
-Such an inferred type may leak to the public interface of the class.
-If you wish to override such behavior, you can explicitly insert the desired
-annotation, e.g.,
-
-\begin{Verbatim}
-    public final @Nullable String protocol = "https";
-\end{Verbatim}
-
-\item
-Within method bodies:
-Type inference is performed for fields in the context of method bodies,
-like local variables.
-Consider the following example, where \code{updatedAt} is a nullable
-field:
-
-\begin{Verbatim}
-class DBObject {
-  @Nullable Date updatedAt;
-
-  void m() {
-    // updatedAt is @Nullable, so warning about .getTime()
-    ... updatedAt.getTime() ... // warning about possible NullPointerException
-
-    if (updatedAt == null) {
-      updatedAt = new Date();
-    }
-
-    // updatedAt is now @NonNull, so .getTime() call is OK
-    ... updatedAt.getTime() ...
-  }
-}
-\end{Verbatim}
-
-Here the call to \code{persistData()} invalidates the inferred non-null type
-of \code{updatedAt}.
-
-A method call may invalidate inferences about field types; see
-Section~\ref{type-refinement-purity}.
-
-\end{itemize}
-
-
 \subsectionAndLabel{Side effects, determinism, purity, and flow-sensitive analysis}{type-refinement-purity}
 
 Side effect analysis is important for helping a checker reason about the
 values of expressions.
 
-As described above, a checker can use a refined type for an expression from
-the time when the checker infers that the value has that refined type,
-until the checker can no longer support that inference.
-
-\begin{itemize}
-\item
-  The refined type \emph{begins} at a test (such as \<if (myvar != null)
-  ...>) or an assignment.  If the assignment occurs within a method body,
-  you can write a postcondition annotation such as
-  \refqualclass{checker/nullness/qual}{EnsuresNonNull}.
-\item
-  The refined type \emph{ends} at an assignment or possible assignment.
-  Any method call has the potential to side-effect any field, so calling a
-  method typically causes the checker to discard its knowledge of the
-  refined type.  This is undesirable if the method doesn't actually
-  re-assign the field.
-\end{itemize}
+Calling a method typically causes the checker to discard its knowledge of
+the refined type, because the method might assign a field.
 
 There are three annotations, collectively called purity annotations, that
 you can use to help express what effects a method call does not have.
@@ -1269,6 +1206,9 @@ The set of permitted expressions is a subset of all Java expressions:
   For example:
   \<m1(x, y.z, \#2)>, \<a.m2("hello")>.
 
+  Currently, the Checker Framework cannot prove all contracts about method
+  calls, so you may need to suppress some warnings.
+
   One unusual feature of the Checker Framework's Java expressions is that a
   method call is allowed to have side effects.  Other tools forbid methods
   with side effects (and doing so is necessary if a specification is going
@@ -1283,8 +1223,6 @@ The set of permitted expressions is a subset of all Java expressions:
 
   This states that if \<readLine()> is called immediately after \<ready()>
   returns true, then \<readLine()> returns a non-null value.
-  Currently, the Checker Framework cannot prove all contracts about method
-  calls, so you may need to suppress some warnings.
 
 \end{itemize}
 
