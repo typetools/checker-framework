@@ -1018,6 +1018,18 @@ result is named \<this>.
 A method in an anonymous class has a receiver, but it is not possible to
 write the receiver in the formal parameter list because there is no name
 for the type of \<this>.
+Therefore, there is another syntax for writing annotations on the receiver
+formal parameter.  The following two forms behave identically:
+
+\begin{Verbatim}
+  void myMethod(@Anno MyClass this, int x) { ... }
+
+  @ReceiverAnnotation(Anno.class)
+  void myMethod(int x) { ... }
+\end{Verbatim}
+
+\noindent
+The latter can always be written, even on a method in an anonymous class.
 
 
 \subsectionAndLabel{What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?}{faq-annotation-after-type}
