@@ -1269,6 +1269,9 @@ The set of permitted expressions is a subset of all Java expressions:
   For example:
   \<m1(x, y.z, \#2)>, \<a.m2("hello")>.
 
+  Currently, the Checker Framework cannot prove all contracts about method
+  calls, so you may need to suppress some warnings.
+
   One unusual feature of the Checker Framework's Java expressions is that a
   method call is allowed to have side effects.  Other tools forbid methods
   with side effects (and doing so is necessary if a specification is going
@@ -1283,8 +1286,6 @@ The set of permitted expressions is a subset of all Java expressions:
 
   This states that if \<readLine()> is called immediately after \<ready()>
   returns true, then \<readLine()> returns a non-null value.
-  Currently, the Checker Framework cannot prove all contracts about method
-  calls, so you may need to suppress some warnings.
 
 \end{itemize}
 
