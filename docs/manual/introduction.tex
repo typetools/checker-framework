@@ -81,12 +81,16 @@ The Checker Framework comes with checkers for specific types of errors:
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
+  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
+  expressions have aliases (see \chapterpageref{aliasing-checker})
+\item
   \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
   whether an expression's value can be known at compile time
   (see \chapterpageref{constant-value-checker})
 \item
-  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
-  expressions have aliases (see \chapterpageref{aliasing-checker})
+  \ahrefloc{reflection-checker}{Reflection Checker} to determine
+  whether an expression's value (of type \<Method> or \<Class>) can be known at compile time
+  (see \chapterpageref{reflection-resolution})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
@@ -689,7 +693,7 @@ Type-checking modes:  enable/disable functionality
 \item \<-AresolveReflection>
   Determine the target of reflective calls, and perform more precise
   type-checking based no that information; see
-  Section~\ref{reflection-resolution}.  \<-AresolveReflection=debug> causes
+  Chapter~\ref{reflection-resolution}.  \<-AresolveReflection=debug> causes
   debugging information to be output.
 \item \<-Ainfer>
   Output suggested annotations for method signatures and fields.
