@@ -63,7 +63,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * <p>Here are two specific examples where this annotated type factory refines types:
  *
  * <ul>
- *   <li>User-written SameLen. If a variable is declared with a user-written {@code @SameLen}
+ *   <li>User-written SameLen: If a variable is declared with a user-written {@code @SameLen}
  *       annotation, then the type of the new variable is the union of the user-written arrays in
  *       the annotation and the arrays listed in the SameLen types of each of those arrays.
  *   <li>New array: The type of an expression of the form {@code new T[a.length]} is the union of
@@ -112,23 +112,25 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new SameLenQualifierHierarchy(factory);
     }
 
-    // Handles case "user-written samelen"
+    // Handles case "user-written SameLen"
     @Override
     public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree tree) {
         AnnotatedTypeMirror atm = super.getAnnotatedTypeLhs(tree);
+
         if (tree.getKind() == Tree.Kind.VARIABLE) {
-            Receiver r;
-            try {
-                r = FlowExpressionParseUtil.internalReprOfVariable(this, (VariableTree) tree);
-            } catch (FlowExpressionParseException ex) {
-                r = null;
-            }
+            AnnotationMirror anm = atm.getAnnotation(SameLen.class);
+            if (anm != null) {
 
-            if (r != null) {
-                String varName = r.toString();
+                Receiver r;
+                try {
+                    r = FlowExpressionParseUtil.internalReprOfVariable(this, (VariableTree) tree);
+                } catch (FlowExpressionParseException ex) {
+                    r = null;
+                }
 
-                AnnotationMirror anm = atm.getAnnotation(SameLen.class);
-                if (anm != null) {
+                if (r != null) {
+                    String varName = r.toString();
+
                     List<String> exprs = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
                     if (exprs.contains(varName)) {
                         exprs.remove(varName);
@@ -141,6 +143,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
         }
+
         return atm;
     }
 
