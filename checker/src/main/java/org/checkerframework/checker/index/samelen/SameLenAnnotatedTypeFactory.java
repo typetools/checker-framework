@@ -185,7 +185,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         for (int i = 0; i < receivers.size(); i++) {
             Receiver rec = receivers.get(i);
             AnnotationMirror anno = annos.get(i);
-            if (shouldUseInAnnotation(rec)) {
+            if (mayAppearInSameLen(rec)) {
                 values.add(rec.toString());
             }
             if (AnnotationUtils.areSameByClass(anno, SameLen.class)) {
@@ -196,7 +196,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return res;
     }
 
-    public static boolean shouldUseInAnnotation(Receiver receiver) {
+    /** Returns true if the given expression may appear in a @SameLen annotation. */
+    public static boolean mayAppearInSameLen(Receiver receiver) {
         return !receiver.containsUnknown()
                 && !(receiver instanceof FlowExpressions.ArrayCreation)
                 && !(receiver instanceof FlowExpressions.ClassName)
@@ -333,7 +334,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             getAnnotatedType(sequenceTree).getAnnotationInHierarchy(UNKNOWN);
 
                     Receiver rec = FlowExpressions.internalReprOf(this.atypeFactory, sequenceTree);
-                    if (shouldUseInAnnotation(rec)) {
+                    if (mayAppearInSameLen(rec)) {
                         if (AnnotationUtils.areSameByClass(sequenceAnno, SameLenUnknown.class)) {
                             sequenceAnno = createSameLen(rec.toString());
                         } else if (AnnotationUtils.areSameByClass(sequenceAnno, SameLen.class)) {
