@@ -5,8 +5,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.SuppressWarningsKeys;
 
 /**
- * An internal checker that collects information about the arrays that have the same length. It is
- * used by the Upper Bound Checker.
+ * An internal checker that collects information about arrays that have the same length. It is used
+ * by the Upper Bound Checker.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
