@@ -11,10 +11,10 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
@@ -46,19 +46,27 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * as arrays or strings) in a program that share the same length. It is part of the Index Checker,
  * and is used as a subchecker by the Index Checker's components.
  *
- * <p>This annotated type factory refines types in X cases:
+ * <p>This type factory adds extra expressions to @SameLen annotations when necessary. For example,
+ * if the full version of the type {@code @SameLen({"a","b"})} should include "a", "b", and whatever
+ * is in the @SameLen types for "a" and for "b".
+ *
+ * <p>Also, every sequence s should have type @SameLen("s"). However, sometimes the sequence has
+ * no @SameLen annotation, and users may write the annotation without the variable itself, as in
+ *
+ * <pre>{@code @SameLen("b") String a;}</pre>
+ *
+ * rather than the more pedantic
+ *
+ * <pre>{@code @SameLen({"a", "b"}) String a;}</pre>
+ *
+ * <p>Here are two specific examples where this annotated type factory refines types:
  *
  * <ul>
- *   <li>1. {@code @PolyAll} and {@code @PolyLength} are refined to {@code @PolySameLen }.
- *   <li>2. If a variable is declared with a user-written {@code @SameLen} annotation, then the type
- *       of the new variable is the union of the user-written arrays in the annotation and the
- *       arrays listed in the SameLen types of each of those arrays.
- *   <li>3. The greatest lower bound of two SameLen annotations is the union of the two sets of
- *       arrays.
- *   <li>4. The least upper bound of two SameLen annotations is the intersection of the two sets of
- *       arrays.
- *   <li>5. The type of an expression of the form {@code new T[a.length]} is the union of the
- *       SameLen type of {@code a} and the arrays listed in {@code a}'s SameLen type.
+ *   <li>User-written SameLen. If a variable is declared with a user-written {@code @SameLen}
+ *       annotation, then the type of the new variable is the union of the user-written arrays in
+ *       the annotation and the arrays listed in the SameLen types of each of those arrays.
+ *   <li>New array: The type of an expression of the form {@code new T[a.length]} is the union of
+ *       the SameLen type of {@code a} and the arrays listed in {@code a}'s SameLen type.
  * </ul>
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -69,7 +77,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final IndexMethodIdentifier imf;
 
-    /** Handles case 1. */
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         UNKNOWN = AnnotationBuilder.fromClass(elements, SameLenUnknown.class);
@@ -104,7 +111,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new SameLenQualifierHierarchy(factory);
     }
 
-    /** Handles case 2. */
+    // Handles case "user-written samelen"
     @Override
     public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree tree) {
         AnnotatedTypeMirror atm = super.getAnnotatedTypeLhs(tree);
@@ -136,66 +143,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return atm;
     }
 
-    /**
-     * This function finds the union of the values of two annotations. Both annotations must have a
-     * value field; otherwise the function will fail.
-     *
-     * @return the set union of the two value fields
-     */
-    public AnnotationMirror getCombinedSameLen(List<String> a1Names, List<String> a2Names) {
-
-        HashSet<String> newValues = new HashSet<>(a1Names.size() + a2Names.size());
-
-        newValues.addAll(a1Names);
-        newValues.addAll(a2Names);
-        String[] names = newValues.toArray(new String[newValues.size()]);
-        return createSameLen(names);
-    }
-
-    /**
-     * Combines the given arrays and annotations into a single SameLen annotation. See {@link
-     * #createCombinedSameLen(List, List)}.
-     */
-    public AnnotationMirror createCombinedSameLen(
-            Receiver rec1, Receiver rec2, AnnotationMirror a1, AnnotationMirror a2) {
-        List<Receiver> receivers = new ArrayList<>();
-        receivers.add(rec1);
-        receivers.add(rec2);
-        List<AnnotationMirror> annos = new ArrayList<>();
-        annos.add(a1);
-        annos.add(a2);
-        return createCombinedSameLen(receivers, annos);
-    }
-
-    /**
-     * For the use of the transfer function; generates a SameLen that includes a and b, as well as
-     * everything in sl1 and sl2, if they are SameLen annotations.
-     *
-     * @param receivers a list of receivers representing arrays to be included in the combined
-     *     annotation
-     * @param annos a list of the current annotations of the receivers. Must be the same length as
-     *     receivers.
-     * @return a combined SameLen annotation
-     */
-    public AnnotationMirror createCombinedSameLen(
-            List<FlowExpressions.Receiver> receivers, List<AnnotationMirror> annos) {
-
-        assert receivers.size() == annos.size();
-        List<String> values = new ArrayList<>();
-        for (int i = 0; i < receivers.size(); i++) {
-            Receiver rec = receivers.get(i);
-            AnnotationMirror anno = annos.get(i);
-            if (mayAppearInSameLen(rec)) {
-                values.add(rec.toString());
-            }
-            if (AnnotationUtils.areSameByClass(anno, SameLen.class)) {
-                values.addAll(getValueOfAnnotationWithStringArgument(anno));
-            }
-        }
-        AnnotationMirror res = getCombinedSameLen(values, new ArrayList<>());
-        return res;
-    }
-
     /** Returns true if the given expression may appear in a @SameLen annotation. */
     public static boolean mayAppearInSameLen(Receiver receiver) {
         return !receiver.containsUnknown()
@@ -207,12 +154,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * The qualifier hierarchy for the sameLen type system. SameLen is strange, because most types
-     * are distinct and at the same level: for instance @SameLen("a") and @SameLen("b) have nothing
-     * in common. However, if one type includes even one overlapping name, then the types have to be
-     * the same: so @SameLen({"a","b","c"} and @SameLen({"c","f","g"} are actually the same type,
-     * and have to be treated as such - both should usually be replaced by a SameLen with the union
-     * of the lists of names.
+     * The qualifier hierarchy for the SameLen type system. Most types are distinct and at the same
+     * level: for instance @SameLen("a") and @SameLen("b) have nothing in common. However, if one
+     * type includes even one overlapping name, then the types have to be the same:
+     * so @SameLen({"a","b","c"} and @SameLen({"c","f","g"} are actually the same type -- both
+     * should usually be replaced by a SameLen with the union of the lists of names.
      */
     private final class SameLenQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
@@ -226,7 +172,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWN;
         }
 
-        /** Case 3. */
+        // The GLB of two SameLen annotations is the union of the two sets of arrays, or is bottom
+        // if the sets do not intersect.
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
@@ -252,7 +199,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        /** Case 4. */
+        // The LUB of two SameLen annotations is the intersection of the two sets of arrays, or is
+        // top if they do not intersect.
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
@@ -322,7 +270,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(factory);
         }
 
-        /** Case 5. */
+        // Case "new array" for "new T[a.length]"
         @Override
         public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
             if (node.getDimensions().size() == 1) {
@@ -357,6 +305,31 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Find all the sequences that are members of the SameLen annotation associated with the
+     * sequence named in sequenceExpression along the current path.
+     */
+    public List<String> getSameLensFromString(
+            String sequenceExpression, Tree tree, TreePath currentPath) {
+        AnnotationMirror sameLenAnno;
+        try {
+            sameLenAnno =
+                    getAnnotationFromJavaExpressionString(
+                            sequenceExpression, tree, currentPath, SameLen.class);
+        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+            // ignore parse errors
+            sameLenAnno = null;
+        }
+        if (sameLenAnno == null) {
+            return new ArrayList<>();
+        }
+        return getValueOfAnnotationWithStringArgument(sameLenAnno);
+    }
+
+    ///
+    /// Creating @SameLen annotations
+    ///
+
     /** Creates a @SameLen annotation whose values are the given strings. */
     public AnnotationMirror createSameLen(String... val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
@@ -366,23 +339,62 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Find all the sequences that are members of the SameLen annotation associated with the
-     * sequence named in sequenceExpression along the current path.
+     * This function finds the union of the expressions in two @SameLen annotations. Both
+     * annotations must have a value field; otherwise the function will fail.
+     *
+     * @return a SameLen annotation whose expressions are the set union of the given expressions
      */
-    public List<String> getSameLensFromString(
-            String sequenceExpression, Tree tree, TreePath currentPath) {
-        AnnotationMirror sameLenAnno = null;
-        try {
-            sameLenAnno =
-                    getAnnotationFromJavaExpressionString(
-                            sequenceExpression, tree, currentPath, SameLen.class);
-        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-            // ignore parse errors
+    public AnnotationMirror getCombinedSameLen(List<String> exprs1, List<String> exprs2) {
+
+        Set<String> newExprs = new TreeSet<>();
+
+        newExprs.addAll(exprs1);
+        newExprs.addAll(exprs2);
+        String[] names = newExprs.toArray(new String[newExprs.size()]);
+        return createSameLen(names);
+    }
+
+    /**
+     * Combines the given arrays and annotations into a single SameLen annotation. See {@link
+     * #createCombinedSameLen(List, List)}.
+     */
+    public AnnotationMirror createCombinedSameLen(
+            Receiver rec1, Receiver rec2, AnnotationMirror a1, AnnotationMirror a2) {
+        List<Receiver> receivers = new ArrayList<>();
+        receivers.add(rec1);
+        receivers.add(rec2);
+        List<AnnotationMirror> annos = new ArrayList<>();
+        annos.add(a1);
+        annos.add(a2);
+        return createCombinedSameLen(receivers, annos);
+    }
+
+    /**
+     * Generates a SameLen that includes a and b, as well as everything in sl1 and sl2, if they are
+     * SameLen annotations.
+     *
+     * @param receivers a list of receivers representing arrays to be included in the combined
+     *     annotation
+     * @param annos a list of the current annotations of the receivers. Must be the same length as
+     *     receivers.
+     * @return a combined SameLen annotation
+     */
+    public AnnotationMirror createCombinedSameLen(
+            List<FlowExpressions.Receiver> receivers, List<AnnotationMirror> annos) {
+
+        assert receivers.size() == annos.size();
+        List<String> exprs = new ArrayList<>();
+        for (int i = 0; i < receivers.size(); i++) {
+            Receiver rec = receivers.get(i);
+            AnnotationMirror anno = annos.get(i);
+            if (mayAppearInSameLen(rec)) {
+                exprs.add(rec.toString());
+            }
+            if (AnnotationUtils.areSameByClass(anno, SameLen.class)) {
+                exprs.addAll(getValueOfAnnotationWithStringArgument(anno));
+            }
         }
-        if (sameLenAnno == null) {
-            // Could not find a more precise type, so return 0;
-            return new ArrayList<>();
-        }
-        return getValueOfAnnotationWithStringArgument(sameLenAnno);
+        AnnotationMirror res = getCombinedSameLen(exprs, new ArrayList<>());
+        return res;
     }
 }
