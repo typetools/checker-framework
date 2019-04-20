@@ -143,21 +143,19 @@ public class SameLenTransfer extends CFTransfer {
     }
 
     /**
-     * Insert combinedSameLen into the store as the SameLen type of each array listed in
-     * combinedSameLen.
+     * Insert a @SameLen annotation into the store as the SameLen type of each array listed in it.
      *
-     * @param combinedSameLen a {@code @SameLen} annotation. Not just an annotation in the SameLen
-     *     hierarchy; this annotation MUST be {@code @SameLen(...)}.
+     * @param sameLenAnno a {@code @SameLen} annotation. Not just an annotation in the SameLen
+     *     hierarchy; this annotation must be {@code @SameLen(...)}.
      * @param node the node in the tree where the combination is happening. Used for context.
      * @param store the store to modify
      */
-    private void propagateCombinedSameLen(
-            AnnotationMirror combinedSameLen, Node node, CFStore store) {
+    private void propagateCombinedSameLen(AnnotationMirror sameLenAnno, Node node, CFStore store) {
         TreePath currentPath = aTypeFactory.getPath(node.getTree());
         if (currentPath == null) {
             return;
         }
-        for (String expr : IndexUtil.getValueOfAnnotationWithStringArgument(combinedSameLen)) {
+        for (String expr : IndexUtil.getValueOfAnnotationWithStringArgument(sameLenAnno)) {
             Receiver recS;
             try {
                 recS = aTypeFactory.getReceiverFromJavaExpressionString(expr, currentPath);
@@ -165,7 +163,7 @@ public class SameLenTransfer extends CFTransfer {
                 continue;
             }
             store.clearValue(recS);
-            store.insertValue(recS, combinedSameLen);
+            store.insertValue(recS, sameLenAnno);
         }
     }
 
