@@ -355,6 +355,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
+    // In Java 9, this method can be eliminated:  it is simple enough for clients to inline, using
+    // List.of.
     /**
      * Combines the given arrays and annotations into a single SameLen annotation. See {@link
      * #createCombinedSameLen(List, List)}.

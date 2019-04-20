@@ -97,6 +97,9 @@ public class SameLenTransfer extends CFTransfer {
                                     .getAnnotationInHierarchy(UNKNOWN);
 
                     AnnotationMirror combinedSameLen =
+                            // In Java 9, this can be:
+                            // aTypeFactory.createCombinedSameLen(
+                            //         List.of(targetRec, otherRec), List.of(lengthNodeAnnotation));
                             aTypeFactory.createCombinedSameLen(
                                     targetRec, otherRec, UNKNOWN, lengthNodeAnnotation);
 
@@ -127,6 +130,9 @@ public class SameLenTransfer extends CFTransfer {
             AnnotationMirror rightAnnoOrUnknown = rightAnno == null ? UNKNOWN : rightAnno;
 
             AnnotationMirror combinedSameLen =
+                    // In Java 9, this can be:
+                    // aTypeFactory.createCombinedSameLen(
+                    //         List.of(targetRec, exprRec), List.of(rightAnnoOrUnknown));
                     aTypeFactory.createCombinedSameLen(
                             targetRec, exprRec, UNKNOWN, rightAnnoOrUnknown);
 
@@ -169,6 +175,7 @@ public class SameLenTransfer extends CFTransfer {
                 && ((FieldAccessNode) node).getFieldName().equals("length")
                 && ((FieldAccessNode) node).getReceiver().getType().getKind() == TypeKind.ARRAY);
     }
+
     /**
      * Handles refinement of equality comparisons. Assumes "a == b" or "a.length == b.length"
      * evaluates to true. The method gives a and b SameLen of each other in the store.
