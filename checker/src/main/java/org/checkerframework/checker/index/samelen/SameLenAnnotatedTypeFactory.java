@@ -298,18 +298,17 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                     Receiver rec = FlowExpressions.internalReprOf(this.atypeFactory, sequenceTree);
                     if (mayAppearInSameLen(rec)) {
+                        String recString = rec.toString();
                         if (AnnotationUtils.areSameByClass(sequenceAnno, SameLenUnknown.class)) {
-                            sequenceAnno = createSameLen(rec.toString());
+                            sequenceAnno = createSameLen(Collections.singletonList(recString));
                         } else if (AnnotationUtils.areSameByClass(sequenceAnno, SameLen.class)) {
-                            // Ensure that the sequence whose length is actually being used is part
-                            // of the annotation. If not, add it.
-                            List<String> sequenceAnnoSequences =
+                            // Add the sequence whose length is being used to the annotation.
+                            List<String> exprs =
                                     getValueOfAnnotationWithStringArgument(sequenceAnno);
-                            if (!sequenceAnnoSequences.contains(rec.toString())) {
-                                sequenceAnnoSequences.add(rec.toString());
-                                String[] newSequenceAnnoSequences =
-                                        sequenceAnnoSequences.toArray(new String[0]);
-                                sequenceAnno = createSameLen(newSequenceAnnoSequences);
+                            int index = Collections.binarySearch(exprs, recString);
+                            if (index < 0) {
+                                exprs.add(-index - 1, recString);
+                                sequenceAnno = createSameLen(exprs);
                             }
                         }
                     }
@@ -347,20 +346,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Creates a @SameLen annotation whose values are the given strings, from an <em>ordered</em>
-     * collection such as a list or TreeSet.
+     * collection such as a list or TreeSet in which the strings are in alphabetical order.
      */
     public AnnotationMirror createSameLen(Collection<String> exprs) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
         String[] exprArray = exprs.toArray(new String[0]);
         builder.setValue("value", exprArray);
-        return builder.build();
-    }
-
-    /** Creates a @SameLen annotation whose values are the given strings. */
-    public AnnotationMirror createSameLen(String... val) {
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
-        Arrays.sort(val);
-        builder.setValue("value", val);
         return builder.build();
     }
 
