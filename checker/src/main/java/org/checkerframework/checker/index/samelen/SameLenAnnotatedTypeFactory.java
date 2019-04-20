@@ -10,6 +10,7 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -128,14 +129,14 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 AnnotationMirror anm = atm.getAnnotation(SameLen.class);
                 if (anm != null) {
-                    List<String> slArrays = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
-                    if (slArrays.contains(varName)) {
-                        slArrays.remove(varName);
+                    List<String> exprs = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
+                    if (exprs.contains(varName)) {
+                        exprs.remove(varName);
                     }
-                    if (slArrays.isEmpty()) {
+                    if (exprs.isEmpty()) {
                         atm.replaceAnnotation(UNKNOWN);
                     } else {
-                        atm.replaceAnnotation(createSameLen(slArrays.toArray(new String[0])));
+                        atm.replaceAnnotation(createSameLen(exprs));
                     }
                 }
             }
@@ -172,6 +173,20 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWN;
         }
 
+        /**
+         * If the collections are disjoint, returns null. Otherwise, returns their union. The
+         * collections must not contain duplicates.
+         */
+        private Set<String> unionIfNotDisjoint(Collection<String> c1, Collection<String> c2) {
+            Set<String> result = new TreeSet<>(c1);
+            for (String s : c2) {
+                if (!result.add(s)) {
+                    return null;
+                }
+            }
+            return result;
+        }
+
         // The GLB of two SameLen annotations is the union of the two sets of arrays, or is bottom
         // if the sets do not intersect.
         @Override
@@ -181,12 +196,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
                 List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
 
-                if (!Collections.disjoint(a1Val, a2Val)) {
-                    return getCombinedSameLen(a1Val, a2Val);
-                } else {
+                Set<String> exprs = unionIfNotDisjoint(a1Val, a2Val);
+                if (exprs == null) {
                     return BOTTOM;
+                } else {
+                    return createSameLen(exprs);
                 }
-
             } else {
                 // the glb is either one of the annotations (if the other is top), or bottom.
                 if (AnnotationUtils.areSameByClass(a1, SameLenUnknown.class)) {
@@ -210,7 +225,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 if (!Collections.disjoint(a1Val, a2Val)) {
                     a1Val.retainAll(a2Val);
-                    return createSameLen(a1Val.toArray(new String[0]));
+                    return createSameLen(a1Val);
                 } else {
                     return UNKNOWN;
                 }
@@ -330,28 +345,23 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /// Creating @SameLen annotations
     ///
 
+    /**
+     * Creates a @SameLen annotation whose values are the given strings, from an <em>ordered</em>
+     * collection such as a list or TreeSet.
+     */
+    public AnnotationMirror createSameLen(Collection<String> exprs) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
+        String[] exprArray = exprs.toArray(new String[0]);
+        builder.setValue("value", exprArray);
+        return builder.build();
+    }
+
     /** Creates a @SameLen annotation whose values are the given strings. */
     public AnnotationMirror createSameLen(String... val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
         Arrays.sort(val);
         builder.setValue("value", val);
         return builder.build();
-    }
-
-    /**
-     * This function finds the union of the expressions in two @SameLen annotations. Both
-     * annotations must have a value field; otherwise the function will fail.
-     *
-     * @return a SameLen annotation whose expressions are the set union of the given expressions
-     */
-    public AnnotationMirror getCombinedSameLen(List<String> exprs1, List<String> exprs2) {
-
-        Set<String> newExprs = new TreeSet<>();
-
-        newExprs.addAll(exprs1);
-        newExprs.addAll(exprs2);
-        String[] names = newExprs.toArray(new String[newExprs.size()]);
-        return createSameLen(names);
     }
 
     /**
@@ -370,31 +380,28 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Generates a SameLen that includes a and b, as well as everything in sl1 and sl2, if they are
-     * SameLen annotations.
+     * Generates a SameLen that includes each receiver, as well as everything in the annotations2,
+     * if they are SameLen annotations.
      *
      * @param receivers a list of receivers representing arrays to be included in the combined
      *     annotation
-     * @param annos a list of the current annotations of the receivers. Must be the same length as
-     *     receivers.
+     * @param annos a list of annotations
      * @return a combined SameLen annotation
      */
     public AnnotationMirror createCombinedSameLen(
             List<FlowExpressions.Receiver> receivers, List<AnnotationMirror> annos) {
 
-        assert receivers.size() == annos.size();
-        List<String> exprs = new ArrayList<>();
-        for (int i = 0; i < receivers.size(); i++) {
-            Receiver rec = receivers.get(i);
-            AnnotationMirror anno = annos.get(i);
+        Set<String> exprs = new TreeSet<>();
+        for (Receiver rec : receivers) {
             if (mayAppearInSameLen(rec)) {
                 exprs.add(rec.toString());
             }
+        }
+        for (AnnotationMirror anno : annos) {
             if (AnnotationUtils.areSameByClass(anno, SameLen.class)) {
                 exprs.addAll(getValueOfAnnotationWithStringArgument(anno));
             }
         }
-        AnnotationMirror res = getCombinedSameLen(exprs, new ArrayList<>());
-        return res;
+        return createSameLen(exprs);
     }
 }
