@@ -686,7 +686,7 @@ type refinement).
   myVar.hashCode();     // warning: posible dereference of null
 \end{Verbatim}
 
-Flow-sensitive type refinement applies to every checker, including new
+Type refinement applies to every checker, including new
 checkers that you write.  Here is an example for the Regex Checker
 (\chapterpageref{regex-checker}):
 
@@ -746,9 +746,9 @@ report (see Section~\ref{reporting-bugs}) that includes a small piece of
 Java code that reproduces the problem.
 
 
-\subsubsectionAndLabel{Fields and flow-sensitive analysis}{type-refinement-fields}
+\subsubsectionAndLabel{Fields and type refinement}{type-refinement-fields}
 
-Flow sensitivity analysis infers the type of fields in some restricted cases:
+Type refinement infers the type of fields in some restricted cases:
 
 \begin{itemize}
 

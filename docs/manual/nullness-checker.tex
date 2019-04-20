@@ -169,7 +169,7 @@ The nullness hierarchy contains these qualifiers:
   method at a time), when a \code{MonotonicNonNull} field is first read within a
   method, the field cannot be assumed to be non-null.  The benefit of
   MonotonicNonNull over Nullable is its different interaction with
-  flow-sensitive type qualifier refinement (Section~\ref{type-refinement}).
+  type refinement (Section~\ref{type-refinement}).
   After a check of a MonotonicNonNull
   field, all subsequent accesses \emph{within that method} can be assumed
   to be NonNull, even after arbitrary external method calls that have

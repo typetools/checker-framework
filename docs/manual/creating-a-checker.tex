@@ -1222,8 +1222,8 @@ two \<addComputedTypeAnnotations> methods.
 \<AnnotatedTypeFactory>, when given a program
 expression, returns the expression's type.  This should include not only
 the qualifiers that the programmer explicitly wrote in the source code, but
-also default and implicit annotations, and flow-sensitive local type
-inference (see Section~\ref{effective-qualifier} for explanations of these
+also default and implicit annotations, and type
+refinement (see Section~\ref{effective-qualifier} for explanations of these
 concepts).
 
 To add implicit annotations, you should override
@@ -1240,14 +1240,14 @@ try to limit their work to implicit annotations; often some existing
 simpler mechanism in the Checker Framework will serve other purposes.
 
 
-\sectionAndLabel{Dataflow: enhancing flow-sensitive type qualifier inference}{creating-dataflow}
+\sectionAndLabel{Dataflow: enhancing flow-sensitive type refinement}{creating-dataflow}
 
 By default, every checker performs flow-sensitive type refinement, also known as
 local type inference, as described
 in Section~\ref{type-refinement}.
 
 This section of the manual explains how to enhance the Checker Framework's
-built-in flow-sensitive type refinement.
+built-in type refinement.
 Most commonly, you will inform the Checker Framework about a run-time test
 that gives information about the type qualifiers in your type system.
 Section~\refwithpageparen{type-refinement-runtime-tests} gives examples of
@@ -1270,7 +1270,7 @@ The Regex Checker's dataflow customization for the
 run-time check is used as a running example.
 
 If needed, you can find more details about the implementation of
-flow-sensitive type refinement, and the control flow graph (CFG) data
+type refinement, and the control flow graph (CFG) data
 structure that it uses, in the
 \href{https://checkerframework.org/manual/checker-framework-dataflow-manual.pdf}{Dataflow
   Manual}.
