@@ -342,10 +342,12 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                 AnnotationMirror polyQual = entry.getKey();
                 AnnotationMirrorSet a1Annos = entry.getValue();
                 AnnotationMirrorSet a2Annos = r2.get(polyQual);
-                if (a2Annos != null && !a2Annos.isEmpty()) {
-                    r2remain.remove(polyQual);
+                if (a2Annos == null || a2Annos.isEmpty()) {
+                    res.put(polyQual, a1Annos);
+                } else {
+                    res.put(polyQual, combine(polyQual, a1Annos, a2Annos));
                 }
-                res.put(polyQual, combine(polyQual, a1Annos, a2Annos));
+                r2remain.remove(polyQual);
             }
             for (AnnotationMirror key2 : r2remain) {
                 res.put(key2, r2.get(key2));
