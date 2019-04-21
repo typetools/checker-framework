@@ -32,12 +32,12 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
         super(env, factory);
         Elements elements = env.getElementUtils();
         AnnotationMirrorMap<AnnotationMirror> polys = new AnnotationMirrorMap<>();
+        AnnotationMirrorSet topsSeen = new AnnotationMirrorSet();
         for (AnnotationMirror aam : qualHierarchy.getTypeQualifiers()) {
             if (QualifierPolymorphism.isPolyAll(aam)) {
                 polys.put(aam, null);
                 continue;
             }
-            AnnotationMirrorSet topsSeen = new AnnotationMirrorSet();
             AnnotationMirror aa = QualifierPolymorphism.getPolymorphicQualifier(aam);
             if (aa == null) {
                 continue;
