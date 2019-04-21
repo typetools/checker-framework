@@ -55,7 +55,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * the top qualifier of that hierarchy. The field is always non-null, but it might be an empty
      * mapping.
      */
-    protected final AnnotationMirrorMap<AnnotationMirror> polyQuals;
+    protected final AnnotationMirrorMap<AnnotationMirror> polyQuals = new AnnotationMirrorMap<>();
 
     /**
      * The qualifiers at the top of {@code qualHierarchy}. These are the values in {@code
@@ -64,7 +64,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     protected final AnnotationMirrorSet topQuals;
 
     /** Determines the instantiations for each polymorphic qualifier. */
-    private PolyCollector collector;
+    private PolyCollector collector = new PolyCollector();
 
     /** Replaces each polymorphic qualifier with its instantiation. */
     private AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer;
@@ -73,7 +73,11 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * Completes a type by removing any unresolved polymorphic qualifiers, replacing them with the
      * top qualifiers.
      */
-    private Completer completer;
+    private Completer completer = new Completer();
+
+    /** Replaces each polymorphic qualifier with its instantiation. */
+    private AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer =
+            new Replacer();
 
     /** {@link PolyAll} annotation mirror. */
     protected final AnnotationMirror POLYALL;
@@ -90,12 +94,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         this.atypeFactory = factory;
         this.qualHierarchy = factory.getQualifierHierarchy();
         this.topQuals = new AnnotationMirrorSet(qualHierarchy.getTopAnnotations());
-
-        this.polyQuals = new AnnotationMirrorMap<>();
-
-        this.collector = new PolyCollector();
-        this.completer = new Completer();
-        this.replacer = new Replacer();
 
         Elements elements = env.getElementUtils();
         this.POLYALL = AnnotationBuilder.fromClass(elements, PolyAll.class);
