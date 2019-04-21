@@ -52,7 +52,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * the top qualifier of that hierarchy. The field is always non-null, but it might be an empty
      * mapping.
      */
-    protected final AnnotationMirrorMap<AnnotationMirror> polyQuals;
+    protected final AnnotationMirrorMap<AnnotationMirror> polyQuals = new AnnotationMirrorMap<>();
 
     /** The qualifiers at the top of the qualifier hierarchy. */
     protected final AnnotationMirrorSet topQuals;
@@ -64,16 +64,17 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     protected final AnnotationMirror POLYALL;
 
     /** Determines the instantiations for each polymorphic qualifier. */
-    private PolyCollector collector;
+    private PolyCollector collector = new PolyCollector();
 
     /**
      * Completes a type by removing any unresolved polymorphic qualifiers, replacing them with the
      * top qualifiers.
      */
-    private Completer completer;
+    private Completer completer = new Completer();
 
     /** Replaces each polymorphic qualifier with its instantiation. */
-    private AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer;
+    private AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer =
+            new Replacer();
 
     /**
      * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
@@ -90,12 +91,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
         Elements elements = env.getElementUtils();
         this.POLYALL = AnnotationBuilder.fromClass(elements, PolyAll.class);
-
-        this.polyQuals = new AnnotationMirrorMap<>();
-
-        this.collector = new PolyCollector();
-        this.completer = new Completer();
-        this.replacer = new Replacer();
     }
 
     /**
