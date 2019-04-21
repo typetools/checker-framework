@@ -3270,7 +3270,7 @@ class RandomAccessFile {
     public void write(@PolySigned byte b[], int off, int len);
     public int read(@PolySigned byte[] b) throws IOException;
     public int read(@PolySigned byte b[], int off, int len) throws IOException;
-    public native @Constant long length() throws IOException;
+    public native @Unsigned long length() throws IOException;
     public void seek(@Unsigned long pos) throws IOException;
     public final void readFully(@PolySigned byte[] b) throws IOException;
     public final void readFully(@PolySigned byte[] b, int off, int len) throws IOException;
