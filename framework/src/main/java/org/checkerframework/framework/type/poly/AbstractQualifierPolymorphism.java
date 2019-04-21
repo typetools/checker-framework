@@ -47,24 +47,27 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     /** Annotated type factory. */
     protected final AnnotatedTypeFactory atypeFactory;
 
+    /** The qualifier hierarchy to use. */
+    protected final QualifierHierarchy qualHierarchy;
+
     /**
-     * The polymorphic qualifiers: mapping from a polymorphic qualifier of a qualifier hierarchy to
+     * The polymorphic qualifiers: mapping from a polymorphic qualifier of {@code qualHierarchy} to
      * the top qualifier of that hierarchy. The field is always non-null, but it might be an empty
      * mapping.
      */
     protected final AnnotationMirrorMap<AnnotationMirror> polyQuals;
 
-    /** The qualifiers at the top of the qualifier hierarchy. */
+    /**
+     * The qualifiers at the top of {@code qualHierarchy}. These are the values in {@code
+     * polyQuals}.
+     */
     protected final AnnotationMirrorSet topQuals;
-
-    /** The qualifier hierarchy to use. */
-    protected final QualifierHierarchy qualHierarchy;
-
-    /** {@link PolyAll} annotation mirror. */
-    protected final AnnotationMirror POLYALL;
 
     /** Determines the instantiations for each polymorphic qualifier. */
     private PolyCollector collector;
+
+    /** Replaces each polymorphic qualifier with its instantiation. */
+    private AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer;
 
     /**
      * Completes a type by removing any unresolved polymorphic qualifiers, replacing them with the
@@ -72,13 +75,13 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      */
     private Completer completer;
 
-    /** Replaces each polymorphic qualifier with its instantiation. */
-    private AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer;
+    /** {@link PolyAll} annotation mirror. */
+    protected final AnnotationMirror POLYALL;
 
     /**
      * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
      * querying type qualifiers and the given factory for getting annotated types. Subclasses need
-     * to add polymorphic qualifiers to {@code polyQuals}.
+     * to add polymorphic qualifiers to {@code this.polyQuals}.
      *
      * @param env the processing environment
      * @param factory the factory for the current checker
@@ -88,14 +91,14 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         this.qualHierarchy = factory.getQualifierHierarchy();
         this.topQuals = new AnnotationMirrorSet(qualHierarchy.getTopAnnotations());
 
-        Elements elements = env.getElementUtils();
-        this.POLYALL = AnnotationBuilder.fromClass(elements, PolyAll.class);
-
         this.polyQuals = new AnnotationMirrorMap<>();
 
         this.collector = new PolyCollector();
         this.completer = new Completer();
         this.replacer = new Replacer();
+
+        Elements elements = env.getElementUtils();
+        this.POLYALL = AnnotationBuilder.fromClass(elements, PolyAll.class);
     }
 
     /**
@@ -235,7 +238,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
     /**
      * Replaces the top-level polymorphic annotations in {@code type} with the instantiations in
-     * {@code matches}.
+     * {@code replacements}.
      *
      * <p>This method is called on all parts of a type.
      *
