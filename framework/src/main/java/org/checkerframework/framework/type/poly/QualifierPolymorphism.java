@@ -19,14 +19,14 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public interface QualifierPolymorphism {
 
-    /** @return true if {@code qual} is {@code @PolyAlly} */
+    /** @return true if {@code qual} is {@code @PolyAll} */
     static boolean isPolyAll(AnnotationMirror qual) {
         return AnnotationUtils.areSameByClass(qual, PolyAll.class);
     }
 
     /**
      * @return the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
-     *     otherwise return null.
+     *     otherwise return null
      */
     static AnnotationMirror getPolymorphicQualifier(AnnotationMirror qual) {
         if (qual == null) {
@@ -47,9 +47,9 @@ public interface QualifierPolymorphism {
     }
 
     /**
-     * If {@code qual} is a polymorphic qualifier, then the class specified by the {@link
+     * If {@code qual} is a polymorphic qualifier, return the class specified by the {@link
      * PolymorphicQualifier} meta-annotation on the polymorphic qualifier is returned. Otherwise,
-     * null is returned.
+     * return null.
      *
      * <p>This value identifies the qualifier hierarchy to which this polymorphic qualifier belongs.
      * By convention, it is the top qualifier of the hierarchy. Use of {@code
