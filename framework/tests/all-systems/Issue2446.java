@@ -1,4 +1,3 @@
-// @skip-test
 class Issue2446 {
     static class One<T, V> {}
 
