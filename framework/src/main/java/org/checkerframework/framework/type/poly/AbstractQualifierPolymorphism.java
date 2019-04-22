@@ -39,8 +39,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * can alter the way instantiations of polymorphic qualifiers are {@link #combine combined}.
  *
  * <p>An "instantiation" is a mapping from declaration type to use-site type &mdash; that is, a
- * mapping from {@code @Poly*} to concrete qualifiers. (The code replaces everything; but the
- * instantiation only contains {@code @Poly*} as keys.)
+ * mapping from {@code @Poly*} to concrete qualifiers.
  *
  * <p>The implementation performs these steps:
  *
@@ -63,7 +62,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     /**
      * The polymorphic qualifiers: mapping from a polymorphic qualifier of {@code qualHierarchy} to
      * the top qualifier of that hierarchy. The field is always non-null, but it might be an empty
-     * mapping.
+     * mapping. If a value is null, the polymorphic qualifier, such as {@link PolyAll}, applies to
+     * all hierarchies.
      */
     protected final AnnotationMirrorMap<AnnotationMirror> polyQuals = new AnnotationMirrorMap<>();
 
@@ -229,8 +229,11 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     /**
-     * Returns an annotation set that is the merge of the two sets of annotations, typically their
-     * least upper bound. The sets are instantiations for {@code polyQual}.
+     * Returns an annotation set that is the merge of the two sets of annotations. The sets are
+     * instantiations for {@code polyQual}.
+     *
+     * <p>The combination is typically their least upper bound. (It could be GLB in the case GLB in
+     * the case that all arguments to a polymorphic method must have the same annotation.)
      *
      * @param polyQual polymorphic qualifier for which {@code a1Annos} and {@code a2Annos} are
      *     instantiations
@@ -352,10 +355,12 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                 AnnotationMirror polyQual = entry.getKey();
                 AnnotationMirrorSet a1Annos = entry.getValue();
                 AnnotationMirrorSet a2Annos = r2.get(polyQual);
-                if (a2Annos != null && !a2Annos.isEmpty()) {
-                    r2remain.remove(polyQual);
+                if (a2Annos == null || a2Annos.isEmpty()) {
+                    res.put(polyQual, a1Annos);
+                } else {
+                    res.put(polyQual, combine(polyQual, a1Annos, a2Annos));
                 }
-                res.put(polyQual, combine(polyQual, a1Annos, a2Annos));
+                r2remain.remove(polyQual);
             }
             for (AnnotationMirror key2 : r2remain) {
                 res.put(key2, r2.get(key2));
