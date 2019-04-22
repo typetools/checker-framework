@@ -3268,12 +3268,34 @@ class PrintStream {
 class RandomAccessFile {
     public void write(@PolySigned byte b[]);
     public void write(@PolySigned byte b[], int off, int len);
+    public void write(@PolySigned int b) throws IOException;
+    public final void writeByte(@PolySigned int v) throws IOException;
+    public final void writeShort(@PolySigned int v) throws IOException;
+    public final void writeChar(@PolySigned int v) throws IOException;
+    public final void writeInt(@PolySigned int v) throws IOException;
+    public final void writeLong(@PolySigned long v) throws IOException;
+    private native void writeBytes(@PolySigned byte b[], int off, int len) throws IOException;
+    public final void writeChars(String s) throws IOException {
+        int clen = s.length();
+        int blen = 2*clen;
+        @Unsigned byte[] b = new byte[blen];
+        char[] c = new char[clen];
+        s.getChars(0, clen, c, 0);
+        for (int i = 0, j = 0; i < clen; i++) {
+            b[j++] = (byte)(c[i] >>> 8);
+            b[j++] = (byte)(c[i] >>> 0);
+        }
+        writeBytes(b, 0, blen);
+    }
+    public native @PolySigned int read() throws IOException;
+    private native int readBytes(@PolySigned byte b[], int off, int len) throws IOException;
     public int read(@PolySigned byte[] b) throws IOException;
     public int read(@PolySigned byte b[], int off, int len) throws IOException;
-    public native @Unsigned long length() throws IOException;
     public void seek(@Unsigned long pos) throws IOException;
     public final void readFully(@PolySigned byte[] b) throws IOException;
     public final void readFully(@PolySigned byte[] b, int off, int len) throws IOException;
+    public final @Unsigned int readUnsignedByte() throws IOException;
+    public final @Unsigned int readUnsignedShort() throws IOException;
 }
 
 package java.net;
