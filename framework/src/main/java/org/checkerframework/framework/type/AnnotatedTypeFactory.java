@@ -3577,7 +3577,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         final TypeMirror wildcardUBTypeMirror = wildcard.getExtendsBound().getUnderlyingType();
         if (types.isSubtype(wildcardUBTypeMirror, toModifyTypeMirror)) {
             return annotatedTypeMirror;
-        } else if (types.isSubtype(toModifyTypeMirror, wildcardUBTypeMirror)) {
+        } else if (types.isSubtype(
+                types.erasure(toModifyTypeMirror), types.erasure(wildcardUBTypeMirror))) {
             return AnnotatedTypes.asSuper(this, annotatedTypeMirror, wildcard);
         } else if (wildcardUBTypeMirror.getKind() == TypeKind.DECLARED
                 && TypesUtils.getTypeElement(wildcardUBTypeMirror).getKind().isInterface()) {
