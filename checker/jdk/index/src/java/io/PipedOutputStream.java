@@ -26,7 +26,6 @@
 package java.io;
 import org.checkerframework.checker.index.qual.*;
 
-import java.io.*;
 
 /**
  * A piped output stream can be connected to a piped input stream
