@@ -95,7 +95,7 @@ public class PipedReader extends Reader {
      * @exception  IllegalArgumentException if <code>pipeSize <= 0</code>.
      * @since      1.6
      */
-    public PipedReader(PipedWriter src, @NonNegative int pipeSize) throws IOException {
+    public PipedReader(PipedWriter src, @Positive int pipeSize) throws IOException {
         initPipe(pipeSize);
         connect(src);
     }
@@ -124,11 +124,11 @@ public class PipedReader extends Reader {
      * @exception  IllegalArgumentException if <code>pipeSize <= 0</code>.
      * @since      1.6
      */
-    public PipedReader(@NonNegative int pipeSize) {
+    public PipedReader(@Positive int pipeSize) {
         initPipe(pipeSize);
     }
 
-    private void initPipe(@Positive int pipeSize) {
+    private void initPipe(int pipeSize) {
         if (pipeSize <= 0) {
             throw new IllegalArgumentException("Pipe size <= 0");
         }

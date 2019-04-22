@@ -121,7 +121,7 @@ public class PipedInputStream extends InputStream {
      * @exception  IllegalArgumentException if <code>pipeSize <= 0</code>.
      * @since      1.6
      */
-    public PipedInputStream(PipedOutputStream src, @NonNegative int pipeSize)
+    public PipedInputStream(PipedOutputStream src, @Positive int pipeSize)
             throws IOException {
          initPipe(pipeSize);
          connect(src);
@@ -151,11 +151,11 @@ public class PipedInputStream extends InputStream {
      * @exception  IllegalArgumentException if <code>pipeSize <= 0</code>.
      * @since      1.6
      */
-    public PipedInputStream(@NonNegative int pipeSize) {
+    public PipedInputStream(@Positive int pipeSize) {
         initPipe(pipeSize);
     }
 
-    private void initPipe(@Positive int pipeSize) {
+    private void initPipe(int pipeSize) {
          if (pipeSize <= 0) {
             throw new IllegalArgumentException("Pipe Size <= 0");
          }
