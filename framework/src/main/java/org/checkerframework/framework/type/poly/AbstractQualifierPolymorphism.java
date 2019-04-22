@@ -52,7 +52,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     /**
      * The polymorphic qualifiers: mapping from a polymorphic qualifier of {@code qualHierarchy} to
      * the top qualifier of that hierarchy. The field is always non-null, but it might be an empty
-     * mapping.
+     * mapping. If a value is null, the polymorphic qualifier, such as {@link PolyAll}, applies to
+     * all hierarchies.
      */
     protected final AnnotationMirrorMap<AnnotationMirror> polyQuals = new AnnotationMirrorMap<>();
 
