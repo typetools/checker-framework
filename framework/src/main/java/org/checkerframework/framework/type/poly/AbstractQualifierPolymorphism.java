@@ -39,8 +39,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * can alter the way instantiations of polymorphic qualifiers are {@link #combine combined}.
  *
  * <p>An "instantiation" is a mapping from declaration type to use-site type &mdash; that is, a
- * mapping from {@code @Poly*} to concrete qualifiers. (The code replaces everything; but the
- * instantiation only contains {@code @Poly*} as keys.)
+ * mapping from {@code @Poly*} to concrete qualifiers.
  */
 public abstract class AbstractQualifierPolymorphism implements QualifierPolymorphism {
 
