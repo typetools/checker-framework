@@ -17,11 +17,15 @@ public class TypeDeclDefaultVisitor extends BaseTypeVisitor<TypeDeclDefaultAnnot
     @Override
     protected void checkConstructorResult(
             AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
-        // skip
+        // The constructor result is defaulted to bottom, since that isn't top an error would always
+        // be issued if super is called.  Don't issue the error so that this checker can be run on
+        // all-systems tests.
     }
 
     @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
+        // Use bottom since that's the default.  This avoids errors when exception parameters are
+        // used in all-systems tests.
         Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
         set.add(atypeFactory.BOTTOM);
         return set;

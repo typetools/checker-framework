@@ -161,7 +161,12 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     private boolean shouldDefaultTypeVarLocals;
 
-    /** Should the type be calculated as a type declaration? */
+    /**
+     * Should the type currently being computed be treated as a type declaration?
+     *
+     * @see GenericAnnotatedTypeFactory#getAnnotatedTypeAsTypeDecl(Tree)
+     * @see GenericAnnotatedTypeFactory#getAnnotatedTypeAsTypeDecl(Element)
+     */
     private boolean isTypeDecl = false;
 
     /** An empty store. */
@@ -1310,7 +1315,7 @@ public abstract class GenericAnnotatedTypeFactory<
         shouldCache = false;
         isTypeDecl = true;
         AnnotatedTypeMirror type;
-        if (tree.getKind() == Kind.CLASS) {
+        if (TreeUtils.isClassTree(tree)) {
             type = getAnnotatedType(tree);
         } else {
             type = getAnnotatedTypeFromTypeTree(tree);
