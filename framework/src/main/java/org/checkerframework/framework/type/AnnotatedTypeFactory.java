@@ -1026,8 +1026,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns an AnnotatedTypeMirror representing the annotated type of {@code elt} as a type
      * declaration.
      *
-     * <p>It is not possible to tell whether an element is a use of a type or a declaration, so this
-     * method differentiates the two.
+     * <p>A TypeElement is a representation of a type declaration, but the type of an element
+     * returned by {@link #getAnnotatedType(Element)} is its type at a use. This method returns the
+     * type at its declaration.
      *
      * @param elt element whose type is requested
      * @return the annotated type of {@code elt} as a type declaration

@@ -399,9 +399,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        AnnotatedTypeMirror classType =
-                atypeFactory.getAnnotatedTypeAsTypeDecl(
-                        TreeUtils.elementFromDeclaration(classTree));
+        AnnotatedTypeMirror classType = atypeFactory.getAnnotatedTypeAsTypeDecl(classTree);
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
         // classTree.getExtendsClause() is null when there is no explicitly-written extends clause,
