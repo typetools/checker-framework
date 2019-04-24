@@ -168,22 +168,21 @@ You can find more potential projects in the
     <a href="https://checkerframework.org/manual/#installation">Install</a>
     the Checker Framework.
   <li>
-    Choose a program to type-check.  This should be an already-existing
-    program.  It should not be newly-written code, nor a set of tiny
+    Choose a library or program to type-check.  This should be an already-existing
+    program; it should not be newly-written code, nor a set of tiny
     benchmarks that aim to expose corner cases.
     <!-- (Corner cases are great to
     discover, but they are only worth addressing if they come up in real code.)
     -->
+    The library or program should be under active maintenance; don't choose one
+    that has not had a commit in several years.
     <br/>
     You will find the case study easier if you are already familiar with
-    the program.  Choose a program that is
-    relatively small, or choose a small part of a larger program.
-    <!-- Choose a program that the checker has never been run on in the past. -->
-    A program that you have written, such as for your coursework, is a good
-    first choice. (After verifying it, you'll want to move on to a bigger
-    program.)
-    Another good choice is a library that is not already annotated; see
-    the project <a href="#library-annotations">library annotations</a> below.
+    the program, or if it is written in good style.
+    As your first choice, choose a small library or program (say, 1000 lines), then
+    move on to a larger one.
+    If you need ideas of what program to annotate, you could
+    see <a href="#library-annotations">library annotations</a> below.
     Don't choose part of the JDK as your first case study.
   <li>
     Choose one type system, from

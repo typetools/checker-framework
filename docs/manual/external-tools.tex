@@ -658,7 +658,7 @@ instructions below.
 
 See the directory \code{docs/examples/MavenExample/} for examples of the use of
 Maven build files that run a checker.  These examples can be used to verify that
-Maven is correctly downloading the Checker Framework from
+Maven is correctly downloading the Checker Framework from the
 \href{https://search.maven.org/search?q=org.checkerframework}{Maven
   Central Repository} and executing it.
 
@@ -1015,7 +1015,7 @@ explains the two different varieties of type inference.
 \begin{enumerate}
 \item
   Type inference during type-checking (Section~\ref{type-refinement}):
-  During type-checking, if certain variables have no type qualifier, the
+  During type-checking, if certain variables have no programmer-written type qualifier, the
   type-checker determines whether there is some type qualifier that would
   permit the program to type-check.  If so, the type-checker uses that type
   qualifier, but never tells the programmer what it was.  Each time the

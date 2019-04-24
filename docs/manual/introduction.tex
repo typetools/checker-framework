@@ -84,6 +84,9 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
+  \ahrefloc{purity-checker}{Purity Checker} to identify whether
+  methods have side effects (see \chapterpageref{purity-checker})
+\item
   \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
   whether an expression's value can be known at compile time
   (see \chapterpageref{constant-value-checker})
@@ -708,7 +711,7 @@ Type-checking modes:  enable/disable functionality
   contains a key that would suppress any warning from this checker.
 \item \<-ArequirePrefixInWarningSuppressions>
   Require that the key in a warning suppression annotation begin with a checker
-  warning supression key.  Otherwise, the suppress warning annotation does not
+  warning suppression key.  Otherwise, the suppress warning annotation does not
   suppress any warnings.  For example, if this command-line option is
   supplied, then \<@SuppressWarnings("assignment.type.incompatible")> has no effect, but
   \<@SuppressWarnings("nullness:assignment.type.incompatible")> does.
@@ -1442,14 +1445,14 @@ same methodology in different words.
 
 
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc
-% LocalWords:  SuppressWarnings un skipUses java plugins plugin TODO cp
+% LocalWords:  SuppressWarnings un skipUses java plugins plugin TODO cp io
 % LocalWords:  nonnull langtools sourcepath classpath OpenJDK pre jsr lst
 % LocalWords:  Djsr qual Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
 % LocalWords:  Nullness unselect checkbox unsetting PolyNull typedefs arg
 % LocalWords:  bashrc IDE xml buildfile PolymorphicQualifier enum API elts INF
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
-% LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter
+% LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter bcel csv
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
@@ -1475,5 +1478,6 @@ same methodology in different words.
 %%  LocalWords:  AstubWarnIfOverwritesBytecode AprintVerboseGenerics
 %%  LocalWords:  AatfDoNotCache AatfCacheSize IntRange AwarnIfNotFound
 %%  LocalWords:  AwarnUnneededSuppressions AshowInferenceSteps BHCJEIBB
-%%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses processOptions
+%%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses processOptions getopt
 %%  LocalWords:  EnsuresNonNull EnsuresNonNullIf
+%%  LocalWords:  ArequirePrefixInWarningSuppressions

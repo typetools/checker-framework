@@ -1098,12 +1098,11 @@ public final class TreeUtils {
     /**
      * Determine whether the given tree represents an ExpressionTree.
      *
-     * <p>TODO: is there a nicer way than an instanceof?
-     *
      * @param tree the Tree to test
      * @return whether the tree is an ExpressionTree
      */
     public static boolean isExpressionTree(Tree tree) {
+        // TODO: is there a nicer way than an instanceof?
         return tree instanceof ExpressionTree;
     }
 
