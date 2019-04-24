@@ -1041,11 +1041,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns an AnnotatedTypeMirror representing the annotated type of {@code tree} as a type
      * declaration.
      *
-     * <p>It is possible to tell whether a tree is a type declaration, but extends and implements
-     * clauses should also be treated as type declarations so defaults are applied correctly. (Also,
-     * {@link #getAnnotatedType(Element)} converts elements to ClassTrees if one is available, so
-     * even if the tree is a class declaration, that doesn't mean that it should be treated as a
-     * type declaration.)
+     * <p>In addition to ClassTrees, extends and implement clauses should be annotated as if they
+     * are type declarations because they must be a supertype of the class type. Extends and
+     * implements clause are represented by a type tree.
+     *
+     * <p>Also, ClassTree is always a type declaration, but {@link #getAnnotatedType(Element)}
+     * converts elements to ClassTrees if one is available, so even if the tree is a class
+     * declaration, that doesn't mean that it should be treated as a type declaration.
      *
      * @param tree element whose type is requested
      * @return the annotated type of {@code tree} as a type declaration
