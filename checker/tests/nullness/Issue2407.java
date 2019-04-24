@@ -13,9 +13,11 @@ class Issue2407 {
     }
 
     @EnsuresNonNull("1")
+    // :: error: (flowexpr.parse.error)
     void method() {}
 
     @EnsuresNonNullIf(expression = "1", result = true)
+    // :: error: (flowexpr.parse.error)
     void method2() {}
 
     String getMessage() {
