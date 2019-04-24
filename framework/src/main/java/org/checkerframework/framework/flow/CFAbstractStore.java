@@ -259,7 +259,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 || r instanceof FlowExpressions.ThisReference
                 || r instanceof FlowExpressions.LocalVariable
                 || r instanceof FlowExpressions.MethodCall
-                || r instanceof FlowExpressions.ArrayAccess) {
+                || r instanceof FlowExpressions.ArrayAccess
+                || r instanceof FlowExpressions.ClassName) {
             return !r.containsUnknown();
         }
         return false;
@@ -283,6 +284,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // top and top is also the default value.
             return;
         }
+        assert canInsertReceiver(r);
         if (r.containsUnknown()) {
             // Expressions containing unknown expressions are not stored.
             return;
