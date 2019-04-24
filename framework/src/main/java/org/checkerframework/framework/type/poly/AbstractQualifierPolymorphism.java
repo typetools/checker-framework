@@ -44,7 +44,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>The implementation performs these steps:
  *
  * <ul>
- *   <li>a Collector creates an instantiation
+ *   <li>the PolyCollector creates an instantiation
  *   <li>if the instantiation is non-empty: the Replacer does resolution -- that is, it replaces
  *       each occurrence of {@code @Poly*} by the concrete qualifier it maps to in the instantiation
  *   <li>if the instantiation is empty, the Completer replaces each {@code @Poly*} by the top
@@ -250,7 +250,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      *
      * <p>This method is called on all parts of a type.
      *
-     * @param type AnnotationTypeMirror whose poly annotations are replaced; it is side-effected by
+     * @param type AnnotatedTypeMirror whose poly annotations are replaced; it is side-effected by
      *     this method
      * @param replacements mapping from polymorphic annotation to instantiation
      */
