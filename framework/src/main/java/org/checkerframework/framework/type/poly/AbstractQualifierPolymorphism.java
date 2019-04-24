@@ -232,8 +232,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * Returns an annotation set that is the merge of the two sets of annotations. The sets are
      * instantiations for {@code polyQual}.
      *
-     * <p>The combination is typically their least upper bound. (It could be GLB in the case GLB in
-     * the case that all arguments to a polymorphic method must have the same annotation.)
+     * <p>The combination is typically their least upper bound. (It could be the GLB in the
+     * case that all arguments to a polymorphic method must have the same annotation.)
      *
      * @param polyQual polymorphic qualifier for which {@code a1Annos} and {@code a2Annos} are
      *     instantiations
