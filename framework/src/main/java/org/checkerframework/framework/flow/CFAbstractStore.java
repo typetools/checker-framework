@@ -288,7 +288,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // Expressions containing unknown expressions are not stored.
             return;
         }
-
         if (r instanceof FlowExpressions.LocalVariable) {
             FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
             V oldValue = localVariableValues.get(localVar);
