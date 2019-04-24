@@ -58,7 +58,6 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -439,7 +438,7 @@ public class ValueTransfer extends CFTransfer {
 
         // If the expression is not representable (for example if String.length() for some reason is
         // not marked @Pure, then do not refine.
-        if (CFAbstractStore.canInsertReceiver(lengthRec)) {
+        if (lengthRec instanceof FlowExpressions.Unknown) {
             return;
         }
 
