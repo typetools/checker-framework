@@ -797,6 +797,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             } catch (FlowExpressionParseException e) {
                 checker.report(e.getResult(), node);
             }
+            if (!CFAbstractStore.canInsertReceiver(expr)) {
+                checker.report(Result.failure("flowexpr.parse.error", expression), node);
+                expr = null;
+            }
             if (expr != null && !abstractMethod) {
                 switch (contract.kind) {
                     case POSTCONDTION:

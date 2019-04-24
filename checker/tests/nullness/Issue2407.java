@@ -1,3 +1,5 @@
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
@@ -9,6 +11,12 @@ class Issue2407 {
     void setMessage(String message) {
         this.message = message;
     }
+
+    @EnsuresNonNull("1")
+    void method() {}
+
+    @EnsuresNonNullIf(expression = "1", result = true)
+    void method2() {}
 
     String getMessage() {
         return message;
