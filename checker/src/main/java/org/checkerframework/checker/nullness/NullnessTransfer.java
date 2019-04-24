@@ -118,6 +118,15 @@ public class NullnessTransfer
         }
     }
 
+    /** Refine the given result to @NonNull. */
+    protected void refineToNonNull(TransferResult<NullnessValue, NullnessStore> result) {
+        NullnessValue oldResultValue = result.getResultValue();
+        NullnessValue refinedResultValue =
+                analysis.createSingleAnnotationValue(NONNULL, oldResultValue.getUnderlyingType());
+        NullnessValue newResultValue = refinedResultValue.mostSpecific(oldResultValue, null);
+        result.setResultValue(newResultValue);
+    }
+
     @Override
     protected NullnessValue finishValue(NullnessValue value, NullnessStore store) {
         value = super.finishValue(value, store);
@@ -270,15 +279,6 @@ public class NullnessTransfer
         }
 
         return result;
-    }
-
-    /** Refine the given result to @NonNull. */
-    void refineToNonNull(TransferResult<NullnessValue, NullnessStore> result) {
-        NullnessValue oldResultValue = result.getResultValue();
-        NullnessValue refinedResultValue =
-                analysis.createSingleAnnotationValue(NONNULL, oldResultValue.getUnderlyingType());
-        NullnessValue newResultValue = refinedResultValue.mostSpecific(oldResultValue, null);
-        result.setResultValue(newResultValue);
     }
 
     /**

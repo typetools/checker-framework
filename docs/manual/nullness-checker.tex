@@ -169,7 +169,7 @@ The nullness hierarchy contains these qualifiers:
   method at a time), when a \code{MonotonicNonNull} field is first read within a
   method, the field cannot be assumed to be non-null.  The benefit of
   MonotonicNonNull over Nullable is its different interaction with
-  flow-sensitive type qualifier refinement (Section~\ref{type-refinement}).
+  type refinement (Section~\ref{type-refinement}).
   After a check of a MonotonicNonNull
   field, all subsequent accesses \emph{within that method} can be assumed
   to be NonNull, even after arbitrary external method calls that have
@@ -2435,12 +2435,12 @@ annotation has nothing to do with the raw types of Java Generics.
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum NullAway
 % LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw
-% LocalWords:  NullnessChecker redundantNullComparison instanceof
+% LocalWords:  NullnessChecker redundantNullComparison instanceof runtime
 % LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
 % LocalWords:  UnderInitialization getComponentType AsuppressWarnings
 % LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass
 % LocalWords:  NullnessRawnessChecker mymap mykey KeyType ValueType
 % LocalWords:  dereferenced dereference Dereferencing initializers
 % LocalWords:  initHelper helperMethod NoSuchElementException classpath
-% LocalWords:  forbidnonnullarraycomponents lombok
-% LocalWords:  NotOnlyInitialized
+% LocalWords:  forbidnonnullarraycomponents lombok findbugs CurrentClass
+% LocalWords:  NotOnlyInitialized underinitialization

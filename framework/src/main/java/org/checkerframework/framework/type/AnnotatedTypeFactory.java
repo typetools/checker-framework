@@ -99,6 +99,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
+import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.TypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -1168,7 +1169,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Because of a bug in Java 8, annotations on type parameters are not stored in elements,
         // so get explicit annotations from the tree. (This bug has been fixed in Java 9.)
         // Also, since annotations computed by the AnnotatedTypeFactory are stored in the element,
-        // the annotations have to be retrived from the tree so that only explicit annotations are
+        // the annotations have to be retrieved from the tree so that only explicit annotations are
         // returned.
         Tree decl = declarationFromElement(elt);
 
@@ -2296,6 +2297,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (ctx != null) {
                     AnnotatedTypeMirror ctxtype = ctx.second;
                     fromNewClassContextHelper(type, ctxtype);
+                } else {
+                    TreePath p = getPath(newClassTree);
+                    AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
+                    if (ctxtype != null) {
+                        fromNewClassContextHelper(type, ctxtype);
+                    } else {
+                        // give up trying and set to raw.
+                        type.setWasRaw();
+                    }
                 }
             }
             AnnotatedDeclaredType fromTypeTree =

@@ -80,10 +80,10 @@ CFLogo.png: ../logo/Logo/CFLogo.png
 favicon-checkerframework.png: ../logo/Checkmark/CFCheckmark_favicon.png
 	cp -p $< $@
 
-# Ensure that every section of the manual has a \label{} command.
+# Don't use \section; use \sectionAndLabel instead
 .PHONY: check-labels
 check-labels:
-	if ( grep -n '^\\\(chapter\|\(sub\)*section\|paragraph\){' *.tex | grep -v "{.*\\label{.*}}" ) ; then false ; else true ; fi
+	if ( grep -n '^\\\(chapter\|\(sub\)*section\|paragraph\){' *.tex ) ; then false ; else true ; fi
 
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:
