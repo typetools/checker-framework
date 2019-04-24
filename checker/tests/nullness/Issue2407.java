@@ -16,6 +16,7 @@ class Issue2407 {
 
     void main() {
         Issue2407 object = new Issue2407();
+        // :: error: (contracts.precondition.not.satisfied)
         object.setMessage(object.getMessage() + "extra");
     }
 }

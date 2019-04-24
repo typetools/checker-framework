@@ -1416,14 +1416,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(e.getResult(), tree);
                 return;
             }
-            //            if (expr.containsUnknown()) {
-            //                checker.report(Result.failure("flowexpr.parse.error", ), tree);
-            //                return;
-            //            }
 
             CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
             CFAbstractValue<?> value = null;
-            value = store.getValue(expr);
+            if (CFAbstractStore.canInsertReceiver(expr)) {
+                value = store.getValue(expr);
+            }
             AnnotationMirror inferredAnno = null;
             if (value != null) {
                 QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
@@ -1431,11 +1429,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
             }
             if (!checkContract(expr, anno, inferredAnno, store)) {
+                String expressionString =
+                        (expr == null || expr.containsUnknown()) ? expression : expr.toString();
                 checker.report(
                         Result.failure(
                                 "contracts.precondition.not.satisfied",
                                 tree.getMethodSelect().toString(),
-                                expr == null ? expression : expr.toString()),
+                                expressionString),
                         tree);
             }
         }
