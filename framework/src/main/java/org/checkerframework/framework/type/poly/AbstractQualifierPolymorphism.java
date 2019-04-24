@@ -39,8 +39,17 @@ import org.checkerframework.javacutil.TypesUtils;
  * can alter the way instantiations of polymorphic qualifiers are {@link #combine combined}.
  *
  * <p>An "instantiation" is a mapping from declaration type to use-site type &mdash; that is, a
- * mapping from {@code @Poly*} to concrete qualifiers. (The code replaces everything; but the
- * instantiation only contains {@code @Poly*} as keys.)
+ * mapping from {@code @Poly*} to concrete qualifiers.
+ *
+ * <p>The implementation performs these steps:
+ *
+ * <ul>
+ *   <li>the PolyCollector creates an instantiation
+ *   <li>if the instantiation is non-empty: the Replacer does resolution -- that is, it replaces
+ *       each occurrence of {@code @Poly*} by the concrete qualifier it maps to in the instantiation
+ *   <li>if the instantiation is empty, the Completer replaces each {@code @Poly*} by the top
+ *       qualifier
+ * </ul>
  */
 public abstract class AbstractQualifierPolymorphism implements QualifierPolymorphism {
 
@@ -53,7 +62,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     /**
      * The polymorphic qualifiers: mapping from a polymorphic qualifier of {@code qualHierarchy} to
      * the top qualifier of that hierarchy. The field is always non-null, but it might be an empty
-     * mapping.
+     * mapping. If a value is null, the polymorphic qualifier, such as {@link PolyAll}, applies to
+     * all hierarchies.
      */
     protected final AnnotationMirrorMap<AnnotationMirror> polyQuals = new AnnotationMirrorMap<>();
 
@@ -66,7 +76,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     /** Determines the instantiations for each polymorphic qualifier. */
     private PolyCollector collector = new PolyCollector();
 
-    /** Replaces each polymorphic qualifier with its instantiation. */
+    /** Resolves each polymorphic qualifier by replacing it with its instantiation. */
     private AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer =
             new Replacer();
 
@@ -183,7 +193,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     public void annotate(
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference) {
         for (AnnotationMirror type : functionalInterface.getReturnType().getAnnotations()) {
-            if (QualifierPolymorphism.isPolymorphicQualified(type)) {
+            if (QualifierPolymorphism.hasPolymorphicQualifier(type)) {
                 // functional interface has a polymorphic qualifier, so they should not be resolved
                 // on memberReference.
                 return;
@@ -219,8 +229,11 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     /**
-     * Returns an annotation set that is the merge of the two sets of annotations, typically their
-     * least upper bound. The sets are instantiations for {@code polyQual}.
+     * Returns an annotation set that is the merge of the two sets of annotations. The sets are
+     * instantiations for {@code polyQual}.
+     *
+     * <p>The combination is typically their least upper bound. (It could be the GLB in the
+     * case that all arguments to a polymorphic method must have the same annotation.)
      *
      * @param polyQual polymorphic qualifier for which {@code a1Annos} and {@code a2Annos} are
      *     instantiations
@@ -237,7 +250,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      *
      * <p>This method is called on all parts of a type.
      *
-     * @param type AnnotationTypeMirror whose poly annotations are replaced
+     * @param type AnnotatedTypeMirror whose poly annotations are replaced; it is side-effected by
+     *     this method
      * @param replacements mapping from polymorphic annotation to instantiation
      */
     protected abstract void replace(
@@ -284,7 +298,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * A helper class that resolves the polymorphic qualifiers with the most restrictive qualifier.
      * It returns a mapping from the polymorphic qualifier to the substitution for that qualifier,
      * which is a set of qualifiers. For most polymorphic qualifiers this will be a singleton set.
-     * For the @PolyAll qualifier, this might be a set of qualifiers.
+     * For the @PolyAll qualifier, this is a set of qualifiers if the type system has multiple
+     * hierarchies.
      */
     private class PolyCollector
             extends EquivalentAtmComboScanner<AnnotationMirrorMap<AnnotationMirrorSet>, Void> {

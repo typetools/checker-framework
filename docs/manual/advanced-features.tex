@@ -184,7 +184,7 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 
 An unannotated
 Java type is treated as if it had a default annotation.
-A type system designer, or an end-user programmer, can control the defaulting.
+Both the type system designer and an end-user programmer can control the defaulting.
 Defaulting never applies to uses of type variables, even if they do not
 have an explicit type annotation.
 
@@ -558,12 +558,12 @@ misbehave at run time.
 
 \sectionAndLabel{Annotations on classes and constructors}{annotations-on-classes-and-constructors}
 
-\subsectionAndLabel{Annotations on class declarations}{annotations-on-class-declarations}
+\subsectionAndLabel{Annotations on type declarations}{annotations-on-type-declarations}
 
 % TODO: use a more realistic example.
 
-Writing an annotation on a class declaration makes that annotation implicit
-for all uses of the class (see Section~\ref{effective-qualifier}).
+Writing an annotation on a type (class or interface) declaration makes that annotation implicit
+for all uses of the type (see Section~\ref{effective-qualifier}).
 That is, the annotation is an upper bound for all uses of the type.
 
 Consider the type hierarchy \code{@A :> @B :> @C} and the following

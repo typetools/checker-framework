@@ -76,7 +76,7 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
             AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
         for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : replacements.entrySet()) {
             AnnotationMirror poly = pqentry.getKey();
-            if (poly != null && type.hasAnnotation(poly)) {
+            if (type.hasAnnotation(poly)) {
                 type.removeAnnotation(poly);
                 AnnotationMirrorSet quals = pqentry.getValue();
                 type.replaceAnnotations(quals);
