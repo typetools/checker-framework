@@ -187,8 +187,9 @@ Java type is treated as if it had a default annotation.
 Both the type system designer and an end-user programmer can control the defaulting.
 Defaulting never applies to uses of type variables, even if they do not
 have an explicit type annotation.
-Defaulting does not apply to type declarations:  writing no type qualifier
-is equivalent to writing the top qualifier and this behavior cannot be changed.
+Defaulting does not apply to type declarations; see
+Section~\ref{nnotations-on-type-declarations} for an explanation of writting no
+qualifier in this location means.
 
 There are several defaulting mechanisms, for convenience and flexibility.
 When determining the default qualifier for a use of a type, the following
@@ -580,9 +581,14 @@ Every unannotated use of \<MyClass> is \<@B MyClass>, and every use of
 \<MyClass> must be a subtype of \<@B> --- that is, \<@A MyClass> is not a
 valid type, but \<@C MyClass> is valid.
 
-Class declaration locations are not defaulted.
+Class declaration locations are not defaulted.  If no annotation is written on
+a class declaration, then the upper bound for all uses of the type is top.  In
+other words, it is legal to annotate the type with any annotation.  However,
+writing no annotation is not equivalent to writing the top type qualifier,
+because if no annotation is written, the top qualifier is not implicitly added
+to all uses of the type.
+% A type system designer can choose a different qualifier than top.
 % The implementation gives the class declaration a type qualifier, because every type must have a type qualifier.  But elsewhere, the implementation checks whether the type was defaulted or explicitly written.
-If a programmer does not write a type qualifier, that is equivalent to writing the top type qualifier, not writing the default type qualifier.
 
 
 \subsectionAndLabel{Annotations on constructor declarations}{annotations-on-constructor-declarations}
