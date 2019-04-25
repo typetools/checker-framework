@@ -100,15 +100,20 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    public final AnnotationMirror UNKNOWN, BOTTOM, POLY;
+    /** The @{@link UpperBoundUnknown} annotation. */
+    public final AnnotationMirror UNKNOWN =
+            AnnotationBuilder.fromClass(elements, UpperBoundUnknown.class);
+    /** The @{@link UpperBoundBottom} annotation. */
+    public final AnnotationMirror BOTTOM =
+            AnnotationBuilder.fromClass(elements, UpperBoundBottom.class);
+    /** The @{@link PolyUpperBound} annotation. */
+    public final AnnotationMirror POLY =
+            AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
     private final IndexMethodIdentifier imf;
 
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN = AnnotationBuilder.fromClass(elements, UpperBoundUnknown.class);
-        BOTTOM = AnnotationBuilder.fromClass(elements, UpperBoundBottom.class);
-        POLY = AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
         addAliasedAnnotation(IndexFor.class, LTLengthOf.class, true);
         addAliasedAnnotation(IndexOrLow.class, LTLengthOf.class, true);
