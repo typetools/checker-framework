@@ -1,3 +1,5 @@
+import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.signedness.qual.*;
 import org.checkerframework.common.value.qual.*;
 
@@ -5,13 +7,14 @@ public class ValueIntegration {
     public void ByteValRules(
             @IntVal({0, 127}) byte c,
             @IntVal({128, 255}) byte upure,
-            @IntVal({0, 128}) byte umixed,
+            @IntVal({0, 128}) byte umixed, // 128 is another way to write -128
             @IntVal({-128, -1}) byte spure,
             @IntVal({-1, 127}) byte smixed,
             @IntVal({-128, 0, 128}) byte bmixed) {
         @Signed byte stest;
         @Constant byte ctest;
 
+        stest = c;
         ctest = c;
 
         stest = upure;
@@ -45,6 +48,7 @@ public class ValueIntegration {
         @Signed char stest;
         @Constant char ctest;
 
+        stest = c;
         ctest = c;
 
         stest = upure;
@@ -78,6 +82,7 @@ public class ValueIntegration {
         @Signed short stest;
         @Constant short ctest;
 
+        stest = c;
         ctest = c;
 
         stest = upure;
@@ -111,6 +116,7 @@ public class ValueIntegration {
         @Signed int stest;
         @Constant int ctest;
 
+        stest = c;
         ctest = c;
 
         stest = upure;
@@ -142,6 +148,7 @@ public class ValueIntegration {
         @Signed long stest;
         @Constant long ctest;
 
+        stest = c;
         ctest = c;
 
         stest = spure;
@@ -159,6 +166,8 @@ public class ValueIntegration {
 
     public void ByteRangeRules(
             @IntRange(from = 0, to = 127) byte c,
+            @NonNegative byte nnc,
+            @Positive byte pc,
             @IntRange(from = 128, to = 255) byte upure,
             @IntRange(from = 0, to = 128) byte umixed,
             @IntRange(from = -128, to = -1) byte spure,
@@ -167,7 +176,14 @@ public class ValueIntegration {
         @Signed byte stest;
         @Constant byte ctest;
 
+        stest = c;
         ctest = c;
+
+        stest = nnc;
+        ctest = nnc;
+
+        stest = pc;
+        ctest = pc;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
@@ -200,6 +216,7 @@ public class ValueIntegration {
         @Signed char stest;
         @Constant char ctest;
 
+        stest = c;
         ctest = c;
 
         stest = upure;
@@ -233,6 +250,7 @@ public class ValueIntegration {
         @Signed short stest;
         @Constant short ctest;
 
+        stest = c;
         ctest = c;
 
         stest = upure;
@@ -266,6 +284,7 @@ public class ValueIntegration {
         @Signed int stest;
         @Constant int ctest;
 
+        stest = c;
         ctest = c;
 
         stest = upure;
@@ -297,6 +316,7 @@ public class ValueIntegration {
         @Signed long stest;
         @Constant long ctest;
 
+        stest = c;
         ctest = c;
 
         stest = spure;
