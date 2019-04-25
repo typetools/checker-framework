@@ -29,21 +29,19 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 /** @checker_framework.manual #signedness-checker Signedness Checker */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private final AnnotationMirror UNKNOWN_SIGNEDNESS;
-    private final AnnotationMirror CONSTANT;
+    /** The @UnknownSignedness annotation. */
+    private final AnnotationMirror UNKNOWN_SIGNEDNESS =
+            AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
 
-    private ValueAnnotatedTypeFactory valueAtypefactory;
+    /** The @Constant annotation. */
+    private final AnnotationMirror CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
 
     /**
      * Provides a way to query the Constant Value Checker, which computes the values of expressions
      * known at compile time (constant propagation and folding).
      */
-    private ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
-        if (valueAtypefactory == null) {
-            valueAtypefactory = getTypeFactoryOfSubchecker(ValueChecker.class);
-        }
-        return valueAtypefactory;
-    }
+    private ValueAnnotatedTypeFactory valueAtypefactory =
+            getTypeFactoryOfSubchecker(ValueChecker.class);
 
     // These are commented out until issues with making boxed implicitly signed
     // are worked out. (https://github.com/typetools/checker-framework/issues/797)
@@ -57,8 +55,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Create a SignednessAnnotatedTypeFactory. */
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN_SIGNEDNESS = AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
-        CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
 
         postInit();
     }
@@ -190,7 +186,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || javaTypeKind == TypeKind.SHORT
                     || javaTypeKind == TypeKind.INT
                     || javaTypeKind == TypeKind.LONG) {
-                ValueAnnotatedTypeFactory valFact = getValueAnnotatedTypeFactory();
+                ValueAnnotatedTypeFactory valFact = valueAtypefactory;
                 Range treeRange =
                         IndexUtil.getPossibleValues(valFact.getAnnotatedType(tree), valFact);
 
