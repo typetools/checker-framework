@@ -71,12 +71,12 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * one. The user can pass the class name via the {@code -Acheckclass=...} option. Null if no
      * class is specified, or the class specified isn't in the classpath.
      */
-    private final DeclaredType typeToCheck = typeToCheck();;
+    private final DeclaredType typeToCheck = typeToCheck();
 
     /** The Comparable.compareTo method. */
     private final ExecutableElement comparableCompareTo =
             TreeUtils.getMethod(
-                    "java.lang.Comparable", "compareTo", 1, checker.getProcessingEnvironment());;
+                    "java.lang.Comparable", "compareTo", 1, checker.getProcessingEnvironment());
 
     /** Create an InterningVisitor. */
     public InterningVisitor(BaseTypeChecker checker) {

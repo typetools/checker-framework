@@ -58,8 +58,10 @@ import org.checkerframework.javacutil.TypesUtils;
 public class NullnessTransfer
         extends InitializationTransfer<NullnessValue, NullnessTransfer, NullnessStore> {
 
-    /** Annotations of the non-null type system. */
-    protected final AnnotationMirror NONNULL, NULLABLE;
+    /** The @{@link NonNull} annotation. */
+    protected final AnnotationMirror NONNULL;
+    /** The @{@link Nullable} annotation. */
+    protected final AnnotationMirror NULLABLE;
 
     /**
      * Java's Map interface.
