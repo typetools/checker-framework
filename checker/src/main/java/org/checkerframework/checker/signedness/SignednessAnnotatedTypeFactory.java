@@ -12,8 +12,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
-import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.signedness.qual.Constant;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
@@ -21,6 +19,8 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
+import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -42,9 +42,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror UNKNOWN_SIGNEDNESS;
 
     /** The @NonNegative annotation of the Index Checker. */
-    private final AnnotationMirror NON_NEGATIVE;
+    private final AnnotationMirror INT_RANGE_FROM_NON_NEGATIVE;
     /** The @Positive annotation of the Index Checker. */
-    private final AnnotationMirror POSITIVE;
+    private final AnnotationMirror INT_RANGE_FROM_POSITIVE;
 
     /**
      * Provides a way to query the Index Checker, which can look up @NonNegative and @Positive
@@ -71,8 +71,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
         UNKNOWN_SIGNEDNESS = AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
 
-        NON_NEGATIVE = AnnotationBuilder.fromClass(elements, NonNegative.class);
-        POSITIVE = AnnotationBuilder.fromClass(elements, Positive.class);
+        INT_RANGE_FROM_NON_NEGATIVE =
+                AnnotationBuilder.fromClass(elements, IntRangeFromNonNegative.class);
+        INT_RANGE_FROM_POSITIVE = AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
         postInit();
     }
@@ -204,19 +205,17 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || javaTypeKind == TypeKind.SHORT
                     || javaTypeKind == TypeKind.INT
                     || javaTypeKind == TypeKind.LONG) {
-                LowerBoundAnnotatedTypeFactory lowerBoundFact =
+                ValueAnnotatedTypeFactory valueFact =
                         getTypeFactoryOfSubchecker(ValueChecker.class);
-                assert lowerBoundFact != null;
-                AnnotatedTypeMirror lowerBoundATM = lowerBoundFact.getAnnotatedType(tree);
-                if ((lowerBoundATM.hasAnnotation(NON_NEGATIVE)
-                                || lowerBoundATM.hasAnnotation(POSITIVE))
+                AnnotatedTypeMirror valueATM = valueFact.getAnnotatedType(tree);
+                // These annotations are trusted rather than checked.  Maybe have an option to
+                // disable using them?
+                if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
+                                || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
                         && type.hasAnnotation(SIGNED)) {
                     type.replaceAnnotation(CONSTANT);
                 } else {
-                    ValueAnnotatedTypeFactory valueFact = getValueAnnotatedTypeFactory();
-                    Range treeRange =
-                            IndexUtil.getPossibleValues(
-                                    valueFact.getAnnotatedType(tree), valueFact);
+                    Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFact);
 
                     if (treeRange != null) {
                         switch (javaType.getKind()) {
