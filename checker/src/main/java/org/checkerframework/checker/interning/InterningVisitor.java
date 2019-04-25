@@ -62,24 +62,25 @@ import org.checkerframework.javacutil.TypesUtils;
 public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTypeFactory> {
 
     /** The @Interned annotation. */
-    private final AnnotationMirror INTERNED;
+    private final AnnotationMirror INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
     /** The @InternedDistinct annotation. */
-    private final AnnotationMirror INTERNED_DISTINCT;
-    /** See method typeToCheck(). */
-    private final DeclaredType typeToCheck;
+    private final AnnotationMirror INTERNED_DISTINCT =
+            AnnotationBuilder.fromClass(elements, InternedDistinct.class);
+    /**
+     * The declared type of which the equality tests should be tested, if the user explicitly passed
+     * one. The user can pass the class name via the {@code -Acheckclass=...} option. Null if no
+     * class is specified, or the class specified isn't in the classpath.
+     */
+    private final DeclaredType typeToCheck = typeToCheck();;
 
     /** The Comparabel.compareTo method. */
-    private final ExecutableElement comparableCompareTo;
+    private final ExecutableElement comparableCompareTo =
+            TreeUtils.getMethod(
+                    "java.lang.Comparable", "compareTo", 1, checker.getProcessingEnvironment());;
 
     /** Create an InterningVisitor. */
     public InterningVisitor(BaseTypeChecker checker) {
         super(checker);
-        this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
-        this.INTERNED_DISTINCT = AnnotationBuilder.fromClass(elements, InternedDistinct.class);
-        typeToCheck = typeToCheck();
-        comparableCompareTo =
-                TreeUtils.getMethod(
-                        "java.lang.Comparable", "compareTo", 1, checker.getProcessingEnvironment());
     }
 
     /**
@@ -859,13 +860,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         return false;
     }
 
-    /**
-     * Returns the declared type of which the equality tests should be tested, if the user
-     * explicitly passed one. The user can pass the class name via the {@code -Acheckclass=...}
-     * option.
-     *
-     * <p>If no class is specified, or the class specified isn't in the classpath, it returns null.
-     */
+    /** @see #typeToCheck */
     DeclaredType typeToCheck() {
         String className = checker.getOption("checkclass");
         if (className == null) {

@@ -46,21 +46,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The @Positive annotation of the Index Checker. */
     private final AnnotationMirror POSITIVE;
 
-    private ValueAnnotatedTypeFactory valueAtypefactory;
-
-    private LowerBoundAnnotatedTypeFactory lowerBoundAtypefactory;
-
-    /**
-     * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant propagation and folding).
-     */
-    private ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
-        if (valueAtypefactory == null) {
-            valueAtypefactory = getTypeFactoryOfSubchecker(ValueChecker.class);
-        }
-        return valueAtypefactory;
-    }
-
     /**
      * Provides a way to query the Index Checker, which can look up @NonNegative and @Positive
      * annotations.
@@ -219,7 +204,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || javaTypeKind == TypeKind.SHORT
                     || javaTypeKind == TypeKind.INT
                     || javaTypeKind == TypeKind.LONG) {
-                LowerBoundAnnotatedTypeFactory lowerBoundFact = getLowerBoundAnnotatedTypeFactory();
+                LowerBoundAnnotatedTypeFactory lowerBoundFact =
+                        getTypeFactoryOfSubchecker(ValueChecker.class);
                 assert lowerBoundFact != null;
                 AnnotatedTypeMirror lowerBoundATM = lowerBoundFact.getAnnotatedType(tree);
                 if ((lowerBoundATM.hasAnnotation(NON_NEGATIVE)
