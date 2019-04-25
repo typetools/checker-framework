@@ -29,21 +29,10 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 /** @checker_framework.manual #signedness-checker Signedness Checker */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private final AnnotationMirror UNKNOWN_SIGNEDNESS;
+    /** The @Constant annotation. */
     private final AnnotationMirror CONSTANT;
-
-    private ValueAnnotatedTypeFactory valueAtypefactory;
-
-    /**
-     * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant propagation and folding).
-     */
-    private ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
-        if (valueAtypefactory == null) {
-            valueAtypefactory = getTypeFactoryOfSubchecker(ValueChecker.class);
-        }
-        return valueAtypefactory;
-    }
+    /** The @UnknownSignedness annotation. */
+    private final AnnotationMirror UNKNOWN_SIGNEDNESS;
 
     // These are commented out until issues with making boxed implicitly signed
     // are worked out. (https://github.com/typetools/checker-framework/issues/797)
@@ -190,7 +179,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || javaTypeKind == TypeKind.SHORT
                     || javaTypeKind == TypeKind.INT
                     || javaTypeKind == TypeKind.LONG) {
-                ValueAnnotatedTypeFactory valFact = getValueAnnotatedTypeFactory();
+                ValueAnnotatedTypeFactory valFact = getTypeFactoryOfSubchecker(ValueChecker.class);
                 Range treeRange =
                         IndexUtil.getPossibleValues(valFact.getAnnotatedType(tree), valFact);
 
