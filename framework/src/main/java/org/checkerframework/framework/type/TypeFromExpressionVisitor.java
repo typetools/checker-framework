@@ -43,7 +43,7 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * Converts ExpressionTrees into AnnotatedTypeMirrors.
  *
- * <p>The type of some expressions depend on the checker, so for these expressions, a checker should
+ * <p>The type of some expressions depends on the checker, so for these expressions, a checker should
  * add annotations in a {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator}
  * and/or the {@link org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator}.
  * These trees are:
