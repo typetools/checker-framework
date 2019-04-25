@@ -45,19 +45,19 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** The @{@link @I18nUnknownFormat} annotation. */
+    /** The @{@link I18nUnknownFormat} annotation. */
     protected final AnnotationMirror I18NUNKNOWNFORMAT =
             AnnotationBuilder.fromClass(elements, I18nUnknownFormat.class);
-    /** The @{@link @I18nFormat} annotation. */
+    /** The @{@link I18nFormat} annotation. */
     protected final AnnotationMirror I18NFORMAT =
             AnnotationBuilder.fromClass(elements, I18nFormat.class);
-    /** The @{@link @I18nInvalidFormat} annotation. */
+    /** The @{@link I18nInvalidFormat} annotation. */
     protected final AnnotationMirror I18NINVALIDFORMAT =
             AnnotationBuilder.fromClass(elements, I18nInvalidFormat.class);
-    /** The @{@link @I18nFormatBottom} annotation. */
+    /** The @{@link I18nFormatBottom} annotation. */
     protected final AnnotationMirror I18NFORMATBOTTOM =
             AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
-    /** The @{@link @I18nFormatFor} annotation. */
+    /** The @{@link I18nFormatFor} annotation. */
     protected final AnnotationMirror I18NFORMATFOR =
             AnnotationBuilder.fromClass(elements, I18nFormatFor.class);
 
