@@ -10,8 +10,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexUtil;
-import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
-import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.signedness.qual.Constant;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
@@ -35,25 +33,19 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The @Constant annotation. */
-    private final AnnotationMirror CONSTANT;
+    private final AnnotationMirror CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
     /** The @Signed annotation. */
-    private final AnnotationMirror SIGNED;
+    private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
     /** The @UnknownSignedness annotation. */
-    private final AnnotationMirror UNKNOWN_SIGNEDNESS;
+    private final AnnotationMirror UNKNOWN_SIGNEDNESS =
+            AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
 
-    /** The @NonNegative annotation of the Index Checker. */
-    private final AnnotationMirror INT_RANGE_FROM_NON_NEGATIVE;
-    /** The @Positive annotation of the Index Checker. */
-    private final AnnotationMirror INT_RANGE_FROM_POSITIVE;
-
-    /**
-     * Provides a way to query the Index Checker, which can look up @NonNegative and @Positive
-     * annotations.
-     */
-    private LowerBoundAnnotatedTypeFactory getLowerBoundAnnotatedTypeFactory() {
-        // TODO this does not work
-        return getTypeFactoryOfSubchecker(LowerBoundChecker.class);
-    }
+    /** The @NonNegative annotation of the Index Checker, as represented by the Value Checker. */
+    private final AnnotationMirror INT_RANGE_FROM_NON_NEGATIVE =
+            AnnotationBuilder.fromClass(elements, IntRangeFromNonNegative.class);
+    /** The @Positive annotation of the Index Checker, as represented by the Value Checker. */
+    private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
+            AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
     // These are commented out until issues with making boxed implicitly signed
     // are worked out. (https://github.com/typetools/checker-framework/issues/797)
@@ -67,13 +59,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Create a SignednessAnnotatedTypeFactory. */
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
-        SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
-        UNKNOWN_SIGNEDNESS = AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
-
-        INT_RANGE_FROM_NON_NEGATIVE =
-                AnnotationBuilder.fromClass(elements, IntRangeFromNonNegative.class);
-        INT_RANGE_FROM_POSITIVE = AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
         postInit();
     }

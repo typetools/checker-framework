@@ -73,7 +73,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      */
     private final DeclaredType typeToCheck = typeToCheck();;
 
-    /** The Comparabel.compareTo method. */
+    /** The Comparable.compareTo method. */
     private final ExecutableElement comparableCompareTo =
             TreeUtils.getMethod(
                     "java.lang.Comparable", "compareTo", 1, checker.getProcessingEnvironment());;
