@@ -103,10 +103,10 @@ public class LockAnnotatedTypeFactory
     protected final AnnotationMirror GUARDSATISFIED =
             AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
-    /** The net.jcip.annotations.GuardedBy annotation. */
+    /** The net.jcip.annotations.GuardedBy annotation, or null if not on the classpath. */
     protected final Class<? extends Annotation> jcipGuardedBy;
 
-    /** The javax.annotation.concurrent.GuardedBy annotation. */
+    /** The javax.annotation.concurrent.GuardedBy annotation, or null if not on the classpath. */
     protected final Class<? extends Annotation> javaxGuardedBy;
 
     /** Create a new LockAnnotatedTypeFactory. */
