@@ -208,6 +208,8 @@ public class ValueIntegration {
 
     public void CharRangeRules(
             @IntRange(from = 0, to = 127) char c,
+            @NonNegative char nnc,
+            @Positive char pc,
             @IntRange(from = 128, to = 255) char upure,
             @IntRange(from = 0, to = 128) char umixed,
             @IntRange(from = -128, to = -1) char spure,
@@ -218,6 +220,12 @@ public class ValueIntegration {
 
         stest = c;
         ctest = c;
+
+        stest = nnc;
+        ctest = nnc;
+
+        stest = pc;
+        ctest = pc;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
@@ -242,6 +250,8 @@ public class ValueIntegration {
 
     public void ShortRangeRules(
             @IntRange(from = 0, to = 32767) short c,
+            @NonNegative short nnc,
+            @Positive short pc,
             @IntRange(from = 32768, to = 65535) short upure,
             @IntRange(from = 0, to = 32768) short umixed,
             @IntRange(from = -32768, to = -1) short spure,
@@ -252,6 +262,12 @@ public class ValueIntegration {
 
         stest = c;
         ctest = c;
+
+        stest = nnc;
+        ctest = nnc;
+
+        stest = pc;
+        ctest = pc;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
@@ -276,6 +292,8 @@ public class ValueIntegration {
 
     public void IntRangeRules(
             @IntRange(from = 0, to = 2147483647) int c,
+            @NonNegative int nnc,
+            @Positive int pc,
             @IntRange(from = 2147483648L, to = 4294967295L) int upure,
             @IntRange(from = 0, to = 2147483648L) int umixed,
             @IntRange(from = -2147483648, to = -1) int spure,
@@ -286,6 +304,12 @@ public class ValueIntegration {
 
         stest = c;
         ctest = c;
+
+        stest = nnc;
+        ctest = nnc;
+
+        stest = pc;
+        ctest = pc;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
@@ -310,6 +334,8 @@ public class ValueIntegration {
 
     public void LongRangeRules(
             @IntRange(from = 0, to = Long.MAX_VALUE) long c,
+            @NonNegative long nnc,
+            @Positive long pc,
             @IntRange(from = Long.MIN_VALUE, to = -1) long spure,
             @IntRange(from = -1, to = Long.MAX_VALUE) long smixed,
             @IntRange(from = Long.MIN_VALUE, to = Long.MAX_VALUE) long bmixed) {
@@ -318,6 +344,12 @@ public class ValueIntegration {
 
         stest = c;
         ctest = c;
+
+        stest = nnc;
+        ctest = nnc;
+
+        stest = pc;
+        ctest = pc;
 
         stest = spure;
         // :: error: (assignment.type.incompatible)
