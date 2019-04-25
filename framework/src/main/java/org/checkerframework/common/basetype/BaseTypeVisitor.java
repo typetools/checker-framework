@@ -797,7 +797,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             } catch (FlowExpressionParseException e) {
                 checker.report(e.getResult(), node);
             }
-            if (!CFAbstractStore.canInsertReceiver(expr)) {
+            // If expr is null, then an error was issued above.
+            if (expr != null && !CFAbstractStore.canInsertReceiver(expr)) {
                 checker.report(Result.failure("flowexpr.parse.error", expression), node);
                 expr = null;
             }
