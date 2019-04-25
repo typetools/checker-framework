@@ -45,8 +45,10 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+    /** The {@link UnknownInterned} annotation. */
+    final AnnotationMirror TOP = AnnotationBuilder.fromClass(elements, UnknownInterned.class);
     /** The {@link Interned} annotation. */
-    final AnnotationMirror INTERNED, TOP;
+    final AnnotationMirror INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
 
     /**
      * Creates a new {@link InterningAnnotatedTypeFactory} that operates on a particular AST.
@@ -55,8 +57,6 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
-        this.TOP = AnnotationBuilder.fromClass(elements, UnknownInterned.class);
 
         // If you update the following, also update ../../../../../docs/manual/interning-checker.tex
         addAliasedAnnotation("com.sun.istack.internal.Interned", INTERNED);

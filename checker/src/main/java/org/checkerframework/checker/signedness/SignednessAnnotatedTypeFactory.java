@@ -30,9 +30,10 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The @Constant annotation. */
-    private final AnnotationMirror CONSTANT;
+    private final AnnotationMirror CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
     /** The @UnknownSignedness annotation. */
-    private final AnnotationMirror UNKNOWN_SIGNEDNESS;
+    private final AnnotationMirror UNKNOWN_SIGNEDNESS =
+            AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
 
     // These are commented out until issues with making boxed implicitly signed
     // are worked out. (https://github.com/typetools/checker-framework/issues/797)
@@ -46,8 +47,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Create a SignednessAnnotatedTypeFactory. */
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN_SIGNEDNESS = AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
-        CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
 
         postInit();
     }

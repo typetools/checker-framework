@@ -29,15 +29,21 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Aliasing annotations. */
-    protected final AnnotationMirror MAYBE_ALIASED, NON_LEAKED, UNIQUE, MAYBE_LEAKED;
+    /** The @{@link MaybeAliased} annotation. */
+    protected final AnnotationMirror MAYBE_ALIASED =
+            AnnotationBuilder.fromClass(elements, MaybeAliased.class);
+    /** The @{@link NonLeaked} annotation. */
+    protected final AnnotationMirror NON_LEAKED =
+            AnnotationBuilder.fromClass(elements, NonLeaked.class);
+    /** The @{@link Unique} annotation. */
+    protected final AnnotationMirror UNIQUE = AnnotationBuilder.fromClass(elements, Unique.class);
+    /** The @{@link MaybeLeaked} annotation. */
+    protected final AnnotationMirror MAYBE_LEAKED =
+            AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
 
     /** Create the type factory. */
     public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        MAYBE_ALIASED = AnnotationBuilder.fromClass(elements, MaybeAliased.class);
-        NON_LEAKED = AnnotationBuilder.fromClass(elements, NonLeaked.class);
-        UNIQUE = AnnotationBuilder.fromClass(elements, Unique.class);
-        MAYBE_LEAKED = AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
         if (this.getClass().equals(AliasingAnnotatedTypeFactory.class)) {
             this.postInit();
         }

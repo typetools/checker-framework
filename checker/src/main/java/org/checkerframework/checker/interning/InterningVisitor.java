@@ -62,24 +62,21 @@ import org.checkerframework.javacutil.TypesUtils;
 public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTypeFactory> {
 
     /** The @Interned annotation. */
-    private final AnnotationMirror INTERNED;
+    private final AnnotationMirror INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
     /** The @InternedDistinct annotation. */
-    private final AnnotationMirror INTERNED_DISTINCT;
+    private final AnnotationMirror INTERNED_DISTINCT =
+            AnnotationBuilder.fromClass(elements, InternedDistinct.class);
     /** See method typeToCheck(). */
-    private final DeclaredType typeToCheck;
+    private final DeclaredType typeToCheck = typeToCheck();
 
     /** The Comparabel.compareTo method. */
-    private final ExecutableElement comparableCompareTo;
+    private final ExecutableElement comparableCompareTo =
+            TreeUtils.getMethod(
+                    "java.lang.Comparable", "compareTo", 1, checker.getProcessingEnvironment());
 
     /** Create an InterningVisitor. */
     public InterningVisitor(BaseTypeChecker checker) {
         super(checker);
-        this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
-        this.INTERNED_DISTINCT = AnnotationBuilder.fromClass(elements, InternedDistinct.class);
-        typeToCheck = typeToCheck();
-        comparableCompareTo =
-                TreeUtils.getMethod(
-                        "java.lang.Comparable", "compareTo", 1, checker.getProcessingEnvironment());
     }
 
     /**
