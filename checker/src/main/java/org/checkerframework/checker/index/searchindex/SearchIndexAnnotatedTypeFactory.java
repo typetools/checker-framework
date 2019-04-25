@@ -36,6 +36,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
 
+    /** Create a new SearchIndexAnnotatedTypeFactory. */
     public SearchIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 

@@ -81,25 +81,35 @@ public class LockAnnotatedTypeFactory
     /** dependent type annotation error message for when the expression is not effectively final. */
     public static final String NOT_EFFECTIVELY_FINAL = "lock expression is not effectively final";
 
+    /** The @{@link LockHeld} annotation. */
     protected final AnnotationMirror LOCKHELD =
             AnnotationBuilder.fromClass(elements, LockHeld.class);
+    /** The @{@link LockPossiblyHeld} annotation. */
     protected final AnnotationMirror LOCKPOSSIBLYHELD =
             AnnotationBuilder.fromClass(elements, LockPossiblyHeld.class);
+    /** The @{@link SideEffectFree} annotation. */
     protected final AnnotationMirror SIDEEFFECTFREE =
             AnnotationBuilder.fromClass(elements, SideEffectFree.class);
+    /** The @{@link GuardedByUnknown} annotation. */
     protected final AnnotationMirror GUARDEDBYUNKNOWN =
             AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
+    /** The @{@link GuardedByBottom} annotation. */
     protected final AnnotationMirror GUARDEDBY =
             createGuardedByAnnotationMirror(new ArrayList<String>());
+    /** The @{@link GuardedByBottom} annotation. */
     protected final AnnotationMirror GUARDEDBYBOTTOM =
             AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
+    /** The @{@link GuardSatisfied} annotation. */
     protected final AnnotationMirror GUARDSATISFIED =
             AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
+    /** The net.jcip.annotations.GuardedBy annotation. */
     protected final Class<? extends Annotation> jcipGuardedBy;
 
+    /** The javax.annotation.concurrent.GuardedBy annotation. */
     protected final Class<? extends Annotation> javaxGuardedBy;
 
+    /** Create a new LockAnnotatedTypeFactory. */
     public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 

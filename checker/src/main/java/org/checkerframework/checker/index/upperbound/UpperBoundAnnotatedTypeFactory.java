@@ -112,6 +112,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final IndexMethodIdentifier imf;
 
+    /** Create a new UpperBoundAnnotatedTypeFactory. */
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 

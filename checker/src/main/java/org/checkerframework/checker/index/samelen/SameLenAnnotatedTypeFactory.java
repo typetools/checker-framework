@@ -83,6 +83,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final IndexMethodIdentifier imf = new IndexMethodIdentifier(this);
 
+    /** Create a new SameLenAnnotatedTypeFactory. */
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 

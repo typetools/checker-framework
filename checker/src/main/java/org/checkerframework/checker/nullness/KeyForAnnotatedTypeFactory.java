@@ -61,6 +61,7 @@ public class KeyForAnnotatedTypeFactory
 
     private final KeyForPropagator keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
+    /** Create a new KeyForAnnotatedTypeFactory. */
     public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 

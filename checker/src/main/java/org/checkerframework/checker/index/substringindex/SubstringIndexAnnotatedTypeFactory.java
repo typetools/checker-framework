@@ -32,6 +32,7 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     public final AnnotationMirror BOTTOM =
             AnnotationBuilder.fromClass(elements, SubstringIndexBottom.class);
 
+    /** Create a new SubstringIndexAnnotatedTypeFactory. */
     public SubstringIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
