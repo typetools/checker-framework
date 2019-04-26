@@ -717,18 +717,37 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 <p>
   A good way to find a case study project is to search for code that uses
   signedness-sensitive routines.
-  In <code>Integer</code>
-  and <code>Long</code>, these are
-   <code>compareUnsigned</code>
-   <code>divideUnsigned</code>
-   <code>parseUnsignedInt</code>
+</p>
+<ul>
+  <li>In the JDK's <code>Integer</code>
+  and <code>Long</code>, these include
+   <code>compareUnsigned</code>,
+   <code>divideUnsigned</code>,
+   <code>parseUnsignedInt</code>,
    <code>remainderUnsigned</code>, and
    <code>toUnsignedLong</code>.
-  Also look for uses of Guava's <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedBytes.html">UnsignedBytes</a> class.
-</p>
+   <br/>
+   Classes like <code>DataInputStream</code>, <code>ObjectInputStream</code>,
+   and <code>RandomAccessFile</code> have <code>readUnsignedByte</code>.
+   <br/>
+   <code>Arrays</code> has <code>compareUnsigned</code>.
+  </li>
+  <li>
+    In Guava, see
+  its <a href="https://github.com/google/guava/wiki/PrimitivesExplained#unsigned-support">unsigned
+  support</a>, such
+  as <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedBytes.html">UnsignedBytes</a>,
+  <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedLong.html">UnsignedLong</a>,
+  <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedLongs.html">UnsignedLongs</a>,
+  etc.
+  </li>
+  <li>The <a href="https://github.com/jOOQ/jOOU">jOOU</a> library consists of support for unsigned
+      integers.</li>
+</ul>
 
 <p>
-  Here are some possibilities:
+  Here are some possible case studies (but you can probably find a better
+  example that uses one of the above libraries):
 </p>
 <ul>
   <li><a href="https://bytonic.de/html/jake2.html">Jake2</a></li>
