@@ -329,6 +329,12 @@ Cast and instanceof types
 are given the same type as their argument expression.  This has the same
 effect as if they were given the
 top type and then flow-sensitively refined to the type of their argument.
+However, note that programmer-written type qualifiers are \emph{not}
+refined.
+% Programmer-written type qualifiers could be refined, but it has never
+% been a priority.  The code that defaults casts in this manner predates
+% the dataflow framework and we never reimplemented casts in the dataflow
+% framework.
 
 \item
 Implicit upper bounds are defaulted to top to allow them to be instantiated
