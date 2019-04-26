@@ -3279,7 +3279,6 @@ class RandomAccessFile {
     private native int readBytes(@PolySigned byte b[], int off, int len) throws IOException;
     public int read(@PolySigned byte[] b) throws IOException;
     public int read(@PolySigned byte b[], int off, int len) throws IOException;
-    public void seek(@Unsigned long pos) throws IOException;
     public final void readFully(@PolySigned byte[] b) throws IOException;
     public final void readFully(@PolySigned byte[] b, int off, int len) throws IOException;
     public final @Unsigned int readUnsignedByte() throws IOException;
