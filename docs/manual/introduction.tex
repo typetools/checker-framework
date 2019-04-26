@@ -1113,8 +1113,9 @@ Do not write unnecessary annotations.
   annotations for local variables (see Section~\ref{type-refinement}).
   Usually, you only need to annotate fields and method signatures.  You
   should add annotations inside method bodies only if the checker is unable
-  to infer the correct annotation (usually on type arguments, rather than
-  on local variables).
+  to infer the correct annotation (usually on type arguments or array
+  element types, rather than
+  on top-level types).
   % or if
   % you need to suppress a warning (see Chapter~\ref{suppressing-warnings}).
 

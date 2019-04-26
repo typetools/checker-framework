@@ -755,7 +755,8 @@ corresponding annotation:
 
 \noindent
 You should ignore all other occurrences of \code{null} within a method
-body.  In particular, you (almost) never need to annotate local variables.
+body.  In particular, you rarely need to annotate local variables
+(except their type arguments or array element types).
 
 Only after this step should you run
 the Nullness Checker.  The reason is that it is quicker to search for
