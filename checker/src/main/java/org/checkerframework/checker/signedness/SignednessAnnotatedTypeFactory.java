@@ -11,11 +11,14 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.signedness.qual.Constant;
+import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
+import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -29,21 +32,20 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 /** @checker_framework.manual #signedness-checker Signedness Checker */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private final AnnotationMirror UNKNOWN_SIGNEDNESS;
-    private final AnnotationMirror CONSTANT;
+    /** The @Constant annotation. */
+    private final AnnotationMirror CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
+    /** The @Signed annotation. */
+    private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
+    /** The @UnknownSignedness annotation. */
+    private final AnnotationMirror UNKNOWN_SIGNEDNESS =
+            AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
 
-    private ValueAnnotatedTypeFactory valueAtypefactory;
-
-    /**
-     * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant propagation and folding).
-     */
-    private ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
-        if (valueAtypefactory == null) {
-            valueAtypefactory = getTypeFactoryOfSubchecker(ValueChecker.class);
-        }
-        return valueAtypefactory;
-    }
+    /** The @NonNegative annotation of the Index Checker, as represented by the Value Checker. */
+    private final AnnotationMirror INT_RANGE_FROM_NON_NEGATIVE =
+            AnnotationBuilder.fromClass(elements, IntRangeFromNonNegative.class);
+    /** The @Positive annotation of the Index Checker, as represented by the Value Checker. */
+    private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
+            AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
     // These are commented out until issues with making boxed implicitly signed
     // are worked out. (https://github.com/typetools/checker-framework/issues/797)
@@ -57,8 +59,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Create a SignednessAnnotatedTypeFactory. */
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN_SIGNEDNESS = AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
-        CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
 
         postInit();
     }
@@ -190,35 +190,44 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || javaTypeKind == TypeKind.SHORT
                     || javaTypeKind == TypeKind.INT
                     || javaTypeKind == TypeKind.LONG) {
-                ValueAnnotatedTypeFactory valFact = getValueAnnotatedTypeFactory();
-                Range treeRange =
-                        IndexUtil.getPossibleValues(valFact.getAnnotatedType(tree), valFact);
+                ValueAnnotatedTypeFactory valueFact =
+                        getTypeFactoryOfSubchecker(ValueChecker.class);
+                AnnotatedTypeMirror valueATM = valueFact.getAnnotatedType(tree);
+                // These annotations are trusted rather than checked.  Maybe have an option to
+                // disable using them?
+                if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
+                                || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
+                        && type.hasAnnotation(SIGNED)) {
+                    type.replaceAnnotation(CONSTANT);
+                } else {
+                    Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFact);
 
-                if (treeRange != null) {
-                    switch (javaType.getKind()) {
-                        case BYTE:
-                        case CHAR:
-                            if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
-                                type.replaceAnnotation(CONSTANT);
-                            }
-                            break;
-                        case SHORT:
-                            if (treeRange.isWithin(0, Short.MAX_VALUE)) {
-                                type.replaceAnnotation(CONSTANT);
-                            }
-                            break;
-                        case INT:
-                            if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
-                                type.replaceAnnotation(CONSTANT);
-                            }
-                            break;
-                        case LONG:
-                            if (treeRange.isWithin(0, Long.MAX_VALUE)) {
-                                type.replaceAnnotation(CONSTANT);
-                            }
-                            break;
-                        default:
-                            // Nothing
+                    if (treeRange != null) {
+                        switch (javaType.getKind()) {
+                            case BYTE:
+                            case CHAR:
+                                if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
+                                    type.replaceAnnotation(CONSTANT);
+                                }
+                                break;
+                            case SHORT:
+                                if (treeRange.isWithin(0, Short.MAX_VALUE)) {
+                                    type.replaceAnnotation(CONSTANT);
+                                }
+                                break;
+                            case INT:
+                                if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
+                                    type.replaceAnnotation(CONSTANT);
+                                }
+                                break;
+                            case LONG:
+                                if (treeRange.isWithin(0, Long.MAX_VALUE)) {
+                                    type.replaceAnnotation(CONSTANT);
+                                }
+                                break;
+                            default:
+                                // Nothing
+                        }
                     }
                 }
             }

@@ -40,29 +40,30 @@ public class KeyForAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
                 KeyForValue, KeyForStore, KeyForTransfer, KeyForAnalysis> {
 
-    /** The types in the KeyFor hierarchy. */
-    protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR, KEYFORBOTTOM;
+    /** The @{@link KeyFor} annotation. */
+    protected final AnnotationMirror KEYFOR = AnnotationBuilder.fromClass(elements, KeyFor.class);
+    /** The @{@link UnknownKeyFor} annotation. */
+    protected final AnnotationMirror UNKNOWNKEYFOR =
+            AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
+    /** The @{@link KeyForBottom} annotation. */
+    protected final AnnotationMirror KEYFORBOTTOM =
+            AnnotationBuilder.fromClass(elements, KeyForBottom.class);
 
     /** The Map.containsKey method. */
-    private final ExecutableElement mapContainsKey;
+    private final ExecutableElement mapContainsKey =
+            TreeUtils.getMethod("java.util.Map", "containsKey", 1, processingEnv);
     /** The Map.get method. */
-    private final ExecutableElement mapGet;
+    private final ExecutableElement mapGet =
+            TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
     /** The Map.put method. */
-    private final ExecutableElement mapPut;
+    private final ExecutableElement mapPut =
+            TreeUtils.getMethod("java.util.Map", "put", 2, processingEnv);
 
-    private final KeyForPropagator keyForPropagator;
+    private final KeyForPropagator keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
+    /** Create a new KeyForAnnotatedTypeFactory. */
     public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
-
-        KEYFOR = AnnotationBuilder.fromClass(elements, KeyFor.class);
-        UNKNOWNKEYFOR = AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
-        KEYFORBOTTOM = AnnotationBuilder.fromClass(elements, KeyForBottom.class);
-        keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
-
-        mapContainsKey = TreeUtils.getMethod("java.util.Map", "containsKey", 1, processingEnv);
-        mapGet = TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
-        mapPut = TreeUtils.getMethod("java.util.Map", "put", 2, processingEnv);
 
         // Add compatibility annotations:
         addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForDecl", KEYFOR);
