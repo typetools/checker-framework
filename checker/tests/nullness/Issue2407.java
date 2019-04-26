@@ -1,16 +1,11 @@
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 class Issue2407 {
 
-    @NonNull String message = "default string";
-
     @RequiresNonNull("#1")
-    void setMessage(String message) {
-        this.message = message;
-    }
+    void setMessage(String message) {}
 
     @EnsuresNonNull("1")
     // :: error: (flowexpr.parse.error)
@@ -20,13 +15,9 @@ class Issue2407 {
     // :: error: (flowexpr.parse.error)
     void method2() {}
 
-    String getMessage() {
-        return message;
-    }
-
     void main() {
         Issue2407 object = new Issue2407();
         // :: error: (contracts.precondition.not.satisfied)
-        object.setMessage(object.getMessage() + "extra");
+        object.setMessage(new Object() + "bar");
     }
 }
