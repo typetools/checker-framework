@@ -4,9 +4,6 @@ Version ??, May 1, 2019
 
 Moved text about the Purity Checker into its own chapter in the manual.
 
-Improved the diagnostic text for uninitialized static fields.  The new
-error key is initialization.static.fields.uninitialized.
-
 ---------------------------------------------------------------------------
 
 Version 2.8.0, April 3, 2019
