@@ -12,10 +12,7 @@ interface Consumer<T> {
 }
 
 // For test purposes, f1 is never initialized
-@SuppressWarnings({
-    "initialization.fields.uninitialized",
-    "initialization.static.fields.uninitialized"
-})
+@SuppressWarnings("initialization.fields.uninitialized")
 class LambdaInit {
     String f1;
     String f2 = "";
