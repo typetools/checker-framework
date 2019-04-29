@@ -9,6 +9,7 @@ import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
@@ -61,10 +62,15 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
     }
 
     @Override
-    protected boolean checkConstructorInvocation(
+    protected void checkConstructorInvocation(
             AnnotatedDeclaredType dt, AnnotatedExecutableType constructor, NewClassTree src) {
         // Ignore the default annotation on the constructor
-        return true;
+    }
+
+    @Override
+    protected void checkConstructorResult(
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        // Skip this check
     }
 
     @Override

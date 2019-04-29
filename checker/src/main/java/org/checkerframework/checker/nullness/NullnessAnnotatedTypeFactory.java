@@ -6,6 +6,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
@@ -41,6 +42,7 @@ import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -66,10 +68,22 @@ public class NullnessAnnotatedTypeFactory
         extends InitializationAnnotatedTypeFactory<
                 NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
 
-    /** Annotation constants. */
-    protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL;
+    /** The @{@link NonNull} annotation. */
+    protected final AnnotationMirror NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
+    /** The @{@link Nullable} annotation. */
+    protected final AnnotationMirror NULLABLE =
+            AnnotationBuilder.fromClass(elements, Nullable.class);
+    /** The @{@link PolyNull} annotation. */
+    protected final AnnotationMirror POLYNULL =
+            AnnotationBuilder.fromClass(elements, PolyNull.class);
+    /** The @{@link MonotonicNonNull} annotation. */
+    protected final AnnotationMirror MONOTONIC_NONNULL =
+            AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
 
+    /** Handles invocations of {@link java.lang.System#getProperty(String)}. */
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
+
+    /** Determines the nullness type of calls to {@link java.util.Collection#toArray()}. */
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
     /** Cache for the nullness annotations. */
@@ -165,11 +179,6 @@ public class NullnessAnnotatedTypeFactory
     /** Creates NullnessAnnotatedTypeFactory. */
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, useFbc);
-
-        NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
-        NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
-        POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
-        MONOTONIC_NONNULL = AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
 
         Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
         tempNullnessAnnos.add(NonNull.class);
@@ -360,7 +369,7 @@ public class NullnessAnnotatedTypeFactory
 
         return new ListTreeAnnotator(
                 // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
-                new NullnessPropagationAnnotator(this),
+                new NullnessPropagationTreeAnnotator(this),
                 implicitsTreeAnnotator,
                 new NullnessTreeAnnotator(this),
                 new CommitmentTreeAnnotator(this));
@@ -372,9 +381,10 @@ public class NullnessAnnotatedTypeFactory
      *
      * <p>Would this be valid to move into CommitmentTreeAnnotator.
      */
-    protected static class NullnessPropagationAnnotator extends PropagationTreeAnnotator {
+    protected static class NullnessPropagationTreeAnnotator extends PropagationTreeAnnotator {
 
-        public NullnessPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
+        /** Create the NullnessPropagationTreeAnnotator. */
+        public NullnessPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 
@@ -459,6 +469,18 @@ public class NullnessAnnotatedTypeFactory
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
+            return null;
+        }
+
+        @Override
+        public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+            // The most precise element type for `new Object[] {null}` is @FBCBottom, but
+            // the most useful element type is @Initialized (which is also accurate).
+            AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
+            AnnotatedTypeMirror componentType = arrayType.getComponentType();
+            if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
+                componentType.replaceAnnotation(COMMITTED);
+            }
             return null;
         }
     }

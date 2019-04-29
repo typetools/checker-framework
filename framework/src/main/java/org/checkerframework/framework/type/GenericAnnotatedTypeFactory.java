@@ -544,10 +544,18 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a string containing the number of qualifiers and canonical names of each qualifier
      */
     protected final String getSortedQualifierNames() {
+        Set<Class<? extends Annotation>> stq = getSupportedTypeQualifiers();
+        if (stq.isEmpty()) {
+            return "No qualifiers examined";
+        }
+        if (stq.size() == 1) {
+            return "1 qualifier examined: " + stq.iterator().next().getCanonicalName();
+        }
+
         // Create a list of the supported qualifiers and sort the list
         // alphabetically
         List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>();
-        sortedSupportedQuals.addAll(getSupportedTypeQualifiers());
+        sortedSupportedQuals.addAll(stq);
         Collections.sort(sortedSupportedQuals, QUALIFIER_SORT_ORDERING);
 
         // display the number of qualifiers as well as the names of each
@@ -556,19 +564,15 @@ public abstract class GenericAnnotatedTypeFactory<
         sb.append(sortedSupportedQuals.size());
         sb.append(" qualifiers examined");
 
-        if (sortedSupportedQuals.size() > 0) {
-            sb.append(": ");
-            // for each qualifier, add its canonical name, a comma and a space
-            // to the string.
-            for (Class<? extends Annotation> qual : sortedSupportedQuals) {
-                sb.append(qual.getCanonicalName());
-                sb.append(", ");
-            }
-            // remove last comma and space
-            return sb.substring(0, sb.length() - 2);
-        } else {
-            return sb.toString();
+        sb.append(": ");
+        // for each qualifier, add its canonical name, a comma and a space
+        // to the string.
+        for (Class<? extends Annotation> qual : sortedSupportedQuals) {
+            sb.append(qual.getCanonicalName());
+            sb.append(", ");
         }
+        // remove last comma and space
+        return sb.substring(0, sb.length() - 2);
     }
 
     /**
@@ -1561,8 +1565,8 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the AnnotatedTypeFactory of the subchecker and copies the current visitor state to
      * the sub-factory so that the types are computed properly. Because the visitor state is copied,
-     * call this method each time a subfactory is needed rather than store the returned factory in a
-     * field.
+     * call this method each time a subfactory is needed rather than store the returned subfactory
+     * in a field.
      *
      * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
      */

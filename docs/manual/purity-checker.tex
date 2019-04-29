@@ -1,0 +1,115 @@
+\htmlhr
+\chapterAndLabel{Purity Checker}{purity-checker}
+
+The Purity Checker identifies methods that have no side effects, that
+return the same value each time they are called on the same argument, or both.
+
+Purity analysis aids type refinement (Section~\ref{type-refinement}).
+
+All checkers utilize purity annotations on called methods.
+You do not need to run the Purity Checker directly.
+However you may run just the Purity Checker by
+supplying the following command-line options to javac:
+\code{-processor org.checkerframework.util.PurityChecker}.
+
+
+\sectionAndLabel{Purity annotations}{purity-annotations}
+
+\begin{description}
+
+\item[\refqualclass{dataflow/qual}{SideEffectFree}]
+  indicates that the method has no externally-visible side effects.
+
+\item[\refqualclass{dataflow/qual}{Deterministic}]
+  indicates that if the method is called multiple times with identical
+  arguments, then it returns the identical result according to \<==>
+  (not just according to \<equals()>).
+
+\item[\refqualclass{dataflow/qual}{Pure}]
+  indicates that the method is both \<@SideEffectFree> and \<@Deterministic>.
+
+\end{description}
+
+If you supply the command-line option \<-AsuggestPureMethods>, then the
+Checker Framework will suggest methods that can be marked as
+\<@SideEffectFree>, \<@Deterministic>, or \<@Pure>.
+
+
+\sectionAndLabel{Purity annotations are trusted}{purity-trusted}
+
+Currently, purity annotations are trusted.  Purity annotations on called
+methods affect type-checking of client code.  However, you can make a
+mistake by writing \<@SideEffectFree> on the declaration of a method that
+is not actually side-effect-free or by writing \<@Deterministic> on the
+declaration of a method that is not actually deterministic.
+
+To enable
+checking of the annotations, supply the command-line option
+\<-AcheckPurityAnnotations>.  It is not enabled by default because of a high false
+positive rate.  In the future, after a new purity-checking analysis is
+implemented, the Checker Framework will default to checking purity
+annotations.
+
+
+\sectionAndLabel{Overriding methods must respect specifications in superclasses}{purity-override}
+
+If a method in a superclass has a purity annotation, then every overriding
+definition must also have that purity annotation (or a stronger one).
+
+Here is an example error if this requirement is violated:
+
+\begin{mysmall}
+\begin{Verbatim}
+MyClass.java:1465: error: int hashCode() in MyClass cannot override int hashCode(Object this) in java.lang.Object;
+attempting to use an incompatible purity declaration
+    public int hashCode() {
+               ^
+  found   : []
+  required: [SIDE_EFFECT_FREE, DETERMINISTIC]
+\end{Verbatim}
+\end{mysmall}
+
+\noindent
+The reason for the error is that the \<Object> class is annotated as:
+
+\begin{Verbatim}
+class Object {
+  ...
+  @Pure int hashCode() { ... }
+}
+\end{Verbatim}
+
+\noindent
+(where \refqualclass{dataflow/qual}{Pure} means both
+\refqualclass{dataflow/qual}{SideEffectFree} and
+\refqualclass{dataflow/qual}{Deterministic}).  Every overriding
+definition, including those in your program, must use be at least as strong
+a specification.  For \<hashCode>, every overriding definition must be
+annotated as \<@Pure>.
+
+You can fix the definition by adding \<@Pure> to your method definition.
+Alternately, you can suppress the warning.
+You can suppress each such warning individually using
+\<@SuppressWarnings("purity.invalid.overriding")>,
+or you can use the \<-AsuppressWarnings=purity.invalid.overriding>
+command-line argument to suppress all such warnings.
+% The \<-AassumeSideEffectFree> command-line argument suppresses the
+% warning, but it does more too; don't mention it here.
+In the future, the Checker Framework will support inheriting annotations
+from superclass definitions.
+
+
+\sectionAndLabel{Suppressing warnings}{purity-suppress-warnings}
+
+The command-line option
+\<-AassumeSideEffectFree> makes the Checker Framework unsoundly
+assume that \emph{every} called method is side-effect-free.  This can make
+flow-sensitive type refinement much more effective, since method calls will
+not cause the analysis to discard information that it has learned.
+However, this option can mask real errors.  It is most appropriate when you
+are starting out annotating a project, or if you are using the Checker
+Framework to find some bugs but not to give a guarantee that no more errors
+exist of the given type.
+
+%%  LocalWords:  AsuggestPureMethods AcheckPurityAnnotations
+%%  LocalWords:  AsuppressWarnings AassumeSideEffectFree

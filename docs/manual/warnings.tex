@@ -139,6 +139,11 @@ With the \code{-AshowSuppressWarningKeys} command-line option,
 the compiler lists every key that would suppress the warning,
 not just the most specific one.
 
+With the \code{-ArequirePrefixInWarningSuppressions} command-line
+option, a warning is only suppressed if the key begins with the checker
+name followed by a colon, as in
+\<@SuppressWarnings("nullness:assignment.type.incompatible")>.
+
 %% This is true, but relevant mostly to developers, not users.
 % For a list of all message keys for a given checker, see two files:
 % \begin{enumerate}
@@ -308,7 +313,7 @@ the Nullness Checker assumes that \<c> is non-null from the \<assert>
 statement forward (including on the next iteration through the loop).
 
 The \<assert> expression must be an expression that would affect flow-sensitive
-type qualifier refinement (Section~\ref{type-refinement}), if the
+type refinement (Section~\ref{type-refinement}), if the
 expression appeared in a conditional test.  Each type system has its own
 rules about what type refinement it performs.
 
@@ -569,8 +574,8 @@ Each of the distributed checkers supports at least the following lint options:
 \item
   \code{cast:unsafe} (default: on) warn about unsafe casts that are not
   checked at run time, as in \code{((@NonNull String) myref)}.  Such casts
-  are generally not necessary when flow-sensitive local type refinement is
-  enabled.
+  are generally not necessary because of type refinement
+  (Section~\ref{type-refinement}).
 
 \item
   \code{cast:redundant} (default: on) warn about redundant
@@ -755,4 +760,6 @@ annotations, those compatibility annotations are no longer necessary.
 %%  LocalWords:  refactored AassumeAssertionsAreEnabled assertNotNull
 %%  LocalWords:  AassumeAssertionsAreDisabled NullnessUtil checkNotNull
 %%  LocalWords:  ElementType AuseSafeDefaultsForUnannotatedSourceCode
-% LocalWords:  AuseDefaultsForUncheckedCode checkerframework
+% LocalWords:  AuseDefaultsForUncheckedCode checkerframework askipuses
+%%  LocalWords:  suppresswarnings ArequirePrefixInWarningSuppressions
+%%  LocalWords:  assumeassertion askipdefs alint compat

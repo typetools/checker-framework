@@ -38,11 +38,12 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Do not propagate types through binary/compound operations. */
     private class I18nTreeAnnotator extends TreeAnnotator {
-        private final AnnotationMirror LOCALIZED;
+        /** The @{@link Localized} annotation. */
+        private final AnnotationMirror LOCALIZED =
+                AnnotationBuilder.fromClass(elements, Localized.class);
 
         public I18nTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
-            LOCALIZED = AnnotationBuilder.fromClass(elements, Localized.class);
         }
 
         @Override

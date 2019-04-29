@@ -151,6 +151,7 @@ annotation was available, but it was not available at run time.
 You can use JDK 8 at run time.
 
 \item
+\label{troubleshooting-class-file-not-found}
 A ``class file for \ldots\ not found'' error, especially for an inner class
 in the JDK, is probably due to a JDK version mismatch.  To solve the
 problem, you need to perform compilation with a different Java version or
@@ -166,37 +167,22 @@ compiled library refers to a class that only appears in JDK 6 or 7.  (If only
 one version of Java existed, or the Checker Framework didn't try to support
 multiple different versions of Java, this would not be a problem.)
 
-Examples of classes that were in JDK 7 but were removed in JDK 8 include:
+Examples of classes that were removed from the JDK include:
 
 \begin{Verbatim}
-  class file for java.util.TimeZone$DisplayNames not found
+  class file for java.io.File$LazyInitialization not found  -- removed in JDK 7
+  class file for java.util.Hashtable$EmptyIterator not found  -- removed in JDK 7
+  java.lang.NoClassDefFoundError: java/util/Hashtable$EmptyEnumerator  -- removed in JDK 7
+  class file for java.util.TimeZone$DisplayNames not found  -- removed in JDK 8
 \end{Verbatim}
 
-Examples of classes that were in JDK 6 but were removed in JDK 7 include:
+Examples of classes that were added to the JDK include:
 
 \begin{Verbatim}
-  class file for java.io.File$LazyInitialization not found
-  class file for java.util.Hashtable$EmptyIterator not found
-  java.lang.NoClassDefFoundError: java/util/Hashtable$EmptyEnumerator
-\end{Verbatim}
-
-Examples of classes that were not in JDK 7 but were introduced in JDK 8 include:
-
-\begin{Verbatim}
-  The type java.lang.Class$ReflectionData cannot be resolved
-\end{Verbatim}
-
-Examples of classes that were not in JDK 6 but were introduced in JDK 7 include:
-
-\begin{Verbatim}
-  class file for java.util.Vector$Itr not found
-\end{Verbatim}
-
-There are even classes that were introduced within a single JDK release.
-Classes that appear in JDK 7 release 71 but not in JDK 7 release 45 include:
-
-\begin{Verbatim}
-  class file for java.lang.Class$ReflectionData not found
+  class file for java.util.Vector$Itr not found  -- introduced in JDK 7
+  class file for java.lang.Class$ReflectionData not found  -- introduced in JDK 7 release 45
+  The type java.lang.Class$ReflectionData cannot be resolved  -- introduced in JDK 8
+  class file for java.util.regex.Pattern$HorizWS not found  -- introduced in JDK 9
 \end{Verbatim}
 
 You may be able to solve the problem by running
@@ -260,6 +246,16 @@ implementation cannot handle.  For instance, if the directory name contains
 FileNotFoundException and prints out the directory name with ``\<+>''
 replaced by blanks.
 
+\end{itemize}
+
+
+\subsectionAndLabel{Unexpected warnings not related to type-checking}{common-problems-non-typechecking}
+
+This section gives solutions for some warning messages that are not related
+to type errors in your code.
+
+\begin{itemize}
+
 \item
 If you get an error like the following
 
@@ -269,15 +265,19 @@ error: scoping construct cannot be annotated with type-use annotation
 \end{Verbatim}
 
 \noindent
-\begin{sloppypar}
-then you have probably written something like \<@Nullable java.util.List>.
+  then you have probably written something like one of the following:
+\begin{description}
+\item[\<@Nullable java.util.List>]
 The correct Java syntax to write an annotation on a fully-qualified type
 name is to put the annotation on the simple name part, as in
 \<java.util.@Nullable List>.  But, it's usually
 better to add \<import java.util.List> to your source file, so that you can
-just write \<@Nullable List>.  Likewise, you must write \<Outer.@Nullable
+just write \<@Nullable List>.
+\item[\<@Nullable Map.Entry>]  You must write \<Outer.@Nullable
 StaticNestedClass> rather than \<@Nullable Outer.StaticNestedClass>.
-\end{sloppypar}
+Since a static nested class does not depend on its outer class, the
+annotation on the outer class would have no effect and is forbidden.
+\end{description}
 
 Java 8 requires that a type qualifier be written directly on the type that
 it qualifies, rather than on a scoping mechanism that assists in resolving
@@ -289,7 +289,7 @@ writing a member nested class (also known as an inner class), it is
 possible to write annotations on both the outer and the inner class:  \<@A1
 Outer. @A2 Inner>.  Therefore, when writing a static nested class, the
 annotations should go on the same place:  \<Outer. @A3 StaticNested> (rather
-than \<@ConfusingAnnotation Outer. Nested> where
+than \<@ConfusingAnnotation Outer.\ Nested> where
 \<@ConfusingAnnotation> applies to \<Outer> if \<Nested> is a member class
 and applies to \<Nested> if \<Nested> is a static class).  It's not legal
 to write an annotation on the outer class of a static nested class, because
@@ -762,7 +762,7 @@ mkdir -p $HOME/Library/texmf/tex/latex
 cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
 \end{Verbatim}
 
-Note: If copy permission denied, try \<sudo>.
+Note: If copy permission is denied, try \<sudo>.
 
 Also set the \<JAVA\_HOME> environment variable in your \<.bashrc> file;
 for example,
@@ -828,7 +828,7 @@ the Checker Framework anyway.)
 \end{smaller}
 %END LATEX
 
-\item[Mac OSX 10.5 or later]
+\item[Mac OS X 10.5 or later]
   Add one of the following two commands in your \code{.bash\_profile} or
   \code{.profile} file according to the version of your JDK.
 \begin{Verbatim}
@@ -937,7 +937,7 @@ Run \code{make} in the \code{docs/manual} directory to build both the PDF and HT
 \subsectionAndLabel{Code style, IDE configuration, pull requests, etc.}{building-developer-manual}
 
 Please see the
-\href{../developer/developer-manual.html}{Checker Framework Developer Manual}.
+\href{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{Checker Framework Developer Manual}.
 
 
 \subsectionAndLabel{Enable Travis continuous integration builds}{building-travis}
@@ -1193,4 +1193,4 @@ For details, see file
 %%  LocalWords:  Barros Athaydes Ren Oblak Heule Steph Trask Stalnaker
 %%  LocalWords:  toolset's typechecking LiteralKind reifiable plaintext
 %%  LocalWords:  astub homebrew hevea cloneAndBuildDependencies allTests
-%%  LocalWords:  compileJava travis typedefs LPAR Tunable OIGJ
+%%  LocalWords:  compileJava travis typedefs LPAR Tunable OIGJ sudo

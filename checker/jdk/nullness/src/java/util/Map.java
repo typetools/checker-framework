@@ -347,6 +347,9 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      *
      * @return a set view of the keys contained in this map
      */
+    // TODO: Make the below comment true.  https://tinyurl.com/cfissue/#2358
+    // This annotation is not strong enough and is overridden in KeyForAnnotatedTypeFactory.
+    // The keys are "this" and all the keys on the receiver's key type.
     @SideEffectFree
     Set<@KeyFor("this") K> keySet();
 
@@ -983,7 +986,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V computeIfAbsent(K key,
-            Function<? super K, ? extends V> mappingFunction) {
+            Function<? super K, ? extends @Nullable V> mappingFunction) {
         Objects.requireNonNull(mappingFunction);
         V v;
         if ((v = get(key)) == null) {
@@ -1044,7 +1047,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V computeIfPresent(K key,
-            BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+            BiFunction<? super K, ? super V, ? extends @Nullable V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         V oldValue;
         if ((oldValue = get(key)) != null) {
@@ -1120,7 +1123,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V compute(K key,
-            BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+            BiFunction<? super K, ? super @Nullable V, ? extends @Nullable V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         V oldValue = get(key);
 
@@ -1201,7 +1204,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V merge(K key, V value,
-            BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+            BiFunction<? super V, ? super V, ? extends @Nullable V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         Objects.requireNonNull(value);
         V oldValue = get(key);

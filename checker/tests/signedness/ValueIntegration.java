@@ -1,3 +1,5 @@
+import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.signedness.qual.*;
 import org.checkerframework.common.value.qual.*;
 
@@ -5,13 +7,14 @@ public class ValueIntegration {
     public void ByteValRules(
             @IntVal({0, 127}) byte c,
             @IntVal({128, 255}) byte upure,
-            @IntVal({0, 128}) byte umixed,
+            @IntVal({0, 128}) byte umixed, // 128 is another way to write -128
             @IntVal({-128, -1}) byte spure,
             @IntVal({-1, 127}) byte smixed,
             @IntVal({-128, 0, 128}) byte bmixed) {
         @Signed byte stest;
         @Constant byte ctest;
 
+        stest = c;
         ctest = c;
 
         stest = upure;
@@ -45,6 +48,7 @@ public class ValueIntegration {
         @Signed char stest;
         @Constant char ctest;
 
+        stest = c;
         ctest = c;
 
         stest = upure;
@@ -78,6 +82,7 @@ public class ValueIntegration {
         @Signed short stest;
         @Constant short ctest;
 
+        stest = c;
         ctest = c;
 
         stest = upure;
@@ -111,6 +116,7 @@ public class ValueIntegration {
         @Signed int stest;
         @Constant int ctest;
 
+        stest = c;
         ctest = c;
 
         stest = upure;
@@ -142,6 +148,7 @@ public class ValueIntegration {
         @Signed long stest;
         @Constant long ctest;
 
+        stest = c;
         ctest = c;
 
         stest = spure;
@@ -159,6 +166,8 @@ public class ValueIntegration {
 
     public void ByteRangeRules(
             @IntRange(from = 0, to = 127) byte c,
+            @NonNegative byte nnc,
+            @Positive byte pc,
             @IntRange(from = 128, to = 255) byte upure,
             @IntRange(from = 0, to = 128) byte umixed,
             @IntRange(from = -128, to = -1) byte spure,
@@ -167,7 +176,14 @@ public class ValueIntegration {
         @Signed byte stest;
         @Constant byte ctest;
 
+        stest = c;
         ctest = c;
+
+        stest = nnc;
+        ctest = nnc;
+
+        stest = pc;
+        ctest = pc;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
@@ -192,6 +208,8 @@ public class ValueIntegration {
 
     public void CharRangeRules(
             @IntRange(from = 0, to = 127) char c,
+            @NonNegative char nnc,
+            @Positive char pc,
             @IntRange(from = 128, to = 255) char upure,
             @IntRange(from = 0, to = 128) char umixed,
             @IntRange(from = -128, to = -1) char spure,
@@ -200,7 +218,14 @@ public class ValueIntegration {
         @Signed char stest;
         @Constant char ctest;
 
+        stest = c;
         ctest = c;
+
+        stest = nnc;
+        ctest = nnc;
+
+        stest = pc;
+        ctest = pc;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
@@ -225,6 +250,8 @@ public class ValueIntegration {
 
     public void ShortRangeRules(
             @IntRange(from = 0, to = 32767) short c,
+            @NonNegative short nnc,
+            @Positive short pc,
             @IntRange(from = 32768, to = 65535) short upure,
             @IntRange(from = 0, to = 32768) short umixed,
             @IntRange(from = -32768, to = -1) short spure,
@@ -233,7 +260,14 @@ public class ValueIntegration {
         @Signed short stest;
         @Constant short ctest;
 
+        stest = c;
         ctest = c;
+
+        stest = nnc;
+        ctest = nnc;
+
+        stest = pc;
+        ctest = pc;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
@@ -258,6 +292,8 @@ public class ValueIntegration {
 
     public void IntRangeRules(
             @IntRange(from = 0, to = 2147483647) int c,
+            @NonNegative int nnc,
+            @Positive int pc,
             @IntRange(from = 2147483648L, to = 4294967295L) int upure,
             @IntRange(from = 0, to = 2147483648L) int umixed,
             @IntRange(from = -2147483648, to = -1) int spure,
@@ -266,7 +302,14 @@ public class ValueIntegration {
         @Signed int stest;
         @Constant int ctest;
 
+        stest = c;
         ctest = c;
+
+        stest = nnc;
+        ctest = nnc;
+
+        stest = pc;
+        ctest = pc;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
@@ -291,13 +334,22 @@ public class ValueIntegration {
 
     public void LongRangeRules(
             @IntRange(from = 0, to = Long.MAX_VALUE) long c,
+            @NonNegative long nnc,
+            @Positive long pc,
             @IntRange(from = Long.MIN_VALUE, to = -1) long spure,
             @IntRange(from = -1, to = Long.MAX_VALUE) long smixed,
             @IntRange(from = Long.MIN_VALUE, to = Long.MAX_VALUE) long bmixed) {
         @Signed long stest;
         @Constant long ctest;
 
+        stest = c;
         ctest = c;
+
+        stest = nnc;
+        ctest = nnc;
+
+        stest = pc;
+        ctest = pc;
 
         stest = spure;
         // :: error: (assignment.type.incompatible)

@@ -228,8 +228,13 @@ public class DependentTypesHelper {
         }
 
         TreePath path = factory.getPath(tree);
+        Tree enclosingClass = TreeUtils.enclosingClass(path);
+        if (enclosingClass == null) {
+            return;
+        }
+        TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
         FlowExpressions.Receiver r =
-                FlowExpressions.internalReprOfImplicitReceiver(TreeUtils.elementFromUse(tree));
+                FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
         FlowExpressionContext context =
                 new FlowExpressionContext(
                         r,

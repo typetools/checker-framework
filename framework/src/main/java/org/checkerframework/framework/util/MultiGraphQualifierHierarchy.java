@@ -91,7 +91,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 return;
             }
 
-            Name pqtopclass = QualifierPolymorphism.getPolymorphicQualifierTop(qual);
+            Name pqtopclass = QualifierPolymorphism.getPolymorphicQualifierElement(qual);
             if (pqtopclass != null) {
                 AnnotationMirror pqtop =
                         AnnotationBuilder.fromName(atypeFactory.getElementUtils(), pqtopclass);
@@ -333,13 +333,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return polyQualifiers.get(polymorphicQualifier);
         } else {
             // No polymorphic qualifier exists for that hierarchy.
-            throw new BugInCF(
-                    "MultiGraphQualifierHierarchy: did not find the polymorphic qualifier corresponding to qualifier "
-                            + start
-                            + "; all polymorphic qualifiers: "
-                            + polyQualifiers
-                            + "; this: "
-                            + this);
+            return null;
         }
     }
 

@@ -58,8 +58,10 @@ import org.checkerframework.javacutil.TypesUtils;
 public class NullnessTransfer
         extends InitializationTransfer<NullnessValue, NullnessTransfer, NullnessStore> {
 
-    /** Annotations of the non-null type system. */
-    protected final AnnotationMirror NONNULL, NULLABLE;
+    /** The @{@link NonNull} annotation. */
+    protected final AnnotationMirror NONNULL;
+    /** The @{@link Nullable} annotation. */
+    protected final AnnotationMirror NULLABLE;
 
     /**
      * Java's Map interface.
@@ -116,6 +118,15 @@ public class NullnessTransfer
         } else {
             makeNonNull(result.getRegularStore(), node);
         }
+    }
+
+    /** Refine the given result to @NonNull. */
+    protected void refineToNonNull(TransferResult<NullnessValue, NullnessStore> result) {
+        NullnessValue oldResultValue = result.getResultValue();
+        NullnessValue refinedResultValue =
+                analysis.createSingleAnnotationValue(NONNULL, oldResultValue.getUnderlyingType());
+        NullnessValue newResultValue = refinedResultValue.mostSpecific(oldResultValue, null);
+        result.setResultValue(newResultValue);
     }
 
     @Override
@@ -265,14 +276,7 @@ public class NullnessTransfer
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
                     && !hasNullableValueType((AnnotatedDeclaredType) receiverType)) {
                 makeNonNull(result, n);
-
-                NullnessValue oldResultValue = result.getResultValue();
-                NullnessValue refinedResultValue =
-                        analysis.createSingleAnnotationValue(
-                                NONNULL, oldResultValue.getUnderlyingType());
-                NullnessValue newResultValue =
-                        refinedResultValue.mostSpecific(oldResultValue, null);
-                result.setResultValue(newResultValue);
+                refineToNonNull(result);
             }
         }
 

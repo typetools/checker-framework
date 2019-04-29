@@ -1218,13 +1218,16 @@ public class AnnotatedTypes {
         // Collect all polymorphic qualifiers; we should substitute them.
         Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : returnType.getAnnotations()) {
-            if (QualifierPolymorphism.isPolymorphicQualified(anno)) {
+            if (QualifierPolymorphism.hasPolymorphicQualifier(anno)) {
                 polys.add(anno);
             }
         }
 
         for (AnnotationMirror cta : constructor.getReturnType().getAnnotations()) {
             AnnotationMirror ctatop = atypeFactory.getQualifierHierarchy().getTopAnnotation(cta);
+            if (returnType.isAnnotatedInHierarchy(cta)) {
+                continue;
+            }
             if (atypeFactory.isSupportedQualifier(cta) && !returnType.isAnnotatedInHierarchy(cta)) {
                 for (AnnotationMirror fromDecl : decret) {
                     if (atypeFactory.isSupportedQualifier(fromDecl)
