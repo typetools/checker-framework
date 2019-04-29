@@ -1565,8 +1565,8 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the AnnotatedTypeFactory of the subchecker and copies the current visitor state to
      * the sub-factory so that the types are computed properly. Because the visitor state is copied,
-     * call this method each time a subfactory is needed rather than store the returned factory in a
-     * field.
+     * call this method each time a subfactory is needed rather than store the returned subfactory
+     * in a field.
      *
      * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
      */

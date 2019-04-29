@@ -47,7 +47,12 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
         postInit();
     }
-    /** Returns the Value Checker's annotated type factory. */
+
+    /**
+     * Returns the Value Checker's annotated type factory.
+     *
+     * @return the Value Checker's annotated type factory
+     */
     public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(ValueChecker.class);
     }
@@ -121,7 +126,11 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** @return is left less than right? */
+    /**
+     * @param left the first tree to compare
+     * @param right the second tree to compare
+     * @return is left less than right?
+     */
     public boolean isLessThan(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);
         return isLessThan(leftATM.getAnnotationInHierarchy(UNKNOWN), right);

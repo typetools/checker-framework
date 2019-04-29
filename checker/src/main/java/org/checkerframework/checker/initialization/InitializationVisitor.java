@@ -63,6 +63,9 @@ public class InitializationVisitor<
             "initialization.invalid.cast";
     private static final @CompilerMessageKey String COMMITMENT_FIELDS_UNINITIALIZED =
             "initialization.fields.uninitialized";
+    private static final @CompilerMessageKey String COMMITMENT_STATIC_FIELDS_UNINITIALIZED =
+            // TODO: change to "initialization.static.fields.uninitialized";
+            "initialization.fields.uninitialized";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
             "initialization.invalid.field.type";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
@@ -374,6 +377,11 @@ public class InitializationVisitor<
             return;
         }
 
+        String COMMITMENT_FIELDS_UNINITIALIZED_KEY =
+                (staticFields
+                        ? COMMITMENT_STATIC_FIELDS_UNINITIALIZED
+                        : COMMITMENT_FIELDS_UNINITIALIZED);
+
         List<VariableTree> violatingFields =
                 atypeFactory.getUninitializedInvariantFields(
                         store, getCurrentPath(), staticFields, receiverAnnotations);
@@ -393,7 +401,7 @@ public class InitializationVisitor<
         while (itor.hasNext()) {
             VariableTree f = itor.next();
             Element e = TreeUtils.elementFromTree(f);
-            if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED)) {
+            if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED_KEY)) {
                 itor.remove();
             }
         }
@@ -409,7 +417,7 @@ public class InitializationVisitor<
                 fieldsString.append(f.getName());
             }
             checker.report(
-                    Result.failure(COMMITMENT_FIELDS_UNINITIALIZED, fieldsString), blockNode);
+                    Result.failure(COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString), blockNode);
         }
     }
 }

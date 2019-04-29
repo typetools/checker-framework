@@ -91,7 +91,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 return;
             }
 
-            Name pqtopclass = QualifierPolymorphism.getPolymorphicQualifierTop(qual);
+            Name pqtopclass = QualifierPolymorphism.getPolymorphicQualifierElement(qual);
             if (pqtopclass != null) {
                 AnnotationMirror pqtop =
                         AnnotationBuilder.fromName(atypeFactory.getElementUtils(), pqtopclass);
