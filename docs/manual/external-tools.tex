@@ -395,8 +395,8 @@ then always use \<./gradlew> where you would have used \<gradle>.
 
 This section tells you how to make IntelliJ IDEA automatically run a
 checker on every compile for Java projects and/or modules.  If your project
-uses a build tool such as Gradle, follow the instructions
-for that build tool.
+uses a build tool such as Gradle, these instructions will not work.
+Use the instructions for that build tool instead.
 
 To run a checker within IntelliJ IDEA:
 
@@ -409,9 +409,8 @@ To run a checker within IntelliJ IDEA:
 \url{https://www.jetbrains.com/help/idea/creating-and-managing-projects.html#project-structure-settings}.
 
 \item Add the annotated JDK library to the bootclasspath.
-On \ahref{https://www.jetbrains.com/help/idea/java-compiler.html}{the Java
-  compiler settings page}, in the
-  ``Additional command line parameters'': section, add:\\
+On the Java compiler settings page},see \url{https://www.jetbrains.com/help/idea/java-compiler.html},
+in the ``Additional command line parameters'': section, add:\\
   \code{-Xbootclasspath/p:"<path to checker framework>/checker/dist/jdk8.jar"}
 
 \item Configure an annotation profile.
