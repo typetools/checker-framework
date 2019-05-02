@@ -175,9 +175,10 @@ shadowJar {
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
 artifacts {
-    // Don't add this here or else the Javadoc is built during the assemble task.
+    // Don't add these here or else the Javadoc/Sources jars are
+    // built during the assemble task.
     // archives allJavadocJar
-    archives allSourcesJar
+    // archives allSourcesJar
     archives shadowJar
 }
 
