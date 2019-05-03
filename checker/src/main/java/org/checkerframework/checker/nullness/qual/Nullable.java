@@ -25,7 +25,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @SubtypeOf({})
-@ImplicitFor(literals = LiteralKind.NULL)
+@ImplicitFor(literals = LiteralKind.NULL, typeNames = Void.class)
 @DefaultInUncheckedCodeFor({TypeUseLocation.RETURN, TypeUseLocation.UPPER_BOUND})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
