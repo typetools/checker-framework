@@ -31,9 +31,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -273,11 +271,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                super.createTreeAnnotator(),
-                new SameLenTreeAnnotator(this),
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this));
+        return new ListTreeAnnotator(super.createTreeAnnotator(), new SameLenTreeAnnotator(this));
     }
 
     /**
