@@ -112,6 +112,12 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
                 addStringPattern(pattern, theQual);
             }
         }
+        // Set null to bottom if no other implicit is given.
+        if (!treeKinds.containsKey(Kind.NULL_LITERAL)) {
+            for (AnnotationMirror bottom : qualHierarchy.getBottomAnnotations()) {
+                addLiteralKind(LiteralKind.NULL, bottom);
+            }
+        }
     }
 
     /**

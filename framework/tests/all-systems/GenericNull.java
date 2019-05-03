@@ -1,6 +1,6 @@
 // The test cases GenericNull, FieldAccess, and InferTypeArgs often fail together.
 // Here are some things that might be wrong if they are failing.
-//  * Did you write @ImplicitFor(literals = LiteralKind.NULL) on the bottom type in your type
+//  * Did you write  on the bottom type in your type
 //    hierarchy?
 //  * If you have overridden AnnotatedTypeFactory.createTreeAnnotator(), the body should return a
 //    list that contains the result of running the overridden implementation, as in:
