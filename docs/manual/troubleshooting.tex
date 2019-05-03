@@ -433,28 +433,6 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
 \end{Verbatim}
 
 \item
-If you get an error related to a bounded type parameter and a literal such
-as \<null>, the problem may be missing defaulting.  Here is an example:
-
-\begin{Verbatim}
-mypackage/MyClass.java:2044: warning: incompatible types in assignment.
-      T retval = null;
-                 ^
-  found   : null
-  required: T extends @MyQualifier Object
-\end{Verbatim}
-
-\noindent
-A value that can be assigned to a variable of type \<T extends @MyQualifier
-Object> only if that value is of the bottom type, since the bottom type is
-the only one that is a subtype of every subtype of \<T extends @MyQualifier
-Object>.  The value \<null> satisfies this for the Java type system, and it
-must be made to satisfy it for the pluggable type system as well.  The
-typical way to address this is to write the meta-annotation
-\<@ImplicitFor(literals={LiteralKind.NULL})> on the definition of the
-bottom type qualifier.
-
-\item
 An error such as
 
 \begin{Verbatim}

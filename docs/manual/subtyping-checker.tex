@@ -8,9 +8,7 @@ the type qualifier annotations.
 
 The Subtyping Checker can accommodate all of the type system enhancements that
 can be declaratively specified (see Chapter~\ref{creating-a-checker}).
-This includes type introduction rules (implicit
-annotations, e.g., literals are implicitly considered \refqualclass{checker/nullness/qual}{NonNull}) via
-the \refqualclass{framework/qual}{ImplicitFor} meta-annotation, and other features such as
+This includes type introduction rules meta-annotation, and other features such as
 type refinement (Section~\ref{type-refinement}) and
 qualifier polymorphism (Section~\ref{qualifier-polymorphism}).
 
@@ -116,7 +114,6 @@ import java.lang.annotation.Target;
  * Denotes that the representation of an object is encrypted.
  */
 @SubtypeOf(PossiblyUnencrypted.class)
-@ImplicitFor(literal=\{LiteralKind.NULL\})
 @DefaultFor(\{TypeUseLocation.LOWER_BOUND\})
 @Target(\{ElementType.TYPE_USE, ElementType.TYPE_PARAMETER\})
 public @interface Encrypted \{\}
