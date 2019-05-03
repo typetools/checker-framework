@@ -2,6 +2,7 @@ package testlib.wholeprograminference;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -87,6 +88,11 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
         @Override
         public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
             return BOTTOM;
+        }
+
+        @Override
+        public Set<? extends AnnotationMirror> getBottomAnnotations() {
+            return Collections.singleton(BOTTOM);
         }
 
         @Override
