@@ -62,8 +62,8 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
     @Override
     public TreeAnnotator createTreeAnnotator() {
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, BOTTOM);
         implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.INT_LITERAL, BOTTOM);
+        implicitsTreeAnnotator.addStandardImplicits();
 
         return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
     }

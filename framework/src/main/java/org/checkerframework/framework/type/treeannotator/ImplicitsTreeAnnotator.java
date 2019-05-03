@@ -112,12 +112,33 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
                 addStringPattern(pattern, theQual);
             }
         }
+    }
+
+    /**
+     * Adds standard implicit. Currently sets the null literal to bottom if no other implicit is set
+     * for null literals.
+     *
+     * @return this
+     */
+    public ImplicitsTreeAnnotator addStandardImplicits() {
         // Set null to bottom if no other implicit is given.
         if (!treeKinds.containsKey(Kind.NULL_LITERAL)) {
             for (AnnotationMirror bottom : qualHierarchy.getBottomAnnotations()) {
                 addLiteralKind(LiteralKind.NULL, bottom);
             }
+            return this;
         }
+        Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
+        Set<AnnotationMirror> implicitForNull = treeKinds.get(Kind.NULL_LITERAL);
+        if (tops.size() == implicitForNull.size()) {
+            return this;
+        }
+        for (AnnotationMirror top : tops) {
+            if (qualHierarchy.findAnnotationInHierarchy(implicitForNull, top) == null) {
+                implicitForNull.add(qualHierarchy.getBottomAnnotation(top));
+            }
+        }
+        return this;
     }
 
     /**

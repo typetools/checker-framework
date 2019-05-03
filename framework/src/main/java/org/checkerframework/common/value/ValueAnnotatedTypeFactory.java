@@ -978,7 +978,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 };
         return new ListTreeAnnotator(
-                new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this), arrayCreation);
+                new ValueTreeAnnotator(this),
+                new ImplicitsTreeAnnotator(this).addStandardImplicits(),
+                arrayCreation);
     }
 
     /**
