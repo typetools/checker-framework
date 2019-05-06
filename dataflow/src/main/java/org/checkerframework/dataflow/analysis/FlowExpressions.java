@@ -1172,6 +1172,7 @@ public class FlowExpressions {
                     && left.syntacticEquals(((BinaryAccess) other).left);
         }
 
+        @Override
         public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
             return right.containsModifiableAliasOf(store, other)
                     || left.containsModifiableAliasOf(store, other);
