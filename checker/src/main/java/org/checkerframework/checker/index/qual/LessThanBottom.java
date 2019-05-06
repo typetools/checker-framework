@@ -6,6 +6,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
+/**
+ * The bottom type in the LessThan type system. Programmers should rarely write this type.
+ *
+ * @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #bottom-type the bottom type
+ */
 @SubtypeOf({LessThan.class})
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
