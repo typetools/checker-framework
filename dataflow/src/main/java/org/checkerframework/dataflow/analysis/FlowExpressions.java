@@ -1116,12 +1116,14 @@ public class FlowExpressions {
         }
     }
 
+    /** Receiver takes in binary operations */
     public static class BinaryAccess extends Receiver {
 
         BinaryOperationNode receiverNode;
         Receiver left;
         Receiver right;
 
+        /** Constructor, takes in a BinaryOpeartionNode and a left and right Receiver */
         public BinaryAccess(
                 TypeMirror type, BinaryOperationNode receiverNode, Receiver left, Receiver right) {
             super(type);
@@ -1130,14 +1132,17 @@ public class FlowExpressions {
             this.right = right;
         }
 
+        /** Get the binary operation node */
         public BinaryOperationNode getReceierNode() {
             return receiverNode;
         }
 
+        /** Get the left receiver */
         public Receiver getLeft() {
             return left;
         }
 
+        /** Get the right receiver */
         public Receiver getRight() {
             return right;
         }
