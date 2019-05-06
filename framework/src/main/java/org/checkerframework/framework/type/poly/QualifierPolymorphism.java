@@ -5,8 +5,10 @@ import com.sun.source.tree.NewClassTree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -135,4 +137,13 @@ public interface QualifierPolymorphism {
      */
     void annotate(
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference);
+
+    /**
+     * Resolves polymorphism annotations for the given field type.
+     *
+     * @param field field element to whose poly annotation must be resolved
+     * @param owner the type of the object whose field is being typed
+     * @param type type of the field which still has poly annotations
+     */
+    void annotate(VariableElement field, AnnotatedTypeMirror owner, AnnotatedTypeMirror type);
 }

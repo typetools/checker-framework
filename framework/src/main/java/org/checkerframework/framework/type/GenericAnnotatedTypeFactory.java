@@ -27,11 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -1676,5 +1672,14 @@ public abstract class GenericAnnotatedTypeFactory<
     /** The CFGVisualizer to be used by all CFAbstractAnalysis instances. */
     public CFGVisualizer<Value, Store, TransferFunction> getCFGVisualizer() {
         return cfgVisualizer;
+    }
+
+    @Override
+    public void postAsMemberOf(
+            AnnotatedTypeMirror type, AnnotatedTypeMirror owner, Element element) {
+        super.postAsMemberOf(type, owner, element);
+        if (element.getKind() == ElementKind.FIELD) {
+            poly.annotate(((VariableElement) element), owner, type);
+        }
     }
 }
