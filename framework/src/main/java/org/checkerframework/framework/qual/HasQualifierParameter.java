@@ -53,5 +53,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Documented
 public @interface HasQualifierParameter {
+
+    /**
+     * Class of the top qualifier for the hierarchy for which this class has a qualifier parameter.
+     */
     Class<? extends Annotation>[] value();
 }
