@@ -115,8 +115,8 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Adds standard implicit. Currently sets the null literal to bottom if no other implicit is set
-     * for null literals.
+     * Adds standard implicit rules. Currently sets the null literal to bottom if no other implicit
+     * is set for null literals.
      *
      * @return this
      */
