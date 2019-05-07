@@ -75,16 +75,16 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         result.setElement(elt);
 
         ElementAnnotationApplier.apply(result, elt, f);
-        new MethodTypeVarAnnotator().visit(result, f);
+        new TypeVarAnnotator().visit(result, f);
 
         return result;
     }
 
     /**
-     * Annotates uses of method type variables with annotation written explicity on the type
-     * parameter declaration.
+     * Annotates uses of type variables with annotation written explicitly on the type parameter
+     * declaration and/or its upper bound.
      */
-    static class MethodTypeVarAnnotator extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
+    static class TypeVarAnnotator extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
         @Override
         public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory p) {
             TypeParameterElement tpelt =
