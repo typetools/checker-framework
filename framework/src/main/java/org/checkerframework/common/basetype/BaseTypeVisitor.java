@@ -1886,20 +1886,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     .isSubtype(
                             castType.getEffectiveAnnotations(), exprType.getEffectiveAnnotations());
         }
-        boolean allBottom = true;
         Set<? extends AnnotationMirror> castTypeAnnos = castType.getEffectiveAnnotations();
         Set<? extends AnnotationMirror> exprTypeAnnos = exprType.getEffectiveAnnotations();
         for (AnnotationMirror bottom :
                 atypeFactory.getQualifierHierarchy().getBottomAnnotations()) {
             if (!AnnotationUtils.containsSame(castTypeAnnos, bottom)
                     || !AnnotationUtils.containsSame(exprTypeAnnos, bottom)) {
-                allBottom = false;
-                break;
+                return false;
             }
         }
-
-        return allBottom
-                || atypeFactory.getQualifierHierarchy().isSubtype(castTypeAnnos, exprTypeAnnos);
+        return true;
     }
 
     private boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {

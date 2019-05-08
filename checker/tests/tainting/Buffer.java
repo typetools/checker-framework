@@ -47,22 +47,23 @@ class Use {
         buffer.list.add(tainted);
         // :: error: (assignment.type.incompatible)
         buffer.someString = tainted;
-        // TODO: error when @HasQualifierParameter is implemented
+        // TODO: Should be argument type incompatible.
+        // :: error: (method.invocation.invalid)
         buffer.append(tainted);
     }
 
     void casts(@Untainted Object untainted, @Tainted Object tainted) {
         @Untainted Buffer b1 = (@Untainted Buffer) untainted; // ok
-        // :: error: invariant cast
+        // :: warning: (invariant.cast)
         @Untainted Buffer b2 = (@Untainted Buffer) tainted;
 
-        // :: error: invariant cast
+        // :: warning: (invariant.cast)
         @Tainted Buffer b3 = (@Tainted Buffer) untainted; // error
-        // :: error: invariant cast
+        // :: warning: (invariant.cast)
         @Tainted Buffer b4 = (@Tainted Buffer) tainted; // error
 
         @Untainted Buffer b5 = (Buffer) untainted; // ok
-        // :: error: invariant cast
+        // :: warning: (invariant.cast)
         @Tainted Buffer b6 = (Buffer) tainted;
     }
 }
