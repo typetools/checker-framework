@@ -214,6 +214,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, boolean annosCanBeEmtpy) {
         final AnnotationMirror subtypeAnno = subtype.getAnnotationInHierarchy(currentTop);
         final AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
+        if (checker.getTypeFactory().hasQualifierParameter(supertype)
+                && checker.getTypeFactory().hasQualifierParameter(subtype)) {
+            return isAnnoSubtype(subtypeAnno, supertypeAnno, annosCanBeEmtpy)
+                    && isAnnoSubtype(supertypeAnno, subtypeAnno, annosCanBeEmtpy);
+        }
 
         return isAnnoSubtype(subtypeAnno, supertypeAnno, annosCanBeEmtpy);
     }

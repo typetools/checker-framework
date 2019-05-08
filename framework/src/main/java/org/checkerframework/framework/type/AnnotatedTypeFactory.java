@@ -3484,26 +3484,42 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return result;
     }
 
-    public boolean isInvariantType(AnnotatedTypeMirror annotatedType) {
+    /**
+     * Whether or not the {@code annotatedType} has an implicit qualifier parameter.
+     *
+     * @param annotatedType AnnotatedTypeMirror to check
+     * @return true if the type has a qualifier parameter
+     */
+    public boolean hasQualifierParameter(AnnotatedTypeMirror annotatedType) {
         if (annotatedType.getKind() != TypeKind.DECLARED) {
             return false;
         }
 
-        // TODO: caching
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) annotatedType;
         Element element = declaredType.getUnderlyingType().asElement();
+        return hasQualifierParameter(element);
+    }
+    /**
+     * Whether or not the {@code element} has an implicit qualifier parameter.
+     *
+     * @param element Element to check
+     * @return true if the element is a type declaration that has a qualifier parameter
+     */
+    public boolean hasQualifierParameter(Element element) {
+        if (!ElementUtils.isTypeDeclaration(element)) {
+            return false;
+        }
+        // TODO: caching
         AnnotationMirror hasQualifierParam =
                 getDeclAnnotation(element, HasQualifierParameter.class);
         if (hasQualifierParam == null) {
             return false;
         }
 
-        List<Class> qualClasses =
-                (List<Class>)
-                        AnnotationUtils.getElementValueArray(
-                                hasQualifierParam, "value", Class.class, true);
-        for (Class qual : qualClasses) {
-            AnnotationMirror annotationMirror = AnnotationBuilder.fromClass(elements, qual);
+        List<Name> qualClasses =
+                AnnotationUtils.getElementValueClassNames(hasQualifierParam, "value", true);
+        for (Name qual : qualClasses) {
+            AnnotationMirror annotationMirror = AnnotationBuilder.fromName(elements, qual);
             if (isSupportedQualifier(annotationMirror)) {
                 return true;
             }

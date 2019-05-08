@@ -1857,6 +1857,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
 
+        if (atypeFactory.hasQualifierParameter(castType)
+                && !isInvariantTypeCastSafe(castType, exprType)) {
+            checker.report(
+                    Result.warning(
+                            "invariant.cast", exprType.toString(true), castType.toString(true)),
+                    node);
+            return; // don't issue cast unsafe warning.
+        }
+
         // We cannot do a simple test of casting, as isSubtypeOf requires
         // the input types to be subtypes according to Java
         if (!isTypeCastSafe(castType, exprType)) {
@@ -1864,6 +1873,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     Result.warning("cast.unsafe", exprType.toString(true), castType.toString(true)),
                     node);
         }
+    }
+
+    private boolean isInvariantTypeCastSafe(
+            AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
+        if (!isTypeCastSafe(castType, exprType)) {
+            return false;
+        }
+        //        if(castType.getAnnotations())
+
+        return atypeFactory
+                .getQualifierHierarchy()
+                .isSubtype(castType.getEffectiveAnnotations(), exprType.getEffectiveAnnotations());
     }
 
     private boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
@@ -3765,6 +3786,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
+        if (atypeFactory.hasQualifierParameter(declarationType)) {
+            // TODO: don't skip.
+            return true;
+        }
         return atypeFactory
                 .getTypeHierarchy()
                 .isSubtype(useType.getErased(), declarationType.getErased());
