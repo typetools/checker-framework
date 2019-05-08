@@ -71,7 +71,7 @@ class Use {
 
     void creation() {
         @Untainted Buffer b1 = new @Untainted Buffer();
-        @Tainted Buffer b1 = new @Tainted Buffer();
-        @PolyTainted Buffer b1 = new Buffer();
+        @Tainted Buffer b2 = new @Tainted Buffer();
+        @PolyTainted Buffer b3 = new Buffer();
     }
 }
