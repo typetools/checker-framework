@@ -70,6 +70,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromByteCode;
 import org.checkerframework.framework.qual.FromStubFile;
+import org.checkerframework.framework.qual.HasQualifierParameter;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
@@ -3481,6 +3482,33 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         return result;
+    }
+
+    public boolean isInvariantType(AnnotatedTypeMirror annotatedType) {
+        if (annotatedType.getKind() != TypeKind.DECLARED) {
+            return false;
+        }
+
+        // TODO: caching
+        AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) annotatedType;
+        Element element = declaredType.getUnderlyingType().asElement();
+        AnnotationMirror hasQualifierParam =
+                getDeclAnnotation(element, HasQualifierParameter.class);
+        if (hasQualifierParam == null) {
+            return false;
+        }
+
+        List<Class> qualClasses =
+                (List<Class>)
+                        AnnotationUtils.getElementValueArray(
+                                hasQualifierParam, "value", Class.class, true);
+        for (Class qual : qualClasses) {
+            AnnotationMirror annotationMirror = AnnotationBuilder.fromClass(elements, qual);
+            if (isSupportedQualifier(annotationMirror)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
