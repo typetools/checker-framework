@@ -22,7 +22,7 @@ class TestFieldPolymorphism {
         this.field = s;
     }
 
-    void testSetter3(@Tainted String s) {
+    void testSetter3(@PolyTainted TestFieldPolymorphism this, @Tainted String s) {
         // :: error: (assignment.type.incompatible)
         this.field = s;
     }

@@ -12,6 +12,8 @@ public class Buffer {
     final List<@PolyTainted String> list = new ArrayList<>();
     @PolyTainted String someString = "";
 
+    public @PolyTainted Buffer() {}
+
     public @PolyTainted Buffer append(@PolyTainted Buffer this, @PolyTainted String s) {
         list.add(s);
         someString = s;
@@ -65,5 +67,11 @@ class Use {
         @Untainted Buffer b5 = (Buffer) untainted; // ok
         // :: warning: (invariant.cast)
         @Tainted Buffer b6 = (Buffer) tainted;
+    }
+
+    void creation() {
+        @Untainted Buffer b1 = new @Untainted Buffer();
+        @Tainted Buffer b1 = new @Tainted Buffer();
+        @PolyTainted Buffer b1 = new Buffer();
     }
 }
