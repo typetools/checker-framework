@@ -62,8 +62,6 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         BOTTOM = AnnotationBuilder.fromClass(elements, Bottom.class);
 
         this.postInit();
-
-        addTypeNameImplicit(java.lang.Void.class, BOTTOM);
     }
 
     @Override

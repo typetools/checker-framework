@@ -163,4 +163,25 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
 
         return super.scan(type, p);
     }
+    /**
+     * Adds standard implicit rules. Currently sets the Void to bottom if no other implicit is set
+     * for Void.
+     *
+     * @return this
+     */
+    public ImplicitsTypeAnnotator addStandardImplicits() {
+        if (!typeNames.containsKey(Void.class.getCanonicalName())) {
+            for (AnnotationMirror bottom : qualHierarchy.getBottomAnnotations()) {
+                addTypeName(Void.class, bottom);
+            }
+        }
+        Set<AnnotationMirror> annos = typeNames.get(Void.class.getCanonicalName());
+        for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+            if (qualHierarchy.findAnnotationInHierarchy(annos, top) == null) {
+                addTypeName(Void.class, qualHierarchy.getBottomAnnotation(top));
+            }
+        }
+
+        return this;
+    }
 }

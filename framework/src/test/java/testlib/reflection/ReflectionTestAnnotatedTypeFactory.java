@@ -21,8 +21,6 @@ public final class ReflectionTestAnnotatedTypeFactory extends BaseAnnotatedTypeF
     public ReflectionTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
-        AnnotationMirror bottom = AnnotationBuilder.fromClass(elements, ReflectBottom.class);
-        addTypeNameImplicit(java.lang.Void.class, bottom);
     }
 
     @Override

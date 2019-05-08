@@ -369,7 +369,8 @@ public abstract class GenericAnnotatedTypeFactory<
                             this, getQualifierHierarchy().getTopAnnotations(), relevantClasses));
         }
         typeAnnotators.add(new PropagationTypeAnnotator(this));
-        implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
+        implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this).addStandardImplicits();
+
         typeAnnotators.add(implicitsTypeAnnotator);
         return new ListTypeAnnotator(typeAnnotators);
     }

@@ -43,7 +43,6 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
     public WholeProgramInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
-        addTypeNameImplicit(java.lang.Void.class, BOTTOM);
     }
 
     @Override

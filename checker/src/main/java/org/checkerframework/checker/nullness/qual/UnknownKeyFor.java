@@ -26,7 +26,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
 @DefaultFor({TypeUseLocation.LOWER_BOUND})
-@ImplicitFor(literals = LiteralKind.NULL)
+@ImplicitFor(literals = LiteralKind.NULL, typeNames = Void.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
