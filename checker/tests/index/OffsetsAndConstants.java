@@ -21,10 +21,10 @@ public class OffsetsAndConstants {
 
         read(a, 5, 5);
 
-        // :: error: assignment.type.incompatible
+        // :: error: (argument.type.incompatible)
         read(a, 5, 6);
 
-        // :: error: assignment.type.incompatible
+        // :: error: (argument.type.incompatible)
         read(a, 5, 7);
     }
 }
