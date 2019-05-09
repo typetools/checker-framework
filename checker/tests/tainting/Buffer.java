@@ -14,6 +14,13 @@ public class Buffer {
 
     public @PolyTainted Buffer() {}
 
+    public @Untainted Buffer(@Tainted String s) {
+        // :: error: (assignment.type.incompatible)
+        this.someString = s;
+    }
+
+    public @PolyTainted Buffer(@PolyTainted Buffer copy) {}
+
     public @PolyTainted Buffer append(@PolyTainted Buffer this, @PolyTainted String s) {
         list.add(s);
         someString = s;
@@ -73,5 +80,8 @@ class Use {
         @Untainted Buffer b1 = new @Untainted Buffer();
         @Tainted Buffer b2 = new @Tainted Buffer();
         @PolyTainted Buffer b3 = new Buffer();
+
+        @Untainted Buffer b4 = new @Untainted Buffer(b1);
+        @Tainted Buffer b5 = new @Tainted Buffer(b1);
     }
 }

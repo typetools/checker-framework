@@ -1857,12 +1857,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
 
-        if (atypeFactory.hasQualifierParameter(castType)
-                && !isInvariantTypeCastSafe(castType, exprType)) {
-            checker.report(
-                    Result.warning(
-                            "invariant.cast", exprType.toString(true), castType.toString(true)),
-                    node);
+        if (atypeFactory.hasQualifierParameter(castType)) {
+            if (!isInvariantTypeCastSafe(castType, exprType)) {
+                checker.report(
+                        Result.warning(
+                                "invariant.cast", exprType.toString(true), castType.toString(true)),
+                        node);
+            }
             return; // don't issue cast unsafe warning.
         }
 
@@ -1875,19 +1876,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
+    /**
+     * Return whether or not casting the exprType to castType is legal.
+     *
+     * @param castType an invariant type
+     * @param exprType type of the expressions that is cast may or may not be invariant
+     * @return whether or not casting the exprType to castType is legal.
+     */
     private boolean isInvariantTypeCastSafe(
             AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
         if (!isTypeCastSafe(castType, exprType)) {
             return false;
         }
-        if (atypeFactory.hasQualifierParameter(exprType)) {
-            return atypeFactory
-                    .getQualifierHierarchy()
-                    .isSubtype(
-                            castType.getEffectiveAnnotations(), exprType.getEffectiveAnnotations());
-        }
         Set<? extends AnnotationMirror> castTypeAnnos = castType.getEffectiveAnnotations();
         Set<? extends AnnotationMirror> exprTypeAnnos = exprType.getEffectiveAnnotations();
+        if (atypeFactory.hasQualifierParameter(exprType)) {
+            // The isTypeCastSafe call above checked that the exprType is a subtype of castType,
+            // so just check the reverse to check that the qualifiers are equivalent.
+            return atypeFactory.getQualifierHierarchy().isSubtype(castTypeAnnos, exprTypeAnnos);
+        }
+        // Otherwise the cast is unsafe, unless the qualifiers on both cast and expr are bottom.
         for (AnnotationMirror bottom :
                 atypeFactory.getQualifierHierarchy().getBottomAnnotations()) {
             if (!AnnotationUtils.containsSame(castTypeAnnos, bottom)
