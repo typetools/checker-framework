@@ -180,7 +180,8 @@ The nullness hierarchy contains these qualifiers:
   field may not be assigned to null anywhere else in the program.  If you
   supply the \<noInitForMonotonicNonNull> lint flag (for example, supply
   \<-Alint=noInitForMonotonicNonNull> on the command line), then
-  @MonotonicNonNull fields are not allowed to have initializers.
+  \<@MonotonicNonNull> fields are not allowed to have initializers at their
+  declarations.
 
   Use of \<@MonotonicNonNull> on a static field is a code smell:  it may
   indicate poor design.  You should consider whether it is possible to make
