@@ -91,6 +91,7 @@ public class LogRecord implements java.io.Serializable {
     private static final AtomicInteger nextThreadId
         = new AtomicInteger(MIN_SEQUENTIAL_THREAD_ID);
 
+    @SuppressWarnings("type.argument.type.incompatible")
     private static final ThreadLocal<Integer> threadIds = new ThreadLocal<>();
 
     /**
@@ -497,7 +498,7 @@ public class LogRecord implements java.io.Serializable {
         }
     }
 
-    @SuppressWarnings("dereference.of.nullable") // method first initializes parameters before its dereference
+    @SuppressWarnings({"dereference.of.nullable" , "argument.type.incompatible"}) // method first initializes parameters before its dereference and ClassLoader.getSystemClassLoader() can't be @Nullable here
     private void readObject(ObjectInputStream in)
                         throws IOException, ClassNotFoundException {
         // We have to call defaultReadObject first.
