@@ -1,5 +1,4 @@
 // Test Case for adding nullness annotations to java.util.logging.LogRecord
-// @skip-test
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
