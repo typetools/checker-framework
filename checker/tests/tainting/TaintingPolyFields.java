@@ -21,4 +21,8 @@ public class TaintingPolyFields {
         // :: error: (assignment.type.incompatible)
         @Untainted List<@Untainted String> myLst2 = obj2.lst;
     }
+
+    static void polyTest(@PolyTainted TaintingPolyFields o) {
+        @PolyTainted Integer f = o.x;
+    }
 }
