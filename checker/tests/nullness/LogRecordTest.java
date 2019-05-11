@@ -12,7 +12,6 @@ public class LogRecordTest {
 
     void test() {
 
-        // :: error: (argument.type.incompatible)
         LogRecord logRecord = new LogRecord(level, null);
 
         logRecord.setLoggerName(null);
