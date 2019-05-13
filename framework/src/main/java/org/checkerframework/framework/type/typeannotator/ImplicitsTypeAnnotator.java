@@ -174,11 +174,12 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
             for (AnnotationMirror bottom : qualHierarchy.getBottomAnnotations()) {
                 addTypeName(Void.class, bottom);
             }
-        }
-        Set<AnnotationMirror> annos = typeNames.get(Void.class.getCanonicalName());
-        for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
-            if (qualHierarchy.findAnnotationInHierarchy(annos, top) == null) {
-                addTypeName(Void.class, qualHierarchy.getBottomAnnotation(top));
+        } else {
+            Set<AnnotationMirror> annos = typeNames.get(Void.class.getCanonicalName());
+            for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+                if (qualHierarchy.findAnnotationInHierarchy(annos, top) == null) {
+                    addTypeName(Void.class, qualHierarchy.getBottomAnnotation(top));
+                }
             }
         }
 
