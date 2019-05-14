@@ -31,4 +31,11 @@ public class ExplictTypeVarAnnos<E extends @Nullable Object, @Nullable F> {
         Consumer<F> result = ExplictTypeVarAnnos.<F>cast(nullConsumer);
         return result;
     }
+
+    @SuppressWarnings("method.invocation.invalid")
+    Consumer<E> field = getConsumer2();
+
+    public Consumer<E> getField() {
+        return field;
+    }
 }
