@@ -16,7 +16,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #tainting-checker Tainting Checker
  */
 @SubtypeOf(Tainted.class)
-@ImplicitFor(literals = {LiteralKind.STRING, LiteralKind.NULL})
+@ImplicitFor(literals = {LiteralKind.ALL})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @DefaultFor(TypeUseLocation.LOWER_BOUND)
