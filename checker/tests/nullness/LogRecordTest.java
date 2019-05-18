@@ -5,12 +5,7 @@ import java.util.logging.LogRecord;
 
 public class LogRecordTest {
 
-    @SuppressWarnings(
-            "initialization.fields.uninitialized") // Consturctor for java.util.logging.Level is
-    // protected
-    Level level;
-
-    void test() {
+    void test(Level level) {
 
         LogRecord logRecord = new LogRecord(level, null);
 

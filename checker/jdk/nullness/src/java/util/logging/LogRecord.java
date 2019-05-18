@@ -91,8 +91,7 @@ public class LogRecord implements java.io.Serializable {
     private static final AtomicInteger nextThreadId
         = new AtomicInteger(MIN_SEQUENTIAL_THREAD_ID);
 
-    @SuppressWarnings("type.argument.type.incompatible")
-    private static final ThreadLocal<Integer> threadIds = new ThreadLocal<>();
+    private static final ThreadLocal<@Nullable Integer> threadIds = new ThreadLocal<>();
 
     /**
      * @serial Logging message level
@@ -475,7 +474,7 @@ public class LogRecord implements java.io.Serializable {
      * a null String is written.  Otherwise the output of Object.toString()
      * is written.
      */
-    @SuppressWarnings("dereference.of.nullable") // parameters and parameters[i] is always ensured to be non-null at every dereference
+    @SuppressWarnings("dereference.of.nullable") // out.writeInt and out.writeObject do not affect parameters field. http://tinyurl.com/cfissue/984
     private void writeObject(ObjectOutputStream out) throws IOException {
         // We have to call defaultWriteObject first.
         out.defaultWriteObject();
@@ -498,7 +497,9 @@ public class LogRecord implements java.io.Serializable {
         }
     }
 
-    @SuppressWarnings({"dereference.of.nullable" , "argument.type.incompatible"}) // method first initializes parameters before its dereference and ClassLoader.getSystemClassLoader() can't be @Nullable here
+    @SuppressWarnings({"dereference.of.nullable", "argument.type.incompatible"}) // in.readObject does not affect parameters field. http://tinyurl.com/cfissue/984
+    // and ClassLoader.getSystemClassLoader() is @NonNull because  there will always be a SystemClassLoader present to load the classes of logging framework
+    // for which LogRecord objects are used to pass logging requests to individual log handlers.
     private void readObject(ObjectInputStream in)
                         throws IOException, ClassNotFoundException {
         // We have to call defaultReadObject first.
