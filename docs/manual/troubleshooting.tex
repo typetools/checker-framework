@@ -248,6 +248,19 @@ replaced by blanks.
 
 \end{itemize}
 
+\item
+The Checker Framework sometimes runs out of memory when processing very
+large Java files, or files with very large methods.
+
+If you get an error such as
+\begin{Verbatim}
+error: SourceChecker.typeProcess: unexpected Throwable (OutOfMemoryError) while processing ...; message: GC overhead limit exceeded
+\end{Verbatim}
+
+\noindent
+then either give the JVM more memory when running the Checker Framework, or
+split your files and methods into smaller ones, or both.
+
 
 \subsectionAndLabel{Unexpected warnings not related to type-checking}{common-problems-non-typechecking}
 
