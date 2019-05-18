@@ -497,9 +497,7 @@ public class LogRecord implements java.io.Serializable {
         }
     }
 
-    @SuppressWarnings({"dereference.of.nullable", "argument.type.incompatible"}) // in.readObject does not affect parameters field. http://tinyurl.com/cfissue/984
-    // and ClassLoader.getSystemClassLoader() is @NonNull because  there will always be a SystemClassLoader present to load the classes of logging framework
-    // for which LogRecord objects are used to pass logging requests to individual log handlers.
+    @SuppressWarnings({"dereference.of.nullable"}) // in.readObject does not affect parameters field. http://tinyurl.com/cfissue/984
     private void readObject(ObjectInputStream in)
                         throws IOException, ClassNotFoundException {
         // We have to call defaultReadObject first.
