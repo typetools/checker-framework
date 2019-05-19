@@ -287,12 +287,15 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public static List<String> getLessThanExpressions(AnnotationMirror annotation) {
         if (AnnotationUtils.areSameByClass(annotation, LessThanBottom.class)) {
+            System.out.printf("getLessThanExpressions(%s) => null%n", annotation);
             return null;
         } else if (AnnotationUtils.areSameByClass(annotation, LessThanUnknown.class)) {
+            System.out.printf("getLessThanExpressions(%s) => empty list%n", annotation);
             return new ArrayList<>();
         } else {
             List<String> list =
                     AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
+            System.out.printf("getLessThanExpressions(%s) => %s%n", annotation, list);
             return list;
         }
     }

@@ -756,10 +756,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     UBQualifier fromLessThan(ExpressionTree tree, TreePath treePath) {
         List<String> lessThanExpressions =
                 getLessThanAnnotatedTypeFactory().getLessThanExpressions(tree);
+        System.out.printf(
+                "fromLessThan(%s, %s): lessThanExpressions=%s%n",
+                tree, treePath, lessThanExpressions);
         if (lessThanExpressions == null) {
             return null;
         }
         UBQualifier ubQualifier = fromLessThanOrEqual(tree, treePath, lessThanExpressions);
+        System.out.printf("fLT: ubQualifier=%s%n", ubQualifier);
         if (ubQualifier != null) {
             return ubQualifier.plusOffset(1);
         }
@@ -803,6 +807,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
         }
+        System.out.printf("fromLessThanOrEqual => %s%n", ubQualifier);
         return ubQualifier;
     }
 }

@@ -291,10 +291,12 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * type of the array.
      */
     private boolean relaxedCommonAssignment(AnnotatedTypeMirror varType, ExpressionTree valueExp) {
+        System.out.printf("relaxedCommonAssignment(%s, %s)%n", varType, valueExp);
         List<? extends ExpressionTree> expressions;
         if (valueExp.getKind() == Kind.NEW_ARRAY && varType.getKind() == TypeKind.ARRAY) {
             expressions = ((NewArrayTree) valueExp).getInitializers();
             if (expressions == null || expressions.isEmpty()) {
+                System.out.printf("rCA false (1)%n");
                 return false;
             }
             // The qualifier we need for an array is in the component type, not varType.
@@ -302,10 +304,12 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             UBQualifier qualifier =
                     UBQualifier.createUBQualifier(componentType, atypeFactory.UNKNOWN);
             if (!qualifier.isLessThanLengthQualifier()) {
+                System.out.printf("rCA false (2)%n");
                 return false;
             }
             for (ExpressionTree expressionTree : expressions) {
                 if (!relaxedCommonAssignmentCheck((LessThanLengthOf) qualifier, expressionTree)) {
+                    System.out.printf("rCA false (3 for %s)%n", expressionTree);
                     return false;
                 }
             }
@@ -356,14 +360,18 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      */
     private boolean relaxedCommonAssignmentCheck(
             LessThanLengthOf varLtlQual, ExpressionTree valueExp) {
+        System.out.printf(
+                "relaxedCommonAssignmentCheck(varLtlQual=%s, valueExp=%s)%n", varLtlQual, valueExp);
 
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(valueExp);
         UBQualifier expQual = UBQualifier.createUBQualifier(expType, atypeFactory.UNKNOWN);
+        System.out.printf("expType=%s, expQual=%s%n", expType, expQual);
 
         UBQualifier lessThanQual = atypeFactory.fromLessThan(valueExp, getCurrentPath());
         if (lessThanQual != null) {
             expQual = expQual.glb(lessThanQual);
         }
+        System.out.printf("lessThanQual=%s, expQual=%s%n", lessThanQual, expQual);
 
         UBQualifier lessThanOrEqualQual =
                 atypeFactory.fromLessThanOrEqual(valueExp, getCurrentPath());
@@ -390,6 +398,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         Long value = IndexUtil.getMaxValue(valueExp, atypeFactory.getValueAnnotatedTypeFactory());
 
         if (value == null && !expQual.isLessThanLengthQualifier()) {
+            System.out.printf("rCAC => false (1), expQual=%s, valueExp=%s%n", expQual, valueExp);
             return false;
         }
 
@@ -420,6 +429,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 }
             }
 
+            System.out.printf("rCAC => false (2, for %s)%n", sequenceName);
             return false;
         }
 
