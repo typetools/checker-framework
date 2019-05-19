@@ -1209,7 +1209,8 @@ public class ValueTransfer extends CFTransfer {
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
             // Combine the new annotations based on the results of the comparison with the existing
             // type.
-            store.insertValue(rec, hierarchy.greatestLowerBound(anno, currentAnno));
+            AnnotationMirror newAnno = hierarchy.greatestLowerBound(anno, currentAnno);
+            store.insertValue(rec, newAnno);
 
             if (node instanceof FieldAccessNode) {
                 refineArrayAtLengthAccess((FieldAccessNode) internal, store);
