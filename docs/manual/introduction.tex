@@ -91,7 +91,7 @@ The Checker Framework comes with checkers for specific types of errors:
   whether an expression's value can be known at compile time
   (see \chapterpageref{constant-value-checker})
 \item
-  \ahrefloc{reflection-checker}{Reflection Checker} to determine
+  \ahrefloc{reflection-resolution}{Reflection Checker} to determine
   whether an expression's value (of type \<Method> or \<Class>) can be known at compile time
   (see \chapterpageref{reflection-resolution})
 \item
@@ -217,7 +217,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.8.0.zip}
+  \url{https://checkerframework.org/checker-framework-2.8.1.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -1113,8 +1113,9 @@ Do not write unnecessary annotations.
   annotations for local variables (see Section~\ref{type-refinement}).
   Usually, you only need to annotate fields and method signatures.  You
   should add annotations inside method bodies only if the checker is unable
-  to infer the correct annotation (usually on type arguments, rather than
-  on local variables).
+  to infer the correct annotation (usually on type arguments or array
+  element types, rather than
+  on top-level types).
   % or if
   % you need to suppress a warning (see Chapter~\ref{suppressing-warnings}).
 

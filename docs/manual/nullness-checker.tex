@@ -180,7 +180,8 @@ The nullness hierarchy contains these qualifiers:
   field may not be assigned to null anywhere else in the program.  If you
   supply the \<noInitForMonotonicNonNull> lint flag (for example, supply
   \<-Alint=noInitForMonotonicNonNull> on the command line), then
-  @MonotonicNonNull fields are not allowed to have initializers.
+  \<@MonotonicNonNull> fields are not allowed to have initializers at their
+  declarations.
 
   Use of \<@MonotonicNonNull> on a static field is a code smell:  it may
   indicate poor design.  You should consider whether it is possible to make
@@ -755,7 +756,8 @@ corresponding annotation:
 
 \noindent
 You should ignore all other occurrences of \code{null} within a method
-body.  In particular, you (almost) never need to annotate local variables.
+body.  In particular, you rarely need to annotate local variables
+(except their type arguments or array element types).
 
 Only after this step should you run
 the Nullness Checker.  The reason is that it is quicker to search for

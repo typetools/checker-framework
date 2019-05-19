@@ -195,7 +195,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     private final AnnotatedDeclaredType vectorType;
 
     /** The @java.lang.annotation.Target annotation. */
-    protected final AnnotationMirror TARGET;
+    protected final AnnotationMirror TARGET =
+            AnnotationBuilder.fromClass(elements, java.lang.annotation.Target.class);
 
     /** The {@code value} element/field of the @java.lang.annotation.Target annotation. */
     protected final ExecutableElement targetValueElement;
@@ -226,7 +227,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
         this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
-        this.TARGET = AnnotationBuilder.fromClass(elements, java.lang.annotation.Target.class);
         targetValueElement =
                 TreeUtils.getMethod(java.lang.annotation.Target.class.getName(), "value", 0, env);
 
@@ -796,6 +796,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 expression, flowExprContext, getCurrentPath(), false);
             } catch (FlowExpressionParseException e) {
                 checker.report(e.getResult(), node);
+            }
+            // If expr is null, then an error was issued above.
+            if (expr != null && !CFAbstractStore.canInsertReceiver(expr)) {
+                checker.report(Result.failure("flowexpr.parse.error", expression), node);
+                expr = null;
             }
             if (expr != null && !abstractMethod) {
                 switch (contract.kind) {
@@ -1418,8 +1423,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
-            CFAbstractValue<?> value = store.getValue(expr);
-
+            CFAbstractValue<?> value = null;
+            if (CFAbstractStore.canInsertReceiver(expr)) {
+                value = store.getValue(expr);
+            }
             AnnotationMirror inferredAnno = null;
             if (value != null) {
                 QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
@@ -1427,11 +1434,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
             }
             if (!checkContract(expr, anno, inferredAnno, store)) {
+                String expressionString =
+                        (expr == null || expr.containsUnknown()) ? expression : expr.toString();
                 checker.report(
                         Result.failure(
                                 "contracts.precondition.not.satisfied",
                                 tree.getMethodSelect().toString(),
-                                expr == null ? expression : expr.toString()),
+                                expressionString),
                         tree);
             }
         }
@@ -2228,7 +2237,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (checker.hasOption("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
-                    " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+                    "%s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
                     "About to test whether actual is a subtype of expected",
                     (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
                     valueTree.getKind(),

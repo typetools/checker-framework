@@ -1218,7 +1218,7 @@ public class AnnotatedTypes {
         // Collect all polymorphic qualifiers; we should substitute them.
         Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : returnType.getAnnotations()) {
-            if (QualifierPolymorphism.isPolymorphicQualified(anno)) {
+            if (QualifierPolymorphism.hasPolymorphicQualifier(anno)) {
                 polys.add(anno);
             }
         }

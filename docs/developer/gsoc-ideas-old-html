@@ -79,3 +79,39 @@ codebase to discover latent problems, or by providing it to the Bazel
 developers to run each time they propose a code change.  The Bazel
 team is interested in collaborating by evaluating a tool.
 </p>
+
+
+<h2 id="case-study-index-out-of-bounds">Array indexing (index-out-of-bounds errors)</h2>
+
+<p>
+An index-out-of-bounds error occurs when a programmer provides an illegal
+index to an array or list, as in <code>a[i]</code> or <code>a.get(i)</code>
+where <code>i</code> is less than 0 or greater than the length of
+<code>a</code>.  In languages like C, this is disastrous:  buffers
+overflows lead to about 1/6 of all security vulnerabilities.  In languages
+like Java, the result is &ldquo;merely&rdquo; that the program crashes.  In
+both languages, it is desirable to prevent programmers from making this
+error and to prevent users from suffering the bad consequences.
+</p>
+
+<p>
+This project will be a substantial case study with
+the <a href="https://checkerframework.org/manual/#index-checker">Index
+Checker</a>.  The first goal is to identify its merits and limitations.
+Does it scale up to big,
+interesting programs?  Are there common, important code patterns that it
+fails to handle?  Does it produce too many false positive warnings?  Does
+it place too heavy a burden on the user, either in terms of annotations or
+in terms of complexity of the error messages?  Worst of all, are there
+unknown unsoundnesses in the tool?
+The second goal is to improve its precision enough to make it usable by
+real-world programmers.
+</p>
+
+<p>
+A <a href="#index-checker-mutable-length">related project</a> is to extend
+the Index Checker to handle
+mutable collections such as
+<code>List</code>s, where the <code>remove()</code> method makes sound,
+precise analysis very tricky.
+</p>

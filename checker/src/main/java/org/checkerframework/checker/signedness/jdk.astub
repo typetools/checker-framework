@@ -3268,6 +3268,21 @@ class PrintStream {
 class RandomAccessFile {
     public void write(@PolySigned byte b[]);
     public void write(@PolySigned byte b[], int off, int len);
+    public void write(@PolySigned int b) throws IOException;
+    public final void writeByte(@PolySigned int v) throws IOException;
+    public final void writeShort(@PolySigned int v) throws IOException;
+    public final void writeChar(@PolySigned int v) throws IOException;
+    public final void writeInt(@PolySigned int v) throws IOException;
+    public final void writeLong(@PolySigned long v) throws IOException;
+    private native void writeBytes(@PolySigned byte b[], int off, int len) throws IOException;
+    public native @PolySigned int read() throws IOException;
+    private native int readBytes(@PolySigned byte b[], int off, int len) throws IOException;
+    public int read(@PolySigned byte[] b) throws IOException;
+    public int read(@PolySigned byte b[], int off, int len) throws IOException;
+    public final void readFully(@PolySigned byte[] b) throws IOException;
+    public final void readFully(@PolySigned byte[] b, int off, int len) throws IOException;
+    public final @Unsigned int readUnsignedByte() throws IOException;
+    public final @Unsigned int readUnsignedShort() throws IOException;
 }
 
 package java.net;
