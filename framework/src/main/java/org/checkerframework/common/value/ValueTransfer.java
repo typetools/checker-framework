@@ -67,10 +67,12 @@ import org.checkerframework.javacutil.TypesUtils;
 
 public class ValueTransfer extends CFTransfer {
     protected final ValueAnnotatedTypeFactory atypefactory;
+    protected final QualifierHierarchy hierarchy;
 
     public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         atypefactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
+        hierarchy = atypefactory.getQualifierHierarchy();
     }
 
     /** Returns a range of possible lengths for an integer from a range, as casted to a String. */
@@ -246,10 +248,8 @@ public class ValueTransfer extends CFTransfer {
 
         if (atypefactory.isIntRange(value.getAnnotations())) {
             intAnno =
-                    atypefactory
-                            .getQualifierHierarchy()
-                            .findAnnotationInHierarchy(
-                                    value.getAnnotations(), atypefactory.UNKNOWNVAL);
+                    hierarchy.findAnnotationInHierarchy(
+                            value.getAnnotations(), atypefactory.UNKNOWNVAL);
             Range range = ValueAnnotatedTypeFactory.getRange(intAnno);
             return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
@@ -263,9 +263,8 @@ public class ValueTransfer extends CFTransfer {
     }
 
     private AnnotationMirror getValueAnnotation(CFValue cfValue) {
-        return atypefactory
-                .getQualifierHierarchy()
-                .findAnnotationInHierarchy(cfValue.getAnnotations(), atypefactory.UNKNOWNVAL);
+        return hierarchy.findAnnotationInHierarchy(
+                cfValue.getAnnotations(), atypefactory.UNKNOWNVAL);
     }
 
     /**
@@ -478,8 +477,7 @@ public class ValueTransfer extends CFTransfer {
         if (oldRecAnno == null) {
             combinedRecAnno = newRecAnno;
         } else {
-            combinedRecAnno =
-                    atypefactory.getQualifierHierarchy().greatestLowerBound(oldRecAnno, newRecAnno);
+            combinedRecAnno = hierarchy.greatestLowerBound(oldRecAnno, newRecAnno);
         }
         Receiver receiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiverNode);
         store.insertValue(receiver, combinedRecAnno);
@@ -1211,9 +1209,7 @@ public class ValueTransfer extends CFTransfer {
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
             // Combine the new annotations based on the results of the comparison with the existing
             // type.
-            store.insertValue(
-                    rec,
-                    atypefactory.getQualifierHierarchy().greatestLowerBound(anno, currentAnno));
+            store.insertValue(rec, hierarchy.greatestLowerBound(anno, currentAnno));
 
             if (node instanceof FieldAccessNode) {
                 refineArrayAtLengthAccess((FieldAccessNode) internal, store);
