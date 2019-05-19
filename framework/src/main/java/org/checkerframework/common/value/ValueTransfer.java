@@ -61,6 +61,7 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
@@ -1042,6 +1043,7 @@ public class ValueTransfer extends CFTransfer {
             return refineIntRanges(
                     leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
         }
+        // This is a list of all the values that the expression can evaluate to.
         List<Boolean> resultValues = new ArrayList<>();
 
         List<? extends Number> lefts = getNumericalValues(leftNode, leftAnno);
@@ -1201,12 +1203,19 @@ public class ValueTransfer extends CFTransfer {
     }
 
     private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
+        // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
         for (Node internal : splitAssignments(node)) {
-            AnnotationMirror currentAnno =
-                    atypefactory
-                            .getAnnotatedType(internal.getTree())
-                            .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+            CFValue currentValueFromStore;
+            try {
+                currentValueFromStore = store.getValue(rec);
+            } catch (Throwable t) {
+                // This receiver isn't stored in the store; e.g., FlowExpressions.Unknown.
+                // store.insertValue ignores such nodes.
+                // (TODO: Is it OK to skip the calls to refineArary... and refineString?)
+                continue;
+            }
+            AnnotationMirror currentAnno = getValueAnnotation(currentValueFromStore);
             // Combine the new annotations based on the results of the comparison with the existing
             // type.
             AnnotationMirror newAnno = hierarchy.greatestLowerBound(anno, currentAnno);
