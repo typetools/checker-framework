@@ -1222,8 +1222,8 @@ public class ValueTransfer extends CFTransfer {
             } catch (Throwable t) {
                 // This receiver isn't stored in the store; e.g., FlowExpressions.Unknown.
                 // store.insertValue ignores such nodes.
-                // (TODO: Is it OK to skip the calls to refineArary... and refineString?)
-                continue;
+                // Don't just `continue;` which would skip the calls to refine{Array,String}...
+                currentValueFromStore = null;
             }
             AnnotationMirror currentAnno =
                     (currentValueFromStore == null
