@@ -89,8 +89,8 @@ public interface Store<S extends Store<S>> {
     void visualize(CFGVisualizer<?, S, ?> viz);
 
     /**
-     * Returns a string representation of this that might be more verbose than that of
-     * {@codetoString}.
+     * Returns a string representation of this that might be more verbose than that of {@code
+     * toString}.
      *
      * @return a verbose string representation of this
      */
