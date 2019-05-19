@@ -539,7 +539,7 @@ executed.
 
 If you supply the \<-AconcurrentSemantics> command-line option, then the
 Checker Framework assumes that any field can be changed at any time.  This
-limits the amount of flow-sensitive type qualifier refinement
+limits the amount of type refinement
 (Section~\ref{type-refinement}) that the Checker Framework can do.
 
 
@@ -603,11 +603,11 @@ See Section~\ref{running} for more details.
 Sometimes, a Checker Framework warning message will mention a type you have
 not written in your program.  This is typically because a default has been
 applied where you did not write a type; see Section~\ref{defaults}.  In
-other cases, this is because flow-sensitive type refinement has given an
+other cases, this is because type refinement has given an
 expression a more specific type than you wrote or than was defaulted; see
 Section~\ref{type-refinement}.
 Note that an invocation of an impure method may cause the loss of all
-information that was determined via flow-sensitive type refinement; see
+information that was determined via type refinement; see
 Section~\ref{type-refinement-purity}.
 
 
@@ -844,7 +844,7 @@ Code that checks one variable and then uses a different variable is
 confusing and is often considered poor style.
 
 The Nullness Checker is able to verify the correctness of a small variant
-of the program, thanks to flow-sensitive type refinement
+of the program, thanks to type refinement
 (Section~\ref{type-refinement}):
 
 \begin{Verbatim}
@@ -1773,4 +1773,4 @@ third-party tools.  The Checker Framework is one such tool.
 %%  LocalWords:  NoSuchElementException binarySearch subclasses faq awarns
 %%  LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
 %%  LocalWords:  IllegalFormatException typequals typedef runtime nullaway
-%%  LocalWords:  covariance InheritedAnnotation
+%%  LocalWords:  covariance InheritedAnnotation someMethod jml jsr

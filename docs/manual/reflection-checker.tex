@@ -18,13 +18,13 @@ positive warnings when type-checking code that uses reflection.
 If you supply the \<-AresolveReflection> command-line option, the Checker
 Framework attempts to resolve reflection.  At each call to \<Method.invoke>
 or \<Constructor.newInstance>, the Checker Framework first soundly estimates
-which methods might be invoked at runtime.  When type-checking the call, the
-Checker Framework uses a library annotation that indicates the parameter
-and return types of the possibly-invoked methods.
+which methods might be invoked at run time.  When type-checking the call, the
+Checker Framework uses the library annotations for the possibly-invoked
+methods, rather than the imprecise one for \<Method.invoke>.
 
-If the estimate of invoked methods is small, these types are precise and
+If the estimate of invoked methods is small,
 the checker issues fewer false positive warnings.
-If the estimate of invoked methods is large, these types are no better than the
+If the estimate of invoked methods is large, these types may be no better than the
 conservative library annotations.
 
 Reflection resolution is disabled by default, because it increases the time
@@ -50,24 +50,85 @@ Reflection resolution does not change your source code or generated code.
 In particular, it does not replace the \<Method.invoke> or
 \<Constructor.newInstance> calls.
 
-The command-line option \<-AresolveReflection=debug> outputs verbose information about the reflection resolution process.
+The command-line option \<-AresolveReflection=debug> outputs verbose
+information about the reflection resolution process, which may be useful
+for debugging.
+
+Section~\ref{reflection-examples} gives an example of reflection resolution.
+Then,
+Section~\ref{methodval-and-classval-checkers} describes the MethodVal
+and ClassVal Checkers, which reflection resolution uses internally.
 
 
-Section~\ref{methodval-and-classval-checkers} first describes the MethodVal
-and ClassVal Checkers, which reflection resolution uses internally.  Then,
-Section~\ref{reflection-examples} gives examples of reflection resolution.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\sectionAndLabel{Reflection resolution example}{reflection-examples}
+
+Consider the following example, in which the Nullness Checker employs
+reflection resolution to avoid issuing a false positive warning.
+
+\begin{Verbatim}
+public class LocationInfo {
+    @NonNull Location getCurrentLocation() {  ...  }
+}
+
+public class Example {
+    LocationInfo privateLocation = ... ;
+    String getCurrentCity() throws Exception {
+        Method getCurrentLocationObj = LocationInfo.class.getMethod("getCurrentLocation");
+        Location currentLocation = (Location) getCurrentLocationObj.invoke(privateLocation);
+        return currentLocation.nameOfCity();
+    }
+}
+\end{Verbatim}
+
+When reflection resolution is not enabled, the Nullness Checker uses conservative
+annotations on the \<Method.invoke> method signature:
+
+\quad \<{\bfseries @Nullable} Object invoke({\bfseries @NonNull} Object recv, {\bfseries @NonNull} Object ... args)>
+
+
+This causes the Nullness Checker to issue the following warning even though
+\<currentLocation> cannot be null.
+
+\begin{Verbatim}
+error: [dereference.of.nullable] dereference of possibly-null reference currentLocation
+        return currentLocation.nameOfCity();
+               ^
+1 error
+\end{Verbatim}
+
+\begin{sloppypar}
+When reflection resolution is enabled, the MethodVal Checker infers that the \<@MethodVal> annotation for \<getCurrentLocationObj>  is:
+\end{sloppypar}
+
+\quad \<@MethodVal(className="LocationInfo", methodName="getCurrentLocation", params=0)>
+
+Based on this \<@MethodVal> annotation, the reflection resolver determines that
+the reflective method call represents a call to \<getCurrentLocation> in class
+\<LocationInfo>.
+The reflection resolver uses this information to provide the
+following precise procedure summary to the Nullness Checker, for this
+call site only:
+
+\quad \<{\bfseries @NonNull} Object invoke({\bfseries @NonNull} Object recv, {\bfseries @Nullable} Object ... args)>
+
+Using this more precise signature, the Nullness Checker does not issue the false positive warning shown above.
 
 
 \sectionAndLabel{MethodVal and ClassVal Checkers}{methodval-and-classval-checkers}
 
 The implementation of reflection resolution internally uses the ClassVal
 Checker (Section~\ref{classval-checker}) and the MethodVal Checker
-(Section~\ref{methodval-checker}).  They are very similar to the Constant
+(Section~\ref{methodval-checker}).  They are similar to the Constant
 Value Checker (Section~\ref{constant-value-checker}) in that their
 annotations estimate the run-time value of an expression.
 
-In some cases, you may need to write annotations such as \<@ClassVal>,
-\<@MethodVal>, \refqualclass{common/value/qual}{StringVal}, and \refqualclass{common/value/qual}{ArrayLen} to aid in reflection resolution.
+In some cases, you may need to write annotations such as
+\refqualclass{common/reflection/qual}{ClassVal},
+\refqualclass{common/reflection/qual}{MethodVal},
+\refqualclass{common/value/qual}{StringVal}, and
+\refqualclass{common/value/qual}{ArrayLen} to aid in reflection
+resolution.
 Often, though, these annotations can be inferred
 (Section~\ref{methodval-and-classval-inference}).
 
@@ -184,7 +245,6 @@ where CA, MA, and PA are lists of equal size and CB, MB, and PB are lists of equ
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsectionAndLabel{MethodVal and ClassVal inference}{methodval-and-classval-inference}
 
 The developer rarely has to write \<@ClassVal> or \<@MethodVal>
@@ -217,60 +277,6 @@ is adequate to resolve reflectively-invoked methods because of the subtyping
 rules for overridden methods.
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\sectionAndLabel{Reflection resolution example}{reflection-examples}
-
-Consider the following example, in which the Nullness Checker employs
-reflection resolution to avoid issuing a false positive warning.
-
-\begin{Verbatim}
-public class LocationInfo {
-    @NonNull Location getCurrentLocation() {  ...  }
-}
-
-public class Example {
-    LocationInfo privateLocation = ... ;
-    String getCurrentCity() throws Exception {
-        Method getCurrentLocationObj = LocationInfo.class.getMethod("getCurrentLocation");
-        Location currentLocation = (Location) getCurrentLocationObj.invoke(privateLocation);
-        return currentLocation.nameOfCity();
-    }
-}
-\end{Verbatim}
-
-When reflection resolution is not enabled, the Nullness Checker uses conservative
-annotations on the \<Method.invoke> method signature:
-
-\quad \<{\bfseries @Nullable} Object invoke({\bfseries @NonNull} Object recv, {\bfseries @NonNull} Object ... args)>
-
-
-This causes the Nullness Checker to issue the following warning even though
-\<currentLocation> cannot be null.
-
-\begin{Verbatim}
-error: [dereference.of.nullable] dereference of possibly-null reference currentLocation
-        return currentLocation.nameOfCity();
-               ^
-1 error
-\end{Verbatim}
-
-\begin{sloppypar}
-When reflection resolution is enabled, the MethodVal Checker infers that the \<@MethodVal> annotation for \<getCurrentLocationObj>  is:
-\end{sloppypar}
-
-\quad \<@MethodVal(className="LocationInfo", methodName="getCurrentLocation", params=0)>
-
-Based on this \<@MethodVal> annotation, the reflection resolver determines that
-the reflective method call represents a call to \<getCurrentLocation> in class
-\<LocationInfo>.
-The reflection resolver uses this information to provide the
-following precise procedure summary to the Nullness Checker, for this
-call site only:
-
-\quad \<{\bfseries @NonNull} Object invoke({\bfseries @NonNull} Object recv, {\bfseries @Nullable} Object ... args)>
-
-Using this more precise signature, the Nullness Checker does not issue the false positive warning shown above.
-
 %%  LocalWords:  java AresolveReflection newInstance MethodVal ClassVal
 %%  LocalWords:  StringVal ArrayLen jls ClassBound UnknownClass params
 %%  LocalWords:  ClassValBottom className methodName init containsKey arg
@@ -278,3 +284,4 @@ Using this more precise signature, the Nullness Checker does not issue the false
 %%  LocalWords:  methodname forName ClassLoader loadClass getClass recv
 %%  LocalWords:  getMethod paramTypes getConstructor args currentLocation
 %%  LocalWords:  getCurrentLocationObj LocationInfo getCurrentLocation
+%%  LocalWords:  methodval classval

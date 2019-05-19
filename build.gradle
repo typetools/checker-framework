@@ -75,7 +75,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '2.8.0'
+    version '2.8.1'
 
     repositories {
         mavenCentral()
@@ -283,8 +283,8 @@ task requireJavadocPrivate(type: Javadoc, group: "Documentation") {
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
     onlyIf { !(new File("${jtregHome}/lib/jtreg.jar").exists()) }
-    // TODO: ci.adaptopenjdk is currently down, use a local copy. (4/4/2019)
-//    src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
+    // TODO: ci.adoptopenjdk.net is currently down, use a local copy. (4/4/2019)
+    // src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
     src 'https://checkerframework.org/jtreg-4.2.0-tip.tar.gz'
     overwrite true
     dest new File(buildDir, 'jtreg-4.2.0-tip.tar.gz')
@@ -708,7 +708,7 @@ task releaseBuild(type: GradleBuild) {
     startParameter = new StartParameter()
     startParameter.setProjectProperties(release: true)
     // This downloads rather than builds the jdk8.jar because that's what is used in all the Travis tests.
-    tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc']
+    tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', 'checker:allJavadocJar']
 }
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
     description 'Build everything required for a release and run allTests'

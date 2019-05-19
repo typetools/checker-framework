@@ -1,5 +1,15 @@
 ---------------------------------------------------------------------------
 
+Version 2.8.1, May 1, 2019
+
+Moved text about the Purity Checker into its own chapter in the manual.
+
+Closed issues:
+660, 2030, 2223, 2240, 2244, 2375, 2407, 2410, 2415, 2420, 2421, 2446, 2447,
+2460, 2462.
+
+---------------------------------------------------------------------------
+
 Version 2.8.0, April 3, 2019
 
 Support `androidx.annotation.RecentlyNonNull` and `RecentlyNullable` (as of
@@ -23,7 +33,7 @@ Clarified the semantics of annotations on class and constructor declarations.
 See Section 25.5 "Annotations on classes and constructors" in the manual.
 
 Interface changes:
- * Added proctected methods to BaseTypeVisitor so that checkers can change the
+ * Added protected methods to BaseTypeVisitor so that checkers can change the
    checks for annotations on classes, constructor declarations, and constructor
    invocations.
  * Removed BaseTypeVisitor#checkAssignability and BaseTypeVisitor#isAssignable

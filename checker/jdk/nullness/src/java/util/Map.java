@@ -986,7 +986,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V computeIfAbsent(K key,
-            Function<? super K, ? extends V> mappingFunction) {
+            Function<? super K, ? extends @Nullable V> mappingFunction) {
         Objects.requireNonNull(mappingFunction);
         V v;
         if ((v = get(key)) == null) {
@@ -1047,7 +1047,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V computeIfPresent(K key,
-            BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+            BiFunction<? super K, ? super V, ? extends @Nullable V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         V oldValue;
         if ((oldValue = get(key)) != null) {
@@ -1123,7 +1123,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V compute(K key,
-            BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+            BiFunction<? super K, ? super @Nullable V, ? extends @Nullable V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         V oldValue = get(key);
 
@@ -1204,7 +1204,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V merge(K key, V value,
-            BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+            BiFunction<? super V, ? super V, ? extends @Nullable V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         Objects.requireNonNull(value);
         V oldValue = get(key);
