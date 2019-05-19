@@ -152,6 +152,11 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     }
 
     @Override
+    public String toStringVerbose() {
+        return toString();
+    }
+
+    @Override
     public boolean canAlias(FlowExpressions.Receiver a, FlowExpressions.Receiver b) {
         return true;
     }
