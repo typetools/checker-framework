@@ -1225,7 +1225,10 @@ public class ValueTransfer extends CFTransfer {
                 // (TODO: Is it OK to skip the calls to refineArary... and refineString?)
                 continue;
             }
-            AnnotationMirror currentAnno = getValueAnnotation(currentValueFromStore);
+            AnnotationMirror currentAnno =
+                    (currentValueFromStore == null
+                            ? atypefactory.UNKNOWNVAL
+                            : getValueAnnotation(currentValueFromStore));
             // Combine the new annotations based on the results of the comparison with the existing
             // type.
             AnnotationMirror newAnno = hierarchy.greatestLowerBound(anno, currentAnno);
