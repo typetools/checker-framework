@@ -66,10 +66,14 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** The transfer class for the Value Checker. */
 public class ValueTransfer extends CFTransfer {
+    /** The Value type factory. */
     protected final ValueAnnotatedTypeFactory atypefactory;
+    /** The Value qualifier hierarchy. */
     protected final QualifierHierarchy hierarchy;
 
+    /** Create a new ValueTransfer. */
     public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         atypefactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
@@ -263,6 +267,12 @@ public class ValueTransfer extends CFTransfer {
         return getValueAnnotation(value);
     }
 
+    /**
+     * Extract the Value Checker annotation from a CFValue object.
+     *
+     * @param cfValue a CFValue object
+     * @return the Value Checker annotation within cfValue
+     */
     private AnnotationMirror getValueAnnotation(CFValue cfValue) {
         return hierarchy.findAnnotationInHierarchy(
                 cfValue.getAnnotations(), atypefactory.UNKNOWNVAL);
