@@ -8,14 +8,23 @@ import org.checkerframework.dataflow.analysis.TransferFunction;
 public class StoreToString<A extends AbstractValue<A>, S extends Store<S>>
         extends DOTCFGVisualizer<A, S, TransferFunction<A, S>> {
 
+    /** A string to remove from the front of DOTCFGVisualizer's output. */
     private static final String PREFIX = "org.checkerframework.framework.flow.CFStore (\\n";
+    /** A string to remove from the end of DOTCFGVisualizer's output. */
     private static final String SUFFIX = "\\n)";
+    /** The system-specific line separator. */
     private static final String lineSep = System.lineSeparator();
 
+    /** Creates a new Store printer. */
     public StoreToString() {
         this.sbStore = new StringBuilder();
     }
 
+    /**
+     * Gets the string representation of the most recently-visualized store.
+     *
+     * @return the string representation of the most recently-visualized store
+     */
     public String getStoreString() {
         StringBuilder result = sbStore;
 
