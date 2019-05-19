@@ -587,8 +587,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return glbOfStringVal(a2, a1);
                 }
 
-                // Simply return BOTTOMVAL in other cases. Refine this if discover more use cases
-                // that need a more precision GLB.
+                // Simply return BOTTOMVAL in other cases. Refine this if we discover use cases
+                // that need a more precise GLB.
                 return BOTTOMVAL;
             }
         }
