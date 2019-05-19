@@ -1030,6 +1030,8 @@ public class ValueTransfer extends CFTransfer {
         LESS_THAN_EQ;
     }
 
+    // Returns a list of all the values that the boolean expression can evaluate to.
+    // Also, by side effect, updates thenStore and elseStore.
     private List<Boolean> calculateBinaryComparison(
             Node leftNode,
             CFValue leftValue,
@@ -1220,9 +1222,9 @@ public class ValueTransfer extends CFTransfer {
             try {
                 currentValueFromStore = store.getValue(rec);
             } catch (Throwable t) {
-                // This receiver isn't stored in the store; e.g., FlowExpressions.Unknown.
-                // store.insertValue ignores such nodes.
-                // (TODO: Is it OK to skip the calls to refineArary... and refineString?)
+                // The receiver `rec` isn't stored in the store; e.g., it's FlowExpressions.Unknown.
+                // store.insertValue() ignores such nodes.
+                // (TODO: Is it OK to skip the calls to refineArary... and refineString...?)
                 continue;
             }
             AnnotationMirror currentAnno =
