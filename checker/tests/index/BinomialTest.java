@@ -5,6 +5,12 @@ class BinomialTest {
 
     static final long @MinLen(1) [] factorials = {1L, 1L, 1L * 2};
 
+    public static long binomial(
+            @NonNegative @LTLengthOf("this.factorials") int n,
+            @NonNegative @LessThan("#1 + 1") int k) {
+        return factorials[k];
+    }
+
     public static void binomial0(@LTLengthOf("this.factorials") int n, @LessThan("#1") int k) {
         @LTLengthOf(value = "factorials", offset = "1") int i = k;
     }
