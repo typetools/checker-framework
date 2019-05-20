@@ -374,7 +374,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      *
      * @param varLtlQual the variable qualifier (the left-hand side of the assignment)
      * @param valueExp the expression (the right-hand side of the assignment)
-     * @returt true if the assignment is legal: varLtlQual is a supertype of the type of valueExp
+     * @return true if the assignment is legal: varLtlQual is a supertype of the type of valueExp
      */
     private boolean relaxedCommonAssignmentCheck(
             LessThanLengthOf varLtlQual, ExpressionTree valueExp) {
