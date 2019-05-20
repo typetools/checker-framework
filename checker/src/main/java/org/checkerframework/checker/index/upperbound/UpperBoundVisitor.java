@@ -29,6 +29,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
@@ -36,6 +37,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Warns about array accesses that could be too high. */
@@ -250,29 +252,26 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             AnnotatedTypeMirror varType,
             ExpressionTree valueTree,
             @CompilerMessageKey String errorKey) {
+        AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueTree);
+        commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
         if (!relaxedCommonAssignment(varType, valueTree)) {
+            commonAssignmentCheckEndDiagnostic(
+                    true,
+                    "relaxedCommonAssignment didn't override, now must call super",
+                    varType,
+                    valueType,
+                    valueTree);
             super.commonAssignmentCheck(varType, valueTree, errorKey);
         } else if (checker.hasOption("showchecks")) {
-            // Print the success message because super isn't called.
-            long valuePos = positions.getStartPosition(root, valueTree);
-            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueTree);
-            System.out.printf(
-                    " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
-                    "success: actual is subtype of expected",
-                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
-                    valueTree.getKind(),
-                    valueTree,
-                    valueType.getKind(),
-                    valueType.toString(),
-                    varType.getKind(),
-                    varType.toString());
+            commonAssignmentCheckEndDiagnostic(
+                    true, "relaxedCommonAssignment", varType, valueType, valueTree);
         }
     }
 
     /**
      * Returns whether the assignment is legal based on the relaxed assignment rules.
      *
-     * <p>The relaxed assignment rules is the following: Assuming the varType (left-hand side) is
+     * <p>The relaxed assignment rules are the following: Assuming the varType (left-hand side) is
      * less than the length of some array given some offset
      *
      * <p>1. If both the offset and the value expression (rhs) are ints known at compile time, and
@@ -286,8 +285,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * <p>3. Otherwise the assignment is only legal if the usual assignment rules are true, so this
      * method returns false.
      *
-     * <p>If the varType is less than the length of multiple arrays, then the this method only
-     * returns true if the relaxed rules above apply for each array.
+     * <p>If the varType is less than the length of multiple arrays, then this method only returns
+     * true if the relaxed rules above apply for each array.
      *
      * <p>If the varType is an array type and the value expression is an array initializer, then the
      * above rules are applied for expression in the initializer where the varType is the component
@@ -321,8 +320,32 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
+     * Fetches a receiver and an offset from a String using the passed type factory. Returns null if
+     * there is a parse exception. This wraps
+     * GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
+     *
+     * <p>This is useful for expressions like "n+1", for which {@link
+     * #getReceiverFromJavaExpressionString} returns null because the whole expression is not a
+     * receiver.
+     */
+    static Pair<Receiver, String> getReceiverAndOffsetFromJavaExpressionString(
+            String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
+
+        Pair<String, String> p = AnnotatedTypeFactory.getExpressionAndOffset(s);
+
+        Receiver rec = getReceiverFromJavaExpressionString(p.first, atypeFactory, currentPath);
+        if (rec == null) {
+            return null;
+        }
+        return Pair.of(rec, p.second);
+    }
+
+    /**
      * Fetches a receiver from a String using the passed type factory. Returns null if there is a
-     * parse exception. This wraps GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
+     * parse exception -- that is, if the string does not represent an expression for a Receiver.
+     * For example, the expression "n+1" does not represent a Receiver.
+     *
+     * <p>This wraps GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
      */
     static Receiver getReceiverFromJavaExpressionString(
             String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
@@ -356,6 +379,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     /**
      * Implements the actual check for the relaxed common assignment check. For what is permitted,
      * see {@link #relaxedCommonAssignment}.
+     *
+     * @param varLtlQual the variable qualifier (the left-hand side of the assignment)
+     * @param valueExp the expression (the right-hand side of the assignment)
+     * @return true if the assignment is legal: varLtlQual is a supertype of the type of valueExp
      */
     private boolean relaxedCommonAssignmentCheck(
             LessThanLengthOf varLtlQual, ExpressionTree valueExp) {

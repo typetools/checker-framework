@@ -662,7 +662,7 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 
 <p>
   The <a href="https://checkerframework.org/manual/#signedness-checker">Signedness
-  Checker</a> gives ensures that you do not misuse unsigned values, such as
+  Checker</a> ensures that you do not misuse unsigned values, such as
   by mixing signed and unsigned values in a computation or by performing a
   meaningless operation.
 </p>
@@ -673,12 +673,16 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 </p>
 
 <p>
-  You will need to find Java packages that use unsigned arithmetic, or
+  You will need to find Java projects that use unsigned arithmetic, or
   that <em>could</em> use unsigned arithmetic but do not.
+  When doing the case study, it is important to type-check both a library and
+  a client that uses it.  Type-checking the client will ensure that the
+  library annotations are accurate.
 </p>
 
 <p>
-  A good way to find a case study project is to search for code that uses
+  Here are some libraries that you could annotate (some are already
+  annotated for you).  You would need to find client code that uses the
   signedness-sensitive routines.
 </p>
 <ul>
@@ -709,13 +713,21 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 </ul>
 
 <p>
-  Here are some possible case studies (but you can probably find a better
-  example that uses one of the above libraries):
+  Here are some other possible case studies; you would need to determine
+  whether this code is the library, the client, or both:
 </p>
 <ul>
+  <li><a href="https://github.com/bcgit/bc-java">bc-java</a>.  This is
+  over 200 KLOC of code.</li>
+
+  <!-- Not a good choice because this is just example code, not an actively-maintained project.
+  <li>Project
+  Nayuki: <a href="https://www.nayuki.io/page/forcing-a-files-crc-to-any-value">CRC</a>, <a href="https://www.nayuki.io/page/notepadcrypt-format-decryptor-java">crypt</a>, <a href="https://www.nayuki.io/page/native-hash-functions-for-java">hash</a>.</li>
+  -->
+
+  <!-- Not a good choice because it is not under active development:
   <li><a href="https://bytonic.de/html/jake2.html">Jake2</a></li>
-  <li><a href="https://github.com/bcgit/bc-java">bc-java</a></li>
-  <li>Project Nayuki: <a href="https://www.nayuki.io/page/forcing-a-files-crc-to-any-value">CRC</a>, <a href="https://www.nayuki.io/page/notepadcrypt-format-decryptor-java">crypt</a>, <a href="https://www.nayuki.io/page/native-hash-functions-for-java">hash</a>.
+   -->
 </ul>
 
 <p>
@@ -1871,7 +1883,7 @@ This is a good way to learn about performance tuning for Java applications.
 <ul>
   <li>Profile the Checker Framework.  Run a profiler such as
   <a href="https://www.yourkit.com/java/profiler/">YourKit</a> to determine
-  which parts of the Checker Framework consume the most CPU time.
+  which parts of the Checker Framework consume the most CPU time and memory.
   </li>
 
   <li>Perhaps compare a profile of the Checker Framework against a profile
@@ -2064,9 +2076,9 @@ testing and model checking; for a reference, see
  -->
 <!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks pre
  -->
-<!--  LocalWords:  checklink subparts UnsignedBytes runtime MyClass
+<!--  LocalWords:  checklink subparts UnsignedBytes runtime MyClass jOOU
  -->
 <!--  LocalWords:  usePriorityQueue PriorityQueue queueMinPathNode
  -->
-<!--  LocalWords:  subchecker IntScope
+<!--  LocalWords:  subchecker IntScope UnsignedLong UnsignedLongs
  -->

@@ -102,14 +102,11 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
-import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ContractsUtils;
+import org.checkerframework.framework.util.*;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
 import org.checkerframework.framework.util.ContractsUtils.Contract;
 import org.checkerframework.framework.util.ContractsUtils.Postcondition;
 import org.checkerframework.framework.util.ContractsUtils.Precondition;
-import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -381,7 +378,57 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         checkExtendsImplements(classTree);
 
+        checkPolymorphicClass(classTree);
+
         super.visitClass(classTree, null);
+    }
+
+    /**
+     * Issues an error if {@code classTree} has polymorphic fields but is not annotated with
+     * {@code @HasQualifierParameter}.
+     */
+    private void checkPolymorphicClass(ClassTree classTree) {
+        List<? extends Tree> members = classTree.getMembers();
+
+        PolyTypeScanner polyScanner = new PolyTypeScanner();
+        Element classTreeElement = TreeUtils.elementFromTree(classTree);
+        if (!atypeFactory.hasQualifierParameter(classTreeElement)) {
+            for (Tree mem : members) {
+                if (mem.getKind() == Tree.Kind.VARIABLE) {
+                    AnnotatedTypeMirror fieldAnno = atypeFactory.getAnnotatedType(mem);
+                    if (polyScanner.visit(fieldAnno)) {
+                        checker.report(Result.failure("invalid.polymorphic.qualifier.use"), mem);
+                    }
+                }
+            }
+        }
+    }
+
+    /** A scanner that indicates whether any (sub-)types are annotated as polymorphic. */
+    class PolyTypeScanner extends SimpleAnnotatedTypeScanner<Boolean, Void> {
+        @Override
+        protected Boolean reduce(Boolean r1, Boolean r2) {
+            r1 = r1 == null ? false : r1;
+            r2 = r2 == null ? false : r2;
+            return r1 || r2;
+        }
+
+        @Override
+        protected Boolean defaultAction(AnnotatedTypeMirror type, Void aVoid) {
+            if (type == null) {
+                return false;
+            }
+            Set<? extends AnnotationMirror> topAnnotations =
+                    atypeFactory.getQualifierHierarchy().getTopAnnotations();
+            for (AnnotationMirror top : topAnnotations) {
+                AnnotationMirror polyAnnoInHierarchy =
+                        atypeFactory.getQualifierHierarchy().getPolymorphicAnnotation(top);
+                if (type.hasAnnotationRelaxed(polyAnnoInHierarchy)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     /**
@@ -2259,6 +2306,65 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
+     * Prints a diagnostic about entering commonAssignmentCheck, if the showchecks option was set.
+     *
+     * @param varType the annotated type of the variable
+     * @param valueType the annotated type of the value
+     * @param valueTree the location to use when reporting the error message
+     */
+    protected final void commonAssignmentCheckStartDiagnostic(
+            AnnotatedTypeMirror varType, AnnotatedTypeMirror valueType, Tree valueTree) {
+        if (checker.hasOption("showchecks")) {
+            long valuePos = positions.getStartPosition(root, valueTree);
+            System.out.printf(
+                    "%s %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+                    this.getClass().getSimpleName(),
+                    "about to test whether actual is a subtype of expected",
+                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
+                    valueTree.getKind(),
+                    valueTree,
+                    valueType.getKind(),
+                    valueType.toString(),
+                    varType.getKind(),
+                    varType.toString());
+        }
+    }
+
+    /**
+     * Prints a diagnostic about exiting commonAssignmentCheck, if the showchecks option was set.
+     *
+     * @param success whether the check succeeded or failed
+     * @param extraMessage information about why the result is what it is; may be null
+     * @param varType the annotated type of the variable
+     * @param valueType the annotated type of the value
+     * @param valueTree the location to use when reporting the error message
+     */
+    protected final void commonAssignmentCheckEndDiagnostic(
+            boolean success,
+            String extraMessage,
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree) {
+
+        if (checker.hasOption("showchecks")) {
+            long valuePos = positions.getStartPosition(root, valueTree);
+            System.out.printf(
+                    " %s%s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+                    (success
+                            ? "success: actual is subtype of expected"
+                            : "FAILURE: actual is not subtype of expected"),
+                    (extraMessage == null ? "" : " because " + extraMessage),
+                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
+                    valueTree.getKind(),
+                    valueTree,
+                    valueType.getKind(),
+                    valueType.toString(),
+                    varType.getKind(),
+                    varType.toString());
+        }
+    }
+
+    /**
      * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
      * emits an error message (through the compiler's messaging interface) if it is not valid.
      *
@@ -2274,19 +2380,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Tree valueTree,
             @CompilerMessageKey String errorKey) {
 
-        if (checker.hasOption("showchecks")) {
-            long valuePos = positions.getStartPosition(root, valueTree);
-            System.out.printf(
-                    " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
-                    "About to test whether actual is a subtype of expected",
-                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
-                    valueTree.getKind(),
-                    valueTree,
-                    valueType.getKind(),
-                    valueType.toString(),
-                    varType.getKind(),
-                    varType.toString());
-        }
+        commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
 
         boolean success = atypeFactory.getTypeHierarchy().isSubtype(valueType, varType);
 
@@ -2307,21 +2401,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
-        if (checker.hasOption("showchecks")) {
-            long valuePos = positions.getStartPosition(root, valueTree);
-            System.out.printf(
-                    " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
-                    (success
-                            ? "success: actual is subtype of expected"
-                            : "FAILURE: actual is not subtype of expected"),
-                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
-                    valueTree.getKind(),
-                    valueTree,
-                    valueType.getKind(),
-                    valueType.toString(),
-                    varType.getKind(),
-                    varType.toString());
-        }
+        commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueTree);
 
         // Use an error key only if it's overridden by a checker.
         if (!success) {
