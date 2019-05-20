@@ -3957,7 +3957,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
     static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
-    // THIS IS A HACK AND PROBABLY NOT THE RIGHT APPROACH.
     /**
      * Given an expression, split it into a subexpression and a constant offset. For example:
      *
@@ -3968,9 +3967,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * "a - 5" => <"a", "-5">
      * }</pre>
      *
+     * There are methods that can only take as input an expression that represents a Receiver. The
+     * purpose of this is to pre-process expressions to make those methods more likely to succeed.
+     *
      * @param expression and expression to remove a constant offset from
      * @return a sub-expression and a constant offset
      */
+    // TODO: generalize.  There is no reason this couldn't handle arbitrary addition and subtraction
+    // expressions, given the Index Checker's support for OffsetEquation.  That might even make its
+    // implementation simpler.
     public static Pair<String, String> getExpressionAndOffset(String expression) {
         String expr = expression;
         // Should the default value be null instead of "0"?

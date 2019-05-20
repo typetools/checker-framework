@@ -815,7 +815,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return ubQualifier;
     }
 
-    // Assumes the argument is an integer constant
+    /**
+     * Given an expression string, returns its negation.
+     *
+     * @param constantExpression a string representing an integer constant
+     * @return the negation of constantExpression
+     */
     private static String negate(String constantExpression) {
         if (constantExpression.startsWith("-")) {
             return constantExpression.substring(1);

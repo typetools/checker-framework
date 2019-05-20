@@ -320,8 +320,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     * Fetches a receiver from a String using the passed type factory. Returns null if there is a
-     * parse exception. This wraps GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
+     * Fetches a receiver and an offset from a String using the passed type factory. Returns null if
+     * there is a parse exception. This wraps
+     * GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
+     *
+     * <p>This is useful for expressions like "n+1", for which {@link
+     * #getReceiverFromJavaExpressionString} returns null because the whole expression is not a
+     * receiver.
      */
     static Pair<Receiver, String> getReceiverAndOffsetFromJavaExpressionString(
             String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
@@ -337,7 +342,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
     /**
      * Fetches a receiver from a String using the passed type factory. Returns null if there is a
-     * parse exception. This wraps GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
+     * parse exception -- that is, if the string does not represent an expression for a Receiver.
+     * For example, the expression "n+1" does not represent a Receiver.
+     *
+     * <p>This wraps GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
      */
     static Receiver getReceiverFromJavaExpressionString(
             String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
