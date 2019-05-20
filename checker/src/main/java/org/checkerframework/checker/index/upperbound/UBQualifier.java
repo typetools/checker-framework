@@ -35,10 +35,24 @@ import org.checkerframework.javacutil.Pair;
  */
 public abstract class UBQualifier {
 
+    /**
+     * Create a UBQualifier from the given annotation.
+     *
+     * @param am the annotation to turn into a UBQualifier
+     * @return a UBQualifier that represents the same information as the given annotation
+     */
     public static UBQualifier createUBQualifier(AnnotationMirror am) {
         return createUBQualifier(am, null);
     }
 
+    /**
+     * Create a UBQualifier from the given annotation, with an extra offset
+     *
+     * @param am the annotation to turn into a UBQualifier
+     * @param offset the extra offset; may be null
+     * @return a UBQualifier that represents the same information as the given annotation (plus an
+     *     optional offset)
+     */
     public static UBQualifier createUBQualifier(AnnotationMirror am, String offset) {
         if (AnnotationUtils.areSameByClass(am, UpperBoundUnknown.class)) {
             return UpperBoundUnknownQualifier.UNKNOWN;
@@ -106,6 +120,17 @@ public abstract class UBQualifier {
         return createUBQualifier(sequences, offsets, null);
     }
 
+    /**
+     * Creates an {@link UBQualifier} from the given sequences and offsets, with the given
+     * additional offset. The list of sequences may not be empty. If the offsets list is empty, then
+     * an offset of 0 is used for each sequence. If the offsets list is not empty, then it must be
+     * the same size as sequence.
+     *
+     * @param sequences non-empty list of sequences
+     * @param offsets list of offset, if empty, an offset of 0 is used
+     * @param extraOffsets offset to add to each element of offsets; may be null
+     * @return an {@link UBQualifier} for the sequences with the given offsets
+     */
     public static UBQualifier createUBQualifier(
             List<String> sequences, List<String> offsets, String extraOffset) {
         assert !sequences.isEmpty();
