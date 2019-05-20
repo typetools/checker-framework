@@ -1053,6 +1053,7 @@ public class ValueTransfer extends CFTransfer {
             return refineIntRanges(
                     leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
         }
+        // This is a list of all the values that the expression can evaluate to.
         List<Boolean> resultValues = new ArrayList<>();
 
         List<? extends Number> lefts = getNumericalValues(leftNode, leftAnno);
@@ -1212,6 +1213,7 @@ public class ValueTransfer extends CFTransfer {
     }
 
     private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
+        // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
         for (Node internal : splitAssignments(node)) {
             AnnotationMirror currentAnno =
                     atypefactory
