@@ -25,6 +25,12 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 class TypeFromMemberVisitor extends TypeFromTreeVisitor {
 
+    /**
+     * Adds explicit annotations on type parameter declarations an their upper bounds to uses of
+     * type variables.
+     */
+    private final TypeVarAnnotator typeVarAnnotator = new TypeVarAnnotator();
+
     @Override
     public AnnotatedTypeMirror visitVariable(VariableTree node, AnnotatedTypeFactory f) {
         // Create the ATM and add non-primary annotations
@@ -75,7 +81,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         result.setElement(elt);
 
         ElementAnnotationApplier.apply(result, elt, f);
-        new TypeVarAnnotator().visit(result, f);
+        typeVarAnnotator.visit(result, f);
 
         return result;
     }
@@ -83,6 +89,13 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     /**
      * Annotates uses of type variables with annotation written explicitly on the type parameter
      * declaration and/or its upper bound.
+     *
+     * <p>For all uses, except those in a method declaration, the type of the type variable is
+     * computed using {@link TypeFromTree#fromTypeTree(AnnotatedTypeFactory, Tree)}. {@link
+     * TypeFromTypeTreeVisitor#forTypeVariable(AnnotatedTypeMirror, AnnotatedTypeFactory)} is called
+     * for all uses of type variables and that method looks up the annotations on type parameters
+     * and type parameter upper bounds from the tree. Types in method signatures aren't created
+     * using TypeFromTree#fromTypeTree, so it needs special handling.
      */
     static class TypeVarAnnotator extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
         @Override
