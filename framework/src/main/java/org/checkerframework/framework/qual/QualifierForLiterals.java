@@ -12,10 +12,10 @@ public @interface QualifierForLiterals {
     /**
      * @return {@link LiteralKind}s for which an annotation should be implicitly added. For example,
      *     if {@code @MyAnno} is meta-annotated with
-     *     {@code @QualifierForLiterals(literals={LiteralKind.STRING})}, then a literal {@code
-     *     String} constant such as {@code "hello world"} has type {@code @MyAnno String}, but other
-     *     occurrences of {@code String} in the source code are not affected. For String literals,
-     *     also see the {@link #stringPatterns} annotation field.
+     *     {@code @QualifierForLiterals(LiteralKind.STRING)}, then a literal {@code String} constant
+     *     such as {@code "hello world"} has type {@code @MyAnno String}, but other occurrences of
+     *     {@code String} in the source code are not affected. For String literals, also see the
+     *     {@link #stringPatterns} annotation field.
      */
     LiteralKind[] value() default {};
 
