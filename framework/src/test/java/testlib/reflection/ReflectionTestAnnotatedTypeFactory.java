@@ -21,16 +21,14 @@ public final class ReflectionTestAnnotatedTypeFactory extends BaseAnnotatedTypeF
     public ReflectionTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
-        AnnotationMirror bottom = AnnotationBuilder.fromClass(elements, ReflectBottom.class);
-        addTypeNameImplicit(java.lang.Void.class, bottom);
     }
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
         AnnotationMirror bottom = AnnotationBuilder.fromClass(elements, ReflectBottom.class);
-        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, bottom);
         implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.INT_LITERAL, bottom);
+        implicitsTreeAnnotator.addStandardImplicits();
 
         return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
     }
