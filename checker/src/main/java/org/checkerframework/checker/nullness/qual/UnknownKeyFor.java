@@ -7,7 +7,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.QualifierForLiterals;
@@ -26,8 +25,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
-@DefaultFor({TypeUseLocation.LOWER_BOUND})
-@ImplicitFor(typeNames = Void.class)
+@DefaultFor(value = TypeUseLocation.LOWER_BOUND, typeNames = Void.class)
 @QualifierForLiterals(LiteralKind.NULL)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

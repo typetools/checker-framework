@@ -70,7 +70,6 @@ import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
@@ -83,7 +82,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultForUseTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.IrrelevantTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
@@ -105,8 +104,8 @@ import org.checkerframework.javacutil.UserError;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
- * inference, qualifier polymorphism, implicit annotations via {@link ImplicitFor}, and
- * user-specified defaults via {@link DefaultQualifier}.
+ * inference, qualifier polymorphism, default annotations via {@link DefaultFor}, and user-specified
+ * defaults via {@link DefaultQualifier}.
  */
 public abstract class GenericAnnotatedTypeFactory<
                 Value extends CFAbstractValue<Value>,
@@ -125,7 +124,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected TypeAnnotator typeAnnotator;
 
     /** for use in addTypeImplicits */
-    private ImplicitsTypeAnnotator implicitsTypeAnnotator;
+    private DefaultForUseTypeAnnotator defaultForUseTypeAnnotator;
 
     /** to annotate types based on the given un-annotated types */
     protected TreeAnnotator treeAnnotator;
@@ -342,8 +341,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
-     * that adds annotations to a type based on the content of the type itself.
+     * Returns a {@link DefaultForUseTypeAnnotator} that adds annotations to a type based on the
+     * content of the type itself.
      *
      * <p>Subclass may override this method. The default type annotator is a {@link
      * ListTypeAnnotator} of the following:
@@ -352,7 +351,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@link
      *       RelevantJavaTypes} annotation on the checker.
      *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards.
-     *   <li>{@link ImplicitsTypeAnnotator}: Adds annotations based on {@link ImplicitFor}
+     *   <li>{@link DefaultForUseTypeAnnotator}: Adds annotations based on {@link DefaultFor}
      *       meta-annotations.
      * </ol>
      *
@@ -370,14 +369,13 @@ public abstract class GenericAnnotatedTypeFactory<
                             this, getQualifierHierarchy().getTopAnnotations(), relevantClasses));
         }
         typeAnnotators.add(new PropagationTypeAnnotator(this));
-        implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this).addStandardImplicits();
-
-        typeAnnotators.add(implicitsTypeAnnotator);
+        defaultForUseTypeAnnotator = new DefaultForUseTypeAnnotator(this);
+        typeAnnotators.add(defaultForUseTypeAnnotator);
         return new ListTypeAnnotator(typeAnnotators);
     }
 
     protected void addTypeNameImplicit(Class<?> clazz, AnnotationMirror implicitAnno) {
-        implicitsTypeAnnotator.addTypeName(clazz, implicitAnno);
+        defaultForUseTypeAnnotator.addTypeName(clazz, implicitAnno);
     }
 
     /**

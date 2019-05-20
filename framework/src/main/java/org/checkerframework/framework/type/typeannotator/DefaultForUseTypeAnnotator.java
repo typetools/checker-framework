@@ -1,18 +1,17 @@
 package org.checkerframework.framework.type.typeannotator;
 
-import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -20,19 +19,19 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Adds annotations to a type based on the contents of a type. By default, this class honors the
- * {@link ImplicitFor} annotation and applies implicit annotations specified by {@link ImplicitFor}
- * for any type whose visitor is not overridden or does not call {@code super}; it is designed to be
- * invoked from {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Element,
- * AnnotatedTypeMirror)} and {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Tree,
- * AnnotatedTypeMirror)}.
+ * Adds annotations to a type based on the use of a type. This class applies annotations specified
+ * by {@link DefaultFor}; it is designed to be used in a {@link
+ * org.checkerframework.framework.type.treeannotator.ListTreeAnnotator} constructed in {@link
+ * GenericAnnotatedTypeFactory#createTreeAnnotator()}
  *
- * <p>This class takes care of two of the attributes of {@link ImplicitFor}; the others are handled
- * in {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator}.
+ * <p>{@link DefaultForUseTypeAnnotator} traverses types deeply.
  *
- * @see org.checkerframework.framework.type.treeannotator.TreeAnnotator
+ * <p>This class takes care of two of the attributes of {@link DefaultFor}; the others are handled
+ * in {@link org.checkerframework.framework.util.defaults.QualifierDefaults}.
+ *
+ * @see org.checkerframework.framework.type.treeannotator.ListTreeAnnotator
  */
-public class ImplicitsTypeAnnotator extends TypeAnnotator {
+public class DefaultForUseTypeAnnotator extends TypeAnnotator {
 
     private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
     private final Map<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>> typeClasses;
@@ -42,37 +41,36 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
     // private final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * Creates a {@link ImplicitsTypeAnnotator} from the given checker, using that checker to
+     * Creates a {@link DefaultForUseTypeAnnotator} from the given checker, using that checker to
      * determine the annotations that are in the type hierarchy.
      */
-    public ImplicitsTypeAnnotator(AnnotatedTypeFactory typeFactory) {
+    public DefaultForUseTypeAnnotator(AnnotatedTypeFactory typeFactory) {
         super(typeFactory);
         this.typeKinds = new EnumMap<>(TypeKind.class);
         this.typeClasses = new HashMap<>();
         this.typeNames = new HashMap<>();
 
         this.qualHierarchy = typeFactory.getQualifierHierarchy();
-        // this.atypeFactory = atypeFactory;
 
         // Get type qualifiers from the checker.
         Set<Class<? extends Annotation>> quals = typeFactory.getSupportedTypeQualifiers();
 
-        // For each qualifier, read the @ImplicitFor annotation and put its type
-        // classes and kinds into maps.
+        // For each qualifier, read the @DefaultFor annotation and put its type classes and kinds
+        // into maps.
         for (Class<? extends Annotation> qual : quals) {
-            ImplicitFor implicit = qual.getAnnotation(ImplicitFor.class);
-            if (implicit == null) {
+            DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
+            if (defaultFor == null) {
                 continue;
             }
 
             AnnotationMirror theQual =
                     AnnotationBuilder.fromClass(typeFactory.getElementUtils(), qual);
-            for (org.checkerframework.framework.qual.TypeKind typeKind : implicit.types()) {
+            for (org.checkerframework.framework.qual.TypeKind typeKind : defaultFor.types()) {
                 TypeKind mappedTk = mapTypeKinds(typeKind);
                 addTypeKind(mappedTk, theQual);
             }
 
-            for (Class<?> typeName : implicit.typeNames()) {
+            for (Class<?> typeName : defaultFor.typeNames()) {
                 addTypeName(typeName, theQual);
             }
         }
@@ -166,12 +164,12 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
     }
 
     /**
-     * Adds standard implicit rules. Currently sets Void to bottom if no other implicit is set for
+     * Adds standard rules. Currently, sets Void to bottom if no other implicit is set for
      * Void. Also, see {@link LiteralTreeAnnotator#addStandardLiteralQualifiers()}.
      *
      * @return this
      */
-    public ImplicitsTypeAnnotator addStandardImplicits() {
+    public DefaultForUseTypeAnnotator addStandardDefaults() {
         if (!typeNames.containsKey(Void.class.getCanonicalName())) {
             for (AnnotationMirror bottom : qualHierarchy.getBottomAnnotations()) {
                 addTypeName(Void.class, bottom);

@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.typeannotator.DefaultForUseTypeAnnotator;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -23,7 +24,7 @@ import org.checkerframework.javacutil.Pair;
  * the binary operation.
  *
  * <p>{@link PropagationTreeAnnotator} is generally run first by {@link ListTreeAnnotator} since the
- * trees it handles are not usually targets of {@code @ImplicitFor}.
+ * trees it handles are not usually targets of {@code @DefaultFor}.
  *
  * <p>{@link PropagationTreeAnnotator} does not traverse trees deeply by default.
  *
@@ -34,8 +35,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     private final QualifierHierarchy qualHierarchy;
 
     /**
-     * Creates a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
-     * from the given checker, using that checker's type hierarchy.
+     * Creates a {@link DefaultForUseTypeAnnotator} from the given checker, using that checker's
+     * type hierarchy.
      */
     public PropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);
