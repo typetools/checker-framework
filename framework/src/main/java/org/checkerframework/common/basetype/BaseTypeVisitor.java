@@ -1907,7 +1907,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (atypeFactory.hasQualifierParameter(castType)) {
             if (!isInvariantTypeCastSafe(castType, exprType)) {
                 checker.report(
-                        Result.warning(
+                        Result.failure(
                                 "invariant.cast", exprType.toString(true), castType.toString(true)),
                         node);
             }

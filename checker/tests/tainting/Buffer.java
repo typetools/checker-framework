@@ -63,16 +63,16 @@ class Use {
 
     void casts(@Untainted Object untainted, @Tainted Object tainted) {
         @Untainted Buffer b1 = (@Untainted Buffer) untainted; // ok
-        // :: warning: (invariant.cast)
+        // :: error: (invariant.cast)
         @Untainted Buffer b2 = (@Untainted Buffer) tainted;
 
-        // :: warning: (invariant.cast)
+        // :: error: (invariant.cast)
         @Tainted Buffer b3 = (@Tainted Buffer) untainted; // error
-        // :: warning: (invariant.cast)
+        // :: error: (invariant.cast)
         @Tainted Buffer b4 = (@Tainted Buffer) tainted; // error
 
         @Untainted Buffer b5 = (Buffer) untainted; // ok
-        // :: warning: (invariant.cast)
+        // :: error: (invariant.cast)
         @Tainted Buffer b6 = (Buffer) tainted;
     }
 
