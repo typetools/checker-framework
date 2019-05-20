@@ -18,6 +18,7 @@ import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -116,7 +117,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
 
     /**
      * Adds standard implicit rules. Currently sets the null literal to bottom if no other implicit
-     * is set for null literals.
+     * is set for null literals. Also, see {@link ImplicitsTypeAnnotator#addStandardImplicits()}.
      *
      * @return this
      */
