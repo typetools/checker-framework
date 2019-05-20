@@ -3957,6 +3957,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
     static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
+    // THIS IS A HACK AND PROBABLY NOT THE RIGHT APPROACH.
     /**
      * Given an expression, split it into a subexpression and a constant offset. For example:
      *
