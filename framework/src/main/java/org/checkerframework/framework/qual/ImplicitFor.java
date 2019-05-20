@@ -24,16 +24,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface ImplicitFor {
 
-    /**
-     * @return {@link LiteralKind}s for which an annotation should be implicitly added. For example,
-     *     if {@code @MyAnno} is meta-annotated with
-     *     {@code @ImplicitFor(literals={LiteralKind.STRING})}, then a literal {@code String}
-     *     constant such as {@code "hello world"} has type {@code @MyAnno String}, but other
-     *     occurrences of {@code String} in the source code are not affected. For String literals,
-     *     also see the {@link #stringPatterns} annotation field.
-     */
-    LiteralKind[] literals() default {};
-
     /** @return {@link TypeKind}s of types for which an annotation should be implicitly added */
     TypeKind[] types() default {};
 
@@ -50,13 +40,6 @@ public @interface ImplicitFor {
      *     {@code null} literal.
      */
     Class<?>[] typeNames() default {};
-
-    /**
-     * @return regular expressions of string literals for which an annotation should be implicitly
-     *     added. If multiple patterns match, then the string literal is given the greatest lower
-     *     bound of all the matches.
-     */
-    String[] stringPatterns() default {};
 
     // TODO: do we need an option to provide implicits for locations
     // specified by a TypeUseLocation (which should then be renamed)?

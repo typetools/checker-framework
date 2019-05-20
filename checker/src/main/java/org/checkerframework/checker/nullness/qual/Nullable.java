@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
@@ -25,7 +26,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @SubtypeOf({})
-@ImplicitFor(literals = LiteralKind.NULL, typeNames = Void.class)
+@QualifierForLiterals(LiteralKind.NULL)
+@ImplicitFor(typeNames = Void.class)
 @DefaultInUncheckedCodeFor({TypeUseLocation.RETURN, TypeUseLocation.UPPER_BOUND})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
