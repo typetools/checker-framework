@@ -818,7 +818,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * Produces the receiver and offset associated with an expression. For instance, "n+1" has no
-     * associated Receiver, but it this produces a pair of a Receiver (for n) and an offset ("1").
+     * associated Receiver, but this method produces a pair of a Receiver (for "n") and an offset
+     * ("1").
      *
      * @param expression a Java expression, possibly with a constant offset
      * @param currentPath location at which expression is evaluated

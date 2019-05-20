@@ -821,10 +821,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param constantExpression a string representing an integer constant
      * @return the negation of constantExpression
      */
+    // Also see Subsequence.negateString which is similar but more sophisticated.
     private static String negate(String constantExpression) {
         if (constantExpression.startsWith("-")) {
             return constantExpression.substring(1);
         } else {
+            if (constantExpression.startsWith("+")) {
+                constantExpression = constantExpression.substring(1);
+            }
             return "-" + constantExpression;
         }
     }

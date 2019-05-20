@@ -3970,15 +3970,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * There are methods that can only take as input an expression that represents a Receiver. The
      * purpose of this is to pre-process expressions to make those methods more likely to succeed.
      *
-     * @param expression and expression to remove a constant offset from
-     * @return a sub-expression and a constant offset
+     * @param expression an expression to remove a constant offset from
+     * @return a sub-expression and a constant offset. The offset is "0" if this routine is unable
+     *     to splite the given expression
      */
     // TODO: generalize.  There is no reason this couldn't handle arbitrary addition and subtraction
     // expressions, given the Index Checker's support for OffsetEquation.  That might even make its
     // implementation simpler.
     public static Pair<String, String> getExpressionAndOffset(String expression) {
         String expr = expression;
-        // Should the default value be null instead of "0"?
         String offset = "0";
 
         // Is this normalization necessary?
@@ -3996,12 +3996,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             offset = mPlus.group(1);
         } else if (mMinus.find()) {
             expr = expr.substring(0, mMinus.start());
-            offset = mMinus.group(1);
-            if (offset.startsWith("-")) {
-                offset = offset.substring(1);
-            } else {
-                offset = "-" + offset;
-            }
+            offset = UpperBoundAnnotatedTypeFactory.negate(mMinus.group(1));
         }
 
         if (offset.equals("-0")) {
