@@ -24,7 +24,10 @@
  */
 
 package java.util;
+
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.*;
+
 import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
@@ -3346,7 +3349,7 @@ public class Collections {
      * @return an immutable list containing only the specified object.
      * @since 1.3
      */
-    public static <T> List<T> singletonList(T o) {
+    public static <T> @MinLen(1) List<T> singletonList(T o) {
         return new SingletonList<>(o);
     }
 
