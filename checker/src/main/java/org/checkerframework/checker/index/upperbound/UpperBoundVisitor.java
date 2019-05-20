@@ -29,6 +29,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
@@ -36,6 +37,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Warns about array accesses that could be too high. */
@@ -318,8 +320,32 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
+     * Fetches a receiver and an offset from a String using the passed type factory. Returns null if
+     * there is a parse exception. This wraps
+     * GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
+     *
+     * <p>This is useful for expressions like "n+1", for which {@link
+     * #getReceiverFromJavaExpressionString} returns null because the whole expression is not a
+     * receiver.
+     */
+    static Pair<Receiver, String> getReceiverAndOffsetFromJavaExpressionString(
+            String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
+
+        Pair<String, String> p = AnnotatedTypeFactory.getExpressionAndOffset(s);
+
+        Receiver rec = getReceiverFromJavaExpressionString(p.first, atypeFactory, currentPath);
+        if (rec == null) {
+            return null;
+        }
+        return Pair.of(rec, p.second);
+    }
+
+    /**
      * Fetches a receiver from a String using the passed type factory. Returns null if there is a
-     * parse exception. This wraps GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
+     * parse exception -- that is, if the string does not represent an expression for a Receiver.
+     * For example, the expression "n+1" does not represent a Receiver.
+     *
+     * <p>This wraps GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
      */
     static Receiver getReceiverFromJavaExpressionString(
             String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
