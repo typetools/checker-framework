@@ -61,16 +61,23 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** The transfer class for the Value Checker. */
 public class ValueTransfer extends CFTransfer {
+    /** The Value type factory. */
     protected final ValueAnnotatedTypeFactory atypefactory;
+    /** The Value qualifier hierarchy. */
+    protected final QualifierHierarchy hierarchy;
 
+    /** Create a new ValueTransfer. */
     public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         atypefactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
+        hierarchy = atypefactory.getQualifierHierarchy();
     }
 
     /** Returns a range of possible lengths for an integer from a range, as casted to a String. */
@@ -246,10 +253,8 @@ public class ValueTransfer extends CFTransfer {
 
         if (atypefactory.isIntRange(value.getAnnotations())) {
             intAnno =
-                    atypefactory
-                            .getQualifierHierarchy()
-                            .findAnnotationInHierarchy(
-                                    value.getAnnotations(), atypefactory.UNKNOWNVAL);
+                    hierarchy.findAnnotationInHierarchy(
+                            value.getAnnotations(), atypefactory.UNKNOWNVAL);
             Range range = ValueAnnotatedTypeFactory.getRange(intAnno);
             return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
@@ -262,10 +267,15 @@ public class ValueTransfer extends CFTransfer {
         return getValueAnnotation(value);
     }
 
+    /**
+     * Extract the Value Checker annotation from a CFValue object.
+     *
+     * @param cfValue a CFValue object
+     * @return the Value Checker annotation within cfValue
+     */
     private AnnotationMirror getValueAnnotation(CFValue cfValue) {
-        return atypefactory
-                .getQualifierHierarchy()
-                .findAnnotationInHierarchy(cfValue.getAnnotations(), atypefactory.UNKNOWNVAL);
+        return hierarchy.findAnnotationInHierarchy(
+                cfValue.getAnnotations(), atypefactory.UNKNOWNVAL);
     }
 
     /**
@@ -478,8 +488,7 @@ public class ValueTransfer extends CFTransfer {
         if (oldRecAnno == null) {
             combinedRecAnno = newRecAnno;
         } else {
-            combinedRecAnno =
-                    atypefactory.getQualifierHierarchy().greatestLowerBound(oldRecAnno, newRecAnno);
+            combinedRecAnno = hierarchy.greatestLowerBound(oldRecAnno, newRecAnno);
         }
         Receiver receiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiverNode);
         store.insertValue(receiver, combinedRecAnno);
@@ -1044,6 +1053,7 @@ public class ValueTransfer extends CFTransfer {
             return refineIntRanges(
                     leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
         }
+        // This is a list of all the values that the expression can evaluate to.
         List<Boolean> resultValues = new ArrayList<>();
 
         List<? extends Number> lefts = getNumericalValues(leftNode, leftAnno);
@@ -1203,6 +1213,7 @@ public class ValueTransfer extends CFTransfer {
     }
 
     private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
+        // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
         for (Node internal : splitAssignments(node)) {
             AnnotationMirror currentAnno =
                     atypefactory
@@ -1211,9 +1222,8 @@ public class ValueTransfer extends CFTransfer {
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
             // Combine the new annotations based on the results of the comparison with the existing
             // type.
-            store.insertValue(
-                    rec,
-                    atypefactory.getQualifierHierarchy().greatestLowerBound(anno, currentAnno));
+            AnnotationMirror newAnno = hierarchy.greatestLowerBound(anno, currentAnno);
+            store.insertValue(rec, newAnno);
 
             if (node instanceof FieldAccessNode) {
                 refineArrayAtLengthAccess((FieldAccessNode) internal, store);
