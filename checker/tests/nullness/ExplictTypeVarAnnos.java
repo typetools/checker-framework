@@ -1,3 +1,4 @@
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class ExplictTypeVarAnnos<E extends @Nullable Object, @Nullable F> {
@@ -38,4 +39,9 @@ public class ExplictTypeVarAnnos<E extends @Nullable Object, @Nullable F> {
     public Consumer<E> getField() {
         return field;
     }
+
+    static class A<Q extends @NonNull Object> {}
+
+    // :: error: (type.argument.type.incompatible)
+    static class B<S> extends A<S> {}
 }
