@@ -179,6 +179,13 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         return result;
     }
 
+    /**
+     * Returns an AnnotatedTypeMirror for uses of type variables with annotations written explicitly
+     * on the type parameter declaration and/or its upper bound.
+     *
+     * <p>Note for type variable uses in method signatures, explicit annotations on the declaration
+     * are added by {@link TypeFromMemberVisitor#typeVarAnnotator}.
+     */
     private AnnotatedTypeMirror forTypeVariable(AnnotatedTypeMirror type, AnnotatedTypeFactory f) {
         if (type.getKind() != TypeKind.TYPEVAR) {
             throw new BugInCF(
