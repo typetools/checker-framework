@@ -250,22 +250,19 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             AnnotatedTypeMirror varType,
             ExpressionTree valueTree,
             @CompilerMessageKey String errorKey) {
+        AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueTree);
+        commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
         if (!relaxedCommonAssignment(varType, valueTree)) {
+            commonAssignmentCheckEndDiagnostic(
+                    true,
+                    "relaxedCommonAssignment didn't override, now must call super",
+                    varType,
+                    valueType,
+                    valueTree);
             super.commonAssignmentCheck(varType, valueTree, errorKey);
         } else if (checker.hasOption("showchecks")) {
-            // Print the success message because super isn't called.
-            long valuePos = positions.getStartPosition(root, valueTree);
-            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueTree);
-            System.out.printf(
-                    " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
-                    "success: actual is subtype of expected",
-                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
-                    valueTree.getKind(),
-                    valueTree,
-                    valueType.getKind(),
-                    valueType.toString(),
-                    varType.getKind(),
-                    varType.toString());
+            commonAssignmentCheckEndDiagnostic(
+                    true, "relaxedCommonAssignment", varType, valueType, valueTree);
         }
     }
 
