@@ -31,9 +31,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -72,21 +70,23 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    public final AnnotationMirror UNKNOWN;
-    private final AnnotationMirror BOTTOM;
-    private final AnnotationMirror POLY;
+    /** The @{@link SameLenUnknown} annotation. */
+    public final AnnotationMirror UNKNOWN =
+            AnnotationBuilder.fromClass(elements, SameLenUnknown.class);
+    /** The @{@link SameLenBottom} annotation. */
+    private final AnnotationMirror BOTTOM =
+            AnnotationBuilder.fromClass(elements, SameLenBottom.class);
+    /** The @{@link PolySameLen} annotation. */
+    private final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolySameLen.class);
 
-    private final IndexMethodIdentifier imf;
+    private final IndexMethodIdentifier imf = new IndexMethodIdentifier(this);
 
+    /** Create a new SameLenAnnotatedTypeFactory. */
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN = AnnotationBuilder.fromClass(elements, SameLenUnknown.class);
-        BOTTOM = AnnotationBuilder.fromClass(elements, SameLenBottom.class);
-        POLY = AnnotationBuilder.fromClass(elements, PolySameLen.class);
+
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyLength.class, POLY);
-
-        imf = new IndexMethodIdentifier(this);
 
         this.postInit();
     }
@@ -271,11 +271,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                super.createTreeAnnotator(),
-                new SameLenTreeAnnotator(this),
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this));
+        return new ListTreeAnnotator(super.createTreeAnnotator(), new SameLenTreeAnnotator(this));
     }
 
     /**

@@ -12,7 +12,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -114,18 +113,5 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
             type.addMissingAnnotations(annotations);
         }
         return super.scan(type, aVoid);
-    }
-
-    @Override
-    public Void visitExecutable(AnnotatedExecutableType t, Void p) {
-        // super skips the receiver
-        scan(t.getReturnType(), p);
-        if (t.getReceiverType() != null) {
-            scanAndReduce(t.getReceiverType(), p, null);
-        }
-        scanAndReduce(t.getParameterTypes(), p, null);
-        scanAndReduce(t.getThrownTypes(), p, null);
-        scanAndReduce(t.getTypeVariables(), p, null);
-        return null;
     }
 }

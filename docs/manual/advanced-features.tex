@@ -184,7 +184,7 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 
 An unannotated
 Java type is treated as if it had a default annotation.
-A type system designer, or an end-user programmer, can control the defaulting.
+Both the type system designer and an end-user programmer can control the defaulting.
 Defaulting never applies to uses of type variables, even if they do not
 have an explicit type annotation.
 
@@ -329,6 +329,12 @@ Cast and instanceof types
 are given the same type as their argument expression.  This has the same
 effect as if they were given the
 top type and then flow-sensitively refined to the type of their argument.
+However, note that programmer-written type qualifiers are \emph{not}
+refined.
+% Programmer-written type qualifiers could be refined, but it has never
+% been a priority.  The code that defaults casts in this manner predates
+% the dataflow framework and we never reimplemented casts in the dataflow
+% framework.
 
 \item
 Implicit upper bounds are defaulted to top to allow them to be instantiated
@@ -558,12 +564,12 @@ misbehave at run time.
 
 \sectionAndLabel{Annotations on classes and constructors}{annotations-on-classes-and-constructors}
 
-\subsectionAndLabel{Annotations on class declarations}{annotations-on-class-declarations}
+\subsectionAndLabel{Annotations on type declarations}{annotations-on-type-declarations}
 
 % TODO: use a more realistic example.
 
-Writing an annotation on a class declaration makes that annotation implicit
-for all uses of the class (see Section~\ref{effective-qualifier}).
+Writing an annotation on a type (class or interface) declaration makes that annotation implicit
+for all uses of the type (see Section~\ref{effective-qualifier}).
 That is, the annotation is an upper bound for all uses of the type.
 
 Consider the type hierarchy \code{@A :> @B :> @C} and the following

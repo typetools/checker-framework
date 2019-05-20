@@ -230,6 +230,7 @@ public abstract class UBQualifier {
     }
 
     public static class LessThanLengthOf extends UBQualifier {
+        // This maps from sequence name to offset
         private final Map<String, Set<OffsetEquation>> map;
 
         private LessThanLengthOf(Map<String, Set<OffsetEquation>> map) {
