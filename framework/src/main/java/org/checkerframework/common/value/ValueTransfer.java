@@ -1217,7 +1217,7 @@ public class ValueTransfer extends CFTransfer {
         for (Node internal : splitAssignments(node)) {
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
             if (!store.canInsertReceiver(rec)) {
-                // TODO: This skips the calls to refineArary... and refineString.  Is that OK?
+                // TODO: This skips the calls to refineArray... and refineString... .  Is that OK?
                 continue;
             }
             CFValue currentValueFromStore = store.getValue(rec);
