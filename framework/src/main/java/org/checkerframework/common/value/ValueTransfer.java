@@ -1216,15 +1216,11 @@ public class ValueTransfer extends CFTransfer {
         // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
         for (Node internal : splitAssignments(node)) {
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
-            CFValue currentValueFromStore;
-            try {
-                currentValueFromStore = store.getValue(rec);
-            } catch (Throwable t) {
-                // This receiver isn't stored in the store; e.g., FlowExpressions.Unknown.
-                // store.insertValue ignores such nodes.
-                // (TODO: Is it OK to skip the calls to refineArary... and refineString?)
+            if (!store.canInsertReceiver(rec)) {
+                // TODO: This skips the calls to refineArary... and refineString.  Is that OK?
                 continue;
             }
+            CFValue currentValueFromStore = store.getValue(rec);
             AnnotationMirror currentAnno =
                     (currentValueFromStore == null
                             ? atypefactory.UNKNOWNVAL
