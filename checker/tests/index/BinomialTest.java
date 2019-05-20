@@ -16,7 +16,7 @@ class BinomialTest {
     }
 
     public static void binomial0Error(@LTLengthOf("this.factorials") int n, @LessThan("#1") int k) {
-        // :: error
+        // :: error: (assignment.type.incompatible)
         @LTLengthOf(value = "factorials", offset = "2") int i = k;
     }
 
