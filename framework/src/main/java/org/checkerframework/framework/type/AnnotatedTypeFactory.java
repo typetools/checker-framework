@@ -38,6 +38,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -45,7 +47,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.IntersectionType;
@@ -1708,31 +1709,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
 
             return super.visitDeclared(type, p);
-        }
-
-        private final Map<TypeParameterElement, AnnotatedTypeVariable> visited = new HashMap<>();
-
-        @Override
-        public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory p) {
-            TypeParameterElement tpelt =
-                    (TypeParameterElement) type.getUnderlyingType().asElement();
-            if (!visited.containsKey(tpelt)) {
-                visited.put(tpelt, type);
-                if (type.getAnnotations().isEmpty()
-                        && type.getUpperBound().getAnnotations().isEmpty()
-                        && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
-                    ElementAnnotationApplier.apply(type, tpelt, p);
-                }
-                super.visitTypeVariable(type, p);
-                visited.remove(tpelt);
-            }
-            return null;
-        }
-
-        @Override
-        public void reset() {
-            visited.clear();
-            super.reset();
         }
     }
 
@@ -3994,5 +3970,78 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Accessor for the {@link CFContext}. */
     public CFContext getContext() {
         return checker;
+    }
+
+    static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
+    static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
+
+    /**
+     * Given an expression, split it into a subexpression and a constant offset. For example:
+     *
+     * <pre>{@code
+     * "a" => <"a", "0">
+     * "a + 5" => <"a", "5">
+     * "a + -5" => <"a", "-5">
+     * "a - 5" => <"a", "-5">
+     * }</pre>
+     *
+     * There are methods that can only take as input an expression that represents a Receiver. The
+     * purpose of this is to pre-process expressions to make those methods more likely to succeed.
+     *
+     * @param expression an expression to remove a constant offset from
+     * @return a sub-expression and a constant offset. The offset is "0" if this routine is unable
+     *     to splite the given expression
+     */
+    // TODO: generalize.  There is no reason this couldn't handle arbitrary addition and subtraction
+    // expressions, given the Index Checker's support for OffsetEquation.  That might even make its
+    // implementation simpler.
+    public static Pair<String, String> getExpressionAndOffset(String expression) {
+        String expr = expression;
+        String offset = "0";
+
+        // Is this normalization necessary?
+        // Remove surrrounding whitespace.
+        expr = expr.trim();
+        // Remove surrounding parentheses.
+        if (expr.matches("^\\([^()]\\)")) {
+            expr = expr.substring(1, expr.length() - 2).trim();
+        }
+
+        Matcher mPlus = plusConstant.matcher(expr);
+        Matcher mMinus = minusConstant.matcher(expr);
+        if (mPlus.find()) {
+            expr = expr.substring(0, mPlus.start());
+            offset = mPlus.group(1);
+        } else if (mMinus.find()) {
+            expr = expr.substring(0, mMinus.start());
+            offset = negateConstant(mMinus.group(1));
+        }
+
+        if (offset.equals("-0")) {
+            offset = "0";
+        }
+
+        expr = expr.intern();
+        offset = offset.intern();
+
+        return Pair.of(expr, offset);
+    }
+
+    /**
+     * Given an expression string, returns its negation.
+     *
+     * @param constantExpression a string representing an integer constant
+     * @return the negation of constantExpression
+     */
+    // Also see Subsequence.negateString which is similar but more sophisticated.
+    public static String negateConstant(String constantExpression) {
+        if (constantExpression.startsWith("-")) {
+            return constantExpression.substring(1);
+        } else {
+            if (constantExpression.startsWith("+")) {
+                constantExpression = constantExpression.substring(1);
+            }
+            return "-" + constantExpression;
+        }
     }
 }
