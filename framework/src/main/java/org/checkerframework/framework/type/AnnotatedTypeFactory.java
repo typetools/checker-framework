@@ -3984,7 +3984,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         Matcher mPlus = plusConstant.matcher(expr);
-        Matcher mMinus = plusConstant.matcher(expr);
+        Matcher mMinus = minusConstant.matcher(expr);
         if (mPlus.find()) {
             expr = expr.substring(0, mPlus.start());
             offset = mPlus.group(1);
