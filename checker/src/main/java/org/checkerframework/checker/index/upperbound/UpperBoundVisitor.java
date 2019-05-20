@@ -272,7 +272,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     /**
      * Returns whether the assignment is legal based on the relaxed assignment rules.
      *
-     * <p>The relaxed assignment rules is the following: Assuming the varType (left-hand side) is
+     * <p>The relaxed assignment rules are the following: Assuming the varType (left-hand side) is
      * less than the length of some array given some offset
      *
      * <p>1. If both the offset and the value expression (rhs) are ints known at compile time, and
@@ -286,8 +286,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * <p>3. Otherwise the assignment is only legal if the usual assignment rules are true, so this
      * method returns false.
      *
-     * <p>If the varType is less than the length of multiple arrays, then the this method only
-     * returns true if the relaxed rules above apply for each array.
+     * <p>If the varType is less than the length of multiple arrays, then this method only returns
+     * true if the relaxed rules above apply for each array.
      *
      * <p>If the varType is an array type and the value expression is an array initializer, then the
      * above rules are applied for expression in the initializer where the varType is the component
@@ -356,6 +356,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     /**
      * Implements the actual check for the relaxed common assignment check. For what is permitted,
      * see {@link #relaxedCommonAssignment}.
+     *
+     * @param varLtlQual the variable qualifier (the left-hand side of the assignment)
+     * @param valueExp the expression (the right-hand side of the assignment)
+     * @return true if the assignment is legal: varLtlQual is a supertype of the type of valueExp
      */
     private boolean relaxedCommonAssignmentCheck(
             LessThanLengthOf varLtlQual, ExpressionTree valueExp) {
