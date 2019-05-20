@@ -59,7 +59,6 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
-import org.checkerframework.checker.index.upperbound.UpperBoundAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -3997,7 +3996,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             offset = mPlus.group(1);
         } else if (mMinus.find()) {
             expr = expr.substring(0, mMinus.start());
-            offset = UpperBoundAnnotatedTypeFactory.negate(mMinus.group(1));
+            offset = negateConstant(mMinus.group(1));
         }
 
         if (offset.equals("-0")) {
@@ -4008,5 +4007,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         offset = offset.intern();
 
         return Pair.of(expr, offset);
+    }
+
+    /**
+     * Given an expression string, returns its negation.
+     *
+     * @param constantExpression a string representing an integer constant
+     * @return the negation of constantExpression
+     */
+    // Also see Subsequence.negateString which is similar but more sophisticated.
+    public static String negateConstant(String constantExpression) {
+        if (constantExpression.startsWith("-")) {
+            return constantExpression.substring(1);
+        } else {
+            if (constantExpression.startsWith("+")) {
+                constantExpression = constantExpression.substring(1);
+            }
+            return "-" + constantExpression;
+        }
     }
 }

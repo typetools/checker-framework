@@ -804,7 +804,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         UBQualifier.createUBQualifier(
                                 qualHierarchy.findAnnotationInHierarchy(
                                         value.getAnnotations(), UNKNOWN),
-                                negate(offset));
+                                AnnotatedTypeFactory.negateConstant(offset));
                 if (ubQualifier == null) {
                     ubQualifier = newUBQ;
                 } else {
@@ -813,23 +813,5 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
         return ubQualifier;
-    }
-
-    /**
-     * Given an expression string, returns its negation.
-     *
-     * @param constantExpression a string representing an integer constant
-     * @return the negation of constantExpression
-     */
-    // Also see Subsequence.negateString which is similar but more sophisticated.
-    private static String negate(String constantExpression) {
-        if (constantExpression.startsWith("-")) {
-            return constantExpression.substring(1);
-        } else {
-            if (constantExpression.startsWith("+")) {
-                constantExpression = constantExpression.substring(1);
-            }
-            return "-" + constantExpression;
-        }
     }
 }
