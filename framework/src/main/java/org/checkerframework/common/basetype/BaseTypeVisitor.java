@@ -102,14 +102,11 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
-import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ContractsUtils;
+import org.checkerframework.framework.util.*;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
 import org.checkerframework.framework.util.ContractsUtils.Contract;
 import org.checkerframework.framework.util.ContractsUtils.Postcondition;
 import org.checkerframework.framework.util.ContractsUtils.Precondition;
-import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -381,7 +378,57 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         checkExtendsImplements(classTree);
 
+        checkPolymorphicClass(classTree);
+
         super.visitClass(classTree, null);
+    }
+
+    /**
+     * Issues an error if {@code classTree} has polymorphic fields but is not annotated with
+     * {@code @HasQualifierParameter}.
+     */
+    private void checkPolymorphicClass(ClassTree classTree) {
+        List<? extends Tree> members = classTree.getMembers();
+
+        PolyTypeScanner polyScanner = new PolyTypeScanner();
+        Element classTreeElement = TreeUtils.elementFromTree(classTree);
+        if (!atypeFactory.hasQualifierParameter(classTreeElement)) {
+            for (Tree mem : members) {
+                if (mem.getKind() == Tree.Kind.VARIABLE) {
+                    AnnotatedTypeMirror fieldAnno = atypeFactory.getAnnotatedType(mem);
+                    if (polyScanner.visit(fieldAnno)) {
+                        checker.report(Result.failure("invalid.polymorphic.qualifier.use"), mem);
+                    }
+                }
+            }
+        }
+    }
+
+    /** A scanner that indicates whether any (sub-)types are annotated as polymorphic. */
+    class PolyTypeScanner extends SimpleAnnotatedTypeScanner<Boolean, Void> {
+        @Override
+        protected Boolean reduce(Boolean r1, Boolean r2) {
+            r1 = r1 == null ? false : r1;
+            r2 = r2 == null ? false : r2;
+            return r1 || r2;
+        }
+
+        @Override
+        protected Boolean defaultAction(AnnotatedTypeMirror type, Void aVoid) {
+            if (type == null) {
+                return false;
+            }
+            Set<? extends AnnotationMirror> topAnnotations =
+                    atypeFactory.getQualifierHierarchy().getTopAnnotations();
+            for (AnnotationMirror top : topAnnotations) {
+                AnnotationMirror polyAnnoInHierarchy =
+                        atypeFactory.getQualifierHierarchy().getPolymorphicAnnotation(top);
+                if (type.hasAnnotationRelaxed(polyAnnoInHierarchy)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     /**
