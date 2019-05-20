@@ -11,6 +11,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUnchecke
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
@@ -28,7 +29,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Documented
 @DefaultQualifierInHierarchy
 @DefaultFor({TypeUseLocation.LOWER_BOUND})
-@ImplicitFor(literals = LiteralKind.NULL, typeNames = Void.class)
+@ImplicitFor(typeNames = Void.class)
+@QualifierForLiterals(LiteralKind.NULL)
 @DefaultQualifierInHierarchyInUncheckedCode
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND})
 @Retention(RetentionPolicy.RUNTIME)
