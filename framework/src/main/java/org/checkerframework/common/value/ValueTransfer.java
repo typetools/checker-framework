@@ -1215,11 +1215,18 @@ public class ValueTransfer extends CFTransfer {
     private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
         // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
         for (Node internal : splitAssignments(node)) {
-            AnnotationMirror currentAnno =
-                    atypefactory
-                            .getAnnotatedType(internal.getTree())
-                            .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+            CFValue currentValueFromStore;
+            if (store.canInsertReceiver(rec)) {
+                currentValueFromStore = store.getValue(rec);
+            } else {
+                // Don't just `continue;` which would skip the calls to refine{Array,String}...
+                currentValueFromStore = null;
+            }
+            AnnotationMirror currentAnno =
+                    (currentValueFromStore == null
+                            ? atypefactory.UNKNOWNVAL
+                            : getValueAnnotation(currentValueFromStore));
             // Combine the new annotations based on the results of the comparison with the existing
             // type.
             AnnotationMirror newAnno = hierarchy.greatestLowerBound(anno, currentAnno);
