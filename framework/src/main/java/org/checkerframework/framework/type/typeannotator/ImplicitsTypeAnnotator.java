@@ -163,9 +163,10 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
 
         return super.scan(type, p);
     }
+
     /**
-     * Adds standard implicit rules. Currently sets the Void to bottom if no other implicit is set
-     * for Void.
+     * Adds standard implicit rules. Currently sets Void to bottom if no other implicit is set for
+     * Void.
      *
      * @return this
      */

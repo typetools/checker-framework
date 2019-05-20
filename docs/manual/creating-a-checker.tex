@@ -712,7 +712,7 @@ qualifier.
 \<null> is the bottom type. Because the only value with type \<Void> is \<null>, uses of the type \<Void> are also bottom.
 (The only exception
 is if the type system has special treatment for \<null> values, as the
-Nullness Checker does. In that case, add the meta annotation \<@ImplicitFor(literals = LiteralKind.NULL, typeNames = Void.class)>
+Nullness Checker does. In that case, add the meta-annotation \<@ImplicitFor(literals = LiteralKind.NULL, typeNames = Void.class)>
 to the correct qualifier.)
 This legal code
 will not type-check unless \<null> has the bottom type:
