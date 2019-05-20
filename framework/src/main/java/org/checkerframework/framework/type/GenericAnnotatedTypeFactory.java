@@ -817,6 +817,21 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Produces the receiver and offset associated with expression on currentPath.
+     *
+     * @param expression a Java expression, possibly with a constant offset
+     * @param currentPath location at which expression is evaluated
+     * @return receiver and offset for the given expression
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     */
+    public Pair<Receiver, String> getReceiverAndOffsetFromJavaExpressionString(
+            String expression, TreePath currentPath) throws FlowExpressionParseException {
+        Pair<String, String> p = getExpressionAndOffset(expression);
+        Receiver r = getReceiverFromJavaExpressionString(p.first, currentPath);
+        return Pair.of(r, p.second);
+    }
+
+    /**
      * Returns the annotation mirror from dataflow for {@code expression}.
      *
      * <p>This will output a different annotation than {@link

@@ -71,6 +71,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -757,14 +758,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<String> lessThanExpressions =
                 getLessThanAnnotatedTypeFactory().getLessThanExpressions(tree);
         System.out.printf(
-                "fromLessThan(%s, %s): lessThanExpressions=%s%n",
-                tree, treePath, lessThanExpressions);
+                "fromLessThan(%s, <path>): lessThanExpressions=%s%n", tree, lessThanExpressions);
         if (lessThanExpressions == null) {
             return null;
         }
         UBQualifier ubQualifier = fromLessThanOrEqual(tree, treePath, lessThanExpressions);
         System.out.printf("fLT: ubQualifier=%s%n", ubQualifier);
         if (ubQualifier != null) {
+            System.out.printf("fLT: returning=%s%n", ubQualifier.plusOffset(1));
             return ubQualifier.plusOffset(1);
         }
         return null;
@@ -782,15 +783,25 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private UBQualifier fromLessThanOrEqual(
             Tree tree, TreePath treePath, List<String> lessThanExpressions) {
+        System.out.printf("fromLessThanOrEqual(%s, <path>, %s)%n", tree, lessThanExpressions);
         UBQualifier ubQualifier = null;
         for (String expression : lessThanExpressions) {
-            FlowExpressions.Receiver receiver;
+            Pair<FlowExpressions.Receiver, String> receiverAndOffset;
             try {
-                receiver = getReceiverFromJavaExpressionString(expression, treePath);
+                receiverAndOffset =
+                        getReceiverAndOffsetFromJavaExpressionString(expression, treePath);
             } catch (FlowExpressionParseException e) {
-                receiver = null;
+                receiverAndOffset = null;
+                System.out.printf("flTOE: exception => receiverAndOffset=%s%n", receiverAndOffset);
             }
-            if (receiver == null || !CFAbstractStore.canInsertReceiver(receiver)) {
+            System.out.printf("flTOE: receiverAndOffset=%s%n", receiverAndOffset);
+            if (receiverAndOffset == null) {
+                continue;
+            }
+            FlowExpressions.Receiver receiver = receiverAndOffset.first;
+            String offset = receiverAndOffset.second;
+
+            if (!CFAbstractStore.canInsertReceiver(receiver)) {
                 continue;
             }
             CFStore store = getStoreBefore(tree);
@@ -799,7 +810,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 UBQualifier newUBQ =
                         UBQualifier.createUBQualifier(
                                 qualHierarchy.findAnnotationInHierarchy(
-                                        value.getAnnotations(), UNKNOWN));
+                                        value.getAnnotations(), UNKNOWN),
+                                negate(offset));
                 if (ubQualifier == null) {
                     ubQualifier = newUBQ;
                 } else {
@@ -809,5 +821,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         System.out.printf("fromLessThanOrEqual => %s%n", ubQualifier);
         return ubQualifier;
+    }
+
+    // Assumes the argument is an integer constant
+    private static String negate(String constantExpression) {
+        if (constantExpression.startsWith("-")) {
+            return constantExpression.substring(1);
+        } else {
+            return "-" + constantExpression;
+        }
     }
 }

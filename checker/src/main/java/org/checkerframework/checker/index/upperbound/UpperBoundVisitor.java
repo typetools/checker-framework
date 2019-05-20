@@ -29,6 +29,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
@@ -36,6 +37,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Warns about array accesses that could be too high. */
@@ -313,12 +315,40 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     return false;
                 }
             }
+            System.out.printf("rCA true (4)%n");
             return true;
         }
 
         UBQualifier qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
-        return qualifier.isLessThanLengthQualifier()
-                && relaxedCommonAssignmentCheck((LessThanLengthOf) qualifier, valueExp);
+        System.out.printf(
+                "rCA: qualifier=%s, isLessThanLengthQualifier()=%s%n",
+                qualifier, qualifier.isLessThanLengthQualifier());
+        boolean result =
+                qualifier.isLessThanLengthQualifier()
+                        && relaxedCommonAssignmentCheck((LessThanLengthOf) qualifier, valueExp);
+        System.out.printf(
+                "rCA(%s, %s) made recursive call, then => %s%n", varType, valueExp, result);
+        return result;
+    }
+
+    /**
+     * Fetches a receiver from a String using the passed type factory. Returns null if there is a
+     * parse exception. This wraps GenericAnnotatedTypeFactory#getReceiverFromJavaExpressionString.
+     */
+    static Pair<Receiver, String> getReceiverAndOffsetFromJavaExpressionString(
+            String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
+
+        Pair<String, String> p = AnnotatedTypeFactory.getExpressionAndOffset(s);
+        System.out.printf(
+                "UBV.getReceiverAndOffsetFromJavaExpressionString(%s): pair = < %s , %s >%n",
+                p.first, p.second);
+
+        Receiver rec = getReceiverFromJavaExpressionString(p.first, atypeFactory, currentPath);
+        if (rec == null) {
+            System.out.printf("UBV.getReceiverAndOffsetFromJavaExpressionString(%s) => null%n", s);
+            return null;
+        }
+        return Pair.of(rec, p.second);
     }
 
     /**
@@ -357,6 +387,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     /**
      * Implements the actual check for the relaxed common assignment check. For what is permitted,
      * see {@link #relaxedCommonAssignment}.
+     *
+     * @param varLtlQual the variable qualifier (the left-hand side of the assignment)
+     * @param valueExp the expression (the right-hand side of the assignment)
+     * @returt true if the assignment is legal: varLtlQual is a supertype of the type of valueExp
      */
     private boolean relaxedCommonAssignmentCheck(
             LessThanLengthOf varLtlQual, ExpressionTree valueExp) {
