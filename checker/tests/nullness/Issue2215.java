@@ -1,5 +1,6 @@
 // Test Case for Issue2215
 // https://github.com/typetools/checker-framework/issues/2215
+// @skip-test
 
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
