@@ -13,4 +13,9 @@ public class Refine {
         @Untainted Refine untaintedLocal = local;
         @Untainted Refine untaintedLocal2 = untaintedLocal;
     }
+
+    void methodNull() {
+        @Tainted Refine local = null;
+        @Untainted Refine untaintedLocal = local;
+    }
 }
