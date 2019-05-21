@@ -3481,7 +3481,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param element Element to check
      * @return true if the element is a type declaration that has a qualifier parameter
      */
-    public boolean hasQualifierParameter(Element element) {
+    public boolean hasQualifierParameter(@Nullable Element element) {
+        if (element == null) {
+            return false;
+        }
         if (!ElementUtils.isTypeDeclaration(element)) {
             return false;
         }
