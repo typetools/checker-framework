@@ -1,5 +1,11 @@
 import org.checkerframework.checker.tainting.qual.*;
 
+package java.lang;
+
+class Object {
+    @Untainted Object();
+}
+
 package java.sql;
 
 interface Statement {

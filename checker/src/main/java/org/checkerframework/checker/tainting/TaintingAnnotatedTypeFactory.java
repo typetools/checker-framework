@@ -9,7 +9,6 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
@@ -44,7 +43,7 @@ public class TaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         typeAnnotators.add(new PropagationTypeAnnotator(this));
         ImplicitsTypeAnnotator implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
         typeAnnotators.add(implicitsTypeAnnotator);
-        implicitsTypeAnnotator.addTypeClass(AnnotatedArrayType.class, UNTAINTED);
+        //        implicitsTypeAnnotator.addTypeClass(AnnotatedArrayType.class, UNTAINTED);
         return new ListTypeAnnotator(typeAnnotators);
     }
 }
