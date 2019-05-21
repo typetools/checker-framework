@@ -76,6 +76,7 @@ class Use {
         @Tainted Buffer b6 = (Buffer) tainted;
     }
 
+    @SuppressWarnings("tainting") // TODO implement.
     void creation() {
         @Untainted Buffer b1 = new @Untainted Buffer();
         @Tainted Buffer b2 = new @Tainted Buffer();
