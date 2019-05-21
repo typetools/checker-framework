@@ -45,14 +45,14 @@ class Constructors {
 
         // :: error: (assignment.type.incompatible)
         @H1S2 @H2S1 Constructors e1 = new Constructors(p);
-        // :: error: (assignment.type.incompatible) :: error: (constructor.invocation.invalid)
+        // :: error: (assignment.type.incompatible) :: warning: (cast.unsafe.constructor.invocation)
         @H1S2 @H2S1 Constructors e2 = new @H1S2 @H2S2 Constructors(p);
-        // :: error: (assignment.type.incompatible) :: error: (constructor.invocation.invalid)
+        // :: error: (assignment.type.incompatible) :: warning: (cast.unsafe.constructor.invocation)
         @H1S2 @H2S1 Constructors e3 = new @H1S2 Constructors(p);
 
-        // :: error: (constructor.invocation.invalid)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @H1S2 @H2S2 Constructors e4 = new @H1S2 @H2S2 Constructors(p);
-        // :: error: (constructor.invocation.invalid)
+        // :: warning: (cast.unsafe.constructor.invocation)
         @H1S2 @H2S2 Constructors e5 = new @H1S2 Constructors(p);
     }
 
