@@ -104,7 +104,7 @@ public class PushbackReader extends FilterReader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         synchronized (lock) {
             ensureOpen();
             try {
@@ -172,7 +172,7 @@ public class PushbackReader extends FilterReader {
      * @exception  IOException  If there is insufficient room in the pushback
      *                          buffer, or if some other I/O error occurs
      */
-    public void unread(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void unread(char cbuf[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         synchronized (lock) {
             ensureOpen();
             if (len > pos)
