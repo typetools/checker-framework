@@ -642,6 +642,9 @@ public final class TypesUtils {
      */
     public static TypeElement getTypeElement(TypeMirror type) {
         Element element = ((Type) type).asElement();
+        if (element == null) {
+            return null;
+        }
         switch (element.getKind()) {
             case ANNOTATION_TYPE:
             case CLASS:

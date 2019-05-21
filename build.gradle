@@ -122,6 +122,7 @@ allprojects {
             options.deprecation = true
             options.compilerArgs += [
                     '-g',
+                    '-Werror',
                     // To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
                     "-Xlint:-options",
                     "-Xlint",

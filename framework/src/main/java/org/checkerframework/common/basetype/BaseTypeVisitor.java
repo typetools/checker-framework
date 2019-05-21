@@ -378,7 +378,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         checkExtendsImplements(classTree);
 
-        checkPolymorphicClass(classTree);
+        checkQualifierParam(classTree);
 
         super.visitClass(classTree, null);
     }
@@ -386,19 +386,37 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Issues an error if {@code classTree} has polymorphic fields but is not annotated with
      * {@code @HasQualifierParameter}.
+     *
+     * <p>Issues an error if (@code classTree} extends or implements a class/interface that has a
+     * qualifier parameter, but this class does not.
      */
-    private void checkPolymorphicClass(ClassTree classTree) {
-        List<? extends Tree> members = classTree.getMembers();
+    private void checkQualifierParam(ClassTree classTree) {
+        TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
+        if (atypeFactory.hasQualifierParameter(classElement)) {
+            return;
+        }
 
+        Element extendsEle = TypesUtils.getTypeElement(classElement.getSuperclass());
+        if (extendsEle != null && atypeFactory.hasQualifierParameter(extendsEle)) {
+            checker.report(Result.failure("missing.has.qual.param"), classTree);
+        } else {
+
+            for (TypeMirror interfaceType : classElement.getInterfaces()) {
+                Element interfaceEle = TypesUtils.getTypeElement(interfaceType);
+                if (atypeFactory.hasQualifierParameter(interfaceEle)) {
+                    checker.report(Result.failure("missing.has.qual.param"), classTree);
+                    break; // only issue error once
+                }
+            }
+        }
+
+        // Check for poly fields.
         PolyTypeScanner polyScanner = new PolyTypeScanner();
-        Element classTreeElement = TreeUtils.elementFromTree(classTree);
-        if (!atypeFactory.hasQualifierParameter(classTreeElement)) {
-            for (Tree mem : members) {
-                if (mem.getKind() == Tree.Kind.VARIABLE) {
-                    AnnotatedTypeMirror fieldAnno = atypeFactory.getAnnotatedType(mem);
-                    if (polyScanner.visit(fieldAnno)) {
-                        checker.report(Result.failure("invalid.polymorphic.qualifier.use"), mem);
-                    }
+        for (Tree mem : classTree.getMembers()) {
+            if (mem.getKind() == Tree.Kind.VARIABLE) {
+                AnnotatedTypeMirror fieldAnno = atypeFactory.getAnnotatedType(mem);
+                if (polyScanner.visit(fieldAnno)) {
+                    checker.report(Result.failure("invalid.polymorphic.qualifier.use"), mem);
                 }
             }
         }
