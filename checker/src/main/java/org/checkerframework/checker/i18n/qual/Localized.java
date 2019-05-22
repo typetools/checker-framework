@@ -17,18 +17,13 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @SubtypeOf(UnknownLocalized.class)
 @QualifierForLiterals({
-    /* All integer literals */
+    // All literals except chars and strings, which may need to be localized.
+    // (null is bottom by default.)
     LiteralKind.INT,
     LiteralKind.LONG,
     LiteralKind.FLOAT,
     LiteralKind.DOUBLE,
-    LiteralKind.BOOLEAN,
-
-    /* null should be the bottom type */
-    LiteralKind.NULL
-
-    // CHAR_LITERAL,
-    // STRING_LITERAL,
+    LiteralKind.BOOLEAN
 })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
