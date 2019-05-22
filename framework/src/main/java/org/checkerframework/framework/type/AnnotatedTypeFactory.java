@@ -47,6 +47,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.IntersectionType;
@@ -397,6 +398,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final ExecutableElement objectGetClass;
 
     /**
+     * Adds explicit annotations on type parameter declarations an their upper bounds to uses of
+     * type variables.
+     */
+    protected final TypeVarAnnotator typeVarAnnotator;
+
+    /**
      * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
      * root. (These parameters are required so that the factory may conduct the appropriate
      * annotation-gathering analyses on certain tree types.)
@@ -462,6 +469,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
 
         objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, processingEnv);
+        this.typeVarAnnotator = new TypeVarAnnotator();
     }
 
     /**
@@ -1180,6 +1188,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 && (typesFromStubFiles == null || !typesFromStubFiles.containsKey(elt))) {
             type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
             ElementAnnotationApplier.apply(type, elt, this);
+            typeVarAnnotator.visit(type);
 
             if (elt instanceof ExecutableElement || elt instanceof VariableElement) {
                 annotateInheritedFromClass(type);
@@ -3998,6 +4007,32 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 constantExpression = constantExpression.substring(1);
             }
             return "-" + constantExpression;
+        }
+    }
+
+    /**
+     * Annotates uses of type variables with annotation written explicitly on the type parameter
+     * declaration and/or its upper bound.
+     *
+     * <p>For all uses, except those in a method declaration or from an element, the type of the
+     * type variable is computed using {@link TypeFromTree#fromTypeTree(AnnotatedTypeFactory,
+     * Tree)}. {@link TypeFromTypeTreeVisitor#forTypeVariable(AnnotatedTypeMirror,
+     * AnnotatedTypeFactory)} is called for all uses of type variables and that method looks up the
+     * annotations on type parameters and type parameter upper bounds from the tree. Types in method
+     * signatures aren't created using TypeFromTree#fromTypeTree, so it needs special handling.
+     */
+    class TypeVarAnnotator extends AnnotatedTypeScanner<Void, Void> {
+        @Override
+        public Void visitTypeVariable(AnnotatedTypeVariable type, Void p) {
+            TypeParameterElement tpelt =
+                    (TypeParameterElement) type.getUnderlyingType().asElement();
+
+            if (type.getAnnotations().isEmpty()
+                    && type.getUpperBound().getAnnotations().isEmpty()
+                    && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
+                ElementAnnotationApplier.apply(type, tpelt, AnnotatedTypeFactory.this);
+            }
+            return super.visitTypeVariable(type, p);
         }
     }
 }
