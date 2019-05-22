@@ -334,7 +334,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected TreeAnnotator createTreeAnnotator() {
         List<TreeAnnotator> treeAnnotators = new ArrayList<>();
         treeAnnotators.add(new PropagationTreeAnnotator(this));
-        treeAnnotators.add(new LiteralTreeAnnotator(this).addStandardDefaults());
+        treeAnnotators.add(new LiteralTreeAnnotator(this).addStandardLiteralQualifiers());
         if (dependentTypesHelper != null) {
             treeAnnotators.add(dependentTypesHelper.createDependentTypesTreeAnnotator(this));
         }

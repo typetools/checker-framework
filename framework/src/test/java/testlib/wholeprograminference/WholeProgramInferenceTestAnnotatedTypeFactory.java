@@ -64,7 +64,7 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
     public TreeAnnotator createTreeAnnotator() {
         LiteralTreeAnnotator literalTreeAnnotator = new LiteralTreeAnnotator(this);
         literalTreeAnnotator.addLiteralKind(LiteralKind.INT, BOTTOM);
-        literalTreeAnnotator.addStandardDefaults();
+        literalTreeAnnotator.addStandardLiteralQualifiers();
 
         return new ListTreeAnnotator(new PropagationTreeAnnotator(this), literalTreeAnnotator);
     }

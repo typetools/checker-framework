@@ -26,15 +26,13 @@ import org.checkerframework.javacutil.BugInCF;
 /**
  * Adds annotations to a type based on the contents of a tree. This class applies annotations
  * specified by {@link org.checkerframework.framework.qual.QualifierForLiterals}; it is designed to
- * be add to a {@link ListTreeAnnotator} via {@link
+ * be added to a {@link ListTreeAnnotator} via {@link
  * GenericAnnotatedTypeFactory#createTreeAnnotator()}
  *
  * <p>{@link LiteralTreeAnnotator} does not traverse trees deeply.
  *
  * @see TreeAnnotator
  */
-//  TODO: we currently don't check that any attribute is set, that is, a qualifier could be
-// annotated as @QualifierForLiterals(), which might be misleading.
 public class LiteralTreeAnnotator extends TreeAnnotator {
 
     /* The following three fields are mappings from a particular AST kind,
@@ -102,16 +100,21 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
             for (String pattern : forLiterals.stringPatterns()) {
                 addStringPattern(pattern, theQual);
             }
+
+            if (forLiterals.value().length == 0 && forLiterals.stringPatterns().length == 0) {
+                addLiteralKind(LiteralKind.ALL, theQual);
+            }
         }
     }
 
     /**
-     * Adds standard defaults. Currently sets the null literal to bottom if no other default is set
-     * for null literals. Also, see {@link ImplicitsTypeAnnotator#addStandardImplicits()}.
+     * Adds standard qualifiers for literals. Currently sets the null literal to bottom if no other
+     * default is set for null literals. Also, see {@link
+     * ImplicitsTypeAnnotator#addStandardImplicits()}.
      *
      * @return this
      */
-    public LiteralTreeAnnotator addStandardDefaults() {
+    public LiteralTreeAnnotator addStandardLiteralQualifiers() {
         // Set null to bottom if no other implicit is given.
         if (!treeKinds.containsKey(Kind.NULL_LITERAL)) {
             for (AnnotationMirror bottom : qualHierarchy.getBottomAnnotations()) {

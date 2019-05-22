@@ -167,7 +167,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
 
     /**
      * Adds standard implicit rules. Currently sets Void to bottom if no other implicit is set for
-     * Void. Also, see {@link LiteralTreeAnnotator#addStandardDefaults()}.
+     * Void. Also, see {@link LiteralTreeAnnotator#addStandardLiteralQualifiers()}.
      *
      * @return this
      */

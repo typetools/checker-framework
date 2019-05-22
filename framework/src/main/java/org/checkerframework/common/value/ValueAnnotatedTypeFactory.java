@@ -979,7 +979,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 };
         return new ListTreeAnnotator(
                 new ValueTreeAnnotator(this),
-                new LiteralTreeAnnotator(this).addStandardDefaults(),
+                new LiteralTreeAnnotator(this).addStandardLiteralQualifiers(),
                 arrayCreation);
     }
 

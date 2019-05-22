@@ -244,7 +244,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // Don't call super.createTreeAnnotator because the PropagationTreeAnnotator types binary
         // expressions as lub.
         return new ListTreeAnnotator(
-                new LiteralTreeAnnotator(this).addStandardDefaults(),
+                new LiteralTreeAnnotator(this).addStandardLiteralQualifiers(),
                 new RegexTreeAnnotator(this),
                 new RegexPropagationTreeAnnotator(this));
     }

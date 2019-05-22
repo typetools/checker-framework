@@ -29,7 +29,7 @@ public final class ReflectionTestAnnotatedTypeFactory extends BaseAnnotatedTypeF
         LiteralTreeAnnotator literalTreeAnnotator = new LiteralTreeAnnotator(this);
         AnnotationMirror bottom = AnnotationBuilder.fromClass(elements, ReflectBottom.class);
         literalTreeAnnotator.addLiteralKind(LiteralKind.INT, bottom);
-        literalTreeAnnotator.addStandardDefaults();
+        literalTreeAnnotator.addStandardLiteralQualifiers();
 
         return new ListTreeAnnotator(new PropagationTreeAnnotator(this), literalTreeAnnotator);
     }
