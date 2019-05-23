@@ -92,7 +92,7 @@ SONATYPE_DROPPING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-
 USER = pwd.getpwuid(os.geteuid())[0]
 
 # Per-user directory for the temporary files created by the release process
-TMP_DIR = "/scratch/" + USER + "/jsr308-release"
+TMP_DIR = "/tmp/" + USER + "/jsr308-release"
 
 # Location this and other release scripts are contained in
 SCRIPTS_DIR = TMP_DIR + "/checker-framework/docs/developer/release"
@@ -161,6 +161,16 @@ DATAFLOW_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+".jar")
 DATAFLOW_SOURCE_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-source.jar")
 DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-javadoc.jar")
 
+FRAMEWORK_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework", "build", "libs")
+FRAMEWORK_BINARY = os.path.join(FRAMEWORK_DIST_DIR, "framework-"+CF_VERSION+".jar")
+FRAMEWORK_SOURCE_JAR = os.path.join(FRAMEWORK_DIST_DIR, "framework-"+CF_VERSION+"-source.jar")
+FRAMEWORK_JAVADOC_JAR = os.path.join(FRAMEWORK_DIST_DIR, "framework-"+CF_VERSION+"-javadoc.jar")
+
+FRAMEWORKALL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework", "dist")
+FRAMEWORKALL_BINARY = os.path.join(FRAMEWORKALL_DIST_DIR, "framework.jar")
+FRAMEWORKALL_SOURCE_JAR = os.path.join(FRAMEWORKALL_DIST_DIR, "framework-source.jar")
+FRAMEWORKALL_JAVADOC_JAR = os.path.join(FRAMEWORKALL_DIST_DIR, "framework-javadoc.jar")
+
 FRAMEWORKTEST_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework-test", "build", "libs")
 FRAMEWORKTEST_BINARY = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+".jar")
 FRAMEWORKTEST_SOURCE_JAR = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+"-source.jar")
@@ -199,6 +209,8 @@ CHECKER_QUAL_ANDROID_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualA
 JDK8_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml')
 JAVACUTIL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml')
 DATAFLOW_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowReleasePom.xml')
+FRAMEWORK_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'frameworkReleasePom.xml')
+FRAMEWORKALL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'frameworkAllReleasePom.xml')
 FRAMEWORKTEST_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'frameworktestReleasePom.xml')
 
 BUILD_REPOS = (CHECKER_FRAMEWORK, ANNO_TOOLS)
