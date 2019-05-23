@@ -29,7 +29,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.checkerframework</groupId>
+            <groupId>io.github.eisop</groupId>
             <artifactId>checker-qual</artifactId>
             <version><!-- checker-framework-version -->3.0.0-b1<!-- /checker-framework-version --></version>
             <type>jar</type>

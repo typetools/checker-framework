@@ -15,7 +15,7 @@
         write your own compiler plug-ins.
     </description>
 
-    <groupId>org.checkerframework</groupId>
+    <groupId>io.github.eisop</groupId>
     <artifactId>checker</artifactId>
 
     <licenses>

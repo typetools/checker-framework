@@ -18,7 +18,7 @@
 
       Please
         see artifact:
-        org.checkerframework:checker
+        io.github.eisop:checker
     </description>
 
     <groupId>io.github.eisop</groupId>
