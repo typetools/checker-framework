@@ -85,7 +85,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
     /**
      * Completes a type by removing any unresolved polymorphic qualifiers, replacing them with the
-     * top qualifiers.
+     * bottom qualifiers.
      */
     private Completer completer = new Completer();
 
@@ -285,11 +285,11 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                     type.removeAnnotation(poly);
                     if (top == null) {
                         // poly is PolyAll -> add all tops not explicitly given
-                        type.addMissingAnnotations(topQuals);
+                        type.addMissingAnnotations(qualHierarchy.getBottomAnnotations());
                     } else if (type.getKind() != TypeKind.TYPEVAR
                             && type.getKind() != TypeKind.WILDCARD) {
                         // Do not add the top qualifiers to type variables and wildcards
-                        type.addAnnotation(top);
+                        type.addAnnotation(qualHierarchy.getBottomAnnotation(top));
                     }
                 }
             }
