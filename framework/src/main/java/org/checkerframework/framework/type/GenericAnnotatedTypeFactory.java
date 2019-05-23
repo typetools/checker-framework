@@ -74,7 +74,6 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
@@ -818,6 +817,23 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Produces the receiver and offset associated with an expression. For instance, "n+1" has no
+     * associated Receiver, but this method produces a pair of a Receiver (for "n") and an offset
+     * ("1").
+     *
+     * @param expression a Java expression, possibly with a constant offset
+     * @param currentPath location at which expression is evaluated
+     * @return receiver and offset for the given expression
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     */
+    public Pair<Receiver, String> getReceiverAndOffsetFromJavaExpressionString(
+            String expression, TreePath currentPath) throws FlowExpressionParseException {
+        Pair<String, String> p = getExpressionAndOffset(expression);
+        Receiver r = getReceiverFromJavaExpressionString(p.first, currentPath);
+        return Pair.of(r, p.second);
+    }
+
+    /**
      * Returns the annotation mirror from dataflow for {@code expression}.
      *
      * <p>This will output a different annotation than {@link
@@ -1409,34 +1425,6 @@ public abstract class GenericAnnotatedTypeFactory<
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
         poly.annotate(tree, method);
-
-        // If the newClassTree "tree" is explicitly annotated with a polymorphic annotation,
-        // do not replace that. This ensures consistent behaviour with constructor invocations that
-        // are cast to the polymorphic type i.e "(@Poly X) new X();" is the same as
-        // "new @Poly X();"
-        // TODO: Replace getExplicitAnnotationsOnNewClassTree() with getExplicitAnnotations()
-        // when issue 2324 is fixed.
-        // See https://github.com/typetools/checker-framework/issues/2324.
-        Set<? extends AnnotationMirror> explicitAnnotations =
-                getExplicitAnnotationsOnNewClassTree(
-                        tree, getAnnotatedType(tree.getIdentifier()).getAnnotations());
-        Set<? extends AnnotationMirror> topAnnotations = qualHierarchy.getTopAnnotations();
-        for (AnnotationMirror top : topAnnotations) {
-            AnnotationMirror polyAnnotation = qualHierarchy.getPolymorphicAnnotation(top);
-            if (AnnotationUtils.containsSameByName(explicitAnnotations, polyAnnotation)) {
-                if (!qualHierarchy.isSubtype(
-                        method.returnType.getAnnotationInHierarchy(top), polyAnnotation)) {
-                    checker.report(
-                            Result.warning(
-                                    "cast.unsafe.constructor.invocation",
-                                    method.returnType.getAnnotationInHierarchy(top),
-                                    polyAnnotation),
-                            tree);
-                }
-                method.returnType.replaceAnnotation(polyAnnotation);
-            }
-        }
-
         return mType;
     }
 
@@ -1594,8 +1582,8 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the AnnotatedTypeFactory of the subchecker and copies the current visitor state to
      * the sub-factory so that the types are computed properly. Because the visitor state is copied,
-     * call this method each time a subfactory is needed rather than store the returned factory in a
-     * field.
+     * call this method each time a subfactory is needed rather than store the returned subfactory
+     * in a field.
      *
      * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
      */

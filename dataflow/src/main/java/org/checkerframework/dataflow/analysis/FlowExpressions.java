@@ -466,8 +466,21 @@ public class FlowExpressions {
          * respect to ==) by a method call. This is the case for local variables, the self reference
          * as well as final field accesses for whose receiver {@link #isUnassignableByOtherCode} is
          * true.
+         *
+         * @see #isUnmodifiableByOtherCode
          */
         public abstract boolean isUnassignableByOtherCode();
+
+        /**
+         * Returns true if and only if the value this expression stands for cannot be changed by a
+         * method call, including changes to any of its fields.
+         *
+         * <p>Approximately, this returns true if the expression is {@link
+         * #isUnassignableByOtherCode} and its type is immutable.
+         *
+         * @see #isUnassignableByOtherCode
+         */
+        public abstract boolean isUnmodifiableByOtherCode();
 
         /** @return true if and only if the two receiver are syntactically identical */
         public boolean syntacticEquals(Receiver other) {
@@ -581,6 +594,12 @@ public class FlowExpressions {
         public boolean isUnassignableByOtherCode() {
             return isFinal() && getReceiver().isUnassignableByOtherCode();
         }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return isUnassignableByOtherCode()
+                    && TypesUtils.isImmutableTypeInJdk(getReceiver().type);
+        }
     }
 
     public static class ThisReference extends Receiver {
@@ -616,6 +635,11 @@ public class FlowExpressions {
         @Override
         public boolean isUnassignableByOtherCode() {
             return true;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return TypesUtils.isImmutableTypeInJdk(type);
         }
 
         @Override
@@ -671,6 +695,11 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return true;
+        }
+
+        @Override
         public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
             return false; // not modifiable
         }
@@ -708,6 +737,11 @@ public class FlowExpressions {
 
         @Override
         public boolean isUnassignableByOtherCode() {
+            return false;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
             return false;
         }
     }
@@ -784,6 +818,11 @@ public class FlowExpressions {
         public boolean isUnassignableByOtherCode() {
             return true;
         }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
+        }
     }
 
     public static class ValueLiteral extends Receiver {
@@ -807,6 +846,11 @@ public class FlowExpressions {
 
         @Override
         public boolean isUnassignableByOtherCode() {
+            return true;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
             return true;
         }
 
@@ -852,7 +896,7 @@ public class FlowExpressions {
         }
     }
 
-    /** A method call. */
+    /** A call to a @Deterministic method. */
     public static class MethodCall extends Receiver {
 
         protected final Receiver receiver;
@@ -906,7 +950,15 @@ public class FlowExpressions {
 
         @Override
         public boolean isUnassignableByOtherCode() {
-            return false;
+            // There is no need to check that the method is deterministic, because a MethodCall is
+            // only created for deterministic methods.
+            return receiver.isUnmodifiableByOtherCode()
+                    && parameters.stream().allMatch(Receiver::isUnmodifiableByOtherCode);
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return isUnassignableByOtherCode();
         }
 
         @Override
@@ -1041,6 +1093,11 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return false;
+        }
+
+        @Override
         public boolean containsSyntacticEqualReceiver(Receiver other) {
             return syntacticEquals(other)
                     || receiver.syntacticEquals(other)
@@ -1129,6 +1186,11 @@ public class FlowExpressions {
 
         @Override
         public boolean isUnassignableByOtherCode() {
+            return false;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
             return false;
         }
 

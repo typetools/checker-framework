@@ -19,11 +19,10 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-/*
- * The Lock Store behaves like CFAbstractStore but requires the ability
- * to insert exact annotations. This is because we want to be able to
- * insert @LockPossiblyHeld to replace @LockHeld, which normally is
- * not possible in CFAbstractStore since @LockHeld is more specific.
+/**
+ * The Lock Store behaves like CFAbstractStore but requires the ability to insert exact annotations.
+ * This is because we want to be able to insert @LockPossiblyHeld to replace @LockHeld, which
+ * normally is not possible in CFAbstractStore since @LockHeld is more specific.
  */
 public class LockStore extends CFAbstractStore<CFValue, LockStore> {
 

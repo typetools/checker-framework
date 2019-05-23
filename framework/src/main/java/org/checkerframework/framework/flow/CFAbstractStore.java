@@ -227,7 +227,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             fieldValues = newFieldValues;
 
             // update method values
-            methodValues.clear();
+            methodValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
 
             arrayValues.clear();
         }
@@ -259,7 +259,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 || r instanceof FlowExpressions.ThisReference
                 || r instanceof FlowExpressions.LocalVariable
                 || r instanceof FlowExpressions.MethodCall
-                || r instanceof FlowExpressions.ArrayAccess) {
+                || r instanceof FlowExpressions.ArrayAccess
+                || r instanceof FlowExpressions.ClassName) {
             return !r.containsUnknown();
         }
         return false;

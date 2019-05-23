@@ -68,8 +68,17 @@ public class NullnessAnnotatedTypeFactory
         extends InitializationAnnotatedTypeFactory<
                 NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
 
-    /** Annotation constants. */
-    protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL;
+    /** The @{@link NonNull} annotation. */
+    protected final AnnotationMirror NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
+    /** The @{@link Nullable} annotation. */
+    protected final AnnotationMirror NULLABLE =
+            AnnotationBuilder.fromClass(elements, Nullable.class);
+    /** The @{@link PolyNull} annotation. */
+    protected final AnnotationMirror POLYNULL =
+            AnnotationBuilder.fromClass(elements, PolyNull.class);
+    /** The @{@link MonotonicNonNull} annotation. */
+    protected final AnnotationMirror MONOTONIC_NONNULL =
+            AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
 
     /** Handles invocations of {@link java.lang.System#getProperty(String)}. */
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
@@ -170,11 +179,6 @@ public class NullnessAnnotatedTypeFactory
     /** Creates NullnessAnnotatedTypeFactory. */
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, useFbc);
-
-        NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
-        NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
-        POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
-        MONOTONIC_NONNULL = AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
 
         Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
         tempNullnessAnnos.add(NonNull.class);

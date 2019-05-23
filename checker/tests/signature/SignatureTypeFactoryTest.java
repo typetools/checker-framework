@@ -79,6 +79,7 @@ public class SignatureTypeFactoryTest {
         String t31 = "[Lpackage.Outer$22;";
         String t32 = "package/Outer$22[]";
         String t33 = "[]";
+        String t34 = "org.plumelib.reflection.TestReflectionPlume$Inner.InnerInner";
 
         String us; // @SignatureUnknown
         @FullyQualifiedName String fqn;
@@ -710,5 +711,18 @@ public class SignatureTypeFactoryTest {
         // :: error: (assignment.type.incompatible)
         iform = t33;
         sn = t33;
+
+        us = t34;
+        // :: error: (assignment.type.incompatible)
+        fqn = t34;
+        // :: error: (assignment.type.incompatible)
+        bn = t34;
+        cgn = t34;
+        // :: error: (assignment.type.incompatible)
+        fd = t34;
+        // :: error: (assignment.type.incompatible)
+        iform = t34;
+        // :: error: (assignment.type.incompatible)
+        sn = t34;
     }
 }

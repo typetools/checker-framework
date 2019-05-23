@@ -107,7 +107,6 @@ public class AnonInnerDefaults {
                     }
                 };
         @UI PolyIface p =
-                // :: error: (declaration.inconsistent.with.implements.clause)
                 new @UI PolyIface() {
                     @Override
                     public void doStuff() {

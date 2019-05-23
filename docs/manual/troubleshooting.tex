@@ -247,6 +247,29 @@ FileNotFoundException and prints out the directory name with ``\<+>''
 replaced by blanks.
 
 \item
+The Checker Framework sometimes runs out of memory when processing very
+large Java files, or files with very large methods.
+
+If you get an error such as
+\begin{Verbatim}
+error: SourceChecker.typeProcess: unexpected Throwable (OutOfMemoryError) while processing ...; message: GC overhead limit exceeded
+\end{Verbatim}
+
+\noindent
+then either give the JVM more memory when running the Checker Framework, or
+split your files and methods into smaller ones, or both.
+
+\end{itemize}
+
+
+\subsectionAndLabel{Unexpected warnings not related to type-checking}{common-problems-non-typechecking}
+
+This section gives solutions for some warning messages that are not related
+to type errors in your code.
+
+\begin{itemize}
+
+\item
 If you get an error like the following
 
 \begin{Verbatim}
@@ -255,15 +278,19 @@ error: scoping construct cannot be annotated with type-use annotation
 \end{Verbatim}
 
 \noindent
-\begin{sloppypar}
-then you have probably written something like \<@Nullable java.util.List>.
+  then you have probably written something like one of the following:
+\begin{description}
+\item[\<@Nullable java.util.List>]
 The correct Java syntax to write an annotation on a fully-qualified type
 name is to put the annotation on the simple name part, as in
 \<java.util.@Nullable List>.  But, it's usually
 better to add \<import java.util.List> to your source file, so that you can
-just write \<@Nullable List>.  Likewise, you must write \<Outer.@Nullable
+just write \<@Nullable List>.
+\item[\<@Nullable Map.Entry>]  You must write \<Outer.@Nullable
 StaticNestedClass> rather than \<@Nullable Outer.StaticNestedClass>.
-\end{sloppypar}
+Since a static nested class does not depend on its outer class, the
+annotation on the outer class would have no effect and is forbidden.
+\end{description}
 
 Java 8 requires that a type qualifier be written directly on the type that
 it qualifies, rather than on a scoping mechanism that assists in resolving
@@ -275,7 +302,7 @@ writing a member nested class (also known as an inner class), it is
 possible to write annotations on both the outer and the inner class:  \<@A1
 Outer. @A2 Inner>.  Therefore, when writing a static nested class, the
 annotations should go on the same place:  \<Outer. @A3 StaticNested> (rather
-than \<@ConfusingAnnotation Outer. Nested> where
+than \<@ConfusingAnnotation Outer.\ Nested> where
 \<@ConfusingAnnotation> applies to \<Outer> if \<Nested> is a member class
 and applies to \<Nested> if \<Nested> is a static class).  It's not legal
 to write an annotation on the outer class of a static nested class, because
@@ -748,7 +775,7 @@ mkdir -p $HOME/Library/texmf/tex/latex
 cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
 \end{Verbatim}
 
-Note: If copy permission denied, try \<sudo>.
+Note: If copy permission is denied, try \<sudo>.
 
 Also set the \<JAVA\_HOME> environment variable in your \<.bashrc> file;
 for example,
@@ -814,7 +841,7 @@ the Checker Framework anyway.)
 \end{smaller}
 %END LATEX
 
-\item[Mac OSX 10.5 or later]
+\item[Mac OS X 10.5 or later]
   Add one of the following two commands in your \code{.bash\_profile} or
   \code{.profile} file according to the version of your JDK.
 \begin{Verbatim}
@@ -923,7 +950,7 @@ Run \code{make} in the \code{docs/manual} directory to build both the PDF and HT
 \subsectionAndLabel{Code style, IDE configuration, pull requests, etc.}{building-developer-manual}
 
 Please see the
-\href{../developer/developer-manual.html}{Checker Framework Developer Manual}.
+\href{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{Checker Framework Developer Manual}.
 
 
 \subsectionAndLabel{Enable Travis continuous integration builds}{building-travis}
@@ -1179,4 +1206,4 @@ For details, see file
 %%  LocalWords:  Barros Athaydes Ren Oblak Heule Steph Trask Stalnaker
 %%  LocalWords:  toolset's typechecking LiteralKind reifiable plaintext
 %%  LocalWords:  astub homebrew hevea cloneAndBuildDependencies allTests
-%%  LocalWords:  compileJava travis typedefs LPAR Tunable OIGJ
+%%  LocalWords:  compileJava travis typedefs LPAR Tunable OIGJ sudo

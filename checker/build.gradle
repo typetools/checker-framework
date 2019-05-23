@@ -2,7 +2,7 @@ ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = 'ecafdf9b336fdbf74b92ee5f01fdc1537bbc2fa7'
+    jdkShaHash = '92fd4628de9dd1cfb9ea00ccd8a94954636d07df'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -145,6 +145,28 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
 }
 assemble.dependsOn copyJarsToDist
 
+task printPlumeUtilJarPath {
+    description "Print the path to plume-util.jar"
+    doFirst { println project.configurations.compile.find { it.name.startsWith("plume-util") } }
+}
+
+task allSourcesJar(type: Jar) {
+    description 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
+    destinationDir = file("${projectDir}/dist")
+    archiveName = "checker-source.jar"
+    from (sourceSets.main.java, project(':framework').sourceSets.main.allJava,
+            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
+}
+
+task allJavadocJar(type: Jar) {
+    description 'Creates javadoc jar include Javadoc for all of the framework'
+    dependsOn rootProject.tasks.allJavadoc
+    destinationDir = file("${projectDir}/dist")
+    archiveName = "checker-javadoc.jar"
+    from rootProject.tasks.allJavadoc.destinationDir
+}
+
+
 shadowJar {
     description 'Creates the "fat" checker.jar in dist/.'
     destinationDir = file("${projectDir}/dist")
@@ -153,6 +175,9 @@ shadowJar {
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
 artifacts {
+    // Don't add this here or else the Javadoc is built during the assemble task.
+    // archives allJavadocJar
+    archives allSourcesJar
     archives shadowJar
 }
 

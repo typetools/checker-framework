@@ -4,6 +4,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.NullnessChecker;
@@ -61,6 +63,9 @@ public class InitializationVisitor<
             "initialization.invalid.cast";
     private static final @CompilerMessageKey String COMMITMENT_FIELDS_UNINITIALIZED =
             "initialization.fields.uninitialized";
+    private static final @CompilerMessageKey String COMMITMENT_STATIC_FIELDS_UNINITIALIZED =
+            // TODO: change to "initialization.static.fields.uninitialized";
+            "initialization.fields.uninitialized";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
             "initialization.invalid.field.type";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
@@ -86,12 +91,23 @@ public class InitializationVisitor<
     }
 
     @Override
-    protected boolean checkConstructorInvocation(
+    protected void checkConstructorInvocation(
             AnnotatedDeclaredType dt, AnnotatedExecutableType constructor, NewClassTree src) {
         // receiver annotations for constructors are forbidden, therefore no
         // check is necessary
         // TODO: nested constructors can have receivers!
-        return true;
+    }
+
+    @Override
+    protected void checkConstructorResult(
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        // Nothing to check
+    }
+
+    @Override
+    protected void checkThisOrSuperConstructorCall(
+            MethodInvocationTree superCall, @CompilerMessageKey String errorKey) {
+        // Nothing to check
     }
 
     @Override
@@ -361,6 +377,11 @@ public class InitializationVisitor<
             return;
         }
 
+        String COMMITMENT_FIELDS_UNINITIALIZED_KEY =
+                (staticFields
+                        ? COMMITMENT_STATIC_FIELDS_UNINITIALIZED
+                        : COMMITMENT_FIELDS_UNINITIALIZED);
+
         List<VariableTree> violatingFields =
                 atypeFactory.getUninitializedInvariantFields(
                         store, getCurrentPath(), staticFields, receiverAnnotations);
@@ -380,7 +401,7 @@ public class InitializationVisitor<
         while (itor.hasNext()) {
             VariableTree f = itor.next();
             Element e = TreeUtils.elementFromTree(f);
-            if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED)) {
+            if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED_KEY)) {
                 itor.remove();
             }
         }
@@ -396,7 +417,7 @@ public class InitializationVisitor<
                 fieldsString.append(f.getName());
             }
             checker.report(
-                    Result.failure(COMMITMENT_FIELDS_UNINITIALIZED, fieldsString), blockNode);
+                    Result.failure(COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString), blockNode);
         }
     }
 }
