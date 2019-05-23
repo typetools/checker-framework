@@ -126,6 +126,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         this.invariantArrayComponents = invariantArrayComponents;
     }
 
+    /** Create the equality comparer. */
     protected StructuralEqualityComparer createEqualityComparer() {
         return new StructuralEqualityComparer(typeargVisitHistory);
     }
