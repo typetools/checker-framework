@@ -129,6 +129,7 @@ allprojects {
             options.deprecation = true
             options.compilerArgs += [
                     '-g',
+                    '-Werror',
                     // To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
                     "-Xlint:-options",
                     "-Xlint",
@@ -322,8 +323,8 @@ task requireJavadocPrivate(type: Javadoc, group: "Documentation") {
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
     onlyIf { !(new File("${jtregHome}/lib/jtreg.jar").exists()) }
-    // TODO: ci.adaptopenjdk is currently down, use a local copy. (4/4/2019)
-//    src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
+    // TODO: ci.adoptopenjdk.net is currently down, use a local copy. (4/4/2019)
+    // src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
     src 'https://checkerframework.org/jtreg-4.2.0-tip.tar.gz'
     overwrite true
     dest new File(buildDir, 'jtreg-4.2.0-tip.tar.gz')

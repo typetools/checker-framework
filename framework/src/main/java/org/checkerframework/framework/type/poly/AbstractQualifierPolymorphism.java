@@ -3,6 +3,8 @@ package org.checkerframework.framework.type.poly;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -366,28 +368,22 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             extends EquivalentAtmComboScanner<AnnotationMirrorMap<AnnotationMirrorSet>, Void> {
 
         /**
-         * List of {@link AnnotatedTypeVariable} or {@link AnnotatedWildcardType} that have been
-         * visited. Call {@link #visited(AnnotatedTypeMirror)} to check if the type have been
-         * visited, so that reference equality is used rather than {@link #equals(Object)}.
+         * Set of {@link AnnotatedTypeVariable} or {@link AnnotatedWildcardType} that have been
+         * visited. Used to prevent infinite recursion on recursive types.
+         *
+         * <p>Uses reference equality rather than equals because the visitor may visit two types
+         * that are structurally equal, but not actually the same. For example, the wildcards in
+         * Pair<?,?> may be equal, but they both should be visited.
          */
-        private final List<AnnotatedTypeMirror> visitedTypes = new ArrayList<>();
+        private final Set<AnnotatedTypeMirror> visitedTypes =
+                Collections.newSetFromMap(new IdentityHashMap<AnnotatedTypeMirror, Boolean>());
 
         /**
          * Returns true if the {@link AnnotatedTypeMirror} has been visited. If it has not, then it
-         * is added to the list of visited AnnotatedTypeMirrors. This prevents infinite recursion on
-         * recursive types.
+         * is added to the list of visited AnnotatedTypeMirrors.
          */
         private boolean visited(AnnotatedTypeMirror atm) {
-            for (AnnotatedTypeMirror atmVisit : visitedTypes) {
-                // Use reference equality rather than equals because the visitor may visit two types
-                // that are structurally equal, but not actually the same.  For example, the
-                // wildcards in Pair<?,?> may be equal, but they both should be visited.
-                if (atmVisit == atm) {
-                    return true;
-                }
-            }
-            visitedTypes.add(atm);
-            return false;
+            return !visitedTypes.add(atm);
         }
 
         @Override

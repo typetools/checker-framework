@@ -16,6 +16,7 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -150,6 +151,16 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             return super.visitDeclared(t, p);
+        }
+
+        @Override
+        public Void visitExecutable(AnnotatedExecutableType type, Void p) {
+            scan(type.getReturnType(), p);
+            // TODO: don't skip the receiver
+            scan(type.getParameterTypes(), p);
+            scan(type.getThrownTypes(), p);
+            scan(type.getTypeVariables(), p);
+            return null;
         }
     }
 

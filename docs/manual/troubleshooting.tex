@@ -246,6 +246,19 @@ implementation cannot handle.  For instance, if the directory name contains
 FileNotFoundException and prints out the directory name with ``\<+>''
 replaced by blanks.
 
+\item
+The Checker Framework sometimes runs out of memory when processing very
+large Java files, or files with very large methods.
+
+If you get an error such as
+\begin{Verbatim}
+error: SourceChecker.typeProcess: unexpected Throwable (OutOfMemoryError) while processing ...; message: GC overhead limit exceeded
+\end{Verbatim}
+
+\noindent
+then either give the JVM more memory when running the Checker Framework, or
+split your files and methods into smaller ones, or both.
+
 \end{itemize}
 
 
