@@ -91,6 +91,13 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      */
     private Completer completer = new Completer();
 
+    /**
+     * Instantiations for poly qualifiers that are exactly the qualifier corresponding to poly
+     * qualifiers on types that have a qualifier parameter. Mapping from poly qualifier to set of
+     * qualifiers.
+     */
+    protected final AnnotationMirrorMap<AnnotationMirrorSet> polyBind = new AnnotationMirrorMap<>();
+
     /** {@link PolyAll} annotation mirror. */
     protected final AnnotationMirror POLYALL;
 
@@ -120,6 +127,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         collector.reset();
         replacer.reset();
         completer.reset();
+        polyBind.clear();
     }
 
     /**
@@ -307,11 +315,17 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             AnnotationMirror poly = kv.getKey();
 
             if (top == null && polyType.hasAnnotation(POLYALL)) {
+                if (atypeFactory.hasQualifierParameter(polyType)) {
+                    polyBind.put(poly, new AnnotationMirrorSet(type.getAnnotations()));
+                }
                 // PolyAll qualifier
                 result.put(poly, new AnnotationMirrorSet(type.getAnnotations()));
             } else if (polyType.hasAnnotation(poly)) {
                 AnnotationMirror typeQual = type.getAnnotationInHierarchy(top);
                 if (typeQual != null) {
+                    if (atypeFactory.hasQualifierParameter(polyType)) {
+                        polyBind.put(poly, AnnotationMirrorSet.singleElementSet(typeQual));
+                    }
                     result.put(poly, AnnotationMirrorSet.singleElementSet(typeQual));
                 }
             }
