@@ -113,8 +113,8 @@ INTERM_CHECKER_REPO = os.path.join(INTERM_REPO_ROOT, "checker-framework")
 INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 
 # The central repositories for Checker Framework related projects
-LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
-LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
+LIVE_ANNO_REPO = "git@github.com:eisop/annotation-tools.git"
+LIVE_CHECKER_REPO = "git@github.com:eisop/checker-framework.git"
 LIVE_PLUME_SCRIPTS = "https://github.com/plume-lib/plume-scripts"
 LIVE_CHECKLINK = "https://github.com/plume-lib/checklink"
 LIVE_PLUME_BIB = "https://github.com/mernst/plume-bib"
