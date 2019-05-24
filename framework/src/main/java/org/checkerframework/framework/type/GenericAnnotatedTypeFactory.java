@@ -94,6 +94,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
@@ -1470,6 +1471,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
 
+        applyPolyDefaults(tree, type);
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(tree, type);
@@ -1540,8 +1542,47 @@ public abstract class GenericAnnotatedTypeFactory<
         applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
     }
 
+    void applyPolyDefaults(Tree tree, AnnotatedTypeMirror type) {
+        applyPolyDefaults(TreeUtils.elementFromTree(tree), type);
+    }
+
+    void applyPolyDefaults(Element elt, AnnotatedTypeMirror type) {
+        if (elt == null) {
+            return;
+        }
+        switch (elt.getKind()) {
+            case CONSTRUCTOR:
+            case METHOD:
+            case FIELD:
+            case LOCAL_VARIABLE:
+            case PARAMETER:
+                break;
+            default:
+                return;
+        }
+
+        TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
+        if (!hasQualifierParameter(enclosingClass)) {
+            return;
+        }
+        new TypeAnnotator(this) {
+            @Override
+            public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
+                if (type.getUnderlyingType().asElement().equals(enclosingClass)) {
+                    for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+                        if (!type.isAnnotatedInHierarchy(top)) {
+                            type.addAnnotation(qualHierarchy.getPolymorphicAnnotation(top));
+                        }
+                    }
+                }
+                return super.visitDeclared(type, aVoid);
+            }
+        }.visit(type);
+    }
+
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+        applyPolyDefaults(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
         if (dependentTypesHelper != null) {

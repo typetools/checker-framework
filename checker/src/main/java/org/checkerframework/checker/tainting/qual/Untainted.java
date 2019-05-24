@@ -20,5 +20,5 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @ImplicitFor(literals = {LiteralKind.STRING, LiteralKind.NULL})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultFor(TypeUseLocation.LOWER_BOUND)
+@DefaultFor({TypeUseLocation.LOWER_BOUND})
 public @interface Untainted {}

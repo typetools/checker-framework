@@ -7,43 +7,48 @@ import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 import org.checkerframework.framework.qual.HasQualifierParameter;
 
-@HasQualifierParameter(Tainted.class)
-public class Buffer {
-    final List<@PolyTainted String> list = new ArrayList<>();
-    @PolyTainted String someString = "";
+public class HasQualParamDefaults {
+    @HasQualifierParameter(Tainted.class)
+    public class Buffer {
+        final List<@PolyTainted String> list = new ArrayList<>();
+        @PolyTainted String someString = "";
 
-    public @PolyTainted Buffer() {}
+        public Buffer() {}
 
-    public @Untainted Buffer(@Tainted String s) {
-        // :: error: (assignment.type.incompatible)
-        this.someString = s;
-    }
-
-    public @PolyTainted Buffer(@PolyTainted Buffer copy) {}
-
-    public @PolyTainted Buffer append(@PolyTainted Buffer this, @PolyTainted String s) {
-        list.add(s);
-        someString = s;
-        return this;
-    }
-
-    public @PolyTainted String prettyPrint(@PolyTainted Buffer this) {
-        String prettyString = "";
-        for (String s : list) {
-            prettyString += s + " ~~ ";
+        public @Untainted Buffer(@Tainted String s) {
+            // :: error: (assignment.type.incompatible)
+            this.someString = s;
         }
-        return prettyString;
+
+        public Buffer(Buffer copy) {
+            this.list.addAll(copy.list);
+            this.someString = copy.someString;
+        }
+
+        public Buffer append(@PolyTainted String s) {
+            list.add(s);
+            someString = s;
+            return this;
+        }
+
+        public @PolyTainted String prettyPrint() {
+            String prettyString = list.get(1);
+            for (@PolyTainted String s : list) {
+                prettyString += s + " ~~ ";
+            }
+            return prettyString;
+        }
+
+        public @PolyTainted String unTaintedOnly(@Untainted Buffer this, @PolyTainted String s) {
+            // :: error: (argument.type.incompatible)
+            list.add(s);
+            // :: error: (assignment.type.incompatible)
+            someString = s;
+            return s;
+        }
     }
 
-    public @PolyTainted String unTaintedOnly(@Untainted Buffer this, @PolyTainted String s) {
-        // :: error: (argument.type.incompatible)
-        list.add(s);
-        // :: error: (assignment.type.incompatible)
-        someString = s;
-        return s;
-    }
-
-    static class Use {
+    class Use {
         void passingUses(@Untainted String untainted, @Untainted Buffer buffer) {
             buffer.list.add(untainted);
             buffer.someString = untainted;
