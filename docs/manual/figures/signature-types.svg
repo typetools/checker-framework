@@ -74,8 +74,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 136px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+            <xhtml:div>
               <xhtml:b>@ClassGetSimpleName<xhtml:br />
 </xhtml:b>
               <xhtml:br />
@@ -113,8 +112,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 86px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+            <xhtml:div>
               <xhtml:b>@InternalForm<xhtml:br />
 </xhtml:b>
               <xhtml:br />
@@ -151,8 +149,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 100px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+            <xhtml:div>
               <xhtml:b>@FieldDescriptor<xhtml:br />
 </xhtml:b>
               <xhtml:br />
@@ -191,8 +188,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 98px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+            <xhtml:div>
               <xhtml:b>@ClassGetName<xhtml:br />
 </xhtml:b>
               <xhtml:br />
@@ -231,8 +227,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 82px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+            <xhtml:div>
               <xhtml:b>@BinaryName<xhtml:br />
 </xhtml:b>
               <xhtml:br />
@@ -270,8 +265,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 125px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+            <xhtml:div>
               <xhtml:b>@FullyQualifiedName<xhtml:br />
 </xhtml:b>
               <xhtml:br />
@@ -308,8 +302,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 114px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">@SignatureUnknown<xhtml:br />
+            <xhtml:div>@SignatureUnknown<xhtml:br />
 <xhtml:br />
 </xhtml:div>
           </xhtml:div>
@@ -346,8 +339,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 102px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">@IdentifierOrArray<xhtml:br />
+            <xhtml:div>@IdentifierOrArray<xhtml:br />
 <xhtml:br />
 </xhtml:div>
           </xhtml:div>
@@ -384,8 +376,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 308px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">@FieldDescriptorForPrimitiveOrArrayInUnnamedPackage<xhtml:br />
+            <xhtml:div>@FieldDescriptorForPrimitiveOrArrayInUnnamedPackage<xhtml:br />
 <xhtml:br />
 </xhtml:div>
           </xhtml:div>
@@ -422,8 +413,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 60px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">@Identifier<xhtml:br />
+            <xhtml:div>@Identifier<xhtml:br />
 <xhtml:br />
 </xhtml:div>
           </xhtml:div>
@@ -460,8 +450,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 188px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">@BinaryNameInUnnamedPackage<xhtml:br />
+            <xhtml:div>@BinaryNameInUnnamedPackage<xhtml:br />
 <xhtml:br />
 </xhtml:div>
           </xhtml:div>
@@ -694,8 +683,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 158px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">@FieldDescriptorForPrimitive<xhtml:br />
+            <xhtml:div>@FieldDescriptorForPrimitive<xhtml:br />
 <xhtml:br />
 </xhtml:div>
           </xhtml:div>
@@ -732,8 +720,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 140px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">@DotSeparatedIdentifiers<xhtml:br />
+            <xhtml:div>@DotSeparatedIdentifiers<xhtml:br />
 <xhtml:br />
 </xhtml:div>
           </xhtml:div>
