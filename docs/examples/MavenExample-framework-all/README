@@ -1,0 +1,9 @@
+This directory contains an example Maven project that downloads the latest
+Checker Framework framework-all Maven artifacts and runs the Value Checker.
+
+To run the example, simply execute:
+mvn compile
+
+You should see output that includes:
+
+MavenExample.java:[24,29] error: [assignment.type.incompatible] incompatible types in assignment.
