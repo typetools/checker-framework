@@ -13,7 +13,7 @@
         compiled program.
     </description>
 
-    <groupId>org.checkerframework</groupId>
+    <groupId>io.github.eisop</groupId>
     <artifactId>jdk8</artifactId>
 
     <licenses>
