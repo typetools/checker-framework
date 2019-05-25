@@ -3359,14 +3359,6 @@ class Arrays {
     public static int hashCode(@PolySigned char[] a);
     public static int hashCode(@PolySigned long[] a);
 
-    public static void parallelPrefix(@PolySigned int[] array, IntBinaryOperator op);
-    public static void parallelPrefix(@PolySigned long[] array, LongBinaryOperator op);
-    public static void parallelPrefix(@PolySigned int[] array, int fromIndex, int toIndex, IntBinaryOperator op);
-    public static void parallelPrefix(@PolySigned long[] array, int fromIndex, int toIndex, LongBinaryOperator op);
-
-    public static void parallelSetAll(@PolySigned int[] array, IntUnaryOperator generator);
-    public static void parallelSetAll(@PolySigned long[] array, IntToLongFunction generator);
-
     public static void parallelSort(@PolySigned byte[] a);
     public static void parallelSort(@PolySigned short[] a);
     public static void parallelSort(@PolySigned int[] a);
@@ -3388,15 +3380,6 @@ class Arrays {
     public static void sort(@PolySigned int[] a, int fromIndex, int toIndex);
     public static void sort(@PolySigned long[] a, int fromIndex, int toIndex);
     public static void sort(@PolySigned char[] a, int fromIndex, int toIndex);
-
-    public static void setAll(@PolySigned int[] array, IntUnaryOperator generator);
-    public static void setAll(@PolySigned long[] array, IntToLongFunction generator);
-
-    public static String toString(@PolySigned byte[] a);
-    public static String toString(@PolySigned short[] a);
-    public static String toString(@PolySigned int[] a);
-    public static String toString(@PolySigned long[] a);
-    public static String toString(@PolySigned char[] a);
 }
 
 class Random {
