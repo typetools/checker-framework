@@ -1,3 +1,7 @@
+Version 2.8.2, June 4, 2019
+
+Added a template for a repository that you can use to write a custom checker.
+
 ---------------------------------------------------------------------------
 
 Version 2.8.1, May 1, 2019
