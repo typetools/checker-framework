@@ -276,6 +276,11 @@ the \<@SuppressWarnings> annotation.  It will also help you audit your code
 to verify all the warning suppressions.  (The code is correct only if the
 checker issues no warnings \emph{and} each \<@SuppressWarnings> is correct.)
 
+A suppression message like ``a.f is not null'' is not useful.  The fact
+that you are suppressing the warning means that you believe that \<a.f> is
+not null.  The message should explain \emph{why} you believe that; for
+example, ``a.f was checked above and no subsequent side effect can affect it''.
+
 Here are some terse examples from libraries in \href{https://github.com/plume-lib/}{plume-lib}:
 
 \begin{Verbatim}
@@ -313,7 +318,7 @@ the Nullness Checker assumes that \<c> is non-null from the \<assert>
 statement forward (including on the next iteration through the loop).
 
 The \<assert> expression must be an expression that would affect flow-sensitive
-type qualifier refinement (Section~\ref{type-refinement}), if the
+type refinement (Section~\ref{type-refinement}), if the
 expression appeared in a conditional test.  Each type system has its own
 rules about what type refinement it performs.
 
@@ -574,8 +579,8 @@ Each of the distributed checkers supports at least the following lint options:
 \item
   \code{cast:unsafe} (default: on) warn about unsafe casts that are not
   checked at run time, as in \code{((@NonNull String) myref)}.  Such casts
-  are generally not necessary when flow-sensitive local type refinement is
-  enabled.
+  are generally not necessary because of type refinement
+  (Section~\ref{type-refinement}).
 
 \item
   \code{cast:redundant} (default: on) warn about redundant
@@ -760,4 +765,6 @@ annotations, those compatibility annotations are no longer necessary.
 %%  LocalWords:  refactored AassumeAssertionsAreEnabled assertNotNull
 %%  LocalWords:  AassumeAssertionsAreDisabled NullnessUtil checkNotNull
 %%  LocalWords:  ElementType AuseSafeDefaultsForUnannotatedSourceCode
-% LocalWords:  AuseDefaultsForUncheckedCode checkerframework
+% LocalWords:  AuseDefaultsForUncheckedCode checkerframework askipuses
+%%  LocalWords:  suppresswarnings ArequirePrefixInWarningSuppressions
+%%  LocalWords:  assumeassertion askipdefs alint compat

@@ -109,10 +109,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     "char[]")));
 
     /** The top type for this hierarchy. */
-    protected final AnnotationMirror UNKNOWNVAL;
+    protected final AnnotationMirror UNKNOWNVAL =
+            AnnotationBuilder.fromClass(elements, UnknownVal.class);
 
     /** The bottom type for this hierarchy. */
-    protected final AnnotationMirror BOTTOMVAL;
+    protected final AnnotationMirror BOTTOMVAL =
+            AnnotationBuilder.fromClass(elements, BottomVal.class);
 
     /** The canonical @{@link PolyValue} annotation. */
     public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyValue.class);
@@ -128,9 +130,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-
-        BOTTOMVAL = AnnotationBuilder.fromClass(elements, BottomVal.class);
-        UNKNOWNVAL = AnnotationBuilder.fromClass(elements, UnknownVal.class);
 
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
         Range.ignoreOverflow = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
@@ -396,9 +395,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Performs pre-processing on annotations written by users, replacing illegal annotations by
      * legal ones.
      */
-    private class ValueTypeAnnotator extends TypeAnnotator {
+    protected class ValueTypeAnnotator extends TypeAnnotator {
 
-        private ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
+        /** Construct a new ValueTypeAnnotator */
+        protected ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 
@@ -587,8 +587,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return glbOfStringVal(a2, a1);
                 }
 
-                // Simply return BOTTOMVAL in other cases. Refine this if discover more use cases
-                // that need a more precision GLB.
+                // Simply return BOTTOMVAL in other cases. Refine this if we discover use cases
+                // that need a more precise GLB.
                 return BOTTOMVAL;
             }
         }

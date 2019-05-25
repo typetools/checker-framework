@@ -417,7 +417,7 @@ public final class Console implements Flushable
             return in.ready();
         }
 
-        public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length)
+        public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int length)
             throws IOException
         {
             int off = offset;

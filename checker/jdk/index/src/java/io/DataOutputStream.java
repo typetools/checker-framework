@@ -102,7 +102,7 @@ class DataOutputStream extends FilterOutputStream implements DataOutput {
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.FilterOutputStream#out
      */
-    public synchronized void write(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len)
+    public synchronized void write(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len)
         throws IOException
     {
         out.write(b, off, len);

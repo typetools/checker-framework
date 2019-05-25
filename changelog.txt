@@ -1,8 +1,18 @@
 ---------------------------------------------------------------------------
 
-Version ??, April 2, 2019
+Version 2.8.1, May 1, 2019
 
-Support androidx.annotation.RecentlyNonNull and RecentlyNullable (as of
+Moved text about the Purity Checker into its own chapter in the manual.
+
+Closed issues:
+660, 2030, 2223, 2240, 2244, 2375, 2407, 2410, 2415, 2420, 2421, 2446, 2447,
+2460, 2462.
+
+---------------------------------------------------------------------------
+
+Version 2.8.0, April 3, 2019
+
+Support `androidx.annotation.RecentlyNonNull` and `RecentlyNullable` (as of
 2.6.0, but not previously documented).
 
 The following qualifiers are now repeatable:  `@DefaultQualifier`
@@ -15,6 +25,25 @@ New command-line option `-ArequirePrefixInWarningSuppressions` makes
 `@SuppressWarnings` recognize warning keys of the form
 "checkername:key.about.problem" but ignore warning keys of the form
 "key.about.problem" without the checker name as a prefix.
+
+New CONSTRUCTOR_RESULT enum constant in TypeUseLocation makes it possible to
+set default annotations for constructor results.
+
+Clarified the semantics of annotations on class and constructor declarations.
+See Section 25.5 "Annotations on classes and constructors" in the manual.
+
+Interface changes:
+ * Added protected methods to BaseTypeVisitor so that checkers can change the
+   checks for annotations on classes, constructor declarations, and constructor
+   invocations.
+ * Removed BaseTypeVisitor#checkAssignability and BaseTypeVisitor#isAssignable
+   methods.
+ * Renamed AnnotatedTypeFactory#getEnclosingMethod to
+   AnnotatedTypeFactory#getEnclosingElementForArtificialTree
+
+Closed issues:
+2159, 2230, 2318, 2324, 2330, 2334, 2343, 2344, 2353, 2366, 2367, 2370, 2371,
+2385.
 
 ---------------------------------------------------------------------------
 
@@ -600,8 +629,8 @@ Version 1.9.10, 4 January 2016
 The Checker Framework distribution files now contain a version number:
 for example, checker-framework-1.9.9.zip rather than checker-framework.zip.
 
-Nullness Checker supports org.eclipse.jgit.annotations.Nullable and NonNull
-annotations.
+The Nullness Checker supports the org.eclipse.jgit.annotations.Nullable and
+NonNull annotations.
 
 Buildfiles do less unnecessary recomputation.
 

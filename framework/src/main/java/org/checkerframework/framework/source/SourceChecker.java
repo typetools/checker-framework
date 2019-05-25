@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -439,10 +441,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * in the case of a compound checker, the compound checker is the parent, not the checker that
      * was run prior to this one by the compound checker.
      */
-    protected SourceChecker parentChecker = null;
+    protected SourceChecker parentChecker;
 
     /** List of upstream checker names. Includes the current checker. */
-    protected List<String> upstreamCheckerNames = null;
+    protected List<String> upstreamCheckerNames;
 
     @Override
     public final synchronized void init(ProcessingEnvironment env) {
@@ -466,13 +468,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return this.processingEnv;
     }
 
+    /** Set the processing environment of the current checker. */
     /* This method is protected only to allow the AggregateChecker and BaseTypeChecker to call it. */
     protected void setProcessingEnvironment(ProcessingEnvironment env) {
         this.processingEnv = env;
     }
 
+    /** Set the parent checker of the current checker. */
     protected void setParentChecker(SourceChecker parentChecker) {
         this.parentChecker = parentChecker;
+    }
+
+    /** Invoked when the current compilation unit root changes. */
+    protected void setRoot(CompilationUnitTree newRoot) {
+        this.currentRoot = newRoot;
+        visitor.setRoot(currentRoot);
     }
 
     /**
@@ -732,7 +742,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return null;
         }
 
-        return swString.split(",");
+        return arrayToLowerCase(swString.split(","));
+    }
+
+    /** Side-effects the array to make each string lowercase, then returns the array. */
+    private static String[] arrayToLowerCase(String[] a) {
+        for (int i = 0; i < a.length; i++) {
+            a[i] = a[i].toLowerCase();
+        }
+        return a;
     }
 
     /** Log a user error. */
@@ -782,6 +800,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                             + ce.getCause()
                             + "; "
                             + formatStackTrace(ce.getCause().getStackTrace()));
+            boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
             Throwable cause = ce.getCause().getCause();
             while (cause != null) {
                 msg.append(
@@ -789,7 +808,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                 + cause
                                 + "; "
                                 + formatStackTrace(cause.getStackTrace()));
+                printClasspath |= cause instanceof NoClassDefFoundError;
                 cause = cause.getCause();
+            }
+
+            if (printClasspath) {
+                msg.append("\nClasspath:");
+                ClassLoader cl = ClassLoader.getSystemClassLoader();
+                URL[] urls = ((URLClassLoader) cl).getURLs();
+                for (URL url : urls) {
+                    msg.append("\n" + url.getFile());
+                }
             }
         }
 
@@ -962,17 +991,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return;
         }
         if (p.getCompilationUnit() != currentRoot) {
-            currentRoot = p.getCompilationUnit();
+            setRoot(p.getCompilationUnit());
             if (hasOption("filenames")) {
                 // Add timestamp to indicate how long operations are taking
                 message(Kind.NOTE, new java.util.Date().toString());
                 message(
                         Kind.NOTE,
-                        "Checker: %s is type-checking: %s",
+                        "%s is type-checking %s",
                         (Object) this.getClass().getSimpleName(),
                         currentRoot.getSourceFile().getName());
             }
-            visitor.setRoot(currentRoot);
         }
 
         // Visit the attributed tree.
@@ -1427,7 +1455,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         if (anno != null) {
-            String[] userSwKeys = anno.value();
+            String[] userSwKeys = arrayToLowerCase(anno.value());
             if (checkSuppressWarnings(userSwKeys, errKey)) {
                 return true;
             }
@@ -1440,8 +1468,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Return true if the given error should be suppressed, based on the given @SuppressWarnings
      * keys.
      *
-     * @param userSwKeys the @SuppressWarnings keys supplied by the user
-     * @param errKey the error key the checker is emitting
+     * @param userSwKeys the @SuppressWarnings keys supplied by the user; may be null (in which case
+     *     this method returns false), otherwise contains lowercase strings
+     * @param errKey the error key the checker is emitting; a lowercase string
      * @return true if one of the {@code userSwKeys} is returned by {@link
      *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
      */
@@ -1457,13 +1486,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // Check each value of the user-written @SuppressWarnings annotation.
         for (String suppressWarningValue : userSwKeys) {
             for (String checkerKey : checkerSwKeys) {
-                if (suppressWarningValue.equalsIgnoreCase(checkerKey)) {
+                if (suppressWarningValue.equals(checkerKey)) {
                     // Emitted error is exactly a @SuppressWarnings key: "nullness", for example.
                     return true;
                 }
 
                 String expected = checkerKey + ":" + errKey;
-                if (expected.toLowerCase().contains(suppressWarningValue.toLowerCase())) {
+                if (expected.contains(suppressWarningValue)) {
                     if (!requirePrefix
                             || suppressWarningValue
                                     .toLowerCase()
@@ -2063,8 +2092,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * @return string keys that a checker honors for suppressing warnings and errors that it issues.
-     *     Each such key suppresses all warnings issued by the checker.
+     * @return collection of lower-case string keys that a checker honors for suppressing warnings
+     *     and errors that it issues. Each such key suppresses all warnings issued by the checker.
      * @see SuppressWarningsKeys
      */
     public Collection<String> getSuppressWarningsKeys() {
@@ -2086,7 +2115,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (annotation != null) {
             // Add from annotation
             for (String key : annotation.value()) {
-                result.add(key);
+                result.add(key.toLowerCase());
             }
 
         } else {

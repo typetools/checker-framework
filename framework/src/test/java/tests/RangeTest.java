@@ -540,20 +540,24 @@ public class RangeTest {
     public void testBitwiseAnd() {
         for (RangeAndElement re1 : rangeAndElements()) {
             for (RangeAndElement re2 : rangeAndElements()) {
-                Range result = re1.range.bitwiseAnd(re2.range);
-                if (re2.range.isConstant()) {
+                Range result1 = re1.range.bitwiseAnd(re2.range);
+                Range result2 = re2.range.bitwiseAnd(re1.range);
+                if (re1.range.isConstant() || re2.range.isConstant()) {
                     Long witness = re1.element & re2.element;
-                    assert result.contains(witness)
+                    assert result1.from == result2.from;
+                    assert result1.to == result2.to;
+                    assert result1.contains(witness)
                             : String.format(
                                     "Range.bitwiseAnd failure: %s %s => %s; witnesses %s & %s => %s",
                                     re1.range,
                                     re2.range,
-                                    result,
+                                    result1,
                                     re1.element,
                                     re2.element,
                                     witness);
                 } else {
-                    assert result == Range.EVERYTHING;
+                    assert result1 == Range.EVERYTHING;
+                    assert result2 == Range.EVERYTHING;
                 }
             }
         }

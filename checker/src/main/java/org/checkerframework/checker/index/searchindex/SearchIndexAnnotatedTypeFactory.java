@@ -29,12 +29,17 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    public final AnnotationMirror UNKNOWN, BOTTOM;
+    /** The @{@link SearchIndexUnknown} annotation. */
+    public final AnnotationMirror UNKNOWN =
+            AnnotationBuilder.fromClass(elements, SearchIndexUnknown.class);
+    /** The @{@link SearchIndexBottom} annotation. */
+    public final AnnotationMirror BOTTOM =
+            AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
 
+    /** Create a new SearchIndexAnnotatedTypeFactory. */
     public SearchIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN = AnnotationBuilder.fromClass(elements, SearchIndexUnknown.class);
-        BOTTOM = AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
+
         this.postInit();
     }
 
