@@ -53,7 +53,7 @@
      transform="translate(0.5,0.5)"
      id="g188">
     <rect
-       x="0"
+       x="44"
        y="125"
        width="150"
        height="40"
@@ -61,7 +61,7 @@
        id="rect4"
        style="fill:#ffffff;stroke:#000000" />
     <g
-       transform="translate(5.5,137.5)"
+       transform="translate(49.5,137.5)"
        id="g10">
       <switch
          id="switch8"
@@ -242,15 +242,15 @@
       </switch>
     </g>
     <rect
-       x="175"
-       y="127"
+       x="282.79657"
+       y="190.68338"
        width="135"
        height="40"
        pointer-events="none"
        id="rect44"
        style="fill:#ffffff;stroke:#000000;stroke-width:1.06161761" />
     <g
-       transform="translate(177.14939,135.5)"
+       transform="translate(284.94597,199.18338)"
        id="g50">
       <switch
          id="switch48"
@@ -455,20 +455,6 @@
       </switch>
     </g>
     <path
-       d="M 282,123.67 332.94,83.92"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path92"
-       inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-miterlimit:10" />
-    <path
-       d="m 337.08,80.69 -3.37,7.06 -0.77,-3.83 -3.53,-1.69 z"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path94"
-       inkscape:connector-curvature="0"
-       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
-    <path
        d="M 565.29711,190.25289 532.76289,165.56711"
        stroke-miterlimit="10"
        pointer-events="none"
@@ -518,12 +504,12 @@
        inkscape:connector-curvature="0"
        style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
     <path
-       d="M 75.33,125.33 303.81,70.8"
+       d="M 119.82351,122.37344 303.81649,70.756556"
        stroke-miterlimit="10"
        pointer-events="none"
        id="path112"
        inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-miterlimit:10" />
+       style="fill:none;stroke:#000000;stroke-width:0.87308133;stroke-miterlimit:10" />
     <path
        d="m 308.91,69.58 -5.99,5.03 0.89,-3.81 -2.52,-3 z"
        stroke-miterlimit="10"
@@ -574,45 +560,17 @@
        inkscape:connector-curvature="0"
        style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
     <path
-       d="M 102,260.33 82,171.21"
+       d="M 146,260.33 126,171.21"
        stroke-miterlimit="10"
        pointer-events="none"
        id="path136"
        inkscape:connector-curvature="0"
        style="fill:none;stroke:#000000;stroke-miterlimit:10" />
     <path
-       d="m 80.85,166.09 4.95,6.06 -3.8,-0.94 -3.03,2.48 z"
+       d="m 124.85,166.09 4.95,6.06 -3.8,-0.94 -3.03,2.48 z"
        stroke-miterlimit="10"
        pointer-events="none"
        id="path138"
-       inkscape:connector-curvature="0"
-       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
-    <path
-       d="m 155.33,260.33 55.8,-89.92"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path140"
-       inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-miterlimit:10" />
-    <path
-       d="m 213.9,165.95 -0.72,7.79 -2.05,-3.33 -3.9,-0.36 z"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path142"
-       inkscape:connector-curvature="0"
-       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
-    <path
-       d="m 354.40555,190.10326 -50.1511,-20.62652"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path144"
-       inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-width:0.3951734;stroke-miterlimit:10" />
-    <path
-       d="m 299.28,168.31 7.69,-1.44 -2.64,2.88 0.71,3.85 z"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path146"
        inkscape:connector-curvature="0"
        style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
     <rect
@@ -688,20 +646,6 @@
            style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@DotSeparatedIdentifiers</text>
       </switch>
     </g>
-    <path
-       d="m 325.41555,257.93786 -58.1911,-89.14572"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path164"
-       inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-width:0.69335616;stroke-miterlimit:10" />
-    <path
-       d="m 263.16,165.68 7.67,1.52 -3.52,1.7 -0.76,3.84 z"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path166"
-       inkscape:connector-curvature="0"
-       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
     <path
        d="M 599.98664,414.51863 860.35336,232.72137"
        stroke-miterlimit="10"
@@ -887,41 +831,6 @@
        id="path120-7"
        inkscape:connector-curvature="0"
        style="fill:none;stroke:#000000;stroke-width:1.02721262;stroke-miterlimit:10" />
-    <rect
-       x="317.5"
-       y="191.5"
-       width="120"
-       height="40"
-       pointer-events="none"
-       id="rect76-3"
-       style="fill:#ffffff;stroke:#000000" />
-    <g
-       transform="translate(347,198)"
-       id="g82-6">
-      <switch
-         id="switch80-7">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="58"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 60px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">@FqArrayName<xhtml:br />
-<xhtml:br />
-</xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="29"
-           y="19"
-           font-size="12px"
-           id="text78-5"
-           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@FqArrayName</text>
-      </switch>
-    </g>
     <path
        d="m 410.76479,190.5603 74.49782,-23.98394"
        stroke-miterlimit="10"
