@@ -186,7 +186,7 @@ public class ByteArrayOutputStream extends OutputStream {
      *          of valid bytes in this output stream.
      * @see     java.io.ByteArrayOutputStream#count
      */
-    public synchronized @NonNegative int size() {
+    public synchronized @IndexOrHigh("this.buf") int size() {
         return count;
     }
 
