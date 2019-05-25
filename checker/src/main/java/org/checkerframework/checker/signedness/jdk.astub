@@ -3356,8 +3356,8 @@ class Arrays {
     public static int hashCode(@PolySigned byte[] a);
     public static int hashCode(@PolySigned short[] a);
     public static int hashCode(@PolySigned int[] a);
-    public static int hashCode(@PolySigned char[] a);
     public static int hashCode(@PolySigned long[] a);
+    public static int hashCode(@PolySigned char[] a);
 
     public static void parallelPrefix(@PolySigned int[] array, IntBinaryOperator op);
     public static void parallelPrefix(@PolySigned long[] array, LongBinaryOperator op);
