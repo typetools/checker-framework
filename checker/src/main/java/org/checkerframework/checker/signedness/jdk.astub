@@ -3338,6 +3338,10 @@ class Arrays {
 
 }
 
+class Random {
+    public void nextBytes(@PolySigned byte[] bytes);
+}
+
 package java.util.zip;
 
 class CheckedOutputStream {
