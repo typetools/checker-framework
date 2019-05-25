@@ -3318,7 +3318,7 @@ class Arrays {
     public static int binarySearch(@PolySigned int[] a, int key);
     public static int binarySearch(@PolySigned long[] a, long key);
     public static int binarySearch(@PolySigned char[] a, char key);
-    public static int binarySearch(@PolySigned byte[] a, int fromIndex, int toIndex, byte key);    
+    public static int binarySearch(@PolySigned byte[] a, int fromIndex, int toIndex, byte key);
     public static int binarySearch(@PolySigned short[] a, int fromIndex, int toIndex, short key);
     public static int binarySearch(@PolySigned int[] a, int fromIndex, int toIndex, int key);
     public static int binarySearch(@PolySigned long[] a, int fromIndex, int toIndex, long key);
@@ -3356,8 +3356,8 @@ class Arrays {
     public static int hashCode(@PolySigned byte[] a);
     public static int hashCode(@PolySigned short[] a);
     public static int hashCode(@PolySigned int[] a);
-    public static int hashCode(@PolySigned long[] a);
     public static int hashCode(@PolySigned char[] a);
+    public static int hashCode(@PolySigned long[] a);
 
     public static void parallelPrefix(@PolySigned int[] array, IntBinaryOperator op);
     public static void parallelPrefix(@PolySigned long[] array, LongBinaryOperator op);
