@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>Examples:
  *
- * <pre>{@Code
+ * <pre>{@code
  * int
  * MyClass
  * java.lang.Integer
