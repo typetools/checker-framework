@@ -302,7 +302,7 @@ interface DataInput {
      * @return     the number of bytes actually skipped.
      * @exception  IOException   if an I/O error occurs.
      */
-    int skipBytes(int n) throws IOException;
+    @NonNegative int skipBytes(int n) throws IOException;
 
     /**
      * Reads one input byte and returns

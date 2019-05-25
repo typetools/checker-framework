@@ -53,7 +53,7 @@ public class ByteArrayOutputStream extends OutputStream {
     /**
      * The number of valid bytes in the buffer.
      */
-    protected int count;
+    protected @IndexOrHigh("this.buf") int count;
 
     /**
      * Creates a new byte array output stream. The buffer capacity is
