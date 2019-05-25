@@ -3313,16 +3313,16 @@ class DigestOutputStream {
 package java.util;
 
 class Arrays {
-    public static int binarySearch(@PolySigned byte[] a, byte key);
-    public static int binarySearch(@PolySigned short[] a, short key);
-    public static int binarySearch(@PolySigned int[] a, int key);
-    public static int binarySearch(@PolySigned long[] a, long key);
-    public static int binarySearch(@PolySigned char[] a, char key);
-    public static int binarySearch(@PolySigned byte[] a, int fromIndex, int toIndex, byte key);
-    public static int binarySearch(@PolySigned short[] a, int fromIndex, int toIndex, short key);
-    public static int binarySearch(@PolySigned int[] a, int fromIndex, int toIndex, int key);
-    public static int binarySearch(@PolySigned long[] a, int fromIndex, int toIndex, long key);
-    public static int binarySearch(@PolySigned char[] a, int fromIndex, int toIndex, char key);
+    public static int binarySearch(@PolySigned byte[] a, @PolySigned byte key);
+    public static int binarySearch(@PolySigned short[] a, @PolySigned short key);
+    public static int binarySearch(@PolySigned int[] a, @PolySigned int key);
+    public static int binarySearch(@PolySigned long[] a, @PolySigned long key);
+    public static int binarySearch(@PolySigned char[] a, @PolySigned char key);
+    public static int binarySearch(@PolySigned byte[] a, int fromIndex, int toIndex, @PolySigned byte key);
+    public static int binarySearch(@PolySigned short[] a, int fromIndex, int toIndex, @PolySigned short key);
+    public static int binarySearch(@PolySigned int[] a, int fromIndex, int toIndex, @PolySigned int key);
+    public static int binarySearch(@PolySigned long[] a, int fromIndex, int toIndex, @PolySigned long key);
+    public static int binarySearch(@PolySigned char[] a, int fromIndex, int toIndex, @PolySigned char key);
 
     public static @PolySigned byte[] copyOf(@PolySigned byte[] original, int newLength);
     public static @PolySigned short[] copyOf(@PolySigned short[] original, int newLength);
