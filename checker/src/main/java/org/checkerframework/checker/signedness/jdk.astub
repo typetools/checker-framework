@@ -3313,22 +3313,16 @@ class DigestOutputStream {
 package java.util;
 
 class Arrays {
-    public static void fill(@PolySigned byte[] a, @PolySigned byte val);
-    public static void fill(@PolySigned char[] a, @PolySigned char val);
-    public static void fill(@PolySigned short[] a, @PolySigned short val);
-    public static void fill(@PolySigned int[] a, @PolySigned int val);
-    public static void fill(@PolySigned long[] a, @PolySigned long val);
-    public static void fill(@PolySigned byte[] a, int fromIndex, int toIndex, @PolySigned byte val);
-    public static void fill(@PolySigned char[] a, int fromIndex, int toIndex, @PolySigned char val);
-    public static void fill(@PolySigned short[] a, int fromIndex, int toIndex, @PolySigned short val);
-    public static void fill(@PolySigned int[] a, int fromIndex, int toIndex, @PolySigned int val);
-    public static void fill(@PolySigned long[] a, int fromIndex, int toIndex, @PolySigned long val);
-
-    public static @PolySigned byte[] copyOfRange(@PolySigned byte[] original, int from, int to);
-    public static @PolySigned short[] copyOfRange(@PolySigned short[] original, int from, int to);
-    public static @PolySigned int[] copyOfRange(@PolySigned int[] original, int from, int to);
-    public static @PolySigned long[] copyOfRange(@PolySigned long[] original, int from, int to);
-    public static @PolySigned char[] copyOfRange(@PolySigned char[] original, int from, int to);
+    public static int binarySearch(@PolySigned byte[] a, byte key);
+    public static int binarySearch(@PolySigned short[] a, short key);
+    public static int binarySearch(@PolySigned int[] a, int key);
+    public static int binarySearch(@PolySigned long[] a, long key);
+    public static int binarySearch(@PolySigned char[] a, char key);
+    public static int binarySearch(@PolySigned byte[] a, int fromIndex, int toIndex, byte key);    
+    public static int binarySearch(@PolySigned short[] a, int fromIndex, int toIndex, short key);
+    public static int binarySearch(@PolySigned int[] a, int fromIndex, int toIndex, int key);
+    public static int binarySearch(@PolySigned long[] a, int fromIndex, int toIndex, long key);
+    public static int binarySearch(@PolySigned char[] a, int fromIndex, int toIndex, char key);
 
     public static @PolySigned byte[] copyOf(@PolySigned byte[] original, int newLength);
     public static @PolySigned short[] copyOf(@PolySigned short[] original, int newLength);
@@ -3336,6 +3330,73 @@ class Arrays {
     public static @PolySigned long[] copyOf(@PolySigned long[] original, int newLength);
     public static @PolySigned char[] copyOf(@PolySigned char[] original, int newLength);
 
+    public static @PolySigned byte[] copyOfRange(@PolySigned byte[] original, int from, int to);
+    public static @PolySigned short[] copyOfRange(@PolySigned short[] original, int from, int to);
+    public static @PolySigned int[] copyOfRange(@PolySigned int[] original, int from, int to);
+    public static @PolySigned long[] copyOfRange(@PolySigned long[] original, int from, int to);
+    public static @PolySigned char[] copyOfRange(@PolySigned char[] original, int from, int to);
+
+    public static boolean equals(@PolySigned byte[] a, @PolySigned byte[] a2);
+    public static boolean equals(@PolySigned short[] a, @PolySigned short[] a2);
+    public static boolean equals(@PolySigned int[] a, @PolySigned int[] a2);
+    public static boolean equals(@PolySigned long[] a, @PolySigned long[] a2);
+    public static boolean equals(@PolySigned char[] a, @PolySigned char[] a2);
+
+    public static void fill(@PolySigned byte[] a, @PolySigned byte val);
+    public static void fill(@PolySigned short[] a, @PolySigned short val);
+    public static void fill(@PolySigned int[] a, @PolySigned int val);
+    public static void fill(@PolySigned long[] a, @PolySigned long val);
+    public static void fill(@PolySigned char[] a, @PolySigned char val);
+    public static void fill(@PolySigned byte[] a, int fromIndex, int toIndex, @PolySigned byte val);
+    public static void fill(@PolySigned short[] a, int fromIndex, int toIndex, @PolySigned short val);
+    public static void fill(@PolySigned int[] a, int fromIndex, int toIndex, @PolySigned int val);
+    public static void fill(@PolySigned long[] a, int fromIndex, int toIndex, @PolySigned long val);
+    public static void fill(@PolySigned char[] a, int fromIndex, int toIndex, @PolySigned char val);
+
+    public static int hashCode(@PolySigned byte[] a);
+    public static int hashCode(@PolySigned short[] a);
+    public static int hashCode(@PolySigned int[] a);
+    public static int hashCode(@PolySigned char[] a);
+    public static int hashCode(@PolySigned long[] a);
+
+    public static void parallelPrefix(@PolySigned int[] array, IntBinaryOperator op);
+    public static void parallelPrefix(@PolySigned long[] array, LongBinaryOperator op);
+    public static void parallelPrefix(@PolySigned int[] array, int fromIndex, int toIndex, IntBinaryOperator op);
+    public static void parallelPrefix(@PolySigned long[] array, int fromIndex, int toIndex, LongBinaryOperator op);
+
+    public static void parallelSetAll(@PolySigned int[] array, IntUnaryOperator generator);
+    public static void parallelSetAll(@PolySigned long[] array, IntToLongFunction generator);
+
+    public static void parallelSort(@PolySigned byte[] a);
+    public static void parallelSort(@PolySigned short[] a);
+    public static void parallelSort(@PolySigned int[] a);
+    public static void parallelSort(@PolySigned long[] a);
+    public static void parallelSort(@PolySigned char[] a);
+    public static void parallelSort(@PolySigned byte[] a, int fromIndex, int toIndex);
+    public static void parallelSort(@PolySigned short[] a, int fromIndex, int toIndex);
+    public static void parallelSort(@PolySigned int[] a, int fromIndex, int toIndex);
+    public static void parallelSort(@PolySigned long[] a, int fromIndex, int toIndex);
+    public static void parallelSort(@PolySigned char[] a, int fromIndex, int toIndex);
+
+    public static void sort(@PolySigned byte[] a);
+    public static void sort(@PolySigned short[] a);
+    public static void sort(@PolySigned int[] a);
+    public static void sort(@PolySigned long[] a);
+    public static void sort(@PolySigned char[] a);
+    public static void sort(@PolySigned byte[] a, int fromIndex, int toIndex);
+    public static void sort(@PolySigned short[] a, int fromIndex, int toIndex);
+    public static void sort(@PolySigned int[] a, int fromIndex, int toIndex);
+    public static void sort(@PolySigned long[] a, int fromIndex, int toIndex);
+    public static void sort(@PolySigned char[] a, int fromIndex, int toIndex);
+
+    public static void setAll(@PolySigned int[] array, IntUnaryOperator generator);
+    public static void setAll(@PolySigned long[] array, IntToLongFunction generator);
+
+    public static String toString(@PolySigned byte[] a);
+    public static String toString(@PolySigned short[] a);
+    public static String toString(@PolySigned int[] a);
+    public static String toString(@PolySigned long[] a);
+    public static String toString(@PolySigned char[] a);
 }
 
 package java.util.zip;
