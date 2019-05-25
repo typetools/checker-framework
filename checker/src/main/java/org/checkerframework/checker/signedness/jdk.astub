@@ -3386,6 +3386,12 @@ class Random {
     public void nextBytes(@PolySigned byte[] bytes);
 }
 
+package java.security;
+
+class SecureRandom {
+    public void nextBytes(@PolySigned byte[] bytes);
+}
+
 package java.util.zip;
 
 class CheckedOutputStream {
