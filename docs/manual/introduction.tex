@@ -189,9 +189,10 @@ synonyms.
 \sectionAndLabel{Installation}{installation}
 
 \begin{sloppypar}
-This section describes how to install the Checker Framework.
+This section describes how to install the Checker Framework. \\
 If you use a build system that automatically downloads dependencies,
-such as Gradle or Maven, you do not need to perform any installation.
+such as Gradle or Maven, \textbf{no installation is necessary}; just see
+\chapterpageref{external-tools}. \\
 If you wish to try the Checker Framework without installing it, use the
 \href{http://eisop.uwaterloo.ca/live/}{Checker Framework Live Demo} webpage.
 \end{sloppypar}
@@ -544,14 +545,16 @@ then update your buildfile to use the \<org.checkerframework.annotatedlib>
 group.  For example, in \<build.gradle>, change
 
 \begin{Verbatim}
-  api group: 'org.apache.bcel', name: 'bcel', version: '6.2'
+  api group: 'org.apache.bcel', name: 'bcel', version: '6.3.1'
+  api group: 'commons-io', name: 'commans-io', version: '2.6'
 \end{Verbatim}
 
 \noindent
 to
 
 \begin{Verbatim}
-  api group: 'org.checkerframework.annotatedlib', name: 'bcel', version: '6.2.0.2'
+  api group: 'org.checkerframework.annotatedlib', name: 'bcel', version: '6.3.1'
+  api group: 'org.checkerframework.annotatedlib', name: 'commons-io', version: '2.6.0.1'
 \end{Verbatim}
 
 \noindent
@@ -1390,7 +1393,7 @@ verify your reasoning.
   \item
     If your proof includes ``method \<processOptions> has already been called and it
     set field \<tz1>'', then annotate \<processOptions>'s declaration with
-    \refqualclasswithparams{checker/nullness/qual}{EnsuresNonNull}{"tz1"}.
+   \ refqualclasswithparams{checker/nullness/qual}{EnsuresNonNull}{"tz1"}.
   \item
     If your proof includes ``method \<isEmpty> returned false, so its
     argument must have been non-null'', then annotate \<isEmpty>'s
