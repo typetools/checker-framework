@@ -47,10 +47,6 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
         TypeCastTree cast = (TypeCastTree) node;
         Tree castType = cast.getType();
-        // All types should be wrapped in some annotation
-        if (castType.getKind() != Kind.ANNOTATED_TYPE) {
-            return null;
-        }
 
         AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) castType;
         ExpressionTree underlyingType = annotatedType.getUnderlyingType();
