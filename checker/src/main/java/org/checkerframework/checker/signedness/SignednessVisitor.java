@@ -384,7 +384,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     }
 
     /** @return a string representation of kind, with trailing _ASSIGNMENT stripped off if any */
-    private String kindWithOutAssignment(Kind kind) {
+    private String kindWithoutAssignment(Kind kind) {
         String result = kind.toString();
         if (result.endsWith("_ASSIGNMENT")) {
             return result.substring(0, result.length() - "_ASSIGNMENT".length());
@@ -421,13 +421,13 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                     checker.report(
                             Result.failure(
                                     "compound.assignment.unsigned.variable",
-                                    kindWithOutAssignment(kind)),
+                                    kindWithoutAssignment(kind)),
                             var);
                 } else if (exprType.hasAnnotation(Unsigned.class)) {
                     checker.report(
                             Result.failure(
                                     "compound.assignment.unsigned.expression",
-                                    kindWithOutAssignment(kind)),
+                                    kindWithoutAssignment(kind)),
                             expr);
                 }
                 break;
@@ -437,7 +437,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                     checker.report(
                             Result.failure(
                                     "compound.assignment.shift.signed",
-                                    kindWithOutAssignment(kind),
+                                    kindWithoutAssignment(kind),
                                     "unsigned"),
                             var);
                 }
@@ -448,7 +448,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                     checker.report(
                             Result.failure(
                                     "compound.assignment.shift.unsigned",
-                                    kindWithOutAssignment(kind),
+                                    kindWithoutAssignment(kind),
                                     "signed"),
                             var);
                 }
@@ -462,14 +462,14 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                     checker.report(
                             Result.failure(
                                     "compound.assignment.mixed.unsigned.variable",
-                                    kindWithOutAssignment(kind)),
+                                    kindWithoutAssignment(kind)),
                             expr);
                 } else if (varType.hasAnnotation(Signed.class)
                         && exprType.hasAnnotation(Unsigned.class)) {
                     checker.report(
                             Result.failure(
                                     "compound.assignment.mixed.unsigned.expression",
-                                    kindWithOutAssignment(kind)),
+                                    kindWithoutAssignment(kind)),
                             expr);
                 }
                 break;
