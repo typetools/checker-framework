@@ -47,15 +47,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
             AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
-    // These are commented out until issues with making boxed implicitly signed
-    // are worked out. (https://github.com/typetools/checker-framework/issues/797)
-    /*
-    private final String JAVA_LANG_BYTE = "java.lang.Byte";
-    private final String JAVA_LANG_SHORT = "java.lang.Short";
-    private final String JAVA_LANG_INTEGER = "java.lang.Integer";
-    private final String JAVA_LANG_LONG = "java.lang.Long";
-    */
-
     /** Create a SignednessAnnotatedTypeFactory. */
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -105,20 +96,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             default:
                 // Nothing for other cases.
         }
-
-        // This code is commented out until boxed primitives can be made implicitly signed.
-        // (https://github.com/typetools/checker-framework/issues/797)
-
-        /*switch (TypesUtils.getQualifiedName(type.getUnderlyingType()).toString()) {
-        case JAVA_LANG_BYTE:
-        case JAVA_LANG_SHORT:
-        case JAVA_LANG_INTEGER:
-        case JAVA_LANG_LONG:
-            QualifierDefaults defaults = new QualifierDefaults(elements, this);
-            defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
-            defaults.annotate(tree, type);
-        }*/
-
     }
 
     /** {@inheritDoc} */
@@ -178,8 +155,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         // Refines the type of an integer primitive to @Constant if it is within the signed positive
-        // range (i.e. its MSB is zero). Note that boxed primitives are not handled because they are
-        // not yet handled by the Signedness Checker (Issue #797).
+        // range (i.e. its MSB is zero).
         @Override
         public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
             TypeMirror javaType = type.getUnderlyingType();
