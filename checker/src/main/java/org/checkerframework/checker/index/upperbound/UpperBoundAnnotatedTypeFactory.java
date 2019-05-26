@@ -671,7 +671,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * length of some sequence, then (a + b) / divisor is less than the length of that sequence.
          */
         private UBQualifier plusTreeDivideByVal(int divisor, ExpressionTree numeratorTree) {
-            numeratorTree = TreeUtils.skipParens(numeratorTree);
+            numeratorTree = TreeUtils.withoutParens(numeratorTree);
             if (divisor < 2 || numeratorTree.getKind() != Kind.PLUS) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
