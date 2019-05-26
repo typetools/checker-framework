@@ -47,6 +47,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
             AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
+    ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
+
     /** Create a SignednessAnnotatedTypeFactory. */
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -111,7 +113,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * left operand, and that the types of identifiers are refined based on the results of the Value
      * Checker.
      */
-    // TODO: Refine the type of expressions using the Value Checker as well.
     private class SignednessTreeAnnotator extends TreeAnnotator {
 
         public SignednessTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
@@ -122,7 +123,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Change the type of booleans to {@code @UnknownSignedness} so that the {@link
          * PropagationTreeAnnotator} does not change the type of them.
          */
-        private void annotateBoolean(AnnotatedTypeMirror type) {
+        private void annotateBooleanAsUnknownSignedness(AnnotatedTypeMirror type) {
             switch (type.getKind()) {
                 case BOOLEAN:
                     type.addAnnotation(UNKNOWN_SIGNEDNESS);
@@ -144,13 +145,13 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 default:
                     // Do nothing
             }
-            annotateBoolean(type);
+            annotateBooleanAsUnknownSignedness(type);
             return null;
         }
 
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
-            annotateBoolean(type);
+            annotateBooleanAsUnknownSignedness(type);
             return null;
         }
 
@@ -166,9 +167,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || javaTypeKind == TypeKind.SHORT
                     || javaTypeKind == TypeKind.INT
                     || javaTypeKind == TypeKind.LONG) {
-                ValueAnnotatedTypeFactory valueFact =
-                        getTypeFactoryOfSubchecker(ValueChecker.class);
-                AnnotatedTypeMirror valueATM = valueFact.getAnnotatedType(tree);
+                AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
                 // These annotations are trusted rather than checked.  Maybe have an option to
                 // disable using them?
                 if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
@@ -176,7 +175,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         && type.hasAnnotation(SIGNED)) {
                     type.replaceAnnotation(CONSTANT);
                 } else {
-                    Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFact);
+                    Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
 
                     if (treeRange != null) {
                         switch (javaType.getKind()) {
