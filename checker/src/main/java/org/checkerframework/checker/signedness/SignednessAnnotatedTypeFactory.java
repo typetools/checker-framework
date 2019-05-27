@@ -68,20 +68,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return getBundledTypeQualifiersWithoutPolyAll();
     }
 
-    /** {@inheritDoc} */
     @Override
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-        // When it is possible to default types based on their TypeKinds,
-        // this method will no longer be needed.
-        // Currently, it is adding the LOCAL_VARIABLE default for
-        // bytes, shorts, ints, and longs so that the implicit for
-        // those types is not applied when they are local variables.
-        // Only the local variable default is applied first because
-        // it is the only refinable location (other than fields) that could
-        // have a primitive type.
-
+        // Prevent @ImplicitFor from applying to local variables of type byte, short, int, and long,
+        // but adding the top type to them, which permits flow-sensitive type refinement.
+        // (When it is possible to default types based on their TypeKinds,
+        // this whole method will no longer be needed.)
         addUnknownSignednessToSomeLocals(tree, type);
+
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
     }
 
@@ -95,9 +90,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             case SHORT:
             case INT:
             case LONG:
-            case FLOAT:
-            case DOUBLE:
-            case CHAR:
                 QualifierDefaults defaults = new QualifierDefaults(elements, this);
                 defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
                 defaults.annotate(tree, type);
@@ -121,7 +113,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     }
 
-    /** {@inheritDoc} */
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(

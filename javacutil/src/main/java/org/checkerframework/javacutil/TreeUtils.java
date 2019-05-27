@@ -329,8 +329,8 @@ public final class TreeUtils {
     }
 
     /**
-     * If the given tree is a parenthesized tree, it returns the enclosed non-parenthesized tree.
-     * Otherwise, it returns the same tree.
+     * If the given tree is a parenthesized tree, return the enclosed non-parenthesized tree.
+     * Otherwise, return the same tree.
      *
      * @param tree an expression tree
      * @return the outermost non-parenthesized tree enclosed by the given tree
@@ -354,6 +354,25 @@ public final class TreeUtils {
     @Deprecated // use withoutParens
     public static ExpressionTree skipParens(final ExpressionTree tree) {
         return withoutParens(tree);
+    }
+
+    /**
+     * Gets the first enclosing tree in path, that is not a parenthesis.
+     *
+     * @param path the path defining the tree node
+     * @return a pair of a non-parenthesis tree that contains the argument, and its child that is
+     *     the argument or is a parenthesized version of it
+     */
+    public static Pair<Tree, Tree> enclosingNonParen(final TreePath path) {
+        TreePath parentPath = path.getParentPath();
+        Tree enclosing = parentPath.getLeaf();
+        Tree enclosingChild = path.getLeaf();
+        while (enclosing.getKind() == Kind.PARENTHESIZED) {
+            parentPath = parentPath.getParentPath();
+            enclosingChild = enclosing;
+            enclosing = parentPath.getLeaf();
+        }
+        return Pair.of(enclosing, enclosingChild);
     }
 
     /**
