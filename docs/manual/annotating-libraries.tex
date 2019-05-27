@@ -376,6 +376,10 @@ Build the annotated JDK\@.  There are two ways:
   run \<./gradlew buildJdk>
 \end{itemize}
 
+(First, be sure you have followed the instrucctions for building the Checker
+Framework from source (Section~\ref{build-source})
+including running \<./gradlew cloneAndBuildDependencies>.)
+
 You may receive a compilation error because your files use a part of the
 JDK that is not in the annotated JDK\@.  If the missing part is relatively
 small, please add it.  If the missing part is large, then you can make
