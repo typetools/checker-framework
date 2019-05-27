@@ -61,7 +61,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return getBundledTypeQualifiersWithoutPolyAll();
     }
 
-    /** {@inheritDoc} */
     @Override
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
@@ -100,7 +99,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** {@inheritDoc} */
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
