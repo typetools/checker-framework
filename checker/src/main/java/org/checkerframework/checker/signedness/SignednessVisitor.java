@@ -9,7 +9,6 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
-import com.sun.source.util.TreePath;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
@@ -18,6 +17,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -210,21 +210,11 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      *     same effect
      */
     private boolean isMaskedShift(BinaryTree shiftExpr) {
-        // enclosing is the operation or statement that immediately contains shiftExpr
-        Tree enclosing;
-        // enclosingChild is the top node in the chain of nodes from shiftExpr to parent
-        Tree enclosingChild;
-        {
-            TreePath parentPath = visitorState.getPath().getParentPath();
-            enclosing = parentPath.getLeaf();
-            enclosingChild = enclosing;
-            // Strip away all parentheses from the shift operation
-            while (enclosing.getKind() == Kind.PARENTHESIZED) {
-                parentPath = parentPath.getParentPath();
-                enclosingChild = enclosing;
-                enclosing = parentPath.getLeaf();
-            }
-        }
+        Pair<Tree, Tree> enclosingPair = TreeUtils.enclosingNonParen(visitorState.getPath());
+        // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
+        Tree enclosing = enclosingPair.first;
+        // enclosingChild is a child of enclosing:  shiftExpr or a parenthesized version of it.
+        Tree enclosingChild = enclosingPair.second;
 
         if (!isMask(enclosing)) {
             return false;
@@ -265,17 +255,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      *     has the same effect
      */
     private boolean isCastedShift(BinaryTree shiftExpr) {
-        // enclosing is the operation or statement that immediately contains shiftExpr
-        Tree enclosing;
-        {
-            TreePath parentPath = visitorState.getPath().getParentPath();
-            enclosing = parentPath.getLeaf();
-            // Strip away all parentheses from the shift operation
-            while (enclosing.getKind() == Kind.PARENTHESIZED) {
-                parentPath = parentPath.getParentPath();
-                enclosing = parentPath.getLeaf();
-            }
-        }
+        // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
+        Tree enclosing = TreeUtils.enclosingNonParen(visitorState.getPath()).first;
 
         PrimitiveTypeTree castPrimitiveType = primitiveTypeCast(enclosing);
         if (castPrimitiveType == null) {
