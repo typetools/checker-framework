@@ -366,14 +366,14 @@ option.
 Build the annotated JDK\@.  There are two ways:
 \begin{itemize}
 \item
+  Pass a flag.
   Run \<./gradlew buildJdk -PuseLocalJdk>
   % Is any more advice needed here, such as supplying -PuseLocalJdk to
   % other commands?
 \item
-  \begin{enumerate}
-  \item set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>
-  \item run \<./gradlew buildJdk>
-  \end{enumerate}
+  Make a setting in the buildfile.
+  Set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>, then
+  run \<./gradlew buildJdk>
 \end{itemize}
 
 You may receive a compilation error because your files use a part of the
