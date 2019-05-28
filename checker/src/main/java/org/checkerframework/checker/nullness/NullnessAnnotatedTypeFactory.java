@@ -47,8 +47,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
@@ -363,14 +363,10 @@ public class NullnessAnnotatedTypeFactory
     protected TreeAnnotator createTreeAnnotator() {
         // Don't call super.createTreeAnnotator because the default tree annotators are incorrect
         // for the Nullness Checker.
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, NONNULL);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, NONNULL);
-
         return new ListTreeAnnotator(
                 // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
                 new NullnessPropagationTreeAnnotator(this),
-                implicitsTreeAnnotator,
+                new LiteralTreeAnnotator(this),
                 new NullnessTreeAnnotator(this),
                 new CommitmentTreeAnnotator(this));
     }
@@ -474,6 +470,11 @@ public class NullnessAnnotatedTypeFactory
 
         @Override
         public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+            // The result of newly allocated structures is always non-null.
+            if (!type.isAnnotatedInHierarchy(NONNULL)) {
+                type.replaceAnnotation(NONNULL);
+            }
+
             // The most precise element type for `new Object[] {null}` is @FBCBottom, but
             // the most useful element type is @Initialized (which is also accurate).
             AnnotatedArrayType arrayType = (AnnotatedArrayType) type;

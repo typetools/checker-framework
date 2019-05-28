@@ -10,6 +10,7 @@ import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeKind;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -37,8 +38,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf(MonotonicNonNull.class)
+@QualifierForLiterals(LiteralKind.STRING)
 @ImplicitFor(
-        literals = {LiteralKind.STRING},
         types = {
             TypeKind.PACKAGE,
             TypeKind.INT,

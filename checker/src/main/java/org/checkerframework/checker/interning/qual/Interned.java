@@ -7,6 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeKind;
 
@@ -30,8 +31,8 @@ import org.checkerframework.framework.qual.TypeKind;
  * @checker_framework.manual #interning-checker Interning Checker
  */
 @SubtypeOf(UnknownInterned.class)
+@QualifierForLiterals({LiteralKind.PRIMITIVE, LiteralKind.STRING}) // everything but NULL
 @ImplicitFor(
-        literals = {LiteralKind.PRIMITIVE, LiteralKind.STRING}, // everything but NULL
         types = {
             TypeKind.BOOLEAN,
             TypeKind.BYTE,
