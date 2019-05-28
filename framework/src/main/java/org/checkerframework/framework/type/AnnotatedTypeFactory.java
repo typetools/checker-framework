@@ -1188,7 +1188,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 && (typesFromStubFiles == null || !typesFromStubFiles.containsKey(elt))) {
             type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
             ElementAnnotationApplier.apply(type, elt, this);
-            typeVarAnnotator.visit(type);
 
             if (elt instanceof ExecutableElement || elt instanceof VariableElement) {
                 annotateInheritedFromClass(type);
