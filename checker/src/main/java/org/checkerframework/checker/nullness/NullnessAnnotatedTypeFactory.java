@@ -471,7 +471,9 @@ public class NullnessAnnotatedTypeFactory
         @Override
         public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
             // The result of newly allocated structures is always non-null.
-            type.replaceAnnotation(NONNULL);
+            if (!type.isAnnotatedInHierarchy(NONNULL)) {
+                type.replaceAnnotation(NONNULL);
+            }
 
             // The most precise element type for `new Object[] {null}` is @FBCBottom, but
             // the most useful element type is @Initialized (which is also accurate).
