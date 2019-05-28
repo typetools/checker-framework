@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
@@ -167,7 +167,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
 
     /**
      * Adds standard implicit rules. Currently sets Void to bottom if no other implicit is set for
-     * Void. Also, see {@link ImplicitsTreeAnnotator#addStandardImplicits()}.
+     * Void. Also, see {@link LiteralTreeAnnotator#addStandardLiteralQualifiers()}.
      *
      * @return this
      */

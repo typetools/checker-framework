@@ -5,8 +5,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
@@ -16,21 +16,15 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */
 @SubtypeOf(UnknownLocalized.class)
-@ImplicitFor(
-        literals = {
-            /* All integer literals */
-            LiteralKind.INT,
-            LiteralKind.LONG,
-            LiteralKind.FLOAT,
-            LiteralKind.DOUBLE,
-            LiteralKind.BOOLEAN,
-
-            /* null should be the bottom type */
-            LiteralKind.NULL
-
-            // CHAR_LITERAL,
-            // STRING_LITERAL,
-        })
+@QualifierForLiterals({
+    // All literals except chars and strings, which may need to be localized.
+    // (null is bottom by default.)
+    LiteralKind.INT,
+    LiteralKind.LONG,
+    LiteralKind.FLOAT,
+    LiteralKind.DOUBLE,
+    LiteralKind.BOOLEAN
+})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
