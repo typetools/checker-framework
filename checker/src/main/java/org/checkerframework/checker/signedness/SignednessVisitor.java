@@ -39,7 +39,10 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         return kind == Kind.AND || kind == Kind.OR;
     }
 
-    /** @return type of a primitive cast, or null if not a cast to a primitive */
+    /**
+     * @return type of an explicitly annotated primitive cast. Return null if not an explicitly
+     *     annotated cast to a primitive.
+     */
     private PrimitiveTypeTree primitiveTypeCast(Tree node) {
         if (node.getKind() != Kind.TYPE_CAST) {
             return null;
@@ -48,6 +51,10 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         TypeCastTree cast = (TypeCastTree) node;
         Tree castType = cast.getType();
 
+        // We only care if the cast has an annotation.
+        if (castType.getKind() != Kind.ANNOTATED_TYPE) {
+            return null;
+        }
         AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) castType;
         ExpressionTree underlyingType = annotatedType.getUnderlyingType();
 
