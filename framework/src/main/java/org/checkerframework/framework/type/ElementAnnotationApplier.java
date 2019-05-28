@@ -69,6 +69,17 @@ public class ElementAnnotationApplier {
             final AnnotatedTypeMirror type,
             final Element element,
             final AnnotatedTypeFactory typeFactory) {
+        applyInternal(type, element, typeFactory);
+        // Also copy annotations from type parameters to their uses.
+        typeFactory.typeVarAnnotator.visit(type);
+    }
+
+    /** Same as apply except that annatation aren't copied from type parameter declarations. */
+    /*package-private*/ static void applyInternal(
+            final AnnotatedTypeMirror type,
+            final Element element,
+            final AnnotatedTypeFactory typeFactory) {
+
         if (element == null) {
             throw new BugInCF("ElementAnnotationUtil.apply: element cannot be null");
 

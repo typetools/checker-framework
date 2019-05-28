@@ -4013,13 +4013,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Annotates uses of type variables with annotation written explicitly on the type parameter
      * declaration and/or its upper bound.
-     *
-     * <p>For all uses, except those in a method declaration or from an element, the type of the
-     * type variable is computed using {@link TypeFromTree#fromTypeTree(AnnotatedTypeFactory,
-     * Tree)}. {@link TypeFromTypeTreeVisitor#forTypeVariable(AnnotatedTypeMirror,
-     * AnnotatedTypeFactory)} is called for all uses of type variables and that method looks up the
-     * annotations on type parameters and type parameter upper bounds from the tree. Types in method
-     * signatures aren't created using TypeFromTree#fromTypeTree, so it needs special handling.
      */
     class TypeVarAnnotator extends AnnotatedTypeScanner<Void, Void> {
         @Override
@@ -4030,7 +4023,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             if (type.getAnnotations().isEmpty()
                     && type.getUpperBound().getAnnotations().isEmpty()
                     && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
-                ElementAnnotationApplier.apply(type, tpelt, AnnotatedTypeFactory.this);
+                ElementAnnotationApplier.applyInternal(type, tpelt, AnnotatedTypeFactory.this);
             }
             return super.visitTypeVariable(type, p);
         }

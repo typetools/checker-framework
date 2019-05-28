@@ -72,8 +72,6 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         result.setElement(elt);
 
         ElementAnnotationApplier.apply(result, elt, f);
-        f.typeVarAnnotator.visit(result);
-
         return result;
     }
 
