@@ -2,7 +2,10 @@ import org.checkerframework.checker.tainting.qual.PolyTainted;
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
-@SuppressWarnings({"inconsistent.constructor.type", "super.invocation.invalid"})
+@SuppressWarnings({
+    "inconsistent.constructor.type",
+    "super.invocation.invalid"
+}) // ignore these warnings
 public class PolyReturn {
     @PolyTainted PolyReturn() {}
 
