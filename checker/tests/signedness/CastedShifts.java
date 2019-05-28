@@ -6,12 +6,12 @@ public class CastedShifts {
         // Cast to byte.
         @UnknownSignedness byte byteRes;
 
-        byteRes = (byte) (unsigned >> 23);
         // Shifting right by 23, the introduced bits are cast away
         byteRes = (@Unsigned byte) (unsigned >>> 23);
         byteRes = (@Unsigned byte) (unsigned >> 23);
         byteRes = (@Signed byte) (signed >>> 23);
         byteRes = (@Signed byte) (signed >> 23);
+        byteRes = (byte) (signed >> 23);
 
         // Shifting right by 24, the introduced bits are still cast away.
         byteRes = (@Unsigned byte) (unsigned >>> 24);
