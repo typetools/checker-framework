@@ -352,41 +352,11 @@ Look under the menu headings Java $\rightarrow$ Compiler $\rightarrow$ Errors/Wa
 
 \sectionAndLabel{Gradle}{gradle}
 
-This section describes how to run a checker
-on a project that uses the \href{https://gradle.org/}{Gradle} build system.
-
-\begin{enumerate}
-\item
-  Copy the file
-  \href{https://raw.githubusercontent.com/typetools/checker-framework/master/docs/manual/checkerframework.gradle}{\<checkerframework.gradle>}
-  to your project.
-
-\item
-  Customize the file, such as setting which type-checkers are run.
-
-\item
-  In your main buildfile, add the lines
-\begin{Verbatim}
-// Checker Framework pluggable type-checking
-apply from: "checkerframework.gradle"
-\end{Verbatim}
-
-\end{enumerate}
-
-
-\textbf{Note}: Gradle 3.4 has a bug where it does not run annotation processors,
-even if the \<-processor> flag is passed.
-% The gradle maintainers claim at
-% https://github.com/gradle/gradle/issues/1471#issuecomment-283001380 that
-% gradle is right and javac is wrong, because the file
-% META-INF/services/javax.annotation.processing.Processor must be present.
-% In fact, the javac documentation they link to is clear that -processor
-% overrides the need for that file; the gradle maintainers misread it.
-To work around this, install a later version of gradle.  Or, run
-\<gradle wrapper --gradle-version 4.5> (or any version 3.5 or later) and
-then always use \<./gradlew> where you would have used \<gradle>.
-
-
+To run a checker
+on a project that uses the \href{https://gradle.org/}{Gradle} build system,
+use the
+\ahreforurl{https://github.com/kelloggm/checkerframework-gradle-plugin}{Checker
+  Framework Gradle plugin}.  Its documentation explains how to use it.
 
 
 \sectionAndLabel{IntelliJ IDEA}{intellij}
