@@ -164,8 +164,8 @@ public class DefaultForUseTypeAnnotator extends TypeAnnotator {
     }
 
     /**
-     * Adds standard rules. Currently, sets Void to bottom if no other implicit is set for
-     * Void. Also, see {@link LiteralTreeAnnotator#addStandardLiteralQualifiers()}.
+     * Adds standard rules. Currently, sets Void to bottom if no other implicit is set for Void.
+     * Also, see {@link LiteralTreeAnnotator#addStandardLiteralQualifiers()}.
      *
      * @return this
      */
