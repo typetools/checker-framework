@@ -71,6 +71,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -670,7 +671,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * length of some sequence, then (a + b) / divisor is less than the length of that sequence.
          */
         private UBQualifier plusTreeDivideByVal(int divisor, ExpressionTree numeratorTree) {
-            numeratorTree = TreeUtils.skipParens(numeratorTree);
+            numeratorTree = TreeUtils.withoutParens(numeratorTree);
             if (divisor < 2 || numeratorTree.getKind() != Kind.PLUS) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
@@ -780,13 +781,20 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Tree tree, TreePath treePath, List<String> lessThanExpressions) {
         UBQualifier ubQualifier = null;
         for (String expression : lessThanExpressions) {
-            FlowExpressions.Receiver receiver;
+            Pair<FlowExpressions.Receiver, String> receiverAndOffset;
             try {
-                receiver = getReceiverFromJavaExpressionString(expression, treePath);
+                receiverAndOffset =
+                        getReceiverAndOffsetFromJavaExpressionString(expression, treePath);
             } catch (FlowExpressionParseException e) {
-                receiver = null;
+                receiverAndOffset = null;
             }
-            if (receiver == null || !CFAbstractStore.canInsertReceiver(receiver)) {
+            if (receiverAndOffset == null) {
+                continue;
+            }
+            FlowExpressions.Receiver receiver = receiverAndOffset.first;
+            String offset = receiverAndOffset.second;
+
+            if (!CFAbstractStore.canInsertReceiver(receiver)) {
                 continue;
             }
             CFStore store = getStoreBefore(tree);
@@ -795,7 +803,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 UBQualifier newUBQ =
                         UBQualifier.createUBQualifier(
                                 qualHierarchy.findAnnotationInHierarchy(
-                                        value.getAnnotations(), UNKNOWN));
+                                        value.getAnnotations(), UNKNOWN),
+                                AnnotatedTypeFactory.negateConstant(offset));
                 if (ubQualifier == null) {
                     ubQualifier = newUBQ;
                 } else {
