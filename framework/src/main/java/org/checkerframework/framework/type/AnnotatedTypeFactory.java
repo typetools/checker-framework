@@ -47,7 +47,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.IntersectionType;
@@ -398,12 +397,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final ExecutableElement objectGetClass;
 
     /**
-     * Adds explicit annotations on type parameter declarations an their upper bounds to uses of
-     * type variables.
-     */
-    protected final TypeVarAnnotator typeVarAnnotator;
-
-    /**
      * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
      * root. (These parameters are required so that the factory may conduct the appropriate
      * annotation-gathering analyses on certain tree types.)
@@ -469,7 +462,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
 
         objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, processingEnv);
-        this.typeVarAnnotator = new TypeVarAnnotator();
     }
 
     /**
@@ -4006,25 +3998,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 constantExpression = constantExpression.substring(1);
             }
             return "-" + constantExpression;
-        }
-    }
-
-    /**
-     * Annotates uses of type variables with annotation written explicitly on the type parameter
-     * declaration and/or its upper bound.
-     */
-    class TypeVarAnnotator extends AnnotatedTypeScanner<Void, Void> {
-        @Override
-        public Void visitTypeVariable(AnnotatedTypeVariable type, Void p) {
-            TypeParameterElement tpelt =
-                    (TypeParameterElement) type.getUnderlyingType().asElement();
-
-            if (type.getAnnotations().isEmpty()
-                    && type.getUpperBound().getAnnotations().isEmpty()
-                    && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
-                ElementAnnotationApplier.applyInternal(type, tpelt, AnnotatedTypeFactory.this);
-            }
-            return super.visitTypeVariable(type, p);
         }
     }
 }
