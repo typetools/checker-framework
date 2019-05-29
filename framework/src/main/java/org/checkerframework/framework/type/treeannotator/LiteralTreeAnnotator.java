@@ -257,16 +257,14 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
                 for (Set<? extends AnnotationMirror> sam : nonMatches) {
                     if (qualHierarchy.isSubtype(res, sam)) {
                         throw new BugInCF(
-                                "Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition: inferred type for \""
-                                        + string
-                                        + "\" is "
-                                        + res
-                                        + " which is a subtype of "
-                                        + sam
-                                        + " but its pattern does not match the string.  matches = "
-                                        + matches
-                                        + "; nonMatches = "
-                                        + nonMatches);
+                                String.join(
+                                        System.lineSeparator(),
+                                        "Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition:",
+                                        " inferred type for \"" + string + "\" is " + res,
+                                        " which is a subtype of " + sam,
+                                        " but its pattern does not match the string.",
+                                        "  matches = " + matches,
+                                        "  nonMatches = " + nonMatches));
                     }
                 }
                 type.addAnnotations(res);
