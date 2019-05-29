@@ -109,7 +109,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
     /**
      * Adds standard qualifiers for literals. Currently sets the null literal to bottom if no other
      * default is set for null literals. Also, see {@link
-     * ImplicitsTypeAnnotator#addStandardImplicits()}.
+     * DefaultForUseTypeAnnotator#addStandardDefaults()}.
      *
      * @return this
      */
