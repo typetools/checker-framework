@@ -78,7 +78,7 @@ public class ElementAnnotationApplier {
     }
 
     /** Same as apply except that annatation aren't copied from type parameter declarations. */
-    /*package-private*/ static void applyInternal(
+    private static void applyInternal(
             final AnnotatedTypeMirror type,
             final Element element,
             final AnnotatedTypeFactory typeFactory) {
