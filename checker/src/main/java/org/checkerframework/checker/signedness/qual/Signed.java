@@ -20,7 +20,7 @@ import org.checkerframework.framework.qual.TypeKind;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({UnknownSignedness.class})
 @DefaultFor(
-        types = {
+        typeKinds = {
             TypeKind.BYTE,
             TypeKind.INT,
             TypeKind.LONG,
@@ -34,7 +34,7 @@ import org.checkerframework.framework.qual.TypeKind;
         // correctly.
 
         /*,
-        typeNames = {
+        classes = {
             java.lang.Byte.class,
             java.lang.Short.class,
             java.lang.Integer.class,

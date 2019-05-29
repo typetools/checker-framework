@@ -40,7 +40,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER})
 @DefaultFor(
         value = {TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.UPPER_BOUND},
-        types = {
+        typeKinds = {
             TypeKind.BOOLEAN,
             TypeKind.BYTE,
             TypeKind.CHAR,
@@ -50,7 +50,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
             TypeKind.LONG,
             TypeKind.SHORT
         },
-        typeNames = {java.lang.String.class, Void.class})
+        classes = {java.lang.String.class, Void.class})
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface GuardedBy {

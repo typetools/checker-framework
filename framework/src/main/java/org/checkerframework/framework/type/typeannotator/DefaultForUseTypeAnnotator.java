@@ -65,12 +65,12 @@ public class DefaultForUseTypeAnnotator extends TypeAnnotator {
 
             AnnotationMirror theQual =
                     AnnotationBuilder.fromClass(typeFactory.getElementUtils(), qual);
-            for (org.checkerframework.framework.qual.TypeKind typeKind : defaultFor.types()) {
+            for (org.checkerframework.framework.qual.TypeKind typeKind : defaultFor.typeKinds()) {
                 TypeKind mappedTk = mapTypeKinds(typeKind);
                 addTypeKind(mappedTk, theQual);
             }
 
-            for (Class<?> typeName : defaultFor.typeNames()) {
+            for (Class<?> typeName : defaultFor.classes()) {
                 addTypeName(typeName, theQual);
             }
         }

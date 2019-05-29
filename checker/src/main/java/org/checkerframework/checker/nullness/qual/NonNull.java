@@ -41,7 +41,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @DefaultQualifierInHierarchy
 @DefaultFor(
         value = TypeUseLocation.EXCEPTION_PARAMETER,
-        types = {
+        typeKinds = {
             TypeKind.PACKAGE,
             TypeKind.INT,
             TypeKind.BOOLEAN,

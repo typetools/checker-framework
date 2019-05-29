@@ -28,12 +28,12 @@ public @interface DefaultFor {
     TypeUseLocation[] value() default {};
 
     /** @return {@link TypeKind}s of types for which an annotation should be implicitly added */
-    TypeKind[] types() default {};
+    TypeKind[] typeKinds() default {};
 
     /**
      * @return {@link Class}es for which an annotation should be applied. For example, if
-     *     {@code @MyAnno} is meta-annotated with {@code @DefaultFor(typeNames=String.class)}, then
+     *     {@code @MyAnno} is meta-annotated with {@code @DefaultFor(classes=String.class)}, then
      *     every occurrence of {@code String} is actually {@code @MyAnno String}.
      */
-    Class<?>[] typeNames() default {};
+    Class<?>[] classes() default {};
 }

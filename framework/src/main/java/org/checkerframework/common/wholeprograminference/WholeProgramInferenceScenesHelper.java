@@ -377,14 +377,14 @@ public class WholeProgramInferenceScenesHelper {
         // org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator.
         DefaultFor defaultFor = elt.getAnnotation(DefaultFor.class);
         if (defaultFor != null) {
-            org.checkerframework.framework.qual.TypeKind[] types = defaultFor.types();
+            org.checkerframework.framework.qual.TypeKind[] types = defaultFor.typeKinds();
             TypeKind atmKind = atm.getUnderlyingType().getKind();
             if (hasMatchingTypeKind(atmKind, types)) {
                 return true;
             }
 
             try {
-                Class<?>[] names = defaultFor.typeNames();
+                Class<?>[] names = defaultFor.classes();
                 for (Class<?> c : names) {
                     TypeMirror underlyingtype = atm.getUnderlyingType();
                     while (underlyingtype instanceof javax.lang.model.type.ArrayType) {

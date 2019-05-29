@@ -33,7 +33,7 @@ import org.checkerframework.framework.qual.TypeKind;
 @SubtypeOf(UnknownInterned.class)
 @QualifierForLiterals({LiteralKind.PRIMITIVE, LiteralKind.STRING}) // everything but NULL
 @DefaultFor(
-        types = {
+        typeKinds = {
             TypeKind.BOOLEAN,
             TypeKind.BYTE,
             TypeKind.CHAR,
