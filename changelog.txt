@@ -7,6 +7,9 @@ Added a template for a repository that you can use to write a custom checker.
 Linked to the Checker Framework Gradle plugin, which makes it easy to run
 a checker on a project that is built using the Gradle build tool.
 
+Implementation detail: deprecated TreeUtils.skipParens in favor of
+TreeUtils.withoutParens which has the same specification.
+
 ---------------------------------------------------------------------------
 
 Version 2.8.1, May 1, 2019

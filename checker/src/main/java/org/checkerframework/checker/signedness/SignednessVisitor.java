@@ -225,7 +225,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                         : maskExpr.getRightOperand();
 
         // Strip away the parentheses from the mask if any exist
-        mask = TreeUtils.skipParens(mask);
+        mask = TreeUtils.withoutParens(mask);
 
         if (!isLiteral(shiftAmountExpr) || !isLiteral(mask)) {
             return false;
