@@ -6,4 +6,7 @@ mvn compile
 
 You should see output that includes:
 
-MavenExample.java:[26,29] error: [assignment.type.incompatible] incompatible types in assignment.
+MavenExample.java:[25,29] error: [assignment.type.incompatible] incompatible types in assignment.
+
+Note that error-prone only needs to be used in a Java 8 environment.
+For Java 9+ environments, remove mentions of error-prone from pom.xml.
