@@ -61,16 +61,16 @@ public class Buffer {
 
         void casts(@Untainted Object untainted, @Tainted Object tainted) {
             @Untainted Buffer b1 = (@Untainted Buffer) untainted; // ok
-            // :: error: (invariant.cast)
+            // :: error: (invariant.cast.unsafe)
             @Untainted Buffer b2 = (@Untainted Buffer) tainted;
 
-            // :: error: (invariant.cast)
+            // :: error: (invariant.cast.unsafe)
             @Tainted Buffer b3 = (@Tainted Buffer) untainted; // error
-            // :: error: (invariant.cast)
+            // :: error: (invariant.cast.unsafe)
             @Tainted Buffer b4 = (@Tainted Buffer) tainted; // error
 
             @Untainted Buffer b5 = (Buffer) untainted; // ok
-            // :: error: (invariant.cast)
+            // :: error: (invariant.cast.unsafe)
             @Tainted Buffer b6 = (Buffer) tainted;
         }
 

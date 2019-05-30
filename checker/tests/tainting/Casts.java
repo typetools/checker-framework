@@ -20,11 +20,11 @@ public class Casts {
         o = (@Tainted Object) untaintedObj;
         o = (@Tainted Object) untaintedBuf;
 
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Tainted Buffer) taintedObj;
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Tainted Buffer) untaintedBuf;
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Tainted Buffer) untaintedObj;
 
         // :: warning: (cast.unsafe)
@@ -33,9 +33,9 @@ public class Casts {
         o = (@Untainted Object) taintedBuf;
         o = (@Untainted Object) untaintedBuf;
 
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Untainted Buffer) taintedObj;
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Untainted Buffer) taintedBuf;
         o = (@Untainted Buffer) untaintedObj;
     }
@@ -46,26 +46,26 @@ public class Casts {
             @Tainted MyBuffer taintedMyBuf,
             @Untainted MyBuffer untaintedMyBuff) {
         @Tainted Object o = (@Tainted Buffer) taintedMyBuf;
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Tainted Buffer) untaintedBuf;
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Tainted Buffer) untaintedMyBuff;
 
         o = (@Tainted MyBuffer) taintedBuf;
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Tainted MyBuffer) untaintedBuf;
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Tainted MyBuffer) untaintedMyBuff;
 
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Untainted Buffer) taintedMyBuf;
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Untainted Buffer) taintedMyBuf;
         o = (@Untainted Buffer) untaintedMyBuff;
 
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Untainted MyBuffer) taintedBuf;
-        // :: error: (invariant.cast)
+        // :: error: (invariant.cast.unsafe)
         o = (@Untainted MyBuffer) taintedMyBuf;
         o = (@Untainted MyBuffer) untaintedMyBuff;
     }
