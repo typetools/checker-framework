@@ -1,9 +1,13 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
 import org.checkerframework.framework.qual.HasQualifierParameter;
 
 public class ExtendHasQual {
-    static class Super {}
+    static class Super {
+        @SuppressWarnings("super.invocation.invalid")
+        @Untainted Super() {}
+    }
 
     @HasQualifierParameter(Tainted.class)
     static class Buffer extends Super {}

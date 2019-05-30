@@ -1,8 +1,10 @@
 import org.checkerframework.checker.tainting.qual.PolyTainted;
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
+import org.checkerframework.framework.qual.HasQualifierParameter;
 
 @SuppressWarnings({"inconsistent.constructor.type", "super.invocation.invalid"})
+@HasQualifierParameter(Tainted.class)
 public class PolyConstructor {
 
     @PolyTainted PolyConstructor() {}
@@ -19,8 +21,8 @@ public class PolyConstructor {
         @Untainted PolyConstructor o5 = new PolyConstructor(untainted);
 
         // This currently isn't supported, but could be in the future.
-        // :: error: (assignment.type.incompatible)
         @Untainted PolyConstructor o6 = new PolyConstructor();
+        // :: error: (assignment.type.incompatible)
         @Tainted PolyConstructor o7 = new PolyConstructor();
     }
 }
