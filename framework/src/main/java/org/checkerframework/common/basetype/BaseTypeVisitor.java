@@ -767,7 +767,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Issue a warning if the result type of the constructor is not top. If it is a supertype of the
      * class, then a type.invalid.conflicting.annos error will also be issued by {@link
-     * #isValidUse(AnnotatedDeclaredType, AnnotatedDeclaredType, Tree)}.
+     * #isValidUse(AnnotatedTypeMirror.AnnotatedDeclaredType,AnnotatedTypeMirror.AnnotatedDeclaredType,Tree)}.
      *
      * @param constructorType AnnotatedExecutableType for the constructor
      * @param constructorElement element that declares the constructor
