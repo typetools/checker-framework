@@ -1926,7 +1926,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!isInvariantTypeCastSafe(castType, exprType)) {
                 checker.report(
                         Result.failure(
-                                "invariant.cast", exprType.toString(true), castType.toString(true)),
+                                "invariant.cast.unsafe",
+                                exprType.toString(true),
+                                castType.toString(true)),
                         node);
             }
             return; // don't issue cast unsafe warning.
