@@ -374,10 +374,6 @@ public abstract class GenericAnnotatedTypeFactory<
         return new ListTypeAnnotator(typeAnnotators);
     }
 
-    protected void addTypeNameImplicit(Class<?> clazz, AnnotationMirror implicitAnno) {
-        defaultForUseTypeAnnotator.addTypeName(clazz, implicitAnno);
-    }
-
     /**
      * Returns the appropriate flow analysis class that is used for the
      * org.checkerframework.dataflow analysis.
