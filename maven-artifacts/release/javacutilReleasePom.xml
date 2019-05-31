@@ -40,6 +40,12 @@
 	    <!-- Keep version number in sync with ../../javacutil/build.gradle . -->
             <version>1.0.6</version>
             <type>jar</type>
+        <exclusions>
+        <exclusion>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+        </exclusion>
+      </exclusions>
         </dependency>
     </dependencies>
 

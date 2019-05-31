@@ -17,4 +17,26 @@
             <url>https://checkerframework.org/dev/m2-repo</url>
         </repository>
     </distributionManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+            <version><!-- checker-framework-version -->2.8.1<!-- /checker-framework-version --></version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.plumelib</groupId>
+            <artifactId>plume-util</artifactId>
+	    <!-- Keep version number in sync with ../../javacutil/build.gradle . -->
+            <version>1.0.6</version>
+            <type>jar</type>
+        <exclusions>
+        <exclusion>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+        </exclusion>
+      </exclusions>
+        </dependency>
+    </dependencies>
+
 </project>
