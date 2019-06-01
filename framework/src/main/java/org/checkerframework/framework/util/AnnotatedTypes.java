@@ -837,9 +837,9 @@ public class AnnotatedTypes {
      *     something besides {@link ElementType#TYPE_PARAMETER}
      */
     public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
-        // True if it contains TYPE_USE
+        // True if the array contains TYPE_USE
         boolean hasTypeUse = false;
-        // Non-null if it has an element other than TYPE_USE or TYPE_PARAMETER
+        // Non-null if the array contains an element other than TYPE_USE or TYPE_PARAMETER
         ElementType otherElementType = null;
 
         for (ElementType element : elements) {
