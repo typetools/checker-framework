@@ -8,6 +8,7 @@ import javax.lang.model.element.Element;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** Apply annotations to a declared type based on its declaration. */
 public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
@@ -83,10 +84,15 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
      */
     @Override
     protected void handleTargeted(List<Attribute.TypeCompound> extendsAndImplementsAnnos) {
-        for (final Attribute.TypeCompound anno : extendsAndImplementsAnnos) {
-
-            if (anno.position.type_index >= SUPERCLASS_INDEX && anno.position.location.isEmpty()) {
-                type.addAnnotation(anno);
+        if (TypesUtils.isAnonymous(typeSymbol.type)) {
+            // If this is an anonymous class, then the annotations after "new" but before the
+            // class name are stored as super class annotations. Treat them as annotations on the
+            // class.
+            for (final Attribute.TypeCompound anno : extendsAndImplementsAnnos) {
+                if (anno.position.type_index >= SUPERCLASS_INDEX
+                        && anno.position.location.isEmpty()) {
+                    type.addAnnotation(anno);
+                }
             }
         }
     }

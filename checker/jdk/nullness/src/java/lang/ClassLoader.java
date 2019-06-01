@@ -1432,7 +1432,7 @@ public abstract class ClassLoader {
      * @revised  1.4
      */
     @CallerSensitive
-    public static @Nullable ClassLoader getSystemClassLoader() {
+    public static ClassLoader getSystemClassLoader() {
         initSystemClassLoader();
         if (scl == null) {
             return null;

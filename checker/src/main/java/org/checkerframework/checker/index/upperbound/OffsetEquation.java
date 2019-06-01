@@ -389,7 +389,7 @@ public class OffsetEquation {
      * is zero.
      *
      * @param expressionEquation a Java expression made up of sums and differences
-     * @return an offset equation created form expressionEquation
+     * @return an offset equation created from expressionEquation
      */
     public static OffsetEquation createOffsetFromJavaExpression(String expressionEquation) {
         expressionEquation = expressionEquation.trim();

@@ -352,7 +352,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @param val the value to format
      * @param shift the log2 of the base to format in (4 for hex, 3 for octal, 1 for binary)
      */
-    static String toUnsignedString0(long val, @IntVal({1,2,3,4}) int shift) {
+    static String toUnsignedString0(long val, @IntVal({1,2,3,4,5}) int shift) {
         // assert shift > 0 && shift <=5 : "Illegal shift value";
         int mag = Long.SIZE - Long.numberOfLeadingZeros(val);
         int chars = Math.max(((mag + (shift - 1)) / shift), 1);

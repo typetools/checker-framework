@@ -25,7 +25,7 @@ examples appear in a table below.
   string representations of a Java type.
   The type qualifiers are applicable to \<CharSequence> and its subtypes.
   Programmers only need to write
-  the boldfaced qualifiers, in the second row; qualifiers below those are
+  the boldfaced qualifiers; other qualifiers are
   included to improve the internal handling of String literals.}
 \label{fig-signature-hierarchy}
 \end{figure}
@@ -83,6 +83,11 @@ examples appear in a table below.
   (\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-6.html#jls-6.2}{JLS
     \S 6.2}), which is the same as
   \refqualclass{checker/signature/qual}{Identifier}.
+
+\item[\refqualclass{checker/signature/qual}{FqBinaryName}]
+  Like \refqualclass{checker/signature/qual}{FullyQualifiedName}, but using
+  ``\<\$>'' instead of ``\<.>'' to separate nested classes from their
+  containing classes.  For example, \<"pkg.Outer\$Inner">.
 
 \end{description}
 

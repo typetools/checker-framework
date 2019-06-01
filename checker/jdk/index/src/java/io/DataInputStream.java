@@ -146,7 +146,7 @@ class DataInputStream extends FilterInputStream implements DataInput {
      * @see        java.io.FilterInputStream#in
      * @see        java.io.InputStream#read(byte[], int, int)
      */
-    public final @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public final @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         return in.read(b, off, len);
     }
 
@@ -188,7 +188,7 @@ class DataInputStream extends FilterInputStream implements DataInput {
      *             another I/O error occurs.
      * @see        java.io.FilterInputStream#in
      */
-    public final void readFully(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public final void readFully(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         if (len < 0)
             throw new IndexOutOfBoundsException();
         int n = 0;

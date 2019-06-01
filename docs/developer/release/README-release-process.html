@@ -102,8 +102,9 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <a href="#pre_release_checklist">Pre-release Checklist</a>.
   </li>
   <li>
-    Update dependencies; see all occurrences of <code>version</code> in file
-    <code>build.gradle</code>.
+    Update dependencies, preferably a few days before the release to let any problems be discovered.
+    Run in a branch, then make a pull request to ensure that everything works:
+    <code>./gradlew useLatestVersions</code>
   </li>
   <li>
     If there has been

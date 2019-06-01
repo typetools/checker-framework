@@ -31,6 +31,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -227,8 +228,10 @@ public class TypeArgInferenceUtil {
             // The tree wasn't found as an argument, so it has to be the receiver.
             // This can happen for inner class constructors that take an outer class argument.
             paramType = method.getReceiverType();
-        } else if (treeIndex >= method.getParameterTypes().size() && methodElt.isVarArgs()) {
-            paramType = method.getParameterTypes().get(method.getParameterTypes().size() - 1);
+        } else if (treeIndex + 1 >= method.getParameterTypes().size() && methodElt.isVarArgs()) {
+            AnnotatedTypeMirror varArgsType =
+                    method.getParameterTypes().get(method.getParameterTypes().size() - 1);
+            paramType = ((AnnotatedArrayType) varArgsType).getComponentType();
         } else {
             paramType = method.getParameterTypes().get(treeIndex);
         }
@@ -250,7 +253,7 @@ public class TypeArgInferenceUtil {
      * expression, isArgument is called recursively on the true and false expressions.
      */
     private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
-        argumentTree = TreeUtils.skipParens(argumentTree);
+        argumentTree = TreeUtils.withoutParens(argumentTree);
         if (argumentTree == path.getLeaf()) {
             return true;
         } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {

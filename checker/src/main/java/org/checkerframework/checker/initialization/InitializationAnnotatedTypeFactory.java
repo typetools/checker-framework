@@ -126,6 +126,9 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
 
         initAnnos = Collections.unmodifiableSet(tempInitAnnos);
+
+        // No call to postInit() because this class is abstract.
+        // Its subclasses must call postInit().
     }
 
     public Set<Class<? extends Annotation>> getInitializationAnnotations() {
