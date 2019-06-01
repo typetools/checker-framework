@@ -4,9 +4,6 @@ public class StringBuilderOffset {
         char[] chars = new char[10];
 
         // :: error: (argument.type.incompatible)
-        stringBuilder.append(chars, 11, 5);
-
-        // :: error: (argument.type.incompatible)
         stringBuilder.append(chars, 5, 7);
 
         stringBuilder.append(chars, 5, 4);
