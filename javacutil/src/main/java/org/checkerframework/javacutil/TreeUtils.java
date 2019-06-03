@@ -349,7 +349,7 @@ public final class TreeUtils {
      *
      * @param tree an expression tree
      * @return the outermost non-parenthesized tree enclosed by the given tree
-     * @deprecated use {@link withoutParens}
+     * @deprecated use {@link #withoutParens}
      */
     @Deprecated // use withoutParens
     public static ExpressionTree skipParens(final ExpressionTree tree) {
