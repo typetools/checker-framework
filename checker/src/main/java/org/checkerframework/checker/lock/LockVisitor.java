@@ -894,7 +894,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         ExpressionTree tree = lockExpressionTree;
 
         while (true) {
-            tree = TreeUtils.skipParens(tree);
+            tree = TreeUtils.withoutParens(tree);
 
             switch (tree.getKind()) {
                 case MEMBER_SELECT:

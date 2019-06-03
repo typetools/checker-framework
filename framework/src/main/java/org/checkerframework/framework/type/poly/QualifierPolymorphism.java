@@ -71,7 +71,7 @@ public interface QualifierPolymorphism {
      * @return the class specified by the {@link PolymorphicQualifier} meta-annotation on {@code
      *     qual}, if {@code qual} is a polymorphic qualifier; otherwise, null.
      * @see org.checkerframework.framework.qual.PolymorphicQualifier#value()
-     * @deprecated use {@link getPolymorphicQualifierElement}
+     * @deprecated use {@link QualifierPolymorphism#getPolymorphicQualifierElement}
      */
     @Deprecated // use getPolymorphicQualifierElement()
     static Name getPolymorphicQualifierTop(AnnotationMirror qual) {

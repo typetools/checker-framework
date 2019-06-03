@@ -154,7 +154,7 @@ public class Heuristics {
             while (p != null) {
                 if (p.getLeaf().getKind() == Tree.Kind.IF) {
                     IfTree ifTree = (IfTree) p.getLeaf();
-                    ExpressionTree cond = TreeUtils.skipParens(ifTree.getCondition());
+                    ExpressionTree cond = TreeUtils.withoutParens(ifTree.getCondition());
                     if (ifTree.getThenStatement() == prev.getLeaf()
                             && matcher.match(new TreePath(p, cond))) {
                         return true;

@@ -1078,7 +1078,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else if (tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.VARIABLE) {
             type = fromMember(tree);
         } else if (TreeUtils.isExpressionTree(tree)) {
-            tree = TreeUtils.skipParens((ExpressionTree) tree);
+            tree = TreeUtils.withoutParens((ExpressionTree) tree);
             type = fromExpression((ExpressionTree) tree);
         } else {
             throw new BugInCF(
@@ -1867,7 +1867,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 return false;
             }
 
-            tree = TreeUtils.skipParens(tree);
+            tree = TreeUtils.withoutParens(tree);
 
             if (tree.getKind() == Tree.Kind.IDENTIFIER) {
                 Name n = ((IdentifierTree) tree).getName();
@@ -3101,6 +3101,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
             if (stubs.isEmpty()) {
+                // If the stub file has a prefix of "checker.jar/" then look for the file in the top
+                // level directory of the jar that contains the checker.
+                stubPath = stubPath.replace("checker.jar/", "/");
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 if (in == null) {
                     // Didn't find the stubfile.
