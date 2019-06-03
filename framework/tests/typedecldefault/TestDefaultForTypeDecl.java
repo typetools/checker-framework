@@ -2,6 +2,7 @@ import typedecldefault.quals.*;
 
 // @TypeDeclDefaultBottom is the default qualifier in hierarchy.
 // @TypeDeclDefaultTop is the default for type declarations.
+// @skip-test
 public class TestDefaultForTypeDecl {
     void test(@TypeDeclDefaultTop TestDefaultForTypeDecl arg) {}
 
