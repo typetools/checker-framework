@@ -3469,33 +3469,43 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param annotatedType AnnotatedTypeMirror to check
      * @return true if the type has a qualifier parameter
      */
-    public boolean hasQualifierParameter(AnnotatedTypeMirror annotatedType) {
+    public Set<AnnotationMirror> hasQualifierParameter(AnnotatedTypeMirror annotatedType) {
         if (annotatedType.getKind() != TypeKind.DECLARED) {
-            return false;
+            return AnnotationUtils.createAnnotationSet();
         }
 
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) annotatedType;
         Element element = declaredType.getUnderlyingType().asElement();
         return hasQualifierParameter(element);
     }
+
+    public boolean hasQualifierParameterInHierarchy(
+            AnnotatedTypeMirror annotatedTypeMirror, AnnotationMirror top) {
+        return AnnotationUtils.containsSame(hasQualifierParameter(annotatedTypeMirror), top);
+    }
+
+    public boolean hasQualifierParameterInHierarchy(
+            @Nullable Element element, AnnotationMirror top) {
+        return AnnotationUtils.containsSame(hasQualifierParameter(element), top);
+    }
+
     /**
      * Whether or not the {@code element} has an implicit qualifier parameter.
      *
      * @param element Element to check
      * @return true if the element is a type declaration that has a qualifier parameter
      */
-    public boolean hasQualifierParameter(@Nullable Element element) {
-        if (element == null) {
-            return false;
-        }
-        if (!ElementUtils.isTypeDeclaration(element)) {
-            return false;
+    public Set<AnnotationMirror> hasQualifierParameter(@Nullable Element element) {
+        Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
+
+        if (element == null || !ElementUtils.isTypeDeclaration(element)) {
+            return found;
         }
         // TODO: caching
         AnnotationMirror hasQualifierParam =
                 getDeclAnnotation(element, HasQualifierParameter.class);
         if (hasQualifierParam == null) {
-            return false;
+            return found;
         }
 
         List<Name> qualClasses =
@@ -3503,10 +3513,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         for (Name qual : qualClasses) {
             AnnotationMirror annotationMirror = AnnotationBuilder.fromName(elements, qual);
             if (isSupportedQualifier(annotationMirror)) {
-                return true;
+                found.add(annotationMirror);
             }
         }
-        return false;
+        return found;
     }
 
     /**

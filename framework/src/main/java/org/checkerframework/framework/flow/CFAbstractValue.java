@@ -259,7 +259,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
                 AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
             QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
             if (analysis.getTypeFactory()
-                    .hasQualifierParameter(TypesUtils.getTypeElement(result))) {
+                    .hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(result), top)) {
                 if (hierarchy.isSubtype(a, b) && hierarchy.isSubtype(b, a)) {
                     mostSpecific.add(b);
                 } else {

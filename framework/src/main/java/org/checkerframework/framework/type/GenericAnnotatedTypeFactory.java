@@ -1562,14 +1562,15 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
-        if (!hasQualifierParameter(enclosingClass)) {
+        Set<AnnotationMirror> tops = hasQualifierParameter(enclosingClass);
+        if (tops.isEmpty()) {
             return;
         }
         new TypeAnnotator(this) {
             @Override
             public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
                 if (type.getUnderlyingType().asElement().equals(enclosingClass)) {
-                    for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+                    for (AnnotationMirror top : tops) {
                         if (!type.isAnnotatedInHierarchy(top)) {
                             type.addAnnotation(qualHierarchy.getPolymorphicAnnotation(top));
                         }
