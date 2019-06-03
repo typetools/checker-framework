@@ -29,4 +29,4 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({Unsigned.class, Signed.class})
 @ImplicitFor(literals = {LiteralKind.INT, LiteralKind.LONG, LiteralKind.CHAR})
-public @interface Constant {}
+public @interface SignednessEither {}
