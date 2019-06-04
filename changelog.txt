@@ -1,3 +1,10 @@
+Version 2.9.0, July 2, 2019
+
+Improved the diagnostic text for uninitialized static fields.  The new
+error key is initialization.static.fields.uninitialized.
+
+---------------------------------------------------------------------------
+
 Version 2.8.2, June 3, 2019
 
 The Signature Checker supports a new type, @FqBinaryName.
