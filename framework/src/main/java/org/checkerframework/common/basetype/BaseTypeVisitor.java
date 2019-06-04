@@ -1924,7 +1924,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
         boolean calledOnce = false;
-        for (AnnotationMirror top : atypeFactory.hasQualifierParameter(castType)) {
+        for (AnnotationMirror top : atypeFactory.getQualifierParameterHierarchies(castType)) {
             if (!isInvariantTypeCastSafe(castType, exprType, top)) {
                 checker.report(
                         Result.failure(

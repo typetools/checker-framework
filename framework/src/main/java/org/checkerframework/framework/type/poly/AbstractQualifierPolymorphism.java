@@ -231,6 +231,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         } else {
             completer.visit(type);
         }
+        reset();
     }
 
     @Override
@@ -317,7 +318,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             if (top == null && polyType.hasAnnotation(POLYALL)) {
                 // PolyAll qualifier
                 AnnotationMirrorSet annos = new AnnotationMirrorSet();
-                for (AnnotationMirror hasQualTop : atypeFactory.hasQualifierParameter(polyType)) {
+                for (AnnotationMirror hasQualTop :
+                        atypeFactory.getQualifierParameterHierarchies(polyType)) {
                     annos.add(type.getAnnotationInHierarchy(hasQualTop));
                 }
                 if (!annos.isEmpty()) {

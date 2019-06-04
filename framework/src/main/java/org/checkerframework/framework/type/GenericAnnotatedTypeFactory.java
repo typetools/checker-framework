@@ -1471,7 +1471,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
 
-        applyPolyDefaults(tree, type);
+        applyQualifierParameterDefaults(tree, type);
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(tree, type);
@@ -1542,11 +1542,23 @@ public abstract class GenericAnnotatedTypeFactory<
         applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
     }
 
-    void applyPolyDefaults(Tree tree, AnnotatedTypeMirror type) {
-        applyPolyDefaults(TreeUtils.elementFromTree(tree), type);
+    /**
+     * Applies defaults for types in a class with an qualifier parameter.
+     *
+     * @param tree Tree whose type is {@code type}
+     * @param type where the defaults are applied
+     */
+    protected void applyQualifierParameterDefaults(Tree tree, AnnotatedTypeMirror type) {
+        applyQualifierParameterDefaults(TreeUtils.elementFromTree(tree), type);
     }
 
-    void applyPolyDefaults(Element elt, AnnotatedTypeMirror type) {
+    /**
+     * Applies defaults for types in a class with an qualifier parameter.
+     *
+     * @param elt Element whose type is {@code type}
+     * @param type where the defaults are applied
+     */
+    protected void applyQualifierParameterDefaults(Element elt, AnnotatedTypeMirror type) {
         if (elt == null) {
             return;
         }
@@ -1562,7 +1574,7 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
-        Set<AnnotationMirror> tops = hasQualifierParameter(enclosingClass);
+        Set<AnnotationMirror> tops = getQualifierParameterHierarchies(enclosingClass);
         if (tops.isEmpty()) {
             return;
         }
@@ -1583,7 +1595,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
-        applyPolyDefaults(elt, type);
+        applyQualifierParameterDefaults(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
         if (dependentTypesHelper != null) {
