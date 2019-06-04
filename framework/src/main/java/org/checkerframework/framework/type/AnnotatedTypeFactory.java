@@ -3488,7 +3488,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns the set of top annotations representing all the hierarchies for which this type has a
      * qualifier parameter.
      *
-     * @param annotatedType @link AnnotatedTypeMirror to check
+     * @param annotatedType AnnotatedTypeMirror to check
      * @return the set of top annotations representing all the hierarchies for which this type has a
      *     qualifier parameter
      */
