@@ -1,3 +1,9 @@
+Version 2.8.3, July 2, 2019
+
+Renamed the Signature Checker's @Constant annotation to @SignednessEither.
+
+---------------------------------------------------------------------------
+
 Version 2.8.2, June 3, 2019
 
 The Signature Checker supports a new type, @FqBinaryName.
