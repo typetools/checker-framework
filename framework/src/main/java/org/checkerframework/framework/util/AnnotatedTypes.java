@@ -959,25 +959,24 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Sees if the passed in array of {@link ElementType} values have the correct set of values
-     * which defines a type qualifier.
+     * Returns true if the given array contains {@link ElementType#TYPE_USE}, false otherwise.
      *
      * @param elements an array of {@link ElementType} values
      * @param cls the annotation class being tested; used for diagnostic messages only
+     * @return true iff the give array contains {@link ElementType#TYPE_USE}
      * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
      *     something besides {@link ElementType#TYPE_PARAMETER}
      */
     public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
+        // True if the array contains TYPE_USE
         boolean hasTypeUse = false;
+        // Non-null if the array contains an element other than TYPE_USE or TYPE_PARAMETER
         ElementType otherElementType = null;
 
         for (ElementType element : elements) {
             if (element.equals(ElementType.TYPE_USE)) {
-                // valid annotations have to have TYPE_USE
                 hasTypeUse = true;
             } else if (!element.equals(ElementType.TYPE_PARAMETER)) {
-                // if there's an ElementType with a enumerated value of something other than
-                // TYPE_USE or TYPE_PARAMETER then it isn't a valid annotation
                 otherElementType = element;
             }
             if (hasTypeUse && otherElementType != null) {

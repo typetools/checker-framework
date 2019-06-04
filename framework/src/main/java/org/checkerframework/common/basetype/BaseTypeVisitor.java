@@ -572,10 +572,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         visitorState.setMethodTree(node);
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
-        ModifiersTree modifiersTree = node.getModifiers();
-        Set<Modifier> modifierSet = modifiersTree.getFlags();
-        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
-        warnAboutTypeAnnotationsTooEarly(node, modifierSet, annotations);
+        warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
 
         try {
             if (TreeUtils.isAnonymousConstructor(node)) {
@@ -1011,11 +1008,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitVariable(VariableTree node, Void p) {
-
-        ModifiersTree modifiersTree = node.getModifiers();
-        Set<Modifier> modifierSet = modifiersTree.getFlags();
-        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
-        warnAboutTypeAnnotationsTooEarly(node, modifierSet, annotations);
+        warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
 
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
         visitorState.setAssignmentContext(
@@ -1046,63 +1039,65 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * declaration annotation.
      *
      * @param node a VariableTree or a MethodTree
-     * @param modifierSet the modifiers in node
-     * @param annotations the annotations in node
+     * @param modifiersTree the modifiers sub-tree of node
      */
-    private void warnAboutTypeAnnotationsTooEarly(
-            Tree node, Set<Modifier> modifierSet, List<? extends AnnotationTree> annotations) {
+    private void warnAboutTypeAnnotationsTooEarly(Tree node, ModifiersTree modifiersTree) {
+        Set<Modifier> modifierSet = modifiersTree.getFlags();
+        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
+
+        if (annotations.isEmpty()) {
+            return;
+        }
 
         // Warn about type annotations written before modifiers such as "public".  javac retains no
         // information about modifier locations.  So, this is a very partial check:  Issue a warning
         // if a type annotation is at the very beginning of the VariableTree, and a modifer follows
         // it.
-        if (!annotations.isEmpty()) {
-            // Check if a type annotation precedes a declaration annotation.
-            int lastDeclAnnoIndex = -1;
-            for (int i = annotations.size() - 1; i > 0; i--) { // no need to check index 0
-                if (!isTypeAnnotation(annotations.get(i))) {
-                    lastDeclAnnoIndex = i;
-                    break;
-                }
-            }
-            if (lastDeclAnnoIndex != -1) {
-                List<AnnotationTree> badTypeAnnos = new ArrayList<>();
-                for (int i = 0; i < lastDeclAnnoIndex; i++) {
-                    AnnotationTree anno = annotations.get(i);
-                    if (isTypeAnnotation(anno)) {
-                        badTypeAnnos.add(anno);
-                    }
-                }
-                if (!badTypeAnnos.isEmpty()) {
-                    checker.report(
-                            Result.warning(
-                                    "type.anno.before.decl.anno",
-                                    badTypeAnnos,
-                                    annotations.get(lastDeclAnnoIndex)),
-                            node);
-                }
-            }
 
-            // Determine the length of the text that ought to precede the first type annotation.
-            // If the type annotation appears before that text could appear, then warn that a
-            // modifier appears after the type annotation.
-            // TODO: in the future, account for the lengths of declaration annotations.  Length of
-            // toString of the annotation isn't useful, as it might be different length than
-            // original input.  Can use JCTree.getEndPosition(EndPosTable) and
-            // com.sun.tools.javac.tree.EndPosTable, but it requires -Xjcov.
-            AnnotationTree firstAnno = annotations.get(0);
-            if (!modifierSet.isEmpty() && isTypeAnnotation(firstAnno)) {
-                int precedingTextLength = 0;
-                for (Modifier m : modifierSet) {
-                    precedingTextLength += m.toString().length() + 1; // +1 for the space
+        // Check if a type annotation precedes a declaration annotation.
+        int lastDeclAnnoIndex = -1;
+        for (int i = annotations.size() - 1; i > 0; i--) { // no need to check index 0
+            if (!isTypeAnnotation(annotations.get(i))) {
+                lastDeclAnnoIndex = i;
+                break;
+            }
+        }
+        if (lastDeclAnnoIndex != -1) {
+            List<AnnotationTree> badTypeAnnos = new ArrayList<>();
+            for (int i = 0; i < lastDeclAnnoIndex; i++) {
+                AnnotationTree anno = annotations.get(i);
+                if (isTypeAnnotation(anno)) {
+                    badTypeAnnos.add(anno);
                 }
-                int annoStartPos = ((JCTree) firstAnno).getStartPosition();
-                int varStartPos = ((JCTree) node).getStartPosition();
-                if (annoStartPos < varStartPos + precedingTextLength) {
-                    checker.report(
-                            Result.warning("type.anno.before.modifier", firstAnno, modifierSet),
-                            node);
-                }
+            }
+            if (!badTypeAnnos.isEmpty()) {
+                checker.report(
+                        Result.warning(
+                                "type.anno.before.decl.anno",
+                                badTypeAnnos,
+                                annotations.get(lastDeclAnnoIndex)),
+                        node);
+            }
+        }
+
+        // Determine the length of the text that ought to precede the first type annotation.
+        // If the type annotation appears before that text could appear, then warn that a
+        // modifier appears after the type annotation.
+        // TODO: in the future, account for the lengths of declaration annotations.  Length of
+        // toString of the annotation isn't useful, as it might be different length than
+        // original input.  Can use JCTree.getEndPosition(EndPosTable) and
+        // com.sun.tools.javac.tree.EndPosTable, but it requires -Xjcov.
+        AnnotationTree firstAnno = annotations.get(0);
+        if (!modifierSet.isEmpty() && isTypeAnnotation(firstAnno)) {
+            int precedingTextLength = 0;
+            for (Modifier m : modifierSet) {
+                precedingTextLength += m.toString().length() + 1; // +1 for the space
+            }
+            int annoStartPos = ((JCTree) firstAnno).getStartPosition();
+            int varStartPos = ((JCTree) node).getStartPosition();
+            if (annoStartPos < varStartPos + precedingTextLength) {
+                checker.report(
+                        Result.warning("type.anno.before.modifier", firstAnno, modifierSet), node);
             }
         }
     }
