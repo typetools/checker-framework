@@ -1,6 +1,9 @@
-Version 2.8.3, July 2, 2019
+Version 2.9.0, July 2, 2019
 
 Renamed the Signature Checker's @Constant annotation to @SignednessEither.
+
+Improved the diagnostic text for uninitialized static fields.  The new
+error key is initialization.static.fields.uninitialized.
 
 ---------------------------------------------------------------------------
 
