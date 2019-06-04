@@ -1,6 +1,6 @@
 Version 2.8.3, July 2, 2019
 
-Renamed the Signature Checker's @Constant annotation to @SignednessEither.
+Renamed the Signedness Checker's @Constant annotation to @SignednessEither.
 
 ---------------------------------------------------------------------------
 
