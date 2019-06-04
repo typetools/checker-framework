@@ -148,8 +148,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         // Refines the type of an integer primitive to @SignednessEither if it is within the signed
-        // positive
-        // range (i.e. its MSB is zero).
+        // positive range (i.e. its MSB is zero).
         @Override
         public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
             TypeMirror javaType = type.getUnderlyingType();
