@@ -19,7 +19,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.typeannotator.DefaultForUseTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -68,7 +68,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Creates a {@link DefaultForUseTypeAnnotator} from the given checker, using that checker to
+     * Creates a {@link DefaultForTypeAnnotator} from the given checker, using that checker to
      * determine the annotations that are in the type hierarchy.
      */
     public LiteralTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
@@ -109,7 +109,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
     /**
      * Adds standard qualifiers for literals. Currently sets the null literal to bottom if no other
      * default is set for null literals. Also, see {@link
-     * DefaultForUseTypeAnnotator#addStandardDefaults()}.
+     * DefaultForTypeAnnotator#addStandardDefaults()}.
      *
      * @return this
      */

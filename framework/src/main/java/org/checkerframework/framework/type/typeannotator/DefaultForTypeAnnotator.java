@@ -24,14 +24,14 @@ import org.checkerframework.javacutil.TypesUtils;
  * org.checkerframework.framework.type.treeannotator.ListTreeAnnotator} constructed in {@link
  * GenericAnnotatedTypeFactory#createTreeAnnotator()}
  *
- * <p>{@link DefaultForUseTypeAnnotator} traverses types deeply.
+ * <p>{@link DefaultForTypeAnnotator} traverses types deeply.
  *
  * <p>This class takes care of two of the attributes of {@link DefaultFor}; the others are handled
  * in {@link org.checkerframework.framework.util.defaults.QualifierDefaults}.
  *
  * @see org.checkerframework.framework.type.treeannotator.ListTreeAnnotator
  */
-public class DefaultForUseTypeAnnotator extends TypeAnnotator {
+public class DefaultForTypeAnnotator extends TypeAnnotator {
 
     /** Map from {@link TypeKind} to annotations. */
     private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
@@ -45,10 +45,10 @@ public class DefaultForUseTypeAnnotator extends TypeAnnotator {
     // private final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * Creates a {@link DefaultForUseTypeAnnotator} from the given checker, using that checker to
+     * Creates a {@link DefaultForTypeAnnotator} from the given checker, using that checker to
      * determine the annotations that are in the type hierarchy.
      */
-    public DefaultForUseTypeAnnotator(AnnotatedTypeFactory typeFactory) {
+    public DefaultForTypeAnnotator(AnnotatedTypeFactory typeFactory) {
         super(typeFactory);
         this.typeKinds = new EnumMap<>(TypeKind.class);
         this.typeClasses = new HashMap<>();
@@ -176,7 +176,7 @@ public class DefaultForUseTypeAnnotator extends TypeAnnotator {
      *
      * @return this
      */
-    public DefaultForUseTypeAnnotator addStandardDefaults() {
+    public DefaultForTypeAnnotator addStandardDefaults() {
         if (!classes.containsKey(Void.class.getCanonicalName())) {
             for (AnnotationMirror bottom : qualHierarchy.getBottomAnnotations()) {
                 addClasses(Void.class, bottom);

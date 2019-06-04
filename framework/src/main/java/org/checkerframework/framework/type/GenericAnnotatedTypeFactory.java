@@ -82,7 +82,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.DefaultForUseTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.IrrelevantTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
@@ -124,7 +124,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected TypeAnnotator typeAnnotator;
 
     /** for use in addTypeImplicits */
-    private DefaultForUseTypeAnnotator defaultForUseTypeAnnotator;
+    private DefaultForTypeAnnotator defaultForTypeAnnotator;
 
     /** to annotate types based on the given un-annotated types */
     protected TreeAnnotator treeAnnotator;
@@ -341,7 +341,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns a {@link DefaultForUseTypeAnnotator} that adds annotations to a type based on the
+     * Returns a {@link DefaultForTypeAnnotator} that adds annotations to a type based on the
      * content of the type itself.
      *
      * <p>Subclass may override this method. The default type annotator is a {@link
@@ -351,7 +351,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@link
      *       RelevantJavaTypes} annotation on the checker.
      *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards.
-     *   <li>{@link DefaultForUseTypeAnnotator}: Adds annotations based on {@link DefaultFor}
+     *   <li>{@link DefaultForTypeAnnotator}: Adds annotations based on {@link DefaultFor}
      *       meta-annotations.
      * </ol>
      *
@@ -369,8 +369,8 @@ public abstract class GenericAnnotatedTypeFactory<
                             this, getQualifierHierarchy().getTopAnnotations(), relevantClasses));
         }
         typeAnnotators.add(new PropagationTypeAnnotator(this));
-        defaultForUseTypeAnnotator = new DefaultForUseTypeAnnotator(this);
-        typeAnnotators.add(defaultForUseTypeAnnotator);
+        defaultForTypeAnnotator = new DefaultForTypeAnnotator(this);
+        typeAnnotators.add(defaultForTypeAnnotator);
         return new ListTypeAnnotator(typeAnnotators);
     }
 

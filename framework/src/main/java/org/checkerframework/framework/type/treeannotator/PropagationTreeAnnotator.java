@@ -15,7 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.typeannotator.DefaultForUseTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -35,8 +35,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     private final QualifierHierarchy qualHierarchy;
 
     /**
-     * Creates a {@link DefaultForUseTypeAnnotator} from the given checker, using that checker's
-     * type hierarchy.
+     * Creates a {@link DefaultForTypeAnnotator} from the given checker, using that checker's type
+     * hierarchy.
      */
     public PropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);
