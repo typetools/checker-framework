@@ -84,7 +84,7 @@ import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
-import org.checkerframework.framework.type.typeannotator.DefaultForTypeUseTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultQualifierForUseTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.IrrelevantTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
@@ -126,7 +126,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected TypeAnnotator typeAnnotator;
 
     /** for use in addTypeImplicits */
-    private DefaultForTypeUseTypeAnnotator defaultForUseTypeAnnotator;
+    private DefaultQualifierForUseTypeAnnotator defaultQualifierForUseTypeAnnotator;
 
     /** to annotate types based on the given un-annotated types */
     protected TreeAnnotator treeAnnotator;
@@ -239,7 +239,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.defaults = createAndInitQualifierDefaults();
         this.treeAnnotator = createTreeAnnotator();
         this.typeAnnotator = createTypeAnnotator();
-        this.defaultForUseTypeAnnotator = createDefaultForUseTypeAnnotator();
+        this.defaultQualifierForUseTypeAnnotator = createDefaultForUseTypeAnnotator();
 
         this.poly = createQualifierPolymorphism();
 
@@ -376,8 +376,8 @@ public abstract class GenericAnnotatedTypeFactory<
         return new ListTypeAnnotator(typeAnnotators);
     }
 
-    protected DefaultForTypeUseTypeAnnotator createDefaultForUseTypeAnnotator() {
-        return new DefaultForTypeUseTypeAnnotator(this);
+    protected DefaultQualifierForUseTypeAnnotator createDefaultForUseTypeAnnotator() {
+        return new DefaultQualifierForUseTypeAnnotator(this);
     }
 
     /**
@@ -1450,7 +1450,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     @Override
     public void addDefaultAnnotations(AnnotatedTypeMirror type) {
-        addAnnotationsFromDefaultForUse(null, type);
+        addAnnotationsFromDefaultQualifierForUse(null, type);
         typeAnnotator.visit(type, null);
         defaults.annotate((Element) null, type);
     }
@@ -1477,7 +1477,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
 
-        addAnnotationsFromDefaultForUse(TreeUtils.elementFromTree(tree), type);
+        addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(tree, type);
@@ -1550,7 +1550,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
-        addAnnotationsFromDefaultForUse(elt, type);
+        addAnnotationsFromDefaultQualifierForUse(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
         if (dependentTypesHelper != null) {
@@ -1700,7 +1700,8 @@ public abstract class GenericAnnotatedTypeFactory<
         return cfgVisualizer;
     }
 
-    protected void addAnnotationsFromDefaultForUse(Element element, AnnotatedTypeMirror type) {
+    protected void addAnnotationsFromDefaultQualifierForUse(
+            Element element, AnnotatedTypeMirror type) {
         if (element != null
                 && element.getKind() == ElementKind.LOCAL_VARIABLE
                 && type.getKind() == TypeKind.DECLARED) {
@@ -1708,13 +1709,13 @@ public abstract class GenericAnnotatedTypeFactory<
             // location.
             AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
             if (declaredType.getEnclosingType() != null) {
-                defaultForUseTypeAnnotator.visit(declaredType.getEnclosingType());
+                defaultQualifierForUseTypeAnnotator.visit(declaredType.getEnclosingType());
             }
             for (AnnotatedTypeMirror typeArg : declaredType.getTypeArguments()) {
-                defaultForUseTypeAnnotator.visit(typeArg);
+                defaultQualifierForUseTypeAnnotator.visit(typeArg);
             }
         } else {
-            defaultForUseTypeAnnotator.visit(type);
+            defaultQualifierForUseTypeAnnotator.visit(type);
         }
     }
 }

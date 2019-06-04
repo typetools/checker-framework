@@ -1,10 +1,11 @@
 package org.checkerframework.framework.type.typeannotator;
 
-import java.lang.annotation.Annotation;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
 import org.checkerframework.framework.qual.DefaultQualifierForUse;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -12,9 +13,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-public class DefaultForTypeUseTypeAnnotator extends TypeAnnotator {
+public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
 
-    public DefaultForTypeUseTypeAnnotator(AnnotatedTypeFactory typeFactory) {
+    public DefaultQualifierForUseTypeAnnotator(AnnotatedTypeFactory typeFactory) {
         super(typeFactory);
     }
 
@@ -33,13 +34,11 @@ public class DefaultForTypeUseTypeAnnotator extends TypeAnnotator {
             boolean hasDefault =
                     !AnnotationUtils.getElementValue(defaultQualifier, "none", Boolean.class, true);
             if (hasDefault) {
-                @SuppressWarnings("unchecked")
-                Class<? extends Annotation> annoClass =
-                        AnnotationUtils.getElementValue(
-                                defaultQualifier, "value", Class.class, true);
-                if (!annoClass.equals(Annotation.class)) {
+                List<Name> annoClasses =
+                        AnnotationUtils.getElementValueClassNames(defaultQualifier, "value", true);
+                for (Name annoClass : annoClasses) {
                     AnnotationMirror anno =
-                            AnnotationBuilder.fromClass(typeFactory.getElementUtils(), annoClass);
+                            AnnotationBuilder.fromName(typeFactory.getElementUtils(), annoClass);
                     type.addMissingAnnotations(Collections.singleton(anno));
                 }
             }
