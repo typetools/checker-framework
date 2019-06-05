@@ -1143,6 +1143,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return type;
     }
 
+    public AnnotatedDeclaredType getTypeDeclarationBound(DeclaredType typeMirror) {
+        AnnotatedDeclaredType bounds = (AnnotatedDeclaredType) fromElement(typeMirror.asElement());
+        bounds.addMissingAnnotations(getDefaultTypeDeclarationBound());
+        return bounds;
+    }
+
+    protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBound() {
+        return qualHierarchy.getTopAnnotations();
+    }
+
+    public Set<AnnotationMirror> getTypeOfExtendsImplements(Tree clause) {
+        AnnotatedTypeMirror fromTypeTree = fromTypeTree(clause);
+        AnnotatedTypeMirror bound =
+                getTypeDeclarationBound((DeclaredType) TreeUtils.typeOf(clause));
+        fromTypeTree.addMissingAnnotations(bound.getAnnotations());
+        return fromTypeTree.getAnnotations();
+    }
+
     // **********************************************************************
     // Factories for annotated types that do not account for implicit qualifiers.
     // They only include qualifiers explicitly inserted by the user.

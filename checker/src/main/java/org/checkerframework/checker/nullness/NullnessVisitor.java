@@ -144,11 +144,7 @@ public class NullnessVisitor
             }
         }
 
-        // The super implementation checks that useType is a subtype
-        // of declarationType. However, declarationType by default
-        // is NonNull, which would then forbid Nullable uses.
-        // Therefore, don't perform this check.
-        return true;
+        return super.isValidUse(declarationType, useType, tree);
     }
 
     @Override

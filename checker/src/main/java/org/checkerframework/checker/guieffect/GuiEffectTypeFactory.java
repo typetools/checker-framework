@@ -76,6 +76,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
     }
 
+    @Override
+    protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBound() {
+        return qualHierarchy.getBottomAnnotations();
+    }
+
     // Could move this to a public method on the checker class
     public ExecutableElement findJavaOverride(ExecutableElement overrider, TypeMirror parentType) {
         if (parentType.getKind() != TypeKind.NONE) {
