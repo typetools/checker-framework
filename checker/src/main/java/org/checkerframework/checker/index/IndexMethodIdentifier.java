@@ -21,9 +21,9 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class IndexMethodIdentifier {
 
-    private final ExecutableElement fcnRandom;
-    private final ExecutableElement fcnNextDouble;
-    private final ExecutableElement fcnNextInt;
+    private final ExecutableElement mathRandom;
+    private final ExecutableElement randomNextDouble;
+    private final ExecutableElement randomNextInt;
 
     private final ExecutableElement stringLength;
 
@@ -35,9 +35,9 @@ public class IndexMethodIdentifier {
     public IndexMethodIdentifier(AnnotatedTypeFactory factory) {
         this.factory = factory;
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-        fcnRandom = TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
-        fcnNextDouble = TreeUtils.getMethod("java.util.Random", "nextDouble", 0, processingEnv);
-        fcnNextInt = TreeUtils.getMethod("java.util.Random", "nextInt", 1, processingEnv);
+        mathRandom = TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
+        randomNextDouble = TreeUtils.getMethod("java.util.Random", "nextDouble", 0, processingEnv);
+        randomNextInt = TreeUtils.getMethod("java.util.Random", "nextInt", 1, processingEnv);
 
         stringLength = TreeUtils.getMethod("java.lang.String", "length", 0, processingEnv);
 
@@ -58,15 +58,15 @@ public class IndexMethodIdentifier {
     }
 
     public boolean isMathRandom(Tree tree, ProcessingEnvironment processingEnv) {
-        return TreeUtils.isMethodInvocation(tree, fcnRandom, processingEnv);
+        return TreeUtils.isMethodInvocation(tree, mathRandom, processingEnv);
     }
 
     public boolean isRandomNextDouble(Tree tree, ProcessingEnvironment processingEnv) {
-        return TreeUtils.isMethodInvocation(tree, fcnNextDouble, processingEnv);
+        return TreeUtils.isMethodInvocation(tree, randomNextDouble, processingEnv);
     }
 
     public boolean isRandomNextInt(Tree tree, ProcessingEnvironment processingEnv) {
-        return TreeUtils.isMethodInvocation(tree, fcnNextInt, processingEnv);
+        return TreeUtils.isMethodInvocation(tree, randomNextInt, processingEnv);
     }
 
     /**
