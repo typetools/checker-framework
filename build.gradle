@@ -250,7 +250,7 @@ configurations {
 }
 dependencies {
     // https://mvnrepository.com/artifact/org.plumelib/require-javadoc
-    compileOnly group: 'org.plumelib', name: 'require-javadoc', version: '0.1.1'
+    compileOnly group: 'org.plumelib', name: 'require-javadoc', version: '0.1.2'
 }
 task requireJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Ensures that Java elements have Javadoc documentation.'
