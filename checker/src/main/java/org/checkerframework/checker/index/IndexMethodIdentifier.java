@@ -50,26 +50,29 @@ public class IndexMethodIdentifier {
         mathMaxMethods = TreeUtils.getMethods("java.lang.Math", "max", 2, processingEnv);
     }
 
-    /** Returns true if the argument is an invocation of Math.min. */
+    /** Returns true iff the argument is an invocation of Math.min. */
     public boolean isMathMin(Tree methodTree) {
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         return TreeUtils.isMethodInvocation(methodTree, mathMinMethods, processingEnv);
     }
 
-    /** Returns true if the argument is an invocation of Math.max. */
+    /** Returns true iff the argument is an invocation of Math.max. */
     public boolean isMathMax(Tree methodTree) {
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         return TreeUtils.isMethodInvocation(methodTree, mathMaxMethods, processingEnv);
     }
 
+    /** Returns true iff the argument is an invocation of Math.random(). */
     public boolean isMathRandom(Tree tree, ProcessingEnvironment processingEnv) {
         return TreeUtils.isMethodInvocation(tree, mathRandom, processingEnv);
     }
 
+    /** Returns true iff the argument is an invocation of Random.nextDouble(). */
     public boolean isRandomNextDouble(Tree tree, ProcessingEnvironment processingEnv) {
         return TreeUtils.isMethodInvocation(tree, randomNextDouble, processingEnv);
     }
 
+    /** Returns true iff the argument is an invocation of Random.nextInt(). */
     public boolean isRandomNextInt(Tree tree, ProcessingEnvironment processingEnv) {
         return TreeUtils.isMethodInvocation(tree, randomNextInt, processingEnv);
     }
