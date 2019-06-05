@@ -21,8 +21,13 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class IndexMethodIdentifier {
 
+    /** The canonical ExecutableElement for java.lang.Math#random() */
     private final ExecutableElement mathRandom;
+
+    /** The canonical ExecutableElement for java.util.Random#nextDouble() */
     private final ExecutableElement randomNextDouble;
+
+    /** The canonical ExecutableElement for java.util.Random#nextInt() */
     private final ExecutableElement randomNextInt;
 
     private final ExecutableElement stringLength;
