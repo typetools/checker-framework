@@ -44,7 +44,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -145,16 +144,6 @@ public class NullnessVisitor
         }
 
         return super.isValidUse(declarationType, useType, tree);
-    }
-
-    @Override
-    public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
-        if (tree.getKind() != Tree.Kind.TYPE_CAST && !type.hasAnnotation(NONNULL)) {
-            // TODO: casts are sometimes inferred as @Nullable.
-            // Find a way to correctly handle that case.
-            return false;
-        }
-        return super.isValidUse(type, tree);
     }
 
     private boolean containsSameByName(
