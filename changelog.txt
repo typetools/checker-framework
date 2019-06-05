@@ -1,4 +1,13 @@
-Version 2.8.2, June 4, 2019
+Version 2.9.0, July 2, 2019
+
+Renamed the Signedness Checker's @Constant annotation to @SignednessEither.
+
+Improved the diagnostic text for uninitialized static fields.  The new
+error key is initialization.static.fields.uninitialized.
+
+---------------------------------------------------------------------------
+
+Version 2.8.2, June 3, 2019
 
 The Signature Checker supports a new type, @FqBinaryName.
 
@@ -9,6 +18,10 @@ a checker on a project that is built using the Gradle build tool.
 
 Implementation detail: deprecated TreeUtils.skipParens in favor of
 TreeUtils.withoutParens which has the same specification.
+
+Closed issues:
+2291, 2291, 2406, 2406, 2469, 2469, 2477, 2477, 2479, 2479, 2480, 2480, 2494,
+2494, 2499, 2499.
 
 ---------------------------------------------------------------------------
 

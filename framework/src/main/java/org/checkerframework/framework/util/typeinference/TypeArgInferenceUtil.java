@@ -394,7 +394,7 @@ public class TypeArgInferenceUtil {
                 return false;
             }
             Boolean result = false;
-            Boolean first = true;
+            boolean first = true;
             for (AnnotatedTypeMirror type : types) {
                 result = (first ? scan(type, typeVars) : scanAndReduce(type, typeVars, result));
                 first = false;

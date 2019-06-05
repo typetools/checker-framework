@@ -13,8 +13,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.PluginUtil;
 
 /**
@@ -145,7 +145,7 @@ public class FIsAReducer implements AFReducer {
             }
 
             AnnotatedDeclaredType argumentAsParam =
-                    DefaultTypeHierarchy.castedAsSuper(argument, parameter);
+                    AnnotatedTypes.castedAsSuper(typeFactory, argument, parameter);
             if (argumentAsParam == null) {
                 return null;
             }
