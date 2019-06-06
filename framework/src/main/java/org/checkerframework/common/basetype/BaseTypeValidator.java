@@ -29,6 +29,7 @@ import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.*;
 
 /** A visitor to validate the types in a tree. */
@@ -227,8 +228,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             // Ensure that type use is a subtype of the element type
             // isValidUse determines the erasure of the types.
 
-            AnnotatedDeclaredType elemType =
-                    atypeFactory.getTypeDeclarationBound(type.getUnderlyingType());
+            AnnotationMirrorSet bounds = atypeFactory.getTypeDeclarationBound(type);
+
+            AnnotatedDeclaredType elemType = type.deepCopy();
+            elemType.clearAnnotations();
+            elemType.addAnnotations(bounds);
 
             if (!visitor.isValidUse(elemType, type, tree)) {
                 reportInvalidAnnotationsOnUse(type, tree);

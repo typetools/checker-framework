@@ -91,6 +91,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
@@ -549,6 +550,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.typeHierarchy = createTypeHierarchy();
         this.typeVarSubstitutor = createTypeVariableSubstitutor();
         this.typeArgumentInference = createTypeArgumentInference();
+        this.qualifierUpperBounds = new QualifierUpperBounds(this);
 
         // TODO: is this the best location for declaring this alias?
         addAliasedDeclAnnotation(
@@ -1143,10 +1145,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return type;
     }
 
-    public AnnotatedDeclaredType getTypeDeclarationBound(DeclaredType typeMirror) {
-        AnnotatedDeclaredType bounds = (AnnotatedDeclaredType) fromElement(typeMirror.asElement());
-        bounds.addMissingAnnotations(getDefaultTypeDeclarationBound());
-        return bounds;
+    protected QualifierUpperBounds qualifierUpperBounds;
+
+    public AnnotationMirrorSet getTypeDeclarationBound(AnnotatedTypeMirror typeMirror) {
+        return qualifierUpperBounds.getBoundAnnotations(typeMirror);
     }
 
     protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBound() {
@@ -1155,9 +1157,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     public Set<AnnotationMirror> getTypeOfExtendsImplements(Tree clause) {
         AnnotatedTypeMirror fromTypeTree = fromTypeTree(clause);
-        AnnotatedTypeMirror bound =
-                getTypeDeclarationBound((DeclaredType) TreeUtils.typeOf(clause));
-        fromTypeTree.addMissingAnnotations(bound.getAnnotations());
+        AnnotationMirrorSet bound = getTypeDeclarationBound(fromTypeTree);
+        fromTypeTree.addMissingAnnotations(bound);
         return fromTypeTree.getAnnotations();
     }
 

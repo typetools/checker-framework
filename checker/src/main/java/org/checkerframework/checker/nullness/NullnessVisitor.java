@@ -422,7 +422,9 @@ public class NullnessVisitor
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
         if (isPrimitive(node) && !isPrimitive(node.getExpression())) {
-            checkForNullability(node.getExpression(), UNBOXING_OF_NULLABLE);
+            if (!checkForNullability(node.getExpression(), UNBOXING_OF_NULLABLE)) {
+                return null;
+            }
         }
         return super.visitTypeCast(node, p);
     }

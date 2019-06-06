@@ -10,6 +10,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -481,6 +482,17 @@ public class NullnessAnnotatedTypeFactory
             AnnotatedTypeMirror componentType = arrayType.getComponentType();
             if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
                 componentType.replaceAnnotation(COMMITTED);
+            }
+            return null;
+        }
+
+        @Override
+        public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
+            if (type.getKind().isPrimitive()) {
+                // If a @Nullable expression is cast to a primitivie, then an unboxing.of.nullable
+                // error is issued.  Treat the cast as if were annotated as @NonNull to avoid an
+                // type.invalid.annotations.on.use error.
+                type.replaceAnnotation(NONNULL);
             }
             return null;
         }
