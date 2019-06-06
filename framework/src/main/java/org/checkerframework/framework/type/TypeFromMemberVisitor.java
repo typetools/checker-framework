@@ -9,11 +9,8 @@ import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeParameterElement;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -76,25 +73,6 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
 
         ElementAnnotationApplier.apply(result, elt, f);
         return result;
-    }
-
-    /**
-     * Annotates uses of method type variables with annotation written explicity on the type
-     * parameter declaration.
-     */
-    static class MethodTypeVarAnnotator extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
-        @Override
-        public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory p) {
-            TypeParameterElement tpelt =
-                    (TypeParameterElement) type.getUnderlyingType().asElement();
-
-            if (type.getAnnotations().isEmpty()
-                    && type.getUpperBound().getAnnotations().isEmpty()
-                    && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
-                ElementAnnotationApplier.apply(type, tpelt, p);
-            }
-            return super.visitTypeVariable(type, p);
-        }
     }
 
     /**

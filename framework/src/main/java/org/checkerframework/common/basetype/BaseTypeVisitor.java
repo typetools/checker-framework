@@ -3808,9 +3808,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Tests that the qualifiers present on the primitive type are valid.
      *
-     * <p>The default implementation always returns true. Subclasses should override this method to
-     * limit what annotations are allowed on primitive types.
-     *
      * @param type the use of the primitive type
      * @param tree the tree where the type is used
      * @return true if the type is a valid use of the primitive type
@@ -3824,9 +3821,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Tests that the qualifiers present on the array type are valid. This method will be invoked
      * for each array level independently, i.e. this method only needs to check the top-level
      * qualifiers of an array.
-     *
-     * <p>The default implementation always returns true. Subclasses should override this method to
-     * limit what annotations are allowed on array types.
      *
      * @param type the array type use
      * @param tree the tree where the type is used
