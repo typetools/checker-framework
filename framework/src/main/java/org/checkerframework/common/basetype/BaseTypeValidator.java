@@ -34,7 +34,10 @@ import org.checkerframework.javacutil.*;
 
 /** A visitor to validate the types in a tree. */
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
+    /** Is the type valid? */
     protected boolean isValid = true;
+    /** Should the primary annotation on the the top level type be checked? */
+    protected boolean checkTopLevelDeclaredType = false;
 
     protected final BaseTypeChecker checker;
     protected final BaseTypeVisitor<?> visitor;
@@ -68,6 +71,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             return false;
         }
         this.isValid = true;
+        this.checkTopLevelDeclaredType =
+                type.getKind() == TypeKind.DECLARED
+                        && (TreeUtils.isLocalVariable(tree) || TreeUtils.isExpressionTree(tree))
+                        && !TreeUtils.isTypeTree(tree);
         visit(type, tree);
         return this.isValid;
     }
@@ -224,7 +231,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
         final boolean skipChecks = checker.shouldSkipUses(type.getUnderlyingType().asElement());
 
-        if (!skipChecks) {
+        if (!checkTopLevelDeclaredType && !skipChecks) {
             // Ensure that type use is a subtype of the element type
             // isValidUse determines the erasure of the types.
 
@@ -237,6 +244,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             if (!visitor.isValidUse(elemType, type, tree)) {
                 reportInvalidAnnotationsOnUse(type, tree);
             }
+            checkTopLevelDeclaredType = false;
         }
 
         /*
