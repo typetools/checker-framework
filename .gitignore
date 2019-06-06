@@ -77,6 +77,7 @@ docs/manual/*.png
 docs/manual/*.svg
 docs/examples/**/*.class
 docs/examples/MavenExample/Out.txt
+docs/examples/lombok/Out.txt
 docs/manual/manual.html-e
 
 # dataflow manual

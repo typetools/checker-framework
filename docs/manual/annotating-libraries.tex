@@ -234,7 +234,7 @@ This section describes how to create an annotated library.
     Add a line in its main README to indicate that this is an annotated
     version of the library.  That line should also indicate how to obtain
     the corresponding upstream version (typically a git tag
-    \ahref{../developer/developer-manual.html#annotated-library-version-numbers}{corresponding
+    \ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html#annotated-library-version-numbers}{corresponding
       to a release}), so that others can see exactly what edits you have
     made.
 
@@ -366,15 +366,19 @@ option.
 Build the annotated JDK\@.  There are two ways:
 \begin{itemize}
 \item
+  Pass a flag.
   Run \<./gradlew buildJdk -PuseLocalJdk>
   % Is any more advice needed here, such as supplying -PuseLocalJdk to
   % other commands?
 \item
-  \begin{enumerate}
-  \item set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>
-  \item run \<./gradlew buildJdk>
-  \end{enumerate}
+  Make a setting in the buildfile.
+  Set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>, then
+  run \<./gradlew buildJdk>
 \end{itemize}
+
+(First, be sure you have followed the instructions for building the Checker
+Framework from source (Section~\ref{build-source})
+including running \<./gradlew cloneAndBuildDependencies>.)
 
 You may receive a compilation error because your files use a part of the
 JDK that is not in the annotated JDK\@.  If the missing part is relatively

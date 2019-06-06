@@ -24,7 +24,6 @@
  */
 
 package java.io;
-import org.checkerframework.checker.index.qual.*;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;

@@ -2,8 +2,9 @@ package org.checkerframework.checker.index.samelen;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.IndexUtil;
@@ -22,8 +23,9 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
     }
 
     /**
-     * Modifies the common assignment checks to ensure that SameLen annotations are always merged.
-     * The check is not relaxed in any way.
+     * Merges SameLen annotations, then calls super.
+     *
+     * <p>{@inheritDoc}
      */
     @Override
     protected void commonAssignmentCheck(
@@ -33,20 +35,22 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
             @CompilerMessageKey String errorKey) {
         if (IndexUtil.isSequenceType(valueType.getUnderlyingType())
                 && TreeUtils.isExpressionTree(valueTree)
+                // if both annotations are @PolySameLen, there is nothing to do
                 && !(valueType.hasAnnotation(PolySameLen.class)
                         && varType.hasAnnotation(PolySameLen.class))) {
 
-            AnnotationMirror am = valueType.getAnnotation(SameLen.class);
-            List<String> arraysInAnno =
-                    am == null
-                            ? new ArrayList<>()
-                            : IndexUtil.getValueOfAnnotationWithStringArgument(am);
-
-            Receiver rec = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) valueTree);
-            if (rec != null && SameLenAnnotatedTypeFactory.shouldUseInAnnotation(rec)) {
-                List<String> names = new ArrayList<>();
-                names.add(rec.toString());
-                AnnotationMirror newSameLen = atypeFactory.getCombinedSameLen(arraysInAnno, names);
+            Receiver rhs = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) valueTree);
+            if (rhs != null && SameLenAnnotatedTypeFactory.mayAppearInSameLen(rhs)) {
+                String rhsExpr = rhs.toString();
+                AnnotationMirror am = valueType.getAnnotation(SameLen.class);
+                Collection<String> exprs;
+                if (am == null) {
+                    exprs = Collections.singletonList(rhsExpr);
+                } else {
+                    exprs = new TreeSet<>(IndexUtil.getValueOfAnnotationWithStringArgument(am));
+                    exprs.add(rhsExpr);
+                }
+                AnnotationMirror newSameLen = atypeFactory.createSameLen(exprs);
                 valueType.replaceAnnotation(newSameLen);
             }
         }

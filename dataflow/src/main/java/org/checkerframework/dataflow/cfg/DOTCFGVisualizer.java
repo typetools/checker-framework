@@ -74,7 +74,6 @@ public class DOTCFGVisualizer<
         this.sbBlock = new StringBuilder();
     }
 
-    /** {@inheritDoc} */
     @Override
     public @Nullable Map<String, Object> visualize(
             ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
