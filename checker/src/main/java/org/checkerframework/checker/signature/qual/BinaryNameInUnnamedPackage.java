@@ -10,7 +10,12 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * ClassGetName}. The string represents a class that is in the unnamed package (also known as the
  * default package).
  *
- * <p>Examples: {@code MyClass}, {@code MyClass$22}.
+ * <p>Examples:
+ *
+ * <pre>{@code
+ * MyClass
+ * MyClass$22
+ * }</pre>
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

@@ -208,18 +208,18 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (!hasNullType(inferredArgs)) {
             return;
         }
-        final Map<TypeVariable, AnnotatedTypeMirror> inferredArgsWithOutNull =
+        final Map<TypeVariable, AnnotatedTypeMirror> inferredArgsWithoutNull =
                 infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, false);
         for (AnnotatedTypeVariable atv : methodType.getTypeVariables()) {
             TypeVariable typeVar = atv.getUnderlyingType();
             AnnotatedTypeMirror result = inferredArgs.get(typeVar);
             if (result == null) {
-                AnnotatedTypeMirror withoutNullResult = inferredArgsWithOutNull.get(typeVar);
+                AnnotatedTypeMirror withoutNullResult = inferredArgsWithoutNull.get(typeVar);
                 if (withoutNullResult != null) {
                     inferredArgs.put(typeVar, withoutNullResult);
                 }
             } else if (result.getKind() == TypeKind.NULL) {
-                AnnotatedTypeMirror withoutNullResult = inferredArgsWithOutNull.get(typeVar);
+                AnnotatedTypeMirror withoutNullResult = inferredArgsWithoutNull.get(typeVar);
                 if (withoutNullResult == null) {
                     // withoutNullResult is null when the only constraint on a type argument is
                     // where a method argument is null.

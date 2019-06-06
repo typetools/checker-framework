@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Entering `pwd`/.travis-build.sh, GROUP=$1
+echo "Entering `pwd`/.travis-build.sh, GROUP=$1"
 
 # Optional argument $1 is one of:
 #   all, all-tests, jdk.jar, misc, checker-framework-inference, plume-lib, downstream
@@ -30,7 +30,6 @@ fi
 
 # Fail the whole script if any command fails
 set -e
-
 
 ## Diagnostic output
 # Output lines of this script as they are read.
@@ -161,4 +160,4 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
 
 fi
 
-echo Exiting `pwd`/.travis-build.sh, GROUP=$1
+echo "Exiting `pwd`/.travis-build.sh, GROUP=$1"
