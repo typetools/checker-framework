@@ -12,7 +12,7 @@ plugins {
     id 'org.ajoberstar.grgit' version '3.1.1' apply false
 
     // To update version numbers of dependencies in this file, run: ./gradlew useLatestVersions
-    id 'se.patrikerdes.use-latest-versions' version '0.2.9'
+    id 'se.patrikerdes.use-latest-versions' version '0.2.10'
     id 'com.github.ben-manes.versions' version '0.21.0'
 }
 apply plugin: "de.undercouch.download"
@@ -287,7 +287,7 @@ configurations {
 
 dependencies {
     // https://mvnrepository.com/artifact/org.plumelib/require-javadoc
-    compile group: 'org.plumelib', name: 'require-javadoc', version: '0.1.0'
+    compileOnly group: 'org.plumelib', name: 'require-javadoc', version: '0.1.0'
 }
 
 task requireJavadoc(type: Javadoc, group: "Documentation") {
