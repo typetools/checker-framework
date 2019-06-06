@@ -962,8 +962,7 @@ public class AnnotatedTypes {
         // the annotation is a type annotation if it has the proper ElementTypes in the @Target
         // meta-annotation
         Target target = anno.getAnnotation(Target.class);
-        boolean result =
-                target != null && hasOnlyTypeQualifierElementTypes(target.value(), anno.getName());
+        boolean result = target != null && hasOnlyTypeQualifierElementTypes(target.value(), anno);
         isTypeAnnotationCache.put(anno, result);
         return result;
     }
@@ -975,20 +974,17 @@ public class AnnotatedTypes {
      * @param anno the annotation to check
      * @return true iff the annotation is also targeted to type use annotations
      */
-    public static boolean isAlsoTypeAnnotation(AnnotationMirror anno) {
+    public static boolean isAlsoTypeAnnotation(Class<? extends Annotation> anno) {
         Boolean cached = isTypeAnnotationCache.get(anno);
         if (cached != null) {
             return cached;
         }
-        TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();
+        // TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();
 
         // the annotation is a type annotation if it has the proper ElementTypes in the @Target
         // meta-annotation
-        Target target = elem.getAnnotation(Target.class);
-        boolean result =
-                target != null
-                        && hasAlsoTypeQualifierElementTypes(
-                                target.value(), elem.getSimpleName().toString());
+        Target target = anno.getAnnotation(Target.class);
+        boolean result = target != null && hasAlsoTypeQualifierElementTypes(target.value(), anno);
         isTypeAnnotationCache.put(anno, result);
         return result;
     }
@@ -1002,7 +998,8 @@ public class AnnotatedTypes {
      * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
      *     something besides {@link ElementType#TYPE_PARAMETER}
      */
-    private static boolean hasOnlyTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
+    private static boolean hasOnlyTypeQualifierElementTypes(
+            ElementType[] elements, Class<? extends Annotation> cls) {
         return hasTypeQualifierElementTypes(elements, cls, true);
     }
 
@@ -1014,7 +1011,8 @@ public class AnnotatedTypes {
      * @param cls the annotation class being tested; used for diagnostic messages only
      * @return true iff the annotation is also targeted to type use annotations
      */
-    private static boolean hasAlsoTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
+    private static boolean hasAlsoTypeQualifierElementTypes(
+            ElementType[] elements, Class<? extends Annotation> cls) {
         return hasTypeQualifierElementTypes(elements, cls, false);
     }
 
@@ -1027,7 +1025,8 @@ public class AnnotatedTypes {
      * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
      *     something besides {@link ElementType#TYPE_PARAMETER}
      */
-     private static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls, boolean only) {
+    private static boolean hasTypeQualifierElementTypes(
+            ElementType[] elements, Class<? extends Annotation> cls, boolean only) {
         // True if the array contains TYPE_USE
         boolean hasTypeUse = false;
         // Non-null if the array contains an element other than TYPE_USE or TYPE_PARAMETER
@@ -1044,7 +1043,7 @@ public class AnnotatedTypes {
                         "@Target meta-annotation should not contain both TYPE_USE and "
                                 + otherElementType
                                 + ", for annotation "
-                                + name);
+                                + cls);
             }
         }
 
