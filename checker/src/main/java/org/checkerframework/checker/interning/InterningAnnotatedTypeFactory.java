@@ -3,8 +3,11 @@ package org.checkerframework.checker.interning;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import org.checkerframework.checker.interning.qual.InternMethod;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.interning.qual.UnknownInterned;
@@ -14,9 +17,13 @@ import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultQualifierForUseTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -62,8 +69,47 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    protected DefaultQualifierForUseTypeAnnotator createDefaultForUseTypeAnnotator() {
+        return new InterningDefaultQualifierForUseTypeAnnotator(this);
+    }
+
+    static class InterningDefaultQualifierForUseTypeAnnotator
+            extends DefaultQualifierForUseTypeAnnotator {
+
+        public InterningDefaultQualifierForUseTypeAnnotator(AnnotatedTypeFactory typeFactory) {
+            super(typeFactory);
+        }
+
+        @Override
+        public Void visitExecutable(AnnotatedExecutableType type, Void p) {
+            MethodSymbol methodElt = (MethodSymbol) type.getElement();
+
+            if (methodElt == null
+                    || methodElt.getKind() != ElementKind.CONSTRUCTOR
+                    || methodElt.owner.getKind() == ElementKind.ENUM) {
+                // Annotate method returns, not constructors.
+                scan(type.getReturnType(), p);
+            }
+            if (type.getReceiverType() != null
+                    && typeFactory.getDeclAnnotation(type.getElement(), InternMethod.class)
+                            == null) {
+                scanAndReduce(type.getReceiverType(), p, null);
+            }
+            scanAndReduce(type.getParameterTypes(), p, null);
+            scanAndReduce(type.getThrownTypes(), p, null);
+            scanAndReduce(type.getTypeVariables(), p, null);
+            return null;
+        }
+    }
+
+    @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(super.createTreeAnnotator(), new InterningTreeAnnotator(this));
+    }
+
+    @Override
+    protected TypeAnnotator createTypeAnnotator() {
+        return new ListTypeAnnotator(new InterningTypeAnnotator(this), super.createTypeAnnotator());
     }
 
     @Override
@@ -112,6 +158,25 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
             type.replaceAnnotation(TOP);
             return super.visitCompoundAssignment(node, type);
+        }
+    }
+
+    /** Adds @Interned to enum types. */
+    private class InterningTypeAnnotator extends TypeAnnotator {
+
+        InterningTypeAnnotator(InterningAnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
+        }
+
+        @Override
+        public Void visitDeclared(AnnotatedDeclaredType t, Void p) {
+            // case 3: Enum types, and the Enum class itself, are interned
+            Element elt = t.getUnderlyingType().asElement();
+            assert elt != null;
+            if (elt.getKind() == ElementKind.ENUM) {
+                t.replaceAnnotation(INTERNED);
+            }
+            return super.visitDeclared(t, p);
         }
     }
 
