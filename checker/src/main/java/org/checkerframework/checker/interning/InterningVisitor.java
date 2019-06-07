@@ -823,13 +823,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                     tm.getClass());
         }
         if (classElt != null) {
-            AnnotatedTypeMirror classType = atypeFactory.fromElement(classElt);
-            assert classType != null;
-            for (AnnotationMirror anno : classType.getAnnotations()) {
-                if (INTERNED.equals(anno)) {
-                    return true;
-                }
-            }
+            AnnotationMirrorSet bound =
+                    atypeFactory.getTypeDeclarationBound((TypeElement) classElt);
+            return bound.contains(INTERNED);
         }
         return false;
     }
