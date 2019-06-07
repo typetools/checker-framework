@@ -42,8 +42,7 @@ import org.checkerframework.framework.qual.TypeKind;
             TypeKind.INT,
             TypeKind.LONG,
             TypeKind.SHORT
-        },
-        classes = Enum.class)
+        })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

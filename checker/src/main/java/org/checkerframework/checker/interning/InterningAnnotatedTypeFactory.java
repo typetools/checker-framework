@@ -7,6 +7,8 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.interning.qual.InternMethod;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.PolyInterned;
@@ -24,6 +26,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.DefaultQualifierForUseTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -100,6 +103,24 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             scanAndReduce(type.getTypeVariables(), p, null);
             return null;
         }
+    }
+
+    @Override
+    public AnnotationMirrorSet getTypeDeclarationBound(TypeElement typeMirror) {
+        if (typeMirror.getKind() == ElementKind.ENUM) {
+            return AnnotationMirrorSet.singleElementSet(INTERNED);
+        }
+        return super.getTypeDeclarationBound(typeMirror);
+    }
+
+    @Override
+    public AnnotationMirrorSet getTypeDeclarationBound(AnnotatedTypeMirror typeMirror) {
+        if (typeMirror.getKind() == TypeKind.DECLARED
+                && ((AnnotatedDeclaredType) typeMirror).getUnderlyingType().asElement().getKind()
+                        == ElementKind.ENUM) {
+            return AnnotationMirrorSet.singleElementSet(INTERNED);
+        }
+        return super.getTypeDeclarationBound(typeMirror);
     }
 
     @Override

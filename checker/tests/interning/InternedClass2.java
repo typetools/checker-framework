@@ -35,7 +35,7 @@ public @Interned class InternedClass2 {
         if (!pool.containsKey(this.i)) {
             // The above check proves "this" is interned.
             @SuppressWarnings("interning:assignment.type.incompatible")
-            InternedClass2 internedThis = this;
+            @Interned InternedClass2 internedThis = this;
             pool.put(this.i, internedThis);
         }
         return pool.get(this.i);

@@ -3384,19 +3384,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         protected boolean checkReceiverOverride() {
+            AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
+            AnnotatedDeclaredType overriddenReceiver = overridden.getReceiverType();
+            QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
             // Check the receiver type.
             // isSubtype() requires its arguments to be actual subtypes with
             // respect to JLS, but overrider receiver is not a subtype of the
-            // overridden receiver.  Hence copying the annotations.
+            // overridden receiver.   So, just check primary annotations.
             // TODO: this will need to be improved for generic receivers.
-            AnnotatedTypeMirror overriddenReceiver =
-                    overrider.getReceiverType().getErased().shallowCopy(false);
-            overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
-            if (!atypeFactory
-                    .getTypeHierarchy()
-                    .isSubtype(overriddenReceiver, overrider.getReceiverType().getErased())) {
-                FoundRequired pair =
-                        FoundRequired.of(overrider.getReceiverType(), overridden.getReceiverType());
+            Set<AnnotationMirror> overriderAnnos = overriderReceiver.getAnnotations();
+            Set<AnnotationMirror> overriddenAnnos = overriddenReceiver.getAnnotations();
+            if (!qualifierHierarchy.isSubtype(overriddenAnnos, overriderAnnos)) {
+                // If the overriding receiver annotations are the same as the bound for uses of the
+                // type, then don't issue the warning. This is because all objects are guaranteed to
+                // be at least the annotations on the class declaration.
+                Set<AnnotationMirror> declaredAnnos =
+                        atypeFactory.getTypeDeclarationBound(overridingType);
+                if (qualifierHierarchy.isSubtype(overriderAnnos, declaredAnnos)
+                        && qualifierHierarchy.isSubtype(declaredAnnos, overriderAnnos)) {
+                    return true;
+                }
+                FoundRequired pair = FoundRequired.of(overriderReceiver, overriddenReceiver);
                 checker.report(
                         Result.failure(
                                 "override.receiver.invalid",
