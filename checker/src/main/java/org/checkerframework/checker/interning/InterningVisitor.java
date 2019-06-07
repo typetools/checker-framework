@@ -11,6 +11,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
@@ -18,7 +19,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -29,6 +29,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.interning.qual.InternMethod;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
@@ -37,10 +38,9 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.Heuristics;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -289,32 +289,47 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             // Enums constructor are only called once per enum constant.
             return;
         }
-        // TODO: For now allow @Interned on constructor results
-        // The Interning Checker needs to be adapted to the framework changes properly.
-        // I've starting working on this here:
-        // https://github.com/smillst/checker-framework/tree/interning
-        Set<AnnotationMirror> constructorAnnotations =
-                constructorType.getReturnType().getAnnotations();
-        Set<AnnotationMirror> classAnnotations =
-                atypeFactory
-                        .getAnnotatedType(constructorElement.getEnclosingElement())
-                        .getAnnotations();
-        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-        for (AnnotationMirror classAnno : classAnnotations) {
-            for (AnnotationMirror constructorAnno : constructorAnnotations) {
-                if (qualifierHierarchy.leastUpperBound(classAnno, constructorAnno) != null) {
-                    if (qualifierHierarchy.isSubtype(constructorAnno, classAnno)) {
-                        if (!AnnotationUtils.areSameByName(constructorAnno, classAnno)) {
-                            checker.report(
-                                    Result.warning(
-                                            "inconsistent.constructor.type", constructorAnno),
-                                    constructorElement);
-                        }
-                    }
-                    break;
+        super.checkConstructorResult(constructorType, constructorElement);
+    }
+
+    @Override
+    public boolean validateTypeOf(Tree tree) {
+        // Don't check the result type of a constructor, because it must be @UnknownInterned, even
+        // if the type on the class declaration is @Interned.
+        if (tree.getKind() == Tree.Kind.METHOD && TreeUtils.isConstructor((MethodTree) tree)) {
+            return true;
+        } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
+            NewClassTree newClassTree = (NewClassTree) tree;
+            Element elt = TreeUtils.elementFromUse(newClassTree).getEnclosingElement();
+            if (elt.getKind() == ElementKind.ENUM) {
+                return true;
+            }
+            AnnotationMirrorSet declaredType =
+                    atypeFactory.getTypeDeclarationBound((TypeElement) elt);
+            if (declaredType.contains(INTERNED)) {
+                // Don't issue an invalid type warning for new class trees; instead, issue an
+                // interned.object.creation error.
+                return checkCreationOfInternedObject(newClassTree);
+            }
+        }
+        return super.validateTypeOf(tree);
+    }
+
+    private boolean checkCreationOfInternedObject(NewClassTree newClassTree) {
+        if (getCurrentPath() != null
+                && getCurrentPath().getParentPath() != null
+                && getCurrentPath().getParentPath().getParentPath() != null) {
+            Tree parent = getCurrentPath().getParentPath().getParentPath().getLeaf();
+            if (parent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                ExecutableElement elt = TreeUtils.elementFromUse((MethodInvocationTree) parent);
+                if (atypeFactory.getDeclAnnotation(elt, InternMethod.class) != null) {
+                    return true;
                 }
             }
         }
+
+        checker.report(Result.failure("interned.object.creation"), newClassTree);
+        return false;
     }
 
     // **********************************************************************

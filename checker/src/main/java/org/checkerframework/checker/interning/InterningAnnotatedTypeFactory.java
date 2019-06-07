@@ -5,7 +5,6 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.interning.qual.UnknownInterned;
@@ -15,12 +14,9 @@ import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
-import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -71,11 +67,6 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected TypeAnnotator createTypeAnnotator() {
-        return new ListTypeAnnotator(new InterningTypeAnnotator(this), super.createTypeAnnotator());
-    }
-
-    @Override
     public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         Element element = TreeUtils.elementFromTree(tree);
         if (!type.isAnnotatedInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element)) {
@@ -121,46 +112,6 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
             type.replaceAnnotation(TOP);
             return super.visitCompoundAssignment(node, type);
-        }
-    }
-
-    /** Adds @Interned to enum types and any use of a class that is declared to be @Interned. */
-    private class InterningTypeAnnotator extends TypeAnnotator {
-
-        InterningTypeAnnotator(InterningAnnotatedTypeFactory atypeFactory) {
-            super(atypeFactory);
-        }
-
-        @Override
-        public Void visitDeclared(AnnotatedDeclaredType t, Void p) {
-
-            // case 3: Enum types, and the Enum class itself, are interned
-            Element elt = t.getUnderlyingType().asElement();
-            assert elt != null;
-            if (elt.getKind() == ElementKind.ENUM) {
-                t.replaceAnnotation(INTERNED);
-
-                // TODO: CODE REVIEW:  I am not sure this makes sense.  An element for a declared
-                // type doesn't always have to be a class declaration.  AND I would assume if the
-                // class declaration has @Interned then the type would already receive an @Interned
-                // from the framework without this case (I think from InheritFromClass) IF this is
-                // true, perhaps remove item 6 I added to the class comment.
-            } else if (typeFactory.fromElement(elt).hasAnnotation(INTERNED)) {
-                // If the class/interface has an @Interned annotation, use it.
-                t.replaceAnnotation(INTERNED);
-            }
-
-            return super.visitDeclared(t, p);
-        }
-
-        @Override
-        public Void visitExecutable(AnnotatedExecutableType type, Void p) {
-            scan(type.getReturnType(), p);
-            // TODO: don't skip the receiver
-            scan(type.getParameterTypes(), p);
-            scan(type.getThrownTypes(), p);
-            scan(type.getTypeVariables(), p);
-            return null;
         }
     }
 
