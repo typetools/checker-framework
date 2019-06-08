@@ -113,6 +113,11 @@ allprojects {
             }
         }
 
+	// Turn Javadoc warnings into errors
+	tasks.withType(Javadoc) {
+	    options.addStringOption('Xwerror', '-quiet')
+	}
+
         // Add standard javac options
         tasks.withType(JavaCompile) {
             dependsOn(':installGitHooks')
