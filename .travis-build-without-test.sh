@@ -37,7 +37,7 @@ else
     [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
     REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools annotation-tools`
     BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
-    (cd .. && git clone -b -q ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b -q ${BRANCH} --single-branch --depth 1 ${REPO})
+    (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
 fi
 
 echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
