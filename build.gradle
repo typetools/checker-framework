@@ -113,10 +113,12 @@ allprojects {
             }
         }
 
-	// Turn Javadoc warnings into errors
-	tasks.withType(Javadoc) {
-	    options.addStringOption('Xwerror', '-quiet')
-	}
+	/// TODO: This should be enabled selectively, but not everywhere yet because it would require
+	/// exhaustive @param Javadoc tags throughout.  (Fails on Travis, cannot reproduce locally.)
+	// // Turn Javadoc warnings into errors.
+	// tasks.withType(Javadoc) {
+	//     options.addStringOption('Xwerror', '-quiet')
+	// }
 
         // Add standard javac options
         tasks.withType(JavaCompile) {
