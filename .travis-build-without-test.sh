@@ -47,7 +47,7 @@ echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 
 ## Build stubparser
 if [ -d ../stubparser ] ; then
-    git -C ../stubparser -q pull
+    git -C ../stubparser pull
 else
     [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
     REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools stubparser`
