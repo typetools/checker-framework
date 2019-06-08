@@ -55,7 +55,7 @@ class TestOpt {
         @NonNull Object o = Opt.orElseGet(p, () -> null);
     }
 
-    void foo7(@Nullable Object p) {
+    void foo7(Object p) {
         try {
             @NonNull Object o = Opt.orElseThrow(p, () -> new Throwable());
         } catch (Throwable t) {
@@ -65,7 +65,7 @@ class TestOpt {
 
     void foo7b(@Nullable Object p) {
         try {
-            // :: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible) :: error: (argument.type.incompatible)
             @NonNull Object o = Opt.orElseThrow(p, () -> null);
         } catch (Throwable t) {
             // p was null
