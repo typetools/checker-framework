@@ -40,14 +40,12 @@ public final class Opt {
     /**
      * If primary is non-null, returns it, otherwise throws NoSuchElementException.
      *
-     * <p>Note that primary is required to be non-null by the Nullness Checker, to ensure the
-     * exception never happens for checked code.
-     *
      * @param primary a non-null value to return
      * @return {@code primary} if it is non-null
      * @throws NoSuchElementException if primary is null
      * @see java.util.Optional#get()
      */
+    // `primary` is @NanNull; otherwise, the method could throw an exception.
     public static <T extends @NonNull Object> T get(T primary) {
         if (primary == null) {
             throw new NoSuchElementException("No value present");
@@ -128,14 +126,12 @@ public final class Opt {
     }
 
     /**
-     * Return primary if it is non-null. If primary is null, return an exception to be created by
-     * the provided supplier.
-     *
-     * <p>Note that primary is required to be non-null by the Nullness Checker, to ensure the
-     * exception never happens for checked code.
+     * Return primary if it is non-null. If primary is null, throw an exception to be created by the
+     * provided supplier.
      *
      * @see java.util.Optional#orElseThrow(Supplier)
      */
+    // `primary` is @NanNull; otherwise, the method could throw an exception.
     public static <T extends @NonNull Object, X extends @NonNull Throwable> T orElseThrow(
             T primary, Supplier<? extends X> exceptionSupplier) throws X {
         if (primary != null) {
