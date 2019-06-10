@@ -27,7 +27,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @SubtypeOf({}) // The top type in the hierarchy
 @Documented
 @DefaultQualifierInHierarchy
-@DefaultFor(value = TypeUseLocation.LOWER_BOUND, classes = Void.class)
+@DefaultFor(value = TypeUseLocation.LOWER_BOUND, types = Void.class)
 @QualifierForLiterals(LiteralKind.NULL)
 @DefaultQualifierInHierarchyInUncheckedCode
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND})
