@@ -45,7 +45,7 @@ public final class Opt {
      * @throws NoSuchElementException if primary is null
      * @see java.util.Optional#get()
      */
-    // `primary` is @NanNull; otherwise, the method could throw an exception.
+    // `primary` is @NonNull; otherwise, the method could throw an exception.
     public static <T extends @NonNull Object> T get(T primary) {
         if (primary == null) {
             throw new NoSuchElementException("No value present");
