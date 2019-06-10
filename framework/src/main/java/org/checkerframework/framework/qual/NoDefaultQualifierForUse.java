@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 public @interface NoDefaultQualifierForUse {
-    /** Qualifier to add to all unannotated uses of the type with this declaration annotation. */
+    /** Top qualifier in hierarchies for which no default annotation for use should be appied. */
     Class<? extends Annotation>[] value() default {};
 }
