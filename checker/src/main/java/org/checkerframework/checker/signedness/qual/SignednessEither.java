@@ -13,9 +13,10 @@ import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The value may be interpreted as {@link Signed} or {@link Unsigned}. It is either a manifest
- * literal, or it is a value whose most significant bit is not set (so it has the same
- * interpretation as signed or unsigned)
+ * Client code may interpret the value either as {@link Signed} or as {@link Unsigned} -- both
+ * interpretations are legal. The expression it either a manifest literal, or it evaluates to a
+ * value whose most significant bit is not set (so the value has the same interpretation as signed
+ * or unsigned)
  *
  * <p>The programmer should not write this annotation; the programmer should always write {@link
  * Signed} or {@link Unsigned} to indicate how the value is intended to be interpreted. The
@@ -29,4 +30,4 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({Unsigned.class, Signed.class})
 @QualifierForLiterals({LiteralKind.INT, LiteralKind.LONG, LiteralKind.CHAR})
-public @interface Constant {}
+public @interface SignednessEither {}
