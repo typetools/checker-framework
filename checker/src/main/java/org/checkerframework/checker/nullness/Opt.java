@@ -24,7 +24,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * <p><b>Runtime Dependency</b>
  *
  * <p>Please note that using this class introduces a runtime dependency. This means that you need to
- * distribute (or link to) the Checker Framework, along with your binaries.
+ * distribute (or link to) {@code checker-qual.jar}, along with your binaries.
  *
  * <p>To eliminate this dependency, you can simply copy this class into your own project.
  *
@@ -131,7 +131,7 @@ public final class Opt {
      * @see java.util.Optional#orElseThrow(Supplier)
      */
     public static <T, X extends @NonNull Throwable> @NonNull T orElseThrow(
-            T primary, Supplier<? extends @NonNull X> exceptionSupplier) throws X {
+            @NonNull T primary, Supplier<? extends @NonNull X> exceptionSupplier) throws X {
         if (primary != null) {
             return primary;
         } else {

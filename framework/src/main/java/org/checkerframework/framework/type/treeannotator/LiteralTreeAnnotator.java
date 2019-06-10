@@ -67,10 +67,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         literalKindToTreeKind.put(LiteralKind.STRING, Kind.STRING_LITERAL);
     }
 
-    /**
-     * Creates a {@link DefaultForTypeAnnotator} from the given checker, using that checker to
-     * determine the annotations that are in the type hierarchy.
-     */
+    /** Creates a {@link LiteralTreeAnnotator} for the given {@code atypeFactory}. */
     public LiteralTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);
         this.treeKinds = new EnumMap<>(Kind.class);

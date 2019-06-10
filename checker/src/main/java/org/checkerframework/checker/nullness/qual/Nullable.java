@@ -27,7 +27,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  */
 @SubtypeOf({})
 @QualifierForLiterals(LiteralKind.NULL)
-@DefaultFor(classes = Void.class)
+@DefaultFor(types = Void.class)
 @DefaultInUncheckedCodeFor({TypeUseLocation.RETURN, TypeUseLocation.UPPER_BOUND})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
