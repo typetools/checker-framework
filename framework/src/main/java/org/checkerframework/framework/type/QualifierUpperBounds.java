@@ -60,7 +60,7 @@ public class QualifierUpperBounds {
                 addTypeKind(mappedTk, theQual);
             }
 
-            for (Class<?> typeName : defaultFor.classes()) {
+            for (Class<?> typeName : defaultFor.types()) {
                 addClasses(typeName, theQual);
             }
         }
@@ -111,7 +111,7 @@ public class QualifierUpperBounds {
         boolean res = qualHierarchy.updateMappingToMutableSet(classes, typeNameString, theQual);
         if (!res) {
             throw new BugInCF(
-                    "TypeAnnotator: invalid update of classes "
+                    "TypeAnnotator: invalid update of types "
                             + classes
                             + " at "
                             + clazz
