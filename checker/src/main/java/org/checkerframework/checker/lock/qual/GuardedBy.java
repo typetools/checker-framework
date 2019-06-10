@@ -50,7 +50,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
             TypeKind.LONG,
             TypeKind.SHORT
         },
-        classes = {java.lang.String.class, Void.class})
+        types = {java.lang.String.class, Void.class})
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface GuardedBy {

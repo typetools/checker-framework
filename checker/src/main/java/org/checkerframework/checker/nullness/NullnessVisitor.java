@@ -423,6 +423,7 @@ public class NullnessVisitor
     public Void visitTypeCast(TypeCastTree node, Void p) {
         if (isPrimitive(node) && !isPrimitive(node.getExpression())) {
             if (!checkForNullability(node.getExpression(), UNBOXING_OF_NULLABLE)) {
+                // If unboxing of nullable is issued, don't issue any other errors.
                 return null;
             }
         }

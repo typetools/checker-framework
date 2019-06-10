@@ -20,16 +20,15 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Adds annotations to a type based on the use of a type. This class applies annotations specified
- * by {@link DefaultFor}; it is designed to be used in a {@link
- * org.checkerframework.framework.type.treeannotator.ListTreeAnnotator} constructed in {@link
- * GenericAnnotatedTypeFactory#createTreeAnnotator()}
+ * by {@link DefaultFor}; it is designed to be used in a {@link ListTypeAnnotator} constructed in
+ * {@link GenericAnnotatedTypeFactory#createTypeAnnotator()} ()}
  *
  * <p>{@link DefaultForTypeAnnotator} traverses types deeply.
  *
  * <p>This class takes care of two of the attributes of {@link DefaultFor}; the others are handled
  * in {@link org.checkerframework.framework.util.defaults.QualifierDefaults}.
  *
- * @see org.checkerframework.framework.type.treeannotator.ListTreeAnnotator
+ * @see ListTypeAnnotator
  */
 public class DefaultForTypeAnnotator extends TypeAnnotator {
 
@@ -74,7 +73,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
                 addTypeKind(mappedTk, theQual);
             }
 
-            for (Class<?> typeName : defaultFor.classes()) {
+            for (Class<?> typeName : defaultFor.types()) {
                 addClasses(typeName, theQual);
             }
         }
@@ -126,7 +125,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
         boolean res = qualHierarchy.updateMappingToMutableSet(classes, typeNameString, theQual);
         if (!res) {
             throw new BugInCF(
-                    "TypeAnnotator: invalid update of classes "
+                    "TypeAnnotator: invalid update of types "
                             + classes
                             + " at "
                             + clazz

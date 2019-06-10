@@ -978,7 +978,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      *     array parameter has no GuardSatisfied annotations except on the array type
      */
     // TODO: Remove this method once @TargetLocations are enforced (i.e. once
-    // issue https://github.com/typetools/checker-framework/issues/515 is closed).
+    // issue https://github.com/typetools/checker-framework/issues/1919 is closed).
     private void issueErrorIfGuardSatisfiedAnnotationInUnsupportedLocation(
             AnnotationTree annotationTree) {
         TreePath currentPath = getCurrentPath();

@@ -286,6 +286,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         if (shouldCache) {
             this.flowResultAnalysisCaches.clear();
+            this.defaultQualifierForUseTypeAnnotator.clearCache();
         }
     }
 
@@ -1700,8 +1701,15 @@ public abstract class GenericAnnotatedTypeFactory<
         return cfgVisualizer;
     }
 
+    /**
+     * Adds default qualifiers for uses types of to {@code type}. If {@code element} is a local
+     * variable, then the defaults are not added.
+     *
+     * @param element possibly null element whose type is {@code type}
+     * @param type the type to which defaults are added
+     */
     protected void addAnnotationsFromDefaultQualifierForUse(
-            Element element, AnnotatedTypeMirror type) {
+            @Nullable Element element, AnnotatedTypeMirror type) {
         if (element != null
                 && element.getKind() == ElementKind.LOCAL_VARIABLE
                 && type.getKind() == TypeKind.DECLARED) {

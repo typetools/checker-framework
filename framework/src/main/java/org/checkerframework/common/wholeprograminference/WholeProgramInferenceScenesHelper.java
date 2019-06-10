@@ -384,7 +384,7 @@ public class WholeProgramInferenceScenesHelper {
             }
 
             try {
-                Class<?>[] names = defaultFor.classes();
+                Class<?>[] names = defaultFor.types();
                 for (Class<?> c : names) {
                     TypeMirror underlyingtype = atm.getUnderlyingType();
                     while (underlyingtype instanceof javax.lang.model.type.ArrayType) {

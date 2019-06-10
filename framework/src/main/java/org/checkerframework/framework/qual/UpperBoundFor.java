@@ -27,5 +27,5 @@ public @interface UpperBoundFor {
      *     {@code @MyAnno} is meta-annotated with {@code @DefaultFor(classes=String.class)}, then
      *     every occurrence of {@code String} is actually {@code @MyAnno String}.
      */
-    Class<?>[] classes() default {};
+    Class<?>[] types() default {};
 }
