@@ -131,7 +131,7 @@ public final class Opt {
      *
      * @see java.util.Optional#orElseThrow(Supplier)
      */
-    // `primary` is @NanNull; otherwise, the method could throw an exception.
+    // `primary` is @NonNull; otherwise, the method could throw an exception.
     public static <T extends @NonNull Object, X extends @NonNull Throwable> T orElseThrow(
             T primary, Supplier<? extends X> exceptionSupplier) throws X {
         if (primary != null) {
