@@ -125,7 +125,7 @@ public abstract class GenericAnnotatedTypeFactory<
     /** to annotate types based on the given tree */
     protected TypeAnnotator typeAnnotator;
 
-    /** for use in addTypeImplicits */
+    /** for use in addAnnotationsFromDefaultQualifierForUse */
     private DefaultQualifierForUseTypeAnnotator defaultQualifierForUseTypeAnnotator;
 
     /** to annotate types based on the given un-annotated types */
@@ -377,6 +377,7 @@ public abstract class GenericAnnotatedTypeFactory<
         return new ListTypeAnnotator(typeAnnotators);
     }
 
+    /** Creates an {@link DefaultQualifierForUseTypeAnnotator}. */
     protected DefaultQualifierForUseTypeAnnotator createDefaultForUseTypeAnnotator() {
         return new DefaultQualifierForUseTypeAnnotator(this);
     }

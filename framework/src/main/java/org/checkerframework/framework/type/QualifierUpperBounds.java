@@ -16,6 +16,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** Class that computes and stores the qualifier upper bounds for type uses. */
 public class QualifierUpperBounds {
 
     /** Map from {@link TypeKind} to annotations. */
@@ -121,19 +122,20 @@ public class QualifierUpperBounds {
         }
     }
 
-    protected Set<AnnotationMirror> getBoundAnnotations(AnnotatedTypeMirror annotatedTypeMirror) {
-        TypeMirror type = annotatedTypeMirror.getUnderlyingType();
+    /** Returns the set of qualifiers that are the upper bounds for a use of the type. */
+    protected Set<AnnotationMirror> getBoundQualifiers(AnnotatedTypeMirror type) {
+        TypeMirror javaType = type.getUnderlyingType();
         AnnotationMirrorSet bounds = new AnnotationMirrorSet();
         String qname;
-        if (type.getKind() == TypeKind.DECLARED) {
-            DeclaredType declaredType = (DeclaredType) type;
+        if (javaType.getKind() == TypeKind.DECLARED) {
+            DeclaredType declaredType = (DeclaredType) javaType;
             bounds.addAll(
                     atypeFactory
                             .fromElement((TypeElement) declaredType.asElement())
                             .getAnnotations());
             qname = TypesUtils.getQualifiedName(declaredType).toString();
-        } else if (type.getKind().isPrimitive()) {
-            qname = type.toString();
+        } else if (javaType.getKind().isPrimitive()) {
+            qname = javaType.toString();
         } else {
             qname = null;
         }
@@ -143,14 +145,14 @@ public class QualifierUpperBounds {
             addMissingAnnotations(bounds, fnd);
         }
 
-        // If the type's kind or class is in the appropriate map, annotate the
-        // type.
+        // If the javaType's kind or class is in the appropriate map, annotate the
+        // javaType.
 
-        if (typeKinds.containsKey(type.getKind())) {
-            Set<AnnotationMirror> fnd = typeKinds.get(type.getKind());
+        if (typeKinds.containsKey(javaType.getKind())) {
+            Set<AnnotationMirror> fnd = typeKinds.get(javaType.getKind());
             addMissingAnnotations(bounds, fnd);
         } else if (!typeClasses.isEmpty()) {
-            Class<? extends AnnotatedTypeMirror> t = annotatedTypeMirror.getClass();
+            Class<? extends AnnotatedTypeMirror> t = type.getClass();
             if (typeClasses.containsKey(t)) {
                 Set<AnnotationMirror> fnd = typeClasses.get(t);
                 addMissingAnnotations(bounds, fnd);
@@ -160,6 +162,10 @@ public class QualifierUpperBounds {
         return bounds;
     }
 
+    /**
+     * Adds {@code missing} to {@code annos}, for which no annotation from the same qualifier
+     * hierarchy is present.
+     */
     private void addMissingAnnotations(
             AnnotationMirrorSet annos, Set<? extends AnnotationMirror> missing) {
         for (AnnotationMirror miss : missing) {
