@@ -4,6 +4,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -106,21 +107,21 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public AnnotationMirrorSet getTypeDeclarationBound(TypeElement typeMirror) {
-        if (typeMirror.getKind() == ElementKind.ENUM) {
+    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeElement typeElement) {
+        if (typeElement.getKind() == ElementKind.ENUM) {
             return AnnotationMirrorSet.singleElementSet(INTERNED);
         }
-        return super.getTypeDeclarationBound(typeMirror);
+        return super.getTypeDeclarationBounds(typeElement);
     }
 
     @Override
-    public AnnotationMirrorSet getTypeDeclarationBound(AnnotatedTypeMirror typeMirror) {
+    public Set<AnnotationMirror> getTypeDeclarationBounds(AnnotatedTypeMirror typeMirror) {
         if (typeMirror.getKind() == TypeKind.DECLARED
                 && ((AnnotatedDeclaredType) typeMirror).getUnderlyingType().asElement().getKind()
                         == ElementKind.ENUM) {
             return AnnotationMirrorSet.singleElementSet(INTERNED);
         }
-        return super.getTypeDeclarationBound(typeMirror);
+        return super.getTypeDeclarationBounds(typeMirror);
     }
 
     @Override

@@ -91,7 +91,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
@@ -1147,22 +1146,32 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     protected QualifierUpperBounds qualifierUpperBounds;
 
-    public AnnotationMirrorSet getTypeDeclarationBound(AnnotatedTypeMirror typeMirror) {
+    public Set<AnnotationMirror> getTypeDeclarationBounds(AnnotatedTypeMirror typeMirror) {
         return qualifierUpperBounds.getBoundAnnotations(typeMirror);
     }
 
-    public AnnotationMirrorSet getTypeDeclarationBound(TypeElement typeMirror) {
+    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeElement typeElement) {
         return qualifierUpperBounds.getBoundAnnotations(
-                AnnotatedTypeMirror.createType(typeMirror.asType(), this, true));
+                AnnotatedTypeMirror.createType(typeElement.asType(), this, true));
     }
 
-    protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBound() {
+    /**
+     * Returns the set of qualifiers that are the upper bound for a type use if no other bound is
+     * specified for the type.
+     *
+     * <p>Super implementation returns the top qualifiers by default. Subclass may override to
+     * return different qualifiers.
+     *
+     * @return the set of qualifiers that are the upper bound for a type use if no other bound is
+     *     specified for the type
+     */
+    protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
         return qualHierarchy.getTopAnnotations();
     }
 
     public Set<AnnotationMirror> getTypeOfExtendsImplements(Tree clause) {
         AnnotatedTypeMirror fromTypeTree = fromTypeTree(clause);
-        AnnotationMirrorSet bound = getTypeDeclarationBound(fromTypeTree);
+        Set<AnnotationMirror> bound = getTypeDeclarationBounds(fromTypeTree);
         fromTypeTree.addMissingAnnotations(bound);
         return fromTypeTree.getAnnotations();
     }

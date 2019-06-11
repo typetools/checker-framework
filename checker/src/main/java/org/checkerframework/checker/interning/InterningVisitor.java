@@ -19,6 +19,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -38,9 +39,9 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.Heuristics;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -304,9 +305,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             if (elt.getKind() == ElementKind.ENUM) {
                 return true;
             }
-            AnnotationMirrorSet declaredType =
-                    atypeFactory.getTypeDeclarationBound((TypeElement) elt);
-            if (declaredType.contains(INTERNED)) {
+            Set<AnnotationMirror> declaredType =
+                    atypeFactory.getTypeDeclarationBounds((TypeElement) elt);
+            if (AnnotationUtils.containsSameByClass(declaredType, Interned.class)) {
                 // Don't issue an invalid type warning for new class trees; instead, issue an
                 // interned.object.creation error.
                 return checkCreationOfInternedObject(newClassTree);
@@ -823,9 +824,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                     tm.getClass());
         }
         if (classElt != null) {
-            AnnotationMirrorSet bound =
-                    atypeFactory.getTypeDeclarationBound((TypeElement) classElt);
-            return bound.contains(INTERNED);
+            Set<AnnotationMirror> bound =
+                    atypeFactory.getTypeDeclarationBounds((TypeElement) classElt);
+            return AnnotationUtils.containsSameByClass(bound, Interned.class);
         }
         return false;
     }

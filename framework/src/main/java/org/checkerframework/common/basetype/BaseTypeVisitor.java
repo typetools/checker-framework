@@ -103,7 +103,6 @@ import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
 import org.checkerframework.framework.util.ContractsUtils.Contract;
@@ -397,8 +396,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // Don't check extends clause on anonymous classes.
             return;
         }
-        AnnotationMirrorSet classBounds =
-                atypeFactory.getTypeDeclarationBound(atypeFactory.getAnnotatedType(classTree));
+        Set<AnnotationMirror> classBounds =
+                atypeFactory.getTypeDeclarationBounds(atypeFactory.getAnnotatedType(classTree));
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
         // classTree.getExtendsClause() is null when there is no explicitly-written extends clause,
@@ -3394,7 +3393,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // type, then don't issue the warning. This is because all objects are guaranteed to
                 // be at least the annotations on the class declaration.
                 Set<AnnotationMirror> declaredAnnos =
-                        atypeFactory.getTypeDeclarationBound(overridingType);
+                        atypeFactory.getTypeDeclarationBounds(overridingType);
                 if (qualifierHierarchy.isSubtype(overriderAnnos, declaredAnnos)
                         && qualifierHierarchy.isSubtype(declaredAnnos, overriderAnnos)) {
                     return true;
@@ -3816,7 +3815,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return true if the type is a valid use of the primitive type
      */
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
-        AnnotationMirrorSet bounds = atypeFactory.getTypeDeclarationBound(type);
+        Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(type);
         return atypeFactory.getQualifierHierarchy().isSubtype(type.getAnnotations(), bounds);
     }
 
@@ -3830,7 +3829,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return true if the type is a valid array type
      */
     public boolean isValidUse(AnnotatedArrayType type, Tree tree) {
-        AnnotationMirrorSet bounds = atypeFactory.getTypeDeclarationBound(type);
+        Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(type);
         return atypeFactory.getQualifierHierarchy().isSubtype(type.getAnnotations(), bounds);
     }
 

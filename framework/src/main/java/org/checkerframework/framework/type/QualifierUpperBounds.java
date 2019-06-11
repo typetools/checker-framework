@@ -45,22 +45,23 @@ public class QualifierUpperBounds {
         // Get type qualifiers from the checker.
         Set<Class<? extends Annotation>> quals = typeFactory.getSupportedTypeQualifiers();
 
-        // For each qualifier, read the @DefaultFor annotation and put its type classes and kinds
+        // For each qualifier, read the @UpperBoundFor annotation and put its type classes and kinds
         // into maps.
         for (Class<? extends Annotation> qual : quals) {
-            UpperBoundFor defaultFor = qual.getAnnotation(UpperBoundFor.class);
-            if (defaultFor == null) {
+            UpperBoundFor upperBoundFor = qual.getAnnotation(UpperBoundFor.class);
+            if (upperBoundFor == null) {
                 continue;
             }
 
             AnnotationMirror theQual =
                     AnnotationBuilder.fromClass(typeFactory.getElementUtils(), qual);
-            for (org.checkerframework.framework.qual.TypeKind typeKind : defaultFor.typeKinds()) {
+            for (org.checkerframework.framework.qual.TypeKind typeKind :
+                    upperBoundFor.typeKinds()) {
                 TypeKind mappedTk = mapTypeKinds(typeKind);
                 addTypeKind(mappedTk, theQual);
             }
 
-            for (Class<?> typeName : defaultFor.types()) {
+            for (Class<?> typeName : upperBoundFor.types()) {
                 addClasses(typeName, theQual);
             }
         }
@@ -120,7 +121,7 @@ public class QualifierUpperBounds {
         }
     }
 
-    protected AnnotationMirrorSet getBoundAnnotations(AnnotatedTypeMirror annotatedTypeMirror) {
+    protected Set<AnnotationMirror> getBoundAnnotations(AnnotatedTypeMirror annotatedTypeMirror) {
         TypeMirror type = annotatedTypeMirror.getUnderlyingType();
         AnnotationMirrorSet bounds = new AnnotationMirrorSet();
         String qname;
@@ -155,7 +156,7 @@ public class QualifierUpperBounds {
                 addMissingAnnotations(bounds, fnd);
             }
         }
-        addMissingAnnotations(bounds, atypeFactory.getDefaultTypeDeclarationBound());
+        addMissingAnnotations(bounds, atypeFactory.getDefaultTypeDeclarationBounds());
         return bounds;
     }
 
