@@ -1,11 +1,10 @@
-import org.checkerframework.framework.qual.DefaultQualifierForUse;
+import org.checkerframework.framework.qual.NoDefaultQualifierForUse;
 import typedecldefault.quals.*;
 
 // @TypeDeclDefaultBottom is the default qualifier in hierarchy.
 // @TypeDeclDefaultTop is the default for type declarations.
-// @skip-test This tests needs to be rewritten.
-@DefaultQualifierForUse(TypeDeclDefaultTop.class)
-public class TestDefaultForTypeDecl {
+@NoDefaultQualifierForUse(TypeDeclDefaultTop.class)
+public @TypeDeclDefaultTop class TestDefaultForTypeDecl {
     void test(@TypeDeclDefaultTop TestDefaultForTypeDecl arg) {}
 
     void testUnannotated(TestDefaultForTypeDecl arg) {}
