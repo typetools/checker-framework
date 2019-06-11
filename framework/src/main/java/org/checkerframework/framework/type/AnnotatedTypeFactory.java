@@ -1158,7 +1158,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     public Set<AnnotationMirror> getTypeDeclarationBounds(TypeElement typeElement) {
-        return qualifierUpperBounds.getBoundAnnotations(
+        return qualifierUpperBounds.getBoundQualifiers(
                 AnnotatedTypeMirror.createType(typeElement.asType(), this, true));
     }
 
