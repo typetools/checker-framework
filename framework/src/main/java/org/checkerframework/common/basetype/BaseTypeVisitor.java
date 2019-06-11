@@ -572,10 +572,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         visitorState.setMethodTree(node);
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
-        ModifiersTree modifiersTree = node.getModifiers();
-        Set<Modifier> modifierSet = modifiersTree.getFlags();
-        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
-        warnAboutTypeAnnotationsTooEarly(node, modifierSet, annotations);
+        warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
 
         try {
             if (TreeUtils.isAnonymousConstructor(node)) {
@@ -702,7 +699,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Issue a warning if the result type of the constructor is not top. If it is a supertype of the
      * class, then a type.invalid.conflicting.annos error will also be issued by {@link
-     * #isValidUse(AnnotatedDeclaredType, AnnotatedDeclaredType, Tree)}.
+     * #isValidUse(AnnotatedTypeMirror.AnnotatedDeclaredType,AnnotatedTypeMirror.AnnotatedDeclaredType,Tree)}.
      *
      * @param constructorType AnnotatedExecutableType for the constructor
      * @param constructorElement element that declares the constructor
@@ -1011,11 +1008,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitVariable(VariableTree node, Void p) {
-
-        ModifiersTree modifiersTree = node.getModifiers();
-        Set<Modifier> modifierSet = modifiersTree.getFlags();
-        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
-        warnAboutTypeAnnotationsTooEarly(node, modifierSet, annotations);
+        warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
 
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
         visitorState.setAssignmentContext(
@@ -1046,63 +1039,65 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * declaration annotation.
      *
      * @param node a VariableTree or a MethodTree
-     * @param modifierSet the modifiers in node
-     * @param annotations the annotations in node
+     * @param modifiersTree the modifiers sub-tree of node
      */
-    private void warnAboutTypeAnnotationsTooEarly(
-            Tree node, Set<Modifier> modifierSet, List<? extends AnnotationTree> annotations) {
+    private void warnAboutTypeAnnotationsTooEarly(Tree node, ModifiersTree modifiersTree) {
+        Set<Modifier> modifierSet = modifiersTree.getFlags();
+        List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
+
+        if (annotations.isEmpty()) {
+            return;
+        }
 
         // Warn about type annotations written before modifiers such as "public".  javac retains no
         // information about modifier locations.  So, this is a very partial check:  Issue a warning
         // if a type annotation is at the very beginning of the VariableTree, and a modifer follows
         // it.
-        if (!annotations.isEmpty()) {
-            // Check if a type annotation precedes a declaration annotation.
-            int lastDeclAnnoIndex = -1;
-            for (int i = annotations.size() - 1; i > 0; i--) { // no need to check index 0
-                if (!isTypeAnnotation(annotations.get(i))) {
-                    lastDeclAnnoIndex = i;
-                    break;
-                }
-            }
-            if (lastDeclAnnoIndex != -1) {
-                List<AnnotationTree> badTypeAnnos = new ArrayList<>();
-                for (int i = 0; i < lastDeclAnnoIndex; i++) {
-                    AnnotationTree anno = annotations.get(i);
-                    if (isTypeAnnotation(anno)) {
-                        badTypeAnnos.add(anno);
-                    }
-                }
-                if (!badTypeAnnos.isEmpty()) {
-                    checker.report(
-                            Result.warning(
-                                    "type.anno.before.decl.anno",
-                                    badTypeAnnos,
-                                    annotations.get(lastDeclAnnoIndex)),
-                            node);
-                }
-            }
 
-            // Determine the length of the text that ought to precede the first type annotation.
-            // If the type annotation appears before that text could appear, then warn that a
-            // modifier appears after the type annotation.
-            // TODO: in the future, account for the lengths of declaration annotations.  Length of
-            // toString of the annotation isn't useful, as it might be different length than
-            // original input.  Can use JCTree.getEndPosition(EndPosTable) and
-            // com.sun.tools.javac.tree.EndPosTable, but it requires -Xjcov.
-            AnnotationTree firstAnno = annotations.get(0);
-            if (!modifierSet.isEmpty() && isTypeAnnotation(firstAnno)) {
-                int precedingTextLength = 0;
-                for (Modifier m : modifierSet) {
-                    precedingTextLength += m.toString().length() + 1; // +1 for the space
+        // Check if a type annotation precedes a declaration annotation.
+        int lastDeclAnnoIndex = -1;
+        for (int i = annotations.size() - 1; i > 0; i--) { // no need to check index 0
+            if (!isTypeAnnotation(annotations.get(i))) {
+                lastDeclAnnoIndex = i;
+                break;
+            }
+        }
+        if (lastDeclAnnoIndex != -1) {
+            List<AnnotationTree> badTypeAnnos = new ArrayList<>();
+            for (int i = 0; i < lastDeclAnnoIndex; i++) {
+                AnnotationTree anno = annotations.get(i);
+                if (isTypeAnnotation(anno)) {
+                    badTypeAnnos.add(anno);
                 }
-                int annoStartPos = ((JCTree) firstAnno).getStartPosition();
-                int varStartPos = ((JCTree) node).getStartPosition();
-                if (annoStartPos < varStartPos + precedingTextLength) {
-                    checker.report(
-                            Result.warning("type.anno.before.modifier", firstAnno, modifierSet),
-                            node);
-                }
+            }
+            if (!badTypeAnnos.isEmpty()) {
+                checker.report(
+                        Result.warning(
+                                "type.anno.before.decl.anno",
+                                badTypeAnnos,
+                                annotations.get(lastDeclAnnoIndex)),
+                        node);
+            }
+        }
+
+        // Determine the length of the text that ought to precede the first type annotation.
+        // If the type annotation appears before that text could appear, then warn that a
+        // modifier appears after the type annotation.
+        // TODO: in the future, account for the lengths of declaration annotations.  Length of
+        // toString of the annotation isn't useful, as it might be different length than
+        // original input.  Can use JCTree.getEndPosition(EndPosTable) and
+        // com.sun.tools.javac.tree.EndPosTable, but it requires -Xjcov.
+        AnnotationTree firstAnno = annotations.get(0);
+        if (!modifierSet.isEmpty() && isTypeAnnotation(firstAnno)) {
+            int precedingTextLength = 0;
+            for (Modifier m : modifierSet) {
+                precedingTextLength += m.toString().length() + 1; // +1 for the space
+            }
+            int annoStartPos = ((JCTree) firstAnno).getStartPosition();
+            int varStartPos = ((JCTree) node).getStartPosition();
+            if (annoStartPos < varStartPos + precedingTextLength) {
+                checker.report(
+                        Result.warning("type.anno.before.modifier", firstAnno, modifierSet), node);
             }
         }
     }
@@ -2219,6 +2214,65 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
+     * Prints a diagnostic about entering commonAssignmentCheck, if the showchecks option was set.
+     *
+     * @param varType the annotated type of the variable
+     * @param valueType the annotated type of the value
+     * @param valueTree the location to use when reporting the error message
+     */
+    protected final void commonAssignmentCheckStartDiagnostic(
+            AnnotatedTypeMirror varType, AnnotatedTypeMirror valueType, Tree valueTree) {
+        if (checker.hasOption("showchecks")) {
+            long valuePos = positions.getStartPosition(root, valueTree);
+            System.out.printf(
+                    "%s %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+                    this.getClass().getSimpleName(),
+                    "about to test whether actual is a subtype of expected",
+                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
+                    valueTree.getKind(),
+                    valueTree,
+                    valueType.getKind(),
+                    valueType.toString(),
+                    varType.getKind(),
+                    varType.toString());
+        }
+    }
+
+    /**
+     * Prints a diagnostic about exiting commonAssignmentCheck, if the showchecks option was set.
+     *
+     * @param success whether the check succeeded or failed
+     * @param extraMessage information about why the result is what it is; may be null
+     * @param varType the annotated type of the variable
+     * @param valueType the annotated type of the value
+     * @param valueTree the location to use when reporting the error message
+     */
+    protected final void commonAssignmentCheckEndDiagnostic(
+            boolean success,
+            String extraMessage,
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree) {
+
+        if (checker.hasOption("showchecks")) {
+            long valuePos = positions.getStartPosition(root, valueTree);
+            System.out.printf(
+                    " %s%s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+                    (success
+                            ? "success: actual is subtype of expected"
+                            : "FAILURE: actual is not subtype of expected"),
+                    (extraMessage == null ? "" : " because " + extraMessage),
+                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
+                    valueTree.getKind(),
+                    valueTree,
+                    valueType.getKind(),
+                    valueType.toString(),
+                    varType.getKind(),
+                    varType.toString());
+        }
+    }
+
+    /**
      * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
      * emits an error message (through the compiler's messaging interface) if it is not valid.
      *
@@ -2234,19 +2288,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Tree valueTree,
             @CompilerMessageKey String errorKey) {
 
-        if (checker.hasOption("showchecks")) {
-            long valuePos = positions.getStartPosition(root, valueTree);
-            System.out.printf(
-                    "%s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
-                    "About to test whether actual is a subtype of expected",
-                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
-                    valueTree.getKind(),
-                    valueTree,
-                    valueType.getKind(),
-                    valueType.toString(),
-                    varType.getKind(),
-                    varType.toString());
-        }
+        commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
 
         boolean success = atypeFactory.getTypeHierarchy().isSubtype(valueType, varType);
 
@@ -2267,21 +2309,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
-        if (checker.hasOption("showchecks")) {
-            long valuePos = positions.getStartPosition(root, valueTree);
-            System.out.printf(
-                    " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
-                    (success
-                            ? "success: actual is subtype of expected"
-                            : "FAILURE: actual is not subtype of expected"),
-                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
-                    valueTree.getKind(),
-                    valueTree,
-                    valueType.getKind(),
-                    valueType.toString(),
-                    varType.getKind(),
-                    varType.toString());
-        }
+        commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueTree);
 
         // Use an error key only if it's overridden by a checker.
         if (!success) {

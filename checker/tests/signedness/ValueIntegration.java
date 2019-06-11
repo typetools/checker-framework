@@ -12,7 +12,7 @@ public class ValueIntegration {
             @IntVal({-1, 127}) byte smixed,
             @IntVal({-128, 0, 128}) byte bmixed) {
         @Signed byte stest;
-        @Constant byte ctest;
+        @SignednessEither byte ctest;
 
         stest = c;
         ctest = c;
@@ -46,7 +46,7 @@ public class ValueIntegration {
             @IntVal({-1, 127}) char smixed,
             @IntVal({-128, 0, 128}) char bmixed) {
         @Signed char stest;
-        @Constant char ctest;
+        @SignednessEither char ctest;
 
         stest = c;
         ctest = c;
@@ -80,7 +80,7 @@ public class ValueIntegration {
             @IntVal({-1, 32767}) short smixed,
             @IntVal({-32768, 0, 32768}) short bmixed) {
         @Signed short stest;
-        @Constant short ctest;
+        @SignednessEither short ctest;
 
         stest = c;
         ctest = c;
@@ -114,7 +114,7 @@ public class ValueIntegration {
             @IntVal({-1, 2147483647}) int smixed,
             @IntVal({-2147483648, 0, 2147483648L}) int bmixed) {
         @Signed int stest;
-        @Constant int ctest;
+        @SignednessEither int ctest;
 
         stest = c;
         ctest = c;
@@ -146,7 +146,7 @@ public class ValueIntegration {
             @IntVal({-1, Long.MAX_VALUE}) long smixed,
             @IntVal({Long.MIN_VALUE, 0, Long.MAX_VALUE}) long bmixed) {
         @Signed long stest;
-        @Constant long ctest;
+        @SignednessEither long ctest;
 
         stest = c;
         ctest = c;
@@ -174,7 +174,7 @@ public class ValueIntegration {
             @IntRange(from = -1, to = 127) byte smixed,
             @IntRange(from = -128, to = 128) byte bmixed) {
         @Signed byte stest;
-        @Constant byte ctest;
+        @SignednessEither byte ctest;
 
         stest = c;
         ctest = c;
@@ -216,7 +216,7 @@ public class ValueIntegration {
             @IntRange(from = -1, to = 127) char smixed,
             @IntRange(from = -128, to = 128) char bmixed) {
         @Signed char stest;
-        @Constant char ctest;
+        @SignednessEither char ctest;
 
         stest = c;
         ctest = c;
@@ -258,7 +258,7 @@ public class ValueIntegration {
             @IntRange(from = -1, to = 32767) short smixed,
             @IntRange(from = -32768, to = 32768) short bmixed) {
         @Signed short stest;
-        @Constant short ctest;
+        @SignednessEither short ctest;
 
         stest = c;
         ctest = c;
@@ -300,7 +300,7 @@ public class ValueIntegration {
             @IntRange(from = -1, to = 2147483647) int smixed,
             @IntRange(from = -2147483648, to = 2147483648L) int bmixed) {
         @Signed int stest;
-        @Constant int ctest;
+        @SignednessEither int ctest;
 
         stest = c;
         ctest = c;
@@ -340,7 +340,7 @@ public class ValueIntegration {
             @IntRange(from = -1, to = Long.MAX_VALUE) long smixed,
             @IntRange(from = Long.MIN_VALUE, to = Long.MAX_VALUE) long bmixed) {
         @Signed long stest;
-        @Constant long ctest;
+        @SignednessEither long ctest;
 
         stest = c;
         ctest = c;

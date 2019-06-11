@@ -226,7 +226,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         // Prevent infinite recursion e.g. in Issue1587b
         visitHistory.add(type1, type2, currentTop, true);
 
-        Boolean result = visitTypeArgs(type1, type2);
+        boolean result = visitTypeArgs(type1, type2);
         visitHistory.add(type1, type2, currentTop, result);
         return result;
     }
@@ -236,7 +236,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * need to customize the handling of type arguments. This method provides a convenient extension
      * point.
      */
-    protected Boolean visitTypeArgs(
+    protected boolean visitTypeArgs(
             final AnnotatedDeclaredType type1, final AnnotatedDeclaredType type2) {
 
         // TODO: ANYTHING WITH RAW TYPES? SHOULD WE HANDLE THEM LIKE DefaultTypeHierarchy, i.e. use

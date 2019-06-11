@@ -58,6 +58,7 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -1053,6 +1054,7 @@ public class ValueTransfer extends CFTransfer {
             return refineIntRanges(
                     leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
         }
+        // This is a list of all the values that the expression can evaluate to.
         List<Boolean> resultValues = new ArrayList<>();
 
         List<? extends Number> lefts = getNumericalValues(leftNode, leftAnno);
@@ -1212,12 +1214,20 @@ public class ValueTransfer extends CFTransfer {
     }
 
     private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
+        // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
         for (Node internal : splitAssignments(node)) {
-            AnnotationMirror currentAnno =
-                    atypefactory
-                            .getAnnotatedType(internal.getTree())
-                            .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+            CFValue currentValueFromStore;
+            if (CFAbstractStore.canInsertReceiver(rec)) {
+                currentValueFromStore = store.getValue(rec);
+            } else {
+                // Don't just `continue;` which would skip the calls to refine{Array,String}...
+                currentValueFromStore = null;
+            }
+            AnnotationMirror currentAnno =
+                    (currentValueFromStore == null
+                            ? atypefactory.UNKNOWNVAL
+                            : getValueAnnotation(currentValueFromStore));
             // Combine the new annotations based on the results of the comparison with the existing
             // type.
             AnnotationMirror newAnno = hierarchy.greatestLowerBound(anno, currentAnno);

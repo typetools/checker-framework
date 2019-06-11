@@ -773,8 +773,7 @@ public class AnnotationClassLoader {
 
     /**
      * Checks to see whether a particular annotation class has the {@link Target} meta-annotation,
-     * and has the required {@link ElementType} values as checked by {@link
-     * AnnotatedTypes#hasTypeQualifierElementTypes(ElementType[], Class)}.
+     * and has the required {@link ElementType} values.
      *
      * <p>A subclass may override this method to load annotations that are not intended to be
      * annotated in source code. E.g.: {@code SubtypingChecker} overrides this method to load {@code

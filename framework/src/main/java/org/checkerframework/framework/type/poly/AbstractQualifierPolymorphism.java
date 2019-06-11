@@ -3,9 +3,12 @@ package org.checkerframework.framework.type.poly;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -82,7 +85,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
     /**
      * Completes a type by removing any unresolved polymorphic qualifiers, replacing them with the
-     * top qualifiers.
+     * bottom qualifiers.
      */
     private Completer completer = new Completer();
 
@@ -281,12 +284,12 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                 if (type.hasAnnotation(poly)) {
                     type.removeAnnotation(poly);
                     if (top == null) {
-                        // poly is PolyAll -> add all tops not explicitly given
-                        type.addMissingAnnotations(topQuals);
+                        // poly is PolyAll -> add bottom for all hierarchies without an annotation.
+                        type.addMissingAnnotations(qualHierarchy.getBottomAnnotations());
                     } else if (type.getKind() != TypeKind.TYPEVAR
                             && type.getKind() != TypeKind.WILDCARD) {
-                        // Do not add the top qualifiers to type variables and wildcards
-                        type.addAnnotation(top);
+                        // Do not add qualifiers to type variables and wildcards
+                        type.addAnnotation(qualHierarchy.getBottomAnnotation(top));
                     }
                 }
             }
@@ -305,28 +308,22 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             extends EquivalentAtmComboScanner<AnnotationMirrorMap<AnnotationMirrorSet>, Void> {
 
         /**
-         * List of {@link AnnotatedTypeVariable} or {@link AnnotatedWildcardType} that have been
-         * visited. Call {@link #visited(AnnotatedTypeMirror)} to check if the type have been
-         * visited, so that reference equality is used rather than {@link #equals(Object)}.
+         * Set of {@link AnnotatedTypeVariable} or {@link AnnotatedWildcardType} that have been
+         * visited. Used to prevent infinite recursion on recursive types.
+         *
+         * <p>Uses reference equality rather than equals because the visitor may visit two types
+         * that are structurally equal, but not actually the same. For example, the wildcards in
+         * Pair<?,?> may be equal, but they both should be visited.
          */
-        private final List<AnnotatedTypeMirror> visitedTypes = new ArrayList<>();
+        private final Set<AnnotatedTypeMirror> visitedTypes =
+                Collections.newSetFromMap(new IdentityHashMap<AnnotatedTypeMirror, Boolean>());
 
         /**
          * Returns true if the {@link AnnotatedTypeMirror} has been visited. If it has not, then it
-         * is added to the list of visited AnnotatedTypeMirrors. This prevents infinite recursion on
-         * recursive types.
+         * is added to the list of visited AnnotatedTypeMirrors.
          */
         private boolean visited(AnnotatedTypeMirror atm) {
-            for (AnnotatedTypeMirror atmVisit : visitedTypes) {
-                // Use reference equality rather than equals because the visitor may visit two types
-                // that are structurally equal, but not actually the same.  For example, the
-                // wildcards in Pair<?,?> may be equal, but they both should be visited.
-                if (atmVisit == atm) {
-                    return true;
-                }
-            }
-            visitedTypes.add(atm);
-            return false;
+            return !visitedTypes.add(atm);
         }
 
         @Override

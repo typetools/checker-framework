@@ -1,4 +1,4 @@
-%\htmlhr
+\htmlhr
 % Reinstate when lists are supported:
 % \chapterAndLabel{Index Checker for sequence bounds (arrays, strings, lists)}{index-checker}
 \chapterAndLabel{Index Checker for sequence bounds (arrays and strings)}{index-checker}
@@ -329,7 +329,7 @@ that ensures that a certain expression is a valid index for a sequence:
 \begin{description}
 \item[\refqualclasswithparams{checker/index/qual}{EnsuresLTLengthOf}{String[] value, String[] targetValue, String[] offset}]
   When the method with this annotation returns, the expression (or all the expressions) given in the \code{value} element
-  is less than the length of the given sequences with the given offsets. More preciesly, the expression
+  is less than the length of the given sequences with the given offsets. More precisely, the expression
   has the \code{@LTLengthOf} qualifier with the \code{value} and \code{offset} arguments
   taken from the \code{targetValue} and \code{offset} elements of this annotation.
 \item[\refqualclasswithparams{checker/index/qual}{EnsuresLTLengthOfIf}{String[] expression, boolean result, String[] targetValue, String[] offset}]
@@ -535,7 +535,7 @@ The Search Index Checker's type hierarchy (Figure~\ref{fig-index-searchindex}) h
   An expression with this type represents an integer that could have been
   produced by calling
   \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-java.lang.Object-}{Arrays.binarySearch}:
-  for each array \<a> specifed in the annotation, the annotated integer is
+  for each array \<a> specified in the annotation, the annotated integer is
   between \<-a.length-1> and \<a.length-1>, inclusive
 \item[\refqualclasswithparams{checker/index/qual}{NegativeIndexFor}{String[] names}]
   An expression with this type represents a ``negative index'' that is
@@ -711,7 +711,7 @@ The Index Checker estimates which expression's values are less than other expres
 
 \item[\refqualclass{checker/index/qual}{LessThanUnknown}]
   There is no information about the value of an expression this type relative to other expressions.
-  This is the top type, and should not be written by the programer.
+  This is the top type, and should not be written by the programmer.
 
  \item[\refqualclass{checker/index/qual}{LessThanBottom}]
    This is the bottom type for the less than type system. It should
@@ -776,9 +776,17 @@ warnings:
 \end{Verbatim}
 
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
-%%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE
+%%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE str
 %%  LocalWords:  LowerBoundUnknown LTOMLengthOf LTEq LTOM UpperBoundBottom
-%%  LocalWords:  UpperBoundUnknown MinLen MinLenBottom SameLen indexOf
-%%  LocalWords:  SameLenUnknown SameLenBottom lastIndexOf html lang
+%%  LocalWords:  UpperBoundUnknown MinLen MinLenBottom SameLen indexOf abc
+%%  LocalWords:  SameLenUnknown SameLenBottom lastIndexOf html lang charAt
 %%  LocalWords:  LengthOf IndexOrLow PolyIndex PolyLowerBound PolyLength
 %%  LocalWords:  PolyUpperBound PolySameLen PolyValue LowerBoundBottom
+%%  LocalWords:  lowerbound upperbound EnsuresLTLengthOf targetValue
+%%  LocalWords:  EnsuresLTLengthOfIf boolean HasSubsequence LessThan
+%%  LocalWords:  minlen ArrayLenRange ArrayLen EnsuresMinLenIf samelen
+%%  LocalWords:  searchindex binarySearch SearchIndexFor NegativeIndexFor
+%%  LocalWords:  SearchIndex bitwise SearchIndexBottom SearchIndexUnknown
+%%  LocalWords:  Substring substringindex substring SubstringIndexFor
+%%  LocalWords:  SubstringIndexBottom SubstringIndexUnknown LessThanBottom
+%%  LocalWords:  LessThanUnknown typecheck typechecks

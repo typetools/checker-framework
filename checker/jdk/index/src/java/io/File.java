@@ -25,7 +25,6 @@
 
 package java.io;
 import org.checkerframework.checker.index.qual.*;
-import org.checkerframework.common.value.qual.*;
 
 import java.net.URI;
 import java.net.URL;
