@@ -201,7 +201,6 @@ public class AnnotationBuilder {
      */
     public static void setElementsToDefaultValues(
             AnnotationMirror am, Class<? extends Annotation> aClass) {
-        System.out.printf("AnnotationBuilder.setElementsToDefaultValues(%s, %s)%n", am, aClass);
         for (Method m : aClass.getDeclaredMethods()) {
             System.out.println("  " + m);
             Object defaultValue = m.getDefaultValue();
