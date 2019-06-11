@@ -2,5 +2,5 @@ import typedecldefault.quals.*;
 
 package java.lang;
 class Object{
-@TypeDeclDefaultBottom Object();
+  @TypeDeclDefaultBottom Object();
 }
