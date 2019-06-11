@@ -34,16 +34,6 @@ public class AnnotationConverter {
      * scenelib.annotations.Annotation}.
      */
     protected static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.println(
-                    "annotationMirrorToAnnotation "
-                            + am
-                            + " "
-                            + am.getClass()
-                            + " keyset="
-                            + am.getElementValues().keySet());
-            new Error().printStackTrace(System.out);
-        }
         AnnotationDef def =
                 new AnnotationDef(
                         AnnotationUtils.annotationName(am),
@@ -91,27 +81,11 @@ public class AnnotationConverter {
      */
     protected static AnnotationMirror annotationToAnnotationMirror(
             Annotation anno, ProcessingEnvironment processingEnv) {
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf("annotationToAnnotationMirror(%s)%n", anno);
-            System.out.printf(
-                    "  keySet (%d) = %s%n",
-                    anno.fieldValues.keySet().size(), anno.fieldValues.keySet());
-            System.out.printf("  source = %s, def = %s%n", anno.def.source, anno.def);
-            if (anno.toString().equals("@org.checkerframework.checker.lock.qual.GuardedBy")) {
-                new Error(
-                                "Backtrace for creation of bad @GuardedBy AnnotationMirror, from bad annotation "
-                                        + anno)
-                        .printStackTrace();
-            }
-        }
         final AnnotationBuilder builder = new AnnotationBuilder(processingEnv, anno.def().name);
         for (String fieldKey : anno.fieldValues.keySet()) {
             addFieldToAnnotationBuilder(fieldKey, anno.fieldValues.get(fieldKey), builder);
         }
         AnnotationMirror result = builder.build();
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf("annotationToAnnotationMirror(%s) => %s%n", anno, result);
-        }
         return result;
     }
 
