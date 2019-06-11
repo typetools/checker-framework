@@ -33,6 +33,7 @@ ext {
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
+    plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
 
     javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
@@ -319,6 +320,24 @@ task getCodeFormatScriptsInGradle {
       rgjfGit.pull()
     }
   }
+}
+
+task getPlumeScripts() {
+    description 'Obtain or update plume-scripts'
+    if (file(plumeScriptsHome).exists()) {
+        exec {
+            workingDir plumeScriptsHome
+            executable 'git'
+            args = ['pull', '-q']
+            ignoreExitValue = true
+        }
+    } else {
+        exec {
+            workingDir "${plumeScriptsHome}/../"
+            executable 'git'
+            args = ['clone', '-q', 'https://github.com/plume-lib/plume-scripts.git', '.plume-scripts']
+        }
+    }
 }
 
 task pythonIsInstalled(type: Exec) {

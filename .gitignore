@@ -41,6 +41,7 @@ checker/jdk/**/*.class
 *.pyc
 checker/build-temp
 checker/bin-devel/.run-google-java-format
+checker/bin-devel/.plume-scripts
 
 # manual files
 bib
