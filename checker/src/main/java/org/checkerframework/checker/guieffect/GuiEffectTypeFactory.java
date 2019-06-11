@@ -77,7 +77,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBound() {
+    protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
         return qualHierarchy.getBottomAnnotations();
     }
 
