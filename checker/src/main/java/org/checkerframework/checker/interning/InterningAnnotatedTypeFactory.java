@@ -77,6 +77,10 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new InterningDefaultQualifierForUseTypeAnnotator(this);
     }
 
+    /**
+     * Does not add defaults for type uses on constructor results. Constructor results should be
+     * {@code @UnknownInterned} by default.
+     */
     static class InterningDefaultQualifierForUseTypeAnnotator
             extends DefaultQualifierForUseTypeAnnotator {
 

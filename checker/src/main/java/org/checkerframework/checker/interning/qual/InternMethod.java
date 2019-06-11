@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 /**
  * Method declaration annotation used to indicate that this method may be invoked on an uninterned
- * object and the it returns an interned object.
+ * object and that it returns an interned object.
  */
 @Documented
 @Inherited

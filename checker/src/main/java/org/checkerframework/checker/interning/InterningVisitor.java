@@ -300,6 +300,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (tree.getKind() == Tree.Kind.METHOD && TreeUtils.isConstructor((MethodTree) tree)) {
             return true;
         } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
+            // Don't issue an invalid type warning for creations of objects of interned classes;
+            // instead, issue an
+            // interned.object.creation error if required.
             NewClassTree newClassTree = (NewClassTree) tree;
             Element elt = TreeUtils.elementFromUse(newClassTree).getEnclosingElement();
             if (elt.getKind() == ElementKind.ENUM) {
@@ -308,15 +311,19 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             Set<AnnotationMirror> declaredType =
                     atypeFactory.getTypeDeclarationBounds((TypeElement) elt);
             if (AnnotationUtils.containsSameByClass(declaredType, Interned.class)) {
-                // Don't issue an invalid type warning for new class trees; instead, issue an
-                // interned.object.creation error.
                 return checkCreationOfInternedObject(newClassTree);
             }
         }
         return super.validateTypeOf(tree);
     }
 
-    private boolean checkCreationOfInternedObject(NewClassTree newClassTree) {
+    /**
+     * Issue an error if {@code newInternedObject} is not immediately interned.
+     *
+     * @param newInternedObject call to a constructor of an interned class
+     * @return false unless {@code newInternedObject} is immediately interned.
+     */
+    private boolean checkCreationOfInternedObject(NewClassTree newInternedObject) {
         if (getCurrentPath() != null
                 && getCurrentPath().getParentPath() != null
                 && getCurrentPath().getParentPath().getParentPath() != null) {
@@ -329,7 +336,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             }
         }
 
-        checker.report(Result.failure("interned.object.creation"), newClassTree);
+        checker.report(Result.failure("interned.object.creation"), newInternedObject);
         return false;
     }
 
