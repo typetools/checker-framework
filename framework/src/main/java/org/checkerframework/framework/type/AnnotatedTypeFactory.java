@@ -1171,11 +1171,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return qualHierarchy.getTopAnnotations();
     }
 
-    public Set<AnnotationMirror> getTypeOfExtendsImplements(Tree clause) {
+    /**
+     * Returns the type of the extends or implements clause.
+     *
+     * <p>The primary qualifier is either an explicit annotation on {@code clause}, or it is the
+     * qualifier upper bounds for uses of the type of the clause.
+     *
+     * @param clause tree that represents an extends or implements clause
+     * @returnt he type of the extends or implements clause
+     */
+    public AnnotatedTypeMirror getTypeOfExtendsImplements(Tree clause) {
         AnnotatedTypeMirror fromTypeTree = fromTypeTree(clause);
         Set<AnnotationMirror> bound = getTypeDeclarationBounds(fromTypeTree);
         fromTypeTree.addMissingAnnotations(bound);
-        return fromTypeTree.getAnnotations();
+        return fromTypeTree;
     }
 
     // **********************************************************************
