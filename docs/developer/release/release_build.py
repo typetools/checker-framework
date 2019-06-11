@@ -28,7 +28,6 @@ def print_usage():
     print "\n  --auto  accepts or chooses the default for all prompts"
     print "\n  --debug  turns on debugging mode which produces verbose output"
     print "\n  --notest  disables tests to speed up scripts; for debugging only"
-    print "\n  --review-manual  review the documentation changes only; don't perform a full build"
 
 def clone_or_update_repos(auto):
     """Clone the relevant repos from scratch or update them if they exist and
@@ -70,6 +69,7 @@ The following repositories will be cloned or updated from their origins:
     clone_from_scratch_or_update(LIVE_CHECKLINK, CHECKLINK, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_PLUME_BIB, PLUME_BIB, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_STUBPARSER, STUBPARSER, clone_from_scratch, False)
+    # clone_from_scratch_or_update(LIVE_ANNO_REPO, ANNO_TOOLS, clone_from_scratch, False)
 
 def get_afu_date(building_afu):
     """If the AFU is being built, return the current date, otherwise return the
@@ -153,9 +153,14 @@ def get_current_date():
 
 def download_jsr308_langtools():
     """Download and unzip jsr308-langtools"""
+    langtools_dir = BUILD_DIR+"/jsr308-langtools"
+    langtools_2_4_0_dir = langtools_dir + "/jsr308-langtools-2.4.0"
+    if (os.path.exists(langtools_2_4_0_dir)):
+        print "Not downloading jsr308-langtools because found " + langtools_2_4_0_dir
+        return
     execute('wget -q https://checkerframework.org/jsr308/jsr308-langtools-2.4.0.zip', True, False, BUILD_DIR)
     execute('unzip -q jsr308-langtools-2.4.0.zip', True, False, BUILD_DIR)
-    execute('mv jsr308-langtools-2.4.0 '+BUILD_DIR+"/jsr308-langtools", True, False, BUILD_DIR)
+    execute('mv jsr308-langtools-2.4.0 '+langtools_dir, True, False, BUILD_DIR)
 
 def build_annotation_tools_release(version, afu_interm_dir):
     """Build the Annotation File Utilities project's artifacts and place them
@@ -187,7 +192,7 @@ def build_and_locally_deploy_maven(version):
 
     return
 
-def build_checker_framework_release(version, afu_version, afu_release_date, checker_framework_interm_dir, manual_only=False):
+def build_checker_framework_release(version, old_cf_version, afu_version, afu_release_date, checker_framework_interm_dir, manual_only=False):
     """Build the release files for the Checker Framework project, including the
     manual and the zip file, and run tests on the build."""
     checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
@@ -197,11 +202,21 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
     # build stubparser
     execute("mvn package -Dmaven.test.skip=true", True, False, STUBPARSER)
 
+    # build annotation-tools
+    execute("ant -e compile", True, False, ANNO_TOOLS)
+
     # update versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
     ant_cmd = "ant %s -f release.xml %s update-checker-framework-versions " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+
+    # Check that updating versions didn't overlook anything.
+    print "Here are occurrences of the old version number, " + old_cf_version
+    old_cf_version_regex = old_cf_version.replace('.', '\.')
+    find_cmd = 'find . -type d \( -path \*/build -o -path \*/.git \) -prune  -o \! -type d \( -name \*\~ -o -name \*.bin \) -prune -o  -type f -exec grep -i -n -e \'\b%s\b\' {} +' % old_cf_version_regex
+    execute(find_cmd, False, True, CHECKER_FRAMEWORK_RELEASE)
+    continue_or_exit("If any occurrence is not acceptable, then stop the release, update target \"update-checker-framework-versions\" in file release.xml, and start over.")
 
     if not manual_only:
         # build the checker framework binaries and documents, run checker framework tests
@@ -298,17 +313,13 @@ def main(argv):
     notest = read_command_line_option(argv, "--notest")
 
     # Indicates whether to review documentation changes only and not perform a build.
-    review_documentation = read_command_line_option(argv, "--review-manual")
     add_project_dependencies(projects_to_release)
 
     afu_date = get_afu_date(projects_to_release[AFU_OPT])
 
     # For each project, build what is necessary but don't push
 
-    if not review_documentation:
-        print "Building a new release of Annotation Tools and the Checker Framework!"
-    else:
-        print "Reviewing the documentation for Annotation Tools and the Checker Framework."
+    print "Building a new release of Annotation Tools and the Checker Framework!"
 
     print "\nPATH:\n" + os.environ['PATH'] + "\n"
 
@@ -379,57 +390,7 @@ def main(argv):
               "follow a few remaining release steps.\n")
         prompt_to_continue()
 
-    if review_documentation:
-        print_step("Build Step 4: Review changelogs.") # SEMIAUTO
-
-        print "Verify that all changelog messages follow the guidelines found in README-release-process.html#changelog_guide\n"
-        print "You'll need to review the changelogs on GitHub.\n"
-
-        print "Ensure that the changelogs end with the list of resolved issues in numerical order, like"
-        print "Closed issues:\n"
-        print "200, 300, 332, 336, 357, 359, 373, 374.\n"
-
-        print("To ensure AFU and the Checker Framework changelogs are correct and complete, " +
-              "please follow the Content Guidelines found in README-release-process.html#content_guidelines\n")
-        print "If the changelogs need to be updated, then exit this script, make changes, push the changes, and then restart this script.\n"
-
-        prompt_to_continue()
-
-        # This step will write out all of the changes that happened to the individual projects' documentation
-        # to temporary files. Please review these changes for errors.
-
-        print_step("Build Step 5: Review documentation changes.") # SEMIAUTO
-
-        print "Please review the documentation changes since the last release to ensure that"
-        print " * All new features mentioned in the manuals appear in the changelogs, and"
-        print " * All new features mentioned in the changelogs are documented in the manuals."
-        print ""
-
-        if projects_to_release[AFU_OPT]:
-            propose_documentation_change_review("the Annotation File Utilities documentation updates", old_afu_version, ANNO_TOOLS,
-                                                AFU_TAG_PREFIXES, AFU_MANUAL, TMP_DIR + "/afu.manual")
-
-        if projects_to_release[CF_OPT]:
-            build_checker_framework_release(cf_version, afu_version, afu_date, "checker-framework", manual_only=True)
-
-            print ""
-            print "The built Checker Framework manual (HTML and PDF) can be found at " + CHECKER_MANUAL
-            print ""
-            print "Verify that the manual PDF has no lines that are longer than the page width"
-            print "(it is acceptable for some lines to extend into the right margin)."
-            print ""
-            print "If any checkers have been added or removed, then verify that the lists"
-            print "of checkers in these manual sections are up to date:"
-            print " * Introduction"
-            print " * Run-time tests and type refinement"
-            print ""
-
-            propose_documentation_change_review("the Checker Framework documentation updates", old_cf_version, CHECKER_FRAMEWORK,
-                                                CHECKER_TAG_PREFIXES, CHECKER_MANUAL, TMP_DIR + "/checker-framework.manual")
-
-        return
-
-    ## I don't think this should be necessary in general.  It's just to put files in place no link checking will work, and it takes a loooong time to run.
+    ## I don't think this should be necessary in general.  It's just to put files in place so link checking will work, and it takes a loooong time to run.
     # print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # SEMIAUTO
 
     # if auto or prompt_yes_no("Proceed with copy of live site to dev site?", True):
@@ -440,7 +401,7 @@ def main(argv):
     #     execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev --exclude=sparta/release/versions /cse/www2/types/ /cse/www2/types/dev")
     #     # ************************************************************************************************
 
-    print_step("Build Step 5: Create directories for the current release on the dev site.") # AUTO
+    print_step("Build Step 4: Create directories for the current release on the dev site.") # AUTO
 
     (afu_interm_dir, checker_framework_interm_dir) = \
         create_dirs_for_dev_website_release_versions(cf_version, afu_version)
@@ -452,7 +413,7 @@ def main(argv):
     # piece of the release. There are no prompts from this step forward; you
     # might want to get a cup of coffee and do something else until it is done.
 
-    print_step("Build Step 6: Build projects and websites.") # AUTO
+    print_step("Build Step 5: Build projects and websites.") # AUTO
     print projects_to_release
 
     print_step("6a: Download Type Annotations Compiler.")
@@ -464,10 +425,10 @@ def main(argv):
 
     if projects_to_release[CF_OPT]:
         print_step("6c: Build Checker Framework.")
-        build_checker_framework_release(cf_version, afu_version, afu_date, checker_framework_interm_dir)
+        build_checker_framework_release(cf_version, old_cf_version, afu_version, afu_date, checker_framework_interm_dir)
 
 
-    print_step("Build Step 7: Overwrite .htaccess and CFLogo.png .") # AUTO
+    print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .") # AUTO
 
     # Not "cp -p" because that does not work across filesystems whereas rsync does
     execute("rsync --times %s %s" % (CFLOGO, checker_framework_interm_dir))
@@ -477,14 +438,14 @@ def main(argv):
     # repositories. Keep this in mind if you have any changed files from steps 1d, 4, or 5. Edits to the
     # scripts in the jsr308-release/scripts directory will never be checked in.
 
-    print_step("Build Step 8: Commit projects to intermediate repos.") # AUTO
+    print_step("Build Step 7: Commit projects to intermediate repos.") # AUTO
     commit_to_interm_projects(cf_version, afu_version, projects_to_release)
 
     # Adds read/write/execute group permissions to all of the new dev website directories
     # under https://checkerframework.org/dev/ These directories need group read/execute
     # permissions in order for them to be served.
 
-    print_step("\n\nBuild Step 9: Add group permissions to repos.")
+    print_step("\n\nBuild Step 8: Add group permissions to repos.")
     for build in BUILD_REPOS:
         ensure_group_access(build)
 
@@ -494,7 +455,7 @@ def main(argv):
     # At the moment, this will lead to output error messages because some metadata in some of the
     # dirs I think is owned by Mike or Werner.  We should identify these and have them fix it.
     # But as long as the processes return a zero exit status, we should be ok.
-    print_step("\n\nBuild Step 10: Add group permissions to websites.") # AUTO
+    print_step("\n\nBuild Step 9: Add group permissions to websites.") # AUTO
     ensure_group_access(FILE_PATH_TO_DEV_SITE)
 
     create_empty_file(RELEASE_BUILD_COMPLETED_FLAG_FILE)

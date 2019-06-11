@@ -35,7 +35,7 @@ public class I18nFormatUtil {
      * Returns a {@link I18nConversionCategory} for every conversion found in the format string.
      *
      * @param format the format string to parse
-     * @throws IllegalFormatException if the format is not syntactically valid.
+     * @throws IllegalFormatException if the format is not syntactically valid
      */
     public static I18nConversionCategory[] formatParameterCategories(String format)
             throws IllegalFormatException {
@@ -148,8 +148,7 @@ public class I18nFormatUtil {
         private static final String[] TYPE_KEYWORDS = {"", "number", "date", "time", "choice"};
 
         // Indices for number modifiers
-        private static final int MODIFIER_DEFAULT = 0; // common in number and
-        // date-time
+        private static final int MODIFIER_DEFAULT = 0; // common in number and date-time
         private static final int MODIFIER_CURRENCY = 1;
         private static final int MODIFIER_PERCENT = 2;
         private static final int MODIFIER_INTEGER = 3;
@@ -228,7 +227,7 @@ public class I18nFormatUtil {
                             case '}':
                                 if (braceStack == 0) {
                                     part = SEG_RAW;
-                                    makeFormat(i, numFormat, segments);
+                                    makeFormat(numFormat, segments);
                                     numFormat++;
                                     // throw away other segments
                                     segments[SEG_INDEX] = null;
@@ -262,8 +261,8 @@ public class I18nFormatUtil {
             }
         }
 
-        private static void makeFormat(
-                int position, int offsetNumber, StringBuilder[] textSegments) {
+        /** Side-effects {@code categories} field, adding to it an I18nConversionCategory. */
+        private static void makeFormat(int offsetNumber, StringBuilder[] textSegments) {
             String[] segments = new String[textSegments.length];
             for (int i = 0; i < textSegments.length; i++) {
                 StringBuilder oneseg = textSegments[i];
@@ -361,6 +360,10 @@ public class I18nFormatUtil {
             categories.add(category);
         }
 
+        /**
+         * Return the index of s in list. If not found, return the index of
+         * s.trim().toLowerCase(Locale.ROOT) in list. If still not found, return -1.
+         */
         private static final int findKeyword(String s, String[] list) {
             for (int i = 0; i < list.length; ++i) {
                 if (s.equals(list[i])) {

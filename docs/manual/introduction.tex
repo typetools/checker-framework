@@ -81,12 +81,19 @@ The Checker Framework comes with checkers for specific types of errors:
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
+  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
+  expressions have aliases (see \chapterpageref{aliasing-checker})
+\item
+  \ahrefloc{purity-checker}{Purity Checker} to identify whether
+  methods have side effects (see \chapterpageref{purity-checker})
+\item
   \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
   whether an expression's value can be known at compile time
   (see \chapterpageref{constant-value-checker})
 \item
-  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
-  expressions have aliases (see \chapterpageref{aliasing-checker})
+  \ahrefloc{reflection-resolution}{Reflection Checker} to determine
+  whether an expression's value (of type \<Method> or \<Class>) can be known at compile time
+  (see \chapterpageref{reflection-resolution})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
@@ -182,9 +189,10 @@ synonyms.
 \sectionAndLabel{Installation}{installation}
 
 \begin{sloppypar}
-This section describes how to install the Checker Framework.
+This section describes how to install the Checker Framework. \\
 If you use a build system that automatically downloads dependencies,
-such as Gradle or Maven, you do not need to perform any installation.
+such as Gradle or Maven, \textbf{no installation is necessary}; just see
+\chapterpageref{external-tools}. \\
 If you wish to try the Checker Framework without installing it, use the
 \href{http://eisop.uwaterloo.ca/live/}{Checker Framework Live Demo} webpage.
 \end{sloppypar}
@@ -210,7 +218,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.5.8.zip}
+  \url{https://checkerframework.org/checker-framework-2.8.2.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -459,14 +467,17 @@ A concrete example (using the Nullness Checker) is:
 where \<javac> is as specified in Section~\ref{javac-installation}.
 
 You can also run a checker from within your favorite IDE or build system.  See
-Chapter~\ref{external-tools} for details about
+Chapter~\ref{external-tools} for details about build tools such as
 Ant (Section~\ref{ant-task}),
-Maven (Section~\ref{maven}),
-Gradle (Section~\ref{gradle}),
+Buck (Section~\ref{buck}),
+Gradle (Section~\ref{gradle}), and
+Maven (Section~\ref{maven});
+IDEs such as
 IntelliJ IDEA (Section~\ref{intellij}),
 Eclipse (Section~\ref{eclipse}),
+NetBeans (Section~\ref{netbeans}),
 and
-tIDE (Section~\ref{tide}),
+tIDE (Section~\ref{tide});
 and about customizing other IDEs and build tools.
 
 The checker is run on only the Java files that javac compiles.
@@ -497,20 +508,36 @@ maintainers, so you do not need to do anything special.
 Over time, this should become more common.
 
 For some other libraries, the Checker Framework developers have provided an
-annotated version of the library.  During type-checking, you should use the
-annotated version of the library to improve type-checking results (to issue
-fewer false positive warnings).  When doing ordinary compilation or while
-running your code, you can use either the annotated library or the regular
-distributed version of the library --- they behave identically.
-
+annotated version of the library.
 The annotated libraries appear in
 \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}.
+The annotated library has \emph{identical} behavior to the upstream,
+unannotated version; the source code is identical other than the
+annotations are different, so the only difference is with respect to
+pluggable type-checking of clients.
+
+(Some of the annotated libraries are
+% This list appears here to make it searchable/discoverable.
+bcel,
+commons-csv,
+commons-io,
+guava,
+and
+java-getopt.
+If the library you are interested in does not appear
+\ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{in
+  the Central Repository}, you can contribute by annotating it, which will
+help you and all other Checker Framework users; see
+\chapterpageref{annotating-libraries}.)
+
+To use an annotated library:
 
 \begin{itemize}
 \item
-If your project stores \<.jar> files locally, then download the \<.jar> file
-from the Central Repository.
+If your project stores \<.jar> files locally, then
+\ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{download
+  the \<.jar> file from the Central Repository}.
 
 \item
 If your project manages dependencies using a tool such as Gradle or Maven,
@@ -518,37 +545,47 @@ then update your buildfile to use the \<org.checkerframework.annotatedlib>
 group.  For example, in \<build.gradle>, change
 
 \begin{Verbatim}
-  api group: 'org.apache.bcel', name: 'bcel', version: '6.2'
+  api group: 'org.apache.bcel', name: 'bcel', version: '6.3.1'
+  api group: 'commons-io', name: 'commans-io', version: '2.6'
 \end{Verbatim}
 
 \noindent
 to
 
 \begin{Verbatim}
-  api group: 'org.checkerframework.annotatedlib', name: 'bcel', version: '6.2'
+  api group: 'org.checkerframework.annotatedlib', name: 'bcel', version: '6.3.1'
+  api group: 'org.checkerframework.annotatedlib', name: 'commons-io', version: '2.6.0.1'
 \end{Verbatim}
 
 \noindent
 Use the same version number.  (Sometimes you will use a slightly larger
 number, if the Checker Framework developers have improved the type
 annotations since the last release by the upstream maintainers.)  If a
-newer version of the upstream library is available, then
+newer version of the upstream library is available but that version is not
+available in \<org.checkerframework.annotatedlib>, then
 \ahrefloc{reporting-bugs}{open an issue} requesting that the
 \<org.checkerframework.annotatedlib> version be updated.
 \end{itemize}
 
+%% This is for paranoid users.
+% During type-checking, you should use the
+% annotated version of the library to improve type-checking results (to issue
+% fewer false positive warnings).  When doing ordinary compilation or while
+% running your code, you can use either the annotated library or the regular
+% distributed version of the library --- they behave identically.
+
 There are two special cases.
+\begin{itemize}
+\item
 The annotated JDK is automatically put on your
 classpath; you don't have to do anything special for it.
-For the Javadoc classes in the JDK's com.sun.javadoc package,
+\item
+For the Javadoc classes in the JDK's \<com.sun.javadoc> package,
 % are not exposed by ct.sym and therefore cannot be part of an
 % annotated JDK
-use the stub file \<checker/resources/javadoc.astub>.
-
-If a library you wish to use is not available, then you can request that it
-be annotated, or you can volunteer to write the annotations (see
-\chapterpageref{annotating-libraries}), which will help you and all other
-Checker Framework users.
+use the stub file \<checker/resources/javadoc.astub> by using \<-Astubs=checker.jar/javadoc.astub>.
+% Note: that this syntax only works for checker.jar.
+\end{itemize}
 
 
 \subsectionAndLabel{Distributing your annotated project}{distributing}
@@ -576,7 +613,7 @@ checkers support the following command-line options.
 Unsound checking: ignore some errors
 \begin{itemize}
 \item \<-AsuppressWarnings>
-  Suppress all warnings matching the given key; see
+  Suppress all errors and warnings matching the given key; see
   Section~\ref{suppresswarnings-command-line}.
 \item \<-AskipUses>, \<-AonlyUses>
   Suppress all errors and warnings at all uses of a given class --- or at all
@@ -663,7 +700,7 @@ Type-checking modes:  enable/disable functionality
 \item \<-AresolveReflection>
   Determine the target of reflective calls, and perform more precise
   type-checking based no that information; see
-  Section~\ref{reflection-resolution}.  \<-AresolveReflection=debug> causes
+  Chapter~\ref{reflection-resolution}.  \<-AresolveReflection=debug> causes
   debugging information to be output.
 \item \<-Ainfer>
   Output suggested annotations for method signatures and fields.
@@ -676,6 +713,12 @@ Type-checking modes:  enable/disable functionality
   Issue a warning if a \<@SuppressWarnings> did not suppress a warning issued by
   the checker.  These warnings are only issued if the \<@SuppressWarnings>
   contains a key that would suppress any warning from this checker.
+\item \<-ArequirePrefixInWarningSuppressions>
+  Require that the key in a warning suppression annotation begin with a checker
+  warning suppression key.  Otherwise, the suppress warning annotation does not
+  suppress any warnings.  For example, if this command-line option is
+  supplied, then \<@SuppressWarnings("assignment.type.incompatible")> has no effect, but
+  \<@SuppressWarnings("nullness:assignment.type.incompatible")> does.
 \end{itemize}
 
 Partially-annotated libraries
@@ -1074,8 +1117,9 @@ Do not write unnecessary annotations.
   annotations for local variables (see Section~\ref{type-refinement}).
   Usually, you only need to annotate fields and method signatures.  You
   should add annotations inside method bodies only if the checker is unable
-  to infer the correct annotation (usually on type arguments, rather than
-  on local variables).
+  to infer the correct annotation (usually on type arguments or array
+  element types, rather than
+  on top-level types).
   % or if
   % you need to suppress a warning (see Chapter~\ref{suppressing-warnings}).
 
@@ -1131,7 +1175,8 @@ program does not crash due to a null value.  In a method like this:
 \noindent
 the program crashes if \<null> is passed.  Therefore, the type of \<arg>
 should be \<@NonNull Object> (which you can write as just \<Object> due to
-defaulting).  The Nullness Checker will warn whenever a client passes a
+defaulting).  The Nullness Checker (\chapterpageref{nullness-checker})
+will warn whenever a client passes a
 value that might cause m to crash.  If you wrote the type of the formal
 parameter as \<@Nullable Object>, the Nullness Checker would permit clients
 to make calls that lead to a crash.
@@ -1189,6 +1234,15 @@ don't necessarily throw an exception.
 % possible for null to flow there at run time.  However, since that is an
 % erroneous case, the annotation would be counterproductive rather than
 % useful.)
+
+Another example is the Optional Checker (\chapterpageref{optional-checker})
+and the \<orElseThrow> method.
+The goal of the Optional Checker is to ensure that the program does not
+crash due to use of a non-present Optional value.  Therefore, the receiver
+of \ahref{https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Optional.html#orElseThrow()}{\<orElseThrow>} is annotated as
+\ahref{https://checkerframework.org/api/org/checkerframework/checker/optional/qual/Present.html}{\<@Present>},
+and the optional Checker issues a warning if the client calls
+\<orElseThrow> on a \<@MaybePresent> value.
 
 
 \subsectionAndLabel{Subclasses must respect superclass annotations}{annotations-are-a-contract}
@@ -1265,36 +1319,6 @@ It is a pleasant feature of the Checker Framework that in many cases, no
 annotations at all are needed on type parameters such as \code{E} in \<MultiSet>.
 
 
-\subsectionAndLabel{Annotations on constructor invocations}{annotations-on-constructor-invocations}
-
-%% I want to get rid of this syntax.
-
-In the checkers distributed with the Checker Framework, an annotation on a
-constructor invocation is equivalent to a cast on a constructor result.
-That is, the following two expressions have identical semantics:  one is
-just shorthand for the other.
-
-\begin{Verbatim}
-  new @Untainted Date()
-  (@Untainted Date) new Date()
-\end{Verbatim}
-
-However, you should rarely have to use this.  The Checker Framework will
-determine the qualifier on the result, based on the ``return value''
-annotation on the constructor definition.  The ``return value'' annotation
-appears before the constructor name, for example:
-
-\begin{Verbatim}
-  class MyClass {
-    @Untainted MyClass() { ... }
-  }
-\end{Verbatim}
-
-In general, you should only use an annotation on a constructor invocation
-when you know that the cast is
-guaranteed to succeed.
-
-
 \subsectionAndLabel{What to do if a checker issues a warning about your code}{handling-warnings}
 
 When you run a type-checker on your code, it is likely to issue warnings or
@@ -1306,14 +1330,17 @@ errors.  Don't panic!  There are three general causes for the warnings:
   your code to prevent that crash.
 
 \item
-  There is a weakness in the annotations you wrote.  In other words, the
-  specification you wrote is incorrect or inadequate.  Improve the
+  The annotations are too strong (they are incorrect) or too weak (they
+  are imprecise).  Improve the
   annotations, usually by writing more annotations in order to better
   express the specification.
-  %% Only write annotations that
-  %% accurately describe the intended behavior of the software, of course ---
-  %% it would be counterproductive to write annotations just for the purpose
-  %% of eliminating type-checker warnings.
+  Only write annotations that accurately describe the intended behavior of
+  the software --- don't write inaccurate annotations just for the purpose
+  of eliminating type-checker warnings.
+
+  Usually you need to improve the annotations in your source code.
+  Sometimes you need to improve annotations in a library that your program
+  uses (see \chapterpageref{annotating-libraries}).
 
 \item
   There is a weakness in the type-checker.  Your code is safe --- it never
@@ -1324,6 +1351,12 @@ errors.  Don't panic!  There are three general causes for the warnings:
   Chapter~\ref{suppressing-warnings}); be sure to include a code
   comment explaining how you know the code is correct even though the
   type-checker cannot deduce that fact.
+
+  (Do not add an \<if> test that can never fail, just to suppress a
+  warning.  Adding a gratuitous \<if> clutters the code and confuses
+  readers, who will assume that every \<if> condition can evaluate to true
+  or false.  It can be acceptable to add an \<if> test that throws a
+  descriptive error message.)
 \end{itemize}
 
 For each warning issued by the checker, you need to determine which of the
@@ -1427,16 +1460,16 @@ same methodology in different words.
 
 
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc
-% LocalWords:  SuppressWarnings un skipUses java plugins plugin TODO cp
+% LocalWords:  SuppressWarnings un skipUses java plugins plugin TODO cp io
 % LocalWords:  nonnull langtools sourcepath classpath OpenJDK pre jsr lst
 % LocalWords:  Djsr qual Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
-% LocalWords:  Nullness unselect checkbox unsetting PolyNull
+% LocalWords:  Nullness unselect checkbox unsetting PolyNull typedefs arg
 % LocalWords:  bashrc IDE xml buildfile PolymorphicQualifier enum API elts INF
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
-% LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
+% LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter bcel csv
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
-% LocalWords:  int XDTA newdir Awarns signedness urgin
+% LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
@@ -1448,9 +1481,9 @@ same methodology in different words.
 %  LocalWords:  AassumeAssertionsAreEnabled AassumeAssertionsAreDisabled
 %  LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AnoPrintErrorStack
 %  LocalWords:  AprintAllQualifiers Aignorejdkastub AstubDebug Aflowdotdir
-%  LocalWords:  AresourceStats jls r78 JDKs i18n
+%  LocalWords:  AresourceStats jls r78 JDKs i18n AignoreRangeOverflow L129
 %  LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
-%  LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles
+%  LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles tz1
 %%  LocalWords:  AshowSuppressWarningKeys AoutputArgsToFile RegexChecker
 %%  LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
 %%  LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror
@@ -1458,4 +1491,8 @@ same methodology in different words.
 %%  LocalWords:  AuseDefaultsForUncheckedCode AresolveReflection Ainfer
 %%  LocalWords:  AconservativeUninferredTypeArguments Averbosecfg Acfgviz
 %%  LocalWords:  AstubWarnIfOverwritesBytecode AprintVerboseGenerics
-%%  LocalWords:  AatfDoNotCache AatfCacheSize
+%%  LocalWords:  AatfDoNotCache AatfCacheSize IntRange AwarnIfNotFound
+%%  LocalWords:  AwarnUnneededSuppressions AshowInferenceSteps BHCJEIBB
+%%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses processOptions getopt
+%%  LocalWords:  EnsuresNonNull EnsuresNonNullIf
+%%  LocalWords:  ArequirePrefixInWarningSuppressions

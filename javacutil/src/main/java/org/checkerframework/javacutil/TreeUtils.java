@@ -113,9 +113,9 @@ public final class TreeUtils {
      *
      * @param name a method name
      * @param tree a tree defining a method invocation
-     * @return true iff tree describes a call to the given method
+     * @return true iff tree is a call to the given method
      */
-    protected static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
+    private static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
         return getMethodName(tree.getMethodSelect()).equals(name);
     }
 
@@ -140,7 +140,7 @@ public final class TreeUtils {
      * @return {@code true} iff the member is a member of {@code this} instance
      */
     public static boolean isSelfAccess(final ExpressionTree tree) {
-        ExpressionTree tr = TreeUtils.skipParens(tree);
+        ExpressionTree tr = TreeUtils.withoutParens(tree);
         // If method invocation check the method select
         if (tr.getKind() == Tree.Kind.ARRAY_ACCESS) {
             return false;
@@ -149,11 +149,11 @@ public final class TreeUtils {
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             tr = ((MethodInvocationTree) tree).getMethodSelect();
         }
-        tr = TreeUtils.skipParens(tr);
+        tr = TreeUtils.withoutParens(tr);
         if (tr.getKind() == Tree.Kind.TYPE_CAST) {
             tr = ((TypeCastTree) tr).getExpression();
         }
-        tr = TreeUtils.skipParens(tr);
+        tr = TreeUtils.withoutParens(tr);
 
         if (tr.getKind() == Tree.Kind.IDENTIFIER) {
             return true;
@@ -329,18 +329,50 @@ public final class TreeUtils {
     }
 
     /**
-     * If the given tree is a parenthesized tree, it returns the enclosed non-parenthesized tree.
-     * Otherwise, it returns the same tree.
+     * If the given tree is a parenthesized tree, return the enclosed non-parenthesized tree.
+     * Otherwise, return the same tree.
      *
      * @param tree an expression tree
      * @return the outermost non-parenthesized tree enclosed by the given tree
      */
-    public static ExpressionTree skipParens(final ExpressionTree tree) {
+    public static ExpressionTree withoutParens(final ExpressionTree tree) {
         ExpressionTree t = tree;
         while (t.getKind() == Tree.Kind.PARENTHESIZED) {
             t = ((ParenthesizedTree) t).getExpression();
         }
         return t;
+    }
+
+    /**
+     * If the given tree is a parenthesized tree, it returns the enclosed non-parenthesized tree.
+     * Otherwise, it returns the same tree.
+     *
+     * @param tree an expression tree
+     * @return the outermost non-parenthesized tree enclosed by the given tree
+     * @deprecated use {@link #withoutParens}
+     */
+    @Deprecated // use withoutParens
+    public static ExpressionTree skipParens(final ExpressionTree tree) {
+        return withoutParens(tree);
+    }
+
+    /**
+     * Gets the first enclosing tree in path, that is not a parenthesis.
+     *
+     * @param path the path defining the tree node
+     * @return a pair of a non-parenthesis tree that contains the argument, and its child that is
+     *     the argument or is a parenthesized version of it
+     */
+    public static Pair<Tree, Tree> enclosingNonParen(final TreePath path) {
+        TreePath parentPath = path.getParentPath();
+        Tree enclosing = parentPath.getLeaf();
+        Tree enclosingChild = path.getLeaf();
+        while (enclosing.getKind() == Kind.PARENTHESIZED) {
+            parentPath = parentPath.getParentPath();
+            enclosingChild = enclosing;
+            enclosing = parentPath.getLeaf();
+        }
+        return Pair.of(enclosing, enclosingChild);
     }
 
     /**
@@ -428,7 +460,7 @@ public final class TreeUtils {
         }
 
         if (isExpressionTree(tree)) {
-            tree = skipParens((ExpressionTree) tree);
+            tree = withoutParens((ExpressionTree) tree);
         }
 
         switch (tree.getKind()) {
@@ -585,7 +617,7 @@ public final class TreeUtils {
      * @return whether the tree refers to an identifier, member select, or method invocation
      */
     public static final boolean isUseOfElement(ExpressionTree node) {
-        node = TreeUtils.skipParens(node);
+        node = TreeUtils.withoutParens(node);
         switch (node.getKind()) {
             case IDENTIFIER:
             case MEMBER_SELECT:
@@ -707,7 +739,7 @@ public final class TreeUtils {
      * </ol>
      */
     public static boolean isCompileTimeString(ExpressionTree node) {
-        ExpressionTree tree = TreeUtils.skipParens(node);
+        ExpressionTree tree = TreeUtils.withoutParens(node);
         if (tree instanceof LiteralTree) {
             return true;
         }
@@ -726,7 +758,7 @@ public final class TreeUtils {
 
     /** Returns the receiver tree of a field access or a method invocation. */
     public static ExpressionTree getReceiverTree(ExpressionTree expression) {
-        ExpressionTree receiver = TreeUtils.skipParens(expression);
+        ExpressionTree receiver = TreeUtils.withoutParens(expression);
 
         if (!(receiver.getKind() == Tree.Kind.METHOD_INVOCATION
                 || receiver.getKind() == Tree.Kind.MEMBER_SELECT
@@ -754,7 +786,7 @@ public final class TreeUtils {
             // It's a field access on implicit this or a local variable/parameter.
             return null;
         } else if (receiver.getKind() == Tree.Kind.ARRAY_ACCESS) {
-            return TreeUtils.skipParens(((ArrayAccessTree) receiver).getExpression());
+            return TreeUtils.withoutParens(((ArrayAccessTree) receiver).getExpression());
         } else if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
             receiver = ((MemberSelectTree) receiver).getExpression();
             // Avoid int.class
@@ -764,7 +796,7 @@ public final class TreeUtils {
         }
 
         // Receiver is now really just the receiver tree.
-        return TreeUtils.skipParens(receiver);
+        return TreeUtils.withoutParens(receiver);
     }
 
     // TODO: What about anonymous classes?
@@ -835,6 +867,23 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns true if the argument is an invocation of one of the given methods, or of any method
+     * that overrides them.
+     */
+    public static boolean isMethodInvocation(
+            Tree methodTree, List<ExecutableElement> methods, ProcessingEnvironment processingEnv) {
+        if (!(methodTree instanceof MethodInvocationTree)) {
+            return false;
+        }
+        for (ExecutableElement Method : methods) {
+            if (isMethodInvocation(methodTree, Method, processingEnv)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns the ExecutableElement for the method declaration of methodName, in class typeName,
      * with params formal parameters. Errs if there is not exactly one matching method. If more than
      * one method takes the same number of formal parameters, then use {@link #getMethod(String,
@@ -842,18 +891,20 @@ public final class TreeUtils {
      */
     public static ExecutableElement getMethod(
             String typeName, String methodName, int params, ProcessingEnvironment env) {
-        List<ExecutableElement> methods = getMethodList(typeName, methodName, params, env);
+        List<ExecutableElement> methods = getMethods(typeName, methodName, params, env);
         if (methods.size() == 1) {
             return methods.get(0);
         }
-        throw new BugInCF("TreeUtils.getMethod: expected 1 match, found " + methods.size());
+        throw new BugInCF(
+                "TreeUtils.getMethod(%s, %s, %d): expected 1 match, found %d",
+                typeName, methodName, params, methods.size());
     }
 
     /**
      * Returns all ExecutableElements for method declarations of methodName, in class typeName, with
      * params formal parameters.
      */
-    public static List<ExecutableElement> getMethodList(
+    public static List<ExecutableElement> getMethods(
             String typeName, String methodName, int params, ProcessingEnvironment env) {
         List<ExecutableElement> methods = new ArrayList<>(1);
         TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
@@ -1079,12 +1130,11 @@ public final class TreeUtils {
     /**
      * Determine whether the given tree represents an ExpressionTree.
      *
-     * <p>TODO: is there a nicer way than an instanceof?
-     *
      * @param tree the Tree to test
      * @return whether the tree is an ExpressionTree
      */
     public static boolean isExpressionTree(Tree tree) {
+        // TODO: is there a nicer way than an instanceof?
         return tree instanceof ExpressionTree;
     }
 
@@ -1121,19 +1171,6 @@ public final class TreeUtils {
             default:
                 return false;
         }
-    }
-
-    /**
-     * @see Object#getClass()
-     * @return true iff invocationTree is an instance of getClass()
-     */
-    public static boolean isGetClassInvocation(MethodInvocationTree invocationTree) {
-        final Element declarationElement = elementFromUse(invocationTree);
-        String ownerName =
-                ElementUtils.getQualifiedClassName(declarationElement.getEnclosingElement())
-                        .toString();
-        return ownerName.equals("java.lang.Object")
-                && declarationElement.getSimpleName().contentEquals("getClass");
     }
 
     /**
@@ -1193,7 +1230,7 @@ public final class TreeUtils {
      */
     public static boolean isAnonymousConstructor(final MethodTree method) {
         @Nullable Element e = elementFromTree(method);
-        if (e == null || !(e instanceof Symbol)) {
+        if (!(e instanceof Symbol)) {
             return false;
         }
 

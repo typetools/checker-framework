@@ -13,9 +13,9 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-/*
- * KeyForTransfer ensures that java.util.Map.put and containsKey
- * cause the appropriate @KeyFor annotation to be added to the key.
+/**
+ * KeyForTransfer ensures that java.util.Map.put and containsKey cause the appropriate @KeyFor
+ * annotation to be added to the key.
  */
 public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore, KeyForTransfer> {
 
@@ -36,8 +36,7 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
 
         TransferResult<KeyForValue, KeyForStore> result = super.visitMethodInvocation(node, in);
         KeyForAnnotatedTypeFactory factory = (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
-        if (factory.isInvocationOfMapMethod(node, "containsKey")
-                || factory.isInvocationOfMapMethod(node, "put")) {
+        if (factory.isMapContainsKey(node) || factory.isMapPut(node)) {
 
             Node receiver = node.getTarget().getReceiver();
             Receiver internalReceiver = FlowExpressions.internalReprOf(factory, receiver);
@@ -58,9 +57,9 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
 
             AnnotationMirror am = factory.createKeyForAnnotationMirrorWithValue(keyForMaps);
 
-            if (factory.getMethodName(node).equals("containsKey")) {
+            if (factory.isMapContainsKey(node)) {
                 result.getThenStore().insertValue(keyReceiver, am);
-            } else { // method name is "put"
+            } else { // method is Map.put
                 result.getThenStore().insertValue(keyReceiver, am);
                 result.getElseStore().insertValue(keyReceiver, am);
             }

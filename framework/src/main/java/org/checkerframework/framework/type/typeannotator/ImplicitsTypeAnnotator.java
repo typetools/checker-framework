@@ -26,10 +26,6 @@ import org.checkerframework.javacutil.TypesUtils;
  * AnnotatedTypeMirror)} and {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Tree,
  * AnnotatedTypeMirror)}.
  *
- * <p>{@link ImplicitsTypeAnnotator} traverses types deeply by default, except that it skips the
- * method receiver of executable types (for interoperability with {@link
- * org.checkerframework.framework.type.AnnotatedTypeFactory#annotateInheritedFromClass(org.checkerframework.framework.type.AnnotatedTypeMirror)}).
- *
  * <p>This class takes care of two of the attributes of {@link ImplicitFor}; the others are handled
  * in {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator}.
  *

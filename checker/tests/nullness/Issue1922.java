@@ -9,7 +9,9 @@ public class Issue1922 {
     // A method to find a K in the collection and return it, or return null.
     public static <K> @Nullable K findKey(Collection<@NonNull K> keys, Object target) {
         for (K key : keys) {
-            if (target.equals(key)) return key;
+            if (target.equals(key)) {
+                return key;
+            }
         }
         return null;
     }

@@ -66,6 +66,11 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 # Add CSS styling for some links, since \ahrefloc doesn't permit styling
 	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
 
+.PHONY: contributors.tex
+# The `git-authors` script is in https://github.com/plume-lib/plume-scripts
+contributors.tex:
+	git-authors --latex --punctuation > contributors.tex
+
 ../api:
 	cd ../.. && ./gradlew allJavadoc
 
@@ -75,10 +80,10 @@ CFLogo.png: ../logo/Logo/CFLogo.png
 favicon-checkerframework.png: ../logo/Checkmark/CFCheckmark_favicon.png
 	cp -p $< $@
 
-# Ensure that every section of the manual has a \label{} command.
+# Don't use \section; use \sectionAndLabel instead
 .PHONY: check-labels
 check-labels:
-	if ( grep -n '^\\\(chapter\|\(sub\)*section\|paragraph\){' *.tex | grep -v "{.*\\label{.*}}" ) ; then false ; else true ; fi
+	if ( grep -n '^\\\(chapter\|\(sub\)*section\|paragraph\){' *.tex ) ; then false ; else true ; fi
 
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:

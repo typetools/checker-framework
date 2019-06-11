@@ -1,7 +1,6 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.ExecutableElement;
@@ -21,16 +20,16 @@ import org.checkerframework.javacutil.TreeUtils;
  * keySet to the lhs. e.g.,
  *
  * <pre>{@code
- * // Previously, the user would be required to annotate the LHS's type argument with @KeyFor("m")
+ * // The user is not required to explicitly annotate the LHS's type argument with @KeyFor("m")
  * Set<String> keySet = m.keySet();
  * }</pre>
  *
  * 2. If a variable declaration contains type arguments with an @KeyFor annotation and its
  * initializer is a new class tree with corresponding type arguments that have an @UknownKeyFor
- * primary annotation we transfer from the LHS to RHS. e.g.,
+ * primary annotation, we transfer from the LHS to RHS. e.g.,
  *
  * <pre>{@code
- * // normally a user would have to write the @KeyFor("m") on both sides
+ * // The user does not have to write @KeyFor("m") on both sides
  * List<@KeyFor("m") String> keys = new ArrayList<String>();
  * }</pre>
  *
@@ -63,22 +62,19 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
 
     /** @return true iff expression is a call to java.util.Map.KeySet */
     public boolean isCallToKeyset(ExpressionTree expression) {
-        if (expression instanceof MethodInvocationTree) {
-            return TreeUtils.isMethodInvocation(
-                    expression, keySetMethod, atypeFactory.getProcessingEnv());
-        }
-        return false;
+        return TreeUtils.isMethodInvocation(
+                expression, keySetMethod, atypeFactory.getProcessingEnv());
     }
 
     /**
-     * Transfers annotations to the variableTree if the right side is a call to
-     * java.util.Map.KeySet.
+     * Transfers annotations on type arguments from the initializer to the variableTree, if the
+     * initializer is a call to java.util.Map.keySet.
      */
     @Override
     public Void visitVariable(VariableTree variableTree, AnnotatedTypeMirror type) {
         super.visitVariable(variableTree, type);
 
-        // This should only happen on map.keySet();
+        // This should only happen on Map.keySet();
         if (type.getKind() == TypeKind.DECLARED) {
             final ExpressionTree initializer = variableTree.getInitializer();
 
@@ -87,7 +83,8 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
                 final AnnotatedTypeMirror initializerType =
                         atypeFactory.getAnnotatedType(initializer);
 
-                // array types and boxed primitives etc don't require propagation
+                // Propagate just for declared (class) types, not for array types, boxed primitives,
+                // etc.
                 if (variableType.getKind() == TypeKind.DECLARED) {
                     keyForPropagator.propagate(
                             (AnnotatedDeclaredType) initializerType,

@@ -8,8 +8,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * An expression with this type is exactly the same as an {@link IntRange} annotation whose {@code
  * from} field is {@code -1} and whose {@code to} field is {@code Integer.MAX_VALUE}. However, this
- * annotation is derived from an {@link org.checkerframework.checker.index.qual.GTENegativeOne}
- * annotation from the {@link org.checkerframework.checker.index.IndexChecker}.
+ * annotation is derived from an {@code org.checkerframework.checker.index.qual.GTENegativeOne}
+ * annotation.
  *
  * <p>IntRangeFromGTENegativeOne annotations derived from GTENegativeOne annotations are used to
  * create IntRange annotations, but IntRangeFromGTENegativeOne annotations are not checked when they

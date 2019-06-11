@@ -35,7 +35,7 @@ public class MaskedShifts {
         testRes = (signed >> 8) & 0x1FFFFFF;
 
         // Use mask that doesn't render the MSB irrelevent, but does render the next 7 MSB_s
-        // irrelevent
+        // irrelevant.
 
         // Now the left-most introduced bit matters
         testRes = (unsigned >>> 8) & 0x90FFFFFF;
@@ -121,6 +121,27 @@ public class MaskedShifts {
         testRes = 0xFFFFFFFF & (signed >>> 8);
         testRes = 0xFFFFFFFF & (signed >> 8);
 
+        // Tests shift on right (only 8 and 0 MSB_s), with no parenthesis on right
+
+        // Use mask that renders the 8 MSB_s irrelevant.
+
+        // Shifting right by 8, the introduced bits are still masked away.
+        testRes = 0xFFFFFF & unsigned >>> 8;
+        testRes = 0xFFFFFF & unsigned >> 8;
+        testRes = 0xFFFFFF & signed >>> 8;
+        testRes = 0xFFFFFF & signed >> 8;
+
+        // Use mask that doesn't render any bits irrelevent
+
+        testRes = 0xFFFFFFFF & unsigned >>> 8;
+
+        // :: error: (shift.signed)
+        testRes = 0xFFFFFFFF & unsigned >> 8;
+
+        // :: error: (shift.unsigned)
+        testRes = 0xFFFFFFFF & signed >>> 8;
+        testRes = 0xFFFFFFFF & signed >> 8;
+
         // Tests with parenthesis on mask (only 8 and 0 MSB_s)
 
         // Use mask that renders the 8 MSB_s irrelevant.
@@ -197,7 +218,7 @@ public class MaskedShifts {
         testRes = (signed >> 8) | 0xFE000000;
 
         // Use mask that doesn't render the MSB irrelevent, but does render the next 7 MSB_s
-        // irrelevent
+        // irrelevant.
 
         // Now the left-most introduced bit matters
         testRes = (unsigned >>> 8) | 0x8F000000;

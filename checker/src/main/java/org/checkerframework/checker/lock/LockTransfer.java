@@ -21,7 +21,7 @@ import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.TreeUtils;
 
-/*
+/**
  * LockTransfer handles constructors, initializers, synchronized methods, and synchronized blocks.
  */
 public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTransfer> {

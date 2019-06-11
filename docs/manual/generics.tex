@@ -71,18 +71,26 @@ That is, in the above example, all
 arguments that replace \code{T} in \code{MyList<T>} must be subtypes of
 \code{@NonNull Object}.
 
+
+\subsubsectionAndLabel{Syntax for upper and lower bounds}{generics-bounds-syntax}
+
 Conceptually, each generic type parameter has two bounds --- a lower bound
 and an upper bound --- and at instantiation, the type argument must be
 within the bounds.  Java only allows you to specify the upper bound; the
 lower bound is implicitly the bottom type \<void>.  The Checker Framework
 gives you more power:  you can specify both an upper and lower bound for
-type parameters and wildcards.  For the upper bound, write a type qualifier
-on the \<extends> clause, and for the lower bound, write a type qualifier
-on the type variable.
+type parameters.
+Write the upper bound on the \<extends> clause, and
+write the lower bound on the type variable.
 
 \begin{Verbatim}
   class MyList<@LowerBound T extends @UpperBound Object> { ... }
 \end{Verbatim}
+
+You may omit either the upper or the lower bound, and the Checker Framework
+will use a default.
+
+For a discussion of wildcards, see Section~\ref{annotations-on-wildcards}.
 
 For a concrete example, recall the type system of the Regex Checker (see
 Figure~\refwithpage{fig-regex-hierarchy}) in which
@@ -283,13 +291,15 @@ You can write a type annotation on the bound of a wildcard:
 \end{Verbatim}
 
 Conceptually, every wildcard has two bounds --- an upper bound and a lower
-bound.  Java only permits you to write the upper bound (with
-\code{<?\ extends SomeType>}) or the lower bound (with \code{<?\ super
-  OtherType>}), but not both; the unspecified bound is implicitly the
-top type
-\<Object> or the bottom type \<void>.  The Checker Framework is more
-flexible:  it lets you simultaneously write annotations on both the top and
-the bottom type.  To annotate the implicit bound, write the type annotation
+bound.  Java only permits you to write one bound.
+You can specify the upper bound with \code{<?\ extends SomeType>}, in which
+case the lower bound is implicitly the bottom type \<void>.
+You can specify the lower bound (with \code{<?\ super OtherType>}), in
+which case the upper bound is implicitly the top type \<Object>.
+The Checker Framework is more flexible:  it lets you similarly write
+annotations on both the upper and lower bound.
+
+To annotate the \emph{implicit} bound, write the type annotation
 before the \<?>.  For example:
 
 \begin{Verbatim}
@@ -387,8 +397,8 @@ has, in the ellipsis, these declarations:
   T t;
   @Nullable T nble;      // Section "Type annotations on a use of a generic type variable", below,
   @NonNull T nn;         // further explains the meaning of "@Nullable T" and "@NonNull T".
-  void add(T arg) { }
-  T get(int i) { }
+  void add(T arg) {}
+  T get(int i) {}
 \end{Verbatim}
 
 \noindent
@@ -532,7 +542,7 @@ qualifier for the Nullness type system:
 
   @PolymorphicQualifier
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface PolyNull { }
+  public @interface PolyNull {}
 \end{Verbatim}
 
 \noindent
@@ -751,35 +761,18 @@ no matter what the array's element types are:
 Usually, it does not make sense to write only a single instance of a polymorphic
 qualifier in a method definition:  if you write one instance of (say)
 \<@PolyNull>, then you should use at least two.
+The main benefit of polymorphic qualifiers comes when one is used multiple times
+in a method, since then each instance turns into the same type qualifier.
 (Section~\ref{qualifier-polymorphism-single-qualifier} describes some
 exceptions to this rule:  times when it makes sense to write a single
 polymorphic qualifier in a signature.)
 
-For example, there is no point to writing
-
-\begin{Verbatim}
-  void m(@PolyNull Object obj)
-\end{Verbatim}
-
-\noindent
-which expands to
-
-\begin{Verbatim}
-  void m(@NonNull Object obj)
-  void m(@Nullable Object obj)
-\end{Verbatim}
-
-This is no different (in terms of which calls to the method will
-type-check) than writing just
-
-\begin{Verbatim}
-  void m(@Nullable Object obj)
-\end{Verbatim}
-
-The main benefit of polymorphic qualifiers comes when one is used multiple times
-in a method, since then each instance turns into the same type qualifier.
 Most frequently, the polymorphic qualifier appears on at least one formal
-parameter and also on the return type.  It can also be useful to have
+parameter and also on the return type.
+
+
+
+  It can also be useful to have
 polymorphic qualifiers on (only) multiple formal parameters, especially if
 the method side-effects one of its arguments.
 For example, consider
@@ -800,13 +793,6 @@ Java generics, if you can do so:
 }
 \end{Verbatim}
 
-\label{qualifier-polymorphism-return-type}
-It is unusual, but permitted, to write just one polymorphic qualifier, on a return type.
-This is just like it is unusual, but permitted, to write just one
-occurrence of a generic type parameter, on a return type.  An example of
-such a method is
-\sunjavadoc{java/util/Collections.html\#emptyList--}{Collections.emptyList()}.
-
 
 \subsectionAndLabel{Using a single polymorphic qualifier in a method signature}{qualifier-polymorphism-single-qualifier}
 
@@ -818,6 +804,16 @@ polymorphic qualifier in a method signature.
 Some of these situations can be avoided by writing a generic method,
 but in legacy code it may not be possible for you to change a method to be
 generic.
+
+
+\subsubsectionAndLabel{Using a single polymorphic qualifier on a return type}{qualifier-polymorphism-return-type}
+
+It is unusual, but permitted, to write just one polymorphic qualifier, on a return type.
+
+This is just like it is unusual, but permitted, to write just one
+occurrence of a generic type parameter, on a return type.  An example of
+such a method is
+\sunjavadoc{java/util/Collections.html\#emptyList--}{Collections.emptyList()}.
 
 
 \subsubsectionAndLabel{Using a single polymorphic qualifier on an element type}{qualifier-polymorphism-element-types}
@@ -851,11 +847,44 @@ of these signatures:
  public static <T extends @Nullable Object> int indexOf(T[] a, T elt) { ... }
 \end{Verbatim}
 
-This example uses arrays, but analogous examples exist that
+
+Another example is a method that writes bytes to a file.  It accepts an
+array of signed or unsigned bytes, and it behaves identically for both:
+
+\begin{Verbatim}
+  void write(@PolySigned byte[] b) { ... }
+\end{Verbatim}
+
+
+These examples use arrays, but there are similar examples that
 use collections.
 
 
-\subsubsectionAndLabel{Using a single polymorphic qualifier to indicate all arguments are legal}{qualifier-polymorphism-top-type}
+\subsubsectionAndLabel{Don't use a single polymorphic qualifier on a formal parameter type}{qualifier-polymorphism-formal-parameter}
+
+There is no point to writing
+
+\begin{Verbatim}
+  void m(@PolyNull Object obj)
+\end{Verbatim}
+
+\noindent
+which expands to
+
+\begin{Verbatim}
+  void m(@NonNull Object obj)
+  void m(@Nullable Object obj)
+\end{Verbatim}
+
+This is no different (in terms of which calls to the method will
+type-check) than writing just
+
+\begin{Verbatim}
+  void m(@Nullable Object obj)
+\end{Verbatim}
+
+
+\subsubsectionAndLabel{Using a single \<@PolyAll> qualifier to indicate all arguments are legal}{qualifier-polymorphism-top-type}
 
 A single \<@PolyAll> annotation can indicate that any possible value is
 permitted to be passed.  For example:

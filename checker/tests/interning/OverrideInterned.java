@@ -4,6 +4,7 @@ class OverrideInterned {
 
     // This code is extracted from FreePastry
 
+    // :: error: (super.invocation.invalid)
     @Interned class NodeHandle {}
 
     public interface TransportLayer<IDENTIFIER> {

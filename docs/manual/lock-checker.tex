@@ -358,7 +358,7 @@ the \<@GuardedBy> type hierarchy, including \<@GuardedBy(\{\})>.
   If class $B$ overrides method $m$ from class $A$, then the expressions in
   $B$'s \<@Holding>
   annotation must be a subset of or equal to that of $A$'s \<@Holding>
-  annotation..
+  annotation.
 
 \item[Overriding methods annotated with side effect annotations]
   If class $B$ overrides method $m$ from class $A$, then
@@ -992,4 +992,4 @@ These features are supported by
 %  LocalWords:  EnsuresLockHeldIf LockingFree ReleasesNoLocks str lock1
 %  LocalWords:  MayReleaseLocks GuardedByName lock2 jls JLS LockHeld intra
 %  LocalWords:  LockPossiblyHeld explicitLock isHeldByCurrentThread JCIP's
-%  LocalWords:  holdsLock monitorLock cleanroom
+%  LocalWords:  holdsLock monitorLock cleanroom AconcurrentSemantics

@@ -23,7 +23,7 @@ the answers, or other questions to include here.
 
 \faqtocpara{\ref{faq-motivation-section}: Motivation for pluggable type-checking}
 \\ \ref{faq-never-make-type-errors}: I don't make type errors, so would pluggable type-checking help me?
-\\ \ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses?
+\\ \ref{faq-typequals-vs-subtypes}: Should I use pluggable types (type qualifiers), or should I used Java subtypes?
 
 \faqtocpara{\ref{faq-getting-started-section}: Getting started}
 \\ \ref{faq-annotate-existing-program}: How do I get started annotating an existing program?
@@ -45,6 +45,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors?
 \\ \ref{faq-100-warnings}: Why does the checker always say there are 100 errors or warnings?
 \\ \ref{faq-type-i-did-not-write}: Why does the Checker Framework report an error regarding a type I have not written in my program?
+\\ \ref{faq-same-code-different-behavior}: Why does the Checker Framework accept code on one line but reject it on the next?
 \\ \ref{faq-run-time-checking}: How can I do run-time monitoring of properties that were not statically checked?
 
 \faqtocpara{\ref{faq-false-positives-section}: False positive warnings}
@@ -60,6 +61,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?
 \\ \ref{faq-varargs-syntax-meaning}: What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?
 \\ \ref{faq-type-qualifier-on-class-declaration}: What is the meaning of a type qualifier at a class declaration?
+\\ \ref{faq-type-qualifier-on-bounds}: How are type qualifiers written on upper and lower bounds?
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
 \\ \ref{faq-annotate-fully-qualified-name}: How do I annotate a
 fully-qualified type name?
@@ -81,7 +83,7 @@ fully-qualified type name?
 \\ \ref{faq-checked-exceptions}: Is there a type-checker for managing checked and unchecked exceptions?
 
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
-\\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)?
+\\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs or Error Prone)?
 \\ \ref{faq-eclipse}: How does the Checker Framework compare with Eclipse's Null Analysis?
 \\ \ref{faq-nullaway}: How does the Checker Framework compare with NullAway?
 \\ \ref{faq-optional}: How does the Checker Framework compare with the JDK's \<Optional> type?
@@ -126,7 +128,7 @@ automated approaches cannot find; pluggable type-checking gives you more
 time to focus on those.
 
 
-\subsectionAndLabel{Should I use pluggable types (type qualifiers) or Java subtypes?}{faq-typequals-vs-subtypes}
+\subsectionAndLabel{Should I use pluggable types (type qualifiers), or should I used Java subtypes?}{faq-typequals-vs-subtypes}
 
 % Old labels, for backward compatibility.  Don't use them any longer.
 \label{when-to-use-type-qualifiers}
@@ -135,8 +137,9 @@ time to focus on those.
 In brief, use subtypes when you can, and use type qualifiers when you cannot
 use subtypes.
 
-For some programming tasks, you can use either a Java subclass or a type
-qualifier.  As an example that your code currently uses \code{String} to
+For some programming tasks, you can use either a Java subtype (interfaces
+or subclasses) or a type
+qualifier.  As an example, suppose that your code currently uses \code{String} to
 represent an address.  You could use Java subclasses by creating a new
 \code{Address} class and refactor your code to use it, or you could use
 type qualifiers by creating an \code{@Address} annotation and applying it
@@ -536,7 +539,7 @@ executed.
 
 If you supply the \<-AconcurrentSemantics> command-line option, then the
 Checker Framework assumes that any field can be changed at any time.  This
-limits the amount of flow-sensitive type qualifier refinement
+limits the amount of type refinement
 (Section~\ref{type-refinement}) that the Checker Framework can do.
 
 
@@ -600,12 +603,30 @@ See Section~\ref{running} for more details.
 Sometimes, a Checker Framework warning message will mention a type you have
 not written in your program.  This is typically because a default has been
 applied where you did not write a type; see Section~\ref{defaults}.  In
-other cases, this is because flow-sensitive type refinement has given an
+other cases, this is because type refinement has given an
 expression a more specific type than you wrote or than was defaulted; see
 Section~\ref{type-refinement}.
 Note that an invocation of an impure method may cause the loss of all
-information that was determined via flow-sensitive type refinement; see
+information that was determined via type refinement; see
 Section~\ref{type-refinement-purity}.
+
+
+\subsectionAndLabel{Why does the Checker Framework accept code on one line but reject it on the next?}{faq-same-code-different-behavior}
+
+Sometimes, the Checker Framework permits code on one line, but rejects the
+same code a few lines later:
+
+\begin{Verbatim}
+  if (myField != null) {
+    myField.hashCode();   // no warning
+    someMethod();
+    myField.hashCode();   // warning about potential NullPointerException
+  }
+\end{Verbatim}
+
+The reason is explained in the section on type refinement
+(Section~\ref{type-refinement}), which also tells how to specify the side
+effects of \<someMethod> (Section~\ref{type-refinement-purity}).
 
 
 \subsectionAndLabel{How can I do run-time monitoring of properties that were not statically checked?}{faq-run-time-checking}
@@ -722,9 +743,9 @@ class MyClass {
 
   void method m() {
     String local = "%d";
-    String.format(local, 5);    // Format String Checker verifies that call is safe
-    String.format(field, 5);    // Format String Checker warns that call might not be safe
-    String.format(method(), 5); // Format String Checker warns that call might not be safe
+    String.format(local, 5);    // Format String Checker verifies the call is safe
+    String.format(field, 5);    // Format String Checker warns the call might not be safe
+    String.format(method(), 5); // Format String Checker warns the call might not be safe
   }
 }
 \end{Verbatim}
@@ -760,8 +781,8 @@ There are several reasons for this design choice.
   compatible with all values that are returned by any overriding
   implementation.  In general, examining all implementations is impossible,
   because clients may override the method.  When possible, it is
-  inconvenient to provide all that source code, and it would slow the
-  type-checker down.
+  inconvenient to provide all that source code, and it would slow down the
+  type-checker.
 
   A related issue is that determining which values can be returned by a
   method $m$ requires analyzing $m$'s body, which requires analyzing
@@ -772,8 +793,8 @@ There are several reasons for this design choice.
   Type-checking is modular --- it works on one procedure at a time,
   examining that procedure and the specifications (not implementations) of
   methods that it calls.  Therefore, type-checking is fast and can work on
-  partial programs.  It is undesirable to change type-checking into a
-  whole-program analysis.
+  partial programs.  The Checker Framework performs modular type-checking,
+  not a whole-program analysis.
 
 \item[Order of compilation]
   When the compiler is called on class \<Client> and class \<Library>, the
@@ -823,7 +844,7 @@ Code that checks one variable and then uses a different variable is
 confusing and is often considered poor style.
 
 The Nullness Checker is able to verify the correctness of a small variant
-of the program, thanks to flow-sensitive type refinement
+of the program, thanks to type refinement
 (Section~\ref{type-refinement}):
 
 \begin{Verbatim}
@@ -948,7 +969,7 @@ There is also a separate FAQ for the type annotations syntax
 The \emph{receiver} of a method is the \<this> formal parameter, sometimes
 also called the ``current object''.  Within the method declaration, \<this>
 is used to refer to the receiver formal parameter.  At a method call, the
-receiver actual argument is written before the method name.
+receiver actual argument is written before a period and the method name.
 
 The method \<compareTo> takes \emph{two} formal parameters.  At a call site
 like \<x.compareTo(y)>, the two arguments are \<x> and \<y>.  It is
@@ -993,6 +1014,10 @@ outer class.  The receiver is distinct from the object being constructed.
 In a method of a top-level class, the receiver is named \<this>.  In a
 constructor of an inner class, the receiver is named \<Outer.this> and the
 result is named \<this>.
+
+A method in an anonymous class has a receiver, but it is not possible to
+write the receiver in the formal parameter list because there is no name
+for the type of \<this>.
 
 
 \subsectionAndLabel{What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?}{faq-annotation-after-type}
@@ -1061,14 +1086,12 @@ applies to the element type. The annotation documents that the method takes an a
 
 \subsectionAndLabel{What is the meaning of a type qualifier at a class declaration?}{faq-type-qualifier-on-class-declaration}
 
-% TODO: use a more realistic example.
+See Section~\ref{annotations-on-classes-and-constructors}.
 
-Writing an annotation on a class declaration makes that annotation implicit
-for all uses of the class (see Section~\ref{effective-qualifier}).  If you
-write \<class @MyQual MyClass \ttlcb\ ... \ttrcb>, then every unannotated
-use of \<MyClass> is \<@MyQual MyClass>.  A user is permitted to strengthen
-the type by writing a more restrictive annotation on a use of MyClass, such
-as \<@MyMoreRestrictiveQual MyClass>.
+
+\subsectionAndLabel{How are type qualifiers written on upper and lower bounds?}{faq-type-qualifier-on-bounds}
+
+See Section~\ref{generics-instantiation}.
 
 
 \subsectionAndLabel{Why shouldn't a qualifier apply to both types and declarations?}{faq-no-annotation-on-types-and-declarations}
@@ -1109,9 +1132,8 @@ to require that the receiver has a certain property is to use a type
 annotation on the receiver of the method.  (Slightly more formally, the
 property being checked is compatibility between the annotation on the type
 of the formal parameter receiver and the annotation on the type of the
-actual receiver.)  If you do not know what ``receiver'' means, see the next
-question.
-
+actual receiver.)  If you do not know what ``receiver'' means, see
+Section~\ref{faq-receiver}.
 
 Another example of a type-and-declaration annotation that represents poor
 design is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As discussed
@@ -1162,7 +1184,7 @@ It conceptually creates a new, more specific type.
 That is, it describes what values the type represents.
 
 As an example, the \<int> type contains these values: ..., -2, -1, 0, 1, 2, ...  \\
-The \<@Positive int> type contains thes values:  1, 2, ...   \\
+The \<@Positive int> type contains these values:  1, 2, ...   \\
 Therefore, \<@Positive int> is a subtype of \<int>.
 
 A \textbf{declaration annotation} can be written on any \textbf{declaration} (a class, method, or variable).  It describes the thing being declared, but does not describe run-time values.  Here are examples of declaration annotations:
@@ -1336,7 +1358,7 @@ is an example of a complete, useful type-checker.
 \begin{Verbatim}
   @SubtypeOf(Unqualified.class)
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface Encrypted { }
+  public @interface Encrypted {}
 \end{Verbatim}
 
 Section~\ref{subtyping-example} explains this checker and tells
@@ -1450,7 +1472,7 @@ Framework's annotations.
 \subsectionAndLabel{Why do \<.class> files contain more annotations than the source code?}{faq-classfile-annotations}
 
 You may notice annotations such as \<@Pure> and \<@SideEffectFree> in
-compiled \<.class> files even though the source code containes no
+compiled \<.class> files even though the source code contains no
 annotations.  These annotations are propagated from annotated libraries,
 such as the JDK, to your code.
 
@@ -1483,31 +1505,88 @@ type-and-effect system that is distributed with the Checker Framework.
 \sectionAndLabel{Relationship to other tools}{faq-other-tools-section}
 
 
-\subsectionAndLabel{Why not just use a bug detector (like FindBugs)?}{faq-type-checking-vs-bug-detectors}
+\subsectionAndLabel{Why not just use a bug detector (like FindBugs or Error Prone)?}{faq-type-checking-vs-bug-detectors}
 
-Pluggable type-checking finds more bugs than a bug detector does, for any
-given variety of bug.
+A pluggable type-checker
+is a verification tool that prevents or detects all errors of a given
+variety.  If it issues no warnings, your code has no errors of a given
+variety (for details about the guarantee, see
+Section~\ref{checker-guarantees}).
 
-A bug detector like \href{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
+An alternate approach is to use a bug detector such as
+\href{https://errorprone.info//}{Error Prone},
+\href{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
 \href{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001}, or
-\href{https://pmd.github.io/}{PMD}~\cite{Copeland2005} aims to find \emph{some}
-of the most obvious bugs in your program.  It uses a lightweight analysis,
-then uses heuristics to discard some of its warnings.  Thus, even if the tool
-prints no warnings, your code might still have errors --- maybe the
-analysis was too weak to find them, or the tool's heuristics classified the
-warnings as likely false positives and discarded them.
+\href{https://pmd.github.io/}{PMD}~\cite{Copeland2005}, or the
+tools built into Eclipse (see Section~\ref{faq-eclipse}) and IntelliJ\@.
 
-A type-checker aims to find \emph{all} the bugs (of certain varieties).
-It requires you to write type qualifiers in your program, or to use a tool
-that infers types.  Thus, it requires more work from the programmer, and in
-return it gives stronger guarantees.
+A pluggable type-checker or verifier
+differs from a bug detector in several ways:
+\begin{itemize}
+\item
+  A type-checker reports \emph{all} errors in your code.  If a type-checker
+  reports no warnings, then you have a guarantee (a proof) of correctness
+  (Section~\ref{faq-no-absolute-guarantee}).
 
-Each tool is useful in different circumstances, depending on how important
-your code is and your desired level of confidence in your code.  For more
-details on the comparison, see Section~\ref{other-tools}.  For a case study
-that compared the nullness analysis of FindBugs, Jlint, PMD, and the
-Checker Framework, see section 6 of the paper
+  A bug detector aims to find \emph{some} of the most obvious errors.  Even
+  if a bug detector reports no warnings, there may still be errors in your
+  code.
+
+\item
+  A type-checker requires you to annotate your code with type qualifiers,
+  or to run an inference tool that does so for you.  That is, it requires
+  you to write a specification, then it verifies that your code meets its
+  specification.
+
+  Some bug detectors do not require annotations.  This means that it may be
+  easier to get started running a bug detector.  The tool makes guesses
+  about the intended behavior of your code, leading to false alarms or
+  missed alarms.
+
+\item
+  A verification tool may issue more warnings for a programmer to
+  investigate.  Some bug detectors internally generate many warnings, then
+  use heuristics to discard some of them.  The cost is missed alarms, when
+  the tool's heuristics classified the warnings as likely false positives
+  and discarded them.
+
+\item
+  A type-checker uses a more sophisticated and precise analysis.  For
+  example, it can take advantage of method annotations and annotations on
+  generic type parameters, such as \code{List<@NonNull String>}.  An
+  example specific to the Nullness Checker (Section~\ref{nullness-checker},
+  no other tool correctly handles map keys or initialization.
+
+  A bug detector does a more lightweight analysis.  This means that a bug
+  detector usually runs faster, giving feedback to the programmer more
+  rapidly and avoiding slowdowns.  Its analysis is often narrow, avoiding
+  properties that are tricky to reason about or that might lead to false
+  alarms.  The cost is missed alarms, when analysis is too weak to find the
+  errors.
+
+\item
+  Neither type checking nor bug detection subsumes the other.  A
+  type-checker finds problems that a bug detector cannot.  A bug detector
+  finds problems that a type-checker does not:  there is no need for the
+  type-checker to address style rules, when a bug detector is adequate.
+
+  If your code is important to you, it is advantageous to run both types of
+  tools.
+
+\end{itemize}
+
+For a case study that compared the nullness analysis of FindBugs, Jlint,
+PMD, and the Checker Framework, see section 6 of the paper
 \href{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf}{``Practical pluggable types for Java''}~\cite{PapiACPE2008}.
+The case study was on a well-tested program in daily use.  The Checker
+Framework tool found 8 nullness errors (that is, null pointer
+dereferences).  None of the other tools found any errors.  A follow-up 10
+years later found that Eclipse's and IntelliJ's nullness analyses found 0
+and 3 out of the 9 errors that the Nullness Checker found.
+
+The
+\href{https://checkerframework.org/jsr308/}{JSR 308}~\cite{JSR308-2008-09-12}
+documentation also contains a discussion of related work.
 
 
 \subsectionAndLabel{How does the Checker Framework compare with Eclipse's null analysis?}{faq-eclipse}
@@ -1554,8 +1633,8 @@ It is faster than the Checker Framework, in part because it is less featureful.
 It is built into Eclipse, so you do not have to add it to your build scripts.
 Its IDE integration is tighter and slicker.
 
-(If you know of other differences, please let us know at
-checker-framework-dev@googlegroups.com so we can update the manual.)
+In a case study, the Nullness Checker found 9 errors in a program, and
+Eclipse's analysis found 0.
 
 
 \subsectionAndLabel{How does the Checker Framework compare with NullAway?}{faq-nullaway}
@@ -1565,10 +1644,14 @@ type-checker whose aim is similar to that of the Nullness Checker
 (\chapterpageref{nullness-checker}).  For both tools, the user writes
 nullness annotations, and then the tool checks them.
 
-NullAway is unsound:  even if NullAway issues no warnings, your code might
-crash with a null pointer exception.  NullAway ignores generics, for example.
+NullAway is faster than the Nullness Checker and requires fewer annotations.
 
-However, NullAway is faster than the Nullness Checker and may require fewer annotations.
+NullAway is unsound:  even if NullAway issues no warnings, your code might
+crash with a null pointer exception.  Two differences are that NullAway
+makes unchecked assumptions about getter methods and NullAway assumes all
+objects are always fully initialized.  NullAway forces all generic
+arguments to be non-null, which is not an unsoundness but is less flexible
+than the Nullness Checker.
 
 
 \subsectionAndLabel{How does the Checker Framework compare with the JDK's \<Optional> type?}{faq-optional}
@@ -1674,6 +1757,7 @@ third-party tools.  The Checker Framework is one such tool.
 %  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
 %%  LocalWords:  OtherClass Goetz antipattern subclassed varargs regexes
 %%  LocalWords:  featureful RetentionPolicy instanceof contravariance qual
-%%  LocalWords:  NoSuchElementException binarySearch subclasses
-%%  LocalWords:  intExample1 intExample2 requiresPositive
-%%  LocalWords:  IllegalFormatException
+%%  LocalWords:  NoSuchElementException binarySearch subclasses faq awarns
+%%  LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
+%%  LocalWords:  IllegalFormatException typequals typedef runtime nullaway
+%%  LocalWords:  covariance InheritedAnnotation someMethod jml jsr

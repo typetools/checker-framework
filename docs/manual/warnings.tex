@@ -15,7 +15,9 @@ correct the underlying problem.
 This section describes what to do if the methodology of
 Section~\ref{handling-warnings} indicates that you need to suppress the
 warning.  You won't change your code, but you will prevent the Checker
-Framework from reporting this particular warning to you.
+Framework from reporting this particular warning to you.  (Changing the
+code to fix a bug is another way to prevent the Checker Framework from
+issuing a warning, but it is not what this chapter is about.)
 
 You may wish to suppress checker warnings because of unannotated libraries
 or un-annotated portions of your own code, because of application
@@ -136,6 +138,11 @@ MyFile.java:107: error: [dereference.of.nullable] dereference of possibly-null r
 With the \code{-AshowSuppressWarningKeys} command-line option,
 the compiler lists every key that would suppress the warning,
 not just the most specific one.
+
+With the \code{-ArequirePrefixInWarningSuppressions} command-line
+option, a warning is only suppressed if the key begins with the checker
+name followed by a colon, as in
+\<@SuppressWarnings("nullness:assignment.type.incompatible")>.
 
 %% This is true, but relevant mostly to developers, not users.
 % For a list of all message keys for a given checker, see two files:
@@ -269,6 +276,11 @@ the \<@SuppressWarnings> annotation.  It will also help you audit your code
 to verify all the warning suppressions.  (The code is correct only if the
 checker issues no warnings \emph{and} each \<@SuppressWarnings> is correct.)
 
+A suppression message like ``a.f is not null'' is not useful.  The fact
+that you are suppressing the warning means that you believe that \<a.f> is
+not null.  The message should explain \emph{why} you believe that; for
+example, ``a.f was checked above and no subsequent side effect can affect it''.
+
 Here are some terse examples from libraries in \href{https://github.com/plume-lib/}{plume-lib}:
 
 \begin{Verbatim}
@@ -306,7 +318,7 @@ the Nullness Checker assumes that \<c> is non-null from the \<assert>
 statement forward (including on the next iteration through the loop).
 
 The \<assert> expression must be an expression that would affect flow-sensitive
-type qualifier refinement (Section~\ref{type-refinement}), if the
+type refinement (Section~\ref{type-refinement}), if the
 expression appeared in a conditional test.  Each type system has its own
 rules about what type refinement it performs.
 
@@ -567,8 +579,8 @@ Each of the distributed checkers supports at least the following lint options:
 \item
   \code{cast:unsafe} (default: on) warn about unsafe casts that are not
   checked at run time, as in \code{((@NonNull String) myref)}.  Such casts
-  are generally not necessary when flow-sensitive local type refinement is
-  enabled.
+  are generally not necessary because of type refinement
+  (Section~\ref{type-refinement}).
 
 \item
   \code{cast:redundant} (default: on) warn about redundant
@@ -730,7 +742,7 @@ When possible, you should use type annotations rather than declaration
 annotations.
 
 Users who are using old Java 5--7 declaration annotations (for instance,
-FindBugs annotations, which are no longer supported) can use annotations in
+from the no-longer-supported FindBugs tool) can use annotations in
 package \<org.checkerframework.checker.nullness.compatqual> to avoid name
 conflicts.  These are available in package
 \href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
@@ -753,4 +765,6 @@ annotations, those compatibility annotations are no longer necessary.
 %%  LocalWords:  refactored AassumeAssertionsAreEnabled assertNotNull
 %%  LocalWords:  AassumeAssertionsAreDisabled NullnessUtil checkNotNull
 %%  LocalWords:  ElementType AuseSafeDefaultsForUnannotatedSourceCode
-% LocalWords:  AuseDefaultsForUncheckedCode checkerframework
+% LocalWords:  AuseDefaultsForUncheckedCode checkerframework askipuses
+%%  LocalWords:  suppresswarnings ArequirePrefixInWarningSuppressions
+%%  LocalWords:  assumeassertion askipdefs alint compat

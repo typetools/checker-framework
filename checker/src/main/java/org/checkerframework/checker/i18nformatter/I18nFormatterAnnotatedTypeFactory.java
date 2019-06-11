@@ -45,28 +45,32 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    protected final AnnotationMirror I18NUNKNOWNFORMAT;
-    protected final AnnotationMirror I18NFORMAT;
-    protected final AnnotationMirror I18NINVALIDFORMAT;
-    protected final AnnotationMirror I18NFORMATBOTTOM;
-    protected final AnnotationMirror I18NFORMATFOR;
+    /** The @{@link I18nUnknownFormat} annotation. */
+    protected final AnnotationMirror I18NUNKNOWNFORMAT =
+            AnnotationBuilder.fromClass(elements, I18nUnknownFormat.class);
+    /** The @{@link I18nFormat} annotation. */
+    protected final AnnotationMirror I18NFORMAT =
+            AnnotationBuilder.fromClass(elements, I18nFormat.class);
+    /** The @{@link I18nInvalidFormat} annotation. */
+    protected final AnnotationMirror I18NINVALIDFORMAT =
+            AnnotationBuilder.fromClass(elements, I18nInvalidFormat.class);
+    /** The @{@link I18nFormatBottom} annotation. */
+    protected final AnnotationMirror I18NFORMATBOTTOM =
+            AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
+    /** The @{@link I18nFormatFor} annotation. */
+    protected final AnnotationMirror I18NFORMATFOR =
+            AnnotationBuilder.fromClass(elements, I18nFormatFor.class);
 
-    public final Map<String, String> translations;
+    /** Map from a translation file key to its value in the file. */
+    public final Map<String, String> translations = Collections.unmodifiableMap(buildLookup());
 
-    protected final I18nFormatterTreeUtil treeUtil;
+    /** Syntax tree utilities. */
+    protected final I18nFormatterTreeUtil treeUtil = new I18nFormatterTreeUtil(checker);
 
+    /** Create a new I18nFormatterAnnotatedTypeFactory. */
     public I18nFormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        I18NUNKNOWNFORMAT = AnnotationBuilder.fromClass(elements, I18nUnknownFormat.class);
-        I18NFORMAT = AnnotationBuilder.fromClass(elements, I18nFormat.class);
-        I18NINVALIDFORMAT = AnnotationBuilder.fromClass(elements, I18nInvalidFormat.class);
-        I18NFORMATBOTTOM = AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
-        I18NFORMATFOR = AnnotationBuilder.fromClass(elements, I18nFormatFor.class);
-
-        this.translations = Collections.unmodifiableMap(buildLookup());
-
-        this.treeUtil = new I18nFormatterTreeUtil(checker);
         this.postInit();
     }
 
@@ -90,23 +94,16 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                     try {
                         Properties prop = new Properties();
 
-                        InputStream in = null;
-
                         ClassLoader cl = this.getClass().getClassLoader();
                         if (cl == null) {
-                            // the class loader is null if the system class
-                            // loader was
-                            // used
+                            // The class loader is null if the system class loader was used.
                             cl = ClassLoader.getSystemClassLoader();
                         }
-                        in = cl.getResourceAsStream(name);
+                        InputStream in = cl.getResourceAsStream(name);
 
                         if (in == null) {
-                            // if the classloader didn't manage to load the
-                            // file, try
-                            // whether a FileInputStream works. For absolute
-                            // paths this
-                            // might help.
+                            // If the classloader didn't manage to load the file, try whether a
+                            // FileInputStream works. For absolute paths this might help.
                             try {
                                 in = new FileInputStream(name);
                             } catch (FileNotFoundException e) {
@@ -116,8 +113,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
                         if (in == null) {
                             System.err.println("Couldn't find the properties file: " + name);
-                            // report(Result.failure("propertykeychecker.filenotfound",
-                            // name), null);
+                            // report(Result.failure("propertykeychecker.filenotfound", name),
+                            // null);
                             // return Collections.emptySet();
                             continue;
                         }
@@ -128,10 +125,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                             result.put(key, prop.getProperty(key));
                         }
                     } catch (Exception e) {
-                        // TODO: is there a nicer way to report messages, that
-                        // are not
-                        // connected to an AST node?
-                        // One cannot use report, because it needs a node.
+                        // TODO: is there a nicer way to report messages, that are not connected to
+                        // an AST node?  One cannot use report, because it needs a node.
                         System.err.println(
                                 "Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
                         e.printStackTrace();

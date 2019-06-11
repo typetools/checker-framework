@@ -260,6 +260,7 @@ public class SwingTest {
 
     @SwingVerticalOrientation Object testDefaulting0() {
         @org.checkerframework.framework.qual.DefaultQualifier(SwingVerticalOrientation.class)
+        // :: error: (assignment.type.incompatible)
         Object o = new String();
         return o;
     }

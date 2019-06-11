@@ -18,10 +18,14 @@ public class Heuristics implements Comparable<Heuristics> {
     public boolean equals(Object o) {
         // Using == is OK if it's the first statement in the equals method
         // and it compares "this" against the argument.
-        if (this == o) return true;
+        if (this == o) {
+            return true;
+        }
         // Not the first statement in the method.
         // :: error: (not.interned)
-        if (o == this) return true;
+        if (o == this) {
+            return true;
+        }
         return false;
     }
 
@@ -31,10 +35,14 @@ public class Heuristics implements Comparable<Heuristics> {
         // Using == is OK if it's the first statement in the equals method
         // and it compares "this" against the argument.
 
-        if (o == this) return 0;
+        if (o == this) {
+            return 0;
+        }
         // Not the first statement in the method.
         // :: error: (not.interned)
-        if (this == o) return 0;
+        if (this == o) {
+            return 0;
+        }
         return 0;
     }
 

@@ -2,7 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 
 /**
  * A node for a conditional or expression:
@@ -30,7 +30,7 @@ public class ConditionalOrNode extends BinaryOperationNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ConditionalOrNode)) {
+        if (!(obj instanceof ConditionalOrNode)) {
             return false;
         }
         ConditionalOrNode other = (ConditionalOrNode) obj;
@@ -40,6 +40,6 @@ public class ConditionalOrNode extends BinaryOperationNode {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getLeftOperand(), getRightOperand());
+        return Objects.hash(getLeftOperand(), getRightOperand());
     }
 }

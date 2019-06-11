@@ -143,7 +143,7 @@ public class FlowExpressionParseUtil {
         Types types = env.getTypeUtils();
 
         if (isNullLiteral(expression, context)) {
-            return parseNullLiteral(expression, types);
+            return parseNullLiteral(types);
         } else if (isIntLiteral(expression, context)) {
             return parseIntLiteral(expression, types);
         } else if (isLongLiteral(expression, context)) {
@@ -155,18 +155,18 @@ public class FlowExpressionParseUtil {
         } else if (isStringLiteral(expression, context)) {
             return parseStringLiteral(expression, types, env.getElementUtils());
         } else if (isThisLiteral(expression, context)) {
-            return parseThis(expression, context);
+            return parseThis(context);
         } else if (isSuperLiteral(expression, context)) {
             return parseSuper(expression, types, context);
-        } else if (isIdentifier(expression, context)) {
+        } else if (isIdentifier(expression)) {
             return parseIdentifier(expression, env, path, context);
         } else if (isParameter(expression, context)) {
             return parseParameter(expression, context);
-        } else if (isArray(expression, context)) {
+        } else if (isArray(expression)) {
             return parseArray(expression, context, path);
-        } else if (isMethodCall(expression, context)) {
+        } else if (isMethodCall(expression)) {
             return parseMethodCall(expression, context, path, env);
-        } else if (isMemberSelect(expression, context)) {
+        } else if (isMemberSelect(expression)) {
             return parseMemberSelect(expression, env, context, path);
         } else if (isParentheses(expression, context)) {
             return parseParentheses(expression, context, path);
@@ -185,7 +185,7 @@ public class FlowExpressionParseUtil {
         }
     }
 
-    private static boolean isMemberSelect(String s, FlowExpressionContext context) {
+    private static boolean isMemberSelect(String s) {
         return parseMemberSelect(s) != null;
     }
 
@@ -285,7 +285,7 @@ public class FlowExpressionParseUtil {
         return s.equals("null");
     }
 
-    private static Receiver parseNullLiteral(String expression, Types types) {
+    private static Receiver parseNullLiteral(Types types) {
         return new ValueLiteral(types.getNullType(), (Object) null);
     }
 
@@ -351,7 +351,7 @@ public class FlowExpressionParseUtil {
         return s.equals("this");
     }
 
-    private static Receiver parseThis(String s, FlowExpressionContext context) {
+    private static Receiver parseThis(FlowExpressionContext context) {
         if (!(context.receiver == null || context.receiver.containsUnknown())) {
             // "this" is the receiver of the context
             return context.receiver;
@@ -390,7 +390,7 @@ public class FlowExpressionParseUtil {
         return new ThisReference(superType);
     }
 
-    private static boolean isIdentifier(String s, FlowExpressionContext context) {
+    private static boolean isIdentifier(String s) {
         return IDENTIFIER_PATTERN.matcher(s).matches();
     }
 
@@ -544,7 +544,7 @@ public class FlowExpressionParseUtil {
         return Pair.of(Pair.of(ident, arguments), remaining);
     }
 
-    private static boolean isMethodCall(String s, FlowExpressionContext contex) {
+    private static boolean isMethodCall(String s) {
         Pair<Pair<String, String>, String> result = parseMethodCall(s);
         return result != null && result.second.isEmpty();
     }
@@ -713,9 +713,7 @@ public class FlowExpressionParseUtil {
                 depth++;
             } else if (ch == close) {
                 depth--;
-                if (depth < 0) {
-                    break;
-                } else if (depth == 0) {
+                if (depth == 0) {
                     return i - 1;
                 }
             }
@@ -723,7 +721,7 @@ public class FlowExpressionParseUtil {
         return -1;
     }
 
-    private static boolean isArray(String s, FlowExpressionContext context) {
+    private static boolean isArray(String s) {
         Pair<Pair<String, String>, String> result = parseArray(s);
         return result != null && result.second.isEmpty();
     }
@@ -750,8 +748,10 @@ public class FlowExpressionParseUtil {
         return result;
     }
 
-    // TODO: this returns true for "(a)+(b)" where the inital and final parens do not match.
-    private static boolean isParentheses(String s, FlowExpressionContext contex) {
+    // TODO: This incorrectly returns true for "(a)+(b)" where the inital and final parens do not
+    // match.
+    private static boolean isParentheses(
+            String s, @SuppressWarnings("UnusedVariable") FlowExpressionContext contex) {
         return s.length() > 2 && s.charAt(0) == '(' && s.charAt(s.length() - 1) == ')';
     }
 
@@ -817,7 +817,7 @@ public class FlowExpressionParseUtil {
                             + " while looking up class "
                             + classNameString
                             + " in package "
-                            + packageSymbol.toString());
+                            + packageSymbol);
         }
         if (classSymbol == null) {
             throw constructParserException(
@@ -825,7 +825,7 @@ public class FlowExpressionParseUtil {
                     "classSymbol==null when looking up class "
                             + classNameString
                             + " in package "
-                            + packageSymbol.toString());
+                            + packageSymbol);
         }
         TypeMirror classType = ElementUtils.getType(classSymbol);
         if (classType == null) {

@@ -4,9 +4,10 @@
   <title>Checker Framework developer manual</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="../manual/favicon-checkerframework.png" type="image/png"/>
 </head>
 <body>
-<h1>Checker Framework developer manual</h1>
+<h1 id="Checker_Framework_developer_manual">Checker Framework developer manual</h1>
 
 <p>
   If you wish to use the Checker Framework, see its user manual
@@ -19,8 +20,28 @@ This document contains information for Checker Framework developers,
 including people who wish to edit its source code or make pull requests.
 </p>
 
+<p>Contents:</p>
+<!-- start toc.  do not edit; run html-update-toc instead -->
+    <ul>
+      <li><a href="#Directory_structure">Directory structure</a></li>
+      <li><a href="#Gradle_build_scripts">Gradle build scripts</a></li>
+      <li><a href="#Coding_style">Coding style</a></li>
+      <li><a href="#IDE_configuration">IDE configuration</a>
+        <ul>
+          <li><a href="#Configure_Eclipse_to_edit_the_Checker_Framework">Configure Eclipse to edit the Checker Framework</a></li>
+        </ul></li>
+      <li><a href="#pull-requests">Pull requests</a>
+        <ul>
+          <li><a href="#pull-requests-maintainers">Pull request and commit notes for maintainers</a></li>
+        </ul></li>
+      <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
+      <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
+      <li><a href="#Making_a_Checker_Framework_release">Making a Checker Framework release</a></li>
+    </ul>
+<!-- end toc -->
 
-<h2>Directory structure</h2>
+
+<h2 id="Directory_structure">Directory structure</h2>
 
 <p>
 The <a href="https://github.com/typetools/checker-framework">checker-framework
@@ -35,10 +56,6 @@ repository</a> contains several related projects:
 </pre>
 
 <p>
-Each of these directories contains Eclipse project configuration files.
-</p>
-
-<p>
 The repository also contains the following directories:
 </p>
 <pre>
@@ -47,16 +64,20 @@ The repository also contains the following directories:
 </pre>
 
 
-<h2> Gradle build scripts</h2>
+<h2 id="Gradle_build_scripts">Gradle build scripts</h2>
 
 <p>
-Full instructions for building the Checker Framework from sources appear in the <a href="https://checkerframework.org/manual/#build-source">Checker Framework manual</a>. This section describes the build scripts themselves.
+Full instructions for building the Checker Framework from sources appear in
+the <a href="https://checkerframework.org/manual/#build-source">Checker
+Framework manual</a>. This section describes the build system (the Gradle build tasks).
 </p>
 
 <p>
-Don't run the <code>gradle</code> command, which would use your local installation of gradle.
-Instead, use
-the <code>gradlew</code> script in the <code>checker-framework</code> directory.
+Don't run the <code>gradle</code> command, which would use your local
+installation of gradle.  Instead, use the <code>gradlew</code> script in
+the <code>checker-framework</code> directory, also known as
+the <a href="https://docs.gradle.org/current/userguide/gradle_wrapper.html">Gradle
+wrapper</a>.
 </p>
 
 <p>
@@ -77,61 +98,94 @@ If you run a task from the main directory, then it will run that task in all
 subprojects with a task by that name. So, if you run <code>./gradlew
 allTests</code> that runs all tests everywhere. But <code>(cd
 framework &amp;&amp; ../gradlew allTests)</code> only runs tests in
-framework. Alternatively, calling <code>:framework:allTests</code> from the
-main directory or any subproject has the same effect.  </p>
+framework. Alternatively, running <code>:framework:allTests</code> from the
+main directory or any subproject runs the <code>allTests</code> task only in the <code>framework</code> project.
+</p>
 
 
-<h2>Coding style</h2>
+<h2 id="Coding_style">Coding style</h2>
 
 <p>
-When editing files in the Checker Framework,
-see <a href="https://homes.cs.washington.edu/~mernst/advice/coding-style.html">Michael
-Ernst's coding style guidelines</a>.  You may also wish to
-see <a href="http://www.oracle.com/technetwork/java/javase/documentation/codeconventions-136091.html#248">Oracle's
+Code in this project follows the
+<a href="https://google.github.io/styleguide/javaguide.html">Google Java Style
+  Guide</a> (except 4 spaces are used for indentation),
+<a href="https://homes.cs.washington.edu/~mernst/advice/coding-style.html">Michael
+Ernst's coding style guidelines</a>, and <a href="http://www.oracle.com/technetwork/java/javase/documentation/codeconventions-136091.html#248">Oracle's
 Java code conventions</a>.
 </p>
 
 <p>
-The codebase conforms to a consistent indentation style, which is enforced
-by a git pre-commit hook. The pre-commit hook runs <code>./gradlew
-checkFormat</code> in the top level directory. <code>./gradlew reformat</code>
-will format all files such that <code>./gradlew checkFormat</code> succeeds.
+Code formatting is enforced by a Git pre-commit hook.  You
+can <a href="https://github.com/google/google-java-format#using-the-formatter">configure
+your IDE</a> (Eclipse or IntelliJ) to use that formatting.
 </p>
+<!-- You could also install settings in your IDE:
+https://github.com/HPI-Information-Systems/Metanome/wiki/Installing-the-google-styleguide-settings-in-intellij-and-eclipse
+but that is not what is recommended by the google-java-format documentation. -->
 
 <p>
 We don't use <code>@author</code> Javadoc tags in code files.
 Doing so clutters the code, and is misleading once that individual
 is no longer maintaining the code.
 Authorship (and who has made changes recently) can be obtained from the
-version control system.
+version control system, such as by running <code>git annotate <em>filename</em></code>.
 </p>
 
 
-<h2>Make commits logically uniform</h2>
+
+<h2 id="IDE_configuration">IDE configuration</h2>
+
+<h3 id="Configure_Eclipse_to_edit_the_Checker_Framework">Configure Eclipse to edit the Checker Framework</h3>
 
 <p>
-Each commit should address a single issue, rather than a commit addressing
-multiple issues such as fixing a bug, adding a feature, and changing
-formatting.  Focusing each commit on a single issue makes the commit easier
-to understand and review; it also eases diagnosis and (if necessary)
-rollback.
+These instructions are relevant if you use Eclipse as your IDE.
+</p>
+
+<ol>
+<li> <a href="../manual/manual.html">Clone and build all projects from their sources.</a>
+</li>
+<li> Download Eclipse from
+the <a href="https://www.eclipse.org/downloads/">official Eclipse website</a>
+and install it.
+</li>
+<li> Run Eclipse.
+</li>
+<li> Enter the main Eclipse working screen and in the &ldquo;File&rdquo; menu,
+select &ldquo;Import&rdquo; &rArr; &ldquo;General&rdquo; &rArr; &ldquo;Existing
+Projects into Workspace&rdquo;.
+</li>
+<li> After the &ldquo;Import Projects&rdquo; window appears, select &ldquo;Select
+Root Directory&rdquo;, and select the parent of the <code>$CHECKERFRAMEWORK</code> directory.
+</li>
+<li> Ensure &ldquo;Search for nested projects&rdquo; is selected in the Options panel.
+</li>
+<li> Select all the projects in the folder except for &ldquo;personalblog-demo&rdquo;,
+then select &ldquo;Finish&rdquo; to import the projects.
+</li>
+</ol>
+
+<p>
+Eclipse should successfully build all the imported projects.
+If Eclipse reports any errors, ensure you followed the instructions for
+<a href="../manual/manual.html">cloning and building all projects.</a>
+</p>
+
+
+<h2 id="pull-requests">Pull requests</h2>
+
+<p>
+Each pull request should address a single concern, rather than (say)
+addressing multiple concerns such as fixing a bug, adding a feature, and
+changing formatting.  Focusing each pull request on a single concern makes
+the commit easier to understand and review.  It also makes the commit
+history (after the pull request is merged) easier to understand and (if
+necessary) revert.
 </p>
 
 <p>
-Likewise, each pull request should address a single issue.
-</p>
-
-
-<h2>Pull requests</h2>
-
-<p>
-It is acceptable to commit small, noncontroversial changes directly to
-master.  (This policy differs from some projects, which require an issue
-tracker issue and a pull request for every change, however minor.)
-For any change where you want feedback, or where others might have
-useful comments or might disagree, please submit a pull request.  Be
-conservative in your judgment; others might consider something
-controversial that you do not.
+Don't forget to update the changelog if you make changes that are worthy of
+telling developers about.  This makes it much easier for someone to make a
+release.
 </p>
 
 <p>
@@ -141,7 +195,37 @@ is more efficient than leaving comments in a pull request.
 </p>
 
 <p>
-Try to address pull requests promptly, to avoid stalling others while
+Also
+see <a href="https://homes.cs.washington.edu/~mernst/advice/github-pull-request.html">Michael
+    Ernst's advice about creating GitHub pull requests</a>.
+</p>
+
+<p>
+When there are related changes in the <code>checker-framework</code>
+and <code>checker-framework-inference</code> repositories, use the same
+branch name for each.  The continuous integration framework uses a branch
+of the same name when possible.  If you use different branch names
+in <code>checker-framework</code>
+and <code>checker-framework-inference</code>, then the continuous
+integration tests for both will fail and may mask problems.
+</p>
+
+
+<h3 id="pull-requests-maintainers">Pull request and commit notes for maintainers</h3>
+
+<p>
+It is acceptable to commit small, noncontroversial changes directly to
+master.  (This policy differs from some projects, which require an issue
+tracker issue and a pull request for every change, however minor.)
+As with pull requests, each commit should address a single concern.
+For any change where you want feedback, or where others might have
+useful comments or might disagree, please submit a pull request.  Be
+conservative in your judgment; others might consider something
+controversial that you do not.
+</p>
+
+<p>
+Try to review pull requests promptly, to avoid stalling others while
 waiting for your feedback.  If you have been waiting for more than a week
 after the pull request was assigned with no feedback, then ping the
 assignee, wait at least another business day, and then go ahead and push
@@ -149,54 +233,50 @@ your changes.  It's great if reviewers can give feedback, but if they are
 too busy to do so, you should recognize that and move on.
 </p>
 
-<p>
-Also
-see <a href="https://homes.cs.washington.edu/~mernst/advice/github-pull-request.html">Michael
-    Ernst's advice about creating GitHub pull requests</a>.
-</p>
 
-
-<h2>Changelog</h2>
-
-<p>
-Don't forget to update the changelog if you make changes that are worthy of
-telling developers about.  This makes it much easier for someone to make a
-release.
-</p>
-
-
-<h2>Documenting refactoring ideas</h2>
+<h2 id="Documenting_refactoring_ideas">Documenting refactoring ideas</h2>
 
 <p>
 If you have an idea for a code improvement (such as a refactoring), please
-document it.  If it can be described concisely and is low priority,
-a TODO comment in the code is more appropriate than an
-enhancement request in the issue tracker.  The code comment is more likely
-to be noticed by someone working with the code, and it is equally easy to
-search for.  Furthermore, it doesn't clutter the issue tracker, which
-reduces morale and makes the project appear lower-quality than it actually
-is.
+document it.  If it can be described concisely and is low priority, a TODO
+comment in the code is more appropriate than an enhancement request in the
+issue tracker.  The code comment is more likely to be noticed by someone
+working with the code, and it is equally easy to search for.  Furthermore,
+it doesn't clutter the issue tracker.  Clutter in the issue tracker reduces
+morale, makes it harder to search, and makes the project appear
+lower-quality than it actually is.
 </p>
 
 
-<h2>Version numbers for annotated libraries</h2>
+<h2 id="annotated-library-version-numbers">Version numbers for annotated libraries</h2>
+
+<p>
+  We maintain annotated versions of some third-party libraries.  The source
+  code appears in a fork in
+  the <a href="https://github.com/typetools">GitHub <code>typetools</code>
+  organization</a>.  Binaries are hosted
+  at <a href="https://search.maven.org/search?q=annotatedlib">Maven Central
+  in the <code>org.checkerframework.annotatedlib</code> group</a>.
+</p>
 
 <p>
 Annotated libraries should be based on a released version of the upstream
 library, not an arbitrary commit in the upstream library's version control
-system.
+system.  The library's version number is the same as the upstream version
+number.
 </p>
 
 <p>
 When making a new version of an annotated library, between upstream
-releases, add ".0.1" to the end of the version number.  For example, we
-already uploaded version 6.2 to Maven Central, the next version would be
-6.2.0.1.  This accommodates the possibility that the upstream maintainers
-release 6.2.1.
+releases, add ".0.1" to the end of the version number.  For example, if we
+already uploaded version 6.2 to Maven Central, the next version we upload
+would be 6.2.0.1.  This accommodates the possibility that the upstream
+maintainers release 6.2.1.  Our further releases increment the last number,
+for example to 6.2.0.2.
 </p>
 
 
-<h2>Making a Checker Framework release</h2>
+<h2 id="Making_a_Checker_Framework_release">Making a Checker Framework release</h2>
 
 <p>
 See a separate document about the
@@ -207,5 +287,7 @@ See a separate document about the
 </body>
 </html>
 
-<!--  LocalWords:  TODO
+<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre
+ -->
+<!--  LocalWords:  subproject personalblog changelog
  -->

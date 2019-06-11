@@ -4,7 +4,7 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -45,7 +45,7 @@ public class ParameterizedTypeNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ParameterizedTypeNode)) {
+        if (!(obj instanceof ParameterizedTypeNode)) {
             return false;
         }
         ParameterizedTypeNode other = (ParameterizedTypeNode) obj;
@@ -54,7 +54,7 @@ public class ParameterizedTypeNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getTree());
+        return Objects.hash(getTree());
     }
 
     @Override

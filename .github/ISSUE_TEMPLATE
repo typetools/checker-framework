@@ -1,1 +1,10 @@
-Thanks for submitting an issue.  Please see the instructions for submitting an issue at https://checkerframework.org/manual/#reporting-bugs to ensure that your report is not missing important information.  Then, delete this paragraph before you submit the issue.
+Thanks for submitting an issue.
+As explained in the instructions for submitting an issue at https://checkerframework.org/manual/#reporting-bugs, please include at least the following information.
+
+The commands you ran, so that we can paste them into a command terminal.  Please don't omit any steps, including installing software or setting environment varibales.  Please include `-version -verbose -AprintAllQualifiers` in the javac options.  If you ran the Checker Framework from an IDE, reproduce the problem from the command line; if you cannot, report the bug to the IDE integration.
+
+A transcript of all the output (as text, not a screenshot).
+
+What you expected to happen instead.  It can be helpful to explain your reasoning or reference a section of the manual.
+
+Files that are used by the commands you ran.

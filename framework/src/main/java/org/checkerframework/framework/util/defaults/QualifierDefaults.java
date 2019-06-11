@@ -11,7 +11,6 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type.WildcardType;
-import java.lang.annotation.Annotation;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +18,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
@@ -63,8 +63,8 @@ public class QualifierDefaults {
 
     /**
      * This field indicates whether or not a default should be applied to type vars located in the
-     * type being default. This should only ever be true when the type variable is a local variable,
-     * non-component use, i.e.
+     * type being defaulted. This should only ever be true when the type variable is a local
+     * variable, non-component use, i.e.
      *
      * <pre>{@code
      * <T> void method(@NOT_HERE T tIn) {
@@ -378,9 +378,9 @@ public class QualifierDefaults {
     private Element nearestEnclosingExceptLocal(Tree tree) {
         TreePath path = atypeFactory.getPath(tree);
         if (path == null) {
-            Element method = atypeFactory.getEnclosingMethod(tree);
-            if (method != null) {
-                return method;
+            Element element = atypeFactory.getEnclosingElementForArtificialTree(tree);
+            if (element != null) {
+                return element;
             } else {
                 return TreeUtils.elementFromTree(tree);
             }
@@ -428,7 +428,7 @@ public class QualifierDefaults {
     }
 
     /**
-     * Applies default annotations to a type. A {@link com.sun.source.tree.Tree} that determines the
+     * Applies default annotations to a type. A {@link com.sun.source.tree.Tree} determines the
      * appropriate scope for defaults.
      *
      * <p>For instance, if the tree is associated with a declaration (e.g., it's the use of a field,
@@ -452,6 +452,10 @@ public class QualifierDefaults {
 
             case IDENTIFIER:
                 elt = TreeUtils.elementFromUse((IdentifierTree) tree);
+                if (ElementUtils.isTypeDeclaration(elt)) {
+                    // If the Idenitifer is a type, then use the scope of the tree.
+                    elt = nearestEnclosingExceptLocal(tree);
+                }
                 break;
 
             case METHOD_INVOCATION:
@@ -462,6 +466,19 @@ public class QualifierDefaults {
                 // (The above probably means that we should use defaults in the
                 // scope of the declaration of the array.  Is that right?  -MDE)
 
+            case CLASS:
+                if (((ClassTree) tree).getExtendsClause() != null) {
+                    Element extendsElt =
+                            TreeUtils.elementFromTree(((ClassTree) tree).getExtendsClause());
+                    applyDefaultsToElement(extendsElt, type);
+                }
+                for (Tree implicitClause : ((ClassTree) tree).getImplementsClause()) {
+                    Element implementsElt = TreeUtils.elementFromTree(implicitClause);
+                    applyDefaultsToElement(implementsElt, type);
+                }
+                elt = nearestEnclosingExceptLocal(tree);
+                break;
+
             default:
                 // If no associated symbol was found, use the tree's (lexical)
                 // scope.
@@ -471,6 +488,16 @@ public class QualifierDefaults {
         // System.out.println("applyDefaults on tree " + tree +
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
+        applyDefaultsToElement(elt, type);
+    }
+
+    /**
+     * Applies default annotations to {@code type}.
+     *
+     * @param elt the element associated with the type
+     * @param type the type to which defaults will be applied
+     */
+    void applyDefaultsToElement(Element elt, AnnotatedTypeMirror type) {
         boolean defaultTypeVarLocals =
                 (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
                         && ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
@@ -487,17 +514,15 @@ public class QualifierDefaults {
     // dq must be an AnnotationMirror that represent a @DefaultQualifier
     private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
         @SuppressWarnings("unchecked")
-        Class<? extends Annotation> cls =
-                (Class<? extends Annotation>)
-                        AnnotationUtils.getElementValueClass(dq, "value", false);
-        AnnotationMirror anno = AnnotationBuilder.fromClass(elements, cls);
+        Name cls = AnnotationUtils.getElementValueClassName(dq, "value", false);
+        AnnotationMirror anno = AnnotationBuilder.fromName(elements, cls);
 
         if (anno == null) {
             return null;
         }
 
         if (!atypeFactory.isSupportedQualifier(anno)) {
-            anno = atypeFactory.aliasedAnnotation(anno);
+            anno = atypeFactory.canonicalAnnotation(anno);
         }
 
         if (atypeFactory.isSupportedQualifier(anno)) {
@@ -627,41 +652,42 @@ public class QualifierDefaults {
         }
     }
 
-    /*
+    /**
      * Given an element, returns whether the unchecked code default (i.e. conservative defaults)
      * should be applied for it. Handles elements from bytecode or source code.
      */
     public boolean applyUncheckedCodeDefaults(final Element annotationScope) {
-
         if (annotationScope == null) {
             return false;
         }
 
-        if (uncheckedCodeDefaults.size() > 0) {
-            // TODO: I would expect this:
-            //   atypeFactory.isFromByteCode(annotationScope)) {
-            // to work instead of the
-            // isElementFromByteCode/declarationFromElement/isFromStubFile calls,
-            // but it doesn't work correctly and tests fail.
+        if (uncheckedCodeDefaults.isEmpty()) {
+            return false;
+        }
 
-            boolean isFromStubFile = atypeFactory.isFromStubFile(annotationScope);
-            boolean isBytecode =
-                    ElementUtils.isElementFromByteCode(annotationScope)
-                            && atypeFactory.declarationFromElement(annotationScope) == null
-                            && !isFromStubFile;
-            if (isBytecode) {
-                return useUncheckedCodeDefaultsBytecode;
-            } else if (isFromStubFile) {
-                // TODO: Types in stub files not annotated for a particular checker should be
-                // treated as unchecked bytecode.   For now, all types in stub files are treated as
-                // checked code. Eventually, @AnnotateFor(checker) will be programmatically added
-                // to methods in stub files supplied via the @Stubfile annotation.  Stub files will
-                // be treated like unchecked code except for methods in the scope for an
-                // @AnnotatedFor.
-                return false;
-            } else if (useUncheckedCodeDefaultsSource) {
-                return !isElementAnnotatedForThisChecker(annotationScope);
-            }
+        // TODO: I would expect this:
+        //   atypeFactory.isFromByteCode(annotationScope)) {
+        // to work instead of the
+        // isElementFromByteCode/declarationFromElement/isFromStubFile calls,
+        // but it doesn't work correctly and tests fail.
+
+        boolean isFromStubFile = atypeFactory.isFromStubFile(annotationScope);
+        boolean isBytecode =
+                ElementUtils.isElementFromByteCode(annotationScope)
+                        && atypeFactory.declarationFromElement(annotationScope) == null
+                        && !isFromStubFile;
+        if (isBytecode) {
+            return useUncheckedCodeDefaultsBytecode;
+        } else if (isFromStubFile) {
+            // TODO: Types in stub files not annotated for a particular checker should be
+            // treated as unchecked bytecode.   For now, all types in stub files are treated as
+            // checked code. Eventually, @AnnotateFor(checker) will be programmatically added
+            // to methods in stub files supplied via the @Stubfile annotation.  Stub files will
+            // be treated like unchecked code except for methods in the scope for an
+            // @AnnotatedFor.
+            return false;
+        } else if (useUncheckedCodeDefaultsSource) {
+            return !isElementAnnotatedForThisChecker(annotationScope);
         }
         return false;
     }
@@ -818,6 +844,17 @@ public class QualifierDefaults {
                 }
 
                 switch (location) {
+                    case TYPE_DECLARATION:
+                        {
+                            if (scope != null
+                                    && (scope.getKind() == ElementKind.CLASS
+                                            || scope.getKind() == ElementKind.INTERFACE
+                                            || scope.getKind() == ElementKind.ENUM)
+                                    && t == type) {
+                                addAnnotation(t, qual);
+                            }
+                            break;
+                        }
                     case FIELD:
                         {
                             if (scope != null
@@ -911,6 +948,21 @@ public class QualifierDefaults {
                         {
                             if (scope != null
                                     && scope.getKind() == ElementKind.METHOD
+                                    && t.getKind() == TypeKind.EXECUTABLE
+                                    && t == type) {
+                                final AnnotatedTypeMirror returnType =
+                                        ((AnnotatedExecutableType) t).getReturnType();
+                                if (shouldBeAnnotated(returnType, false)) {
+                                    addAnnotation(returnType, qual);
+                                }
+                            }
+                            break;
+                        }
+
+                    case CONSTRUCTOR_RESULT:
+                        {
+                            if (scope != null
+                                    && scope.getKind() == ElementKind.CONSTRUCTOR
                                     && t.getKind() == TypeKind.EXECUTABLE
                                     && t == type) {
                                 final AnnotatedTypeMirror returnType =

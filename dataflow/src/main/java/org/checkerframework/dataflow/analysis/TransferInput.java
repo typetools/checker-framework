@@ -1,8 +1,8 @@
 package org.checkerframework.dataflow.analysis;
 
+import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * {@code TransferInput} is used as the input type of the individual transfer functions of a {@link
@@ -213,7 +213,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     @Override
     public boolean equals(Object o) {
-        if (o != null && o instanceof TransferInput) {
+        if (o instanceof TransferInput) {
             @SuppressWarnings("unchecked")
             TransferInput<A, S> other = (TransferInput<A, S>) o;
             if (containsTwoStores()) {
@@ -232,8 +232,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(
-                this.analysis, this.node, this.store, this.thenStore, this.elseStore);
+        return Objects.hash(this.analysis, this.node, this.store, this.thenStore, this.elseStore);
     }
 
     @Override

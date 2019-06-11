@@ -1,9 +1,33 @@
 \htmlhr
 \chapterAndLabel{Signedness Checker}{signedness-checker}
 
-The Signedness Checker guarantees that signed and unsigned values are not mixed
+The Signedness Checker guarantees that signed and unsigned integral values are not mixed
 together in a computation. In addition, it prohibits meaningless operations, such
 as division on an unsigned value.
+
+Recall that a computer represents a number as a sequence of bits.
+Signedness indicates how to interpret the most significant bit.  For
+example, the bits \<10000010> ordinarily represent the value -126, but when
+interpreted as unsigned, those bits represent the value 130.  The bits
+\<01111110> represent the value 126 in signed and in unsigned interpretation.
+The range of signed byte values is -128 to 127.  The range of unsigned byte
+values is 0 to 255.
+
+Signedness is only applicable to integral types:  \<bype>, \<char>,
+\<short>, \<int>, and \<long>.  Floating-point types (\<float> and
+\<double>) do not have operations that interpret the bits as unsigned.
+
+Signedness is primarily about how the bits of the representation are
+interpreted, not about the values that it can represent.  An unsigned value
+is always positive, but just because a variable's value is positive does
+not mean that it should be marked as \<@Unsigned>.  If variable $v$ will be
+compared to a signed value, or used in arithmetic operations with a signed
+value, then $v$ should have signed type.
+To indicate the range of possible values for a variable, use the
+\refqualclass{checker/index/qual}{NonNegative} annotation of the Index
+Checker (see \chapterpageref{index-checker}) or the
+\refqualclass{common/value/qual}{IntRange} annotation of the Constant Value
+Checker (see \chapterpageref{constant-value-checker}).
 
 
 \sectionAndLabel{Annotations}{signedness-checker-annotations}
@@ -34,11 +58,18 @@ These are the qualifiers in the signedness type system:
     set, then the bits should be interpreted as a negative value.
     This is the default annotation.
 
-\item[\refqualclass{checker/signedness/qual}{Constant}]
-    indicates that a value is a compile-time constant and could be
+\item[\refqualclass{checker/signedness/qual}{SignednessEither}]
+    indicates that a value may be
     interpreted as unsigned or signed.
+    This applies to manifest constants and values that are known at compile
+    time to be in the positive signed range.
     This annotation is used internally, and should not
     be written by the programmer.
+
+ \item[\refqualclass{checker/signedness/qual}{PolySigned}]
+   indicates qualifier polymorphism.
+   For a description of qualifier polymorphism, see
+   Section~\ref{qualifier-polymorphism}.
 
 \item[\refqualclass{checker/signedness/qual}{UnknownSignedness}]
     indicates that a value's type is not relevant or known to this checker.
@@ -52,13 +83,6 @@ These are the qualifiers in the signedness type system:
 
 \end{description}
 
-Signedness is primarily about how the bits of the representation are
-interpreted, not about the values that it can represent.  An unsigned value
-is always positive, but just because a variable's value is positive does
-not mean that it should be marked as \<@Unsigned>.  If variable $v$ will be
-compared to a signed value, or used in arithmetic operations with a signed
-value, then $v$ should have signed type.
-
 
 \subsectionAndLabel{Default qualifiers}{signedness-checker-annotations-default-qualifiers}
 
@@ -71,7 +95,7 @@ Signedness Checker treats it in one of the following ways:
 
     \item
     All \code{byte}, \code{short}, \code{int}, and \code{long} literals default
-    to \refqualclass{checker/signedness/qual}{Constant}.
+    to \refqualclass{checker/signedness/qual}{SignednessEither}.
     \item
     All \code{byte}, \code{short}, \code{int}, and \code{long} variables default
     to \refqualclass{checker/signedness/qual}{Signed}.
@@ -119,25 +143,30 @@ values, those operations would produce unexpected, incorrect results.
 Consider the following Java code:
 
 \begin{Verbatim}
-  int s1 = -2;
-  int s2 = -1;
+public class SignednessManualExample {
 
-  @Unsigned int u1 = 0xFFFFFFFE;  // unsigned: 2^32 - 2, signed: -2
-  @Unsigned int u2 = 0xFFFFFFFF;  // unsigned: 2^32 - 1, signed: -1
+    int s1 = -2;
+    int s2 = -1;
 
-  int result;
+    @Unsigned int u1 = 2147483646; // unsigned: 2^32 - 2, signed: -2
+    @Unsigned int u2 = 2147483647; // unsigned: 2^32 - 1, signed: -1
 
-  result = s1 / s2;   // OK: result is 2, which is correct for -2 / -1
-  result = u1 / u2;   // ERROR: result is 2, which is incorrect for (2^32 - 2) / (2^32 - 1)
+    void m() {
+        int w = s1 / s2; // OK: result is 2, which is correct for -2 / -1
+        int x = u1 / u2; // ERROR: result is 2, which is incorrect for (2^32 - 2) / (2^32 - 1)
+    }
 
-  int s3 = -1;
-  int s4 = 5;
+    int s3 = -1;
+    int s4 = 5;
 
-  @Unsigned int u3 = 0xFFFFFFFF;    // unsigned: 2^32 - 1, signed: -1
-  @Unsigned int u4 = 5;
+    @Unsigned int u3 = 2147483647; // unsigned: 2^32 - 1, signed: -1
+    @Unsigned int u4 = 5;
 
-  result = s3 % s4;    // OK: result is -1, which is correct for -1 % 5
-  result = u3 % u4;    // ERROR: result is -1, which is incorrect for (2^32 - 1) % 5
+    void m2() {
+        int y = s3 % s4; // OK: result is -1, which is correct for -1 % 5
+        int z = u3 % u4; // ERROR: result is -1, which is incorrect for (2^32 - 1) % 5 = 2
+    }
+}
 \end{Verbatim}
 
 These examples illustrate why division and modulus with an unsigned operand
@@ -157,3 +186,31 @@ you need to write.
 Class \refclass{checker/signedness}{SignednessUtilExtra} contains more utility
 methods that reference packages not included in Android.  This class is not
 included in \code{checker-qual.jar}, so you may want to copy the methods to your code.
+
+
+\sectionAndLabel{Local type refinement}{signedness-refinement}
+
+Local type refinment/inference (Section~\ref{type-refinement}) may be
+surprising for the Signedness type system.  Ordinarily, an expression with
+unsigned type may not participate in a division, as shown in
+Sections~\ref{signedness-checker-prohibited-operations}
+and~\ref{signedness-checker-rationale}.  However, if a constant is assigned
+to a variable that was declared with \<@Unsigned> type, then---just like
+the constant---the variable may be treated as either signed or unsigned.
+For example, it can participate in division.  Since the result of the
+division is signed, you cannot accidentally assign the division result to
+an \<@Unsigned> variable.
+
+\begin{Verbatim}
+    void useLocalVariables() {
+
+        int s1 = -2;
+        int s2 = -1;
+
+        @Unsigned int u1 = 2147483646; // unsigned: 2^32 - 2, signed: -2
+        @Unsigned int u2 = 2147483647; // unsigned: 2^32 - 1, signed: -1
+
+        int w = s1 / s2; // OK: result is 2, which is correct for -2 / -1
+        int x = u1 / u2; // OK; computation over constants, interpreted as signed; result is signed
+    }
+\end{Verbatim}

@@ -74,23 +74,11 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                 }
             }
             if (isLessThan) {
-                if (checker.hasOption("showchecks")) {
-                    // Print the success message because super isn't called.
-                    long valuePos = positions.getStartPosition(root, valueTree);
-                    System.out.printf(
-                            " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
-                            "success: actual is subtype of expected",
-                            (root.getLineMap() != null
-                                    ? root.getLineMap().getLineNumber(valuePos)
-                                    : -1),
-                            valueTree.getKind(),
-                            valueTree,
-                            valueType.getKind(),
-                            valueType.toString(),
-                            varType.getKind(),
-                            varType.toString());
-                }
-                // skip call to super.
+                // Print the messages because super isn't called.
+                commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
+                commonAssignmentCheckEndDiagnostic(
+                        true, "isLessThan", varType, valueType, valueTree);
+                // skip call to super, everything is OK.
                 return;
             }
         }

@@ -4,7 +4,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -45,15 +45,12 @@ public class SuperNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof SuperNode)) {
-            return false;
-        }
-        return true;
+        return obj instanceof SuperNode;
     }
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getName());
+        return Objects.hash(getName());
     }
 
     @Override

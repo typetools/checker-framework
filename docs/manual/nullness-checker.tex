@@ -156,7 +156,9 @@ The nullness hierarchy contains these qualifiers:
 \item[\refqualclass{checker/nullness/qual}{MonotonicNonNull}]
   indicates a reference that may be \code{null}, but if it ever becomes
   non-\code{null}, then it never becomes \code{null} again.  This is
-  appropriate for lazily-initialized fields, among other uses.  When the
+  appropriate for lazily-initialized fields, for field initialization that
+  occurs in a lifecycle method other than the constructor (e.g., an
+  override of \<android.app.Activity.onCreate>), and other uses.  When the
   variable is read, its type is treated as
   \refqualclass{checker/nullness/qual}{Nullable}, but when the variable is
   assigned, its type is treated as
@@ -167,7 +169,7 @@ The nullness hierarchy contains these qualifiers:
   method at a time), when a \code{MonotonicNonNull} field is first read within a
   method, the field cannot be assumed to be non-null.  The benefit of
   MonotonicNonNull over Nullable is its different interaction with
-  flow-sensitive type qualifier refinement (Section~\ref{type-refinement}).
+  type refinement (Section~\ref{type-refinement}).
   After a check of a MonotonicNonNull
   field, all subsequent accesses \emph{within that method} can be assumed
   to be NonNull, even after arbitrary external method calls that have
@@ -178,7 +180,8 @@ The nullness hierarchy contains these qualifiers:
   field may not be assigned to null anywhere else in the program.  If you
   supply the \<noInitForMonotonicNonNull> lint flag (for example, supply
   \<-Alint=noInitForMonotonicNonNull> on the command line), then
-  @MonotonicNonNull fields are not allowed to have initializers.
+  \<@MonotonicNonNull> fields are not allowed to have initializers at their
+  declarations.
 
   Use of \<@MonotonicNonNull> on a static field is a code smell:  it may
   indicate poor design.  You should consider whether it is possible to make
@@ -753,7 +756,8 @@ corresponding annotation:
 
 \noindent
 You should ignore all other occurrences of \code{null} within a method
-body.  In particular, you (almost) never need to annotate local variables.
+body.  In particular, you rarely need to annotate local variables
+(except their type arguments or array element types).
 
 Only after this step should you run
 the Nullness Checker.  The reason is that it is quicker to search for
@@ -797,16 +801,15 @@ assert var != null : "@AssumeAssertion(nullness)";
 \newcommand{\linktoNullable}{\refclass{checker/nullness/qual}{Nullable}}
 
 The Checker Framework's nullness annotations are similar to annotations used
-in IntelliJ IDEA, FindBugs, JML, the JSR 305 proposal, NetBeans, and other
-tools.  In particular, IDE tools such as Eclipse and IntelliJ should be
-viewed as bug-finding tools rather than verification tools, since they
-give up precision, soundness, or both in favor of being fast and
-easy to use.  Also
-see Section~\ref{other-tools} for a comparison to other tools.
-
+in other
+tools.
 You might prefer to use the Checker Framework because it has a more
 powerful analysis that can warn you about more null pointer errors in your
 code.
+Most of the other tools are bug-finding tools rather than verification tools, since they
+give up precision, soundness, or both in favor of being fast and
+easy to use.  Also
+see Section~\ref{faq-type-checking-vs-bug-detectors} for a comparison to other tools.
 
 If your code is already annotated with a different nullness
 annotation, the Checker Framework can type-check your code.
@@ -829,8 +832,10 @@ Section~\ref{declaration-annotations-moved}.
  ~android.annotation.NonNull~ \\ \hline
  ~android.support.annotation.NonNull~ \\ \hline
  ~androidx.annotation.NonNull~ \\ \hline
+ ~androidx.annotation.RecentlyNonNull~ \\ \hline
  ~com.sun.istack.internal.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
+ ~io.reactivex.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~lombok.NonNull~ \\ \hline
@@ -854,11 +859,13 @@ $\Rightarrow$
  ~android.annotation.Nullable~ \\ \hline
  ~android.support.annotation.Nullable~ \\ \hline
  ~androidx.annotation.Nullable~ \\ \hline
+ ~androidx.annotation.RecentlyNullable~ \\ \hline
  ~com.sun.istack.internal.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.CheckForNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.PossiblyNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
+ ~io.reactivex.annotations.Nullable~ \\ \hline
  ~javax.annotation.Nullable~ \\ \hline
  ~javax.annotation.CheckForNull~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NullableDecl~ \\ \hline
@@ -2385,6 +2392,7 @@ types.)
 
 \paragraphAndLabel{Suppressing warnings}{rawness-checking-suppressing-warnings}
 
+% TODO: use @SuppressWarnings("initialization") instead of @SuppressWarnings("rawness")?
 \begin{sloppypar}
 You can suppress warnings related to partially-initialized objects with
 \<@SuppressWarnings("rawness")>.  Do not confuse this with the unrelated
@@ -2429,12 +2437,12 @@ annotation has nothing to do with the raw types of Java Generics.
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum NullAway
 % LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw
-% LocalWords:  NullnessChecker redundantNullComparison instanceof
+% LocalWords:  NullnessChecker redundantNullComparison instanceof runtime
 % LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
 % LocalWords:  UnderInitialization getComponentType AsuppressWarnings
 % LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass
 % LocalWords:  NullnessRawnessChecker mymap mykey KeyType ValueType
 % LocalWords:  dereferenced dereference Dereferencing initializers
 % LocalWords:  initHelper helperMethod NoSuchElementException classpath
-% LocalWords:  forbidnonnullarraycomponents lombok
-% LocalWords:  NotOnlyInitialized
+% LocalWords:  forbidnonnullarraycomponents lombok findbugs CurrentClass
+% LocalWords:  NotOnlyInitialized underinitialization

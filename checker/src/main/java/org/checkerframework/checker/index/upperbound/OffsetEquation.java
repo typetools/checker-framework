@@ -85,11 +85,7 @@ public class OffsetEquation {
 
     @Override
     public int hashCode() {
-        int result = addedTerms.hashCode();
-        result = 31 * result + subtractedTerms.hashCode();
-        result = 31 * result + intValue;
-        result = 31 * result + Objects.hashCode(error);
-        return result;
+        return Objects.hash(addedTerms, subtractedTerms, intValue, error);
     }
 
     @Override
@@ -393,7 +389,7 @@ public class OffsetEquation {
      * is zero.
      *
      * @param expressionEquation a Java expression made up of sums and differences
-     * @return an offset equation created form expressionEquation
+     * @return an offset equation created from expressionEquation
      */
     public static OffsetEquation createOffsetFromJavaExpression(String expressionEquation) {
         expressionEquation = expressionEquation.trim();

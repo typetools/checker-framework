@@ -7,8 +7,8 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.AssignmentLhsContext;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -68,7 +68,7 @@ public class AssignmentNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof AssignmentNode)) {
+        if (!(obj instanceof AssignmentNode)) {
             return false;
         }
         AssignmentNode other = (AssignmentNode) obj;
@@ -78,7 +78,7 @@ public class AssignmentNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getTarget(), getExpression());
+        return Objects.hash(getTarget(), getExpression());
     }
 
     @Override

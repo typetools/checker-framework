@@ -95,7 +95,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 # construct annotated ct.sym
-bash ${WORKDIR}/annotate-ct-sym.sh |& tee ${WORKDIR}/log/2.log
+bash ${WORKDIR}/annotate-ct-sym.sh 2>&1 | tee ${WORKDIR}/log/2.log
 
 cd ${WORKDIR}
 cp jdk.jar ${CF_DIST}/jdk8.jar

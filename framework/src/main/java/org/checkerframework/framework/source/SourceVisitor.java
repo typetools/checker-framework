@@ -58,10 +58,10 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
         this.warnUnneededSuppressions = checker.hasOption("warnUnneededSuppressions");
     }
 
-    /*
-     * Set the CompilationUnitTree to be used during any visits.
-     * For any later calls of {@see com.sun.source.util.TreePathScanner.scan(TreePath, P)},
-     * the CompilationUnitTree of the TreePath has to be equal to {@code root}.
+    /**
+     * Set the CompilationUnitTree to be used during any visits. For any later calls of {@code
+     * com.sun.source.util.TreePathScanner.scan(TreePath, P)}, the CompilationUnitTree of the
+     * TreePath has to be equal to {@code root}.
      */
     public void setRoot(CompilationUnitTree root) {
         this.root = root;
@@ -76,10 +76,7 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
      */
     /*package-private*/ Tree lastVisited;
 
-    /*
-     * Entry point for a type processor: the TreePath leaf is
-     * a top-level type tree within root.
-     */
+    /** Entry point for a type processor: the TreePath leaf is a top-level type tree within root. */
     public void visit(TreePath path) {
         lastVisited = path.getLeaf();
         this.scan(path, null);

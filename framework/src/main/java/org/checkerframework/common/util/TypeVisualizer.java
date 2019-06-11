@@ -331,7 +331,7 @@ public class TypeVisualizer {
                     lines.add(
                             connect(type, typeVars.get(i))
                                     + " "
-                                    + makeMethodTypeArgLabel(i, typeVarName));
+                                    + makeMethodTypeArgLabel(typeVarName));
                 }
 
                 if (type.getReceiverType() != null) {
@@ -342,7 +342,7 @@ public class TypeVisualizer {
                 final List<AnnotatedTypeMirror> params = type.getParameterTypes();
                 for (int i = 0; i < params.size(); i++) {
                     final String paramName = paramElems.get(i).getSimpleName().toString();
-                    lines.add(connect(type, params.get(i)) + " " + makeParamLabel(i, paramName));
+                    lines.add(connect(type, params.get(i)) + " " + makeParamLabel(paramName));
                 }
 
                 final List<AnnotatedTypeMirror> thrown = type.getThrownTypes();
@@ -400,11 +400,11 @@ public class TypeVisualizer {
                 return makeLabel("<" + argIndex + ">");
             }
 
-            private String makeMethodTypeArgLabel(final int argIndex, final String paramName) {
+            private String makeMethodTypeArgLabel(final String paramName) {
                 return makeLabel("<" + paramName + ">");
             }
 
-            private String makeParamLabel(final int index, final String paramName) {
+            private String makeParamLabel(final String paramName) {
                 return makeLabel(paramName);
             }
 
