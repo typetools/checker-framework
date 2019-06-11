@@ -15,7 +15,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
@@ -36,44 +35,39 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 public class KeyForAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
                 KeyForValue, KeyForStore, KeyForTransfer, KeyForAnalysis> {
 
-    /** The types in the KeyFor hierarchy. */
-    protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR, KEYFORBOTTOM;
+    /** The @{@link KeyFor} annotation. */
+    protected final AnnotationMirror KEYFOR = AnnotationBuilder.fromClass(elements, KeyFor.class);
+    /** The @{@link UnknownKeyFor} annotation. */
+    protected final AnnotationMirror UNKNOWNKEYFOR =
+            AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
+    /** The @{@link KeyForBottom} annotation. */
+    protected final AnnotationMirror KEYFORBOTTOM =
+            AnnotationBuilder.fromClass(elements, KeyForBottom.class);
 
     /** The Map.containsKey method. */
-    private final ExecutableElement mapContainsKey;
+    private final ExecutableElement mapContainsKey =
+            TreeUtils.getMethod("java.util.Map", "containsKey", 1, processingEnv);
     /** The Map.get method. */
-    private final ExecutableElement mapGet;
+    private final ExecutableElement mapGet =
+            TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
     /** The Map.put method. */
-    private final ExecutableElement mapPut;
+    private final ExecutableElement mapPut =
+            TreeUtils.getMethod("java.util.Map", "put", 2, processingEnv);
 
-    private final KeyForPropagator keyForPropagator;
+    private final KeyForPropagator keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
-    private final TypeMirror erasedMapType;
-
+    /** Create a new KeyForAnnotatedTypeFactory. */
     public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
-
-        KEYFOR = AnnotationBuilder.fromClass(elements, KeyFor.class);
-        UNKNOWNKEYFOR = AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
-        KEYFORBOTTOM = AnnotationBuilder.fromClass(elements, KeyForBottom.class);
-        keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
-
-        mapContainsKey = TreeUtils.getMethod("java.util.Map", "containsKey", 1, processingEnv);
-        mapGet = TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
-        mapPut = TreeUtils.getMethod("java.util.Map", "put", 2, processingEnv);
 
         // Add compatibility annotations:
         addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForDecl", KEYFOR);
         addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForType", KEYFOR);
-
-        TypeMirror mapType = TypesUtils.typeFromClass(Map.class, types, elements);
-        erasedMapType = types.erasure(mapType);
 
         this.postInit();
     }
@@ -90,9 +84,9 @@ public class KeyForAnnotatedTypeFactory
     }
 
     @Override
-    public ParameterizedMethodType constructorFromUse(NewClassTree tree) {
-        ParameterizedMethodType result = super.constructorFromUse(tree);
-        keyForPropagator.propagateNewClassTree(tree, result.methodType.getReturnType(), this);
+    public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
+        ParameterizedExecutableType result = super.constructorFromUse(tree);
+        keyForPropagator.propagateNewClassTree(tree, result.executableType.getReturnType(), this);
         return result;
     }
 

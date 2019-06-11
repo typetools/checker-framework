@@ -142,7 +142,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
                 methodType.getReturnType(), targetTypeToAnno.get(TargetType.METHOD_RETURN));
         applyThrowsAnnotations(targetTypeToAnno.get(TargetType.THROWS));
 
-        if (unmatched.size() > 0) {
+        if (!unmatched.isEmpty()) {
             throw new BugInCF(
                     "Unexpected annotations ( "
                             + PluginUtil.join(",", unmatched)

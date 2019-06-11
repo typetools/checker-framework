@@ -1,7 +1,6 @@
 package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
@@ -26,16 +25,25 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+/** Annotated type factory for the Aliasing Checker. */
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private final AnnotationMirror MAYBE_ALIASED, NON_LEAKED, UNIQUE, MAYBE_LEAKED;
+    /** Aliasing annotations. */
+    /** The @{@link MaybeAliased} annotation. */
+    protected final AnnotationMirror MAYBE_ALIASED =
+            AnnotationBuilder.fromClass(elements, MaybeAliased.class);
+    /** The @{@link NonLeaked} annotation. */
+    protected final AnnotationMirror NON_LEAKED =
+            AnnotationBuilder.fromClass(elements, NonLeaked.class);
+    /** The @{@link Unique} annotation. */
+    protected final AnnotationMirror UNIQUE = AnnotationBuilder.fromClass(elements, Unique.class);
+    /** The @{@link MaybeLeaked} annotation. */
+    protected final AnnotationMirror MAYBE_LEAKED =
+            AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
 
+    /** Create the type factory. */
     public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        MAYBE_ALIASED = AnnotationBuilder.fromClass(elements, MaybeAliased.class);
-        NON_LEAKED = AnnotationBuilder.fromClass(elements, NonLeaked.class);
-        UNIQUE = AnnotationBuilder.fromClass(elements, Unique.class);
-        MAYBE_LEAKED = AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
         if (this.getClass().equals(AliasingAnnotatedTypeFactory.class)) {
             this.postInit();
         }
@@ -61,21 +69,6 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         public AliasingTreeAnnotator(AliasingAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
-        }
-
-        @Override
-        public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
-            // Copied hack below from SPARTA:
-            // This is a horrible hack around the implementation of constructor
-            // results (CF treats annotations on constructor results in stub
-            // files as if it were a default and therefore ignores it.)
-            // This hack ignores any annotation written in the following location:
-            // new @A SomeClass();
-            AnnotatedTypeMirror defaulted =
-                    atypeFactory.constructorFromUse(node).methodType.getReturnType();
-            Set<AnnotationMirror> defaultedSet = defaulted.getAnnotations();
-            p.replaceAnnotations(defaultedSet);
-            return null;
         }
 
         @Override

@@ -201,14 +201,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         return areEqual(type1.getComponentType(), type2.getComponentType());
     }
 
-    /** A declared type is equal to an array type if the main qualifiers match. */
-    @Override
-    public Boolean visitDeclared_Array(
-            final AnnotatedDeclaredType type1, final AnnotatedArrayType type2, final Void p) {
-        // TODO: type1 is guaranteed by Java to be j.l.Object and therefore we don't need more.
-        return arePrimeAnnosEqual(type1, type2);
-    }
-
     /**
      * Two declared types are equal if:
      *
@@ -234,7 +226,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         // Prevent infinite recursion e.g. in Issue1587b
         visitHistory.add(type1, type2, currentTop, true);
 
-        Boolean result = visitTypeArgs(type1, type2);
+        boolean result = visitTypeArgs(type1, type2);
         visitHistory.add(type1, type2, currentTop, result);
         return result;
     }
@@ -244,7 +236,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * need to customize the handling of type arguments. This method provides a convenient extension
      * point.
      */
-    protected Boolean visitTypeArgs(
+    protected boolean visitTypeArgs(
             final AnnotatedDeclaredType type1, final AnnotatedDeclaredType type2) {
 
         // TODO: ANYTHING WITH RAW TYPES? SHOULD WE HANDLE THEM LIKE DefaultTypeHierarchy, i.e. use
@@ -402,12 +394,14 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     /** @return true if the underlying types of the bounds for type1 and type2 are equal */
     public boolean boundsMatch(
             final AnnotatedTypeVariable type1, final AnnotatedTypeVariable type2) {
-        return type1.getUpperBound()
-                        .getUnderlyingType()
-                        .equals(type2.getUpperBound().getUnderlyingType())
-                && type1.getLowerBound()
-                        .getUnderlyingType()
-                        .equals(type2.getLowerBound().getUnderlyingType());
+        final Types types = type1.atypeFactory.types;
+
+        return types.isSameType(
+                        type1.getUpperBound().getUnderlyingType(),
+                        type2.getUpperBound().getUnderlyingType())
+                && types.isSameType(
+                        type1.getLowerBound().getUnderlyingType(),
+                        type2.getLowerBound().getUnderlyingType());
     }
 
     /**

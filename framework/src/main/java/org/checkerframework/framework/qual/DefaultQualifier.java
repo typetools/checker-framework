@@ -3,6 +3,7 @@ package org.checkerframework.framework.qual;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -15,14 +16,12 @@ import java.lang.annotation.Target;
  * multiple {@code DefaultQualifier} annotations are in scope, the innermost one takes precedence.
  * DefaultQualifier takes precedence over {@link DefaultQualifierInHierarchy}.
  *
- * <p>If you wish to write multiple {@code @DefaultQualifier} annotations (for unrelated type
- * systems, or with different {@code locations} fields) at the same location, use {@link
- * DefaultQualifiers}.
+ * <p>You may write multiple {@code @DefaultQualifier} annotations (for unrelated type systems, or
+ * with different {@code locations} fields) at the same location.
  *
  * <p>This annotation currently has no effect in stub files.
  *
  * @see org.checkerframework.framework.qual.TypeUseLocation
- * @see DefaultQualifiers
  * @see DefaultQualifierInHierarchy
  * @see DefaultFor
  * @checker_framework.manual #defaults Default qualifier for unannotated types
@@ -38,6 +37,7 @@ import java.lang.annotation.Target;
     ElementType.LOCAL_VARIABLE,
     ElementType.PARAMETER
 })
+@Repeatable(DefaultQualifiers.class)
 public @interface DefaultQualifier {
 
     /**

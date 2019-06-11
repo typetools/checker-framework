@@ -106,9 +106,9 @@ public class SupertypesSolver {
                         // If the LUB and the Equality were the SAME typevar, and the lub was
                         // unannotated then "NO ANNOTATION" is the correct choice.
                         if (lub.getKind() == TypeKind.TYPEVAR
-                                && equalityType
-                                        .getUnderlyingType()
-                                        .equals(lub.getUnderlyingType())) {
+                                && typeFactory.types.isSameType(
+                                        equalityType.getUnderlyingType(),
+                                        lub.getUnderlyingType())) {
                             equalityAnnos.add(top);
                         } else {
                             failed = true;
@@ -256,7 +256,7 @@ public class SupertypesSolver {
             lubPrimaries(lubOfPrimaries, subtypeAnnos, tops, qualifierHierarchy);
             solution.addPrimaries(target, lubOfPrimaries);
 
-            if (subtypesOfTarget.keySet().size() > 0) {
+            if (!subtypesOfTarget.isEmpty()) {
                 final AnnotatedTypeMirror lub =
                         leastUpperBound(target, typeFactory, subtypesOfTarget);
                 final AnnotationMirrorSet effectiveLubAnnos =

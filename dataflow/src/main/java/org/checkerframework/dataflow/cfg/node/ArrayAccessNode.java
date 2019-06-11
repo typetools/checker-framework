@@ -4,7 +4,7 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -65,7 +65,7 @@ public class ArrayAccessNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getArray(), getIndex());
+        return Objects.hash(getArray(), getIndex());
     }
 
     @Override

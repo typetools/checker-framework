@@ -107,7 +107,8 @@ public class WholeProgramInferenceScenesHelper {
                 AScene scene = scenes.get(jaifPath).clone();
                 removeIgnoredAnnosFromScene(scene);
                 new File(jaifPath).delete();
-                if (!scene.prune()) {
+                scene.prune();
+                if (!scene.isEmpty()) {
                     // Only write non-empty scenes into .jaif files.
                     IndexFileWriter.write(scene, new FileWriter(jaifPath));
                 }
@@ -164,7 +165,7 @@ public class WholeProgramInferenceScenesHelper {
     protected AClass getAClass(String className, String jaifPath) {
         // Possibly reads .jaif file to obtain a Scene.
         AScene scene = getScene(jaifPath);
-        return scene.classes.vivify(className);
+        return scene.classes.getVivify(className);
     }
 
     /**
@@ -338,10 +339,7 @@ public class WholeProgramInferenceScenesHelper {
      * https://github.com/typetools/checker-framework/issues/683
      */
     private boolean shouldIgnore(
-            AnnotationMirror am,
-            TypeUseLocation location,
-            AnnotatedTypeFactory atf,
-            AnnotatedTypeMirror atm) {
+            AnnotationMirror am, TypeUseLocation location, AnnotatedTypeMirror atm) {
         Element elt = am.getAnnotationType().asElement();
         // Checks if am is an implementation detail (a type qualifier used
         // internally by the type system and not meant to be seen by the user.)
@@ -514,7 +512,7 @@ public class WholeProgramInferenceScenesHelper {
         if (curATM.getExplicitAnnotations().isEmpty()) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 addAnnotationsToATypeElement(
-                        newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
+                        newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         } else if (curATM.getKind() == TypeKind.TYPEVAR) {
             // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
@@ -528,7 +526,7 @@ public class WholeProgramInferenceScenesHelper {
                     break;
                 }
                 addAnnotationsToATypeElement(
-                        newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
+                        newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         }
 
@@ -540,7 +538,7 @@ public class WholeProgramInferenceScenesHelper {
                     newAAT.getComponentType(),
                     oldAAT.getComponentType(),
                     atf,
-                    typeToUpdate.innerTypes.vivify(
+                    typeToUpdate.innerTypes.getVivify(
                             new InnerTypeLocation(
                                     TypeAnnotationPosition.getTypePathFromBinary(
                                             Collections.nCopies(2 * idx, 0)))),
@@ -551,7 +549,6 @@ public class WholeProgramInferenceScenesHelper {
 
     private void addAnnotationsToATypeElement(
             AnnotatedTypeMirror newATM,
-            AnnotatedTypeFactory atf,
             ATypeElement typeToUpdate,
             TypeUseLocation defLoc,
             AnnotationMirror am,
@@ -559,7 +556,7 @@ public class WholeProgramInferenceScenesHelper {
         Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
         if (anno != null) {
             typeToUpdate.tlAnnotationsHere.add(anno);
-            if (isEffectiveAnnotation || shouldIgnore(am, defLoc, atf, newATM)) {
+            if (isEffectiveAnnotation || shouldIgnore(am, defLoc, newATM)) {
                 // firstKey works as a unique identifier for each annotation
                 // that should not be inserted in source code
                 String firstKey =

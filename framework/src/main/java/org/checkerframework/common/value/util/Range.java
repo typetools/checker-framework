@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
 
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
@@ -111,7 +111,7 @@ public class Range {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(from, to);
+        return Objects.hash(from, to);
     }
 
     /** Return true if this range contains every {@code long} value. */
@@ -684,19 +684,30 @@ public class Range {
         // Recall these two's-complement facts:
         //   11111111  represents  -1
         //   10000000  represents  MIN_VALUE
+
+        Range constant = null;
+        Range variable = null;
         if (right.isConstant()) {
-            long mask = right.from;
+            constant = right;
+            variable = this;
+        } else if (this.isConstant()) {
+            constant = this;
+            variable = right;
+        }
+
+        if (constant != null) {
+            long mask = constant.from;
             if (mask >= 0) {
                 // Sign bit of mask is 0.  The elements in the result range must be positive, and
                 // the result range is upper-bounded by the mask.
-                if (this.from >= 0) {
+                if (variable.from >= 0) {
                     // Case 1.1: The result range is upper-bounded by the upper bound of this range.
-                    return new Range(0, Math.min(mask, this.to));
-                } else if (this.to < 0) {
+                    return new Range(0, Math.min(mask, variable.to));
+                } else if (variable.to < 0) {
                     // Case 1.2: The result range is upper-bounded by the upper bound of this range
                     // after ignoring the sign bit. The upper bound of this range has the most bits
                     // (of the highest place values) set to 1.
-                    return new Range(0, Math.min(mask, noSignBit(this.to)));
+                    return new Range(0, Math.min(mask, noSignBit(variable.to)));
                 } else {
                     // Case 1.3:  Since this range contains -1, the upper bound of this range after
                     // ignoring the sign bit is Long.MAX_VALUE and thus doesn't contribute to
@@ -705,23 +716,23 @@ public class Range {
                 }
             } else {
                 // Sign bit of mask is 1.
-                if (this.from >= 0) {
+                if (variable.from >= 0) {
                     // Case 2.1: Similar to case 1.1 except that the sign bit of the mask can be
                     // ignored.
-                    return new Range(0, Math.min(noSignBit(mask), this.to));
-                } else if (this.to < 0) {
+                    return new Range(0, Math.min(noSignBit(mask), variable.to));
+                } else if (variable.to < 0) {
                     // Case 2.2: The sign bit of the elements in the result range must be 1.
                     // Therefore the lower bound of the result range is Long.MIN_VALUE (when all
                     // 1-bits are mismatched between the mask and the element in this range). The
                     // result range is also upper-bounded by this mask itself and the upper bound of
                     // this range.  (Because more set bits means a larger number -- still negative,
                     // but closer to 0.)
-                    return new Range(Long.MIN_VALUE, Math.min(mask, this.to));
+                    return new Range(Long.MIN_VALUE, Math.min(mask, variable.to));
                 } else {
                     // Case 2.3: Similar to case 2.2 except that the elements in this range could
                     // be positive, and thus the result range is upper-bounded by the upper bound
                     // of this range and the mask after ignoring the sign bit.
-                    return new Range(Long.MIN_VALUE, Math.min(noSignBit(mask), this.to));
+                    return new Range(Long.MIN_VALUE, Math.min(noSignBit(mask), variable.to));
                 }
             }
         }
@@ -1012,7 +1023,7 @@ public class Range {
                             .subtract(BigInteger.valueOf(from))
                             .add(BigInteger.ONE)
                             .compareTo(BigInteger.valueOf(value))
-                    == 1;
+                    > 0;
         }
     }
 

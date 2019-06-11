@@ -30,39 +30,36 @@ import org.checkerframework.javacutil.TreeUtils;
 /** Accounts for the effects of certain calls to String.replace. */
 public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** {@literal @}SignatureUnknown annotation. */
-    protected final AnnotationMirror SIGNATURE_UNKNOWN;
-    /** {@literal @}BinaryName annotation. */
-    protected final AnnotationMirror BINARY_NAME;
-    /** {@literal @}InternalForm annotation. */
-    protected final AnnotationMirror INTERNAL_FORM;
-    /** {@literal @}DotSeparatedIdentifiers annotation. */
-    protected final AnnotationMirror DOT_SEPARATED_IDENTIFIERS;
+    /** The {@literal @}{@link SignatureUnknown} annotation. */
+    protected final AnnotationMirror SIGNATURE_UNKNOWN =
+            AnnotationBuilder.fromClass(elements, SignatureUnknown.class);
+    /** The {@literal @}{@link BinaryName} annotation. */
+    protected final AnnotationMirror BINARY_NAME =
+            AnnotationBuilder.fromClass(elements, BinaryName.class);
+    /** The {@literal @}{@link InternalForm} annotation. */
+    protected final AnnotationMirror INTERNAL_FORM =
+            AnnotationBuilder.fromClass(elements, InternalForm.class);
+    /** The {@literal @}{@link DotSeparatedIdentifiers} annotation. */
+    protected final AnnotationMirror DOT_SEPARATED_IDENTIFIERS =
+            AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class);
 
     /** The {@link String#replace(char, char)} method. */
-    private final ExecutableElement replaceCharChar;
+    private final ExecutableElement replaceCharChar =
+            TreeUtils.getMethod(
+                    java.lang.String.class.getName(), "replace", processingEnv, "char", "char");
 
     /** The {@link String#replace(CharSequence, CharSequence)} method. */
-    private final ExecutableElement replaceCharSequenceCharSequence;
+    private final ExecutableElement replaceCharSequenceCharSequence =
+            TreeUtils.getMethod(
+                    java.lang.String.class.getName(),
+                    "replace",
+                    processingEnv,
+                    "java.lang.CharSequence",
+                    "java.lang.CharSequence");
 
     /** Creates a SignatureAnnotatedTypeFactory. */
     public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        SIGNATURE_UNKNOWN = AnnotationBuilder.fromClass(elements, SignatureUnknown.class);
-        BINARY_NAME = AnnotationBuilder.fromClass(elements, BinaryName.class);
-        INTERNAL_FORM = AnnotationBuilder.fromClass(elements, InternalForm.class);
-        DOT_SEPARATED_IDENTIFIERS =
-                AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class);
-        replaceCharChar =
-                TreeUtils.getMethod(
-                        java.lang.String.class.getName(), "replace", processingEnv, "char", "char");
-        replaceCharSequenceCharSequence =
-                TreeUtils.getMethod(
-                        java.lang.String.class.getName(),
-                        "replace",
-                        processingEnv,
-                        "java.lang.CharSequence",
-                        "java.lang.CharSequence");
 
         this.postInit();
     }

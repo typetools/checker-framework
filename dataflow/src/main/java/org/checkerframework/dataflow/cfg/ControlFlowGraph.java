@@ -144,25 +144,7 @@ public class ControlFlowGraph {
                 break;
             }
 
-            Queue<Block> succs = new ArrayDeque<>();
-            if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
-                ConditionalBlock ccur = ((ConditionalBlock) cur);
-                succs.add(ccur.getThenSuccessor());
-                succs.add(ccur.getElseSuccessor());
-            } else {
-                assert cur instanceof SingleSuccessorBlock;
-                Block b = ((SingleSuccessorBlock) cur).getSuccessor();
-                if (b != null) {
-                    succs.add(b);
-                }
-            }
-
-            if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
-                ExceptionBlock ecur = (ExceptionBlock) cur;
-                for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
-                    succs.addAll(exceptionSuccSet);
-                }
-            }
+            Deque<Block> succs = getSuccessors(cur);
 
             for (Block b : succs) {
                 if (!visited.contains(b)) {

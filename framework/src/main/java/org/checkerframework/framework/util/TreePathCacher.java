@@ -16,7 +16,8 @@ import java.util.Map;
  */
 public class TreePathCacher extends TreeScanner<TreePath, Tree> {
 
-    private final Map<Tree, TreePath> foundPaths = new HashMap<>();
+    private final Map<Tree, TreePath> foundPaths = new HashMap<>(32);
+
     /**
      * The TreePath of the previous tree scanned. It is always set back to null after a scan has
      * completed.
@@ -29,6 +30,14 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
      */
     public boolean isCached(Tree target) {
         return foundPaths.containsKey(target);
+    }
+
+    /**
+     * @param target the tree to add
+     * @param path the path to cache
+     */
+    public void addPath(Tree target, TreePath path) {
+        foundPaths.put(target, path);
     }
 
     /**
@@ -57,6 +66,8 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
         } catch (Result result) {
             return result.path;
         }
+        // If a path wasn't found, cache null so the whole compilation unit isn't searched again.
+        foundPaths.put(target, null);
         return null;
     }
 

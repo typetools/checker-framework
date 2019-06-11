@@ -779,7 +779,7 @@ public abstract class CFAbstractTransfer<
     /**
      * Takes a node, and either returns the node itself again (as a singleton list), or if the node
      * is an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively
-     * to the rhs).
+     * to the rhs -- that is, the rhs may not appear in the result, but rather its lhs and rhs may).
      */
     protected List<Node> splitAssignments(Node node) {
         if (node instanceof AssignmentNode) {
@@ -900,7 +900,7 @@ public abstract class CFAbstractTransfer<
             ExecutableElement constructorElt =
                     analysis.getTypeFactory()
                             .constructorFromUse(n.getTree())
-                            .methodType
+                            .executableType
                             .getElement();
             analysis.atypeFactory
                     .getWholeProgramInference()

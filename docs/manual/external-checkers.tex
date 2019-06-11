@@ -173,17 +173,32 @@ enforces transitive class immutability in Java.  According to its webpage:
   the object.
 \end{itemize}
 
+
 \sectionAndLabel{UI Thread Checker for ReactiveX}{rx-thread-checker}
+
 The \href{https://plv.colorado.edu/benno/ase18.pdf}{Rx Thread \& Effect Checker}~\cite{SteinCSC2018} enforces
 UI Thread safety properties for stream-based Android applications and is available at
 \url{https://github.com/uber-research/RxThreadEffectChecker}.
 
+
 \sectionAndLabel{AWS KMS compliance checker}{kms-compliance-checker}
-The \href{https://github.com/awslabs/aws-kms-compliance-checker}{AWS KMS compliance checker} extends the
-Constant Value Checker (see \chapterpageref{constant-value-checker}) to enforce that calls to
-Amazon Web Services' Key Management System only request 256-bit (or longer) data keys.
-This checker can be used to help enforce a compliance requirement (such as from SOC or PCI-DSS)
-that customer data is always encrypted with 256-bit keys.
+
+The \href{https://github.com/awslabs/aws-kms-compliance-checker}{AWS KMS
+  compliance checker} extends the Constant Value Checker (see
+\chapterpageref{constant-value-checker}) to enforce that calls to Amazon
+Web Services' Key Management System only request 256-bit (or longer) data
+keys.  This checker can be used to help enforce a compliance requirement
+(such as from SOC or PCI-DSS) that customer data is always encrypted with
+256-bit keys.
+
+
+\sectionAndLabel{AWS crypto policy compliance checker}{crypto-policy-compliance-checker}
+
+The
+\href{https://github.com/awslabs/aws-crypto-policy-compliance-checker}{AWS
+  crypto policy compliance checker} checks that no weak cipher algorithms
+are used with the Java crypto API\@.
+
 
 % LocalWords:  SCJ EnerJ CheckLT unsanitized JavaUI CCS IGJ OIGJ FIO08
 %%  LocalWords:  jOOQ typesafe

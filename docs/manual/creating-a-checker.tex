@@ -74,6 +74,11 @@ The Javadoc documentation of the framework and the checkers is in the
 distribution and is also available online at
 \myurl{https://checkerframework.org/api/}.
 
+You can write your checker in a fork of the Checker Framework
+repository \url{https://github.com/typetools/checker-framework},
+or you can write it in a stand-alone repository.  Here is a template for a
+stand-alone repository: \url{https://github.com/typetools/templatefora-checker}.
+
 If you write a new checker and wish to advertise it to the world, let us
 know so we can mention it in \chapterpageref{third-party-checkers}
 or even include it in the Checker Framework distribution.
@@ -524,7 +529,7 @@ hierarchy.
   \begin{Verbatim}
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @SubtypeOf( { Nullable.class } )
-    public @interface NonNull { }
+    public @interface NonNull {}
   \end{Verbatim}
 
   % (The actual definition of \refclass{checker/nullness/qual}{NonNull} is slightly more complex.)
@@ -553,8 +558,8 @@ hierarchy.
 
   \begin{Verbatim}
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-    @SubtypeOf( { } )
-    public @interface Nullable { }
+    @SubtypeOf( {} )
+    public @interface Nullable {}
   \end{Verbatim}
 
   \begin{sloppypar}
@@ -572,7 +577,7 @@ hierarchy.
   \begin{Verbatim}
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @PolymorphicQualifier
-    public @interface PolyNull { }
+    public @interface PolyNull {}
   \end{Verbatim}
 
   For a description of polymorphic qualifiers, see
@@ -844,12 +849,12 @@ checker classes for the Interning Checker and the Nullness Checker:
   package my.package;
   import org.checkerframework.common.basetype.BaseTypeChecker;
   @SupportedLintOptions({"dotequals"})
-  public final class InterningChecker extends BaseTypeChecker { }
+  public final class InterningChecker extends BaseTypeChecker {}
 
   package my.package;
   import org.checkerframework.common.basetype.BaseTypeChecker;
   @SupportedLintOptions({"flow", "cast", "cast:redundant"})
-  public class NullnessChecker extends BaseTypeChecker { }
+  public class NullnessChecker extends BaseTypeChecker {}
 \end{Verbatim}
 
 (The \refqualclass{framework/source}{SupportedLintOptions} annotation is
@@ -1190,7 +1195,7 @@ type qualifiers:
   @ImplicitFor(literals = { LiteralKind.NULL },
                typeNames = { java.lang.Void.class })
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface Nullable { }
+  public @interface Nullable {}
 
   @SubtypeOf( { Nullable.class } )
   @ImplicitFor(literals = { LiteralKind.STRING },
@@ -1222,8 +1227,8 @@ two \<addComputedTypeAnnotations> methods.
 \<AnnotatedTypeFactory>, when given a program
 expression, returns the expression's type.  This should include not only
 the qualifiers that the programmer explicitly wrote in the source code, but
-also default and implicit annotations, and flow-sensitive local type
-inference (see Section~\ref{effective-qualifier} for explanations of these
+also default and implicit annotations, and type
+refinement (see Section~\ref{effective-qualifier} for explanations of these
 concepts).
 
 To add implicit annotations, you should override
@@ -1240,14 +1245,14 @@ try to limit their work to implicit annotations; often some existing
 simpler mechanism in the Checker Framework will serve other purposes.
 
 
-\sectionAndLabel{Dataflow: enhancing flow-sensitive type qualifier inference}{creating-dataflow}
+\sectionAndLabel{Dataflow: enhancing flow-sensitive type refinement}{creating-dataflow}
 
 By default, every checker performs flow-sensitive type refinement, also known as
 local type inference, as described
 in Section~\ref{type-refinement}.
 
 This section of the manual explains how to enhance the Checker Framework's
-built-in flow-sensitive type refinement.
+built-in type refinement.
 Most commonly, you will inform the Checker Framework about a run-time test
 that gives information about the type qualifiers in your type system.
 Section~\refwithpageparen{type-refinement-runtime-tests} gives examples of
@@ -1270,7 +1275,7 @@ The Regex Checker's dataflow customization for the
 run-time check is used as a running example.
 
 If needed, you can find more details about the implementation of
-flow-sensitive type refinement, and the control flow graph (CFG) data
+type refinement, and the control flow graph (CFG) data
 structure that it uses, in the
 \href{https://checkerframework.org/manual/checker-framework-dataflow-manual.pdf}{Dataflow
   Manual}.
@@ -1839,9 +1844,8 @@ refinement, you can create a graphical representation of the CFG.
 Typical use is:
 
 \begin{Verbatim}
-javac -processor myProcessor -Aflowdotdir=someDirectory MyClass.java
-cd someDirectory
-dot -Tpdf -o MyClass.pdf MyClass.dot
+javac -processor myProcessor -Aflowdotdir=. MyClass.java
+for dotfile in *.dot; do dot -Tpdf -o $dotfile.pdf $dotfile; done
 \end{Verbatim}
 
 \noindent
@@ -2308,7 +2312,7 @@ without warnings or errors.
 %%  LocalWords:  RegexTransfer's newResultValue subcheckers taglet tex XXX
 %%  LocalWords:  ParameterizedCheckerTest AoutputArgsToFile ManualTaglet
 %%  LocalWords:  Hevea Hitchhiker's compilermsgs args Poly MyTypeSystem
-%%  LocalWords:  I18nChecker i18n I18nSubchecker LocalizableKeyChecker
+%%  LocalWords:  I18nChecker i18n I18nSubchecker LocalizableKeyChecker ast
 %%  LocalWords:  MyChecker MyHelperChecker getImmediateSubcheckerClasses
 %%  LocalWords:  MyChecker's subchecker plugins ElementType myClass myflag
 %%  LocalWords:  CheckerFrameworkTest GenericAnnotatedTypeFactory MyClass
@@ -2317,11 +2321,14 @@ without warnings or errors.
 %%  LocalWords:  ExpressionAnnotationHelper FlowExpressions CFTransfer
 %%  LocalWords:  AnnotationProvider FooTransfer createFlowTransferFunction
 %%  LocalWords:  SupportedLintOptions myoption StubFiles scriptfile outdir
-%%  LocalWords:  somedir Acfgviz Averbosecfg cfgviz MyVisualizer init
+%%  LocalWords:  somedir Acfgviz Averbosecfg cfgviz MyVisualizer init apis
 %%  LocalWords:  VizClassName CFGVisualizer MyProp MyPropChecker mypackage
 %  LocalWords:  SourceFile NonNegative JavaExpression DependentTypesHelper
 %  LocalWords:  createDependentTypesHelper boolean regex subclasses README
 %  LocalWords:  formatter nChecker nSubchecker AprintVerboseGenerics
 %  LocalWords:  AshowInferenceSteps DefaultTypeArgumentInference Graphviz
 %  LocalWords:  javacutil LiteralKind EnsuresQualifier EnsuresQualifierIf
-%%  LocalWords:  mychecker
+%%  LocalWords:  mychecker AnnotationBuilder AnnotationUtils typequals
+%%  LocalWords:  TypeAnnotationUtils reimplementing typesystem TreeType
+%%  LocalWords:  getTypeFactoryOfSubchecker someDirectory checkername
+%%  LocalWords:  AnnotationMirror AnnotationMirrorMap AnnotationMirrorSet

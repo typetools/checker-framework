@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * For example, if the definition of {@code @Inject} is meta-annotated with
  * {@code @IgnoreInWholeProgramInference}:<br>
  * <tt>@IgnoreInWholeProgramInference</tt><br>
- * <tt>@interface Inject { }</tt><br>
+ * <tt>@interface Inject {}</tt><br>
  * then no type qualifier will be inferred for any field annotated by {@code @Inject}.
  *
  * <p>This is appropriate for fields that are set reflectively, so there are no calls in client code
@@ -27,8 +27,9 @@ import java.lang.annotation.Target;
  * <p>2. As a field annotation indicating that no type qualifier will be inferred for the field it
  * annotates.
  *
- * @see
- *     org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes#updateInferredFieldType
+ * <p>See
+ * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes#updateInferredFieldType
+ *
  * @checker_framework.manual #whole-program-inference-ignores-some-code Whole-program inference
  *     ignores some code
  */

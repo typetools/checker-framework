@@ -16,5 +16,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 public @interface StringVal {
+    /** The values that the expression might evaluate to. */
     String[] value();
 }

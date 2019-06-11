@@ -10,12 +10,12 @@ import org.checkerframework.framework.qual.TypeKind;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The bottom type in the Unsigned type system. Programmers should rarely write this type.
+ * The bottom type in the Signedness type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  * @checker_framework.manual #bottom-type the bottom type
  */
-@SubtypeOf({Constant.class})
+@SubtypeOf({SignednessEither.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @ImplicitFor(

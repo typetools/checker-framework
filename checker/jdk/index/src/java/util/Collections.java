@@ -24,7 +24,10 @@
  */
 
 package java.util;
+
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.*;
+
 import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
@@ -1053,7 +1056,7 @@ public class Collections {
             this.c = c;
         }
 
-        public int size()                   {return c.size();}
+        public @NonNegative int size()                   {return c.size();}
         public boolean isEmpty()            {return c.isEmpty();}
         public boolean contains(Object o)   {return c.contains(o);}
         public Object[] toArray()           {return c.toArray();}
@@ -1333,7 +1336,7 @@ public class Collections {
             this.m = m;
         }
 
-        public int size()                        {return m.size();}
+        public @NonNegative int size()                        {return m.size();}
         public boolean isEmpty()                 {return m.isEmpty();}
         public boolean containsKey(Object key)   {return m.containsKey(key);}
         public boolean containsValue(Object val) {return m.containsValue(val);}
@@ -1613,7 +1616,7 @@ public class Collections {
             this.mutex = mutex;
         }
 
-        public int size() {
+        public @NonNegative int size() {
             synchronized (mutex) {return c.size();}
         }
         public boolean isEmpty() {
@@ -2022,7 +2025,7 @@ public class Collections {
             this.mutex = mutex;
         }
 
-        public int size() {
+        public @NonNegative int size() {
             synchronized (mutex) {return m.size();}
         }
         public boolean isEmpty() {
@@ -2289,7 +2292,7 @@ public class Collections {
             this.type = type;
         }
 
-        public int size()                 { return c.size(); }
+        public @NonNegative int size()                 { return c.size(); }
         public boolean isEmpty()          { return c.isEmpty(); }
         public boolean contains(Object o) { return c.contains(o); }
         public Object[] toArray()         { return c.toArray(); }
@@ -2660,7 +2663,7 @@ public class Collections {
             this.valueType = valueType;
         }
 
-        public int size()                      { return m.size(); }
+        public @NonNegative int size()                      { return m.size(); }
         public boolean isEmpty()               { return m.isEmpty(); }
         public boolean containsKey(Object key) { return m.containsKey(key); }
         public boolean containsValue(Object v) { return m.containsValue(v); }
@@ -2724,7 +2727,7 @@ public class Collections {
                 this.valueType = valueType;
             }
 
-            public int size()        { return s.size(); }
+            public @NonNegative int size()        { return s.size(); }
             public boolean isEmpty() { return s.isEmpty(); }
             public String toString() { return s.toString(); }
             public int hashCode()    { return s.hashCode(); }
@@ -3132,7 +3135,7 @@ public class Collections {
 
         public Iterator<E> iterator() { return emptyIterator(); }
 
-        public int size() {return 0;}
+        public @NonNegative int size() {return 0;}
         public boolean isEmpty() {return true;}
 
         public boolean contains(Object obj) {return false;}
@@ -3195,7 +3198,7 @@ public class Collections {
             return emptyListIterator();
         }
 
-        public int size() {return 0;}
+        public @NonNegative int size() {return 0;}
         public boolean isEmpty() {return true;}
 
         public boolean contains(Object obj) {return false;}
@@ -3263,7 +3266,7 @@ public class Collections {
     {
         private static final long serialVersionUID = 6428348081105594320L;
 
-        public int size()                          {return 0;}
+        public @NonNegative int size()                          {return 0;}
         public boolean isEmpty()                   {return true;}
         public boolean containsKey(Object key)     {return false;}
         public boolean containsValue(Object value) {return false;}
@@ -3333,7 +3336,7 @@ public class Collections {
             return singletonIterator(element);
         }
 
-        public int size() {return 1;}
+        public @NonNegative int size() {return 1;}
 
         public boolean contains(Object o) {return eq(o, element);}
     }
@@ -3346,7 +3349,7 @@ public class Collections {
      * @return an immutable list containing only the specified object.
      * @since 1.3
      */
-    public static <T> List<T> singletonList(T o) {
+    public static <T> @MinLen(1) List<T> singletonList(T o) {
         return new SingletonList<>(o);
     }
 
@@ -3367,7 +3370,7 @@ public class Collections {
             return singletonIterator(element);
         }
 
-        public int size()                   {return 1;}
+        public @NonNegative int size()                   {return 1;}
 
         public boolean contains(Object obj) {return eq(obj, element);}
 
@@ -3408,7 +3411,7 @@ public class Collections {
             v = value;
         }
 
-        public int size()                          {return 1;}
+        public @NonNegative int size()                          {return 1;}
 
         public boolean isEmpty()                   {return false;}
 
@@ -3484,7 +3487,7 @@ public class Collections {
             element = e;
         }
 
-        public int size() {
+        public @NonNegative int size() {
             return n;
         }
 
@@ -3897,7 +3900,7 @@ public class Collections {
         }
 
         public void clear()               {        m.clear(); }
-        public int size()                 { return m.size(); }
+        public @NonNegative int size()                 { return m.size(); }
         public boolean isEmpty()          { return m.isEmpty(); }
         public boolean contains(Object o) { return m.containsKey(o); }
         public boolean remove(Object o)   { return m.remove(o) != null; }
@@ -3959,7 +3962,7 @@ public class Collections {
         public E peek()                   { return q.peekFirst(); }
         public E element()                { return q.getFirst(); }
         public void clear()               {        q.clear(); }
-        public int size()                 { return q.size(); }
+        public @NonNegative int size()                 { return q.size(); }
         public boolean isEmpty()          { return q.isEmpty(); }
         public boolean contains(Object o) { return q.contains(o); }
         public boolean remove(Object o)   { return q.remove(o); }

@@ -124,7 +124,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
         boolean res = qualHierarchy.updateMappingToMutableSet(treeClasses, treeClass, theQual);
         if (!res) {
             throw new BugInCF(
-                    "PropagationTreeAnnotator: invalid update of map "
+                    "ImplicitsTreeAnnotator: invalid update of map "
                             + treeClasses
                             + " at "
                             + treeClass
@@ -168,7 +168,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
         boolean res = qualHierarchy.updateMappingToMutableSet(treeKinds, treeKind, theQual);
         if (!res) {
             throw new BugInCF(
-                    "PropagationTreeAnnotator: invalid update of treeKinds "
+                    "ImplicitsTreeAnnotator: invalid update of treeKinds "
                             + treeKinds
                             + " at "
                             + treeKind
@@ -189,7 +189,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
                         stringPatterns, Pattern.compile(pattern), theQual);
         if (!res) {
             throw new BugInCF(
-                    "PropagationTreeAnnotator: invalid update of stringPatterns "
+                    "ImplicitsTreeAnnotator: invalid update of stringPatterns "
                             + stringPatterns
                             + " at "
                             + pattern
@@ -255,16 +255,14 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
                 for (Set<? extends AnnotationMirror> sam : nonMatches) {
                     if (qualHierarchy.isSubtype(res, sam)) {
                         throw new BugInCF(
-                                "Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition: inferred type for \""
-                                        + string
-                                        + "\" is "
-                                        + res
-                                        + " which is a subtype of "
-                                        + sam
-                                        + " but its pattern does not match the string.  matches = "
-                                        + matches
-                                        + "; nonMatches = "
-                                        + nonMatches);
+                                String.join(
+                                        System.lineSeparator(),
+                                        "Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition:",
+                                        " inferred type for \"" + string + "\" is " + res,
+                                        " which is a subtype of " + sam,
+                                        " but its pattern does not match the string.",
+                                        "  matches = " + matches,
+                                        "  nonMatches = " + nonMatches));
                     }
                 }
                 type.addAnnotations(res);

@@ -74,7 +74,6 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedMethodType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
@@ -545,10 +544,18 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a string containing the number of qualifiers and canonical names of each qualifier
      */
     protected final String getSortedQualifierNames() {
+        Set<Class<? extends Annotation>> stq = getSupportedTypeQualifiers();
+        if (stq.isEmpty()) {
+            return "No qualifiers examined";
+        }
+        if (stq.size() == 1) {
+            return "1 qualifier examined: " + stq.iterator().next().getCanonicalName();
+        }
+
         // Create a list of the supported qualifiers and sort the list
         // alphabetically
         List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>();
-        sortedSupportedQuals.addAll(getSupportedTypeQualifiers());
+        sortedSupportedQuals.addAll(stq);
         Collections.sort(sortedSupportedQuals, QUALIFIER_SORT_ORDERING);
 
         // display the number of qualifiers as well as the names of each
@@ -557,19 +564,15 @@ public abstract class GenericAnnotatedTypeFactory<
         sb.append(sortedSupportedQuals.size());
         sb.append(" qualifiers examined");
 
-        if (sortedSupportedQuals.size() > 0) {
-            sb.append(": ");
-            // for each qualifier, add its canonical name, a comma and a space
-            // to the string.
-            for (Class<? extends Annotation> qual : sortedSupportedQuals) {
-                sb.append(qual.getCanonicalName());
-                sb.append(", ");
-            }
-            // remove last comma and space
-            return sb.substring(0, sb.length() - 2);
-        } else {
-            return sb.toString();
+        sb.append(": ");
+        // for each qualifier, add its canonical name, a comma and a space
+        // to the string.
+        for (Class<? extends Annotation> qual : sortedSupportedQuals) {
+            sb.append(qual.getCanonicalName());
+            sb.append(", ");
         }
+        // remove last comma and space
+        return sb.substring(0, sb.length() - 2);
     }
 
     /**
@@ -814,6 +817,23 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Produces the receiver and offset associated with an expression. For instance, "n+1" has no
+     * associated Receiver, but this method produces a pair of a Receiver (for "n") and an offset
+     * ("1").
+     *
+     * @param expression a Java expression, possibly with a constant offset
+     * @param currentPath location at which expression is evaluated
+     * @return receiver and offset for the given expression
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     */
+    public Pair<Receiver, String> getReceiverAndOffsetFromJavaExpressionString(
+            String expression, TreePath currentPath) throws FlowExpressionParseException {
+        Pair<String, String> p = getExpressionAndOffset(expression);
+        Receiver r = getReceiverFromJavaExpressionString(p.first, currentPath);
+        return Pair.of(r, p.second);
+    }
+
+    /**
      * Returns the annotation mirror from dataflow for {@code expression}.
      *
      * <p>This will output a different annotation than {@link
@@ -844,10 +864,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * compilation unit.
      */
     protected enum ScanState {
+        /** Dataflow analysis in progress. */
         IN_PROGRESS,
+        /** Dataflow analysis finished. */
         FINISHED
-    };
+    }
 
+    /** Map from ClassTree to their dataflow analysis state. */
     protected final Map<ClassTree, ScanState> scannedClasses;
 
     /**
@@ -975,7 +998,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
-     * @return the {@link Node}s for a given {@link Tree}.
+     * @return the {@link Node}s for a given {@link Tree}
      */
     public Set<Node> getNodesForTree(Tree tree) {
         return flowResult.getNodesForTree(tree);
@@ -1395,9 +1418,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public ParameterizedMethodType constructorFromUse(NewClassTree tree) {
-        ParameterizedMethodType mType = super.constructorFromUse(tree);
-        AnnotatedExecutableType method = mType.methodType;
+    public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
+        ParameterizedExecutableType mType = super.constructorFromUse(tree);
+        AnnotatedExecutableType method = mType.executableType;
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
@@ -1531,9 +1554,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public ParameterizedMethodType methodFromUse(MethodInvocationTree tree) {
-        ParameterizedMethodType mType = super.methodFromUse(tree);
-        AnnotatedExecutableType method = mType.methodType;
+    public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
+        ParameterizedExecutableType mType = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mType.executableType;
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
@@ -1559,8 +1582,8 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the AnnotatedTypeFactory of the subchecker and copies the current visitor state to
      * the sub-factory so that the types are computed properly. Because the visitor state is copied,
-     * call this method each time a subfactory is needed rather than store the returned factory in a
-     * field.
+     * call this method each time a subfactory is needed rather than store the returned subfactory
+     * in a field.
      *
      * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
      */

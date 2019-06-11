@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -286,7 +287,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private List<Integer> getMethodParamsLen(List<? extends ExpressionTree> args) {
-            assert args.size() > 0 : "getMethod must have at least one parameter";
+            assert !args.isEmpty() : "getMethod must have at least one parameter";
 
             // Number of parameters in the created method object
             int numParams = args.size() - 1;
@@ -363,12 +364,7 @@ class MethodSignature {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((className == null) ? 0 : className.hashCode());
-        result = prime * result + ((methodName == null) ? 0 : methodName.hashCode());
-        result = prime * result + params;
-        return result;
+        return Objects.hash(className, methodName, params);
     }
 
     @Override
