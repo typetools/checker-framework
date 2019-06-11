@@ -29,8 +29,6 @@ import scenelib.annotations.field.ScalarAFT;
  */
 public class AnnotationConverter {
 
-    public static boolean debug = false;
-
     /**
      * Converts an {@link javax.lang.model.element.AnnotationMirror} into an {@link
      * scenelib.annotations.Annotation}.

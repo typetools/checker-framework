@@ -196,12 +196,6 @@ public class WholeProgramInferenceScenesHelper {
         if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
             return;
         }
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf(
-                    "updateAnnotationSetInScene:%n  rhsATM=%s%n  rhsATM.getUnderlyingType()=%s%n",
-                    rhsATM, rhsATM.getUnderlyingType());
-            new Error("Backtrace 3 where rhsATM=" + rhsATM).printStackTrace();
-        }
         AnnotatedTypeMirror atmFromJaif =
                 AnnotatedTypeMirror.createType(rhsATM.getUnderlyingType(), atf, false);
         typeElementToATM(atmFromJaif, type, atf);
@@ -453,15 +447,7 @@ public class WholeProgramInferenceScenesHelper {
     private void typeElementToATM(
             AnnotatedTypeMirror atm, ATypeElement type, AnnotatedTypeFactory atf) {
         Set<Annotation> annos = getSupportedAnnosInSet(type.tlAnnotationsHere, atf);
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf("typeElementToATM: type=%s, annos=%s%n", type, annos);
-        }
         for (Annotation anno : annos) {
-            if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-                if (anno.toString().equals("@org.checkerframework.checker.lock.qual.GuardedBy")) {
-                    new Error("Backtrace 2").printStackTrace();
-                }
-            }
             AnnotationMirror am =
                     AnnotationConverter.annotationToAnnotationMirror(anno, atf.getProcessingEnv());
             atm.addAnnotation(am);

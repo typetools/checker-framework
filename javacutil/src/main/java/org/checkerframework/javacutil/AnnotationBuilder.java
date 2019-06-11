@@ -1,7 +1,9 @@
 package org.checkerframework.javacutil;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -81,9 +83,6 @@ public class AnnotationBuilder {
      */
     public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
         this(env, anno.getCanonicalName());
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf("AnnotationBuilder(%s)%n", anno);
-        }
     }
 
     /**
@@ -94,10 +93,6 @@ public class AnnotationBuilder {
      * @param name the name of the annotation to build
      */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf("AnnotationBuilder(%s)%n", name);
-            new Error(String.format("AnnotationBuilder(%s)", name)).printStackTrace(System.out);
-        }
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
         this.annotationElt = elements.getTypeElement(name);
@@ -117,9 +112,6 @@ public class AnnotationBuilder {
      * @param annotation the annotation to copy
      */
     public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf("AnnotationBuilder(%s)%n", annotation);
-        }
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
 
@@ -273,14 +265,6 @@ public class AnnotationBuilder {
                 new CheckerFrameworkAnnotationMirror(annotationType, elementValues);
         if (result.toString().equals("@org.checkerframework.checker.lock.qual.GuardedBy")) {
             RuntimeException err = new BugInCF("GuardedBy with no value, build will not return");
-            if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-                // Print the error here, because it doesn't get thrown.  It is swallowed somewhere.
-                err.printStackTrace(System.out);
-                throw err;
-            }
-        }
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf("build => %s%n", result);
         }
         return result;
     }
@@ -668,9 +652,6 @@ public class AnnotationBuilder {
             final TypeElement elm = (TypeElement) at.asElement();
             this.annotationName = elm.getQualifiedName().toString().intern();
             this.elementValues = ev;
-            if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-                new Error("new CheckerFrameworkAnnotationMirror: " + this).printStackTrace();
-            }
         }
 
         @Override

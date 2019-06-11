@@ -763,23 +763,10 @@ public class LockAnnotatedTypeFactory
      * @return an AnnotationMirror corresponding to @GuardedBy(values)
      */
     private AnnotationMirror createGuardedByAnnotationMirror(List<String> values) {
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf("createGuardedByAnnotationMirror(%s)%n", values);
-        }
         AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), GuardedBy.class);
         builder.setValue("value", values.toArray());
 
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf("createGuardedByAnnotationMirror called setValue%n");
-        }
-
         // Return the resulting AnnotationMirror
-        AnnotationMirror result = builder.build();
-
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf("createGuardedByAnnotationMirror => %s%n", result);
-        }
-
-        return result;
+        return builder.build();
     }
 }

@@ -434,9 +434,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // ***** PROBLEM:
         // For a primitive such as long, this is yielding just @GuardedBy rather than @GuardedBy({})
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
-        if (org.checkerframework.javacutil.AnnotationBuilder.debug) {
-            System.out.printf("rhsATM = %s = atf.getAnnotatedType(%s)%n", rhsATM, rhs.getTree());
-        }
         helper.updateAnnotationSetInScene(
                 field.type, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.FIELD);
     }
