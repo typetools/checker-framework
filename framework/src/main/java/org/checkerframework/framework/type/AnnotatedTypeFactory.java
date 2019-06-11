@@ -1183,7 +1183,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * qualifier upper bounds for uses of the type of the clause.
      *
      * @param clause tree that represents an extends or implements clause
-     * @returnt he type of the extends or implements clause
+     * @return the type of the extends or implements clause
      */
     public AnnotatedTypeMirror getTypeOfExtendsImplements(Tree clause) {
         AnnotatedTypeMirror fromTypeTree = fromTypeTree(clause);
