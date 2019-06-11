@@ -91,7 +91,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
@@ -1147,7 +1146,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     protected QualifierUpperBounds qualifierUpperBounds;
 
-    public AnnotationMirrorSet getTypeDeclarationBound(AnnotatedTypeMirror typeMirror) {
+    public Set<AnnotationMirror> getTypeDeclarationBounds(AnnotatedTypeMirror typeMirror) {
         return qualifierUpperBounds.getBoundAnnotations(typeMirror);
     }
 
@@ -1157,7 +1156,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     public Set<AnnotationMirror> getTypeOfExtendsImplements(Tree clause) {
         AnnotatedTypeMirror fromTypeTree = fromTypeTree(clause);
-        AnnotationMirrorSet bound = getTypeDeclarationBound(fromTypeTree);
+        Set<AnnotationMirror> bound = getTypeDeclarationBounds(fromTypeTree);
         fromTypeTree.addMissingAnnotations(bound);
         return fromTypeTree.getAnnotations();
     }
