@@ -263,9 +263,6 @@ public class AnnotationBuilder {
         wasBuilt = true;
         AnnotationMirror result =
                 new CheckerFrameworkAnnotationMirror(annotationType, elementValues);
-        if (result.toString().equals("@org.checkerframework.checker.lock.qual.GuardedBy")) {
-            RuntimeException err = new BugInCF("GuardedBy with no value, build will not return");
-        }
         return result;
     }
 
