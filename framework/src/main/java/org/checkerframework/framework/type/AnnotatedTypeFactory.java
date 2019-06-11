@@ -196,6 +196,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private final AnnotationFormatter annotationFormatter;
 
+    /** Holds the qualifier upper bounds for type uses. */
+    protected QualifierUpperBounds qualifierUpperBounds;
+
     /**
      * Provides utility method to substitute arguments for their type variables. Field should be
      * final, but can only be set in postInit, because subtypes might need other state to be
@@ -549,7 +552,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.typeHierarchy = createTypeHierarchy();
         this.typeVarSubstitutor = createTypeVariableSubstitutor();
         this.typeArgumentInference = createTypeArgumentInference();
-        this.qualifierUpperBounds = new QualifierUpperBounds(this);
+        this.qualifierUpperBounds = createQualifierUpperBounds();
 
         // TODO: is this the best location for declaring this alias?
         addAliasedDeclAnnotation(
@@ -576,6 +579,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (this.getClass().equals(AnnotatedTypeFactory.class)) {
             this.parseStubFiles();
         }
+    }
+
+    /** Creates {@link QualifierUpperBounds} for this type factory. */
+    protected QualifierUpperBounds createQualifierUpperBounds() {
+        return new QualifierUpperBounds(this);
     }
 
     /** Returns the WholeProgramInference instance. */
@@ -1144,10 +1152,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return type;
     }
 
-    protected QualifierUpperBounds qualifierUpperBounds;
-
-    public Set<AnnotationMirror> getTypeDeclarationBounds(AnnotatedTypeMirror typeMirror) {
-        return qualifierUpperBounds.getBoundAnnotations(typeMirror);
+    /** Returns the set of qualifiers that are the upper bounds for a use of the type. */
+    public Set<AnnotationMirror> getTypeDeclarationBounds(AnnotatedTypeMirror type) {
+        return qualifierUpperBounds.getBoundQualifiers(type);
     }
 
     public Set<AnnotationMirror> getTypeDeclarationBounds(TypeElement typeElement) {
@@ -1169,11 +1176,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return qualHierarchy.getTopAnnotations();
     }
 
-    public Set<AnnotationMirror> getTypeOfExtendsImplements(Tree clause) {
+    /**
+     * Returns the type of the extends or implements clause.
+     *
+     * <p>The primary qualifier is either an explicit annotation on {@code clause}, or it is the
+     * qualifier upper bounds for uses of the type of the clause.
+     *
+     * @param clause tree that represents an extends or implements clause
+     * @returnt he type of the extends or implements clause
+     */
+    public AnnotatedTypeMirror getTypeOfExtendsImplements(Tree clause) {
         AnnotatedTypeMirror fromTypeTree = fromTypeTree(clause);
         Set<AnnotationMirror> bound = getTypeDeclarationBounds(fromTypeTree);
         fromTypeTree.addMissingAnnotations(bound);
-        return fromTypeTree.getAnnotations();
+        return fromTypeTree;
     }
 
     // **********************************************************************

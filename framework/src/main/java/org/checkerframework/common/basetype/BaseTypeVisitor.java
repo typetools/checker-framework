@@ -405,7 +405,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // there is no need to do any subtype checking.
         if (classTree.getExtendsClause() != null) {
             Set<AnnotationMirror> extendsAnnos =
-                    atypeFactory.getTypeOfExtendsImplements(classTree.getExtendsClause());
+                    atypeFactory
+                            .getTypeOfExtendsImplements(classTree.getExtendsClause())
+                            .getAnnotations();
             for (AnnotationMirror classAnno : classBounds) {
                 AnnotationMirror extendsAnno =
                         qualifierHierarchy.findAnnotationInSameHierarchy(extendsAnnos, classAnno);
@@ -422,7 +424,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Do the same check as above for implements clauses.
         for (Tree implementsClause : classTree.getImplementsClause()) {
             Set<AnnotationMirror> implementsClauseAnnos =
-                    atypeFactory.getTypeOfExtendsImplements(implementsClause);
+                    atypeFactory.getTypeOfExtendsImplements(implementsClause).getAnnotations();
 
             for (AnnotationMirror classAnno : classBounds) {
                 AnnotationMirror implementsAnno =

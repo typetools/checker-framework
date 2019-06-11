@@ -12,11 +12,6 @@ sourceSets {
             // Tests that fail by design.
             exclude 'tests/SubtypingStringPatternsPartialTest.java'
         }
-        resources {
-            // Stub files, message.properties, etc.
-            srcDirs = ['src/main/java']
-            exclude '**/*.java'
-        }
     }
 }
 
