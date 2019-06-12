@@ -637,6 +637,7 @@ task checkBasicStyle(group: 'Format') {
     String[] ignoreDirectories = ['.git',
                                   '.gradle',
                                   '.idea',
+                                  '.plume-scripts',
                                   'annotated',
                                   'api',
                                   'bib',
