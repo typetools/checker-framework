@@ -157,9 +157,10 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ./gradlew :checker:demosTests --console=plain --warning-mode=all -s --no-daemon
 
   # Guava
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
-  (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
+  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools guava`
+  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO} guava) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO} guava)
   export CHECKERFRAMEWORK=${CHECKERFRAMEWORK:-$ROOT/checker-framework}
   (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
 
