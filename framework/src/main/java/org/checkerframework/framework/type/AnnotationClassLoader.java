@@ -417,8 +417,8 @@ public class AnnotationClassLoader {
      */
     private final @Nullable URLClassLoader getClassLoader() {
         ClassLoader ret = InternalUtils.getClassLoaderForClass(checker.getClass());
-        if (ret instanceof URLClassLoader) {
-            return (@Nullable URLClassLoader) ret;
+        if (result instanceof URLClassLoader) {
+            return (@Nullable URLClassLoader) result;
         } else {
             // Java 9+ use an internal classloader that doesn't support getting URLs. Ignore.
             return null;
