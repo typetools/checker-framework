@@ -21,7 +21,7 @@ if [ ! -z "$CHANGED_JAVA_FILES" ]; then
     python checker/bin-devel/.run-google-java-format/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES} || (echo "Try running: ./gradlew reformat" && /bin/false)
 
     ./gradlew getPlumeScripts -q
-    (git diff > /tmp/diff.txt 2>&1) || true
+    (git diff --staged > /tmp/diff.txt 2>&1) || true
     [ -s /tmp/diff.txt ] || (echo "/tmp/diff.txt is empty" && false)
     (./gradlew requireJavadocPrivate > /tmp/warnings.txt 2>&1) || true
     python checker/bin-devel/.plume-scripts/lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/warnings.txt
