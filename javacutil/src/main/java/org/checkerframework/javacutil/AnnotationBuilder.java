@@ -57,8 +57,6 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 public class AnnotationBuilder {
 
-    public static boolean debug = true;
-
     private final Elements elements;
     private final Types types;
 
