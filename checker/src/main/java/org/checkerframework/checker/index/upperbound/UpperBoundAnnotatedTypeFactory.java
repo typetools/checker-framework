@@ -289,6 +289,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return imf.isMathMin(methodTree);
     }
 
+    /**
+     * Returns true if the tree is for {@code Random.nextInt(int)}.
+     *
+     * @param methodTree a tree to check
+     * @return true iff the tree is for {@code Random.nextInt(int)}
+     */
     public boolean isRandomNextInt(Tree methodTree) {
         return imf.isRandomNextInt(methodTree, processingEnv);
     }
@@ -406,8 +412,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * This exists for Math.min and Random.nextInt, which must be special-cased. These are cases
-         * 1 and 2.
+         * This exists for Math.min and Random.nextInt, which must be special-cased.
          *
          * <ul>
          *   <li>Math.min has unusual semantics that combines annotations for the UBC.

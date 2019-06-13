@@ -5,7 +5,7 @@ public class DefaultsSignedness {
     public void ConstantTest() {
 
         // Test bytes with literal values
-        @Constant byte conByte;
+        @SignednessEither byte conByte;
         @SignednessBottom byte botByte;
 
         byte testByte = 0;
@@ -16,7 +16,7 @@ public class DefaultsSignedness {
         botByte = testByte;
 
         // Test shorts with literal values
-        @Constant short conShort;
+        @SignednessEither short conShort;
         @SignednessBottom short botShort;
 
         short testShort = 128;
@@ -27,7 +27,7 @@ public class DefaultsSignedness {
         botShort = testShort;
 
         // Test ints with literal values
-        @Constant int conInt;
+        @SignednessEither int conInt;
         @SignednessBottom int botInt;
 
         int testInt = 32768;
@@ -38,7 +38,7 @@ public class DefaultsSignedness {
         botInt = testInt;
 
         // Test longs with literal values
-        @Constant long conLong;
+        @SignednessEither long conLong;
         @SignednessBottom long botLong;
 
         long testLong = 2147483648L;
@@ -49,7 +49,7 @@ public class DefaultsSignedness {
         botLong = testLong;
 
         // Test chars with literal values
-        @Constant char conChar;
+        @SignednessEither char conChar;
         @SignednessBottom char botChar;
 
         char testChar = 'a';
@@ -76,7 +76,7 @@ public class DefaultsSignedness {
 
         // Test bytes
         @Signed byte sinByte;
-        @Constant byte conByte;
+        @SignednessEither byte conByte;
 
         sinByte = testByte;
 
@@ -85,7 +85,7 @@ public class DefaultsSignedness {
 
         // Test shorts
         @Signed short sinShort;
-        @Constant short conShort;
+        @SignednessEither short conShort;
 
         sinShort = testShort;
 
@@ -94,7 +94,7 @@ public class DefaultsSignedness {
 
         // Test ints
         @Signed int sinInt;
-        @Constant int conInt;
+        @SignednessEither int conInt;
 
         sinInt = testInt;
 
@@ -103,7 +103,7 @@ public class DefaultsSignedness {
 
         // Test longs
         @Signed long sinLong;
-        @Constant long conLong;
+        @SignednessEither long conLong;
 
         sinLong = testLong;
 
@@ -112,7 +112,7 @@ public class DefaultsSignedness {
 
         // Test floats
         @Signed float sinFloat;
-        @Constant float conFloat;
+        @SignednessEither float conFloat;
 
         sinFloat = testFloat;
 
@@ -121,7 +121,7 @@ public class DefaultsSignedness {
 
         // Test doubles
         @Signed double sinDouble;
-        @Constant double conDouble;
+        @SignednessEither double conDouble;
 
         sinDouble = testDouble;
 
@@ -130,7 +130,7 @@ public class DefaultsSignedness {
 
         // Test chars
         @Signed char sinChar;
-        @Constant char conChar;
+        @SignednessEither char conChar;
 
         sinChar = testChar;
 
@@ -140,7 +140,7 @@ public class DefaultsSignedness {
         /*
         //Test boxed bytes
         @Signed Byte sinBoxedByte;
-        @Constant Byte conBoxedByte;
+        @SignednessEither Byte conBoxedByte;
 
         sinBoxedByte = testBoxedByte;
 
@@ -149,7 +149,7 @@ public class DefaultsSignedness {
 
         //Test boxed shorts
         @Signed Short sinBoxedShort;
-        @Constant Short conBoxedShort;
+        @SignednessEither Short conBoxedShort;
 
         sinBoxedShort = testBoxedShort;
 
@@ -158,7 +158,7 @@ public class DefaultsSignedness {
 
         //Test boxed Integers
         @Signed Integer sinBoxedInteger;
-        @Constant Integer conBoxedInteger;
+        @SignednessEither Integer conBoxedInteger;
 
         sinBoxedInteger = testBoxedInteger;
 
@@ -167,7 +167,7 @@ public class DefaultsSignedness {
 
         //Test boxed Longs
         @Signed Long sinBoxedLong;
-        @Constant Long conBoxedLong;
+        @SignednessEither Long conBoxedLong;
 
         sinBoxedLong = testBoxedLong;
 

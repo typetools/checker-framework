@@ -15,6 +15,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -110,6 +111,136 @@ public class AnnotatedTypes {
             asSuperVisitor = new AsSuperVisitor(atypeFactory);
         }
         return asSuperVisitor.asSuper(type, superType);
+    }
+
+    /**
+     * Calls asSuper and casts the result to the same type as the input supertype.
+     *
+     * @param subtype subtype to be transformed to supertype
+     * @param supertype supertype that subtype is transformed to
+     * @param <T> the type of supertype and return type
+     * @return subtype as an instance of supertype
+     */
+    public static <T extends AnnotatedTypeMirror> T castedAsSuper(
+            final AnnotatedTypeFactory atypeFactory,
+            final AnnotatedTypeMirror subtype,
+            final T supertype) {
+        final Types types = atypeFactory.getProcessingEnv().getTypeUtils();
+        final Elements elements = atypeFactory.getProcessingEnv().getElementUtils();
+
+        if (subtype.getKind() == TypeKind.NULL) {
+            // Make a copy of the supertype so that if supertype is a composite type, the
+            // returned type will be fully annotated.  (For example, if sub is @C null and super is
+            // @A List<@B String>, then the returned type is @C List<@B String>.)
+            @SuppressWarnings("unchecked")
+            T copy = (T) supertype.deepCopy();
+            copy.replaceAnnotations(subtype.getAnnotations());
+            return copy;
+        }
+
+        final T asSuperType = AnnotatedTypes.asSuper(atypeFactory, subtype, supertype);
+
+        fixUpRawTypes(subtype, asSuperType, supertype, types);
+
+        // if we have a type for enum MyEnum {...}
+        // When the supertype is the declaration of java.lang.Enum<E>, MyEnum values become
+        // Enum<MyEnum>.  Where really, we would like an Enum<E> with the annotations from
+        // Enum<MyEnum> are transferred to Enum<E>.  That is, if we have a type:
+        // @1 Enum<@2 MyEnum>
+        // asSuper should return:
+        // @1 Enum<E extends @2 Enum<E>>
+        if (asSuperType != null
+                && AnnotatedTypes.isEnum(asSuperType)
+                && AnnotatedTypes.isDeclarationOfJavaLangEnum(types, elements, supertype)) {
+            final AnnotatedDeclaredType resultAtd = ((AnnotatedDeclaredType) supertype).deepCopy();
+            resultAtd.clearAnnotations();
+            resultAtd.addAnnotations(asSuperType.getAnnotations());
+
+            final AnnotatedDeclaredType asSuperAdt = (AnnotatedDeclaredType) asSuperType;
+            if (!resultAtd.getTypeArguments().isEmpty()
+                    && !asSuperAdt.getTypeArguments().isEmpty()) {
+                final AnnotatedTypeMirror sourceTypeArg = asSuperAdt.getTypeArguments().get(0);
+                final AnnotatedTypeMirror resultTypeArg = resultAtd.getTypeArguments().get(0);
+                resultTypeArg.clearAnnotations();
+                if (resultTypeArg.getKind() == TypeKind.TYPEVAR) {
+                    // Only change the upper bound of a type variable.
+                    AnnotatedTypeVariable resultTypeArgTV = (AnnotatedTypeVariable) resultTypeArg;
+                    resultTypeArgTV.getUpperBound().addAnnotations(sourceTypeArg.getAnnotations());
+                } else {
+                    resultTypeArg.addAnnotations(sourceTypeArg.getAnnotations());
+                }
+                @SuppressWarnings("unchecked")
+                T result = (T) resultAtd;
+                return result;
+            }
+        }
+        return asSuperType;
+    }
+
+    /**
+     * Some times we create type arguments for types that were raw. When we do an asSuper we lose
+     * these arguments. If in the converted type (i.e. the subtype as super) is missing type
+     * arguments AND those type arguments should come from the original subtype's type arguments
+     * then we copy the original type arguments to the converted type. e.g. We have a type W, that
+     * "wasRaw" {@code ArrayList<? extends Object>} When W is converted to type A, List, using
+     * asSuper it no longer has its type argument. But since the type argument to List should be the
+     * same as that to ArrayList we copy over the type argument of W to A. A becomes {@code List<?
+     * extends Object>}
+     *
+     * @param originalSubtype the subtype before being converted by asSuper
+     * @param asSuperType he subtype after being converted by asSuper
+     * @param supertype the supertype for which asSuperType should have the same underlying type
+     * @param types the types utility
+     */
+    private static void fixUpRawTypes(
+            final AnnotatedTypeMirror originalSubtype,
+            final AnnotatedTypeMirror asSuperType,
+            final AnnotatedTypeMirror supertype,
+            final Types types) {
+        if (asSuperType == null
+                || asSuperType.getKind() != TypeKind.DECLARED
+                || originalSubtype.getKind() != TypeKind.DECLARED) {
+            return;
+        }
+
+        final AnnotatedDeclaredType declaredAsSuper = (AnnotatedDeclaredType) asSuperType;
+        final AnnotatedDeclaredType declaredSubtype = (AnnotatedDeclaredType) originalSubtype;
+
+        if (!declaredAsSuper.wasRaw()
+                || !declaredAsSuper.getTypeArguments().isEmpty()
+                || declaredSubtype.getTypeArguments().isEmpty()) {
+            return;
+        }
+
+        Set<Pair<Integer, Integer>> typeArgMap =
+                TypeArgumentMapper.mapTypeArgumentIndices(
+                        (TypeElement) declaredSubtype.getUnderlyingType().asElement(),
+                        (TypeElement) declaredAsSuper.getUnderlyingType().asElement(),
+                        types);
+
+        if (typeArgMap.size() != declaredSubtype.getTypeArguments().size()) {
+            return;
+        }
+
+        List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
+
+        List<Pair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
+        Collections.sort(
+                orderedByDestination,
+                new Comparator<Pair<Integer, Integer>>() {
+                    @Override
+                    public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
+                        return o1.second - o2.second;
+                    }
+                });
+
+        final List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
+        if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
+            for (Pair<Integer, Integer> mapping : orderedByDestination) {
+                newTypeArgs.add(subTypeArgs.get(mapping.first).deepCopy());
+            }
+        }
+        declaredAsSuper.setTypeArguments(newTypeArgs);
     }
 
     /** This method identifies wildcard types that are unbound. */
@@ -828,25 +959,24 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Sees if the passed in array of {@link ElementType} values have the correct set of values
-     * which defines a type qualifier.
+     * Returns true if the given array contains {@link ElementType#TYPE_USE}, false otherwise.
      *
      * @param elements an array of {@link ElementType} values
      * @param cls the annotation class being tested; used for diagnostic messages only
+     * @return true iff the give array contains {@link ElementType#TYPE_USE}
      * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
      *     something besides {@link ElementType#TYPE_PARAMETER}
      */
     public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
+        // True if the array contains TYPE_USE
         boolean hasTypeUse = false;
+        // Non-null if the array contains an element other than TYPE_USE or TYPE_PARAMETER
         ElementType otherElementType = null;
 
         for (ElementType element : elements) {
             if (element.equals(ElementType.TYPE_USE)) {
-                // valid annotations have to have TYPE_USE
                 hasTypeUse = true;
             } else if (!element.equals(ElementType.TYPE_PARAMETER)) {
-                // if there's an ElementType with a enumerated value of something other than
-                // TYPE_USE or TYPE_PARAMETER then it isn't a valid annotation
                 otherElementType = element;
             }
             if (hasTypeUse && otherElementType != null) {
@@ -975,6 +1105,7 @@ public class AnnotatedTypes {
             final AnnotationMirror top) {
         return findEffectiveAnnotationInHierarchy(qualifierHierarchy, toSearch, top, false);
     }
+
     /**
      * When comparing types against the bounds of a type variable, we may encounter other type
      * variables, wildcards, and intersections in those bounds. This method traverses the bounds

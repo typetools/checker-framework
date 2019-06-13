@@ -118,12 +118,14 @@ abstract class TargetedElementAnnotationApplier {
         if (!remaining.isEmpty()) {
             StringBuilder msg = new StringBuilder();
             msg.append(
-                    this.getClass().getName()
-                            + ".handleInvalid: "
+                    "handleInvalid(this="
+                            + this.getClass().getName()
+                            + "):"
+                            + "\n"
                             + "Invalid variable and element passed to extractAndApply; type: "
                             + type
-                            + ","
-                            + " element: "
+                            + "\n"
+                            + "  element: "
                             + element
                             + " (kind: "
                             + element.getKind()
@@ -137,7 +139,8 @@ abstract class TargetedElementAnnotationApplier {
                     "\n"
                             + "Targeted annotations: "
                             + PluginUtil.join(", ", annotatedTargets())
-                            + "; Valid annotations: "
+                            + "\n"
+                            + "Valid annotations: "
                             + PluginUtil.join(", ", validTargets()));
             throw new BugInCF(msg.toString());
         }
