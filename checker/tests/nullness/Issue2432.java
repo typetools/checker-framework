@@ -1,13 +1,12 @@
 // Test case for issue 2432:
 // https://github.com/typetools/checker-framework/issues/2432
 
-// @skip--test until the issue is fixed
+// @skip-test until the issue is fixed
 
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
 class Issue2432 {
-
 
     void foo(List<@PolyNull Object> pl, @Nullable Object obj) {
         pl.add(obj);
@@ -19,8 +18,6 @@ class Issue2432 {
         // :: error: (assignment.type.incompatible)
         nl.add(no);
     }
-
-
 
     void test2(TypeArgClass<@PolyNull Object> tc, @NonNull Object nno, @Nullable Object no) {
         Object obj = tc.echo(no);
@@ -38,11 +35,9 @@ class Issue2432 {
         foo2(nc, no, nno);
     }
 
-
-
     private class TypeArgClass<T> {
         @PolyNull Object add(@PolyNull Object obj, T dummy) {
-            obj = dummy;  // assignment.type.incompatible here?
+            obj = dummy; // assignment.type.incompatible here?
             return obj;
         }
 
@@ -54,6 +49,4 @@ class Issue2432 {
             return obj;
         }
     }
-
-
 }
