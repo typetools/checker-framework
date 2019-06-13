@@ -117,21 +117,27 @@ abstract class TargetedElementAnnotationApplier {
         }
         if (!remaining.isEmpty()) {
             throw new BugInCF(
-                    this.getClass().getName()
-                            + ".handleInvalid: "
-                            + "Invalid variable and element passed to extractAndApply; type: "
+                    "handleInvalid(this="
+                            + this.getClass().getName()
+                            + "):"
+                            + "\n"
+                            + "Invalid variable and element passed to extractAndApply;"
+                            + "  type: "
                             + type
-                            + ","
-                            + " element: "
+                            + "\n"
+                            + "  element: "
                             + element
                             + " (kind: "
                             + element.getKind()
-                            + "), invalid annotations: "
+                            + ")"
+                            + "\n"
+                            + "  invalid annotations: "
                             + PluginUtil.join(", ", remaining)
                             + "\n"
                             + "Targeted annotations: "
                             + PluginUtil.join(", ", annotatedTargets())
-                            + "; Valid annotations: "
+                            + "\n"
+                            + "Valid annotations: "
                             + PluginUtil.join(", ", validTargets()));
         }
     }
