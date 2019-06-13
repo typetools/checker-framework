@@ -10,7 +10,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 public class F2A extends AFConstraint {
 
     public F2A(AnnotatedTypeMirror formalParameter, AnnotatedTypeMirror argument) {
-        super(argument, formalParameter, 37);
+        super(argument, formalParameter);
     }
 
     @Override

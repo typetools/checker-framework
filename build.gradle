@@ -146,11 +146,12 @@ task cloneAndBuildDependencies(type: Exec) {
 }
 
 task version() {
-    description 'Print checker-framework version'
+    description 'Print Checker Framework version'
     doLast {
         println version
     }
 }
+
 /**
  * Creates a task that runs the checker on the main source set of each subproject. The task is named
  * "check${shortName}", for example "checkPurity" or "checkNullness".
@@ -718,6 +719,7 @@ task releaseBuild(type: GradleBuild) {
     // This downloads rather than builds the jdk8.jar because that's what is used in all the Travis tests.
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', 'checker:allJavadocJar']
 }
+
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
     description 'Build everything required for a release and run allTests'
     startParameter = new StartParameter()

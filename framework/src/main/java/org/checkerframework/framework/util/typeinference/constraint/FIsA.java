@@ -10,7 +10,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 public class FIsA extends AFConstraint {
 
     public FIsA(AnnotatedTypeMirror parameter, AnnotatedTypeMirror argument) {
-        super(argument, parameter, 101);
+        super(argument, parameter);
     }
 
     @Override

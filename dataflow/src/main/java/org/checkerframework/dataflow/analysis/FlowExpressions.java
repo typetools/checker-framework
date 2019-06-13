@@ -1016,14 +1016,9 @@ public class FlowExpressions {
                 return false;
             }
             MethodCall other = (MethodCall) obj;
-            int i = 0;
-            for (Receiver p : parameters) {
-                if (!p.equals(other.parameters.get(i))) {
-                    return false;
-                }
-                i++;
-            }
-            return receiver.equals(other.receiver) && method.equals(other.method);
+            return parameters.equals(other.parameters)
+                    && receiver.equals(other.receiver)
+                    && method.equals(other.method);
         }
 
         @Override
