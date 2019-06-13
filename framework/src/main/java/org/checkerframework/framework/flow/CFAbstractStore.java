@@ -20,6 +20,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.StringCFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -940,7 +941,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     @SideEffectFree
     @Override
     public String toString() {
-        return "Use visualize(new StringCFGVisualizer<>(...)) to see the Store: " + this.hashCode();
+        return visualize(new StringCFGVisualizer<>());
     }
 
     @Override
