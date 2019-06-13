@@ -940,7 +940,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     @SideEffectFree
     @Override
     public String toString() {
-        return "Use visualize(new StringCFGVisualizer<>()) to see the Store: " + this.hashCode();
+        return "Use visualize(new StringCFGVisualizer<>(...)) to see the Store: " + this.hashCode();
     }
 
     @Override
