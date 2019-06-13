@@ -69,7 +69,7 @@ The following repositories will be cloned or updated from their origins:
     clone_from_scratch_or_update(LIVE_CHECKLINK, CHECKLINK, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_PLUME_BIB, PLUME_BIB, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_STUBPARSER, STUBPARSER, clone_from_scratch, False)
-    clone_from_scratch_or_update(LIVE_ANNO_REPO, ANNO_TOOLS, clone_from_scratch, False)
+    # clone_from_scratch_or_update(LIVE_ANNO_REPO, ANNO_TOOLS, clone_from_scratch, False)
 
 def get_afu_date(building_afu):
     """If the AFU is being built, return the current date, otherwise return the

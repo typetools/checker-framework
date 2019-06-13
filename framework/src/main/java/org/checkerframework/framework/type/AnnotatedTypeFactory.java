@@ -47,7 +47,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.IntersectionType;
@@ -1078,7 +1077,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else if (tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.VARIABLE) {
             type = fromMember(tree);
         } else if (TreeUtils.isExpressionTree(tree)) {
-            tree = TreeUtils.skipParens((ExpressionTree) tree);
+            tree = TreeUtils.withoutParens((ExpressionTree) tree);
             type = fromExpression((ExpressionTree) tree);
         } else {
             throw new BugInCF(
@@ -1710,31 +1709,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
             return super.visitDeclared(type, p);
         }
-
-        private final Map<TypeParameterElement, AnnotatedTypeVariable> visited = new HashMap<>();
-
-        @Override
-        public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory p) {
-            TypeParameterElement tpelt =
-                    (TypeParameterElement) type.getUnderlyingType().asElement();
-            if (!visited.containsKey(tpelt)) {
-                visited.put(tpelt, type);
-                if (type.getAnnotations().isEmpty()
-                        && type.getUpperBound().getAnnotations().isEmpty()
-                        && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
-                    ElementAnnotationApplier.apply(type, tpelt, p);
-                }
-                super.visitTypeVariable(type, p);
-                visited.remove(tpelt);
-            }
-            return null;
-        }
-
-        @Override
-        public void reset() {
-            visited.clear();
-            super.reset();
-        }
     }
 
     // **********************************************************************
@@ -1892,7 +1866,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 return false;
             }
 
-            tree = TreeUtils.skipParens(tree);
+            tree = TreeUtils.withoutParens(tree);
 
             if (tree.getKind() == Tree.Kind.IDENTIFIER) {
                 Name n = ((IdentifierTree) tree).getName();
@@ -3126,6 +3100,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
             if (stubs.isEmpty()) {
+                // If the stub file has a prefix of "checker.jar/" then look for the file in the top
+                // level directory of the jar that contains the checker.
+                stubPath = stubPath.replace("checker.jar/", "/");
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 if (in == null) {
                     // Didn't find the stubfile.

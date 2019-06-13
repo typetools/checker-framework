@@ -523,9 +523,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * @return true if the expressions expr1 and expr2 are identical
      */
     private static boolean sameTree(ExpressionTree expr1, ExpressionTree expr2) {
-        return TreeUtils.skipParens(expr1)
+        return TreeUtils.withoutParens(expr1)
                 .toString()
-                .equals(TreeUtils.skipParens(expr2).toString());
+                .equals(TreeUtils.withoutParens(expr2).toString());
     }
 
     /**
@@ -548,8 +548,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         }
 
         // should strip parens
-        final ExpressionTree left = TreeUtils.skipParens(node.getLeftOperand());
-        final ExpressionTree right = TreeUtils.skipParens(node.getRightOperand());
+        final ExpressionTree left = TreeUtils.withoutParens(node.getLeftOperand());
+        final ExpressionTree right = TreeUtils.withoutParens(node.getRightOperand());
 
         // looking for ((a == b || a.equals(b))
         Heuristics.Matcher matcherEqOrEquals =
@@ -558,7 +558,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                     /** Returns true if e is either "e1 != null" or "e2 != null". */
                     private boolean isNeqNull(
                             ExpressionTree e, ExpressionTree e1, ExpressionTree e2) {
-                        e = TreeUtils.skipParens(e);
+                        e = TreeUtils.withoutParens(e);
                         if (e.getKind() != Tree.Kind.NOT_EQUAL_TO) {
                             return false;
                         }
@@ -673,8 +673,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return false;
         }
 
-        Tree left = TreeUtils.skipParens(node.getLeftOperand());
-        Tree right = TreeUtils.skipParens(node.getRightOperand());
+        Tree left = TreeUtils.withoutParens(node.getLeftOperand());
+        Tree right = TreeUtils.withoutParens(node.getRightOperand());
 
         // Only valid if we're comparing identifiers.
         if (!(left.getKind() == Tree.Kind.IDENTIFIER && right.getKind() == Tree.Kind.IDENTIFIER)) {
