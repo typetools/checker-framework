@@ -218,7 +218,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 }
 
                 // case 2:
-                if (!fieldAccess.isUnmodifiableByOtherCode()) {
+                if (!fieldAccess.isUnassignableByOtherCode()) {
                     continue; // remove information completely
                 }
 
@@ -228,7 +228,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             fieldValues = newFieldValues;
 
             // update method values
-            methodValues.clear();
+            methodValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
 
             arrayValues.clear();
         }
@@ -260,7 +260,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 || r instanceof FlowExpressions.ThisReference
                 || r instanceof FlowExpressions.LocalVariable
                 || r instanceof FlowExpressions.MethodCall
-                || r instanceof FlowExpressions.ArrayAccess) {
+                || r instanceof FlowExpressions.ArrayAccess
+                || r instanceof FlowExpressions.ClassName) {
             return !r.containsUnknown();
         }
         return false;
@@ -300,7 +301,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
             boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
-            if (sequentialSemantics || isMonotonic || fieldAcc.isUnmodifiableByOtherCode()) {
+            if (sequentialSemantics || isMonotonic || fieldAcc.isUnassignableByOtherCode()) {
                 V oldValue = fieldValues.get(fieldAcc);
                 V newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
@@ -328,7 +329,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             }
         } else if (r instanceof FlowExpressions.ThisReference) {
             FlowExpressions.ThisReference thisRef = (FlowExpressions.ThisReference) r;
-            if (sequentialSemantics || thisRef.isUnmodifiableByOtherCode()) {
+            if (sequentialSemantics || thisRef.isUnassignableByOtherCode()) {
                 V oldValue = thisValue;
                 V newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
@@ -337,7 +338,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             }
         } else if (r instanceof FlowExpressions.ClassName) {
             FlowExpressions.ClassName className = (FlowExpressions.ClassName) r;
-            if (sequentialSemantics || className.isUnmodifiableByOtherCode()) {
+            if (sequentialSemantics || className.isUnassignableByOtherCode()) {
                 V oldValue = classValues.get(className);
                 V newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
@@ -524,7 +525,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
             boolean isMonotonic = isMonotonicUpdate(fieldAccess, val);
-            if (sequentialSemantics || isMonotonic || fieldAccess.isUnmodifiableByOtherCode()) {
+            if (sequentialSemantics || isMonotonic || fieldAccess.isUnassignableByOtherCode()) {
                 fieldValues.put(fieldAccess, val);
             }
         }

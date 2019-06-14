@@ -955,7 +955,7 @@ public class ArrayList<E> extends AbstractList<E>
             return ArrayList.this.elementData(offset + index);
         }
 
-        public int size() {
+        public @NonNegative int size() {
             checkForComodification();
             return this.size;
         }

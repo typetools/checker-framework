@@ -16,6 +16,7 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -45,8 +46,10 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+    /** The {@link UnknownInterned} annotation. */
+    final AnnotationMirror TOP = AnnotationBuilder.fromClass(elements, UnknownInterned.class);
     /** The {@link Interned} annotation. */
-    final AnnotationMirror INTERNED, TOP;
+    final AnnotationMirror INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
 
     /**
      * Creates a new {@link InterningAnnotatedTypeFactory} that operates on a particular AST.
@@ -55,8 +58,6 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
-        this.TOP = AnnotationBuilder.fromClass(elements, UnknownInterned.class);
 
         // If you update the following, also update ../../../../../docs/manual/interning-checker.tex
         addAliasedAnnotation("com.sun.istack.internal.Interned", INTERNED);
@@ -150,6 +151,16 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             return super.visitDeclared(t, p);
+        }
+
+        @Override
+        public Void visitExecutable(AnnotatedExecutableType type, Void p) {
+            scan(type.getReturnType(), p);
+            // TODO: don't skip the receiver
+            scan(type.getParameterTypes(), p);
+            scan(type.getThrownTypes(), p);
+            scan(type.getTypeVariables(), p);
+            return null;
         }
     }
 

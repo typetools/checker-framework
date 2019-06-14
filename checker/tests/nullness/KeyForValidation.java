@@ -111,7 +111,7 @@ public class KeyForValidation {
 
     // :: error: (expression.unparsable.type.invalid)
     public static void test2(Set<@KeyFor("this.instanceField") String> keySet) {
-        // :: error: (expression.unparsable.type.invalid) :: error: (argument.type.incompatible)
+        // :: error: (expression.unparsable.type.invalid)
         new ArrayList<@KeyFor("this.instanceField") String>(keySet);
         // :: error: (expression.unparsable.type.invalid)
         new ArrayList<@KeyFor("this.instanceField") String>();

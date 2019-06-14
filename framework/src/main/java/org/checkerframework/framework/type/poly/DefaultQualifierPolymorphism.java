@@ -22,8 +22,8 @@ import org.checkerframework.javacutil.BugInCF;
 public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism {
 
     /**
-     * Creates a {@link DefaultQualifierPolymorphism} instance that uses the given {@code factory}
-     * for querying type qualifiers and the given factory for getting annotated types.
+     * Creates a {@link DefaultQualifierPolymorphism} instance that uses {@code factory} for
+     * querying type qualifiers and for getting annotated types.
      *
      * @param env the processing environment
      * @param factory the factory for the current checker
@@ -31,19 +31,20 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
     public DefaultQualifierPolymorphism(ProcessingEnvironment env, AnnotatedTypeFactory factory) {
         super(env, factory);
         Elements elements = env.getElementUtils();
-        AnnotationMirrorMap<AnnotationMirror> polys = new AnnotationMirrorMap<>();
+        AnnotationMirrorMap<AnnotationMirror> polyQuals = new AnnotationMirrorMap<>();
+        AnnotationMirrorSet topsSeen = new AnnotationMirrorSet();
         for (AnnotationMirror aam : qualHierarchy.getTypeQualifiers()) {
             if (QualifierPolymorphism.isPolyAll(aam)) {
-                polys.put(aam, null);
+                polyQuals.put(aam, null);
                 continue;
             }
-            AnnotationMirrorSet topsSeen = new AnnotationMirrorSet();
             AnnotationMirror aa = QualifierPolymorphism.getPolymorphicQualifier(aam);
             if (aa == null) {
                 continue;
             }
 
-            Name plval = AnnotationUtils.getElementValueClassName(aa, "value", true);
+            Name plval =
+                    AnnotationUtils.getElementValueClassName(aa, "value", /*useDefaults=*/ true);
             AnnotationMirror ttreetop;
             if (PolymorphicQualifier.class.getCanonicalName().contentEquals(plval)) {
                 if (topQuals.size() != 1) {
@@ -59,15 +60,15 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
             if (topsSeen.contains(ttreetop)) {
                 throw new BugInCF(
                         "DefaultQualifierPolymorphism: checker has multiple polymorphic qualifiers: "
-                                + polys.get(ttreetop)
+                                + polyQuals.get(ttreetop)
                                 + " and "
                                 + aam);
             }
             topsSeen.add(ttreetop);
-            polys.put(aam, ttreetop);
+            polyQuals.put(aam, ttreetop);
         }
 
-        this.polyQuals.putAll(polys);
+        this.polyQuals.putAll(polyQuals);
     }
 
     @Override
@@ -75,7 +76,7 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
             AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
         for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : replacements.entrySet()) {
             AnnotationMirror poly = pqentry.getKey();
-            if (poly != null && type.hasAnnotation(poly)) {
+            if (type.hasAnnotation(poly)) {
                 type.removeAnnotation(poly);
                 AnnotationMirrorSet quals = pqentry.getValue();
                 type.replaceAnnotations(quals);
@@ -88,8 +89,8 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
      *
      * @param polyQual polymorphic qualifier for which {@code a1Annos} and {@code a2Annos} are
      *     instantiations
-     * @param a1Annos a set that is an instantiation of {@code polyQual}
-     * @param a2Annos a set that is an instantiation of {@code polyQual}
+     * @param a1Annos a set that is an instantiation of {@code polyQual}, or null
+     * @param a2Annos a set that is an instantiation of {@code polyQual}, or null
      * @return the lub of the two sets
      */
     @Override

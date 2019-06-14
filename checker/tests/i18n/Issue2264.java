@@ -5,8 +5,9 @@ import org.checkerframework.checker.i18n.qual.LocalizableKey;
 import org.checkerframework.checker.i18n.qual.UnknownLocalizableKey;
 
 public class Issue2264 extends SuperClass {
-    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
+    // :: warning: (inconsistent.constructor.type)
     @LocalizableKey Issue2264() {
+        // :: error: (super.invocation.invalid)
         super(9);
     }
 }

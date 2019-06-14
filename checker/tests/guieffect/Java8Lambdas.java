@@ -107,7 +107,6 @@ public class Java8Lambdas {
         // failing that (call.invalid.ui) since doEither is @PolyUIEffect ?
         safePolymorphicLambdaRunner.doEither(e -> e.dangerous());
         safePolymorphicLambdaRunner.doEither(
-                // :: error: (declaration.inconsistent.with.implements.clause)
                 new @UI PolymorphicFunctionalInterface<UIElement>() {
                     public void executePolymorphic(UIElement arg) {
                         arg.dangerous();
@@ -123,8 +122,7 @@ public class Java8Lambdas {
         // :: error: (assignment.type.incompatible)
         PolymorphicFunctionalInterface<UIElement> func2 = e -> e.dangerous(); // Incompatible types!
         PolymorphicFunctionalInterface<UIElement> func2p =
-                // :: error: (assignment.type.incompatible) :: error:
-                // (declaration.inconsistent.with.implements.clause)
+                // :: error: (assignment.type.incompatible)
                 (new @UI PolymorphicFunctionalInterface<UIElement>() {
                     public void executePolymorphic(UIElement arg) {
                         arg.dangerous();
@@ -169,8 +167,7 @@ public class Java8Lambdas {
 
     // Just to check
     public PolymorphicFunctionalInterface<UIElement> returnLambdasTest3() {
-        // :: error: (return.type.incompatible) :: error:
-        // (declaration.inconsistent.with.implements.clause)
+        // :: error: (return.type.incompatible)
         return (new @UI PolymorphicFunctionalInterface<UIElement>() {
             public void executePolymorphic(UIElement arg) {
                 arg.dangerous();
