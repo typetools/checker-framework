@@ -416,7 +416,7 @@ public class AnnotationClassLoader {
      *     both are unavailable
      */
     private final @Nullable URLClassLoader getClassLoader() {
-        ClassLoader ret = InternalUtils.getClassLoaderForClass(checker.getClass());
+        ClassLoader result = InternalUtils.getClassLoaderForClass(checker.getClass());
         if (result instanceof URLClassLoader) {
             return (@Nullable URLClassLoader) result;
         } else {
