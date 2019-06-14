@@ -31,6 +31,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * to be interpreted. The programmer can also annotate values as @{@link NonNegative}, @{@link
  * Positive}, or @{@link IntRange}(from=<em>someNonNegativeConstant</em>).
  *
+ * <p>The "Glb" in the name stands for "greatest lower bound", because this type is the greatest
+ * lower bound of the types {@link Signed} and {@link Unsigned}; that is, this type is a subtype of
+ * both of those types.
+ *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */
 @Documented
