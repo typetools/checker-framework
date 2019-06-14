@@ -148,7 +148,7 @@ public interface CFGVisualizer<
      *
      * @param bb the block
      * @param analysis the current analysis
-     * @return the String representation of the given block {@code bb}
+     * @return the String representation of the given block
      */
     String visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis);
 
@@ -166,7 +166,7 @@ public interface CFGVisualizer<
      *
      * @param bb the block
      * @param analysis the current analysis
-     * @return the String representation of the transferInput of the block {@code bb}
+     * @return the String representation of the transferInput of the given block
      */
     String visualizeBlockTransferInput(Block bb, Analysis<A, S, T> analysis);
 
@@ -175,7 +175,7 @@ public interface CFGVisualizer<
      *
      * @param t the node
      * @param analysis the current analysis
-     * @return the String representation of the node {@code t}
+     * @return the String representation of the given node
      */
     String visualizeBlockNode(Node t, @Nullable Analysis<A, S, T> analysis);
 
