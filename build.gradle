@@ -458,7 +458,9 @@ subprojects {
             manifest {
                 attributes("Implementation-Version": "${version}")
                 attributes("Implementation-URL": "https://checkerframework.org")
-                attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
+		if (archiveName != "checker-source.jar") {
+                    attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
+                }
             }
         }
 
