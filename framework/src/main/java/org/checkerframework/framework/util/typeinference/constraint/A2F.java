@@ -12,7 +12,7 @@ public class A2F extends AFConstraint {
 
     /** Create a constraint with an argument less than a formal. */
     public A2F(AnnotatedTypeMirror argument, AnnotatedTypeMirror formalParameter) {
-        super(argument, formalParameter, 107);
+        super(argument, formalParameter);
     }
 
     @Override
