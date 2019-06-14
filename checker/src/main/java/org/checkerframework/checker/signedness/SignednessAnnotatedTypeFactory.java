@@ -78,6 +78,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * If the tree is a local variable and the type is byte, short, int, or long, then add the
      * UnknownSignedness annotation so that dataflow can refine it.
      */
+    @Override
+    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
+        // Add defaults from @DefaultFor and @DefaultQualifierInHierarchy
+                  defs.addCheckedCodeDefault(
+                        AnnotationBuilder.fromClass(elements, Signed.class), TypeUseLocation.ALL);
+    }
     private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
         switch (type.getKind()) {
             case BYTE:
