@@ -38,7 +38,7 @@ public interface CFGVisualizer<
      *     The information includes {@link Store}s that are valid at the beginning of basic blocks
      *     reachable from {@code entry} and per-node information for value producing {@link Node}s.
      *     Can also be {@code null} to indicate that this information should not be output.
-     * @return possible analysis results, e.g. generated file names({@link DOTCFGVisualizer}) and
+     * @return possible analysis results, e.g. generated file names ({@link DOTCFGVisualizer}) and
      *     String representation of CFG({@link StringCFGVisualizer}).
      */
     @Nullable Map<String, Object> visualize(
@@ -48,8 +48,8 @@ public interface CFGVisualizer<
      * Delegate the visualization responsibility to the passed {@link Store} instance, which will
      * call back to this visualizer instance for sub-components.
      *
-     * @param store the Store to visualize
-     * @return the String presentation of the value of {@link Store}
+     * @param store the store to visualize
+     * @return the String presentation of store
      */
     String visualizeStore(S store);
 
@@ -58,7 +58,7 @@ public interface CFGVisualizer<
      * CFAbstractStore#internalVisualize()} method.
      *
      * @param classCanonicalName the canonical name of the class
-     * @return the String representation of the header of {@link Store}
+     * @return the String representation of the header of store
      */
     String visualizeStoreHeader(String classCanonicalName);
 
@@ -67,7 +67,7 @@ public interface CFGVisualizer<
      *
      * @param localVar the local variable
      * @param value the value of the local variable
-     * @return the String representation of the value of a local variable
+     * @return the String representation of this local variable
      */
     String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, A value);
 
@@ -76,7 +76,7 @@ public interface CFGVisualizer<
      * object {@code this} in this Store.
      *
      * @param value the value of the current object {@code this}
-     * @return the String representation of the value of current object {@code this}
+     * @return the String representation of the current object {@code this}
      */
     String visualizeStoreThisVal(A value);
 
@@ -86,27 +86,27 @@ public interface CFGVisualizer<
      *
      * @param fieldAccess the field
      * @param value the value of the field
-     * @return the String representation of the value of fields of this {@link Store}
+     * @return the String representation of the fields collected by this store
      */
     String visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, A value);
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of arrays
-     * collected by this {@link Store}.
+     * collected by this Store.
      *
      * @param arrayValue the array
      * @param value the value of the array
-     * @return the String representation of the value of arrays of this {@link Store}
+     * @return the String representation of the arrays collected by this store
      */
     String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, A value);
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of pure method
-     * calls collected by this {@link Store}.
+     * calls collected by this Store.
      *
      * @param methodCall the pure method call
      * @param value the value of the pure method call
-     * @return the String representation of the value of pure method calls of this {@link Store}
+     * @return the String representation of the pure method calls collected by this store
      */
     String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, A value);
 
@@ -116,7 +116,7 @@ public interface CFGVisualizer<
      *
      * @param className the class name
      * @param value the value of the class name
-     * @return the String representation of the value of class names of this {@link Store}
+     * @return the String representation of the class names collected by this store
      */
     String visualizeStoreClassVals(FlowExpressions.ClassName className, A value);
 
@@ -136,16 +136,16 @@ public interface CFGVisualizer<
      * Called by {@code CFAbstractStore} to visualize any information after the invocation of {@code
      * CFAbstractStore#internalVisualize()}.
      *
-     * @return the String representation of the value of footer of this {@link Store}
+     * @return the String representation of the footer of store
      */
     String visualizeStoreFooter();
 
     /**
-     * Visualize a {@link Block} based on the analysis.
+     * Visualize a special block based on the analysis.
      *
-     * @param bb the {@link Block}
-     * @param analysis the current {@link Analysis}
-     * @return the String representation of this {@link Block}
+     * @param bb the special block
+     * @param analysis the current analysis
+     * @return the String representation of this block
      */
     String visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis);
 
@@ -153,7 +153,7 @@ public interface CFGVisualizer<
      * Visualize a {@link SpecialBlock}.
      *
      * @param sbb the {@link SpecialBlock}
-     * @return the String representation of the type of this {@link SpecialBlock}(entry, exit or
+     * @return the String representation of the type of this special block (entry, exit or
      *     exceptional-exit)
      */
     String visualizeSpecialBlock(SpecialBlock sbb);
@@ -161,18 +161,18 @@ public interface CFGVisualizer<
     /**
      * Visualize the transferInput of a Block based on the analysis.
      *
-     * @param bb the {@link Block}
-     * @param analysis the current {@link Analysis}
-     * @return the String representation of the transferInput of this {@link Block}
+     * @param bb the block
+     * @param analysis the current analysis
+     * @return the String representation of the transferInput of this block
      */
     String visualizeBlockTransferInput(Block bb, Analysis<A, S, T> analysis);
 
     /**
      * Visualize a Node based on the analysis.
      *
-     * @param t the {@link Node}
-     * @param analysis the current {@link Analysis}
-     * @return the String representation of this {@link Node}
+     * @param t the node
+     * @param analysis the current analysis
+     * @return the String representation of this node
      */
     String visualizeBlockNode(Node t, @Nullable Analysis<A, S, T> analysis);
 
