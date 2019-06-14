@@ -34,12 +34,12 @@ public interface CFGVisualizer<
      *
      * @param cfg the CFG to visualize
      * @param entry the entry node of the control flow graph to be represented
-     * @param analysis the analysis containing information about the program represented by the CFG.
+     * @param analysis an analysis containing information about the program represented by the CFG.
      *     The information includes {@link Store}s that are valid at the beginning of basic blocks
      *     reachable from {@code entry} and per-node information for value producing {@link Node}s.
      *     Can also be {@code null} to indicate that this information should not be output.
      * @return possible analysis results, e.g. generated file names ({@link DOTCFGVisualizer}) and
-     *     String representation of CFG({@link StringCFGVisualizer}).
+     *     String representation of CFG ({@link StringCFGVisualizer})
      */
     @Nullable Map<String, Object> visualize(
             ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis);
@@ -72,11 +72,11 @@ public interface CFGVisualizer<
     String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, A value);
 
     /**
-     * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of the current
-     * object {@code this} in this Store.
+     * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of {@code this}
+     * in this Store.
      *
-     * @param value the value of the current object {@code this}
-     * @return the String representation of the current object {@code this}
+     * @param value the value of {@code this}
+     * @return the String representation of {@code this}
      */
     String visualizeStoreThisVal(A value);
 
