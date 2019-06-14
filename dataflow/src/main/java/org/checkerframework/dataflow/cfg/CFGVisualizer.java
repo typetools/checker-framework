@@ -148,7 +148,7 @@ public interface CFGVisualizer<
      *
      * @param bb the special block
      * @param analysis the current analysis
-     * @return the String representation of this block
+     * @return the String representation of the given block
      */
     String visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis);
 
