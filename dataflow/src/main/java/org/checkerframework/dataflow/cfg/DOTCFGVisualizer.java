@@ -75,10 +75,10 @@ public class DOTCFGVisualizer<
     /**
      * Generate the nodes of control flow graph as String.
      *
-     * @param visited the set of all the {@link Block}s
+     * @param visited the set of all the blocks
      * @param cfg the current control flow graph
      * @param analysis the current analysis
-     * @return the String representation of the {@link Node}s
+     * @return the String representation of the nodes
      */
     @Override
     public String generateNodes(

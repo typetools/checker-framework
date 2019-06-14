@@ -49,7 +49,7 @@ public interface CFGVisualizer<
      * call back to this visualizer instance for sub-components.
      *
      * @param store the store to visualize
-     * @return the String presentation of store
+     * @return the String representation of this store
      */
     String visualizeStore(S store);
 
@@ -58,31 +58,33 @@ public interface CFGVisualizer<
      * CFAbstractStore#internalVisualize()} method.
      *
      * @param classCanonicalName the canonical name of the class
-     * @return the String representation of the header of store
+     * @return the String representation of the header to use for a store with the given canonical
+     *     name
      */
     String visualizeStoreHeader(String classCanonicalName);
 
     /**
-     * Called by {@code CFAbstractStore#internalVisualize()} to visualize a local variable.
+     * Called by {@code CFAbstractStore#internalVisualize()} to visualize a local variable in this
+     * store.
      *
      * @param localVar the local variable
      * @param value the value of the local variable
-     * @return the String representation of this local variable
+     * @return the String representation of the local variable in this store
      */
     String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, A value);
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of {@code this}
-     * in this Store.
+     * in this store.
      *
      * @param value the value of {@code this}
-     * @return the String representation of {@code this}
+     * @return the String representation of the value of {@code this} in this store
      */
     String visualizeStoreThisVal(A value);
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of fields
-     * collected by this Store.
+     * collected by this store.
      *
      * @param fieldAccess the field
      * @param value the value of the field
@@ -92,7 +94,7 @@ public interface CFGVisualizer<
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of arrays
-     * collected by this Store.
+     * collected by this store.
      *
      * @param arrayValue the array
      * @param value the value of the array
@@ -102,7 +104,7 @@ public interface CFGVisualizer<
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of pure method
-     * calls collected by this Store.
+     * calls collected by this store.
      *
      * @param methodCall the pure method call
      * @param value the value of the pure method call
@@ -112,7 +114,7 @@ public interface CFGVisualizer<
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of class names
-     * collected by this Store.
+     * collected by this store.
      *
      * @param className the class name
      * @param value the value of the class name
@@ -122,13 +124,14 @@ public interface CFGVisualizer<
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the specific information
-     * collected according to the specific kind of Store. Currently, these Stores call this method:
+     * collected according to the specific kind of store. Currently, these Stores call this method:
      * {@code LockStore}, {@code NullnessStore}, and {@code InitializationStore} to visualize
      * additional information.
      *
      * @param keyName the name of the specific information to be visualized
      * @param value the value of the specific information to be visualized
-     * @return the String representation of the specific information
+     * @return the String representation of the specific information according to the specific kind
+     *     of store
      */
     String visualizeStoreKeyVal(String keyName, Object value);
 
@@ -136,7 +139,7 @@ public interface CFGVisualizer<
      * Called by {@code CFAbstractStore} to visualize any information after the invocation of {@code
      * CFAbstractStore#internalVisualize()}.
      *
-     * @return the String representation of the footer of store
+     * @return the String representation of the footer to use for a store
      */
     String visualizeStoreFooter();
 
@@ -150,9 +153,9 @@ public interface CFGVisualizer<
     String visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis);
 
     /**
-     * Visualize a {@link SpecialBlock}.
+     * Visualize a special block.
      *
-     * @param sbb the {@link SpecialBlock}
+     * @param sbb the special block to visualize
      * @return the String representation of the type of this special block (entry, exit or
      *     exceptional-exit)
      */
