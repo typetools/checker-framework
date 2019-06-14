@@ -47,13 +47,13 @@ public class StubGenerator {
     /** the package of the class being processed. */
     private String currentPackage = null;
 
-    /** Constructs an instanceof {@code StubGenerator} that outputs to {@code System.out}. */
+    /** Constructs a {@code StubGenerator} that outputs to {@code System.out}. */
     public StubGenerator() {
         this(System.out);
     }
 
     /**
-     * Constructs an instance of {@code StubGenerator} that outputs to the provided output stream.
+     * Constructs a {@code StubGenerator} that outputs to the provided output stream.
      *
      * @param out the output stream
      */
@@ -62,7 +62,7 @@ public class StubGenerator {
     }
 
     /**
-     * Constructs an instance of {@code StubGenerator} that outputs to the provided output stream.
+     * Constructs a {@code StubGenerator} that outputs to the provided output stream.
      *
      * @param out the output stream
      */

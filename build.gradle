@@ -118,6 +118,13 @@ allprojects {
             }
         }
 
+	/// TODO: This should be enabled selectively, but not everywhere yet because it would require
+	/// exhaustive @param Javadoc tags throughout.  (Fails on Travis, cannot reproduce locally.)
+	// // Turn Javadoc warnings into errors.
+	// tasks.withType(Javadoc) {
+	//     options.addStringOption('Xwerror', '-quiet')
+	// }
+
         // Add standard javac options
         tasks.withType(JavaCompile) {
             dependsOn(':installGitHooks')
@@ -284,12 +291,10 @@ javadoc.dependsOn(allJavadoc)
 configurations {
     requireJavadoc
 }
-
 dependencies {
     // https://mvnrepository.com/artifact/org.plumelib/require-javadoc
-    compileOnly group: 'org.plumelib', name: 'require-javadoc', version: '0.1.0'
+    compileOnly group: 'org.plumelib', name: 'require-javadoc', version: '0.1.2'
 }
-
 task requireJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Ensures that Java elements have Javadoc documentation.'
     destinationDir = file("${rootDir}/docs/tmpapi")
@@ -304,7 +309,6 @@ task requireJavadoc(type: Javadoc, group: "Documentation") {
     options.doclet = "org.plumelib.javadoc.RequireJavadoc"
     // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
 }
-
 task requireJavadocPrivate(type: Javadoc, group: "Documentation") {
     description = 'Ensures that all (even private) Java elements have Javadoc documentation.'
     destinationDir = file("${rootDir}/docs/tmpapi")

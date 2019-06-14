@@ -6,12 +6,12 @@ public class LowerUpperBound {
             @UnknownSignedness int unknown,
             @Unsigned int unsigned,
             @Signed int signed,
-            @Constant int constant) {
+            @SignednessEither int constant) {
 
         @UnknownSignedness int unkTest;
         @Unsigned int unsTest;
         @Signed int sinTest;
-        @Constant int conTest;
+        @SignednessEither int conTest;
         @SignednessBottom int botTest;
 
         unkTest = unknown + unknown;
