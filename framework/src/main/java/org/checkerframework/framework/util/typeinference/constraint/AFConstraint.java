@@ -29,7 +29,9 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
  * A is represented by class FIsA
  */
 public abstract class AFConstraint {
+    /** The argument type. */
     public final AnnotatedTypeMirror argument;
+    /** The formal parameter type. */
     public final AnnotatedTypeMirror formalParameter;
 
     /**
