@@ -12,7 +12,7 @@ public class FIsA extends AFConstraint {
 
     /** Create a constraint with an argument equal to a formal. */
     public FIsA(AnnotatedTypeMirror parameter, AnnotatedTypeMirror argument) {
-        super(argument, parameter, 101);
+        super(argument, parameter);
     }
 
     @Override

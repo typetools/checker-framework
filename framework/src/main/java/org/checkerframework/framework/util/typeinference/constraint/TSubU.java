@@ -16,7 +16,7 @@ public class TSubU extends TUConstraint {
     /** Create a constraint with a variable less than a type. */
     public TSubU(
             AnnotatedTypeVariable typeVariable, AnnotatedTypeMirror relatedType, boolean uIsArg) {
-        super(typeVariable, relatedType, 163, uIsArg);
+        super(typeVariable, relatedType, uIsArg);
     }
 
     @Override

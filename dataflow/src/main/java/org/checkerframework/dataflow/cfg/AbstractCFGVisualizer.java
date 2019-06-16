@@ -48,7 +48,7 @@ public abstract class AbstractCFGVisualizer<
     protected final String lineSeparator = System.lineSeparator();
 
     /**
-     * Indicate 2 white space characters as the indentation to the elements of the {@link Store}.
+     * Indicate 2 white space characters as the indentation to the elements of the {@code store}.
      */
     protected final String storeEntryIndent = "  ";
 
@@ -81,7 +81,7 @@ public abstract class AbstractCFGVisualizer<
      * Helper method to simplify generating a control flow graph.
      *
      * @param cfg the control flow graph
-     * @param entry the entry {@link Block}
+     * @param entry the entry block
      * @param analysis the current analysis
      * @return the String representation of the control flow graph
      */
@@ -102,12 +102,12 @@ public abstract class AbstractCFGVisualizer<
 
     /**
      * Helper method called by {@link #generateGraphHelper(ControlFlowGraph, Block, Analysis)}. It
-     * checks the successors of the {@link Block}s, and, if possible, adds all the successors to the
-     * work list and the visited {@link Block}s list.
+     * checks the successors of the current block, and, if possible, adds all the successors to the
+     * work list and the visited blocks list.
      *
-     * @param cur the current {@link Block}
-     * @param visited the set of {@link Block}s that have already been visited
-     * @param workList the queue of {@link Block}s to be processed
+     * @param cur the current block
+     * @param visited the set of blocks that have already been visited
+     * @param workList the queue of blocks to be processed
      * @param sbDigraph the {@link StringBuilder} to store the graph
      */
     protected void handleSuccessorsHelper(
@@ -159,12 +159,12 @@ public abstract class AbstractCFGVisualizer<
 
     /**
      * Helper method called by {@link #handleSuccessorsHelper(Block, Set, Queue, StringBuilder)}.
-     * Checks whether a block exists in the visited {@link Block}s list, and, if not, adds it to the
-     * visited {@link Block}s list and the work list.
+     * Checks whether a block exists in the visited blocks list, and, if not, adds it to the visited
+     * blocks list and the work list.
      *
-     * @param b the {@link Block} to check
-     * @param visited the set of {@link Block}s that have already been visited
-     * @param workList the queue of {@link Block}s to be processed
+     * @param b the block to check
+     * @param visited the set of blocks that have already been visited
+     * @param workList the queue of blocks to be processed
      */
     protected void addBlock(Block b, Set<Block> visited, Queue<Block> workList) {
         if (!visited.contains(b)) {
@@ -174,14 +174,14 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Helper method to simplify visualizing a {@link Block}.
+     * Helper method to simplify visualizing a block.
      *
-     * @param bb the {@link Block}
+     * @param bb the block
      * @param analysis the current analysis
-     * @param cbFooter footer for conditional {@link Block}
+     * @param cbFooter footer for the conditional block
      * @param osFooter footer for the other situations
      * @param escapeCharacter the escape String to use
-     * @return the String representation of the {@link Block}
+     * @return the String representation of the block
      */
     protected String visualizeBlockHelper(
             Block bb,
@@ -231,12 +231,12 @@ public abstract class AbstractCFGVisualizer<
 
     /**
      * Helper method called by {@link #visualizeBlockHelper}. Iterates over the block content and
-     * visualizes all the {@link Node}s in it.
+     * visualizes all the nodes in it.
      *
-     * @param bb the {@link Block}
+     * @param bb the block
      * @param analysis the current analysis
      * @param separator the separator String to use
-     * @return the String representation of the contents of the {@link Block}
+     * @return the String representation of the contents of the block
      */
     protected String loopOverBlockContents(
             Block bb, @Nullable Analysis<A, S, T> analysis, String separator) {
@@ -257,11 +257,11 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Helper method called by {@link #loopOverBlockContents}. If possible, get a sequence of {@link
-     * Node}s for further processing.
+     * Helper method called by {@link #loopOverBlockContents}. If possible, get a sequence of nodes
+     * for further processing.
      *
-     * @param bb the {@link Block}
-     * @return a list of {@link Node}s
+     * @param bb the block
+     * @return a list of nodes
      */
     protected List<Node> addBlockContent(Block bb) {
         List<Node> contents = new ArrayList<>();
@@ -283,13 +283,13 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Helper method to simplify visualizing the transfer input of a Block; it is useful when
+     * Helper method to simplify visualizing the transfer input of a block; it is useful when
      * implementing a custom CFGVisualizer.
      *
-     * @param bb the {@link Block}
+     * @param bb the block
      * @param analysis the current analysis
      * @param escapeCharacter the escape String to use
-     * @return the String representation of the transfer input of a {@link Block}
+     * @return the String representation of the transfer input of the block
      */
     protected String visualizeBlockTransferInputHelper(
             Block bb, Analysis<A, S, T> analysis, String escapeCharacter) {
@@ -319,12 +319,12 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Helper method to simplify visualizing a special Block; it is useful when implementing a
+     * Helper method to simplify visualizing a special block; it is useful when implementing a
      * custom CFGVisualizer.
      *
-     * @param sbb the special {@link Block}
+     * @param sbb the special block
      * @param separator the separator String to use
-     * @return the String representation of the special {@link Block}
+     * @return the String representation of the special block
      */
     protected String visualizeSpecialBlockHelper(SpecialBlock sbb, String separator) {
         String specialBlock = "";
@@ -343,11 +343,11 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Helper method called by {@link #visualizeBlockHelper}. If possible, get the last {@link Node}
-     * of a {@link Block}.
+     * Helper method called by {@link #visualizeBlockHelper}. If possible, get the last node of a
+     * block.
      *
-     * @param bb the {@link Block}
-     * @return the last {@link Node} or {@code null}
+     * @param bb the block
+     * @return the last node of this block or {@code null}
      */
     protected Node getLastNode(Block bb) {
         Node lastNode;
@@ -366,10 +366,10 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Generate the order of processing {@link Block}s.
+     * Generate the order of processing blocks.
      *
      * @param cfg the current control flow graph
-     * @return the IdentityHashMap which maps from {@link Block}s to their orders
+     * @return the IdentityHashMap which maps from blocks to their orders
      */
     protected IdentityHashMap<Block, List<Integer>> getProcessOrder(ControlFlowGraph cfg) {
         IdentityHashMap<Block, List<Integer>> depthFirstOrder = new IdentityHashMap<>();
@@ -391,10 +391,10 @@ public abstract class AbstractCFGVisualizer<
      *
      * <p>This abstract method needs to be implemented to customize the output.
      *
-     * @param visited the set of the visited {@link Block}s
+     * @param visited the set of the visited blocks
      * @param cfg the control flow graph
      * @param analysis the current analysis
-     * @return the String representation of the {@link Node}s
+     * @return the String representation of the nodes
      */
     protected abstract String generateNodes(
             Set<Block> visited, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis);
@@ -404,8 +404,8 @@ public abstract class AbstractCFGVisualizer<
      *
      * <p>This abstract method needs to be implemented to customize the output.
      *
-     * @param sId the ID of current {@link Block}
-     * @param eId the ID of successor {@link Block}
+     * @param sId the ID of current block
+     * @param eId the ID of successor block
      * @param flowRule the content of the edge
      * @return the String representation of the edge
      */
@@ -432,21 +432,21 @@ public abstract class AbstractCFGVisualizer<
     protected abstract String visualizeGraphFooter();
 
     /**
-     * Return the simple String of the process order of a {@link Node}. Called by {@link
-     * #generateNodes(Set, ControlFlowGraph, Analysis)}.
+     * Return the simple String of the process order of a node. Called by {@link #generateNodes(Set,
+     * ControlFlowGraph, Analysis)}.
      *
      * @param order the list of the process order to be processed.
-     * @return the String representation of the process order of a {@link Node}
+     * @return the String representation of the process order of the node
      */
     protected String getProcessOrderSimpleString(List<Integer> order) {
         return "Process order: " + order.toString().replaceAll("[\\[\\]]", "");
     }
 
     /**
-     * Remove the String "Node" from the name of the {@link Node}.
+     * Get the simple name of a node.
      *
-     * @param t {@link Node}
-     * @return the String representation of the {@link Node}'s simple name
+     * @param t a node
+     * @return the String representation of the node's simple name
      */
     protected String getNodeSimpleName(Node t) {
         String name = t.getClass().getSimpleName();
