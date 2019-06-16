@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>As a special case, the Signedness Checker also applies this annotation to manifest literals.
  * This permits a value like {@code -1} or {@code 255} or {@code 0xFF} to be used in both signed and
- * insigned contexts. The Signedness Checker has no way of knowing how a programmer intended a
+ * unsigned contexts. The Signedness Checker has no way of knowing how a programmer intended a
  * literal to be used, so it does not issue warnings for any uses of a literal. (An alternate design
  * would require the programmer to explicitly annotate every manifest literal whose most significant
  * bit is set. That might detect more errors, but it would cause much greater programmer annotation
