@@ -219,7 +219,7 @@ public final class SignednessUtil {
      *     instead.
      */
     @Deprecated // use {@link java.io.RandomAccessFile#readUnsignedByte() readUnsignedByte()}
-                // instead
+    // instead
     @SuppressWarnings("signedness")
     public static @Unsigned byte readUnsignedByte(RandomAccessFile f) throws IOException {
         return f.readByte();
@@ -243,7 +243,7 @@ public final class SignednessUtil {
      *     instead.
      */
     @Deprecated // use {@link java.io.RandomAccessFile#readUnsignedShort() readUnsignedShort()}
-                // instead
+    // instead
     @SuppressWarnings("signedness")
     public static @Unsigned short readUnsignedShort(RandomAccessFile f) throws IOException {
         return f.readShort();
