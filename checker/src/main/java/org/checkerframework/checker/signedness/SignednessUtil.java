@@ -212,12 +212,14 @@ public final class SignednessUtil {
     }
 
     /**
-     * @deprecated This method is no longer used as it is defined in Java 8. Reads an unsigned byte
-     *     from the RandomAccessFile f. This method is a wrapper around {@link
-     *     java.io.RandomAccessFile#readByte() readByte()}, but assumes the output should be
-     *     interpreted as unsigned.
+     * This method is no longer used as it is defined in Java 8. Reads an unsigned byte from the
+     * RandomAccessFile f. It assumes the output should be interpreted as unsigned.
+     *
+     * @deprecated use {@link java.io.RandomAccessFile#readUnsignedByte() readUnsignedByte()}
+     *     instead.
      */
-    @Deprecated
+    @Deprecated // use {@link java.io.RandomAccessFile#readUnsignedByte() readUnsignedByte()}
+                // instead
     @SuppressWarnings("signedness")
     public static @Unsigned byte readUnsignedByte(RandomAccessFile f) throws IOException {
         return f.readByte();
@@ -234,12 +236,14 @@ public final class SignednessUtil {
     }
 
     /**
-     * @deprecated This method is no longer used as it is defined in Java 8. Reads an unsigned short
-     *     from the RandomAccessFile f. This method is a wrapper around {@link
-     *     java.io.RandomAccessFile#readShort() readShort()}, but assumes the output should be
-     *     interpreted as unsigned.
+     * This method is no longer used as it is defined in Java 8. Reads an unsigned short from the
+     * RandomAccessFile f. It assumes the output should be interpreted as unsigned.
+     *
+     * @deprecated use {@link java.io.RandomAccessFile#readUnsignedShort() readUnsignedShort()}
+     *     instead.
      */
-    @Deprecated
+    @Deprecated // use {@link java.io.RandomAccessFile#readUnsignedShort() readUnsignedShort()}
+                // instead
     @SuppressWarnings("signedness")
     public static @Unsigned short readUnsignedShort(RandomAccessFile f) throws IOException {
         return f.readShort();
@@ -360,12 +364,13 @@ public final class SignednessUtil {
     }
 
     /**
-     * @deprecated Compares two unsigned longs x and y.
-     *     <p>This is a reimplementation of Java 8's {@code Long.compareUnsigned(long, long)}.
+     * Compares two unsigned longs x and y.
+     *
      * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
      *     zero iff x == y.
+     * @deprecated use Java 8's {@code Long.compareUnsigned(long, long)} instead.
      */
-    @Deprecated
+    @Deprecated // use Java 8's {@code Long.compareUnsigned(long, long)} instead
     @SuppressWarnings("signedness")
     public static int compareUnsigned(@Unsigned long x, @Unsigned long y) {
         // Java 8 version: return Long.compareUnsigned(x, y);
@@ -373,12 +378,13 @@ public final class SignednessUtil {
     }
 
     /**
-     * @deprecated Compares two unsigned ints x and y.
-     *     <p>This is a reimplementation of Java 8's {@code Integer.compareUnsigned(int, int)}.
+     * Compares two unsigned ints x and y.
+     *
      * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
      *     zero iff x == y.
+     * @deprecated use Java 8's {@code Integer.compareUnsigned(int, int)} instead.
      */
-    @Deprecated
+    @Deprecated // use Java 8's {@code Integer.compareUnsigned(int, int)} instead
     @SuppressWarnings("signedness")
     public static int compareUnsigned(@Unsigned int x, @Unsigned int y) {
         // Java 8 version: return Integer.compareUnsigned(x, y);
@@ -412,10 +418,11 @@ public final class SignednessUtil {
     }
 
     /**
-     * @deprecated Produces a string representation of the unsigned long l.
-     *     <p>This is a reimplementation of Java 8's {@code Long.toUnsignedString(long)}.
+     * Produces a string representation of the unsigned long l.
+     *
+     * @deprecated use Java 8's {@code Long.toUnsignedString(long)} instead.
      */
-    @Deprecated
+    @Deprecated // use Java 8's {@code Long.toUnsignedString(long)} instead
     @SuppressWarnings("signedness")
     public static String toUnsignedString(@Unsigned long l) {
         // Java 8 version: return Long.toUnsignedString(l);
@@ -423,10 +430,11 @@ public final class SignednessUtil {
     }
 
     /**
-     * @deprecated Produces a string representation of the unsigned long l in base radix.
-     *     <p>This is a reimplementation of Java 8's {@code Long.toUnsignedString(long, int)}.
+     * Produces a string representation of the unsigned long l in base radix.
+     *
+     * @deprecated use Java 8's {@code Long.toUnsignedString(long, int)} instead.
      */
-    @Deprecated
+    @Deprecated // use Java 8's {@code Long.toUnsignedString(long, int)} instead
     @SuppressWarnings("signedness")
     public static String toUnsignedString(@Unsigned long l, int radix) {
         // Java 8 version: return Long.toUnsignedString(l, radix);
@@ -434,10 +442,11 @@ public final class SignednessUtil {
     }
 
     /**
-     * @deprecated Produces a string representation of the unsigned int i.
-     *     <p>This is a reimplementation of Java 8's {@code Integer.toUnsignedString(int)}.
+     * Produces a string representation of the unsigned int i.
+     *
+     * @deprecated use Java 8's {@code Integer.toUnsignedString(int)} instead.
      */
-    @Deprecated
+    @Deprecated // use Java 8's {@code Integer.toUnsignedString(int)} instead
     @SuppressWarnings("signedness")
     public static String toUnsignedString(@Unsigned int i) {
         // Java 8 version: return Integer.toUnsignedString(i);
@@ -445,10 +454,11 @@ public final class SignednessUtil {
     }
 
     /**
-     * @deprecated Produces a string representation of the unsigned int i in base radix.
-     *     <p>This is a reimplementation of Java 8's {@code Integer.toUnsignedString(int, int)}.
+     * Produces a string representation of the unsigned int i in base radix.
+     *
+     * @deprecated use Java 8's {@code Integer.toUnsignedString(int, int)} instead.
      */
-    @Deprecated
+    @Deprecated // use Java 8's {@code Integer.toUnsignedString(int, int)} instead
     @SuppressWarnings("signedness")
     public static String toUnsignedString(@Unsigned int i, int radix) {
         // Java 8 version: return Integer.toUnsignedString(i, radix);
@@ -506,47 +516,52 @@ public final class SignednessUtil {
     }
 
     /**
-     * @deprecated Returns an unsigned long representing the same value as an unsigned int.
-     *     <p>This is a reimplementation of Java 8's {@code Integer.toUnsignedLong(int)}.
+     * Returns an unsigned long representing the same value as an unsigned int.
+     *
+     * @deprecated use Java 8's {@code Integer.toUnsignedLong(int)} instead.
      */
-    @Deprecated
+    @Deprecated // use Java 8's {@code Integer.toUnsignedLong(int)} instead
     public static @Unsigned long toUnsignedLong(@Unsigned int i) {
         // Java 8 version: Integer.toUnsignedLong(i)
         return ((long) i) & 0xffffffffL;
     }
 
     /**
-     * @deprecated Returns an unsigned long representing the same value as an unsigned short.
-     *     <p>This is a reimplementation of Java 8's {@code Short.toUnsignedLong(short)}.
+     * Returns an unsigned long representing the same value as an unsigned short.
+     *
+     * @deprecated use Java 8's {@code Short.toUnsignedLong(short)} instead.
      */
-    @Deprecated
+    @Deprecated // use Java 8's {@code Short.toUnsignedLong(short)} instead
     public static @Unsigned long toUnsignedLong(@Unsigned short s) {
         return ((long) s) & 0xffffL;
     }
 
     /**
-     * @deprecated Returns an unsigned int representing the same value as an unsigned short.
-     *     <p>This is a reimplementation of Java 8's {@code Short.toUnsignedInt(short)}.
+     * Returns an unsigned int representing the same value as an unsigned short.
+     *
+     * @deprecated use Java 8's {@code Short.toUnsignedInt(short)} instead.
      */
-    @Deprecated
+    @Deprecated // use Java 8's {@code Short.toUnsignedInt(short)} instead
     public static @Unsigned int toUnsignedInt(@Unsigned short s) {
         return ((int) s) & 0xffff;
     }
 
     /**
-     * @deprecated Returns an unsigned long representing the same value as an unsigned byte.
-     *     <p>This is a reimplementation of Java 8's {@code Byte.toUnsignedLong(byte)}.
+     * Returns an unsigned long representing the same value as an unsigned byte.
+     *
+     * @deprecated use Java 8's {@code Byte.toUnsignedLong(byte)} instead.
      */
-    @Deprecated
+    @Deprecated // use Java 8's {@code Byte.toUnsignedLong(byte)} instead
     public static @Unsigned long toUnsignedLong(@Unsigned byte b) {
         return ((long) b) & 0xffL;
     }
 
     /**
-     * @deprecated Returns an unsigned int representing the same value as an unsigned byte.
-     *     <p>This is a reimplementation of Java 8's {@code Byte.toUnsignedInt(byte)}.
+     * Returns an unsigned int representing the same value as an unsigned byte.
+     *
+     * @deprecated use Java 8's {@code Byte.toUnsignedInt(byte)} instead.
      */
-    @Deprecated
+    @Deprecated // use Java 8's {@code Byte.toUnsignedInt(byte)} instead
     public static @Unsigned int toUnsignedInt(@Unsigned byte b) {
         return ((int) b) & 0xff;
     }
