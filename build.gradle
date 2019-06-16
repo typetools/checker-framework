@@ -172,7 +172,7 @@ task cloneAndBuildDependencies(type: Exec) {
 }
 
 task version() {
-    description 'Print checker-framework version'
+    description 'Print Checker Framework version'
     doLast {
         println version
     }
