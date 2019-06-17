@@ -35,8 +35,9 @@ import org.checkerframework.javacutil.*;
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
     /** Is the type valid? */
     protected boolean isValid = true;
-    /** Should the primary annotation on the the top level type be checked? */
-    protected boolean checkTopLevelDeclaredType = true;
+
+    /** Should the primary annotation on the top level type be checked? */
+    protected boolean checkTopLevelDeclaredType = false;
 
     protected final BaseTypeChecker checker;
     protected final BaseTypeVisitor<?> visitor;
