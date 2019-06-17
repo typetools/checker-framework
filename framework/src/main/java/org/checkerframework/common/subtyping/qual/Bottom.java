@@ -2,6 +2,8 @@ package org.checkerframework.common.subtyping.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -16,7 +18,9 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * use this qualifier during prototyping of very simple type systems. For realistic systems,
  * introduce a top and bottom qualifier that gets stored in bytecode.
  *
- * <p>To use this qualifier, the type system designer needs to manually add the bottom qualifier to
+ * <p>To use this qualifier, the type system designer needs to use methods like {@link
+ * org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator#addLiteralKind(LiteralKind,
+ * AnnotationMirror)} to add implicit annotations and needs to manually add the bottom qualifier to
  * the qualifier hierarchy.
  *
  * @see org.checkerframework.framework.type.QualifierHierarchy#getBottomAnnotations()

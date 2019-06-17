@@ -19,7 +19,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -67,11 +67,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         literalKindToTreeKind.put(LiteralKind.STRING, Kind.STRING_LITERAL);
     }
 
-    /**
-     * Creates a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
-     * from the given checker, using that checker to determine the annotations that are in the type
-     * hierarchy.
-     */
+    /** Creates a {@link LiteralTreeAnnotator} for the given {@code atypeFactory}. */
     public LiteralTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);
         this.treeKinds = new EnumMap<>(Kind.class);
@@ -83,8 +79,8 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         // Get type qualifiers from the checker.
         Set<Class<? extends Annotation>> quals = atypeFactory.getSupportedTypeQualifiers();
 
-        // For each qualifier, read the @ImplicitFor annotation and put its tree
-        // classes and kinds into maps.
+        // For each qualifier, read the @QualifierForLiterals annotation and put its contents into
+        // maps.
         for (Class<? extends Annotation> qual : quals) {
             QualifierForLiterals forLiterals = qual.getAnnotation(QualifierForLiterals.class);
             if (forLiterals == null) {
@@ -110,7 +106,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
     /**
      * Adds standard qualifiers for literals. Currently sets the null literal to bottom if no other
      * default is set for null literals. Also, see {@link
-     * ImplicitsTypeAnnotator#addStandardImplicits()}.
+     * DefaultForTypeAnnotator#addStandardDefaults()}.
      *
      * @return this
      */
@@ -259,7 +255,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
                         throw new BugInCF(
                                 String.join(
                                         System.lineSeparator(),
-                                        "Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition:",
+                                        "Bug in @QualifierForLiterals(stringpatterns=...) in type hierarchy definition:",
                                         " inferred type for \"" + string + "\" is " + res,
                                         " which is a subtype of " + sam,
                                         " but its pattern does not match the string.",
