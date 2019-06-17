@@ -595,6 +595,7 @@ public class NullnessVisitor
 
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
+        // All annotation arguments are non-null and initialized, so no need to check them.
         return null;
     }
 }
