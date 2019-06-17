@@ -28,7 +28,10 @@ package java.lang;
 import java.lang.annotation.Native;
 import java.math.*;
 
+<<<<<<< HEAD
 import org.checkerframework.checker.index.qual.*;
+=======
+>>>>>>> origin/patch-1
 import org.checkerframework.checker.signedness.qual.*;
 
 /**
@@ -64,7 +67,11 @@ public final class Long extends Number implements Comparable<Long> {
      * A constant holding the maximum value a {@code long} can
      * have, 2<sup>63</sup>-1.
      */
+<<<<<<< HEAD
     @Native public static final @Positive long MAX_VALUE = 0x7fffffffffffffffL;
+=======
+    @Native public static final long MAX_VALUE = 0x7fffffffffffffffL;
+>>>>>>> origin/patch-1
 
     /**
      * The {@code Class} instance representing the primitive type
@@ -1343,7 +1350,11 @@ public final class Long extends Number implements Comparable<Long> {
      *
      * @since 1.5
      */
+<<<<<<< HEAD
     @Native public static final @Positive int SIZE = 64;
+=======
+    @Native public static final int SIZE = 64;
+>>>>>>> origin/patch-1
 
     /**
      * The number of bytes used to represent a {@code long} value in two's
@@ -1351,7 +1362,11 @@ public final class Long extends Number implements Comparable<Long> {
      *
      * @since 1.8
      */
+<<<<<<< HEAD
     public static final @Positive int BYTES = SIZE / Byte.SIZE;
+=======
+    public static final int BYTES = SIZE / Byte.SIZE;
+>>>>>>> origin/patch-1
 
     /**
      * Returns a {@code long} value with at most a single one-bit, in the
@@ -1416,7 +1431,11 @@ public final class Long extends Number implements Comparable<Long> {
      *     is equal to zero.
      * @since 1.5
      */
+<<<<<<< HEAD
     public static @NonNegative int numberOfLeadingZeros(@UnknownSignedness long i) {
+=======
+    public static int numberOfLeadingZeros(@UnknownSignedness long i) {
+>>>>>>> origin/patch-1
         // HD, Figure 5-6
          if (i == 0)
             return 64;
@@ -1445,7 +1464,11 @@ public final class Long extends Number implements Comparable<Long> {
      *     to zero.
      * @since 1.5
      */
+<<<<<<< HEAD
     public static @NonNegative int numberOfTrailingZeros(@UnknownSignedness long i) {
+=======
+    public static int numberOfTrailingZeros(@UnknownSignedness long i) {
+>>>>>>> origin/patch-1
         // HD, Figure 5-14
         int x, y;
         if (i == 0) return 64;
@@ -1468,7 +1491,11 @@ public final class Long extends Number implements Comparable<Long> {
      *     representation of the specified {@code long} value.
      * @since 1.5
      */
+<<<<<<< HEAD
      public static @NonNegative int bitCount(@UnknownSignedness long i) {
+=======
+     public static int bitCount(@UnknownSignedness long i) {
+>>>>>>> origin/patch-1
         // HD, Figure 5-14
         i = i - ((i >>> 1) & 0x5555555555555555L);
         i = (i & 0x3333333333333333L) + ((i >>> 2) & 0x3333333333333333L);
@@ -1523,7 +1550,11 @@ public final class Long extends Number implements Comparable<Long> {
      *     specified number of bits.
      * @since 1.5
      */
+<<<<<<< HEAD
     public static @Unsigned long rotateRight(@Unsigned long i, int distance) {
+=======
+    public static @PolySigned long rotateRight(@PolySigned long i, int distance) {
+>>>>>>> origin/patch-1
         return (i >>> distance) | (i << -distance);
     }
 
@@ -1537,7 +1568,11 @@ public final class Long extends Number implements Comparable<Long> {
      *     specified {@code long} value.
      * @since 1.5
      */
+<<<<<<< HEAD
     public static @SignednessGlb long reverse(@UnknownSignedness long i) {
+=======
+    public static @Constant long reverse(@UnknownSignedness long i) {
+>>>>>>> origin/patch-1
         // HD, Figure 7-1
         i = (i & 0x5555555555555555L) << 1 | (i >>> 1) & 0x5555555555555555L;
         i = (i & 0x3333333333333333L) << 2 | (i >>> 2) & 0x3333333333333333L;
@@ -1571,7 +1606,11 @@ public final class Long extends Number implements Comparable<Long> {
      *     {@code long} value.
      * @since 1.5
      */
+<<<<<<< HEAD
     public static @SignednessGlb long reverseBytes(@UnknownSignedness long i) {
+=======
+    public static @Constant long reverseBytes(@UnknownSignedness long i) {
+>>>>>>> origin/patch-1
         i = (i & 0x00ff00ff00ff00ffL) << 8 | (i >>> 8) & 0x00ff00ff00ff00ffL;
         return (i << 48) | ((i & 0xffff0000L) << 16) |
             ((i >>> 16) & 0xffff0000L) | (i >>> 48);
@@ -1586,7 +1625,11 @@ public final class Long extends Number implements Comparable<Long> {
      * @see java.util.function.BinaryOperator
      * @since 1.8
      */
+<<<<<<< HEAD
     public static long sum(long a, long b) {
+=======
+    public static @Constant long sum(@PolySigned long a, @PolySigned long b) {
+>>>>>>> origin/patch-1
         return a + b;
     }
 
@@ -1621,3 +1664,7 @@ public final class Long extends Number implements Comparable<Long> {
     /** use serialVersionUID from JDK 1.0.2 for interoperability */
     @Native private static final long serialVersionUID = 4290774380558885855L;
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/patch-1

@@ -28,7 +28,10 @@ package java.lang;
 import java.lang.annotation.Native;
 
 import org.checkerframework.checker.signedness.qual.*;
+<<<<<<< HEAD
 import org.checkerframework.checker.index.qual.*;
+=======
+>>>>>>> origin/patch-1
 
 /**
  * The {@code Integer} class wraps a value of the primitive type
@@ -63,7 +66,11 @@ public final class Integer extends Number implements Comparable<Integer> {
      * A constant holding the maximum value an {@code int} can
      * have, 2<sup>31</sup>-1.
      */
+<<<<<<< HEAD
     @Native public static final @Positive int   MAX_VALUE = 0x7fffffff;
+=======
+    @Native public static final int   MAX_VALUE = 0x7fffffff;
+>>>>>>> origin/patch-1
 
     /**
      * The {@code Class} instance representing the primitive type
@@ -1323,7 +1330,11 @@ public final class Integer extends Number implements Comparable<Integer> {
      *
      * @since 1.5
      */
+<<<<<<< HEAD
     @Native public static final @Positive int SIZE = 32;
+=======
+    @Native public static final int SIZE = 32;
+>>>>>>> origin/patch-1
 
     /**
      * The number of bytes used to represent a {@code int} value in two's
@@ -1331,7 +1342,11 @@ public final class Integer extends Number implements Comparable<Integer> {
      *
      * @since 1.8
      */
+<<<<<<< HEAD
     public static final @Positive int BYTES = SIZE / Byte.SIZE;
+=======
+    public static final int BYTES = SIZE / Byte.SIZE;
+>>>>>>> origin/patch-1
 
     /**
      * Returns an {@code int} value with at most a single one-bit, in the
@@ -1395,7 +1410,11 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     is equal to zero.
      * @since 1.5
      */
+<<<<<<< HEAD
     public static @NonNegative int numberOfLeadingZeros(@UnknownSignedness int i) {
+=======
+    public static int numberOfLeadingZeros(@UnknownSignedness int i) {
+>>>>>>> origin/patch-1
         // HD, Figure 5-6
         if (i == 0)
             return 32;
@@ -1422,7 +1441,11 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     to zero.
      * @since 1.5
      */
+<<<<<<< HEAD
     public static @NonNegative int numberOfTrailingZeros(@UnknownSignedness int i) {
+=======
+    public static int numberOfTrailingZeros(@UnknownSignedness int i) {
+>>>>>>> origin/patch-1
         // HD, Figure 5-14
         int y;
         if (i == 0) return 32;
@@ -1444,7 +1467,11 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     representation of the specified {@code int} value.
      * @since 1.5
      */
+<<<<<<< HEAD
     public static @NonNegative int bitCount(@UnknownSignedness int i) {
+=======
+    public static int bitCount(@UnknownSignedness int i) {
+>>>>>>> origin/patch-1
         // HD, Figure 5-2
         i = i - ((i >>> 1) & 0x55555555);
         i = (i & 0x33333333) + ((i >>> 2) & 0x33333333);
@@ -1498,7 +1525,11 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     specified number of bits.
      * @since 1.5
      */
+<<<<<<< HEAD
     public static @Unsigned int rotateRight(@Unsigned int i, int distance) {
+=======
+    public static @PolySigned int rotateRight(@PolySigned int i, int distance) {
+>>>>>>> origin/patch-1
         return (i >>> distance) | (i << -distance);
     }
 
@@ -1512,7 +1543,11 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     specified {@code int} value.
      * @since 1.5
      */
+<<<<<<< HEAD
     public static @SignednessGlb int reverse(@UnknownSignedness int i) {
+=======
+    public static @Constant int reverse(@UnknownSignedness int i) {
+>>>>>>> origin/patch-1
         // HD, Figure 7-1
         i = (i & 0x55555555) << 1 | (i >>> 1) & 0x55555555;
         i = (i & 0x33333333) << 2 | (i >>> 2) & 0x33333333;
@@ -1545,7 +1580,11 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     {@code int} value.
      * @since 1.5
      */
+<<<<<<< HEAD
     public static @SignednessGlb int reverseBytes(@UnknownSignedness int i) {
+=======
+    public static @Constant int reverseBytes(@UnknownSignedness int i) {
+>>>>>>> origin/patch-1
         return ((i >>> 24)           ) |
                ((i >>   8) &   0xFF00) |
                ((i <<   8) & 0xFF0000) |
@@ -1561,7 +1600,11 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @see java.util.function.BinaryOperator
      * @since 1.8
      */
+<<<<<<< HEAD
     public static int sum(int a, int b) {
+=======
+    public static @Constant int sum(@PolySigned int a, @PolySigned int b) {
+>>>>>>> origin/patch-1
         return a + b;
     }
 
