@@ -101,7 +101,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
     }
 
     /**
-     * Returns top annotations in heirarchies for which no default for use qualifier should be
+     * Returns top annotations in hierarchies for which no default for use qualifier should be
      * added.
      */
     protected AnnotationMirrorSet getHierarchiesNoDefault(Element element) {
