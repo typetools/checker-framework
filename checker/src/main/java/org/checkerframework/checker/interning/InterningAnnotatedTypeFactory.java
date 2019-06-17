@@ -12,7 +12,6 @@ import org.checkerframework.checker.interning.qual.UnknownInterned;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -41,8 +40,9 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * This factory extends {@link BaseAnnotatedTypeFactory} and inherits its functionality, including:
  * flow-sensitive qualifier inference, qualifier polymorphism (of {@link PolyInterned}), implicit
- * annotations via {@link ImplicitFor} on {@link Interned} (to handle cases 1, 2, 4), and
- * user-specified defaults via {@link DefaultQualifier}. Case 5 is handled by the stub library.
+ * annotations via {@link org.checkerframework.framework.qual.DefaultFor} on {@link Interned} (to
+ * handle cases 1, 2, 4), and user-specified defaults via {@link DefaultQualifier}. Case 5 is
+ * handled by the stub library.
  */
 public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
