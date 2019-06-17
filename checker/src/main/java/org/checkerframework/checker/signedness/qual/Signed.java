@@ -34,7 +34,7 @@ import org.checkerframework.framework.qual.TypeKind;
         // correctly.
 
         /*,
-        classes = {
+        types = {
             java.lang.Byte.class,
             java.lang.Short.class,
             java.lang.Integer.class,

@@ -38,6 +38,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Documented
 @DefaultQualifierInHierarchy
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER})
+// These are required because the default for local variables is @GuardedByUnknown, but if the local
+// variable is one of these type kinds, the default should be @GuardedByUnknown.
 @DefaultFor(
         value = {TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.UPPER_BOUND},
         typeKinds = {

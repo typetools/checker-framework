@@ -725,7 +725,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                     + " At most one separator "
                                     + OPTION_SEPARATOR
                                     + " expected, but found "
-                                    + split.length);
+                                    + split.length
+                                    + ".");
             }
         }
         return Collections.unmodifiableMap(activeOpts);
@@ -755,8 +756,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /** Log a user error. */
     private void logUserError(UserError ce) {
-        StringBuilder msg = new StringBuilder(ce.getMessage());
-        printMessage(msg + ".");
+        String msg = ce.getMessage();
+        printMessage(msg);
     }
 
     /** Log an internal error in the framework or a checker. */
@@ -986,7 +987,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (visitor == null) {
             // typeProcessingStart invokes initChecker, which should
             // have set the visitor. If the field is still null, an
-            // exception occured during initialization, which was already
+            // exception occurred during initialization, which was already
             // logged there. Don't also cause a NPE here.
             return;
         }
