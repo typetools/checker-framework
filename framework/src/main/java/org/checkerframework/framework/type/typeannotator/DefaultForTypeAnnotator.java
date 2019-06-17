@@ -35,9 +35,9 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     /** Map from {@link TypeKind} to annotations. */
     private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
     /** Map from {@link AnnotatedTypeMirror} classes to annotations. */
-    private final Map<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>> typeClasses;
+    private final Map<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>> atmClasses;
     /** Map from full qualified class name strings to annotations. */
-    private final Map<String, Set<AnnotationMirror>> classes;
+    private final Map<String, Set<AnnotationMirror>> types;
 
     /** {@link QualifierHierarchy} */
     private final QualifierHierarchy qualHierarchy;
@@ -50,15 +50,15 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     public DefaultForTypeAnnotator(AnnotatedTypeFactory typeFactory) {
         super(typeFactory);
         this.typeKinds = new EnumMap<>(TypeKind.class);
-        this.typeClasses = new HashMap<>();
-        this.classes = new HashMap<>();
+        this.atmClasses = new HashMap<>();
+        this.types = new HashMap<>();
 
         this.qualHierarchy = typeFactory.getQualifierHierarchy();
 
         // Get type qualifiers from the checker.
         Set<Class<? extends Annotation>> quals = typeFactory.getSupportedTypeQualifiers();
 
-        // For each qualifier, read the @DefaultFor annotation and put its type classes and kinds
+        // For each qualifier, read the @DefaultFor annotation and put its type types and kinds
         // into maps.
         for (Class<? extends Annotation> qual : quals) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
@@ -74,7 +74,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
             }
 
             for (Class<?> typeName : defaultFor.types()) {
-                addClasses(typeName, theQual);
+                addTypes(typeName, theQual);
             }
         }
     }
@@ -105,13 +105,13 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     }
 
     /** Add default qualifier, {@code theQual}, for the given {@link AnnotatedTypeMirror} class. */
-    public void addTypeClass(
+    public void addAtmClass(
             Class<? extends AnnotatedTypeMirror> typeClass, AnnotationMirror theQual) {
-        boolean res = qualHierarchy.updateMappingToMutableSet(typeClasses, typeClass, theQual);
+        boolean res = qualHierarchy.updateMappingToMutableSet(atmClasses, typeClass, theQual);
         if (!res) {
             throw new BugInCF(
-                    "TypeAnnotator: invalid update of typeClasses "
-                            + typeClasses
+                    "TypeAnnotator: invalid update of atmClasses "
+                            + atmClasses
                             + " at "
                             + typeClass
                             + " with "
@@ -119,14 +119,14 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
         }
     }
 
-    /** Add default qualifier, {@code theQual}, for the given class. */
-    public void addClasses(Class<?> clazz, AnnotationMirror theQual) {
+    /** Add default qualifier, {@code theQual}, for the given type. */
+    public void addTypes(Class<?> clazz, AnnotationMirror theQual) {
         String typeNameString = clazz.getCanonicalName();
-        boolean res = qualHierarchy.updateMappingToMutableSet(classes, typeNameString, theQual);
+        boolean res = qualHierarchy.updateMappingToMutableSet(types, typeNameString, theQual);
         if (!res) {
             throw new BugInCF(
                     "TypeAnnotator: invalid update of types "
-                            + classes
+                            + types
                             + " at "
                             + clazz
                             + " with "
@@ -147,8 +147,8 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
             qname = type.getUnderlyingType().toString();
         }
 
-        if (qname != null && classes.containsKey(qname)) {
-            Set<AnnotationMirror> fnd = classes.get(qname);
+        if (qname != null && types.containsKey(qname)) {
+            Set<AnnotationMirror> fnd = types.get(qname);
             type.addMissingAnnotations(fnd);
         }
 
@@ -158,10 +158,10 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
         if (typeKinds.containsKey(type.getKind())) {
             Set<AnnotationMirror> fnd = typeKinds.get(type.getKind());
             type.addMissingAnnotations(fnd);
-        } else if (!typeClasses.isEmpty()) {
+        } else if (!atmClasses.isEmpty()) {
             Class<? extends AnnotatedTypeMirror> t = type.getClass();
-            if (typeClasses.containsKey(t)) {
-                Set<AnnotationMirror> fnd = typeClasses.get(t);
+            if (atmClasses.containsKey(t)) {
+                Set<AnnotationMirror> fnd = atmClasses.get(t);
                 type.addMissingAnnotations(fnd);
             }
         }
@@ -176,15 +176,15 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
      * @return this
      */
     public DefaultForTypeAnnotator addStandardDefaults() {
-        if (!classes.containsKey(Void.class.getCanonicalName())) {
+        if (!types.containsKey(Void.class.getCanonicalName())) {
             for (AnnotationMirror bottom : qualHierarchy.getBottomAnnotations()) {
-                addClasses(Void.class, bottom);
+                addTypes(Void.class, bottom);
             }
         } else {
-            Set<AnnotationMirror> annos = classes.get(Void.class.getCanonicalName());
+            Set<AnnotationMirror> annos = types.get(Void.class.getCanonicalName());
             for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
                 if (qualHierarchy.findAnnotationInHierarchy(annos, top) == null) {
-                    addClasses(Void.class, qualHierarchy.getBottomAnnotation(top));
+                    addTypes(Void.class, qualHierarchy.getBottomAnnotation(top));
                 }
             }
         }

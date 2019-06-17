@@ -349,8 +349,8 @@ public class NullnessAnnotatedTypeFactory
     @Override
     protected TypeAnnotator createTypeAnnotator() {
         DefaultForTypeAnnotator defaultForTypeAnnotator = new DefaultForTypeAnnotator(this);
-        defaultForTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
-        defaultForTypeAnnotator.addTypeClass(
+        defaultForTypeAnnotator.addAtmClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
+        defaultForTypeAnnotator.addAtmClass(
                 AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
         return new ListTypeAnnotator(
                 new PropagationTypeAnnotator(this),
