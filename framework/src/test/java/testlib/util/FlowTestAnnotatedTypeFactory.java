@@ -10,7 +10,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.subtyping.qual.Bottom;
 import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
