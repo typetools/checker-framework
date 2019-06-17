@@ -70,7 +70,7 @@ public class CFTreeBuilder extends TreeBuilder {
                 underlyingTypeTree = maker.TypeIdent(TypeTag.BYTE);
                 break;
             case CHAR:
-                underlyingTypeTree = maker.TypeIdent(TypeTag.BYTE);
+                underlyingTypeTree = maker.TypeIdent(TypeTag.CHAR);
                 break;
             case SHORT:
                 underlyingTypeTree = maker.TypeIdent(TypeTag.SHORT);
@@ -127,6 +127,20 @@ public class CFTreeBuilder extends TreeBuilder {
                     }
                     break;
                 }
+            case INTERSECTION:
+                {
+                    AnnotatedTypeMirror.AnnotatedIntersectionType intersectionType =
+                            (AnnotatedTypeMirror.AnnotatedIntersectionType) annotatedType;
+                    List<JCTree.JCExpression> components = List.nil();
+                    for (AnnotatedTypeMirror.AnnotatedDeclaredType adt :
+                            intersectionType.directSuperTypes()) {
+                        components =
+                                components.append((JCTree.JCExpression) createAnnotatedType(adt));
+                    }
+                    underlyingTypeTree = maker.TypeIntersection(components);
+                    break;
+                }
+                // TODO: case UNION similar to INTERSECTION, but write test first.
             case DECLARED:
                 {
                     underlyingTypeTree = maker.Type((Type) annotatedType.getUnderlyingType());

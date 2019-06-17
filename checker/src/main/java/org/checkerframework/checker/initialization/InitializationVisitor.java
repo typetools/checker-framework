@@ -64,8 +64,7 @@ public class InitializationVisitor<
     private static final @CompilerMessageKey String COMMITMENT_FIELDS_UNINITIALIZED =
             "initialization.fields.uninitialized";
     private static final @CompilerMessageKey String COMMITMENT_STATIC_FIELDS_UNINITIALIZED =
-            // TODO: change to "initialization.static.fields.uninitialized";
-            "initialization.fields.uninitialized";
+            "initialization.static.fields.uninitialized";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
             "initialization.invalid.field.type";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =

@@ -13,7 +13,7 @@ plugins {
     id 'org.ajoberstar.grgit' version '3.1.1' apply false
 
     // To update version numbers of dependencies in this file, run: ./gradlew useLatestVersions
-    id 'se.patrikerdes.use-latest-versions' version '0.2.9'
+    id 'se.patrikerdes.use-latest-versions' version '0.2.10'
     id 'com.github.ben-manes.versions' version '0.21.0'
 }
 apply plugin: "de.undercouch.download"
@@ -75,7 +75,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '2.8.1'
+    version '2.8.2'
 
     repositories {
         mavenCentral()
@@ -113,6 +113,13 @@ allprojects {
             }
         }
 
+	/// TODO: This should be enabled selectively, but not everywhere yet because it would require
+	/// exhaustive @param Javadoc tags throughout.  (Fails on Travis, cannot reproduce locally.)
+	// // Turn Javadoc warnings into errors.
+	// tasks.withType(Javadoc) {
+	//     options.addStringOption('Xwerror', '-quiet')
+	// }
+
         // Add standard javac options
         tasks.withType(JavaCompile) {
             dependsOn(':installGitHooks')
@@ -139,11 +146,12 @@ task cloneAndBuildDependencies(type: Exec) {
 }
 
 task version() {
-    description 'Print checker-framework version'
+    description 'Print Checker Framework version'
     doLast {
         println version
     }
 }
+
 /**
  * Creates a task that runs the checker on the main source set of each subproject. The task is named
  * "check${shortName}", for example "checkPurity" or "checkNullness".
@@ -250,7 +258,7 @@ configurations {
 }
 dependencies {
     // https://mvnrepository.com/artifact/org.plumelib/require-javadoc
-    compile group: 'org.plumelib', name: 'require-javadoc', version: '0.1.0'
+    compileOnly group: 'org.plumelib', name: 'require-javadoc', version: '0.1.2'
 }
 task requireJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Ensures that Java elements have Javadoc documentation.'
@@ -451,7 +459,9 @@ subprojects {
             manifest {
                 attributes("Implementation-Version": "${version}")
                 attributes("Implementation-URL": "https://checkerframework.org")
-                attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
+		if (archiveName != "checker-source.jar") {
+                    attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
+                }
             }
         }
 
@@ -711,6 +721,7 @@ task releaseBuild(type: GradleBuild) {
     // This downloads rather than builds the jdk8.jar because that's what is used in all the Travis tests.
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', 'checker:allJavadocJar']
 }
+
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
     description 'Build everything required for a release and run allTests'
     startParameter = new StartParameter()
