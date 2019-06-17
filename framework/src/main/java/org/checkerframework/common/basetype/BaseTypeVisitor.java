@@ -1829,7 +1829,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     @Override
     public final Void visitParameterizedType(ParameterizedTypeTree node, Void p) {
-        return null; // super.visitParameterizedType(node, p);
+        return super.visitParameterizedType(node, p);
     }
 
     protected void checkTypecastRedundancy(TypeCastTree node, Void p) {
