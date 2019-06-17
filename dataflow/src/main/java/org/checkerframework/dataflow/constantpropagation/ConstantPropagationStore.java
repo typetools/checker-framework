@@ -159,7 +159,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     /**
      * {@inheritDoc}
      *
-     * @return {@code null} because {@link ConstantPropagationStore} doesn't support visualize
+     * @return {@code null} because {@link ConstantPropagationStore} doesn't support visualization
      */
     @Override
     public String visualize(CFGVisualizer<?, ConstantPropagationStore, ?> viz) {

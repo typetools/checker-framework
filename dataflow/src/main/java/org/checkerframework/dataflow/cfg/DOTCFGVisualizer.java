@@ -38,7 +38,7 @@ public class DOTCFGVisualizer<
     /** Mapping from class/method representation to generated dot file. */
     protected Map<String, String> generated;
 
-    /** Terminate the lines that are left justified. */
+    /** Terminator for lines that are left justified. */
     protected final String leftJustified = "\\l";
 
     @Override

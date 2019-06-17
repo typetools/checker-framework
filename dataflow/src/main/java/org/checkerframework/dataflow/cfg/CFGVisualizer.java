@@ -153,11 +153,10 @@ public interface CFGVisualizer<
     String visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis);
 
     /**
-     * Visualize a special block.
+     * Visualize a special block (entry, exit, or exceptional-exit).
      *
      * @param sbb the special block to visualize
-     * @return the String representation of the type of the special block {@code sbb} (entry, exit
-     *     or exceptional-exit)
+     * @return the String representation of {@code sbb}
      */
     String visualizeSpecialBlock(SpecialBlock sbb);
 
