@@ -35,11 +35,15 @@ import org.checkerframework.javacutil.*;
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
     /** Is the type valid? */
     protected boolean isValid = true;
-    /** Should the primary annotation on the the top level type be checked? */
-    protected boolean checkTopLevelDeclaredType = false;
 
+    /** Should the primary annotation on the top level type be checked? */
+    protected boolean checkTopLevelDeclaredType = true;
+
+    /** BaseTypeChecker */
     protected final BaseTypeChecker checker;
+    /** BaseTypeVisitor */
     protected final BaseTypeVisitor<?> visitor;
+    /** AnnotatedTypeFactory */
     protected final AnnotatedTypeFactory atypeFactory;
 
     // TODO: clean up coupling between components
@@ -70,8 +74,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             return false;
         }
         this.isValid = true;
-        this.checkTopLevelDeclaredType = shouldCheckerTopLevelDeclaredType(type, tree);
+        this.checkTopLevelDeclaredType = shouldCheckTopLevelDeclaredType(type, tree);
         visit(type, tree);
+        this.checkTopLevelDeclaredType = true;
         return this.isValid;
     }
 
@@ -84,10 +89,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * @param tree Tree whose type is {@code type}
      * @return whether or not the top-level type should be checked
      */
-    protected boolean shouldCheckerTopLevelDeclaredType(AnnotatedTypeMirror type, Tree tree) {
-        return type.getKind() == TypeKind.DECLARED
-                && (TreeUtils.isLocalVariable(tree) || TreeUtils.isExpressionTree(tree))
-                && !TreeUtils.isTypeTree(tree);
+    protected boolean shouldCheckTopLevelDeclaredType(AnnotatedTypeMirror type, Tree tree) {
+        if (type.getKind() != TypeKind.DECLARED) {
+            return true;
+        }
+        return !TreeUtils.isLocalVariable(tree)
+                && (!TreeUtils.isExpressionTree(tree) || TreeUtils.isTypeTree(tree));
     }
 
     /**
@@ -242,7 +249,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
         final boolean skipChecks = checker.shouldSkipUses(type.getUnderlyingType().asElement());
 
-        if (!checkTopLevelDeclaredType && !skipChecks) {
+        if (checkTopLevelDeclaredType && !skipChecks) {
             // Ensure that type use is a subtype of the element type
             // isValidUse determines the erasure of the types.
 
@@ -255,7 +262,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             if (!visitor.isValidUse(elemType, type, tree)) {
                 reportInvalidAnnotationsOnUse(type, tree);
             }
-            checkTopLevelDeclaredType = false;
+            checkTopLevelDeclaredType = true;
         }
 
         /*

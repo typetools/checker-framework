@@ -283,16 +283,16 @@
      transform="translate(-20,-3.6428562)">
     <rect
        style="fill:#ffffff"
-       x="760"
+       x="740"
        y="380"
-       width="120"
+       width="160"
        height="42"
        id="rect68" />
     <rect
        style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
-       x="760"
+       x="740"
        y="380"
-       width="120"
+       width="160"
        height="42"
        id="rect70" />
     <text
@@ -304,7 +304,7 @@
       <tspan
          x="820"
          y="405.85001"
-         id="tspan74">@SignednessEither</tspan>
+         id="tspan74">@SignednessGlb</tspan>
     </text>
   </g>
   <g

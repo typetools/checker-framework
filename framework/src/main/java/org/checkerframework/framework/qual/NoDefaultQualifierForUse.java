@@ -5,8 +5,9 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Declaration annotation applied to type declarations to specify that the upper bound qualifier
- * should not be applied to unannotated uses of the type.
+ * Declaration annotation applied to type declarations to specify that the annotation on the type
+ * declaration should not be applied to unannotated uses of the type. Instead, another default
+ * should be applied based on the location of the type or some other defaulting rule.
  */
 @Target(ElementType.TYPE)
 public @interface NoDefaultQualifierForUse {

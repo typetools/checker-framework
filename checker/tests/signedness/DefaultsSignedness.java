@@ -5,7 +5,7 @@ public class DefaultsSignedness {
     public void ConstantTest() {
 
         // Test bytes with literal values
-        @SignednessEither byte conByte;
+        @SignednessGlb byte conByte;
         @SignednessBottom byte botByte;
 
         byte testByte = 0;
@@ -16,7 +16,7 @@ public class DefaultsSignedness {
         botByte = testByte;
 
         // Test shorts with literal values
-        @SignednessEither short conShort;
+        @SignednessGlb short conShort;
         @SignednessBottom short botShort;
 
         short testShort = 128;
@@ -27,7 +27,7 @@ public class DefaultsSignedness {
         botShort = testShort;
 
         // Test ints with literal values
-        @SignednessEither int conInt;
+        @SignednessGlb int conInt;
         @SignednessBottom int botInt;
 
         int testInt = 32768;
@@ -38,7 +38,7 @@ public class DefaultsSignedness {
         botInt = testInt;
 
         // Test longs with literal values
-        @SignednessEither long conLong;
+        @SignednessGlb long conLong;
         @SignednessBottom long botLong;
 
         long testLong = 2147483648L;
@@ -49,7 +49,7 @@ public class DefaultsSignedness {
         botLong = testLong;
 
         // Test chars with literal values
-        @SignednessEither char conChar;
+        @SignednessGlb char conChar;
         @SignednessBottom char botChar;
 
         char testChar = 'a';
@@ -76,7 +76,7 @@ public class DefaultsSignedness {
 
         // Test bytes
         @Signed byte sinByte;
-        @SignednessEither byte conByte;
+        @SignednessGlb byte conByte;
 
         sinByte = testByte;
 
@@ -85,7 +85,7 @@ public class DefaultsSignedness {
 
         // Test shorts
         @Signed short sinShort;
-        @SignednessEither short conShort;
+        @SignednessGlb short conShort;
 
         sinShort = testShort;
 
@@ -94,7 +94,7 @@ public class DefaultsSignedness {
 
         // Test ints
         @Signed int sinInt;
-        @SignednessEither int conInt;
+        @SignednessGlb int conInt;
 
         sinInt = testInt;
 
@@ -103,7 +103,7 @@ public class DefaultsSignedness {
 
         // Test longs
         @Signed long sinLong;
-        @SignednessEither long conLong;
+        @SignednessGlb long conLong;
 
         sinLong = testLong;
 
@@ -112,7 +112,7 @@ public class DefaultsSignedness {
 
         // Test floats
         @Signed float sinFloat;
-        @SignednessEither float conFloat;
+        @SignednessGlb float conFloat;
 
         sinFloat = testFloat;
 
@@ -121,7 +121,7 @@ public class DefaultsSignedness {
 
         // Test doubles
         @Signed double sinDouble;
-        @SignednessEither double conDouble;
+        @SignednessGlb double conDouble;
 
         sinDouble = testDouble;
 
@@ -130,7 +130,7 @@ public class DefaultsSignedness {
 
         // Test chars
         @Signed char sinChar;
-        @SignednessEither char conChar;
+        @SignednessGlb char conChar;
 
         sinChar = testChar;
 
@@ -138,36 +138,36 @@ public class DefaultsSignedness {
         conChar = testChar;
 
         /*
-        //Test boxed bytes
+        // Test boxed bytes
         @Signed Byte sinBoxedByte;
-        @SignednessEither Byte conBoxedByte;
+        @SignednessGlb Byte conBoxedByte;
 
         sinBoxedByte = testBoxedByte;
 
         //// :: error: (assignment.type.incompatible)
         conBoxedByte = testBoxedByte;
 
-        //Test boxed shorts
+        // Test boxed shorts
         @Signed Short sinBoxedShort;
-        @SignednessEither Short conBoxedShort;
+        @SignednessGlb Short conBoxedShort;
 
         sinBoxedShort = testBoxedShort;
 
         //// :: error: (assignment.type.incompatible)
         conBoxedShort = testBoxedShort;
 
-        //Test boxed Integers
+        // Test boxed Integers
         @Signed Integer sinBoxedInteger;
-        @SignednessEither Integer conBoxedInteger;
+        @SignednessGlb Integer conBoxedInteger;
 
         sinBoxedInteger = testBoxedInteger;
 
         //// :: error: (assignment.type.incompatible)
         conBoxedInteger = testBoxedInteger;
 
-        //Test boxed Longs
+        // Test boxed Longs
         @Signed Long sinBoxedLong;
-        @SignednessEither Long conBoxedLong;
+        @SignednessGlb Long conBoxedLong;
 
         sinBoxedLong = testBoxedLong;
 

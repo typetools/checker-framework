@@ -350,8 +350,8 @@ public class NullnessAnnotatedTypeFactory
     @Override
     protected TypeAnnotator createTypeAnnotator() {
         DefaultForTypeAnnotator defaultForTypeAnnotator = new DefaultForTypeAnnotator(this);
-        defaultForTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
-        defaultForTypeAnnotator.addTypeClass(
+        defaultForTypeAnnotator.addAtmClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
+        defaultForTypeAnnotator.addAtmClass(
                 AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
         return new ListTypeAnnotator(
                 new PropagationTypeAnnotator(this),
@@ -393,6 +393,20 @@ public class NullnessAnnotatedTypeFactory
         @Override
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
             return null;
+        }
+
+        @Override
+        public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
+            if (type.getKind().isPrimitive()) {
+                AnnotationMirror NONNULL = ((NullnessAnnotatedTypeFactory) atypeFactory).NONNULL;
+                // If a @Nullable expression is cast to a primitive, then an unboxing.of.nullable
+                // error is issued.  Treat the cast as if it were annotated as @NonNull to avoid an
+                // type.invalid.annotations.on.use error.
+                if (!type.isAnnotatedInHierarchy(NONNULL)) {
+                    type.addAnnotation(NONNULL);
+                }
+            }
+            return super.visitTypeCast(node, type);
         }
     }
 
@@ -482,17 +496,6 @@ public class NullnessAnnotatedTypeFactory
             AnnotatedTypeMirror componentType = arrayType.getComponentType();
             if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
                 componentType.replaceAnnotation(COMMITTED);
-            }
-            return null;
-        }
-
-        @Override
-        public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
-            if (type.getKind().isPrimitive()) {
-                // If a @Nullable expression is cast to a primitivie, then an unboxing.of.nullable
-                // error is issued.  Treat the cast as if were annotated as @NonNull to avoid an
-                // type.invalid.annotations.on.use error.
-                type.replaceAnnotation(NONNULL);
             }
             return null;
         }
