@@ -860,7 +860,8 @@ public class FlowExpressionParseUtil {
         }
 
         String packageName = select.first;
-        String remainingString = select.second, remainingStringIfPackageMatched = remainingString;
+        String remainingString = select.second;
+        String remainingStringIfPackageMatched = remainingString;
 
         PackageSymbol result = null; // the result of this method call
 

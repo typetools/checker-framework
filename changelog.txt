@@ -1,11 +1,11 @@
 Version 2.9.0, July 2, 2019
 
-Renamed the Signedness Checker's @Constant annotation to @SignednessEither.
+Renamed the Signedness Checker's @Constant annotation to @SignednessGlb.
 
 Improved the diagnostic text for uninitialized static fields.  The new
 error key is initialization.static.fields.uninitialized.
 
-The first argument of Opt.orElseThrow is annotated as @NonNull.
+Annotated the first argument of Opt.get and Opt.orElseThrow as @NonNull.
 
 ---------------------------------------------------------------------------
 
