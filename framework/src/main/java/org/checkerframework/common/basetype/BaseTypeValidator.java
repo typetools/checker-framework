@@ -36,7 +36,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     /** Is the type valid? */
     protected boolean isValid = true;
     /** Should the primary annotation on the the top level type be checked? */
-    protected boolean checkTopLevelDeclaredType = false;
+    protected boolean checkTopLevelDeclaredType = true;
 
     protected final BaseTypeChecker checker;
     protected final BaseTypeVisitor<?> visitor;
@@ -70,7 +70,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             return false;
         }
         this.isValid = true;
-        this.checkTopLevelDeclaredType = shouldCheckerTopLevelDeclaredType(type, tree);
+        this.checkTopLevelDeclaredType = shouldCheckTopLevelDeclaredType(type, tree);
         visit(type, tree);
         return this.isValid;
     }
@@ -84,10 +84,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * @param tree Tree whose type is {@code type}
      * @return whether or not the top-level type should be checked
      */
-    protected boolean shouldCheckerTopLevelDeclaredType(AnnotatedTypeMirror type, Tree tree) {
-        return type.getKind() == TypeKind.DECLARED
+    protected boolean shouldCheckTopLevelDeclaredType(AnnotatedTypeMirror type, Tree tree) {
+        return !(type.getKind() == TypeKind.DECLARED
                 && (TreeUtils.isLocalVariable(tree) || TreeUtils.isExpressionTree(tree))
-                && !TreeUtils.isTypeTree(tree);
+                && !TreeUtils.isTypeTree(tree));
     }
 
     /**
@@ -242,7 +242,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
         final boolean skipChecks = checker.shouldSkipUses(type.getUnderlyingType().asElement());
 
-        if (!checkTopLevelDeclaredType && !skipChecks) {
+        if (checkTopLevelDeclaredType && !skipChecks) {
             // Ensure that type use is a subtype of the element type
             // isValidUse determines the erasure of the types.
 

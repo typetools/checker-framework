@@ -1703,8 +1703,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Adds default qualifiers for uses types of to {@code type}. If {@code element} is a local
-     * variable, then the defaults are not added.
+     * Adds default qualifiers bases on the underlying type of {@code type} to {@code type}. If
+     * {@code element} is a local variable, then the defaults are not added.
      *
      * @param element possibly null element whose type is {@code type}
      * @param type the type to which defaults are added
