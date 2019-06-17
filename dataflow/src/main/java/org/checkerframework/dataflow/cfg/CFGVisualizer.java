@@ -74,11 +74,12 @@ public interface CFGVisualizer<
     String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, A value);
 
     /**
-     * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of {@code this}
-     * in the given store.
+     * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of the variable
+     * {@code this} in the given store.
      *
      * @param value the value of {@code this}
-     * @return the String representation of the value of {@code this} in the given store
+     * @return the String representation of the value of the variable {@code this} in the given
+     *     store
      */
     String visualizeStoreThisVal(A value);
 
@@ -130,8 +131,7 @@ public interface CFGVisualizer<
      *
      * @param keyName the name of the specific information to be visualized
      * @param value the value of the specific information to be visualized
-     * @return the String representation of the specific information according to the specific kind
-     *     of the given store
+     * @return the String representation of the specific information collected by the given store
      */
     String visualizeStoreKeyVal(String keyName, Object value);
 
