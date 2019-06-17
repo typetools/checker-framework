@@ -39,8 +39,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     /** Should the primary annotation on the top level type be checked? */
     protected boolean checkTopLevelDeclaredType = true;
 
+    /** BaseTypeChecker */
     protected final BaseTypeChecker checker;
+    /** BaseTypeVisitor */
     protected final BaseTypeVisitor<?> visitor;
+    /** AnnotatedTypeFactory */
     protected final AnnotatedTypeFactory atypeFactory;
 
     // TODO: clean up coupling between components

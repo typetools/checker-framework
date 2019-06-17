@@ -19,6 +19,7 @@ import org.checkerframework.javacutil.CollectionUtils;
 /** Implements support for {@link DefaultQualifierForUse} and {@link NoDefaultQualifierForUse}. */
 public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
 
+    /** Creates an DefaultQualifierForUseTypeAnnotator for {@code typeFactory} */
     public DefaultQualifierForUseTypeAnnotator(AnnotatedTypeFactory typeFactory) {
         super(typeFactory);
     }
