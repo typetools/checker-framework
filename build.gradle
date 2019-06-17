@@ -146,11 +146,12 @@ task cloneAndBuildDependencies(type: Exec) {
 }
 
 task version() {
-    description 'Print checker-framework version'
+    description 'Print Checker Framework version'
     doLast {
         println version
     }
 }
+
 /**
  * Creates a task that runs the checker on the main source set of each subproject. The task is named
  * "check${shortName}", for example "checkPurity" or "checkNullness".
@@ -458,7 +459,9 @@ subprojects {
             manifest {
                 attributes("Implementation-Version": "${version}")
                 attributes("Implementation-URL": "https://checkerframework.org")
-                attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
+		if (archiveName != "checker-source.jar") {
+                    attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
+                }
             }
         }
 
@@ -490,12 +493,8 @@ subprojects {
                                 "-keywords:!ignore",
                                 '-samevm',
                                 // Required for checker/jtreg/nullness/PersistUtil.java and other tests
-                                // Must use langtools javap.jar rather than tools.jar because the
-                                // tools.jar in the docker vm doesn't have the required classes.
                                 "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}:" +
-                                        "${parentDir}/jsr308-langtools/dist/lib/javap.jar:" +
                                         "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
-
                                 "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                         ]
                         if (project.name.is('checker')) {
@@ -718,6 +717,7 @@ task releaseBuild(type: GradleBuild) {
     // This downloads rather than builds the jdk8.jar because that's what is used in all the Travis tests.
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', 'checker:allJavadocJar']
 }
+
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
     description 'Build everything required for a release and run allTests'
     startParameter = new StartParameter()
