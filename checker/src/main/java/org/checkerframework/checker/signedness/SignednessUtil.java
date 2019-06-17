@@ -364,6 +364,8 @@ public final class SignednessUtil {
     /**
      * Compares two unsigned longs x and y.
      *
+     * <p>This is a reimplementation of Java 8's {@code Long.compareUnsigned(long, long)}.
+     *
      * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
      *     zero iff x == y.
      * @deprecated use Java 8's {@code Long.compareUnsigned(long, long)}.
@@ -377,6 +379,8 @@ public final class SignednessUtil {
 
     /**
      * Compares two unsigned ints x and y.
+     *
+     * <p>This is a reimplementation of Java 8's {@code Integer.compareUnsigned(int, int)}.
      *
      * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
      *     zero iff x == y.
@@ -418,6 +422,8 @@ public final class SignednessUtil {
     /**
      * Produces a string representation of the unsigned long l.
      *
+     * <p>This is a reimplementation of Java 8's {@code Long.toUnsignedString(long)}.
+     *
      * @deprecated use Java 8's {@code Long.toUnsignedString(long)}.
      */
     @Deprecated // use Long.toUnsignedString(long)
@@ -429,6 +435,8 @@ public final class SignednessUtil {
 
     /**
      * Produces a string representation of the unsigned long l in base radix.
+     *
+     * <p>This is a reimplementation of Java 8's {@code Long.toUnsignedString(long, int)}.
      *
      * @deprecated use Java 8's {@code Long.toUnsignedString(long, int)}.
      */
@@ -442,6 +450,8 @@ public final class SignednessUtil {
     /**
      * Produces a string representation of the unsigned int i.
      *
+     * <p>This is a reimplementation of Java 8's {@code Integer.toUnsignedString(int)}.
+     *
      * @deprecated use Java 8's {@code Integer.toUnsignedString(int)}.
      */
     @Deprecated // use Integer.toUnsignedString(int)
@@ -453,6 +463,8 @@ public final class SignednessUtil {
 
     /**
      * Produces a string representation of the unsigned int i in base radix.
+     *
+     * <p>This is a reimplementation of Java 8's {@code Integer.toUnsignedString(int, int)}.
      *
      * @deprecated use Java 8's {@code Integer.toUnsignedString(int, int)}.
      */
@@ -516,6 +528,8 @@ public final class SignednessUtil {
     /**
      * Returns an unsigned long representing the same value as an unsigned int.
      *
+     * <p>This is a reimplementation of Java 8's {@code Integer.toUnsignedLong(int)}.
+     *
      * @deprecated use Java 8's {@code Integer.toUnsignedLong(int)}.
      */
     @Deprecated // use Integer.toUnsignedLong(int)
@@ -527,6 +541,8 @@ public final class SignednessUtil {
     /**
      * Returns an unsigned long representing the same value as an unsigned short.
      *
+     * <p>This is a reimplementation of Java 8's {@code Short.toUnsignedLong(short)}.
+     *
      * @deprecated use Java 8's {@code Short.toUnsignedLong(short)}.
      */
     @Deprecated // use Short.toUnsignedLong(short)
@@ -536,6 +552,8 @@ public final class SignednessUtil {
 
     /**
      * Returns an unsigned int representing the same value as an unsigned short.
+     *
+     * <p>This is a reimplementation of Java 8's {@code Short.toUnsignedInt(short)}.
      *
      * @deprecated use Java 8's {@code Short.toUnsignedInt(short)}.
      */
@@ -547,6 +565,8 @@ public final class SignednessUtil {
     /**
      * Returns an unsigned long representing the same value as an unsigned byte.
      *
+     * <p>This is a reimplementation of Java 8's {@code Byte.toUnsignedLong(byte)}.
+     *
      * @deprecated use Java 8's {@code Byte.toUnsignedLong(byte)}.
      */
     @Deprecated // use Byte.toUnsignedLong(byte)
@@ -556,6 +576,8 @@ public final class SignednessUtil {
 
     /**
      * Returns an unsigned int representing the same value as an unsigned byte.
+     *
+     * <p>This is a reimplementation of Java 8's {@code Byte.toUnsignedInt(byte)}.
      *
      * @deprecated use Java 8's {@code Byte.toUnsignedInt(byte)}.
      */
