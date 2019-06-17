@@ -1,6 +1,7 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
@@ -590,5 +591,10 @@ public class NullnessVisitor
         // BasetypeVisitor forces annotations on exception parameters to be top,
         // but because exceptions can never be null, the Nullness Checker
         // does not require this check.
+    }
+
+    @Override
+    public Void visitAnnotation(AnnotationTree node, Void p) {
+        return null;
     }
 }
