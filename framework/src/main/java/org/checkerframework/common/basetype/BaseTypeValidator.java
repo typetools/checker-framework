@@ -37,7 +37,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     protected boolean isValid = true;
 
     /** Should the primary annotation on the top level type be checked? */
-    protected boolean checkTopLevelDeclaredType = false;
+    protected boolean checkTopLevelDeclaredType = true;
 
     protected final BaseTypeChecker checker;
     protected final BaseTypeVisitor<?> visitor;
@@ -73,6 +73,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         this.isValid = true;
         this.checkTopLevelDeclaredType = shouldCheckTopLevelDeclaredType(type, tree);
         visit(type, tree);
+        this.checkTopLevelDeclaredType = true;
         return this.isValid;
     }
 
@@ -86,9 +87,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * @return whether or not the top-level type should be checked
      */
     protected boolean shouldCheckTopLevelDeclaredType(AnnotatedTypeMirror type, Tree tree) {
-        return !(type.getKind() == TypeKind.DECLARED
-                && (TreeUtils.isLocalVariable(tree) || TreeUtils.isExpressionTree(tree))
-                && !TreeUtils.isTypeTree(tree));
+        if (type.getKind() != TypeKind.DECLARED) {
+            return true;
+        }
+        return !TreeUtils.isLocalVariable(tree)
+                && (!TreeUtils.isExpressionTree(tree) || TreeUtils.isTypeTree(tree));
     }
 
     /**
@@ -256,7 +259,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             if (!visitor.isValidUse(elemType, type, tree)) {
                 reportInvalidAnnotationsOnUse(type, tree);
             }
-            checkTopLevelDeclaredType = false;
+            checkTopLevelDeclaredType = true;
         }
 
         /*
