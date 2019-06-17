@@ -1868,14 +1868,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
         if (castType.getKind() == TypeKind.DECLARED) {
-            // eliminate false positives, where the annotations are
-            // implicitly added by the declared type declaration
+            // Don't issue an error if the annotations are equivalent to the qualifier upper bound
+            // of the type.
             AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType) castType;
-            AnnotatedDeclaredType elementType =
-                    atypeFactory.fromElement(
-                            (TypeElement) castDeclared.getUnderlyingType().asElement());
-            if (AnnotationUtils.areSame(
-                    castDeclared.getAnnotations(), elementType.getAnnotations())) {
+            Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(castDeclared);
+
+            if (AnnotationUtils.areSame(castDeclared.getAnnotations(), bounds)) {
                 return true;
             }
         }
