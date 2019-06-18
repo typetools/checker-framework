@@ -12,30 +12,42 @@ public class ValueIntegration {
             @IntVal({-1, 127}) byte smixed,
             @IntVal({-128, 0, 128}) byte bmixed) {
         @Signed byte stest;
-        @SignednessGlb byte ctest;
+        @SignednessGlb byte gtest;
+        @SignedPositive byte ptest;
 
         stest = c;
-        ctest = c;
+        gtest = c;
+        ptest = c;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
-        ctest = upure;
+        gtest = upure;
+        // :: error: (assignment.type.incompatible)
+        ptest = upure;
 
         stest = umixed;
         // :: error: (assignment.type.incompatible)
-        ctest = umixed;
+        gtest = umixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = umixed;
 
         stest = spure;
         // :: error: (assignment.type.incompatible)
-        ctest = spure;
+        gtest = spure;
+        // :: error: (assignment.type.incompatible)
+        ptest = spure;
 
         stest = smixed;
         // :: error: (assignment.type.incompatible)
-        ctest = smixed;
+        gtest = smixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = smixed;
 
         stest = bmixed;
         // :: error: (assignment.type.incompatible)
-        ctest = bmixed;
+        gtest = bmixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = bmixed;
     }
 
     public void CharValRules(
@@ -46,30 +58,41 @@ public class ValueIntegration {
             @IntVal({-1, 127}) char smixed,
             @IntVal({-128, 0, 128}) char bmixed) {
         @Signed char stest;
-        @SignednessGlb char ctest;
+        @SignednessGlb char gtest;
 
         stest = c;
-        ctest = c;
+        gtest = c;
+        ptest = c;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
-        ctest = upure;
+        gtest = upure;
+        // :: error: (assignment.type.incompatible)
+        ptest = upure;
 
         stest = umixed;
         // :: error: (assignment.type.incompatible)
-        ctest = umixed;
+        gtest = umixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = umixed;
 
         stest = spure;
         // :: error: (assignment.type.incompatible)
-        ctest = spure;
+        gtest = spure;
+        // :: error: (assignment.type.incompatible)
+        ptest = spure;
 
         stest = smixed;
         // :: error: (assignment.type.incompatible)
-        ctest = smixed;
+        gtest = smixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = smixed;
 
         stest = bmixed;
         // :: error: (assignment.type.incompatible)
-        ctest = bmixed;
+        gtest = bmixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = bmixed;
     }
 
     public void ShortValRules(
@@ -80,30 +103,41 @@ public class ValueIntegration {
             @IntVal({-1, 32767}) short smixed,
             @IntVal({-32768, 0, 32768}) short bmixed) {
         @Signed short stest;
-        @SignednessGlb short ctest;
+        @SignednessGlb short gtest;
 
         stest = c;
-        ctest = c;
+        gtest = c;
+        ptest = c;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
-        ctest = upure;
+        gtest = upure;
+        // :: error: (assignment.type.incompatible)
+        ptest = upure;
 
         stest = umixed;
         // :: error: (assignment.type.incompatible)
-        ctest = umixed;
+        gtest = umixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = umixed;
 
         stest = spure;
         // :: error: (assignment.type.incompatible)
-        ctest = spure;
+        gtest = spure;
+        // :: error: (assignment.type.incompatible)
+        ptest = spure;
 
         stest = smixed;
         // :: error: (assignment.type.incompatible)
-        ctest = smixed;
+        gtest = smixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = smixed;
 
         stest = bmixed;
         // :: error: (assignment.type.incompatible)
-        ctest = bmixed;
+        gtest = bmixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = bmixed;
     }
 
     public void IntValRules(
@@ -114,30 +148,41 @@ public class ValueIntegration {
             @IntVal({-1, 2147483647}) int smixed,
             @IntVal({-2147483648, 0, 2147483648L}) int bmixed) {
         @Signed int stest;
-        @SignednessGlb int ctest;
+        @SignednessGlb int gtest;
 
         stest = c;
-        ctest = c;
+        gtest = c;
+        ptest = c;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
-        ctest = upure;
+        gtest = upure;
+        // :: error: (assignment.type.incompatible)
+        ptest = upure;
 
         stest = umixed;
         // :: error: (assignment.type.incompatible)
-        ctest = umixed;
+        gtest = umixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = umixed;
 
         stest = spure;
         // :: error: (assignment.type.incompatible)
-        ctest = spure;
+        gtest = spure;
+        // :: error: (assignment.type.incompatible)
+        ptest = spure;
 
         stest = smixed;
         // :: error: (assignment.type.incompatible)
-        ctest = smixed;
+        gtest = smixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = smixed;
 
         stest = bmixed;
         // :: error: (assignment.type.incompatible)
-        ctest = bmixed;
+        gtest = bmixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = bmixed;
     }
 
     public void LongValRules(
@@ -146,22 +191,29 @@ public class ValueIntegration {
             @IntVal({-1, Long.MAX_VALUE}) long smixed,
             @IntVal({Long.MIN_VALUE, 0, Long.MAX_VALUE}) long bmixed) {
         @Signed long stest;
-        @SignednessGlb long ctest;
+        @SignednessGlb long gtest;
 
         stest = c;
-        ctest = c;
+        gtest = c;
+        ptest = c;
 
         stest = spure;
         // :: error: (assignment.type.incompatible)
-        ctest = spure;
+        gtest = spure;
+        // :: error: (assignment.type.incompatible)
+        ptest = spure;
 
         stest = smixed;
         // :: error: (assignment.type.incompatible)
-        ctest = smixed;
+        gtest = smixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = smixed;
 
         stest = bmixed;
         // :: error: (assignment.type.incompatible)
-        ctest = bmixed;
+        gtest = bmixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = bmixed;
     }
 
     public void ByteRangeRules(
@@ -174,36 +226,49 @@ public class ValueIntegration {
             @IntRange(from = -1, to = 127) byte smixed,
             @IntRange(from = -128, to = 128) byte bmixed) {
         @Signed byte stest;
-        @SignednessGlb byte ctest;
+        @SignednessGlb byte gtest;
 
         stest = c;
-        ctest = c;
+        gtest = c;
+        ptest = c;
 
         stest = nnc;
-        ctest = nnc;
+        gtest = nnc;
+        ptest = nnc;
 
         stest = pc;
-        ctest = pc;
+        gtest = pc;
+        ptest = pc;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
-        ctest = upure;
+        gtest = upure;
+        // :: error: (assignment.type.incompatible)
+        ptest = upure;
 
         stest = umixed;
         // :: error: (assignment.type.incompatible)
-        ctest = umixed;
+        gtest = umixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = umixed;
 
         stest = spure;
         // :: error: (assignment.type.incompatible)
-        ctest = spure;
+        gtest = spure;
+        // :: error: (assignment.type.incompatible)
+        ptest = spure;
 
         stest = smixed;
         // :: error: (assignment.type.incompatible)
-        ctest = smixed;
+        gtest = smixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = smixed;
 
         stest = bmixed;
         // :: error: (assignment.type.incompatible)
-        ctest = bmixed;
+        gtest = bmixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = bmixed;
     }
 
     public void CharRangeRules(
@@ -216,36 +281,49 @@ public class ValueIntegration {
             @IntRange(from = -1, to = 127) char smixed,
             @IntRange(from = -128, to = 128) char bmixed) {
         @Signed char stest;
-        @SignednessGlb char ctest;
+        @SignednessGlb char gtest;
 
         stest = c;
-        ctest = c;
+        gtest = c;
+        ptest = c;
 
         stest = nnc;
-        ctest = nnc;
+        gtest = nnc;
+        ptest = nnc;
 
         stest = pc;
-        ctest = pc;
+        gtest = pc;
+        ptest = pc;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
-        ctest = upure;
+        gtest = upure;
+        // :: error: (assignment.type.incompatible)
+        ptest = upure;
 
         stest = umixed;
         // :: error: (assignment.type.incompatible)
-        ctest = umixed;
+        gtest = umixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = umixed;
 
         stest = spure;
         // :: error: (assignment.type.incompatible)
-        ctest = spure;
+        gtest = spure;
+        // :: error: (assignment.type.incompatible)
+        ptest = spure;
 
         stest = smixed;
         // :: error: (assignment.type.incompatible)
-        ctest = smixed;
+        gtest = smixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = smixed;
 
         stest = bmixed;
         // :: error: (assignment.type.incompatible)
-        ctest = bmixed;
+        gtest = bmixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = bmixed;
     }
 
     public void ShortRangeRules(
@@ -258,36 +336,49 @@ public class ValueIntegration {
             @IntRange(from = -1, to = 32767) short smixed,
             @IntRange(from = -32768, to = 32768) short bmixed) {
         @Signed short stest;
-        @SignednessGlb short ctest;
+        @SignednessGlb short gtest;
 
         stest = c;
-        ctest = c;
+        gtest = c;
+        ptest = c;
 
         stest = nnc;
-        ctest = nnc;
+        gtest = nnc;
+        ptest = nnc;
 
         stest = pc;
-        ctest = pc;
+        gtest = pc;
+        ptest = pc;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
-        ctest = upure;
+        gtest = upure;
+        // :: error: (assignment.type.incompatible)
+        ptest = upure;
 
         stest = umixed;
         // :: error: (assignment.type.incompatible)
-        ctest = umixed;
+        gtest = umixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = umixed;
 
         stest = spure;
         // :: error: (assignment.type.incompatible)
-        ctest = spure;
+        gtest = spure;
+        // :: error: (assignment.type.incompatible)
+        ptest = spure;
 
         stest = smixed;
         // :: error: (assignment.type.incompatible)
-        ctest = smixed;
+        gtest = smixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = smixed;
 
         stest = bmixed;
         // :: error: (assignment.type.incompatible)
-        ctest = bmixed;
+        gtest = bmixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = bmixed;
     }
 
     public void IntRangeRules(
@@ -300,36 +391,49 @@ public class ValueIntegration {
             @IntRange(from = -1, to = 2147483647) int smixed,
             @IntRange(from = -2147483648, to = 2147483648L) int bmixed) {
         @Signed int stest;
-        @SignednessGlb int ctest;
+        @SignednessGlb int gtest;
 
         stest = c;
-        ctest = c;
+        gtest = c;
+        ptest = c;
 
         stest = nnc;
-        ctest = nnc;
+        gtest = nnc;
+        ptest = nnc;
 
         stest = pc;
-        ctest = pc;
+        gtest = pc;
+        ptest = pc;
 
         stest = upure;
         // :: error: (assignment.type.incompatible)
-        ctest = upure;
+        gtest = upure;
+        // :: error: (assignment.type.incompatible)
+        ptest = upure;
 
         stest = umixed;
         // :: error: (assignment.type.incompatible)
-        ctest = umixed;
+        gtest = umixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = umixed;
 
         stest = spure;
         // :: error: (assignment.type.incompatible)
-        ctest = spure;
+        gtest = spure;
+        // :: error: (assignment.type.incompatible)
+        ptest = spure;
 
         stest = smixed;
         // :: error: (assignment.type.incompatible)
-        ctest = smixed;
+        gtest = smixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = smixed;
 
         stest = bmixed;
         // :: error: (assignment.type.incompatible)
-        ctest = bmixed;
+        gtest = bmixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = bmixed;
     }
 
     public void LongRangeRules(
@@ -340,27 +444,36 @@ public class ValueIntegration {
             @IntRange(from = -1, to = Long.MAX_VALUE) long smixed,
             @IntRange(from = Long.MIN_VALUE, to = Long.MAX_VALUE) long bmixed) {
         @Signed long stest;
-        @SignednessGlb long ctest;
+        @SignednessGlb long gtest;
 
         stest = c;
-        ctest = c;
+        gtest = c;
+        ptest = c;
 
         stest = nnc;
-        ctest = nnc;
+        gtest = nnc;
+        ptest = nnc;
 
         stest = pc;
-        ctest = pc;
+        gtest = pc;
+        ptest = pc;
 
         stest = spure;
         // :: error: (assignment.type.incompatible)
-        ctest = spure;
+        gtest = spure;
+        // :: error: (assignment.type.incompatible)
+        ptest = spure;
 
         stest = smixed;
         // :: error: (assignment.type.incompatible)
-        ctest = smixed;
+        gtest = smixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = smixed;
 
         stest = bmixed;
         // :: error: (assignment.type.incompatible)
-        ctest = bmixed;
+        gtest = bmixed;
+        // :: error: (assignment.type.incompatible)
+        ptest = bmixed;
     }
 }

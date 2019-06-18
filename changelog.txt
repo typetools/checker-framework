@@ -1,6 +1,7 @@
 Version 2.9.0, July 2, 2019
 
 Renamed the Signedness Checker's @Constant annotation to @SignednessGlb.
+Introduced an alias, @SignedPositive, for use by programmers.
 
 Improved the diagnostic text for uninitialized static fields.  The new
 error key is initialization.static.fields.uninitialized.
