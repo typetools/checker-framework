@@ -17,6 +17,7 @@ public class ValueIntegration {
 
         stest = c;
         gtest = c;
+        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = upure;
@@ -59,9 +60,11 @@ public class ValueIntegration {
             @IntVal({-128, 0, 128}) char bmixed) {
         @Signed char stest;
         @SignednessGlb char gtest;
+        @SignedPositive char ptest;
 
         stest = c;
         gtest = c;
+        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = upure;
@@ -104,9 +107,11 @@ public class ValueIntegration {
             @IntVal({-32768, 0, 32768}) short bmixed) {
         @Signed short stest;
         @SignednessGlb short gtest;
+        @SignedPositive short ptest;
 
         stest = c;
         gtest = c;
+        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = upure;
@@ -149,9 +154,11 @@ public class ValueIntegration {
             @IntVal({-2147483648, 0, 2147483648L}) int bmixed) {
         @Signed int stest;
         @SignednessGlb int gtest;
+        @SignedPositive int ptest;
 
         stest = c;
         gtest = c;
+        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = upure;
@@ -192,9 +199,11 @@ public class ValueIntegration {
             @IntVal({Long.MIN_VALUE, 0, Long.MAX_VALUE}) long bmixed) {
         @Signed long stest;
         @SignednessGlb long gtest;
+        @SignedPositive long ptest;
 
         stest = c;
         gtest = c;
+        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = spure;
@@ -227,9 +236,11 @@ public class ValueIntegration {
             @IntRange(from = -128, to = 128) byte bmixed) {
         @Signed byte stest;
         @SignednessGlb byte gtest;
+        @SignedPositive byte ptest;
 
         stest = c;
         gtest = c;
+        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = nnc;
@@ -282,9 +293,11 @@ public class ValueIntegration {
             @IntRange(from = -128, to = 128) char bmixed) {
         @Signed char stest;
         @SignednessGlb char gtest;
+        @SignedPositive char ptest;
 
         stest = c;
         gtest = c;
+        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = nnc;
@@ -337,9 +350,11 @@ public class ValueIntegration {
             @IntRange(from = -32768, to = 32768) short bmixed) {
         @Signed short stest;
         @SignednessGlb short gtest;
+        @SignedPositive short ptest;
 
         stest = c;
         gtest = c;
+        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = nnc;
@@ -392,9 +407,11 @@ public class ValueIntegration {
             @IntRange(from = -2147483648, to = 2147483648L) int bmixed) {
         @Signed int stest;
         @SignednessGlb int gtest;
+        @SignedPositive int ptest;
 
         stest = c;
         gtest = c;
+        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = nnc;
@@ -445,9 +462,11 @@ public class ValueIntegration {
             @IntRange(from = Long.MIN_VALUE, to = Long.MAX_VALUE) long bmixed) {
         @Signed long stest;
         @SignednessGlb long gtest;
+        @SignedPositive long ptest;
 
         stest = c;
         gtest = c;
+        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = nnc;
