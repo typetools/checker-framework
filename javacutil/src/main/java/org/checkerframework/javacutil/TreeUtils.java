@@ -1294,6 +1294,7 @@ public final class TreeUtils {
         return false;
     }
 
+    /** @return the type as a TypeMirror of {@code tree} */
     public static TypeMirror typeOf(Tree tree) {
         return ((JCTree) tree).type;
     }
