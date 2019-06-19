@@ -1,7 +1,10 @@
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
-import org.checkerframework.checker.signedness.qual.*;
-import org.checkerframework.common.value.qual.*;
+import org.checkerframework.checker.signedness.qual.Signed;
+import org.checkerframework.checker.signedness.qual.SignedPositive;
+import org.checkerframework.checker.signedness.qual.SignednessGlb;
+import org.checkerframework.common.value.qual.IntRange;
+import org.checkerframework.common.value.qual.IntVal;
 
 public class ValueIntegration {
     public void ByteValRules(
@@ -17,7 +20,6 @@ public class ValueIntegration {
 
         stest = c;
         gtest = c;
-        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = upure;
@@ -64,7 +66,6 @@ public class ValueIntegration {
 
         stest = c;
         gtest = c;
-        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = upure;
@@ -111,7 +112,6 @@ public class ValueIntegration {
 
         stest = c;
         gtest = c;
-        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = upure;
@@ -158,7 +158,6 @@ public class ValueIntegration {
 
         stest = c;
         gtest = c;
-        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = upure;
@@ -203,7 +202,6 @@ public class ValueIntegration {
 
         stest = c;
         gtest = c;
-        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = spure;
@@ -240,7 +238,6 @@ public class ValueIntegration {
 
         stest = c;
         gtest = c;
-        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = nnc;
@@ -297,7 +294,6 @@ public class ValueIntegration {
 
         stest = c;
         gtest = c;
-        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = nnc;
@@ -354,7 +350,6 @@ public class ValueIntegration {
 
         stest = c;
         gtest = c;
-        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = nnc;
@@ -411,7 +406,6 @@ public class ValueIntegration {
 
         stest = c;
         gtest = c;
-        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = nnc;
@@ -466,7 +460,6 @@ public class ValueIntegration {
 
         stest = c;
         gtest = c;
-        // :: error: (assignment.type.incompatible)
         ptest = c;
 
         stest = nnc;
