@@ -2537,9 +2537,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param type the canonical annotation
      */
     protected void addAliasedAnnotation(Class<?> aliasClass, AnnotationMirror type) {
-        if (aliasClass.getAnnotation(SubtypeOf.class) != null) {
+        if (getSupportedTypeQualifiers().contains(aliasClass)) {
             throw new BugInCF(
-                    "AnnotatedTypeFactory: alias %s should not be meta-annotated with @SubtypeOf.",
+                    "AnnotatedTypeFactory: alias %s should not be in this type hierarchy",
                     aliasClass);
         }
         addAliasedAnnotation(aliasClass.getCanonicalName(), type);
@@ -2593,9 +2593,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Class<?> canonical,
             boolean copyElements,
             String... ignorableElements) {
-        if (aliasClass.getAnnotation(SubtypeOf.class) != null) {
+        if (getSupportedTypeQualifiers().contains(aliasClass)) {
             throw new BugInCF(
-                    "AnnotatedTypeFactory: alias %s should not be meta-annotated with @SubtypeOf.",
+                    "AnnotatedTypeFactory: alias %s should not be in this type hierarchy",
                     aliasClass);
         }
         addAliasedAnnotation(
