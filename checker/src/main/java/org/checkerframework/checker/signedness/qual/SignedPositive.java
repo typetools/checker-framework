@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * The value's is in the signed positive range; that is, its most significant bit is not set. The
- * value has the same interpretation as {@link Signed} and {@link Unsigned} &mdash both
+ * value has the same interpretation as {@link Signed} and {@link Unsigned} &mdash; both
  * interpretations are equivalent.
  *
  * <p>Programmers should rarely write {@code @SignedPositive}. Instead, the programmer should write
