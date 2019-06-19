@@ -62,7 +62,7 @@ echo "In checker-framework/.travis-build.sh GROUP=$GROUP"
 ### TESTS OF THIS REPOSITORY
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  ./gradlew allTests --console=plain --warning-mode=all -s --no-daemon
+  ./gradlew allTests --console=plain --warning-mode=all --no-daemon
   # Moved example-tests-nobuildjdk out of all tests because it fails in
   # the release script because the newest maven artifacts are not published yet.
   ./gradlew :checker:exampleTests --console=plain --warning-mode=all --no-daemon
@@ -123,7 +123,7 @@ if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; the
 
   export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
   export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all -s --no-daemon)
+  (cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all --no-daemon)
 
 fi
 
@@ -149,7 +149,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools checker-framework.demos`
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} checker-framework-demos) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} checker-framework-demos)
-  ./gradlew :checker:demosTests --console=plain --warning-mode=all -s --no-daemon
+  ./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
 
   # Guava
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
