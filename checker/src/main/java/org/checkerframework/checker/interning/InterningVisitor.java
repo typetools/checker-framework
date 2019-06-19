@@ -37,6 +37,7 @@ import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.Heuristics;
@@ -300,18 +301,17 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (tree.getKind() == Tree.Kind.METHOD && TreeUtils.isConstructor((MethodTree) tree)) {
             return true;
         } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
-            // Don't issue an invalid type warning for creations of objects of interned classes;
-            // instead, issue an
-            // interned.object.creation error if required.
             NewClassTree newClassTree = (NewClassTree) tree;
             Element elt = TreeUtils.elementFromUse(newClassTree).getEnclosingElement();
-            if (elt.getKind() == ElementKind.ENUM) {
-                return true;
-            }
-            Set<AnnotationMirror> declaredType =
-                    atypeFactory.getTypeDeclarationBounds((TypeElement) elt);
-            if (AnnotationUtils.containsSameByClass(declaredType, Interned.class)) {
-                return checkCreationOfInternedObject(newClassTree);
+            Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds((TypeElement) elt);
+            // Don't issue an invalid type warning for creations of objects of interned classes;
+            // instead, issue an interned.object.creation if required.
+            if (AnnotationUtils.containsSameByClass(bounds, Interned.class)) {
+                ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(newClassTree);
+                AnnotatedExecutableType constructor = fromUse.executableType;
+                if (!checkCreationOfInternedObject(newClassTree, constructor)) {
+                    return false;
+                }
             }
         }
         return super.validateTypeOf(tree);
@@ -321,9 +321,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * Issue an error if {@code newInternedObject} is not immediately interned.
      *
      * @param newInternedObject call to a constructor of an interned class
+     * @param constructor declared type of the constructor
      * @return false unless {@code newInternedObject} is immediately interned.
      */
-    private boolean checkCreationOfInternedObject(NewClassTree newInternedObject) {
+    private boolean checkCreationOfInternedObject(
+            NewClassTree newInternedObject, AnnotatedExecutableType constructor) {
+        if (constructor.getReturnType().hasAnnotation(Interned.class)) {
+            return true;
+        }
         if (getCurrentPath() != null
                 && getCurrentPath().getParentPath() != null
                 && getCurrentPath().getParentPath().getParentPath() != null) {
