@@ -2539,8 +2539,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected void addAliasedAnnotation(Class<?> aliasClass, AnnotationMirror type) {
         if (getSupportedTypeQualifiers().contains(aliasClass)) {
             throw new BugInCF(
-                    "AnnotatedTypeFactory: alias %s should not be in this type hierarchy",
-                    aliasClass);
+                    "AnnotatedTypeFactory: alias %s should not be in type hierarchy for %s",
+                    aliasClass, this.getClass().getSimpleName());
         }
         addAliasedAnnotation(aliasClass.getCanonicalName(), type);
     }
@@ -2595,8 +2595,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             String... ignorableElements) {
         if (getSupportedTypeQualifiers().contains(aliasClass)) {
             throw new BugInCF(
-                    "AnnotatedTypeFactory: alias %s should not be in this type hierarchy",
-                    aliasClass);
+                    "AnnotatedTypeFactory: alias %s should not be in type hierarchy for %s",
+                    aliasClass, this.getClass().getSimpleName());
         }
         addAliasedAnnotation(
                 aliasClass.getCanonicalName(), canonical, copyElements, ignorableElements);
