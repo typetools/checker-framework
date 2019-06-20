@@ -961,7 +961,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /**
      * Adds a representation of the internal information of this Store to visualizer {@code viz}.
      *
-     * @return a String of the internal information of this {@link Store}
+     * @return a representation of the internal information of this {@link Store}
      */
     protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
         StringBuilder res = new StringBuilder();
