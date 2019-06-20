@@ -1276,7 +1276,7 @@ public final class String
      *          {@code false} otherwise.
      */
     public boolean regionMatches(int toffset, String other, int ooffset,
-				int len) {
+				    int len) {
         char ta[] = value;
         int to = toffset;
         char pa[] = other.value;
