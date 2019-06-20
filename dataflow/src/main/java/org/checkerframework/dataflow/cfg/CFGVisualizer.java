@@ -96,7 +96,7 @@ public interface CFGVisualizer<
      *
      * @param arrayValue the array
      * @param value the value of the array
-     * @return the String representation of the value of arrays
+     * @return the String representation of the value of array
      */
     String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, A value);
 
@@ -106,7 +106,7 @@ public interface CFGVisualizer<
      *
      * @param methodCall the pure method call
      * @param value the value of the pure method call
-     * @return the String representation of the pure method calls
+     * @return the String representation of the pure method call
      */
     String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, A value);
 
@@ -116,7 +116,7 @@ public interface CFGVisualizer<
      *
      * @param className the class name
      * @param value the value of the class name
-     * @return the String representation of the class names
+     * @return the String representation of the class name
      */
     String visualizeStoreClassVals(FlowExpressions.ClassName className, A value);
 
