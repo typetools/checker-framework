@@ -4,15 +4,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
 /**
- * A constraint of the form: F 《 A or A 》 F
- *
- * @see org.checkerframework.framework.util.typeinference.constraint.AFConstraint
+ * @see org.checkerframework.framework.util.typeinference.constraint.AFConstraint A constraint of
+ *     the form: F 《 A or A 》 F
  */
 public class F2A extends AFConstraint {
 
-    /** Create a constraint with an argument greater than a formal. */
     public F2A(AnnotatedTypeMirror formalParameter, AnnotatedTypeMirror argument) {
-        super(argument, formalParameter);
+        super(argument, formalParameter, 37);
     }
 
     @Override

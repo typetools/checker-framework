@@ -276,11 +276,6 @@ the \<@SuppressWarnings> annotation.  It will also help you audit your code
 to verify all the warning suppressions.  (The code is correct only if the
 checker issues no warnings \emph{and} each \<@SuppressWarnings> is correct.)
 
-A suppression message like ``a.f is not null'' is not useful.  The fact
-that you are suppressing the warning means that you believe that \<a.f> is
-not null.  The message should explain \emph{why} you believe that; for
-example, ``a.f was checked above and no subsequent side effect can affect it''.
-
 Here are some terse examples from libraries in \href{https://github.com/plume-lib/}{plume-lib}:
 
 \begin{Verbatim}

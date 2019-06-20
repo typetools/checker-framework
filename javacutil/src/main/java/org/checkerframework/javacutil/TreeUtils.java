@@ -140,7 +140,7 @@ public final class TreeUtils {
      * @return {@code true} iff the member is a member of {@code this} instance
      */
     public static boolean isSelfAccess(final ExpressionTree tree) {
-        ExpressionTree tr = TreeUtils.withoutParens(tree);
+        ExpressionTree tr = TreeUtils.skipParens(tree);
         // If method invocation check the method select
         if (tr.getKind() == Tree.Kind.ARRAY_ACCESS) {
             return false;
@@ -149,11 +149,11 @@ public final class TreeUtils {
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             tr = ((MethodInvocationTree) tree).getMethodSelect();
         }
-        tr = TreeUtils.withoutParens(tr);
+        tr = TreeUtils.skipParens(tr);
         if (tr.getKind() == Tree.Kind.TYPE_CAST) {
             tr = ((TypeCastTree) tr).getExpression();
         }
-        tr = TreeUtils.withoutParens(tr);
+        tr = TreeUtils.skipParens(tr);
 
         if (tr.getKind() == Tree.Kind.IDENTIFIER) {
             return true;
@@ -329,50 +329,18 @@ public final class TreeUtils {
     }
 
     /**
-     * If the given tree is a parenthesized tree, return the enclosed non-parenthesized tree.
-     * Otherwise, return the same tree.
-     *
-     * @param tree an expression tree
-     * @return the outermost non-parenthesized tree enclosed by the given tree
-     */
-    public static ExpressionTree withoutParens(final ExpressionTree tree) {
-        ExpressionTree t = tree;
-        while (t.getKind() == Tree.Kind.PARENTHESIZED) {
-            t = ((ParenthesizedTree) t).getExpression();
-        }
-        return t;
-    }
-
-    /**
      * If the given tree is a parenthesized tree, it returns the enclosed non-parenthesized tree.
      * Otherwise, it returns the same tree.
      *
      * @param tree an expression tree
      * @return the outermost non-parenthesized tree enclosed by the given tree
-     * @deprecated use {@link #withoutParens}
      */
-    @Deprecated // use withoutParens
     public static ExpressionTree skipParens(final ExpressionTree tree) {
-        return withoutParens(tree);
-    }
-
-    /**
-     * Gets the first enclosing tree in path, that is not a parenthesis.
-     *
-     * @param path the path defining the tree node
-     * @return a pair of a non-parenthesis tree that contains the argument, and its child that is
-     *     the argument or is a parenthesized version of it
-     */
-    public static Pair<Tree, Tree> enclosingNonParen(final TreePath path) {
-        TreePath parentPath = path.getParentPath();
-        Tree enclosing = parentPath.getLeaf();
-        Tree enclosingChild = path.getLeaf();
-        while (enclosing.getKind() == Kind.PARENTHESIZED) {
-            parentPath = parentPath.getParentPath();
-            enclosingChild = enclosing;
-            enclosing = parentPath.getLeaf();
+        ExpressionTree t = tree;
+        while (t.getKind() == Tree.Kind.PARENTHESIZED) {
+            t = ((ParenthesizedTree) t).getExpression();
         }
-        return Pair.of(enclosing, enclosingChild);
+        return t;
     }
 
     /**
@@ -460,7 +428,7 @@ public final class TreeUtils {
         }
 
         if (isExpressionTree(tree)) {
-            tree = withoutParens((ExpressionTree) tree);
+            tree = skipParens((ExpressionTree) tree);
         }
 
         switch (tree.getKind()) {
@@ -617,7 +585,7 @@ public final class TreeUtils {
      * @return whether the tree refers to an identifier, member select, or method invocation
      */
     public static final boolean isUseOfElement(ExpressionTree node) {
-        node = TreeUtils.withoutParens(node);
+        node = TreeUtils.skipParens(node);
         switch (node.getKind()) {
             case IDENTIFIER:
             case MEMBER_SELECT:
@@ -739,7 +707,7 @@ public final class TreeUtils {
      * </ol>
      */
     public static boolean isCompileTimeString(ExpressionTree node) {
-        ExpressionTree tree = TreeUtils.withoutParens(node);
+        ExpressionTree tree = TreeUtils.skipParens(node);
         if (tree instanceof LiteralTree) {
             return true;
         }
@@ -758,7 +726,7 @@ public final class TreeUtils {
 
     /** Returns the receiver tree of a field access or a method invocation. */
     public static ExpressionTree getReceiverTree(ExpressionTree expression) {
-        ExpressionTree receiver = TreeUtils.withoutParens(expression);
+        ExpressionTree receiver = TreeUtils.skipParens(expression);
 
         if (!(receiver.getKind() == Tree.Kind.METHOD_INVOCATION
                 || receiver.getKind() == Tree.Kind.MEMBER_SELECT
@@ -786,7 +754,7 @@ public final class TreeUtils {
             // It's a field access on implicit this or a local variable/parameter.
             return null;
         } else if (receiver.getKind() == Tree.Kind.ARRAY_ACCESS) {
-            return TreeUtils.withoutParens(((ArrayAccessTree) receiver).getExpression());
+            return TreeUtils.skipParens(((ArrayAccessTree) receiver).getExpression());
         } else if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
             receiver = ((MemberSelectTree) receiver).getExpression();
             // Avoid int.class
@@ -796,7 +764,7 @@ public final class TreeUtils {
         }
 
         // Receiver is now really just the receiver tree.
-        return TreeUtils.withoutParens(receiver);
+        return TreeUtils.skipParens(receiver);
     }
 
     // TODO: What about anonymous classes?

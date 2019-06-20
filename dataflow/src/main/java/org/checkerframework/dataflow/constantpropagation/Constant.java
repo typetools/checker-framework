@@ -80,7 +80,7 @@ public class Constant implements AbstractValue<Constant> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, value);
+        return type.hashCode() + (value != null ? value.hashCode() : 0);
     }
 
     @Override

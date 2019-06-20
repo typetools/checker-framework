@@ -27,9 +27,8 @@ import java.lang.annotation.Target;
  * <p>2. As a field annotation indicating that no type qualifier will be inferred for the field it
  * annotates.
  *
- * <p>See
- * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes#updateInferredFieldType
- *
+ * @see
+ *     org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes#updateInferredFieldType
  * @checker_framework.manual #whole-program-inference-ignores-some-code Whole-program inference
  *     ignores some code
  */

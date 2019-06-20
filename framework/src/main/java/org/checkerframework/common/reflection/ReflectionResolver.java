@@ -13,7 +13,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExe
  * @checker_framework.manual #reflection-resolution Reflection resolution
  */
 public interface ReflectionResolver {
-    /** The "method name" of constructors. */
+    /** Constant for "method name" of constructors. */
     public static final String INIT = "<init>";
 
     /**

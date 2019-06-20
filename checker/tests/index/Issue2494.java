@@ -1,5 +1,7 @@
 // Test case for issue #2494: http://tinyurl.com/cfissue/2494
 
+// @skip-test until the issue is fixed
+
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LessThan;

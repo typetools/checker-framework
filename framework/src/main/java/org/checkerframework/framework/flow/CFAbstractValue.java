@@ -143,9 +143,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         }
 
         CFAbstractValue<?> other = (CFAbstractValue<?>) obj;
-        if (this.getUnderlyingType() != other.getUnderlyingType()
-                && !analysis.getTypes()
-                        .isSameType(this.getUnderlyingType(), other.getUnderlyingType())) {
+        if (!analysis.getTypes().isSameType(this.getUnderlyingType(), other.getUnderlyingType())) {
             return false;
         }
         return AnnotationUtils.areSame(this.getAnnotations(), other.getAnnotations());

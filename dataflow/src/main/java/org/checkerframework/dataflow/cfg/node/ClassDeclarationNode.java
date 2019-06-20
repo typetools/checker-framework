@@ -3,7 +3,6 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.ClassTree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -46,12 +45,16 @@ public class ClassDeclarationNode extends Node {
 
         ClassDeclarationNode that = (ClassDeclarationNode) o;
 
-        return tree != null ? tree.equals(that.tree) : that.tree == null;
+        if (tree != null ? !tree.equals(that.tree) : that.tree != null) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tree);
+        return tree != null ? tree.hashCode() : 0;
     }
 
     @Override

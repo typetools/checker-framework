@@ -388,10 +388,7 @@ public class AnnotationClassLoader {
         Set<String> paths = new LinkedHashSet<>();
 
         // add all extension paths
-        String extdirs = System.getProperty("java.ext.dirs");
-        if (extdirs != null && !extdirs.isEmpty()) {
-            paths.addAll(Arrays.asList(extdirs.split(File.pathSeparator)));
-        }
+        paths.addAll(Arrays.asList(System.getProperty("java.ext.dirs").split(File.pathSeparator)));
 
         // add all paths in CLASSPATH, -cp, and -classpath
         paths.addAll(
@@ -416,8 +413,7 @@ public class AnnotationClassLoader {
      *     both are unavailable
      */
     private final @Nullable URLClassLoader getClassLoader() {
-        ClassLoader result = InternalUtils.getClassLoaderForClass(checker.getClass());
-        return (@Nullable URLClassLoader) result;
+        return (URLClassLoader) InternalUtils.getClassLoaderForClass(checker.getClass());
     }
 
     /** Debug Use: Displays all classpaths examined by the class loader. */
@@ -777,7 +773,8 @@ public class AnnotationClassLoader {
 
     /**
      * Checks to see whether a particular annotation class has the {@link Target} meta-annotation,
-     * and has the required {@link ElementType} values.
+     * and has the required {@link ElementType} values as checked by {@link
+     * AnnotatedTypes#hasTypeQualifierElementTypes(ElementType[], Class)}.
      *
      * <p>A subclass may override this method to load annotations that are not intended to be
      * annotated in source code. E.g.: {@code SubtypingChecker} overrides this method to load {@code

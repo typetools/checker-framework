@@ -10,7 +10,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.subtyping.qual.Bottom;
 import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
