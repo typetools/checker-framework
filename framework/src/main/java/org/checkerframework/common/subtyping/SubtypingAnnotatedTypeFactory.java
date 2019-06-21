@@ -69,6 +69,10 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
+        if (qualSet.isEmpty()) {
+            throw new UserError("SubtypingChecker: no qualifiers specified");
+        }
+
         // check for subtype meta-annotation
         for (Class<? extends Annotation> qual : qualSet) {
             Annotation subtypeOfAnnotation = qual.getAnnotation(SubtypeOf.class);

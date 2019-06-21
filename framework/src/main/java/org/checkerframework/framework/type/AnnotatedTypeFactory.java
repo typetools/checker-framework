@@ -720,19 +720,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         QualifierHierarchy hierarchy = factory.build();
 
         if (!hierarchy.isValid()) {
-            if (!hierarchy.getTypeQualifiers().isEmpty()) {
-                if (hierarchy
-                        .getClass()
-                        .toString()
-                        .equals(
-                                "org.checkerframework.common.subtyping.SubtypingAnnotatedTypeFactory")) {
-                    throw new UserError("No qualifiers specified");
-                } else {
-                    throw new BugInCF(
-                            "AnnotatedTypeFactory: empty qualifier hierarchy for "
-                                    + hierarchy.getClass());
-                }
-            }
             throw new BugInCF(
                     "AnnotatedTypeFactory: invalid qualifier hierarchy: "
                             + hierarchy.getClass()
