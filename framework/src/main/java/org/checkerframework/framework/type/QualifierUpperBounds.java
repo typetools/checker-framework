@@ -21,10 +21,10 @@ public class QualifierUpperBounds {
 
     /** Map from {@link TypeKind} to annotations. */
     private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
-    /** Map from {@link AnnotatedTypeMirror} classes to annotations. */
+    /** Map from {@link AnnotatedTypeMirror}classes to annotations. */
     private final Map<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>> typeClasses;
     /** Map from full qualified class name strings to annotations. */
-    private final Map<String, Set<AnnotationMirror>> classes;
+    private final Map<String, Set<AnnotationMirror>> types;
 
     /** {@link QualifierHierarchy} */
     private final QualifierHierarchy qualHierarchy;
@@ -39,7 +39,7 @@ public class QualifierUpperBounds {
         this.atypeFactory = typeFactory;
         this.typeKinds = new EnumMap<>(TypeKind.class);
         this.typeClasses = new HashMap<>();
-        this.classes = new HashMap<>();
+        this.types = new HashMap<>();
 
         this.qualHierarchy = typeFactory.getQualifierHierarchy();
 
@@ -63,7 +63,7 @@ public class QualifierUpperBounds {
             }
 
             for (Class<?> typeName : upperBoundFor.types()) {
-                addClasses(typeName, theQual);
+                addType(typeName, theQual);
             }
         }
     }
@@ -83,12 +83,8 @@ public class QualifierUpperBounds {
         boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
         if (!res) {
             throw new BugInCF(
-                    "TypeAnnotator: invalid update of typeKinds "
-                            + typeKinds
-                            + " at "
-                            + typeKind
-                            + " with "
-                            + theQual);
+                    "QualifierUpperBounds: invalid update of typeKinds $s at %s with %s.",
+                    typeKinds, typeKind, theQual);
         }
     }
 
@@ -98,27 +94,19 @@ public class QualifierUpperBounds {
         boolean res = qualHierarchy.updateMappingToMutableSet(typeClasses, typeClass, theQual);
         if (!res) {
             throw new BugInCF(
-                    "TypeAnnotator: invalid update of typeClasses "
-                            + typeClasses
-                            + " at "
-                            + typeClass
-                            + " with "
-                            + theQual);
+                    "QualifierUpperBounds: invalid update of typeClasses $s at %s with %s.",
+                    typeClass, typeClass, theQual);
         }
     }
 
     /** Add default qualifier, {@code theQual}, for the given class. */
-    public void addClasses(Class<?> clazz, AnnotationMirror theQual) {
-        String typeNameString = clazz.getCanonicalName();
-        boolean res = qualHierarchy.updateMappingToMutableSet(classes, typeNameString, theQual);
+    public void addType(Class<?> type, AnnotationMirror theQual) {
+        String typeNameString = type.getCanonicalName();
+        boolean res = qualHierarchy.updateMappingToMutableSet(types, typeNameString, theQual);
         if (!res) {
             throw new BugInCF(
-                    "TypeAnnotator: invalid update of types "
-                            + classes
-                            + " at "
-                            + clazz
-                            + " with "
-                            + theQual);
+                    "QualifierUpperBounds: invalid update of types $s at %s with %s.",
+                    types, type, theQual);
         }
     }
 
@@ -140,8 +128,8 @@ public class QualifierUpperBounds {
             qname = null;
         }
 
-        if (qname != null && classes.containsKey(qname)) {
-            Set<AnnotationMirror> fnd = classes.get(qname);
+        if (qname != null && types.containsKey(qname)) {
+            Set<AnnotationMirror> fnd = types.get(qname);
             addMissingAnnotations(bounds, fnd);
         }
 

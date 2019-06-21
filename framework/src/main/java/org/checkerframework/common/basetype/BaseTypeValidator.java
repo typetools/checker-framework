@@ -76,7 +76,6 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         this.isValid = true;
         this.checkTopLevelDeclaredType = shouldCheckTopLevelDeclaredType(type, tree);
         visit(type, tree);
-        this.checkTopLevelDeclaredType = true;
         return this.isValid;
     }
 
@@ -262,8 +261,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             if (!visitor.isValidUse(elemType, type, tree)) {
                 reportInvalidAnnotationsOnUse(type, tree);
             }
-            checkTopLevelDeclaredType = true;
         }
+        // Set checkTopLevelDeclaredType to true, because the next time visitDeclared is called,
+        // the type isn't the top level, so always do the check.
+        checkTopLevelDeclaredType = true;
 
         /*
          * Try to reconstruct the ParameterizedTypeTree from the given tree.
