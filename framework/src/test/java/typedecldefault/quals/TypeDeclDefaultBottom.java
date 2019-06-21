@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /** TypeDeclDefault bottom qualifier. */
-@SubtypeOf(TypeDeclDefaultTop.class)
+@SubtypeOf(TypeDeclDefaultMiddle.class)
 @QualifierForLiterals(LiteralKind.STRING)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
