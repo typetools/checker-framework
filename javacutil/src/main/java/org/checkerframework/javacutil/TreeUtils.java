@@ -1283,6 +1283,18 @@ public final class TreeUtils {
         return Collections.emptyList();
     }
 
+    /** @return true if the tree is the declaration or use of a local variable */
+    public static boolean isLocalVariable(Tree tree) {
+        if (tree.getKind() == Kind.VARIABLE) {
+            return elementFromDeclaration((VariableTree) tree).getKind()
+                    == ElementKind.LOCAL_VARIABLE;
+        } else if (tree.getKind() == Kind.IDENTIFIER) {
+            return elementFromUse((ExpressionTree) tree).getKind() == ElementKind.LOCAL_VARIABLE;
+        }
+        return false;
+    }
+
+    /** @return the type as a TypeMirror of {@code tree} */
     public static TypeMirror typeOf(Tree tree) {
         return ((JCTree) tree).type;
     }

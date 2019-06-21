@@ -11,7 +11,9 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeKind;
 import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.framework.qual.UpperBoundFor;
 
 /**
  * {@link NonNull} is a type annotation that indicates that an expression is never {@code null}.
@@ -39,6 +41,18 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @QualifierForLiterals(LiteralKind.STRING)
 @DefaultQualifierInHierarchy
 @DefaultFor(TypeUseLocation.EXCEPTION_PARAMETER)
+@UpperBoundFor(
+        typeKinds = {
+            TypeKind.PACKAGE,
+            TypeKind.INT,
+            TypeKind.BOOLEAN,
+            TypeKind.CHAR,
+            TypeKind.DOUBLE,
+            TypeKind.FLOAT,
+            TypeKind.LONG,
+            TypeKind.SHORT,
+            TypeKind.BYTE
+        })
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
