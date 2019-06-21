@@ -83,9 +83,6 @@ public class FieldInvariants {
             throw new BugInCF("malformed FieldInvariants");
         }
         String fieldString = field.toString();
-        if (!isWellFormed()) {
-            throw new BugInCF("malformed FieldInvariants");
-        }
         int index = fields.indexOf(fieldString);
         if (index == -1) {
             return Collections.emptyList();

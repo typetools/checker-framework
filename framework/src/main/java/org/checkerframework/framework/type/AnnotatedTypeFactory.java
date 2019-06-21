@@ -1065,10 +1065,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
 
-        String treeString = tree.toString();
-        if (treeString.length() > 63) {
-            treeString = treeString.substring(0, 60) + "...";
-        }
+        /// For debugging
+        // String treeString = tree.toString();
+        // if (treeString.length() > 63) {
+        //     treeString = treeString.substring(0, 60) + "...";
+        // }
 
         if (tree == null) {
             throw new BugInCF("AnnotatedTypeFactory.getAnnotatedType: null tree");
