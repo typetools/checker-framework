@@ -11,8 +11,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Client code may interpret the value either as {@link Signed} or as {@link Unsigned}. This
- * primarily applies to values whose most significant bit is not set, and thus the value has the
- * same interpretation as signed or unsigned.
+ * primarily applies to values whose most significant bit is not set {@link SignedPositive}, and
+ * thus the value has the same interpretation as signed or unsigned.
  *
  * <p>As a special case, the Signedness Checker also applies this annotation to manifest literals.
  * This permits a value like {@code -1} or {@code 255} or {@code 0xFF} to be used in both signed and
@@ -25,8 +25,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>The programmer should not write this annotation. Instead, the programmer should write {@link
  * Signed} or {@link Unsigned} to indicate how the programmer intends the value to be interpreted.
  * For a value whose most significant bit is not set and different clients may treat it differently
- * (say, the return value of certain library routines), the programmer should write {@code @}{@link
- * SignedPositive} instead of {@code @SignednessGlb}.
+ * (say, the return value of certain library routines, or certain constant fields), the programmer
+ * should write {@code @}{@link SignedPositive} instead of {@code @SignednessGlb}.
  *
  * <p>The "Glb" in the name stands for "greatest lower bound", because this type is the greatest
  * lower bound of the types {@link Signed} and {@link Unsigned}; that is, this type is a subtype of
