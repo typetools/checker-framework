@@ -3385,6 +3385,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return success;
         }
 
+        /**
+         * Issue an "override.receiver.invalid" error if the receiver override is not valid.
+         *
+         * @return true if the override is legal
+         */
         protected boolean checkReceiverOverride() {
             AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
             AnnotatedDeclaredType overriddenReceiver = overridden.getReceiverType();
