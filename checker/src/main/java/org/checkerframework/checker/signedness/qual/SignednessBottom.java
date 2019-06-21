@@ -17,7 +17,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #signedness-checker Signedness Checker
  * @checker_framework.manual #bottom-type the bottom type
  */
-@SubtypeOf({SignednessGlb.class, SignedPositive.class})
+@SubtypeOf(SignednessGlb.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @ImplicitFor(
