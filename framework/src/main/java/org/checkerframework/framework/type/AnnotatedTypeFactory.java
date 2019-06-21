@@ -709,10 +709,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
                 throw new BugInCF(
-                        "AnnotatedTypeFactory: "
-                                + typeQualifier
-                                + " does not specify its super qualifiers. "
-                                + "Add an @org.checkerframework.framework.qual.SubtypeOf annotation to it.");
+                        "AnnotatedTypeFactory: %s does not specify its super qualifiers.%n"
+                                + "Add an @org.checkerframework.framework.qual.SubtypeOf annotation to it,%n"
+                                + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.%n",
+                        typeQualifier);
             }
             Class<? extends Annotation>[] superQualifiers =
                     typeQualifier.getAnnotation(SubtypeOf.class).value();
@@ -2500,6 +2500,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param type the canonical annotation
      */
     protected void addAliasedAnnotation(Class<?> aliasClass, AnnotationMirror type) {
+        if (getSupportedTypeQualifiers().contains(aliasClass)) {
+            throw new BugInCF(
+                    "AnnotatedTypeFactory: alias %s should not be in type hierarchy for %s",
+                    aliasClass, this.getClass().getSimpleName());
+        }
         addAliasedAnnotation(aliasClass.getCanonicalName(), type);
     }
 
@@ -2551,6 +2556,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Class<?> canonical,
             boolean copyElements,
             String... ignorableElements) {
+        if (getSupportedTypeQualifiers().contains(aliasClass)) {
+            throw new BugInCF(
+                    "AnnotatedTypeFactory: alias %s should not be in type hierarchy for %s",
+                    aliasClass, this.getClass().getSimpleName());
+        }
         addAliasedAnnotation(
                 aliasClass.getCanonicalName(), canonical, copyElements, ignorableElements);
     }

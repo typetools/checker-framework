@@ -21,7 +21,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
@@ -1826,44 +1825,53 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Do not override this method! Previously, this method contained some logic, but the main
-     * modifier of types was missing. It has been merged with the TypeValidator below. This method
-     * doesn't need to do anything, as the type is already validated.
+     * If the lint option "cast:redundant" is set, this methods issues a warning if the cast is
+     * redundant.
      */
-    @Override
-    public final Void visitParameterizedType(ParameterizedTypeTree node, Void p) {
-        return null; // super.visitParameterizedType(node, p);
-    }
-
-    protected void checkTypecastRedundancy(TypeCastTree node, Void p) {
+    protected void checkTypecastRedundancy(TypeCastTree typeCastTree) {
         if (!checker.getLintOption("cast:redundant", false)) {
             return;
         }
 
-        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
-        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
+        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
+        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
 
         if (castType.equals(exprType)) {
-            checker.report(Result.warning("cast.redundant", castType), node);
+            checker.report(Result.warning("cast.redundant", castType), typeCastTree);
         }
     }
 
-    protected void checkTypecastSafety(TypeCastTree node, Void p) {
+    /**
+     * If the lint option "cast:unsafe" is set, this method issues a warning if the cast is unsafe.
+     * Only primary qualifiers are checked unless the command line option "checkCastElementType" is
+     * supplied.
+     */
+    protected void checkTypecastSafety(TypeCastTree typeCastTree) {
         if (!checker.getLintOption("cast:unsafe", true)) {
             return;
         }
-        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
-        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
+        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
+        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
 
         // We cannot do a simple test of casting, as isSubtypeOf requires
         // the input types to be subtypes according to Java
         if (!isTypeCastSafe(castType, exprType)) {
             checker.report(
                     Result.warning("cast.unsafe", exprType.toString(true), castType.toString(true)),
-                    node);
+                    typeCastTree);
         }
     }
 
+    /**
+     * Returns true if the cast is safe.
+     *
+     * <p>Only primary qualifiers are checked unless the command line option "checkCastElementType"
+     * is supplied.
+     *
+     * @param castType annotated type of the cast
+     * @param exprType annotated type of the casted expression
+     * @return true if the type cast is safe, false otherwise
+     */
     private boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
@@ -1952,8 +1960,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // validate "node" instead of "node.getType()" to prevent duplicate errors.
         boolean valid = validateTypeOf(node) && validateTypeOf(node.getExpression());
         if (valid) {
-            checkTypecastSafety(node, p);
-            checkTypecastRedundancy(node, p);
+            checkTypecastSafety(node);
+            checkTypecastRedundancy(node);
         }
         if (atypeFactory.getDependentTypesHelper() != null) {
             AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
