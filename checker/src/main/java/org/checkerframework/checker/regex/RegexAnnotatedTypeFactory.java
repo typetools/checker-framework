@@ -119,8 +119,6 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public RegexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        addAliasedAnnotation(org.checkerframework.checker.regex.qual.PolyRegex.class, POLYREGEX);
-
         /*
         legalReferenceTypes = new TypeMirror[] {
             getTypeMirror("java.lang.CharSequence"),
