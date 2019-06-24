@@ -271,16 +271,15 @@ public class OffsetEquation {
                     }
                 }
             }
-        } else if (termReceiver instanceof FlowExpressions.LocalVariable) {
+        } else if (factory != null && termReceiver instanceof FlowExpressions.LocalVariable) {
             AnnotationMirror am =
                     ((BaseAnnotatedTypeFactory) factory)
                             .getTypeFactoryOfSubchecker(ValueChecker.class)
                             .getAnnotatedType(
                                     ((FlowExpressions.LocalVariable) termReceiver).getElement())
                             .getAnnotation(IntVal.class);
-            if (am != null && am.getElementValues().values().size() == 1) {
-                List<Long> list = ValueAnnotatedTypeFactory.getIntValues(am);
-                return list.get(0).intValue();
+            if (am != null && ValueAnnotatedTypeFactory.getIntValues(am).size() == 1) {
+                return ValueAnnotatedTypeFactory.getIntValues(am).get(0).intValue();
             }
         }
 
@@ -325,6 +324,7 @@ public class OffsetEquation {
      * @param context FlowExpressionContext
      * @param scope local scope
      * @param useLocalScope whether or not local scope is used
+     * @param factory AnnotatedTypeFactory
      * @throws FlowExpressionParseException if any term isn't able to be parsed this exception is
      *     thrown. If this happens, no string terms are changed.
      */
@@ -339,6 +339,25 @@ public class OffsetEquation {
                 addedTerms, false, context, scope, useLocalScope, factory);
         standardizeAndViewpointAdaptExpressions(
                 subtractedTerms, true, context, scope, useLocalScope, factory);
+    }
+
+    /**
+     * Standardizes and viewpoint-adapts the string terms based us the supplied context.
+     *
+     * @param context FlowExpressionContext
+     * @param scope local scope
+     * @param useLocalScope whether or not local scope is used
+     * @throws FlowExpressionParseException if any term isn't able to be parsed this exception is
+     *     thrown. If this happens, no string terms are changed.
+     */
+    public void standardizeAndViewpointAdaptExpressions(
+            FlowExpressionContext context, TreePath scope, boolean useLocalScope)
+            throws FlowExpressionParseException {
+
+        standardizeAndViewpointAdaptExpressions(
+                addedTerms, false, context, scope, useLocalScope, null);
+        standardizeAndViewpointAdaptExpressions(
+                subtractedTerms, true, context, scope, useLocalScope, null);
     }
 
     /**
