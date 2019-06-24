@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -272,7 +274,7 @@ public class OffsetEquation {
                 }
             }
         } else if (termReceiver instanceof FlowExpressions.LocalVariable) {
-            AnnotationMirror am = ((UpperBoundAnnotatedTypeFactory) factory).getValueAnnotatedTypeFactory().getAnnotatedType(((FlowExpressions.LocalVariable) termReceiver).getElement()).getAnnotation(IntVal.class);
+            AnnotationMirror am = ((BaseAnnotatedTypeFactory) factory).getTypeFactoryOfSubchecker(ValueChecker.class).getAnnotatedType(((FlowExpressions.LocalVariable) termReceiver).getElement()).getAnnotation(IntVal.class);
             if (am != null && am.getElementValues().values().size() == 1) {
                 List<AnnotationValue> list = new ArrayList<>(am.getElementValues().values());
                 return Integer.parseInt(((List) list.get(0).getValue()).get(0).toString().substring(0, ((List) list.get(0).getValue()).get(0).toString().length() - 1));
