@@ -53,7 +53,7 @@ public class ByteArrayOutputStream extends OutputStream {
     /**
      * The number of valid bytes in the buffer.
      */
-    protected int count;
+    protected @IndexOrHigh("this.buf") int count;
 
     /**
      * Creates a new byte array output stream. The buffer capacity is
@@ -186,7 +186,7 @@ public class ByteArrayOutputStream extends OutputStream {
      *          of valid bytes in this output stream.
      * @see     java.io.ByteArrayOutputStream#count
      */
-    public synchronized @NonNegative int size() {
+    public synchronized @IndexOrHigh("this.buf") int size() {
         return count;
     }
 
