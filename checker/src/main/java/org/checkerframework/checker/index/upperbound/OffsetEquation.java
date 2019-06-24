@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -24,9 +25,6 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TreeUtils;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 
 /**
  * An offset equation is 2 sets of Java expression strings, one set of added terms and one set of
@@ -274,10 +272,15 @@ public class OffsetEquation {
                 }
             }
         } else if (termReceiver instanceof FlowExpressions.LocalVariable) {
-            AnnotationMirror am = ((BaseAnnotatedTypeFactory) factory).getTypeFactoryOfSubchecker(ValueChecker.class).getAnnotatedType(((FlowExpressions.LocalVariable) termReceiver).getElement()).getAnnotation(IntVal.class);
+            AnnotationMirror am =
+                    ((BaseAnnotatedTypeFactory) factory)
+                            .getTypeFactoryOfSubchecker(ValueChecker.class)
+                            .getAnnotatedType(
+                                    ((FlowExpressions.LocalVariable) termReceiver).getElement())
+                            .getAnnotation(IntVal.class);
             if (am != null && am.getElementValues().values().size() == 1) {
-                List<AnnotationValue> list = new ArrayList<>(am.getElementValues().values());
-                return Integer.parseInt(((List) list.get(0).getValue()).get(0).toString().substring(0, ((List) list.get(0).getValue()).get(0).toString().length() - 1));
+                List<Long> list = ValueAnnotatedTypeFactory.getIntValues(am);
+                return list.get(0).intValue();
             }
         }
 
@@ -326,10 +329,14 @@ public class OffsetEquation {
      *     thrown. If this happens, no string terms are changed.
      */
     public void standardizeAndViewpointAdaptExpressions(
-            FlowExpressionContext context, TreePath scope, boolean useLocalScope, AnnotatedTypeFactory factory)
+            FlowExpressionContext context,
+            TreePath scope,
+            boolean useLocalScope,
+            AnnotatedTypeFactory factory)
             throws FlowExpressionParseException {
 
-        standardizeAndViewpointAdaptExpressions(addedTerms, false, context, scope, useLocalScope, factory);
+        standardizeAndViewpointAdaptExpressions(
+                addedTerms, false, context, scope, useLocalScope, factory);
         standardizeAndViewpointAdaptExpressions(
                 subtractedTerms, true, context, scope, useLocalScope, factory);
     }
