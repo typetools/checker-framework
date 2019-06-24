@@ -9,7 +9,7 @@ class ParentClass {
 
     @MonotonicNonNull Object parentClassField;
 
-    ParentClass(Object o) {
+    ParentClass(@Nullable Object o) {
         this.parentClassField = o; // should be allowed
     }
 }
