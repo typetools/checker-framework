@@ -354,10 +354,7 @@ public class OffsetEquation {
             FlowExpressionContext context, TreePath scope, boolean useLocalScope)
             throws FlowExpressionParseException {
 
-        standardizeAndViewpointAdaptExpressions(
-                addedTerms, false, context, scope, useLocalScope, null);
-        standardizeAndViewpointAdaptExpressions(
-                subtractedTerms, true, context, scope, useLocalScope, null);
+        standardizeAndViewpointAdaptExpressions(context, scope, useLocalScope, null);
     }
 
     /**
