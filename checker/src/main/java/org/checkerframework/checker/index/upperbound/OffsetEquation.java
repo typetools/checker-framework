@@ -8,18 +8,23 @@ import java.util.Objects;
 import java.util.Set;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TreeUtils;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 
 /**
  * An offset equation is 2 sets of Java expression strings, one set of added terms and one set of
@@ -246,7 +251,7 @@ public class OffsetEquation {
      * Evaluates an offset term. If the term is an integer constant, returns its value. Otherwise,
      * returns null.
      */
-    private Integer evalConstantTerm(Receiver termReceiver) {
+    private Integer evalConstantTerm(Receiver termReceiver, AnnotatedTypeFactory factory) {
         if (termReceiver instanceof FlowExpressions.ValueLiteral) {
             // Integer literal
             Object value = ((FlowExpressions.ValueLiteral) termReceiver).getValue();
@@ -266,6 +271,12 @@ public class OffsetEquation {
                     }
                 }
             }
+        } else if (termReceiver instanceof FlowExpressions.LocalVariable) {
+            AnnotationMirror am = ((UpperBoundAnnotatedTypeFactory) factory).getValueAnnotatedTypeFactory().getAnnotatedType(((FlowExpressions.LocalVariable) termReceiver).getElement()).getAnnotation(IntVal.class);
+            if (am != null && am.getElementValues().values().size() == 1) {
+                List<AnnotationValue> list = new ArrayList<>(am.getElementValues().values());
+                return Integer.parseInt(((List) list.get(0).getValue()).get(0).toString().substring(0, ((List) list.get(0).getValue()).get(0).toString().length() - 1));
+            }
         }
 
         return null;
@@ -281,14 +292,15 @@ public class OffsetEquation {
             boolean subtract,
             FlowExpressionContext context,
             TreePath scope,
-            boolean useLocalScope)
+            boolean useLocalScope,
+            AnnotatedTypeFactory factory)
             throws FlowExpressionParseException {
         // Standardize all terms and remove constants
         int length = terms.size(), j = 0;
         for (int i = 0; i < length; ++i) {
             String term = terms.get(i);
             Receiver receiver = FlowExpressionParseUtil.parse(term, context, scope, useLocalScope);
-            Integer termConstant = evalConstantTerm(receiver);
+            Integer termConstant = evalConstantTerm(receiver, factory);
             if (termConstant == null) {
                 terms.set(j, receiver.toString());
                 ++j;
@@ -312,12 +324,12 @@ public class OffsetEquation {
      *     thrown. If this happens, no string terms are changed.
      */
     public void standardizeAndViewpointAdaptExpressions(
-            FlowExpressionContext context, TreePath scope, boolean useLocalScope)
+            FlowExpressionContext context, TreePath scope, boolean useLocalScope, AnnotatedTypeFactory factory)
             throws FlowExpressionParseException {
 
-        standardizeAndViewpointAdaptExpressions(addedTerms, false, context, scope, useLocalScope);
+        standardizeAndViewpointAdaptExpressions(addedTerms, false, context, scope, useLocalScope, factory);
         standardizeAndViewpointAdaptExpressions(
-                subtractedTerms, true, context, scope, useLocalScope);
+                subtractedTerms, true, context, scope, useLocalScope, factory);
     }
 
     /**
