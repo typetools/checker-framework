@@ -21,7 +21,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
@@ -1825,16 +1824,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         return super.visitNewArray(node, p);
-    }
-
-    /**
-     * Do not override this method! Previously, this method contained some logic, but the main
-     * modifier of types was missing. It has been merged with the TypeValidator below. This method
-     * doesn't need to do anything, as the type is already validated.
-     */
-    @Override
-    public final Void visitParameterizedType(ParameterizedTypeTree node, Void p) {
-        return null; // super.visitParameterizedType(node, p);
     }
 
     /**

@@ -101,7 +101,7 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
     # good argument to `git diff` but a bad argument to `git log` (they interpret "..." differently!).
     (git diff $TRAVIS_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
     (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/rjp-output.txt 2>&1) || true
-    [ -s /tmp/diff.txt ] || ([[ "${TRAVIS_BRANCH}" != "master" && "${TRAVIS_EVENT_TYPE}" == "push" ]] || (echo "/tmp/diff.txt is empty; try pulling base branch into compare branch" && false))
+    [ -s /tmp/diff.txt ] || ([[ "${TRAVIS_BRANCH}" != "master" && "${TRAVIS_EVENT_TYPE}" == "push" ]] || (echo "/tmp/diff.txt is empty; try pulling base branch (often master) into compare branch (often feature branch)" && false))
     wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
     python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
   fi
@@ -152,9 +152,11 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ./gradlew :checker:demosTests --console=plain --warning-mode=all -s --no-daemon
 
   # Guava
+  echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
   REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools guava`
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
-  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava)
+  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} checker-framework-demos) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} checker-framework-demos)
+  echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
   export CHECKERFRAMEWORK=${CHECKERFRAMEWORK:-$ROOT/checker-framework}
   (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
 
