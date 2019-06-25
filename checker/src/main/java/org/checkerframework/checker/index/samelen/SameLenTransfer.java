@@ -6,7 +6,6 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
@@ -267,29 +266,26 @@ public class SameLenTransfer extends CFTransfer {
             MethodTree methodTree,
             ExecutableElement methodElement) {
         super.addInformationFromPreconditions(info, factory, method, methodTree, methodElement);
+
         List<? extends VariableTree> paramTrees = methodTree.getParameters();
+        List<String> paramNames = new ArrayList<>();
+        List<AnnotatedTypeMirror> params = new ArrayList<>();
 
-        List<String> paramNames =
-                paramTrees.stream()
-                        .map(t -> ((VariableTree) t).getName().toString())
-                        .collect(Collectors.toList());
+        for (VariableTree tree : paramTrees) {
+            paramNames.add(tree.getName().toString());
+            params.add(aTypeFactory.getAnnotatedType(tree));
+        }
 
-        List<AnnotatedTypeMirror> params =
-                paramTrees.stream().map(factory::getAnnotatedType).collect(Collectors.toList());
-
-        // for each parameter,
         for (int index = 0; index < params.size(); index++) {
 
-            // get the type of the parameter
+            // if the parameter has a samelen annotation, then look
+            // for other parameters in that annotation and propagate
+            // default the other annotation so that it is symmetric
             AnnotatedTypeMirror atm = params.get(index);
-            // check to see if it has a @SameLen annotation
             AnnotationMirror anm = atm.getAnnotation(SameLen.class);
             if (anm != null) {
-                // If it has, then get the list of arguments from @SameLen
                 List<String> values = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
-                // For each String
                 for (String value : values) {
-                    // check if the value is in the list of parameters
                     int otherParamIndex = paramNames.indexOf(value);
                     if (otherParamIndex != -1) {
                         // the SameLen value is in the list of params, so modify the type of
