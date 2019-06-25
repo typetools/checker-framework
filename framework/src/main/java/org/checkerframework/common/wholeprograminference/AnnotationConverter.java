@@ -85,8 +85,7 @@ public class AnnotationConverter {
         for (String fieldKey : anno.fieldValues.keySet()) {
             addFieldToAnnotationBuilder(fieldKey, anno.fieldValues.get(fieldKey), builder);
         }
-        AnnotationMirror result = builder.build();
-        return result;
+        return builder.build();
     }
 
     /** Returns an AnnotationFieldType given an ExecutableElement or value. */
