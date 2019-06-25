@@ -303,7 +303,7 @@ class PushbackInputStream extends FilterInputStream {
      * @see        java.io.InputStream#skip(long n)
      * @since      1.2
      */
-    public long skip(long n) throws IOException {
+    public @NonNegative long skip(long n) throws IOException {
         ensureOpen();
         if (n <= 0) {
             return 0;

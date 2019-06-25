@@ -11,6 +11,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.signedness.qual.Signed;
+import org.checkerframework.checker.signedness.qual.SignedPositive;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -54,12 +55,16 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
+        addAliasedAnnotation(SignedPositive.class, SIGNEDNESS_GLB);
+
         postInit();
     }
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll();
+        Set<Class<? extends Annotation>> result = getBundledTypeQualifiersWithoutPolyAll();
+        result.remove(SignedPositive.class); // this method should not return aliases
+        return result;
     }
 
     @Override
