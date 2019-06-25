@@ -276,18 +276,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return result;
     }
 
-    protected boolean isSubtypeOfAll(
-            final AnnotatedTypeMirror subtype,
-            final Iterable<? extends AnnotatedTypeMirror> supertypes) {
-        for (final AnnotatedTypeMirror supertype : supertypes) {
-            if (!isSubtype(subtype, supertype, currentTop)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     protected boolean areAllSubtypes(
             final Iterable<? extends AnnotatedTypeMirror> subtypes,
             final AnnotatedTypeMirror supertype) {
@@ -949,7 +937,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         if (visitHistory.contains(subtype, supertype, currentTop)) {
             return true;
         }
-        boolean result = isSubtypeOfAll(subtype, supertype.directSuperTypes());
+        boolean result = true;
+        for (AnnotatedTypeMirror aSupertype : supertype.directSuperTypes()) {
+            if (TypesUtils.isErasedSubtype(
+                            subtype.getUnderlyingType(),
+                            aSupertype.getUnderlyingType(),
+                            subtype.atypeFactory.types)
+                    && !isSubtype(subtype, aSupertype, currentTop)) {
+                result = false;
+            }
+        }
         visitHistory.add(subtype, supertype, currentTop, result);
         return result;
     }
