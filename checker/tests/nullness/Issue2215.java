@@ -1,6 +1,6 @@
 // Test Case for Issue2215
 // https://github.com/typetools/checker-framework/issues/2215
-// @skip-test
+// @skip-test until the bug is fixed
 
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -10,7 +10,7 @@ class ParentClass {
     @MonotonicNonNull Object parentClassField;
 
     ParentClass(@Nullable Object o) {
-        this.parentClassField = o; // should be allowed
+        this.parentClassField = o;
     }
 }
 
@@ -22,13 +22,15 @@ public class Issue2215 extends ParentClass {
 
     Issue2215(@Nullable Object o) {
 
-        super(o); // should be allowed
-        this.parentClassField = o; // should be allowed
-        this.f = o; // should be allowed
-        this.f = null; // should be allowed
-        this.g = o; // should be allowed
-        this.g = null; // should be allowed
-        this.h = o; // should not be allowed
-        this.h = null; // should not be allowed
+        super(o);
+        this.parentClassField = o;
+        this.f = o;
+        this.f = null;
+        this.g = o;
+        this.g = null;
+        // :: error: (assignment.type.incompatible)
+        this.h = o;
+        // :: error: (assignment.type.incompatible)
+        this.h = null;
     }
 }
