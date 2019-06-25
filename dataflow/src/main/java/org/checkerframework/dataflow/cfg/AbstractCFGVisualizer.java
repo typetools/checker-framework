@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.cfg;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -259,7 +260,7 @@ public abstract class AbstractCFGVisualizer<
             case SPECIAL_BLOCK:
                 return Collections.emptyList();
             default:
-                assert false : "All types of basic blocks covered";
+                throw new Error("Unrecognized basic block type: " + bb.getType());
         }
     }
 
