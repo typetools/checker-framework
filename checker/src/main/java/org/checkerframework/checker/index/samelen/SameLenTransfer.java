@@ -266,6 +266,7 @@ public class SameLenTransfer extends CFTransfer {
             UnderlyingAST.CFGMethod method,
             MethodTree methodTree,
             ExecutableElement methodElement) {
+        super.addInformationFromPreconditions(info, factory, method, methodTree, methodElement);
         List<? extends VariableTree> paramTrees = methodTree.getParameters();
 
         List<String> paramNames =
