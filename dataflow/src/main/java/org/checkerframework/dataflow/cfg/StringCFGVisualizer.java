@@ -30,7 +30,7 @@ public class StringCFGVisualizer<
     }
 
     @Override
-    public String generateNodes(
+    public String visualizeNodes(
             Set<Block> visited, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
         StringBuilder sbStringNodes = new StringBuilder();
         sbStringNodes.append(lineSeparator);

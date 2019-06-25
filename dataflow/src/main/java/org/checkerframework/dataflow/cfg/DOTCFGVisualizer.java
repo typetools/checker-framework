@@ -39,7 +39,7 @@ public class DOTCFGVisualizer<
     protected Map<String, String> generated;
 
     /** Terminator for lines that are left-justified. */
-    protected final String leftJustified = "\\l";
+    protected static final String leftJustifiedTerminator = "\\l";
 
     @Override
     public void init(Map<String, Object> args) {
@@ -62,8 +62,7 @@ public class DOTCFGVisualizer<
             out.write(dotGraph);
             out.close();
         } catch (IOException e) {
-            throw new UserError(
-                    "Error creating dot file: " + dotFileName + "; ensure the path is valid", e);
+            throw new UserError("Error creating dot file (is the path valid?): " + dotFileName, e);
         }
 
         Map<String, Object> res = new HashMap<>();
@@ -73,7 +72,7 @@ public class DOTCFGVisualizer<
     }
 
     /**
-     * Generate the nodes of control flow graph as String.
+     * Visualize the nodes of a control flow graph into a string.
      *
      * @param visited the set of all the blocks
      * @param cfg the current control flow graph
@@ -81,7 +80,7 @@ public class DOTCFGVisualizer<
      * @return the String representation of the nodes
      */
     @Override
-    public String generateNodes(
+    public String visualizeNodes(
             Set<Block> visited, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
 
         StringBuilder sbDotNodes = new StringBuilder();
@@ -104,7 +103,7 @@ public class DOTCFGVisualizer<
             if (verbose) {
                 sbDotNodes
                         .append(getProcessOrderSimpleString(processOrder.get(v)))
-                        .append(leftJustified);
+                        .append(leftJustifiedTerminator);
             }
             sbDotNodes.append(visualizeBlock(v, analysis));
         }
@@ -125,7 +124,7 @@ public class DOTCFGVisualizer<
                 analysis,
                 " \",];" + lineSeparator,
                 "?? empty ?? \",];" + lineSeparator,
-                leftJustified);
+                leftJustifiedTerminator);
     }
 
     @Override
@@ -135,7 +134,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeBlockTransferInput(Block bb, Analysis<A, S, T> analysis) {
-        return super.visualizeBlockTransferInputHelper(bb, analysis, leftJustified);
+        return super.visualizeBlockTransferInputHelper(bb, analysis, leftJustifiedTerminator);
     }
 
     /**
@@ -213,37 +212,57 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeStoreThisVal(A value) {
-        return storeEntryIndent + "this > " + value + leftJustified;
+        return storeEntryIndent + "this > " + value + leftJustifiedTerminator;
     }
 
     @Override
     public String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, A value) {
-        return storeEntryIndent + localVar + " > " + escapeDoubleQuotes(value) + leftJustified;
+        return storeEntryIndent
+                + localVar
+                + " > "
+                + escapeDoubleQuotes(value)
+                + leftJustifiedTerminator;
     }
 
     @Override
     public String visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, A value) {
-        return storeEntryIndent + fieldAccess + " > " + escapeDoubleQuotes(value) + leftJustified;
+        return storeEntryIndent
+                + fieldAccess
+                + " > "
+                + escapeDoubleQuotes(value)
+                + leftJustifiedTerminator;
     }
 
     @Override
     public String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, A value) {
-        return storeEntryIndent + arrayValue + " > " + escapeDoubleQuotes(value) + leftJustified;
+        return storeEntryIndent
+                + arrayValue
+                + " > "
+                + escapeDoubleQuotes(value)
+                + leftJustifiedTerminator;
     }
 
     @Override
     public String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, A value) {
-        return storeEntryIndent + escapeDoubleQuotes(methodCall) + " > " + value + leftJustified;
+        return storeEntryIndent
+                + escapeDoubleQuotes(methodCall)
+                + " > "
+                + value
+                + leftJustifiedTerminator;
     }
 
     @Override
     public String visualizeStoreClassVals(FlowExpressions.ClassName className, A value) {
-        return storeEntryIndent + className + " > " + escapeDoubleQuotes(value) + leftJustified;
+        return storeEntryIndent
+                + className
+                + " > "
+                + escapeDoubleQuotes(value)
+                + leftJustifiedTerminator;
     }
 
     @Override
     public String visualizeStoreKeyVal(String keyName, Object value) {
-        return storeEntryIndent + keyName + " = " + value + leftJustified;
+        return storeEntryIndent + keyName + " = " + value + leftJustifiedTerminator;
     }
 
     /**
@@ -268,7 +287,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeStoreHeader(String classCanonicalName) {
-        return classCanonicalName + " (" + leftJustified;
+        return classCanonicalName + " (" + leftJustifiedTerminator;
     }
 
     @Override

@@ -91,7 +91,7 @@ public abstract class AbstractCFGVisualizer<
             handleSuccessorsHelper(cur, visited, workList, sbGraph);
             cur = workList.poll();
         }
-        sbGraph.append(generateNodes(visited, cfg, analysis));
+        sbGraph.append(visualizeNodes(visited, cfg, analysis));
         return sbGraph.toString();
     }
 
@@ -365,7 +365,7 @@ public abstract class AbstractCFGVisualizer<
      * @param analysis the current analysis
      * @return the String representation of the nodes
      */
-    protected abstract String generateNodes(
+    protected abstract String visualizeNodes(
             Set<Block> visited, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis);
 
     /**
@@ -379,24 +379,21 @@ public abstract class AbstractCFGVisualizer<
     protected abstract String addEdge(long sId, long eId, String flowRule);
 
     /**
-     * Return the header of the generated graph. Called by {@link
-     * #visualizeGraphWithoutHeaderAndFooter(ControlFlowGraph, Block, Analysis)}.
+     * Return the header of the generated graph.
      *
      * @return the String representation of the header of the control flow graph
      */
     protected abstract String visualizeGraphHeader();
 
     /**
-     * Return the footer of the generated graph. Called by {@link
-     * #visualizeGraphWithoutHeaderAndFooter(ControlFlowGraph, Block, Analysis)}.
+     * Return the footer of the generated graph.
      *
      * @return the String representation of the footer of the control flow graph
      */
     protected abstract String visualizeGraphFooter();
 
     /**
-     * Return the simple String of the process order of a node. Called by {@link #generateNodes(Set,
-     * ControlFlowGraph, Analysis)}.
+     * Return the simple String of the process order of a node.
      *
      * @param order the list of the process order to be processed.
      * @return the String representation of the process order of the node
@@ -409,7 +406,7 @@ public abstract class AbstractCFGVisualizer<
      * Get the simple name of a node.
      *
      * @param t a node
-     * @return the String representation of the node's simple name
+     * @return the node's simple name, without "Node"
      */
     protected String getNodeSimpleName(Node t) {
         String name = t.getClass().getSimpleName();
