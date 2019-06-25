@@ -51,7 +51,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             for (String qualName : qualNames.split(",")) {
                 Class<? extends Annotation> anno = loader.loadExternalAnnotationClass(qualName);
                 if (anno == null) {
-                    throw new UserError("qualifier specified in -Aquals not found: " + qualName);
+                    throw new UserError("Qualifier specified in -Aquals not found: " + qualName);
                 }
                 qualSet.add(anno);
             }
@@ -63,14 +63,16 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Set<Class<? extends Annotation>> annos =
                         loader.loadExternalAnnotationClassesFromDirectory(dirName);
                 if (annos.isEmpty()) {
-                    throw new UserError("No qualifiers found in " + dirName);
+                    throw new UserError(
+                            "Directory specified in -AqualsDir contains no qualifiers: " + dirName);
                 }
                 qualSet.addAll(annos);
             }
         }
 
         if (qualSet.isEmpty()) {
-            throw new UserError("SubtypingChecker: no qualifiers specified");
+            throw new UserError(
+                    "SubtypingChecker: no qualifiers specified via -Aquals or -AqualDirs");
         }
 
         // check for subtype meta-annotation

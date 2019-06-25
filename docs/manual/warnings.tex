@@ -292,6 +292,20 @@ Here are some terse examples from libraries in \href{https://github.com/plume-li
 @SuppressWarnings("nullness") // oi.factory is a static method, so null first argument is OK
 \end{Verbatim}
 
+A particularly good (and concise) justification is to reference an issue in
+the issue tracker, as in these two from \href{https://plse.cs.washington.edu/daikon/}{Daikon}:
+
+\begin{Verbatim}
+@SuppressWarnings("keyfor") // https://tinyurl.com/cfissue/877
+@SuppressWarnings("flowexpr.parse.error") // https://tinyurl.com/cfissue/862
+\end{Verbatim}
+
+\noindent
+Reporting false positive warnings permits the developers to know about the
+problem, it helps them with prioritization (by knowing how often in your
+codebase a particular issue arises), and it enables you to know when an
+issue has been fixen (though the \<-AwarnUnneededSuppressions> command-line
+option also serves the latter purpose).
 
 
 \sectionAndLabel{\code{@AssumeAssertion} string in an \<assert> message}{assumeassertion}
