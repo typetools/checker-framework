@@ -283,30 +283,33 @@ public class SameLenTransfer extends CFTransfer {
             // default the other annotation so that it is symmetric
             AnnotatedTypeMirror atm = params.get(index);
             AnnotationMirror anm = atm.getAnnotation(SameLen.class);
-            if (anm != null) {
-                List<String> values = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
-                for (String value : values) {
-                    int otherParamIndex = paramNames.indexOf(value);
-                    if (otherParamIndex != -1) {
-                        // the SameLen value is in the list of params, so modify the type of
-                        // that param in the store
-                        AnnotationMirror newSameLen =
-                                aTypeFactory.createSameLen(
-                                        Collections.singletonList(paramNames.get(index)));
-                        Receiver otherParamRec = null;
-                        try {
-                            otherParamRec =
-                                    aTypeFactory.getReceiverFromJavaExpressionString(
-                                            paramNames.get(otherParamIndex),
-                                            aTypeFactory.getPath(paramTrees.get(otherParamIndex)));
-                        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                            // do nothing
-                        }
+            if (anm == null) {
+                continue;
+            }
 
-                        if (otherParamRec != null) {
-                            info.insertValue(otherParamRec, newSameLen);
-                        }
-                    }
+            List<String> values = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
+            for (String value : values) {
+                int otherParamIndex = paramNames.indexOf(value);
+                if (otherParamIndex == -1) {
+                    continue;
+                }
+
+                // the SameLen value is in the list of params, so modify the type of
+                // that param in the store
+                AnnotationMirror newSameLen =
+                        aTypeFactory.createSameLen(
+                                Collections.singletonList(paramNames.get(index)));
+                Receiver otherParamRec = null;
+                try {
+                    otherParamRec =
+                            aTypeFactory.getReceiverFromJavaExpressionString(
+                                    paramNames.get(otherParamIndex),
+                                    aTypeFactory.getPath(paramTrees.get(otherParamIndex)));
+                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    // do nothing
+                }
+                if (otherParamRec != null) {
+                    info.insertValue(otherParamRec, newSameLen);
                 }
             }
         }
