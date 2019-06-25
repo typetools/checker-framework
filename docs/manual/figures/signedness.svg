@@ -299,11 +299,22 @@
        font-size="16"
        style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="820"
-       y="405.85001"
+       y="395"
        id="text72">
       <tspan
          x="820"
-         y="405.85001"
+         y="395"
+         id="tspan74">@SignedPositive</tspan>
+    </text>
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="820"
+       y="415"
+       id="text72">
+      <tspan
+         x="820"
+         y="415"
          id="tspan74">@SignednessGlb</tspan>
     </text>
   </g>

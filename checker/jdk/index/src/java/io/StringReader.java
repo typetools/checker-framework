@@ -120,7 +120,7 @@ public class StringReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public long skip(long ns) throws IOException {
+    public @NonNegative long skip(long ns) throws IOException {
         synchronized (lock) {
             ensureOpen();
             if (next >= length)
