@@ -180,11 +180,11 @@ public abstract class AbstractCFGVisualizer<
         sbBlock.append(loopOverBlockContents(bb, analysis, escapeCharacter));
 
         // Handle case where no contents are present
-        boolean notCentered = true;
+        boolean centered = false;
         if (sbBlock.length() == 0) {
-            notCentered = false;
             if (bb.getType() == Block.BlockType.SPECIAL_BLOCK) {
                 sbBlock.append(visualizeSpecialBlock((SpecialBlock) bb));
+                centered = true;
             } else if (bb.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
                 sbBlock.append(cbFooter);
                 return sbBlock.toString();
@@ -209,7 +209,7 @@ public abstract class AbstractCFGVisualizer<
                 }
             }
         }
-        if (notCentered) {
+        if (!centered) {
             sbBlock.append(escapeCharacter);
         }
         sbBlock.append(cbFooter);
@@ -217,12 +217,11 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Helper method called by {@link #visualizeBlockHelper}. Iterates over the block content and
-     * visualizes all the nodes in it.
+     * Iterates over the block content and visualizes all the nodes in it.
      *
      * @param bb the block
      * @param analysis the current analysis
-     * @param separator the separator String to use
+     * @param separator the separator between the nodes of the block
      * @return the String representation of the contents of the block
      */
     protected String loopOverBlockContents(
@@ -244,34 +243,28 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Helper method called by {@link #loopOverBlockContents}. If possible, get a sequence of nodes
-     * for further processing.
+     * Returns the contents of the block.
      *
      * @param bb the block
-     * @return a list of nodes
+     * @return the contents of the block, as a list of nodes
      */
     protected List<Node> addBlockContent(Block bb) {
-        List<Node> contents = new ArrayList<>();
         switch (bb.getType()) {
             case REGULAR_BLOCK:
-                contents.addAll(((RegularBlock) bb).getContents());
-                break;
+                return ((RegularBlock) bb).getContents();
             case EXCEPTION_BLOCK:
-                contents.add(((ExceptionBlock) bb).getNode());
-                break;
+                return Collections.singletonList(((ExceptionBlock) bb).getNode());
             case CONDITIONAL_BLOCK:
-                break;
+                return Collections.emptyList();
             case SPECIAL_BLOCK:
-                break;
+                return Collections.emptyList();
             default:
                 assert false : "All types of basic blocks covered";
         }
-        return contents;
     }
 
     /**
-     * Helper method to simplify visualizing the transfer input of a block; it is useful when
-     * implementing a custom CFGVisualizer.
+     * Visualize the transfer input of a block.
      *
      * @param bb the block
      * @param analysis the current analysis
@@ -306,57 +299,48 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Helper method to simplify visualizing a special block; it is useful when implementing a
-     * custom CFGVisualizer.
+     * Visualize a special block.
      *
      * @param sbb the special block
-     * @param separator the separator String to use
-     * @return the String representation of the special block
+     * @param separator the separator String to put at the end of the result
+     * @return the String representation of the special block, followed by the separator
      */
     protected String visualizeSpecialBlockHelper(SpecialBlock sbb, String separator) {
-        String specialBlock = "";
         switch (sbb.getSpecialType()) {
             case ENTRY:
-                specialBlock = "<entry>" + separator;
-                break;
+                return "<entry>" + separator;
             case EXIT:
-                specialBlock = "<exit>" + separator;
-                break;
+                return "<exit>" + separator;
             case EXCEPTIONAL_EXIT:
-                specialBlock = "<exceptional-exit>" + separator;
-                break;
+                return "<exceptional-exit>" + separator;
+            default:
+                return "";
         }
-        return specialBlock;
     }
 
     /**
-     * Helper method called by {@link #visualizeBlockHelper}. If possible, get the last node of a
-     * block.
+     * Returns the last node of a block, or null if none.
      *
      * @param bb the block
      * @return the last node of this block or {@code null}
      */
     protected Node getLastNode(Block bb) {
-        Node lastNode;
         switch (bb.getType()) {
             case REGULAR_BLOCK:
                 List<Node> blockContents = ((RegularBlock) bb).getContents();
-                lastNode = blockContents.get(blockContents.size() - 1);
-                break;
+                return blockContents.get(blockContents.size() - 1);
             case EXCEPTION_BLOCK:
-                lastNode = ((ExceptionBlock) bb).getNode();
-                break;
+                return ((ExceptionBlock) bb).getNode();
             default:
-                lastNode = null;
+                return null;
         }
-        return lastNode;
     }
 
     /**
      * Generate the order of processing blocks.
      *
      * @param cfg the current control flow graph
-     * @return the IdentityHashMap which maps from blocks to their orders
+     * @return an IdentityHashMap that maps from blocks to their orders
      */
     protected IdentityHashMap<Block, List<Integer>> getProcessOrder(ControlFlowGraph cfg) {
         IdentityHashMap<Block, List<Integer>> depthFirstOrder = new IdentityHashMap<>();
@@ -376,8 +360,6 @@ public abstract class AbstractCFGVisualizer<
     /**
      * Generate the String representation of the nodes of a control flow graph.
      *
-     * <p>This abstract method needs to be implemented to customize the output.
-     *
      * @param visited the set of the visited blocks
      * @param cfg the control flow graph
      * @param analysis the current analysis
@@ -388,8 +370,6 @@ public abstract class AbstractCFGVisualizer<
 
     /**
      * Generate the String representation of an edge.
-     *
-     * <p>This abstract method needs to be implemented to customize the output.
      *
      * @param sId the ID of current block
      * @param eId the ID of successor block
@@ -402,8 +382,6 @@ public abstract class AbstractCFGVisualizer<
      * Return the header of the generated graph. Called by {@link
      * #visualizeGraphWithoutHeaderAndFooter(ControlFlowGraph, Block, Analysis)}.
      *
-     * <p>This abstract method needs to be implemented to customize the output.
-     *
      * @return the String representation of the header of the control flow graph
      */
     protected abstract String visualizeGraphHeader();
@@ -411,8 +389,6 @@ public abstract class AbstractCFGVisualizer<
     /**
      * Return the footer of the generated graph. Called by {@link
      * #visualizeGraphWithoutHeaderAndFooter(ControlFlowGraph, Block, Analysis)}.
-     *
-     * <p>This abstract method needs to be implemented to customize the output.
      *
      * @return the String representation of the footer of the control flow graph
      */
