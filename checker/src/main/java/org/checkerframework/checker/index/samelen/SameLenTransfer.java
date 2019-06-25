@@ -1,9 +1,14 @@
 package org.checkerframework.checker.index.samelen;
 
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.SameLen;
@@ -12,6 +17,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -21,6 +27,8 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -248,5 +256,62 @@ public class SameLenTransfer extends CFTransfer {
         }
 
         return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+    }
+
+    /** Overridden to ensure that SameLen annotations on method parameters are symmetric. */
+    @Override
+    protected void addInformationFromPreconditions(
+            CFStore info,
+            AnnotatedTypeFactory factory,
+            UnderlyingAST.CFGMethod method,
+            MethodTree methodTree,
+            ExecutableElement methodElement) {
+        List<? extends VariableTree> paramTrees = methodTree.getParameters();
+
+        List<String> paramNames =
+                paramTrees.stream()
+                        .map(t -> ((VariableTree) t).getName().toString())
+                        .collect(Collectors.toList());
+
+        List<AnnotatedTypeMirror> params =
+                paramTrees.stream().map(factory::getAnnotatedType).collect(Collectors.toList());
+
+        // for each parameter,
+        for (int index = 0; index < params.size(); index++) {
+
+            // get the type of the parameter
+            AnnotatedTypeMirror atm = params.get(index);
+            // check to see if it has a @SameLen annotation
+            AnnotationMirror anm = atm.getAnnotation(SameLen.class);
+            if (anm != null) {
+                // If it has, then get the list of arguments from @SameLen
+                List<String> values = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
+                // For each String
+                for (String value : values) {
+                    // check if the value is in the list of parameters
+                    int otherParamIndex = paramNames.indexOf(value);
+                    if (otherParamIndex != -1) {
+                        // the SameLen value is in the list of params, so modify the type of
+                        // that param in the store
+                        AnnotationMirror newSameLen =
+                                aTypeFactory.createSameLen(
+                                        Collections.singletonList(paramNames.get(index)));
+                        Receiver otherParamRec = null;
+                        try {
+                            otherParamRec =
+                                    aTypeFactory.getReceiverFromJavaExpressionString(
+                                            paramNames.get(otherParamIndex),
+                                            aTypeFactory.getPath(paramTrees.get(otherParamIndex)));
+                        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                            // do nothing
+                        }
+
+                        if (otherParamRec != null) {
+                            info.insertValue(otherParamRec, newSameLen);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
