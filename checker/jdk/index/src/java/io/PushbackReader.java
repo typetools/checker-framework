@@ -261,7 +261,7 @@ public class PushbackReader extends FilterReader {
      * @exception  IllegalArgumentException  If <code>n</code> is negative.
      * @exception  IOException  If an I/O error occurs
      */
-    public long skip(long n) throws IOException {
+    public @NonNegative long skip(@NonNegative long n) throws IOException {
         if (n < 0L)
             throw new IllegalArgumentException("skip value is negative");
         synchronized (lock) {

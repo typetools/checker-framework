@@ -155,7 +155,7 @@ public class CharArrayReader extends Reader {
      * @return       The number of characters actually skipped
      * @exception  IOException If the stream is closed, or an I/O error occurs
      */
-    public long skip(long n) throws IOException {
+    public @NonNegative long skip(long n) throws IOException {
         synchronized (lock) {
             ensureOpen();
             if (pos + n > count) {
