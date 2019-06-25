@@ -101,7 +101,7 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
     # good argument to `git diff` but a bad argument to `git log` (they interpret "..." differently!).
     (git diff $TRAVIS_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
     (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/rjp-output.txt 2>&1) || true
-    [ -s /tmp/diff.txt ] || ([[ "${TRAVIS_BRANCH}" != "master" && "${TRAVIS_EVENT_TYPE}" == "push" ]] || (echo "/tmp/diff.txt is empty; try pulling base branch into compare branch" && false))
+    [ -s /tmp/diff.txt ] || ([[ "${TRAVIS_BRANCH}" != "master" && "${TRAVIS_EVENT_TYPE}" == "push" ]] || (echo "/tmp/diff.txt is empty; try pulling base branch (often master) into compare branch (often feature branch)" && false))
     wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
     python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
   fi
