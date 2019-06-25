@@ -15,7 +15,7 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 
-/** Generate the String representation of the control flow graph. */
+/** Generate the String representation of a control flow graph. */
 public class StringCFGVisualizer<
                 A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
         extends AbstractCFGVisualizer<A, S, T> {
@@ -143,7 +143,7 @@ public class StringCFGVisualizer<
     /**
      * {@inheritDoc}
      *
-     * <p>StringCFGVisualizer does not need a specific header, so just return the blank String.
+     * <p>StringCFGVisualizer does not need a specific header, so just return an empty string.
      */
     @Override
     protected String visualizeGraphHeader() {
@@ -153,7 +153,7 @@ public class StringCFGVisualizer<
     /**
      * {@inheritDoc}
      *
-     * <p>StringCFGVisualizer does not need a specific footer, so just return the blank String.
+     * <p>StringCFGVisualizer does not need a specific footer, so just return an empty string.
      */
     @Override
     protected String visualizeGraphFooter() {

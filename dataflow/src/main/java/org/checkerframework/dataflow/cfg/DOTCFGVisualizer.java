@@ -138,7 +138,7 @@ public class DOTCFGVisualizer<
     }
 
     /**
-     * Create the name of dot file.
+     * Create a dot file and return its name.
      *
      * @param ast an abstract syntax tree
      * @return the file name used for DOT output
@@ -186,11 +186,11 @@ public class DOTCFGVisualizer<
         outFile.append(".dot");
 
         // make path safe for Windows
-        String out = outFile.toString().replace("<", "_").replace(">", "");
+        String outFileName = outFile.toString().replace("<", "_").replace(">", "");
 
-        generated.put(srcLoc.toString(), out);
+        generated.put(srcLoc.toString(), outFileName);
 
-        return out;
+        return outFileName;
     }
 
     @Override
@@ -278,7 +278,7 @@ public class DOTCFGVisualizer<
     /**
      * Escape the double quotes from the string representation of the given object.
      *
-     * @param obj the input Object
+     * @param obj an object
      * @return an escaped version of the string representation of the object
      */
     private String escapeDoubleQuotes(final Object obj) {
