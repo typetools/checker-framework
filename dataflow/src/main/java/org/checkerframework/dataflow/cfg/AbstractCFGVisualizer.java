@@ -106,8 +106,8 @@ public abstract class AbstractCFGVisualizer<
      */
     protected void handleSuccessorsHelper(
             Block cur, Set<Block> visited, Queue<Block> workList, StringBuilder sbGraph) {
-        ConditionalBlock ccur = ((ConditionalBlock) cur);
         if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
+            ConditionalBlock ccur = ((ConditionalBlock) cur);
             Block thenSuccessor = ccur.getThenSuccessor();
             sbGraph.append(
                     addEdge(
