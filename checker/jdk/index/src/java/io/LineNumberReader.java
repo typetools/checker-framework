@@ -225,7 +225,7 @@ public class LineNumberReader extends BufferedReader {
      * @throws  IllegalArgumentException
      *          If <tt>n</tt> is negative
      */
-    public long skip(long n) throws IOException {
+    public @NonNegative long skip(@NonNegative long n) throws IOException {
         if (n < 0)
             throw new IllegalArgumentException("skip() value is negative");
         int nn = (int) Math.min(n, maxSkipBufferSize);

@@ -86,12 +86,14 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
                 boolean notfirst = false;
                 for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> arg :
                         args.entrySet()) {
-                    if (notfirst) {
-                        sb.append(", ");
+                    if (!"{}".equals(arg.getValue().toString())) {
+                        if (notfirst) {
+                            sb.append(", ");
+                        }
+                        notfirst = true;
+                        sb.append(arg.getKey().getSimpleName() + "=");
+                        formatAnnotationMirrorArg(arg.getValue(), sb);
                     }
-                    notfirst = true;
-                    sb.append(arg.getKey().getSimpleName() + "=");
-                    formatAnnotationMirrorArg(arg.getValue(), sb);
                 }
             }
             sb.append(")");

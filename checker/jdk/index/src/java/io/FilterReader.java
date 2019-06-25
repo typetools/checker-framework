@@ -80,7 +80,7 @@ public abstract class FilterReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public long skip(long n) throws IOException {
+    public @NonNegative long skip(@NonNegative long n) throws IOException {
         return in.skip(n);
     }
 

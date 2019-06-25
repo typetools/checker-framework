@@ -234,6 +234,28 @@ too busy to do so, you should recognize that and move on.
 </p>
 
 
+<h2 id="travis-failure">What to do if a Travis build fails</h2>
+
+<p>
+Sometimes, your Travis pull request may fail even though your local build passed.
+This is usually because Travis performed more tests than you ran locally.
+</p>
+
+<p>
+First, examine the error logs, which contain diagnostic output from the
+failing command.  You can determine which command was run from the logs, or
+from the <code>.travis.yml</code> file.  (It might itself call some other
+file, such as <code>.travis-build.sh</code>.)
+</p>
+
+<p>
+When there are multiple Travis jobs in a single Travis build, each job runs
+different commands, or they run the same command with different arguments.
+You can determine those commands from the <code>.travis.yml</code> file and
+run them locally.
+</p>
+
+
 <h2 id="Documenting_refactoring_ideas">Documenting refactoring ideas</h2>
 
 <p>
