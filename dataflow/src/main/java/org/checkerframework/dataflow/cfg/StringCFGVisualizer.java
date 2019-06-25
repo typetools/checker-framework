@@ -23,7 +23,7 @@ public class StringCFGVisualizer<
     @Override
     public Map<String, Object> visualize(
             ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
-        String stringGraph = generateGraph(cfg, entry, analysis);
+        String stringGraph = visualizeGraph(cfg, entry, analysis);
         Map<String, Object> res = new HashMap<>();
         res.put("stringGraph", stringGraph);
         return res;

@@ -26,10 +26,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 /**
  * This abstract class makes implementing a {@link CFGVisualizer} easier. Some of the methods in
  * {@link CFGVisualizer} are already implemented in this abstract class, but can be overridden if
- * necessary. Some of the simpler methods in {@link CFGVisualizer} need to be implemented by
- * subclasses. Additional abstract methods make customizations easy.
- *
- * <p>This class also provides some helper methods to make building custom CFGVisualizers easier.
+ * necessary.
  *
  * @see DOTCFGVisualizer
  * @see StringCFGVisualizer
@@ -39,17 +36,15 @@ public abstract class AbstractCFGVisualizer<
         implements CFGVisualizer<A, S, T> {
 
     /**
-     * Initialized in {@link #init(Map)}. If its value is {@code true}, {@link CFGVisualizer} will
-     * return more detailed information.
+     * Initialized in {@link #init(Map)}. If its value is {@code true}, {@link CFGVisualizer}
+     * returns more detailed information.
      */
     protected boolean verbose;
 
     /** The line separator. */
     protected final String lineSeparator = System.lineSeparator();
 
-    /**
-     * Indicate 2 white space characters as the indentation to the elements of the {@code store}.
-     */
+    /** The indentation for elements of the store. */
     protected final String storeEntryIndent = "  ";
 
     @Override
@@ -63,94 +58,87 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Generate the control flow graph.
+     * Visualize a control flow graph.
      *
      * @param cfg the current control flow graph
      * @param entry the entry block of the control flow graph
      * @param analysis the current analysis
-     * @return the specific representation of the control flow graph, e.g., DOT, String
+     * @return the representation of the control flow graph
      */
-    protected String generateGraph(
+    protected String visualizeGraph(
             ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
         return visualizeGraphHeader()
-                + generateGraphHelper(cfg, entry, analysis)
+                + visualizeGraphWithoutHeaderAndFooter(cfg, entry, analysis)
                 + visualizeGraphFooter();
     }
 
     /**
-     * Helper method to simplify generating a control flow graph.
+     * Helper method to visualize a control flow graph, without outputting a header or footer.
      *
      * @param cfg the control flow graph
-     * @param entry the entry block
+     * @param entry the entry block of the control flow graph
      * @param analysis the current analysis
      * @return the String representation of the control flow graph
      */
-    protected String generateGraphHelper(
+    protected String visualizeGraphWithoutHeaderAndFooter(
             ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
         Set<Block> visited = new HashSet<>();
-        StringBuilder sbDigraph = new StringBuilder();
+        StringBuilder sbGraph = new StringBuilder();
         Queue<Block> workList = new ArrayDeque<>();
         Block cur = entry;
         visited.add(entry);
         while (cur != null) {
-            handleSuccessorsHelper(cur, visited, workList, sbDigraph);
+            handleSuccessorsHelper(cur, visited, workList, sbGraph);
             cur = workList.poll();
         }
-        sbDigraph.append(generateNodes(visited, cfg, analysis));
-        return sbDigraph.toString();
+        sbGraph.append(generateNodes(visited, cfg, analysis));
+        return sbGraph.toString();
     }
 
     /**
-     * Helper method called by {@link #generateGraphHelper(ControlFlowGraph, Block, Analysis)}. It
-     * checks the successors of the current block, and, if possible, adds all the successors to the
-     * work list and the visited blocks list.
+     * Adds the successors of the current block to the work list and the visited blocks list.
      *
      * @param cur the current block
      * @param visited the set of blocks that have already been visited
      * @param workList the queue of blocks to be processed
-     * @param sbDigraph the {@link StringBuilder} to store the graph
+     * @param sbGraph the {@link StringBuilder} to store the graph
      */
     protected void handleSuccessorsHelper(
-            Block cur, Set<Block> visited, Queue<Block> workList, StringBuilder sbDigraph) {
+            Block cur, Set<Block> visited, Queue<Block> workList, StringBuilder sbGraph) {
+        ConditionalBlock ccur = ((ConditionalBlock) cur);
         if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
-            ConditionalBlock ccur = ((ConditionalBlock) cur);
             Block thenSuccessor = ccur.getThenSuccessor();
-            sbDigraph.append(
+            sbGraph.append(
                     addEdge(
                             ccur.getId(),
                             thenSuccessor.getId(),
                             ccur.getThenFlowRule().toString()));
             addBlock(thenSuccessor, visited, workList);
             Block elseSuccessor = ccur.getElseSuccessor();
-            sbDigraph.append(
+            sbGraph.append(
                     addEdge(
                             ccur.getId(),
                             elseSuccessor.getId(),
                             ccur.getElseFlowRule().toString()));
             addBlock(elseSuccessor, visited, workList);
         } else {
-            assert cur instanceof SingleSuccessorBlock;
-            Block b = ((SingleSuccessorBlock) cur).getSuccessor();
-            if (b != null) {
-                sbDigraph.append(
-                        addEdge(
-                                cur.getId(),
-                                b.getId(),
-                                ((SingleSuccessorBlock) cur).getFlowRule().name()));
-                addBlock(b, visited, workList);
+            SingleSuccessorBlock sscur = (SingleSuccessorBlock) cur;
+            Block succ = sscur.getSuccessor();
+            if (succ != null) {
+                sbGraph.append(addEdge(cur.getId(), succ.getId(), sscur.getFlowRule().name()));
+                addBlock(succ, visited, workList);
             }
         }
         if (cur.getType() == Block.BlockType.EXCEPTION_BLOCK) {
             ExceptionBlock ecur = (ExceptionBlock) cur;
             for (Map.Entry<TypeMirror, Set<Block>> e : ecur.getExceptionalSuccessors().entrySet()) {
-                Set<Block> blocks = e.getValue();
                 TypeMirror cause = e.getKey();
                 String exception = cause.toString();
                 if (exception.startsWith("java.lang.")) {
                     exception = exception.replace("java.lang.", "");
                 }
-                for (Block b : blocks) {
-                    sbDigraph.append(addEdge(cur.getId(), b.getId(), exception));
+                for (Block b : e.getValue()) {
+                    sbGraph.append(addEdge(cur.getId(), b.getId(), exception));
                     addBlock(b, visited, workList);
                 }
             }
@@ -158,7 +146,6 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Helper method called by {@link #handleSuccessorsHelper(Block, Set, Queue, StringBuilder)}.
      * Checks whether a block exists in the visited blocks list, and, if not, adds it to the visited
      * blocks list and the work list.
      *
@@ -174,13 +161,13 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Helper method to simplify visualizing a block.
+     * Helper method to visualize a block.
      *
      * @param bb the block
      * @param analysis the current analysis
-     * @param cbFooter footer for the conditional block
-     * @param osFooter footer for the other situations
-     * @param escapeCharacter the escape String to use
+     * @param cbFooter footer for a conditional block
+     * @param osFooter footer for other situations
+     * @param escapeCharacter the escape string to use
      * @return the String representation of the block
      */
     protected String visualizeBlockHelper(
@@ -413,7 +400,7 @@ public abstract class AbstractCFGVisualizer<
 
     /**
      * Return the header of the generated graph. Called by {@link
-     * #generateGraphHelper(ControlFlowGraph, Block, Analysis)}.
+     * #visualizeGraphWithoutHeaderAndFooter(ControlFlowGraph, Block, Analysis)}.
      *
      * <p>This abstract method needs to be implemented to customize the output.
      *
@@ -423,7 +410,7 @@ public abstract class AbstractCFGVisualizer<
 
     /**
      * Return the footer of the generated graph. Called by {@link
-     * #generateGraphHelper(ControlFlowGraph, Block, Analysis)}.
+     * #visualizeGraphWithoutHeaderAndFooter(ControlFlowGraph, Block, Analysis)}.
      *
      * <p>This abstract method needs to be implemented to customize the output.
      *

@@ -53,7 +53,7 @@ public class DOTCFGVisualizer<
     public @Nullable Map<String, Object> visualize(
             ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
 
-        String dotGraph = generateGraph(cfg, entry, analysis);
+        String dotGraph = visualizeGraph(cfg, entry, analysis);
         String dotFileName = dotOutputFileName(cfg.underlyingAST);
 
         try {
