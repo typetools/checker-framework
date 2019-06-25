@@ -29,7 +29,7 @@ public class DOTCFGVisualizer<
                 A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
         extends AbstractCFGVisualizer<A, S, T> {
 
-    /** Designate the output directory. */
+    /** The output directory. */
     protected String outDir;
 
     /** Initialized in {@link #init(Map)}. Use it as a part of the name of the output dot file. */
@@ -38,7 +38,7 @@ public class DOTCFGVisualizer<
     /** Mapping from class/method representation to generated dot file. */
     protected Map<String, String> generated;
 
-    /** Terminator for lines that are left justified. */
+    /** Terminator for lines that are left-justified. */
     protected final String leftJustified = "\\l";
 
     @Override
@@ -247,21 +247,20 @@ public class DOTCFGVisualizer<
     }
 
     /**
-     * Escape the double quotes from the input String. This is for the specification of the dot
-     * files.
+     * Escape the double quotes from the input String, replacing {@code "} by {@code \"}.
      *
-     * @param str the String to be processed
-     * @return the String that has been processed
+     * @param str the string to be escaped
+     * @return the escaped version of the string
      */
     private String escapeDoubleQuotes(final String str) {
         return str.replace("\"", "\\\"");
     }
 
     /**
-     * Escape the double quotes from the input {@code Object}.
+     * Escape the double quotes from the string representation of the given object.
      *
      * @param obj the input Object
-     * @return the String representation of the Object that has been processed
+     * @return an escaped version of the string representation of the object
      */
     private String escapeDoubleQuotes(final Object obj) {
         return escapeDoubleQuotes(String.valueOf(obj));

@@ -38,7 +38,7 @@ public interface CFGVisualizer<
      *     The information includes {@link Store}s that are valid at the beginning of basic blocks
      *     reachable from {@code entry} and per-node information for value producing {@link Node}s.
      *     Can also be {@code null} to indicate that this information should not be output.
-     * @return possible analysis results, e.g. generated file names ({@link DOTCFGVisualizer}) and
+     * @return visualization results, e.g. generated file names ({@link DOTCFGVisualizer}) and
      *     String representation of CFG ({@link StringCFGVisualizer})
      */
     @Nullable Map<String, Object> visualize(
@@ -76,7 +76,7 @@ public interface CFGVisualizer<
      * object {@code this} in this Store.
      *
      * @param value the value of the current object {@code this}
-     * @return the String representation of the value of {@code this}
+     * @return the String representation of {@code this}
      */
     String visualizeStoreThisVal(A value);
 
@@ -96,7 +96,7 @@ public interface CFGVisualizer<
      *
      * @param arrayValue the array
      * @param value the value of the array
-     * @return the String representation of the value of array
+     * @return the String representation of the array
      */
     String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, A value);
 
@@ -153,8 +153,8 @@ public interface CFGVisualizer<
      * Visualize a SpecialBlock.
      *
      * @param sbb the special block
-     * @return the String representation of the type of the special block {@code sbb} (entry, exit
-     *     or exceptional-exit)
+     * @return the String representation of the type of the special block {@code sbb}: entry, exit,
+     *     or exceptional-exit
      */
     String visualizeSpecialBlock(SpecialBlock sbb);
 
