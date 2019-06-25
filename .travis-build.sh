@@ -144,6 +144,9 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ## Not done in the Travis build, but triggered as a separate Travis project:
   ##  * daikon-typecheck: (takes 2 hours)
 
+  echo "TRAVIS_PULL_REQUEST_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH"
+  echo "TRAVIS_BRANCH=$TRAVIS_BRANCH"
+
   # Checker Framework demos
   [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
   REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools checker-framework.demos`
