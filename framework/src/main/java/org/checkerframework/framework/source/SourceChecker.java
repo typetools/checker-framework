@@ -1055,32 +1055,34 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         for (Tree tree : getVisitor().treesWithSuppressWarnings) {
             Element elt = TreeUtils.elementFromTree(tree);
-            SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
-            if (suppressAnno == null || elementsSuppress.contains(elt)) {
+            // TODO: This test is too coarse.  The fact that this @SuppressWarnings suppressed
+            // *some* warning doesn't mean that every key in it did so.
+            if (elementsSuppress.contains(elt)) {
                 continue;
             }
-            for (String keyFromAnno : suppressAnno.value()) {
-                for (String checkerKey : checkerKeys) {
-                    // KeyFromAnno may contain a checker key, but may not be equal to it in cases
-                    // where the checker key if followed by a more precise warning.
-                    // For example if keyFromAnno is "nullness:assignment.type.incompatible"
-                    if (keyFromAnno.contains(checkerKey)) {
-                        reportUnneededSuppression(tree, keyFromAnno);
+            SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
+            for (String userKey : suppressAnno.value()) {
+                String fullUserKey = userKey;
+                int colonPos = userKey.indexOf(":");
+                if (colonPos == -1) {
+                    // User-written key does not contain ":".
+                    if (checkerKeys.contains(userKey)) {
+                        reportUnneededSuppression(tree, userKey);
                     }
+                } else {
+                    // User-written key contains ":".
+                    String userCheckerKey = userKey.substring(0, colonPos);
+                    if (checkerSwKeys.contains(userCheckerKey)) {
+                        reportUnneededSuppression(tree, userKey);
+                    }
+                    userKey = userKey.substring(colonPos + 1);
                 }
-                if (keyFromAnno.contains(":")) {
-                    // The key starts with a checker name, if that is this checker, then the warning
-                    // was issued above.  For example, if this is the Nullness Checker and the
-                    // keyForAnno is "index:override.return.invalid", then don't issue a warning.
-                    continue;
-                }
-
                 for (String errorKey : errorKeys) {
-                    // The keyFromAnno may only be a part of an error key.
+                    // The userKey may only be a part of an error key.
                     // For example, @SuppressWarnings("purity") suppresses errors with keys:
                     // purity.deterministic.void.method, purity.deterministic.constructor, etc.
-                    if (errorKey.contains(keyFromAnno)) {
-                        reportUnneededSuppression(tree, keyFromAnno);
+                    if (errorKey.contains(userKey)) {
+                        reportUnneededSuppression(tree, fullUserKey);
                     }
                 }
             }
