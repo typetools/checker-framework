@@ -1079,7 +1079,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 } else {
                     // User-written error key contains ":".
                     String userCheckerKey = userKey.substring(0, colonPos);
-                    if (!checkerKeys.contains(userCheckerKey)) {
+                    if (userCheckerKey.equals(SourceChecker.SUPPRESS_ALL_KEY)
+                            || !checkerKeys.contains(userCheckerKey)) {
                         // This user-written key is for some other checker
                         continue;
                     }
@@ -1108,8 +1109,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         report(
                 Result.warning(
                         SourceChecker.UNNEEDED_SUPPRESSION_KEY,
-                        getClass().getSimpleName(),
-                        "\"" + key + "\""),
+                        "\"" + key + "\"",
+                        getClass().getSimpleName()),
                 swTree);
     }
 
@@ -1647,7 +1648,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
     public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
         if (UNNEEDED_SUPPRESSION_KEY.equals(errKey)) {
-            // never suppress an unneeded suppression key warning.
+            // TODO: This choice is questionable.  It needs documentation of its rationale.
+            // Never suppress an unneeded suppression key warning.
             return false;
         }
 
@@ -1703,16 +1705,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param src the position object associated with the result
      */
     public void report(final Result r, final Object src) {
+        System.out.printf("SourceChecker.report(%s, %s)%n", r, src);
+
+        if (r.isSuccess()) {
+            return;
+        }
 
         String errKey = r.getMessageKeys().iterator().next();
         if (src instanceof Tree && shouldSuppressWarnings((Tree) src, errKey)) {
             return;
         }
         if (src instanceof Element && shouldSuppressWarnings((Element) src, errKey)) {
-            return;
-        }
-
-        if (r.isSuccess()) {
             return;
         }
 
