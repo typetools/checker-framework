@@ -1500,7 +1500,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 // User-written error key contains ":".
                 String userCheckerKey = userKey.substring(0, colonPos);
                 if (!checkerSwKeys.contains(userCheckerKey)) {
-                    return false;
+                    continue;
                 }
                 userKey = userKey.substring(colonPos + 1);
             }
