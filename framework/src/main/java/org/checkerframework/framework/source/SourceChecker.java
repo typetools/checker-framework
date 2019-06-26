@@ -1705,8 +1705,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param src the position object associated with the result
      */
     public void report(final Result r, final Object src) {
-        System.out.printf("SourceChecker.report(%s, %s)%n", r, src);
-
         if (r.isSuccess()) {
             return;
         }
