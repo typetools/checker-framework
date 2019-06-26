@@ -1052,6 +1052,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // It's not clear for which checker "all" is intended, so never report it as unused.
         checkerKeys.remove(SourceChecker.SUPPRESS_ALL_KEY);
 
+        // Is the name of the checker required to suppress a warning?
+        boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
+
         for (Tree tree : getVisitor().treesWithSuppressWarnings) {
             Element elt = TreeUtils.elementFromTree(tree);
             // TODO: This test is too coarse.  The fact that this @SuppressWarnings suppressed
@@ -1068,6 +1071,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     // User-written error key contains no ":".
                     if (checkerKeys.contains(userKey)) {
                         reportUnneededSuppression(tree, userKey);
+                    }
+                    if (requirePrefix) {
+                        // This user-written key is not for the Checker Framework
+                        continue;
                     }
                 } else {
                     // User-written error key contains ":".
