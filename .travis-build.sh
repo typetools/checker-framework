@@ -144,6 +144,9 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ## Not done in the Travis build, but triggered as a separate Travis project:
   ##  * daikon-typecheck: (takes 2 hours)
 
+  echo "TRAVIS_PULL_REQUEST_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH"
+  echo "TRAVIS_BRANCH=$TRAVIS_BRANCH"
+
   # Checker Framework demos
   [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
   REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools checker-framework.demos`
@@ -153,7 +156,14 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
 
   # Guava
   REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools guava`
-  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
+  if [ $BRANCH = "master" ] ; then
+    REPO=https://github.com/typetools/guava.git
+    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
+    if [ $BRANCH = "master" ] ; then
+      BRANCH=cf-master
+    fi
+  fi
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava)
   export CHECKERFRAMEWORK=${CHECKERFRAMEWORK:-$ROOT/checker-framework}
   (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
