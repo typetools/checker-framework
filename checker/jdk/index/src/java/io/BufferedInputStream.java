@@ -354,7 +354,7 @@ class BufferedInputStream extends FilterInputStream {
      *                          invoking its {@link #close()} method, or an
      *                          I/O error occurs.
      */
-    public synchronized long skip(long n) throws IOException {
+    public synchronized @NonNegative long skip(long n) throws IOException {
         getBufIfOpen(); // Check for closed stream
         if (n <= 0) {
             return 0;

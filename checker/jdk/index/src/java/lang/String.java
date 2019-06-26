@@ -190,7 +190,7 @@ public final class String
      *          If the {@code offset} and {@code count} arguments index
      *          characters outside the bounds of the {@code value} array
      */
-    public String(char value[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int count) {
+    public String(char value[], @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int count) {
         if (offset < 0) {
             throw new StringIndexOutOfBoundsException(offset);
         }
@@ -238,7 +238,7 @@ public final class String
      *
      * @since  1.5
      */
-    public String(int[] codePoints, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int count) {
+    public String(int[] codePoints, @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int count) {
         if (offset < 0) {
             throw new StringIndexOutOfBoundsException(offset);
         }
@@ -323,7 +323,7 @@ public final class String
      * @see  #String(byte[])
      */
     @Deprecated
-    public String(byte ascii[], int hibyte, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int count) {
+    public String(byte ascii[], int hibyte, @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int count) {
         checkBounds(ascii, offset, count);
         char value[] = new char[count];
 
@@ -379,7 +379,7 @@ public final class String
      * and requested offset & length values used by the String(byte[],..)
      * constructors.
      */
-    private static void checkBounds(byte[] bytes, int offset, int length) {
+    private static void checkBounds(byte[] bytes, @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int length) {
         if (length < 0)
             throw new StringIndexOutOfBoundsException(length);
         if (offset < 0)
@@ -421,7 +421,7 @@ public final class String
      *
      * @since  JDK1.1
      */
-    public String(byte bytes[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length, String charsetName)
+    public String(byte bytes[], @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int length, String charsetName)
         throws UnsupportedEncodingException
     {
         if (charsetName == null)
@@ -460,7 +460,7 @@ public final class String
      *
      * @since  1.6
      */
-    public String(byte bytes[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length, Charset charset) {
+    public String(byte bytes[], @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int length, Charset charset) {
         if (charset == null)
             throw new NullPointerException("charset");
         checkBounds(bytes, offset, length);
@@ -545,7 +545,7 @@ public final class String
      *
      * @since  JDK1.1
      */
-    public String(byte bytes[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length) {
+    public String(byte bytes[], @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int length) {
         checkBounds(bytes, offset, length);
         this.value = StringCoding.decode(bytes, offset, length);
     }
@@ -3033,7 +3033,7 @@ public final class String
      *          {@code offset+count} is larger than
      *          {@code data.length}.
      */
-    public static String valueOf(char data[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int count) {
+    public static String valueOf(char data[], @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int count) {
         return new String(data, offset, count);
     }
 
@@ -3050,7 +3050,7 @@ public final class String
      *          {@code offset+count} is larger than
      *          {@code data.length}.
      */
-    public static String copyValueOf(char data[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int count) {
+    public static String copyValueOf(char data[], @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int count) {
         // All public String constructors now copy the data.
         return new String(data, offset, count);
     }

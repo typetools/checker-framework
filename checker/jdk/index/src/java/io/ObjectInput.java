@@ -88,7 +88,7 @@ public interface ObjectInput extends DataInput, AutoCloseable {
      * @return  the actual number of bytes skipped.
      * @exception IOException If an I/O error has occurred.
      */
-    public long skip(long n) throws IOException;
+    public @NonNegative long skip(long n) throws IOException;
 
     /**
      * Returns the number of bytes that can be read
