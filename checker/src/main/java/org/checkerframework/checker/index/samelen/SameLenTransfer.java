@@ -302,9 +302,8 @@ public class SameLenTransfer extends CFTransfer {
                 Receiver otherParamRec = null;
                 try {
                     otherParamRec =
-                            aTypeFactory.getReceiverFromJavaExpressionString(
-                                    paramNames.get(otherParamIndex),
-                                    aTypeFactory.getPath(paramTrees.get(otherParamIndex)));
+                            FlowExpressionParseUtil.internalReprOfVariable(
+                                    aTypeFactory, paramTrees.get(otherParamIndex));
                 } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
                     // do nothing
                 }
