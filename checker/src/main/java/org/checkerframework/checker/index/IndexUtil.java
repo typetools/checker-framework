@@ -142,4 +142,18 @@ public class IndexUtil {
         }
         return min.intValue();
     }
+
+    /**
+     * @param am AnnotationMirror to return the int value from
+     * @return the single int argument of @IntVal annotation, or null if @am is not an @IntVal
+     *     annotation or it has more than one arguments
+     */
+    public static Integer getIntegerFromIntValWithOneArgument(AnnotationMirror am) {
+        if (am != null
+                && AnnotationUtils.areSameByClass(am, IntVal.class)
+                && ValueAnnotatedTypeFactory.getIntValues(am).size() == 1) {
+            return ValueAnnotatedTypeFactory.getIntValues(am).get(0).intValue();
+        }
+        return null;
+    }
 }

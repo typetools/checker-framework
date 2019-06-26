@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -250,8 +251,10 @@ public class OffsetEquation {
     /**
      * Evaluates an offset term. If the term is an integer constant, returns its value. Otherwise,
      * returns null.
+     *
+     * @param factory AnnotatedTypeFactory used to access elements annotations. It can be null.
      */
-    private Integer evalConstantTerm(Receiver termReceiver, AnnotatedTypeFactory factory) {
+    private Integer evalConstantTerm(Receiver termReceiver, BaseAnnotatedTypeFactory factory) {
         if (termReceiver instanceof FlowExpressions.ValueLiteral) {
             // Integer literal
             Object value = ((FlowExpressions.ValueLiteral) termReceiver).getValue();
@@ -272,15 +275,12 @@ public class OffsetEquation {
                 }
             }
         } else if (factory != null && termReceiver instanceof FlowExpressions.LocalVariable) {
+            Element element = ((FlowExpressions.LocalVariable) termReceiver).getElement();
             AnnotationMirror am =
-                    ((BaseAnnotatedTypeFactory) factory)
-                            .getTypeFactoryOfSubchecker(ValueChecker.class)
-                            .getAnnotatedType(
-                                    ((FlowExpressions.LocalVariable) termReceiver).getElement())
+                    factory.getTypeFactoryOfSubchecker(ValueChecker.class)
+                            .getAnnotatedType(element)
                             .getAnnotation(IntVal.class);
-            if (am != null && ValueAnnotatedTypeFactory.getIntValues(am).size() == 1) {
-                return ValueAnnotatedTypeFactory.getIntValues(am).get(0).intValue();
-            }
+            return IndexUtil.getIntegerFromIntValWithOneArgument(am);
         }
 
         return null;
@@ -290,6 +290,8 @@ public class OffsetEquation {
      * Standardizes and viewpoint-adapts string terms in the list based on the supplied context.
      * Terms that evaluate to a integer constant are removed from the list, and the constants are
      * added to or subtracted from the intValue field.
+     *
+     * @param factory AnnotatedTypeFactory used for annotation accessing. It can be null.
      */
     private void standardizeAndViewpointAdaptExpressions(
             List<String> terms,
@@ -304,7 +306,7 @@ public class OffsetEquation {
         for (int i = 0; i < length; ++i) {
             String term = terms.get(i);
             Receiver receiver = FlowExpressionParseUtil.parse(term, context, scope, useLocalScope);
-            Integer termConstant = evalConstantTerm(receiver, factory);
+            Integer termConstant = evalConstantTerm(receiver, (BaseAnnotatedTypeFactory) factory);
             if (termConstant == null) {
                 terms.set(j, receiver.toString());
                 ++j;
@@ -324,7 +326,7 @@ public class OffsetEquation {
      * @param context FlowExpressionContext
      * @param scope local scope
      * @param useLocalScope whether or not local scope is used
-     * @param factory AnnotatedTypeFactory
+     * @param factory AnnotatedTypeFactory used for annotation accessing. It can be null.
      * @throws FlowExpressionParseException if any term isn't able to be parsed this exception is
      *     thrown. If this happens, no string terms are changed.
      */
