@@ -1486,8 +1486,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         // Check each value of the user-written @SuppressWarnings annotation.
         for (String userKey : userSwKeys) {
-            int i = userKey.indexOf(":");
-            if (i == -1) {
+            int colonPos = userKey.indexOf(":");
+            if (colonPos == -1) {
                 // User-written error key contains no ":".
                 if (checkerSwKeys.contains(userKey)) {
                     // Emitted error is exactly a @SuppressWarnings key: "nullness", for example.
@@ -1498,11 +1498,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 }
             } else {
                 // User-written error key contains ":".
-                String userCheckerKey = userKey.substring(0, i);
+                String userCheckerKey = userKey.substring(0, colonPos);
                 if (!checkerSwKeys.contains(userCheckerKey)) {
                     return false;
                 }
-                userKey = userKey.substring(i + 1);
+                userKey = userKey.substring(colonPos + 1);
             }
             if (errKey.contains(userKey)) {
                 return true;
