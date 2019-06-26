@@ -160,6 +160,9 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   if [ $BRANCH = "master" ] ; then
     REPO=https://github.com/typetools/guava.git
     BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
+    if [ $BRANCH = "master" ] ; then
+      BRANCH=cf-master
+    fi
   fi
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava)
   export CHECKERFRAMEWORK=${CHECKERFRAMEWORK:-$ROOT/checker-framework}
