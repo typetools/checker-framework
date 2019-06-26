@@ -1469,8 +1469,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Return true if the given error should be suppressed, based on the given @SuppressWarnings
      * keys.
      *
-     * @param userSwKeys the @SuppressWarnings keys supplied by the user; may be null (in which case
-     *     this method returns false), otherwise contains lowercase strings
+     * @param userSwKeys the lowercased @SuppressWarnings keys supplied by the user (in
+     *     a @SuppressWarnings annotation or on the command line). May be null, in which case this
+     *     method returns false.
      * @param errKey the error key the checker is emitting; a lowercase string
      * @return true if one of the {@code userSwKeys} is returned by {@link
      *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
@@ -1485,22 +1486,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         Collection<String> checkerSwKeys = this.getSuppressWarningsKeys();
 
         // Check each value of the user-written @SuppressWarnings annotation.
-        for (String suppressWarningValue : userSwKeys) {
-            for (String checkerKey : checkerSwKeys) {
-                if (suppressWarningValue.equals(checkerKey)) {
+        for (String userKey : userSwKeys) {
+            int i = userKey.indexOf(":");
+            if (i == -1) {
+                if (checkerSwKeys.contains(userKey)) {
                     // Emitted error is exactly a @SuppressWarnings key: "nullness", for example.
                     return true;
                 }
-
-                String expected = checkerKey + ":" + errKey;
-                if (expected.contains(suppressWarningValue)) {
-                    if (!requirePrefix
-                            || suppressWarningValue
-                                    .toLowerCase()
-                                    .startsWith(checkerKey.toLowerCase())) {
-                        return true;
-                    }
+                if (requirePrefix) {
+                    continue;
                 }
+            } else {
+                String userCheckerKey = userKey.substring(0, i);
+                if (!checkerSwKeys.contains(userCheckerKey)) {
+                    return false;
+                }
+                userKey = userKey.substring(i + 1);
+            }
+            if (errKey.contains(userKey)) {
+                return true;
             }
         }
 
