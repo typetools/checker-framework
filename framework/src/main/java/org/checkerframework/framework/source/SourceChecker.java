@@ -1072,8 +1072,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 } else {
                     // User-written error key contains ":".
                     String userCheckerKey = userKey.substring(0, colonPos);
-                    if (checkerKeys.contains(userCheckerKey)) {
-                        reportUnneededSuppression(tree, userKey);
+                    if (!checkerKeys.contains(userCheckerKey)) {
+                        // This user-written key is for some other checker
+                        continue;
                     }
                     userKey = userKey.substring(colonPos + 1);
                 }
