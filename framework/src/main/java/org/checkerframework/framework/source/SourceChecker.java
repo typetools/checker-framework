@@ -1469,9 +1469,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Return true if the given error should be suppressed, based on the given @SuppressWarnings
      * keys.
      *
-     * @param userSwKeys the lowercased @SuppressWarnings keys supplied by the user (in
-     *     a @SuppressWarnings annotation or on the command line). May be null, in which case this
-     *     method returns false.
+     * @param userSwKeys the @SuppressWarnings keys supplied by the user (in a @SuppressWarnings
+     *     annotation or on the command line). May be null, in which case this method returns false.
      * @param errKey the error key the checker is emitting; a lowercase string
      * @return true if one of the {@code userSwKeys} is returned by {@link
      *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
@@ -1489,6 +1488,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         for (String userKey : userSwKeys) {
             int i = userKey.indexOf(":");
             if (i == -1) {
+                // User-written error key contains no ":".
                 if (checkerSwKeys.contains(userKey)) {
                     // Emitted error is exactly a @SuppressWarnings key: "nullness", for example.
                     return true;
@@ -1497,6 +1497,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     continue;
                 }
             } else {
+                // User-written error key contains ":".
                 String userCheckerKey = userKey.substring(0, i);
                 if (!checkerSwKeys.contains(userCheckerKey)) {
                     return false;
