@@ -2,10 +2,14 @@ package org.checkerframework.checker.index.inequality;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
+import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.Subsequence;
+import org.checkerframework.checker.index.qual.LessThan;
+import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
@@ -83,5 +87,37 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
             }
         }
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+    }
+
+    @Override
+    protected void checkTypecastSafety(TypeCastTree typeCastTree) {
+        if (!checker.getLintOption("cast:unsafe", true)) {
+            return;
+        }
+
+        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
+        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
+
+        AnnotationMirror exprLTAnno =
+                atypeFactory.getAnnotationMirror(typeCastTree.getExpression(), LessThan.class);
+
+        if (exprLTAnno != null) {
+            List<String> initialAnnotations =
+                    LessThanAnnotatedTypeFactory.getLessThanExpressions(exprLTAnno);
+            List<String> updatedAnnotations = new ArrayList<>();
+
+            for (String annotation : initialAnnotations) {
+                updatedAnnotations.add(
+                        OffsetEquation.createOffsetFromJavaExpression(annotation).toString());
+            }
+
+            exprType.replaceAnnotation(atypeFactory.createLessThanQualifier(updatedAnnotations));
+        }
+
+        if (!isTypeCastSafe(castType, exprType)) {
+            checker.report(
+                    Result.warning("cast.unsafe", exprType.toString(true), castType.toString(true)),
+                    typeCastTree);
+        }
     }
 }
