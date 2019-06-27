@@ -15,7 +15,7 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 
-/** Generate the String representation of the control flow graph. */
+/** Generate the String representation of a control flow graph. */
 public class StringCFGVisualizer<
                 A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
         extends AbstractCFGVisualizer<A, S, T> {
@@ -23,29 +23,34 @@ public class StringCFGVisualizer<
     @Override
     public Map<String, Object> visualize(
             ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
-        String stringGraph = generateGraph(cfg, entry, analysis);
+        String stringGraph = visualizeGraph(cfg, entry, analysis);
         Map<String, Object> res = new HashMap<>();
         res.put("stringGraph", stringGraph);
         return res;
     }
 
     @Override
-    public String generateNodes(
-            Set<Block> visited, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
+    public String visualizeNodes(
+            Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
         StringBuilder sbStringNodes = new StringBuilder();
         sbStringNodes.append(lineSeparator);
 
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
         // Generate all the Nodes.
-        for (Block v : visited) {
+        for (Block v : blocks) {
             sbStringNodes.append(v.getId()).append(":").append(lineSeparator);
             if (verbose) {
                 sbStringNodes
                         .append(getProcessOrderSimpleString(processOrder.get(v)))
                         .append(lineSeparator);
             }
-            sbStringNodes.append(visualizeBlock(v, analysis));
+            String strBlock = visualizeBlock(v, analysis);
+            if (strBlock.length() == 0) {
+                sbStringNodes.append(lineSeparator);
+            } else {
+                sbStringNodes.append(strBlock).append(lineSeparator);
+            }
         }
         return sbStringNodes.toString();
     }
@@ -60,8 +65,7 @@ public class StringCFGVisualizer<
 
     @Override
     public @Nullable String visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis) {
-        return super.visualizeBlockHelper(
-                bb, analysis, lineSeparator, lineSeparator, lineSeparator);
+        return super.visualizeBlockHelper(bb, analysis, lineSeparator);
     }
 
     @Override
@@ -143,7 +147,7 @@ public class StringCFGVisualizer<
     /**
      * {@inheritDoc}
      *
-     * <p>StringCFGVisualizer does not need a specific header, so just return the blank String.
+     * <p>StringCFGVisualizer does not need a specific header, so just return an empty string.
      */
     @Override
     protected String visualizeGraphHeader() {
@@ -153,7 +157,7 @@ public class StringCFGVisualizer<
     /**
      * {@inheritDoc}
      *
-     * <p>StringCFGVisualizer does not need a specific footer, so just return the blank String.
+     * <p>StringCFGVisualizer does not need a specific footer, so just return an empty string.
      */
     @Override
     protected String visualizeGraphFooter() {

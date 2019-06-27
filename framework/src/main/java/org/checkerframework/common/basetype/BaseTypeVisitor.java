@@ -1777,14 +1777,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** Performs assignability check. */
     @Override
     public Void visitUnary(UnaryTree node, Void p) {
-        if ((node.getKind() == Tree.Kind.PREFIX_DECREMENT)
-                || (node.getKind() == Tree.Kind.PREFIX_INCREMENT)
-                || (node.getKind() == Tree.Kind.POSTFIX_DECREMENT)
-                || (node.getKind() == Tree.Kind.POSTFIX_INCREMENT)) {
+        Tree.Kind nodeKind = node.getKind();
+        if ((nodeKind == Tree.Kind.PREFIX_DECREMENT)
+                || (nodeKind == Tree.Kind.PREFIX_INCREMENT)
+                || (nodeKind == Tree.Kind.POSTFIX_DECREMENT)
+                || (nodeKind == Tree.Kind.POSTFIX_INCREMENT)) {
             AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(node.getExpression());
             AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedTypeRhsUnaryAssign(node);
-            commonAssignmentCheck(
-                    varType, valueType, node, "compound.assignment.type.incompatible");
+            String errorKey =
+                    (nodeKind == Tree.Kind.PREFIX_INCREMENT
+                                    || nodeKind == Tree.Kind.POSTFIX_INCREMENT)
+                            ? "unary.increment.type.incompatible"
+                            : "unary.decrement.type.incompatible";
+            commonAssignmentCheck(varType, valueType, node, errorKey);
         }
         return super.visitUnary(node, p);
     }
