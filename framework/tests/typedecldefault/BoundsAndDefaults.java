@@ -6,8 +6,7 @@ import typedecldefault.quals.*;
 public class BoundsAndDefaults {
     static @TypeDeclDefaultMiddle class MiddleClass {}
 
-    @TypeDeclDefaultBottom
-    MiddleClass method(@TypeDeclDefaultMiddle MiddleClass middle, MiddleClass noAnno) {
+    @TypeDeclDefaultBottom MiddleClass method(@TypeDeclDefaultMiddle MiddleClass middle, MiddleClass noAnno) {
         noAnno = middle;
         // :: error: (return.type.incompatible)
         return noAnno;
@@ -24,8 +23,7 @@ public class BoundsAndDefaults {
         MiddleBoundClass() {}
     }
 
-    @TypeDeclDefaultBottom
-    MiddleBoundClass method(
+    @TypeDeclDefaultBottom MiddleBoundClass method(
             @TypeDeclDefaultMiddle MiddleBoundClass middle, MiddleBoundClass noAnno) {
         // :: error: (assignment.type.incompatible)
         noAnno = middle;
