@@ -14,5 +14,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf({Sibling1.class, Sibling2.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @IgnoreInWholeProgramInference
-@ImplicitFor(typeNames = {java.lang.StringBuffer.class})
+@ImplicitFor(typeNames = java.lang.StringBuffer.class)
 public @interface ImplicitAnno {}

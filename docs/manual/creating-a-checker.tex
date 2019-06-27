@@ -438,7 +438,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 /**
@@ -450,7 +449,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({UnknownSign.class})
-@ImplicitFor(literals = LiteralKind.NULL)
 public @interface NonNegative {}
 \end{Verbatim}
 
@@ -491,8 +489,6 @@ is declared in the \<qual> package as a type qualifier.
 
 Your type system should include a top qualifier and a bottom qualifier
 (Section~\ref{creating-bottom-and-top-qualifier}).
-In most cases, the bottom qualifier should be meta-annotated with
-\<@ImplicitFor(literals=LiteralKind.NULL)>.
 
 You should also define a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
@@ -707,12 +703,11 @@ Your type hierarchy must have a bottom qualifier
 --- a qualifier that is a (direct or indirect) subtype of every other
 qualifier.
 
-Your type system must give \<null> the bottom type.
+\<null> is the bottom type. Because the only value with type \<Void> is \<null>, uses of the type \<Void> are also bottom.
 (The only exception
 is if the type system has special treatment for \<null> values, as the
-Nullness Checker does.)
-A way to do this is to meta-annotate your bottom type with
-\<@ImplicitFor(literals=LiteralKind.NULL)>.
+Nullness Checker does. In that case, add the meta-annotation \<@ImplicitFor(literals = LiteralKind.NULL, typeNames = Void.class)>
+to the correct qualifier.)
 This legal code
 will not type-check unless \<null> has the bottom type:
 \begin{Verbatim}

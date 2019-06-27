@@ -14,6 +14,7 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
@@ -162,5 +163,28 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
         }
 
         return super.scan(type, p);
+    }
+
+    /**
+     * Adds standard implicit rules. Currently sets Void to bottom if no other implicit is set for
+     * Void. Also, see {@link ImplicitsTreeAnnotator#addStandardImplicits()}.
+     *
+     * @return this
+     */
+    public ImplicitsTypeAnnotator addStandardImplicits() {
+        if (!typeNames.containsKey(Void.class.getCanonicalName())) {
+            for (AnnotationMirror bottom : qualHierarchy.getBottomAnnotations()) {
+                addTypeName(Void.class, bottom);
+            }
+        } else {
+            Set<AnnotationMirror> annos = typeNames.get(Void.class.getCanonicalName());
+            for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+                if (qualHierarchy.findAnnotationInHierarchy(annos, top) == null) {
+                    addTypeName(Void.class, qualHierarchy.getBottomAnnotation(top));
+                }
+            }
+        }
+
+        return this;
     }
 }

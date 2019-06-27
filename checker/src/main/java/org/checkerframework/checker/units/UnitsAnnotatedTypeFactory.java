@@ -343,7 +343,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // is incorrect.
         return new ListTreeAnnotator(
                 new UnitsPropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this),
+                new ImplicitsTreeAnnotator(this).addStandardImplicits(),
                 new UnitsTreeAnnotator(this));
     }
 

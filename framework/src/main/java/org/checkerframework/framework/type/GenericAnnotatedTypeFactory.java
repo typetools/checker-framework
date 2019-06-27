@@ -333,7 +333,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected TreeAnnotator createTreeAnnotator() {
         List<TreeAnnotator> treeAnnotators = new ArrayList<>();
         treeAnnotators.add(new PropagationTreeAnnotator(this));
-        treeAnnotators.add(new ImplicitsTreeAnnotator(this));
+        treeAnnotators.add(new ImplicitsTreeAnnotator(this).addStandardImplicits());
         if (dependentTypesHelper != null) {
             treeAnnotators.add(dependentTypesHelper.createDependentTypesTreeAnnotator(this));
         }
@@ -369,7 +369,8 @@ public abstract class GenericAnnotatedTypeFactory<
                             this, getQualifierHierarchy().getTopAnnotations(), relevantClasses));
         }
         typeAnnotators.add(new PropagationTypeAnnotator(this));
-        implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
+        implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this).addStandardImplicits();
+
         typeAnnotators.add(implicitsTypeAnnotator);
         return new ListTypeAnnotator(typeAnnotators);
     }
