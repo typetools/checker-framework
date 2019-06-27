@@ -431,6 +431,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         AField field = clazz.fields.getVivify(lhs.getFieldName());
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
+        // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
+        // @GuardedBy({}).
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         helper.updateAnnotationSetInScene(
                 field.type, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.FIELD);
