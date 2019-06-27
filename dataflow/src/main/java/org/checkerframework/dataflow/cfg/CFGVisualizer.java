@@ -38,8 +38,8 @@ public interface CFGVisualizer<
      *     The information includes {@link Store}s that are valid at the beginning of basic blocks
      *     reachable from {@code entry} and per-node information for value producing {@link Node}s.
      *     Can also be {@code null} to indicate that this information should not be output.
-     * @return visualization results, e.g. generated file names ({@link DOTCFGVisualizer}) and
-     *     String representation of CFG ({@link StringCFGVisualizer})
+     * @return visualization results, e.g. generated file names ({@link DOTCFGVisualizer}) or a
+     *     String representation of the CFG ({@link StringCFGVisualizer})
      */
     @Nullable Map<String, Object> visualize(
             ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis);
@@ -49,7 +49,7 @@ public interface CFGVisualizer<
      * call back to this visualizer instance for sub-components.
      *
      * @param store the store to visualize
-     * @return the String representation of the store {@code store}
+     * @return the String representation of the given store
      */
     String visualizeStore(S store);
 
