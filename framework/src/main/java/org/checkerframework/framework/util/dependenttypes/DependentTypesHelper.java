@@ -338,6 +338,7 @@ public class DependentTypesHelper {
                 standardizeUseLocals(localContext, path, type);
                 break;
             case FIELD:
+            case ENUM_CONSTANT:
                 FlowExpressions.Receiver receiverF;
                 if (node.getKind() == Tree.Kind.IDENTIFIER) {
                     FlowExpressions.Receiver r =
