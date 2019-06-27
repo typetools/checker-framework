@@ -2,13 +2,11 @@ package org.checkerframework.checker.index.inequality;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.Subsequence;
-import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -90,16 +88,10 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
     }
 
     @Override
-    protected void checkTypecastSafety(TypeCastTree typeCastTree) {
-        if (!checker.getLintOption("cast:unsafe", true)) {
-            return;
-        }
-
-        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
-        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
+    protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
 
         AnnotationMirror exprLTAnno =
-                atypeFactory.getAnnotationMirror(typeCastTree.getExpression(), LessThan.class);
+                exprType.getEffectiveAnnotationInHierarchy(atypeFactory.UNKNOWN);
 
         if (exprLTAnno != null) {
             List<String> initialAnnotations =
@@ -107,17 +99,14 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
             List<String> updatedAnnotations = new ArrayList<>();
 
             for (String annotation : initialAnnotations) {
-                updatedAnnotations.add(
-                        OffsetEquation.createOffsetFromJavaExpression(annotation).toString());
+                OffsetEquation updatedAnnotation =
+                        OffsetEquation.createOffsetFromJavaExpression(annotation);
+                updatedAnnotations.add(updatedAnnotation.toString());
             }
 
             exprType.replaceAnnotation(atypeFactory.createLessThanQualifier(updatedAnnotations));
         }
 
-        if (!isTypeCastSafe(castType, exprType)) {
-            checker.report(
-                    Result.warning("cast.unsafe", exprType.toString(true), castType.toString(true)),
-                    typeCastTree);
-        }
+        return super.isTypeCastSafe(castType, exprType);
     }
 }
