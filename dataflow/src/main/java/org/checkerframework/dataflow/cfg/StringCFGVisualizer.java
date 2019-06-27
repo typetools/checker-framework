@@ -31,21 +31,26 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeNodes(
-            Set<Block> visited, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
+            Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
         StringBuilder sbStringNodes = new StringBuilder();
         sbStringNodes.append(lineSeparator);
 
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
         // Generate all the Nodes.
-        for (Block v : visited) {
+        for (Block v : blocks) {
             sbStringNodes.append(v.getId()).append(":").append(lineSeparator);
             if (verbose) {
                 sbStringNodes
                         .append(getProcessOrderSimpleString(processOrder.get(v)))
                         .append(lineSeparator);
             }
-            sbStringNodes.append(visualizeBlock(v, analysis));
+            String strBlock = visualizeBlock(v, analysis);
+            if (strBlock.length() == 0) {
+                sbStringNodes.append(lineSeparator);
+            } else {
+                sbStringNodes.append(strBlock).append(lineSeparator);
+            }
         }
         return sbStringNodes.toString();
     }
@@ -60,8 +65,7 @@ public class StringCFGVisualizer<
 
     @Override
     public @Nullable String visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis) {
-        return super.visualizeBlockHelper(
-                bb, analysis, lineSeparator, lineSeparator, lineSeparator);
+        return super.visualizeBlockHelper(bb, analysis, lineSeparator);
     }
 
     @Override

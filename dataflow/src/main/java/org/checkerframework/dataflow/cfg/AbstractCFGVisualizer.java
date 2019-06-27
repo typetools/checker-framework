@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
@@ -100,7 +101,7 @@ public abstract class AbstractCFGVisualizer<
      * Adds the successors of the current block to the work list and the visited blocks list.
      *
      * @param cur the current block
-     * @param visited the set of blocks that have already been visited
+     * @param visited the set of blocks that have already been visited or are in the work list
      * @param workList the queue of blocks to be processed
      * @param sbGraph the {@link StringBuilder} to store the graph
      */
@@ -151,7 +152,7 @@ public abstract class AbstractCFGVisualizer<
      * blocks list and the work list.
      *
      * @param b the block to check
-     * @param visited the set of blocks that have already been visited
+     * @param visited the set of blocks that have already been visited or are in the work list
      * @param workList the queue of blocks to be processed
      */
     protected void addBlock(Block b, Set<Block> visited, Queue<Block> workList) {
@@ -166,44 +167,36 @@ public abstract class AbstractCFGVisualizer<
      *
      * @param bb the block
      * @param analysis the current analysis
-     * @param cbFooter footer for a conditional block
-     * @param osFooter footer for other situations
-     * @param escapeCharacter the escape string to use
+     * @param escapeString the escape String for the special need of visualization, e.g., "\\l" for
+     *     {@link DOTCFGVisualizer} to keep line left-justification, "\n" for {@link
+     *     StringCFGVisualizer} to simply add a new line
      * @return the String representation of the block
      */
     protected String visualizeBlockHelper(
-            Block bb,
-            @Nullable Analysis<A, S, T> analysis,
-            String cbFooter,
-            String osFooter,
-            String escapeCharacter) {
+            Block bb, @Nullable Analysis<A, S, T> analysis, String escapeString) {
         StringBuilder sbBlock = new StringBuilder();
-        sbBlock.append(loopOverBlockContents(bb, analysis, escapeCharacter));
+        sbBlock.append(loopOverBlockContents(bb, analysis, escapeString));
 
-        // Handle case where no contents are present
+        // Handle case where no contents are present.
         boolean centered = false;
         if (sbBlock.length() == 0) {
             if (bb.getType() == Block.BlockType.SPECIAL_BLOCK) {
                 sbBlock.append(visualizeSpecialBlock((SpecialBlock) bb));
                 centered = true;
-            } else if (bb.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
-                sbBlock.append(cbFooter);
-                return sbBlock.toString();
             } else {
-                sbBlock.append(osFooter);
-                return sbBlock.toString();
+                return "";
             }
         }
 
-        // Visualize transfer input if necessary
+        // Visualize transfer input if necessary.
         if (analysis != null) {
-            // The transfer input before this block is added before the block content
+            // The transfer input before this block is added before the block content.
             sbBlock.insert(0, visualizeBlockTransferInput(bb, analysis));
             if (verbose) {
                 Node lastNode = getLastNode(bb);
                 if (lastNode != null) {
                     StringBuilder sbStore = new StringBuilder();
-                    sbStore.append(escapeCharacter).append("~~~~~~~~~").append(escapeCharacter);
+                    sbStore.append(escapeString).append("~~~~~~~~~").append(escapeString);
                     sbStore.append("After: ");
                     sbStore.append(visualizeStore(analysis.getResult().getStoreAfter(lastNode)));
                     sbBlock.append(sbStore);
@@ -211,9 +204,8 @@ public abstract class AbstractCFGVisualizer<
             }
         }
         if (!centered) {
-            sbBlock.append(escapeCharacter);
+            sbBlock.append(escapeString);
         }
-        sbBlock.append(cbFooter);
         return sbBlock.toString();
     }
 
@@ -228,19 +220,12 @@ public abstract class AbstractCFGVisualizer<
     protected String loopOverBlockContents(
             Block bb, @Nullable Analysis<A, S, T> analysis, String separator) {
 
-        StringBuilder sbBlockContents = new StringBuilder();
-        boolean notFirst = false;
-
         List<Node> contents = addBlockContent(bb);
-
+        StringJoiner sjBlockContents = new StringJoiner(separator);
         for (Node t : contents) {
-            if (notFirst) {
-                sbBlockContents.append(separator);
-            }
-            notFirst = true;
-            sbBlockContents.append(visualizeBlockNode(t, analysis));
+            sjBlockContents.add(visualizeBlockNode(t, analysis));
         }
-        return sbBlockContents.toString();
+        return sjBlockContents.toString();
     }
 
     /**
@@ -269,11 +254,13 @@ public abstract class AbstractCFGVisualizer<
      *
      * @param bb the block
      * @param analysis the current analysis
-     * @param escapeCharacter the escape String to use
+     * @param escapeString the escape String for the special need of visualization, e.g., "\\l" for
+     *     {@link DOTCFGVisualizer} to keep line left-justification, "\n" for {@link
+     *     StringCFGVisualizer} to simply add a new line
      * @return the String representation of the transfer input of the block
      */
     protected String visualizeBlockTransferInputHelper(
-            Block bb, Analysis<A, S, T> analysis, String escapeCharacter) {
+            Block bb, Analysis<A, S, T> analysis, String escapeString) {
         assert analysis != null
                 : "analysis should be non-null when visualizing the transfer input of a block.";
 
@@ -282,7 +269,7 @@ public abstract class AbstractCFGVisualizer<
 
         StringBuilder sbStore = new StringBuilder();
 
-        // split input representation to two lines
+        // Split input representation to two lines.
         sbStore.append("Before: ");
         if (!input.containsTwoStores()) {
             S regularStore = input.getRegularStore();
@@ -295,7 +282,7 @@ public abstract class AbstractCFGVisualizer<
             sbStore.append(", else=");
             sbStore.append(visualizeStore(elseStore));
         }
-        sbStore.append(escapeCharacter).append("~~~~~~~~~").append(escapeCharacter);
+        sbStore.append(escapeString).append("~~~~~~~~~").append(escapeString);
         return sbStore.toString();
     }
 
@@ -338,7 +325,9 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Generate the order of processing blocks.
+     * Generate the order of processing blocks. Because a block may appears more than once in {@link
+     * ControlFlowGraph#getDepthFirstOrderedBlocks()}, the orders of each block store in a separate
+     * array list.
      *
      * @param cfg the current control flow graph
      * @return an IdentityHashMap that maps from blocks to their orders
@@ -361,13 +350,13 @@ public abstract class AbstractCFGVisualizer<
     /**
      * Generate the String representation of the nodes of a control flow graph.
      *
-     * @param visited the set of the visited blocks
+     * @param blocks the set of all the blocks in a control flow graph
      * @param cfg the control flow graph
      * @param analysis the current analysis
      * @return the String representation of the nodes
      */
     protected abstract String visualizeNodes(
-            Set<Block> visited, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis);
+            Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis);
 
     /**
      * Generate the String representation of an edge.
@@ -394,9 +383,11 @@ public abstract class AbstractCFGVisualizer<
     protected abstract String visualizeGraphFooter();
 
     /**
-     * Return the simple String of the process order of a node.
+     * Return the simple String of the process order of a node, e.g., "Process order: 23". When a
+     * node have multiple process orders, a sequence of numbers will be returned, e.g., "Process
+     * order: 23,25".
      *
-     * @param order the list of the process order to be processed.
+     * @param order the list of the process order to be processed
      * @return the String representation of the process order of the node
      */
     protected String getProcessOrderSimpleString(List<Integer> order) {

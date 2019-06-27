@@ -71,17 +71,9 @@ public class DOTCFGVisualizer<
         return res;
     }
 
-    /**
-     * Visualize the nodes of a control flow graph into a string.
-     *
-     * @param visited the set of all the blocks
-     * @param cfg the current control flow graph
-     * @param analysis the current analysis
-     * @return the String representation of the nodes
-     */
     @Override
     public String visualizeNodes(
-            Set<Block> visited, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
+            Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
 
         StringBuilder sbDotNodes = new StringBuilder();
         sbDotNodes
@@ -91,8 +83,8 @@ public class DOTCFGVisualizer<
 
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
-        // definition of all nodes including their labels
-        for (Block v : visited) {
+        // Definition of all nodes including their labels.
+        for (Block v : blocks) {
             sbDotNodes.append("    ").append(v.getId()).append(" [");
             if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
                 sbDotNodes.append("shape=polygon sides=8 ");
@@ -105,7 +97,19 @@ public class DOTCFGVisualizer<
                         .append(getProcessOrderSimpleString(processOrder.get(v)))
                         .append(leftJustifiedTerminator);
             }
-            sbDotNodes.append(visualizeBlock(v, analysis));
+            String strBlock = visualizeBlock(v, analysis);
+            if (strBlock.length() == 0) {
+                if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
+                    // The footer of the conditional block.
+                    sbDotNodes.append(" \",];").append(lineSeparator);
+                } else {
+                    // The footer of the block which has no content and is not a special or
+                    // conditional block.
+                    sbDotNodes.append("?? empty ?? \",];").append(lineSeparator);
+                }
+            } else {
+                sbDotNodes.append(strBlock).append(" \",];").append(lineSeparator);
+            }
         }
 
         sbDotNodes.append(lineSeparator);
@@ -119,12 +123,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis) {
-        return super.visualizeBlockHelper(
-                bb,
-                analysis,
-                " \",];" + lineSeparator,
-                "?? empty ?? \",];" + lineSeparator,
-                leftJustifiedTerminator);
+        return super.visualizeBlockHelper(bb, analysis, leftJustifiedTerminator);
     }
 
     @Override
