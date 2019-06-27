@@ -5,6 +5,8 @@ Introduced an alias, @SignedPositive, for use by programmers.
 
 Annotated the first argument of Opt.get and Opt.orElseThrow as @NonNull.
 
+Implementation detail: renamed QualifierPolymorphism#annotate methods to #resolve
+
 New/changed error message keys:
  * initialization.static.fields.uninitialized for uninitialized static fields
  * unary.increment.type.incompatible and unary.decrement.type.incompatible
