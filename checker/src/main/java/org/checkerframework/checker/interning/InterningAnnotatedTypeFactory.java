@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.interning.qual.InternMethod;
 import org.checkerframework.checker.interning.qual.Interned;
@@ -92,15 +91,14 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitExecutable(AnnotatedExecutableType type, Void p) {
             MethodSymbol methodElt = (MethodSymbol) type.getElement();
 
-            if (methodElt == null
-                    || methodElt.getKind() != ElementKind.CONSTRUCTOR
-                    || methodElt.owner.getKind() == ElementKind.ENUM) {
+            if (methodElt == null || methodElt.getKind() != ElementKind.CONSTRUCTOR) {
                 // Annotate method returns, not constructors.
                 scan(type.getReturnType(), p);
             }
             if (type.getReceiverType() != null
-                    && typeFactory.getDeclAnnotation(type.getElement(), InternMethod.class)
-                            == null) {
+                    // Intern method may be called on UnknownInterned object, so its receiver should
+                    // not be annotated as @Interned.
+                    && typeFactory.getDeclAnnotation(methodElt, InternMethod.class) == null) {
                 scanAndReduce(type.getReceiverType(), p, null);
             }
             scanAndReduce(type.getParameterTypes(), p, null);
@@ -108,14 +106,6 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             scanAndReduce(type.getTypeVariables(), p, null);
             return null;
         }
-    }
-
-    @Override
-    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeElement typeElement) {
-        if (typeElement.getKind() == ElementKind.ENUM) {
-            return AnnotationMirrorSet.singleElementSet(INTERNED);
-        }
-        return super.getTypeDeclarationBounds(typeElement);
     }
 
     @Override

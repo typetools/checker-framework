@@ -3407,13 +3407,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<AnnotationMirror> overriderAnnos = overriderReceiver.getAnnotations();
             Set<AnnotationMirror> overriddenAnnos = overriddenReceiver.getAnnotations();
             if (!qualifierHierarchy.isSubtype(overriddenAnnos, overriderAnnos)) {
-                // If the overriding receiver annotations are the same as the bound for uses of the
-                // type, then don't issue the warning. This is because all objects are guaranteed to
-                // be at least the annotations on the class declaration.
                 Set<AnnotationMirror> declaredAnnos =
                         atypeFactory.getTypeDeclarationBounds(overridingType);
                 if (qualifierHierarchy.isSubtype(overriderAnnos, declaredAnnos)
                         && qualifierHierarchy.isSubtype(declaredAnnos, overriderAnnos)) {
+                    // All the type of an object must be no higher than its upper bound. So if the
+                    // receiver is annotated with the upper bound qualifiers, then the override is
+                    // safe.
                     return true;
                 }
                 FoundRequired pair = FoundRequired.of(overriderReceiver, overriddenReceiver);
