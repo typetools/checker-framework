@@ -2,8 +2,6 @@ package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.NewArrayTree;
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -57,13 +55,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // type qualifier anymore.
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return new LinkedHashSet<>(
-                Arrays.asList(
-                        MaybeLeaked.class,
-                        LeakedToResult.class,
-                        NonLeaked.class,
-                        MaybeAliased.class,
-                        Unique.class));
+        return getBundledTypeQualifiersWithoutPolyAll(MaybeLeaked.class);
     }
 
     @Override
