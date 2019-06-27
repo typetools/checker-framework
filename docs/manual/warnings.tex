@@ -145,8 +145,11 @@ If the \emph{messagekey} part is omitted, the \<@SuppressWarnings> applies
 to all messages (it suppresses all warnings from the given checker).
 
 With the \code{-ArequirePrefixInWarningSuppressions} command-line
-option, a warning is only suppressed if the key is in the \code{"\emph{checkername}:\emph{messagekey}"}
+option, a warning is only suppressed if the key is in the
+\code{"\emph{checkername}"} or
+\code{"\emph{checkername}:\emph{messagekey}"}
 format, as in
+\<@SuppressWarnings("nullness")> or
 \<@SuppressWarnings("nullness:assignment.type.incompatible")>.
 
 %% This is true, but relevant mostly to developers, not users.
