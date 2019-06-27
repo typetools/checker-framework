@@ -85,7 +85,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
     /**
      * Completes a type by removing any unresolved polymorphic qualifiers, replacing them with the
-     * top qualifiers.
+     * bottom qualifiers.
      */
     private Completer completer = new Completer();
 
@@ -127,7 +127,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * @param type the type to annotate
      */
     @Override
-    public void annotate(MethodInvocationTree tree, AnnotatedExecutableType type) {
+    public void resolve(MethodInvocationTree tree, AnnotatedExecutableType type) {
         if (polyQuals.isEmpty()) {
             return;
         }
@@ -169,7 +169,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     @Override
-    public void annotate(NewClassTree tree, AnnotatedExecutableType type) {
+    public void resolve(NewClassTree tree, AnnotatedExecutableType type) {
         if (polyQuals.isEmpty()) {
             return;
         }
@@ -193,7 +193,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     @Override
-    public void annotate(
+    public void resolve(
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference) {
         for (AnnotationMirror type : functionalInterface.getReturnType().getAnnotations()) {
             if (QualifierPolymorphism.hasPolymorphicQualifier(type)) {
@@ -284,12 +284,12 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                 if (type.hasAnnotation(poly)) {
                     type.removeAnnotation(poly);
                     if (top == null) {
-                        // poly is PolyAll -> add all tops not explicitly given
-                        type.addMissingAnnotations(topQuals);
+                        // poly is PolyAll -> add bottom for all hierarchies without an annotation.
+                        type.addMissingAnnotations(qualHierarchy.getBottomAnnotations());
                     } else if (type.getKind() != TypeKind.TYPEVAR
                             && type.getKind() != TypeKind.WILDCARD) {
-                        // Do not add the top qualifiers to type variables and wildcards
-                        type.addAnnotation(top);
+                        // Do not add qualifiers to type variables and wildcards
+                        type.addAnnotation(qualHierarchy.getBottomAnnotation(top));
                     }
                 }
             }

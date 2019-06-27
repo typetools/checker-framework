@@ -276,8 +276,9 @@ public abstract class UBQualifier {
         return false;
     }
 
+    /** The less-than-length-of qualifier (@LTLengthOf). */
     public static class LessThanLengthOf extends UBQualifier {
-        // This maps from sequence name to offset
+        /** Maps from sequence name to offset. */
         private final Map<String, Set<OffsetEquation>> map;
 
         private LessThanLengthOf(Map<String, Set<OffsetEquation>> map) {

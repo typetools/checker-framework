@@ -283,28 +283,39 @@
      transform="translate(-20,-3.6428562)">
     <rect
        style="fill:#ffffff"
-       x="760"
+       x="740"
        y="380"
-       width="120"
+       width="160"
        height="42"
        id="rect68" />
     <rect
        style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
-       x="760"
+       x="740"
        y="380"
-       width="120"
+       width="160"
        height="42"
        id="rect70" />
     <text
        font-size="16"
        style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="820"
-       y="405.85001"
+       y="395"
        id="text72">
       <tspan
          x="820"
-         y="405.85001"
-         id="tspan74">@Constant</tspan>
+         y="395"
+         id="tspan74">@SignedPositive</tspan>
+    </text>
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="820"
+       y="415"
+       id="text72">
+      <tspan
+         x="820"
+         y="415"
+         id="tspan74">@SignednessGlb</tspan>
     </text>
   </g>
   <g

@@ -1424,7 +1424,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
-        poly.annotate(tree, method);
+        poly.resolve(tree, method);
         return mType;
     }
 
@@ -1560,7 +1560,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
-        poly.annotate(tree, method);
+        poly.resolve(tree, method);
         return mType;
     }
 

@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -64,6 +65,24 @@ public class IndexUtil {
      */
     public static Long getExactValue(Tree tree, ValueAnnotatedTypeFactory factory) {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
+        Range possibleValues = getPossibleValues(valueType, factory);
+        if (possibleValues != null && possibleValues.from == possibleValues.to) {
+            return possibleValues.from;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the exact value of an annotated element according to the Constant Value Checker, or
+     * null if the exact value is not known.
+     *
+     * @param element the element to get the exact value from
+     * @param factory ValueAnnotatedTypeFactory used for annotation accessing
+     * @return the exact value of the element if it is constant, or null otherwise
+     */
+    public static Long getExactValue(Element element, ValueAnnotatedTypeFactory factory) {
+        AnnotatedTypeMirror valueType = factory.getAnnotatedType(element);
         Range possibleValues = getPossibleValues(valueType, factory);
         if (possibleValues != null && possibleValues.from == possibleValues.to) {
             return possibleValues.from;

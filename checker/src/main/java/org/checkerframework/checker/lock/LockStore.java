@@ -129,7 +129,6 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         inConstructorOrInitializer = true;
     }
 
-    /** {@inheritDoc} */
     @Override
     public @Nullable CFValue getValue(FlowExpressions.Receiver expr) {
 
@@ -150,11 +149,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         return super.getValue(expr);
     }
 
-    /** {@inheritDoc} */
     @Override
-    protected void internalVisualize(CFGVisualizer<CFValue, LockStore, ?> viz) {
-        viz.visualizeStoreKeyVal("inConstructorOrInitializer", inConstructorOrInitializer);
-        super.internalVisualize(viz);
+    protected String internalVisualize(CFGVisualizer<CFValue, LockStore, ?> viz) {
+        return viz.visualizeStoreKeyVal("inConstructorOrInitializer", inConstructorOrInitializer)
+                + super.internalVisualize(viz);
     }
 
     @Override

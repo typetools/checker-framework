@@ -9,7 +9,6 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
-import com.sun.source.util.TreePath;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
@@ -18,11 +17,12 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in detail
- * in the Checker Framework Manual.
+ * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in the
+ * Checker Framework Manual.
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */
@@ -39,7 +39,10 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         return kind == Kind.AND || kind == Kind.OR;
     }
 
-    /** @return type of a primitive cast, or null if not primitive */
+    /**
+     * @return type of an explicitly annotated primitive cast. Return null if not an explicitly
+     *     annotated cast to a primitive.
+     */
     private PrimitiveTypeTree primitiveTypeCast(Tree node) {
         if (node.getKind() != Kind.TYPE_CAST) {
             return null;
@@ -47,11 +50,11 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
         TypeCastTree cast = (TypeCastTree) node;
         Tree castType = cast.getType();
-        // All types should be wrapped in some annotation
+
+        // We only care if the cast has an annotation.
         if (castType.getKind() != Kind.ANNOTATED_TYPE) {
             return null;
         }
-
         AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) castType;
         ExpressionTree underlyingType = annotatedType.getUnderlyingType();
 
@@ -72,12 +75,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      * @return the long value of obj
      */
     private long getLong(Object obj) {
-        if (obj instanceof Integer) {
-            Integer intObj = (Integer) obj;
-            return intObj.longValue();
-        } else {
-            return (long) obj;
-        }
+        return ((Number) obj).longValue();
     }
 
     /**
@@ -87,9 +85,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      * bits of mask are 0 for AND, and 1 for OR. For example, assuming that shiftAmount is 4, the
      * following is true about AND and OR masks:
      *
-     * <p>{@code expr & 0x0... == 0x0... ;}
+     * <p>{@code expr & 0x0[anything] == 0x0[something] ;}
      *
-     * <p>{@code expr | 0xF... == 0xF... ;}
+     * <p>{@code expr | 0xF[anything] == 0xF[something] ;}
      *
      * @param maskKind the kind of mask (AND or OR)
      * @param shiftAmountLit the LiteralTree whose value is shiftAmount
@@ -209,22 +207,12 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      * @return true iff the right shift is masked such that a signed or unsigned right shift has the
      *     same effect
      */
-    private boolean isMaskedShift(BinaryTree shiftExpr) {
-        // enclosing is the operation or statement that immediately contains shiftExpr
-        Tree enclosing;
-        // enclosingChild is the top node in the chain of nodes from shiftExpr to parent
-        Tree enclosingChild;
-        {
-            TreePath parentPath = visitorState.getPath().getParentPath();
-            enclosing = parentPath.getLeaf();
-            enclosingChild = enclosing;
-            // Strip away all parentheses from the shift operation
-            while (enclosing.getKind() == Kind.PARENTHESIZED) {
-                parentPath = parentPath.getParentPath();
-                enclosingChild = enclosing;
-                enclosing = parentPath.getLeaf();
-            }
-        }
+    private boolean isMaskedShiftEitherSignedness(BinaryTree shiftExpr) {
+        Pair<Tree, Tree> enclosingPair = TreeUtils.enclosingNonParen(visitorState.getPath());
+        // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
+        Tree enclosing = enclosingPair.first;
+        // enclosingChild is a child of enclosing:  shiftExpr or a parenthesized version of it.
+        Tree enclosingChild = enclosingPair.second;
 
         if (!isMask(enclosing)) {
             return false;
@@ -240,7 +228,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                         : maskExpr.getRightOperand();
 
         // Strip away the parentheses from the mask if any exist
-        mask = TreeUtils.skipParens(mask);
+        mask = TreeUtils.withoutParens(mask);
 
         if (!isLiteral(shiftAmountExpr) || !isLiteral(mask)) {
             return false;
@@ -264,18 +252,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      * @return true iff the right shift is type casted such that a signed or unsigned right shift
      *     has the same effect
      */
-    private boolean isCastedShift(BinaryTree shiftExpr) {
-        // enclosing is the operation or statement that immediately contains shiftExpr
-        Tree enclosing;
-        {
-            TreePath parentPath = visitorState.getPath().getParentPath();
-            enclosing = parentPath.getLeaf();
-            // Strip away all parentheses from the shift operation
-            while (enclosing.getKind() == Kind.PARENTHESIZED) {
-                parentPath = parentPath.getParentPath();
-                enclosing = parentPath.getLeaf();
-            }
-        }
+    private boolean isCastedShiftEitherSignedness(BinaryTree shiftExpr) {
+        // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
+        Tree enclosing = TreeUtils.enclosingNonParen(visitorState.getPath()).first;
 
         PrimitiveTypeTree castPrimitiveType = primitiveTypeCast(enclosing);
         if (castPrimitiveType == null) {
@@ -331,16 +310,16 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
             case RIGHT_SHIFT:
                 if (leftOpType.hasAnnotation(Unsigned.class)
-                        && !isMaskedShift(node)
-                        && !isCastedShift(node)) {
+                        && !isMaskedShiftEitherSignedness(node)
+                        && !isCastedShiftEitherSignedness(node)) {
                     checker.report(Result.failure("shift.signed", kind), leftOp);
                 }
                 break;
 
             case UNSIGNED_RIGHT_SHIFT:
                 if (leftOpType.hasAnnotation(Signed.class)
-                        && !isMaskedShift(node)
-                        && !isCastedShift(node)) {
+                        && !isMaskedShiftEitherSignedness(node)
+                        && !isCastedShiftEitherSignedness(node)) {
                     checker.report(Result.failure("shift.unsigned", kind), leftOp);
                 }
                 break;
@@ -384,7 +363,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     }
 
     /** @return a string representation of kind, with trailing _ASSIGNMENT stripped off if any */
-    private String kindWithOutAssignment(Kind kind) {
+    private String kindWithoutAssignment(Kind kind) {
         String result = kind.toString();
         if (result.endsWith("_ASSIGNMENT")) {
             return result.substring(0, result.length() - "_ASSIGNMENT".length());
@@ -421,13 +400,13 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                     checker.report(
                             Result.failure(
                                     "compound.assignment.unsigned.variable",
-                                    kindWithOutAssignment(kind)),
+                                    kindWithoutAssignment(kind)),
                             var);
                 } else if (exprType.hasAnnotation(Unsigned.class)) {
                     checker.report(
                             Result.failure(
                                     "compound.assignment.unsigned.expression",
-                                    kindWithOutAssignment(kind)),
+                                    kindWithoutAssignment(kind)),
                             expr);
                 }
                 break;
@@ -437,7 +416,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                     checker.report(
                             Result.failure(
                                     "compound.assignment.shift.signed",
-                                    kindWithOutAssignment(kind),
+                                    kindWithoutAssignment(kind),
                                     "unsigned"),
                             var);
                 }
@@ -448,7 +427,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                     checker.report(
                             Result.failure(
                                     "compound.assignment.shift.unsigned",
-                                    kindWithOutAssignment(kind),
+                                    kindWithoutAssignment(kind),
                                     "signed"),
                             var);
                 }
@@ -462,14 +441,14 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                     checker.report(
                             Result.failure(
                                     "compound.assignment.mixed.unsigned.variable",
-                                    kindWithOutAssignment(kind)),
+                                    kindWithoutAssignment(kind)),
                             expr);
                 } else if (varType.hasAnnotation(Signed.class)
                         && exprType.hasAnnotation(Unsigned.class)) {
                     checker.report(
                             Result.failure(
                                     "compound.assignment.mixed.unsigned.expression",
-                                    kindWithOutAssignment(kind)),
+                                    kindWithoutAssignment(kind)),
                             expr);
                 }
                 break;

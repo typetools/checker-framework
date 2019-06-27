@@ -206,18 +206,12 @@ Framework:
 \sectionAndLabel{Compiling and using a custom checker}{creating-compiling}
 
 You can place your checker's source files wherever you like.
-\begin{itemize}
-\item
-  Forking the Checker Framework repository and putting your files in
-  parallel to existing checker implementations is a particularly convenient
-  choice.  You must be able to compile the Checker Framework
-  (Section~\ref{build-source}).
-\item
-  \begin{sloppypar}
-  If you put your checker elsewhere, then when you compile your checker,
-  the classpath must include \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>.
-  \end{sloppypar}
-\end{itemize}
+One choice is to write your checker in a fork of the Checker Framework
+repository \url{https://github.com/typetools/checker-framework}.
+Another choice is to write it in a stand-alone repository.  Here is a
+template for a stand-alone repository:
+\url{https://github.com/typetools/templatefora-checker}; at that URL,
+click the ``Use this template'' button.
 
 % You may also wish to consult Section~\ref{creating-testing-framework} for
 % information on testing a checker and

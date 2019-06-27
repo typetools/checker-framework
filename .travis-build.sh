@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Entering `pwd`/.travis-build.sh, GROUP=$1
+echo "Entering `pwd`/.travis-build.sh, GROUP=$1"
 
 # Optional argument $1 is one of:
 #   all, all-tests, jdk.jar, misc, checker-framework-inference, plume-lib, downstream
@@ -30,7 +30,6 @@ fi
 
 # Fail the whole script if any command fails
 set -e
-
 
 ## Diagnostic output
 # Output lines of this script as they are read.
@@ -63,7 +62,7 @@ echo "In checker-framework/.travis-build.sh GROUP=$GROUP"
 ### TESTS OF THIS REPOSITORY
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  ./gradlew allTests --console=plain --warning-mode=all -s --no-daemon
+  ./gradlew allTests --console=plain --warning-mode=all --no-daemon
   # Moved example-tests-nobuildjdk out of all tests because it fails in
   # the release script because the newest maven artifacts are not published yet.
   ./gradlew :checker:exampleTests --console=plain --warning-mode=all --no-daemon
@@ -102,7 +101,7 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
     # good argument to `git diff` but a bad argument to `git log` (they interpret "..." differently!).
     (git diff $TRAVIS_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
     (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/rjp-output.txt 2>&1) || true
-    [ -s /tmp/diff.txt ] || ([[ "${TRAVIS_BRANCH}" != "master" && "${TRAVIS_EVENT_TYPE}" == "push" ]] || (echo "/tmp/diff.txt is empty; try pulling base branch into compare branch" && false))
+    [ -s /tmp/diff.txt ] || ([[ "${TRAVIS_BRANCH}" != "master" && "${TRAVIS_EVENT_TYPE}" == "push" ]] || (echo "/tmp/diff.txt is empty; try pulling base branch (often master) into compare branch (often feature branch)" && false))
     wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
     python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
   fi
@@ -117,23 +116,23 @@ if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; the
   ## that only it, not other downstream tests, failed.
 
   # checker-framework-inference: 18 minutes
-  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
   REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools checker-framework-inference`
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
-  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
+  (cd .. && git clone -b ${BRANCH} -q --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
 
   export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
   export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all -s --no-daemon)
+  (cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all --no-daemon)
 
 fi
 
 if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
   # plume-lib-typecheck: 15 minutes
-  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
   REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetests plume-lib-typecheck`
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
-  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
+  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
 
   (cd ../plume-lib-typecheck && ./.travis-build.sh)
 fi
@@ -145,20 +144,30 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ## Not done in the Travis build, but triggered as a separate Travis project:
   ##  * daikon-typecheck: (takes 2 hours)
 
+  echo "TRAVIS_PULL_REQUEST_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH"
+  echo "TRAVIS_BRANCH=$TRAVIS_BRANCH"
+
   # Checker Framework demos
-  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 https://github.com/plume-lib/plume-scripts.git)
+  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
   REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools checker-framework.demos`
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
-  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO} checker-framework-demos) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO} checker-framework-demos)
-  ./gradlew :checker:demosTests --console=plain --warning-mode=all -s --no-daemon
+  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} checker-framework-demos) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} checker-framework-demos)
+  ./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
 
   # Guava
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
-  (cd .. && git clone https://github.com/typetools/guava.git) || (cd .. && git clone https://github.com/typetools/guava.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/guava.git)"
+  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools guava`
+  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
+  if [ $BRANCH = "master" ] ; then
+    REPO=https://github.com/typetools/guava.git
+    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
+    if [ $BRANCH = "master" ] ; then
+      BRANCH=cf-master
+    fi
+  fi
+  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava)
   export CHECKERFRAMEWORK=${CHECKERFRAMEWORK:-$ROOT/checker-framework}
   (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
 
 fi
 
-echo Exiting `pwd`/.travis-build.sh, GROUP=$1
+echo "Exiting `pwd`/.travis-build.sh, GROUP=$1"

@@ -1,6 +1,5 @@
 package org.checkerframework.framework.type;
 
-/** Created by jburke on 11/20/14. */
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -9,11 +8,8 @@ import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeParameterElement;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -24,12 +20,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * @see org.checkerframework.framework.type.TypeFromTree
  */
 class TypeFromMemberVisitor extends TypeFromTreeVisitor {
-
-    /**
-     * Adds explicit annotations on type parameter declarations an their upper bounds to uses of
-     * type variables.
-     */
-    private final TypeVarAnnotator typeVarAnnotator = new TypeVarAnnotator();
 
     @Override
     public AnnotatedTypeMirror visitVariable(VariableTree node, AnnotatedTypeFactory f) {
@@ -81,35 +71,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         result.setElement(elt);
 
         ElementAnnotationApplier.apply(result, elt, f);
-        typeVarAnnotator.visit(result, f);
-
         return result;
-    }
-
-    /**
-     * Annotates uses of type variables with annotation written explicitly on the type parameter
-     * declaration and/or its upper bound.
-     *
-     * <p>For all uses, except those in a method declaration, the type of the type variable is
-     * computed using {@link TypeFromTree#fromTypeTree(AnnotatedTypeFactory, Tree)}. {@link
-     * TypeFromTypeTreeVisitor#forTypeVariable(AnnotatedTypeMirror, AnnotatedTypeFactory)} is called
-     * for all uses of type variables and that method looks up the annotations on type parameters
-     * and type parameter upper bounds from the tree. Types in method signatures aren't created
-     * using TypeFromTree#fromTypeTree, so it needs special handling.
-     */
-    static class TypeVarAnnotator extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
-        @Override
-        public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory p) {
-            TypeParameterElement tpelt =
-                    (TypeParameterElement) type.getUnderlyingType().asElement();
-
-            if (type.getAnnotations().isEmpty()
-                    && type.getUpperBound().getAnnotations().isEmpty()
-                    && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
-                ElementAnnotationApplier.apply(type, tpelt, p);
-            }
-            return super.visitTypeVariable(type, p);
-        }
     }
 
     /**

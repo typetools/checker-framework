@@ -701,10 +701,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
                 throw new BugInCF(
-                        "AnnotatedTypeFactory: "
-                                + typeQualifier
-                                + " does not specify its super qualifiers. "
-                                + "Add an @org.checkerframework.framework.qual.SubtypeOf annotation to it.");
+                        "AnnotatedTypeFactory: %s does not specify its super qualifiers.%n"
+                                + "Add an @org.checkerframework.framework.qual.SubtypeOf annotation to it,%n"
+                                + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.%n",
+                        typeQualifier);
             }
             Class<? extends Annotation>[] superQualifiers =
                     typeQualifier.getAnnotation(SubtypeOf.class).value();
@@ -1064,6 +1064,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the annotated type of {@code tree}
      */
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
+
+        /// For debugging
+        // String treeString = tree.toString();
+        // if (treeString.length() > 63) {
+        //     treeString = treeString.substring(0, 60) + "...";
+        // }
+
         if (tree == null) {
             throw new BugInCF("AnnotatedTypeFactory.getAnnotatedType: null tree");
         }
@@ -1077,7 +1084,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else if (tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.VARIABLE) {
             type = fromMember(tree);
         } else if (TreeUtils.isExpressionTree(tree)) {
-            tree = TreeUtils.skipParens((ExpressionTree) tree);
+            tree = TreeUtils.withoutParens((ExpressionTree) tree);
             type = fromExpression((ExpressionTree) tree);
         } else {
             throw new BugInCF(
@@ -1866,7 +1873,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 return false;
             }
 
-            tree = TreeUtils.skipParens(tree);
+            tree = TreeUtils.withoutParens(tree);
 
             if (tree.getKind() == Tree.Kind.IDENTIFIER) {
                 Name n = ((IdentifierTree) tree).getName();
@@ -2537,6 +2544,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param type the canonical annotation
      */
     protected void addAliasedAnnotation(Class<?> aliasClass, AnnotationMirror type) {
+        if (getSupportedTypeQualifiers().contains(aliasClass)) {
+            throw new BugInCF(
+                    "AnnotatedTypeFactory: alias %s should not be in type hierarchy for %s",
+                    aliasClass, this.getClass().getSimpleName());
+        }
         addAliasedAnnotation(aliasClass.getCanonicalName(), type);
     }
 
@@ -2588,6 +2600,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Class<?> canonical,
             boolean copyElements,
             String... ignorableElements) {
+        if (getSupportedTypeQualifiers().contains(aliasClass)) {
+            throw new BugInCF(
+                    "AnnotatedTypeFactory: alias %s should not be in type hierarchy for %s",
+                    aliasClass, this.getClass().getSimpleName());
+        }
         addAliasedAnnotation(
                 aliasClass.getCanonicalName(), canonical, copyElements, ignorableElements);
     }
@@ -3100,6 +3117,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
             if (stubs.isEmpty()) {
+                // If the stub file has a prefix of "checker.jar/" then look for the file in the top
+                // level directory of the jar that contains the checker.
+                stubPath = stubPath.replace("checker.jar/", "/");
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 if (in == null) {
                     // Didn't find the stubfile.

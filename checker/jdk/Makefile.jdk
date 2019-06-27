@@ -36,7 +36,7 @@ DIFFS = $(patsubst src/%.java,build/%.diff, $(SOURCES))
 
 .PHONY: classes
 classes: $(SOURCES)
-	mkdir -p build
+	@mkdir -p build
 	@echo "Building the JDK..."
 	@echo 'Ignore "warning: You do not seem to be using the distributed annotated JDK."'
 # "-AsuppressWarnings=$(JDKDIR) -Afilenames" produces frequent, but not verbose, output, so that

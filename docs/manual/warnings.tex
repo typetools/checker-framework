@@ -87,7 +87,7 @@ argument string.
 A \sunjavadocanno{java/lang/SuppressWarnings.html}{SuppressWarnings}
 annotation may be placed on program declarations such as a local
 variable declaration, a method, or a class.  It suppresses all warnings
-related to the given checker, for that program element.
+within that program element.
 Section~\ref{suppresswarnings-annotation-locations} discusses where the
 annotation may be written in source code.
 
@@ -97,28 +97,29 @@ writing \<@SuppressWarnings> annotations.
 
 \subsectionAndLabel{\code{@SuppressWarnings} syntax}{suppresswarnings-annotation-syntax}
 
-The \code{@SuppressWarnings} annotation takes a string argument.
+The \code{@SuppressWarnings} annotation takes a string argument, in one of
+the following forms:
+\code{"\emph{checkername}:\emph{messagekey}"},
+\code{"\emph{checkername}"},
+or
+\code{"\emph{messagekey}"}.
 
-The most common usage is \code{@SuppressWarnings("\emph{checkername}")}, as
-in \code{@SuppressWarnings("interning")} or
-\code{@SuppressWarnings("nullness")}.  The argument \emph{checkername} is
+The argument \emph{checkername} is
 in lower case and is derived from the way you invoke the checker.  For
 example, if you invoke a checker as
 \code{javac -processor MyNiftyChecker ...},
 then you would suppress its error messages with
 \code{@SuppressWarnings("mynifty")}.  (An exception is the Subtyping
 Checker, for which you use the annotation name; see
-Section~\ref{subtyping-using}).  While not recommended, using
-\code{@SuppressWarnings("all")} will suppress all warnings for all
-checkers.
+Section~\ref{subtyping-using}.)
+Sometimes, a checker honors \emph{checkername} arguments; use
+the \code{-AshowSuppressWarningKeys} command-line option to see them.
+Using \code{"all"} as the checkername applies to all checkers; this is not
+recommended, except for messages common to all checkers such as
+purity-related messages when using \<-AcheckPurityAnnotations>.
 
-The \<@SuppressWarnings> argument string can also  be of the form
-\emph{checkername:messagekey} or \emph{messagekey}, in which case only
-errors/warnings relating to the given message key are suppressed.  For example,
-\code{cast.unsafe} is the messagekey for warnings about an unsafe cast, and
-\code{cast.redundant} is the messagekey for warnings about a redundant cast.
-
-Each warning from the compiler gives the most specific
+The argument \emph{messagekey} is the message key for the error.
+Each warning message from the compiler gives the most specific
 suppression key that can be used to suppress that warning.
 An example is \<dereference.of.nullable> in
 
@@ -135,13 +136,20 @@ MyFile.java:107: error: [dereference.of.nullable] dereference of possibly-null r
 %END LATEX
 
 \noindent
-With the \code{-AshowSuppressWarningKeys} command-line option,
-the compiler lists every key that would suppress the warning,
-not just the most specific one.
+You are allowed to use any substring of a message key.  Beware writing a very
+short messagekey, because it might suppress more warnings than you expect.
+
+If the \emph{checkername} part is omitted, the \<@SuppressWarnings> applies
+to all checkers.
+If the \emph{messagekey} part is omitted, the \<@SuppressWarnings> applies
+to all messages (it suppresses all warnings from the given checker).
 
 With the \code{-ArequirePrefixInWarningSuppressions} command-line
-option, a warning is only suppressed if the key begins with the checker
-name followed by a colon, as in
+option, a warning is only suppressed if the key is in the
+\code{"\emph{checkername}"} or
+\code{"\emph{checkername}:\emph{messagekey}"}
+format, as in
+\<@SuppressWarnings("nullness")> or
 \<@SuppressWarnings("nullness:assignment.type.incompatible")>.
 
 %% This is true, but relevant mostly to developers, not users.
@@ -174,9 +182,9 @@ code into a separate method, so that warnings can be suppressed just for
 its body.  Or, you can use \<@AssumeAssertion> on an \<assert> statement;
 see Section~\ref{assumeassertion}.
 
-As an example, consider suppressing a warning at a cast that you know is
+As an example, consider suppressing a warning at an assignment that you know is
 safe.  Here is an example that uses the Tainting Checker
-(Section~\ref{tainting-checker}); assume that \<expr> has compile-time
+(Section~\ref{tainting-checker}).  Assume that \<expr> has compile-time
 (declared) type \<@Tainted String>, but you know that the run-time value of
 \<expr> is untainted.
 
@@ -192,7 +200,9 @@ safe.  Here is an example that uses the Tainting Checker
 %END LATEX
 
 \noindent
-It would have been \emph{illegal} to write
+Java does not permit annotations (such as \<@SuppressWarnings>) on
+assignments (or on other statements or expressions), so
+it would have been \emph{illegal} to write
 
 %BEGIN LATEX
 \begin{smaller}
@@ -207,22 +217,20 @@ It would have been \emph{illegal} to write
 \end{smaller}
 %END LATEX
 
-\noindent
-This does not work because
-Java does not permit annotations (such as \<@SuppressWarnings>) on
-assignments or other statements or expressions.
-
 
 \subsectionAndLabel{Good practices when suppressing warnings}{suppresswarnings-best-practices}
 
 \subsubsectionAndLabel{Suppress warnings in the smallest possible scope}{suppresswarnings-best-practices-smallest-scope}
 
-You may be able to suppress a warning by writing
-\<@AssumeAssertion> for some subpart of it.  See Section~\ref{assumeassertion}.
+Prefer \<@SuppressWarnings> on a local variable to one on a method, and
+prefer one on a method to one on a class.
 
-Otherwise, if a particular expression causes a false positive warning,
-don't suppress warnings for a larger expression or an entire method body.
-It is better to extract the expression into a local variable
+You may be able to suppress a warning about a use of an expression by
+writing \<@AssumeAssertion> for the expression, before the use.  See
+Section~\ref{assumeassertion}.
+
+Another way to reduce the scope of a \<@SuppressWarnings> is to
+extract the expression into a new local variable
 and place a \code{@SuppressWarnings} annotation on the variable
 declaration.  See Section~\ref{suppresswarnings-annotation-locations}.
 
@@ -244,15 +252,20 @@ this message key when it issues an error.  If you use a broader
 \<@SuppressWarnings> annotation, then it may mask other errors that you
 needed to know about.
 
-The example of Section~\ref{suppresswarnings-annotation-locations} could
-have been written as any one of the following, with the last one being the
-most specific (and therefore the best style):
+Any of the following would have suppressed the warning in
+Section~\ref{suppresswarnings-annotation-locations}:
 
 \begin{Verbatim}
   @SuppressWarnings("tainting")              // suppresses all tainting-related warnings
+  @SuppressWarnings("cast")                  // suppresses warnings from all checkers about casts
+  @SuppressWarnings("unsafe")                // suppresses warnings from all checkers about unsafe code
+  @SuppressWarnings("cast.unsafe")           // suppresses warnings from all checkers about unsafe casts
   @SuppressWarnings("tainting:cast")         // suppresses tainting warnings about casts
+  @SuppressWarnings("tainting:unsafe")       // suppresses tainting warnings about unsafe code
   @SuppressWarnings("tainting:cast.unsafe")  // suppresses tainting warnings about unsafe casts
 \end{Verbatim}
+
+The last one is the most specific, and therefore is the best style.
 
 
 \subsubsectionAndLabel{Justify why the warning is a false positive}{suppresswarnings-best-practices-justification}
@@ -267,14 +280,19 @@ write, typically on the same line, a code comment
 explaining why the code is actually correct.  In some cases you might also
 justify why the code cannot be rewritten in a simpler way that would be
 amenable to type-checking.  Also make it clear what error is being
-suppressed; this is particularly important when the \<@SuppressWarnings> is
+suppressed.  (This is particularly important when the \<@SuppressWarnings> is
 on a method declaration and the suppressed warning might be anywhere in the
-method body.
+method body.)
 
 This documentation will help you and others to understand the reason for
 the \<@SuppressWarnings> annotation.  It will also help you audit your code
 to verify all the warning suppressions.  (The code is correct only if the
 checker issues no warnings \emph{and} each \<@SuppressWarnings> is correct.)
+
+A suppression message like ``a.f is not null'' is not useful.  The fact
+that you are suppressing the warning means that you believe that \<a.f> is
+not null.  The message should explain \emph{why} you believe that; for
+example, ``a.f was checked above and no subsequent side effect can affect it''.
 
 Here are some terse examples from libraries in \href{https://github.com/plume-lib/}{plume-lib}:
 
@@ -287,6 +305,21 @@ Here are some terse examples from libraries in \href{https://github.com/plume-li
 @SuppressWarnings("nullness") // oi.factory is a static method, so null first argument is OK
 \end{Verbatim}
 
+A particularly good (and concise) justification is to reference an issue in
+the issue tracker, as in these two from \href{https://plse.cs.washington.edu/daikon/}{Daikon}:
+
+\begin{Verbatim}
+@SuppressWarnings("keyfor") // https://tinyurl.com/cfissue/877
+@SuppressWarnings("flowexpr.parse.error") // https://tinyurl.com/cfissue/862
+\end{Verbatim}
+
+\noindent
+Please report false positive warnings, then reference them in your warning suppressions.
+This permits the Checker Framework maintainers to know about the
+problem, it helps them with prioritization (by knowing how often in your
+codebase a particular issue arises), and it enables you to know when an
+issue has been fixed (though the \<-AwarnUnneededSuppressions> command-line
+option also serves the latter purpose).
 
 
 \sectionAndLabel{\code{@AssumeAssertion} string in an \<assert> message}{assumeassertion}
@@ -762,4 +795,5 @@ annotations, those compatibility annotations are no longer necessary.
 %%  LocalWords:  ElementType AuseSafeDefaultsForUnannotatedSourceCode
 % LocalWords:  AuseDefaultsForUncheckedCode checkerframework askipuses
 %%  LocalWords:  suppresswarnings ArequirePrefixInWarningSuppressions
-%%  LocalWords:  assumeassertion askipdefs alint compat
+%%  LocalWords:  assumeassertion askipdefs alint compat substring
+% LocalWords:  AcheckPurityAnnotations

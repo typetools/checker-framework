@@ -123,9 +123,9 @@ public class OptionalVisitor
     // TODO: Should handle this via a transfer function, instead of pattern-matching.
     public void handleTernaryIsPresentGet(ConditionalExpressionTree node) {
 
-        ExpressionTree condExpr = TreeUtils.skipParens(node.getCondition());
-        ExpressionTree trueExpr = TreeUtils.skipParens(node.getTrueExpression());
-        ExpressionTree falseExpr = TreeUtils.skipParens(node.getFalseExpression());
+        ExpressionTree condExpr = TreeUtils.withoutParens(node.getCondition());
+        ExpressionTree trueExpr = TreeUtils.withoutParens(node.getTrueExpression());
+        ExpressionTree falseExpr = TreeUtils.withoutParens(node.getFalseExpression());
 
         if (!isCallToIsPresent(condExpr)) {
             return;
@@ -185,7 +185,7 @@ public class OptionalVisitor
      */
     public void handleConditionalStatementIsPresentGet(IfTree node) {
 
-        ExpressionTree condExpr = TreeUtils.skipParens(node.getCondition());
+        ExpressionTree condExpr = TreeUtils.withoutParens(node.getCondition());
         StatementTree thenStmt = skipBlocks(node.getThenStatement());
         StatementTree elseStmt = skipBlocks(node.getElseStatement());
 
@@ -211,7 +211,7 @@ public class OptionalVisitor
         if (args.size() != 1) {
             return;
         }
-        ExpressionTree arg = TreeUtils.skipParens(args.get(0));
+        ExpressionTree arg = TreeUtils.withoutParens(args.get(0));
         if (!isCallToGet(arg)) {
             return;
         }
