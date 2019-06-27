@@ -6,13 +6,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
@@ -20,6 +19,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -276,14 +276,32 @@ public class OffsetEquation {
             }
         } else if (factory != null && termReceiver instanceof FlowExpressions.LocalVariable) {
             Element element = ((FlowExpressions.LocalVariable) termReceiver).getElement();
-            AnnotationMirror am =
-                    factory.getTypeFactoryOfSubchecker(ValueChecker.class)
-                            .getAnnotatedType(element)
-                            .getAnnotation(IntVal.class);
-            return IndexUtil.getIntegerFromIntValWithOneArgument(am);
+            Long exactValue =
+                    getExactValue(element, factory.getTypeFactoryOfSubchecker(ValueChecker.class));
+
+            if (exactValue != null) {
+                return exactValue.intValue();
+            }
         }
 
         return null;
+    }
+
+    /**
+     * Returns the exact value of an annotated element.
+     *
+     * @param element the element to get the exact value from
+     * @param factory ValueAnnotatedTypeFactory used for annotation accessing
+     * @return the exact value of the element if it is constant, or null otherwise
+     */
+    public static Long getExactValue(Element element, ValueAnnotatedTypeFactory factory) {
+        AnnotatedTypeMirror valueType = factory.getAnnotatedType(element);
+        Range possibleValues = IndexUtil.getPossibleValues(valueType, factory);
+        if (possibleValues != null && possibleValues.from == possibleValues.to) {
+            return possibleValues.from;
+        } else {
+            return null;
+        }
     }
 
     /**
