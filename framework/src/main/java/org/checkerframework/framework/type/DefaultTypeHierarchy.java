@@ -948,18 +948,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             // Only call isSubtype if the Java type is actually a subtype; otherwise,
             // only check primary qualifiers.
             if (TypesUtils.isErasedSubtype(
-                    subtype.getUnderlyingType(),
-                    aSupertype.getUnderlyingType(),
-                    subtype.atypeFactory.types)) {
-                if (!isSubtype(subtype, aSupertype, currentTop)) {
-                    result = false;
-                    break;
-                }
-            } else {
-                if (!isPrimarySubtype(subtype, aSupertype)) {
-                    result = false;
-                    break;
-                }
+                            subtype.getUnderlyingType(),
+                            aSupertype.getUnderlyingType(),
+                            subtype.atypeFactory.types)
+                    && !isSubtype(subtype, aSupertype, currentTop)) {
+                result = false;
+                break;
             }
         }
         visitHistory.add(subtype, supertype, currentTop, result);
