@@ -21,8 +21,6 @@ public class QualifierUpperBounds {
 
     /** Map from {@link TypeKind} to annotations. */
     private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
-    /** Map from {@link AnnotatedTypeMirror}classes to annotations. */
-    private final Map<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>> typeClasses;
     /** Map from full qualified class name strings to annotations. */
     private final Map<String, Set<AnnotationMirror>> types;
 
@@ -38,7 +36,6 @@ public class QualifierUpperBounds {
     public QualifierUpperBounds(AnnotatedTypeFactory typeFactory) {
         this.atypeFactory = typeFactory;
         this.typeKinds = new EnumMap<>(TypeKind.class);
-        this.typeClasses = new HashMap<>();
         this.types = new HashMap<>();
 
         this.qualHierarchy = typeFactory.getQualifierHierarchy();
@@ -88,17 +85,6 @@ public class QualifierUpperBounds {
         }
     }
 
-    /** Add default qualifier, {@code theQual}, for the given {@link AnnotatedTypeMirror} class. */
-    public void addTypeClass(
-            Class<? extends AnnotatedTypeMirror> typeClass, AnnotationMirror theQual) {
-        boolean res = qualHierarchy.updateMappingToMutableSet(typeClasses, typeClass, theQual);
-        if (!res) {
-            throw new BugInCF(
-                    "QualifierUpperBounds: invalid update of typeClasses $s at %s with %s.",
-                    typeClass, typeClass, theQual);
-        }
-    }
-
     /** Add default qualifier, {@code theQual}, for the given class. */
     public void addType(Class<?> type, AnnotationMirror theQual) {
         String typeNameString = type.getCanonicalName();
@@ -111,19 +97,18 @@ public class QualifierUpperBounds {
     }
 
     /** Returns the set of qualifiers that are the upper bounds for a use of the type. */
-    protected Set<AnnotationMirror> getBoundQualifiers(AnnotatedTypeMirror type) {
-        TypeMirror javaType = type.getUnderlyingType();
+    protected Set<AnnotationMirror> getBoundQualifiers(TypeMirror type) {
         AnnotationMirrorSet bounds = new AnnotationMirrorSet();
         String qname;
-        if (javaType.getKind() == TypeKind.DECLARED) {
-            DeclaredType declaredType = (DeclaredType) javaType;
+        if (type.getKind() == TypeKind.DECLARED) {
+            DeclaredType declaredType = (DeclaredType) type;
             bounds.addAll(
                     atypeFactory
                             .fromElement((TypeElement) declaredType.asElement())
                             .getAnnotations());
             qname = TypesUtils.getQualifiedName(declaredType).toString();
-        } else if (javaType.getKind().isPrimitive()) {
-            qname = javaType.toString();
+        } else if (type.getKind().isPrimitive()) {
+            qname = type.toString();
         } else {
             qname = null;
         }
@@ -133,19 +118,13 @@ public class QualifierUpperBounds {
             addMissingAnnotations(bounds, fnd);
         }
 
-        // If the javaType's kind or class is in the appropriate map, annotate the
-        // javaType.
+        // If the type's kind is in the appropriate map, annotate the type.
 
-        if (typeKinds.containsKey(javaType.getKind())) {
-            Set<AnnotationMirror> fnd = typeKinds.get(javaType.getKind());
+        if (typeKinds.containsKey(type.getKind())) {
+            Set<AnnotationMirror> fnd = typeKinds.get(type.getKind());
             addMissingAnnotations(bounds, fnd);
-        } else if (!typeClasses.isEmpty()) {
-            Class<? extends AnnotatedTypeMirror> t = type.getClass();
-            if (typeClasses.containsKey(t)) {
-                Set<AnnotationMirror> fnd = typeClasses.get(t);
-                addMissingAnnotations(bounds, fnd);
-            }
         }
+
         addMissingAnnotations(bounds, atypeFactory.getDefaultTypeDeclarationBounds());
         return bounds;
     }
