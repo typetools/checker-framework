@@ -2,10 +2,12 @@ package org.checkerframework.checker.index.inequality;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.Subsequence;
+import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
@@ -83,5 +85,28 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
             }
         }
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+    }
+
+    @Override
+    protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
+
+        AnnotationMirror exprLTAnno =
+                exprType.getEffectiveAnnotationInHierarchy(atypeFactory.UNKNOWN);
+
+        if (exprLTAnno != null) {
+            List<String> initialAnnotations =
+                    LessThanAnnotatedTypeFactory.getLessThanExpressions(exprLTAnno);
+            List<String> updatedAnnotations = new ArrayList<>();
+
+            for (String annotation : initialAnnotations) {
+                OffsetEquation updatedAnnotation =
+                        OffsetEquation.createOffsetFromJavaExpression(annotation);
+                updatedAnnotations.add(updatedAnnotation.toString());
+            }
+
+            exprType.replaceAnnotation(atypeFactory.createLessThanQualifier(updatedAnnotations));
+        }
+
+        return super.isTypeCastSafe(castType, exprType);
     }
 }
