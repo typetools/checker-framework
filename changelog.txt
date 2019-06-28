@@ -30,6 +30,8 @@ Implementation details:
  * Renamed ImplicitsTypeAnnotator to DefaultForTypeAnnotator
  * Removed TypeUseLocation.TYPE_DECLARATION
  * Removed InheritedFromClassAnnotator, replace with DefaultQualifierForUseTypeAnnotator
+ * Rename TreeUtils.isSuperCall and TreeUtils.isThisCall to
+ isSuperConstructorCall and isThisConstructorCall
 
 ---------------------------------------------------------------------------
 

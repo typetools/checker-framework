@@ -1250,16 +1250,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         ExecutableElement invokedMethodElement = invokedMethod.getElement();
-        if (!ElementUtils.isStatic(invokedMethodElement) && !TreeUtils.isSuperCall(node)) {
+        if (!ElementUtils.isStatic(invokedMethodElement)
+                && !TreeUtils.isSuperConstructorCall(node)) {
             checkMethodInvocability(invokedMethod, node);
         }
 
         // check precondition annotations
         checkPreconditions(node, contractsUtils.getPreconditions(invokedMethodElement));
 
-        if (TreeUtils.isSuperCall(node)) {
+        if (TreeUtils.isSuperConstructorCall(node)) {
             checkSuperConstructorCall(node);
-        } else if (TreeUtils.isThisCall(node)) {
+        } else if (TreeUtils.isThisConstructorCall(node)) {
             checkThisConstructorCall(node);
         }
 
