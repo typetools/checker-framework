@@ -1,4 +1,4 @@
-Version 2.9.0, July 2, 2019
+Version 2.9.0, July 1, 2019
 
 Renamed the Signedness Checker's @Constant annotation to @SignednessGlb.
 Introduced an alias, @SignedPositive, for use by programmers.
@@ -19,18 +19,17 @@ Removed meta-annotation @ImplicitFor:
 
 Add @DefaultQualifierOnUse and @NoDefaultQualifierOnUse type declaration annotations
 
-Implementation detail:
- * Renamed QualifierPolymorphism#annotate methods to #resolve
- * Renamed `ImplicitsTreeAnnotator` to `LiteralTreeAnnotator`
- * Renamed ImplicitsTypeAnnotator to DefaultForTypeAnnotator.
- * Removed TypeUseLocation.TYPE_DECLARATION
- * Removed InheritedFromClassAnnotator, replace with DefaultQualifierForUseTypeAnnotator
-
-
 New/changed error message keys:
  * initialization.static.fields.uninitialized for uninitialized static fields
  * unary.increment.type.incompatible and unary.decrement.type.incompatible
    replace some occurrences of compound.assignment.type.incompatible
+
+Implementation details:
+ * Renamed QualifierPolymorphism#annotate methods to resolve
+ * Renamed ImplicitsTreeAnnotator to LiteralTreeAnnotator
+ * Renamed ImplicitsTypeAnnotator to DefaultForTypeAnnotator
+ * Removed TypeUseLocation.TYPE_DECLARATION
+ * Removed InheritedFromClassAnnotator, replace with DefaultQualifierForUseTypeAnnotator
 
 ---------------------------------------------------------------------------
 
