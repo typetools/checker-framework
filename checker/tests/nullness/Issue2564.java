@@ -7,7 +7,7 @@ public abstract class Issue2564 {
         // :: error: (expression.unparsable.type.invalid)
         @KeyFor("myMap") MY_KEY,
         @KeyFor("enumMap") ENUM_KEY;
-        private final Map<String, Integer> enumMap = new HashMap<>();
+        private static final Map<String, Integer> enumMap = new HashMap<>();
 
         void method() {
             @KeyFor("enumMap") EnumType t = ENUM_KEY;
