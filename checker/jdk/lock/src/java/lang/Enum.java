@@ -74,7 +74,7 @@ public abstract class Enum<E extends Enum<E>>
      *
      * @return the name of this enum constant
      */
-    public final String name() {
+    public final String name(@GuardedByUnknown Enum<E> this) {
         return name;
     }
 

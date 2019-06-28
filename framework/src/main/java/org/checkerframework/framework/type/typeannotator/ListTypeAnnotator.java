@@ -13,7 +13,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  * <p>Checkers should not extend ListTypeAnnotator; they should instead pass a custom TypeAnnotator
  * to the constructor.
  *
- * @see org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator
+ * @see DefaultForTypeAnnotator
  * @see org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator
  */
 public final class ListTypeAnnotator extends TypeAnnotator {
