@@ -151,8 +151,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         // type. So, just skip those.  This is consistent with skipping receivers of constructors
         // below.
         if (type.getReceiverType() != null
-                && !TreeUtils.isSuperCall(tree)
-                && !TreeUtils.isThisCall(tree)) {
+                && !TreeUtils.isSuperConstructorCall(tree)
+                && !TreeUtils.isThisConstructorCall(tree)) {
             instantiationMapping =
                     collector.reduce(
                             instantiationMapping,
