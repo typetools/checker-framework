@@ -20,6 +20,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.StringCFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -941,41 +942,47 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     @SideEffectFree
     @Override
     public String toString() {
-        return "Use a CFGVisualizer to see the Store: " + this.hashCode();
+        return visualize(new StringCFGVisualizer<>());
     }
 
     @Override
-    public void visualize(CFGVisualizer<?, S, ?> viz) {
+    public String visualize(CFGVisualizer<?, S, ?> viz) {
         /* This cast is guaranteed to be safe, as long as the CFGVisualizer is created by
          * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
         @SuppressWarnings("unchecked")
         CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
-        castedViz.visualizeStoreHeader(this.getClass().getCanonicalName());
-        internalVisualize(castedViz);
-        castedViz.visualizeStoreFooter();
+        StringBuilder sbVisualize = new StringBuilder();
+        sbVisualize.append(castedViz.visualizeStoreHeader(this.getClass().getCanonicalName()));
+        sbVisualize.append(internalVisualize(castedViz));
+        sbVisualize.append(castedViz.visualizeStoreFooter());
+        return sbVisualize.toString();
     }
 
     /**
-     * Adds a representation of the internal information of this store to visualizer {@code viz}.
+     * Adds a representation of the internal information of this Store to visualizer {@code viz}.
+     *
+     * @return a representation of the internal information of this {@link Store}
      */
-    protected void internalVisualize(CFGVisualizer<V, S, ?> viz) {
+    protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
+        StringBuilder res = new StringBuilder();
         for (Entry<FlowExpressions.LocalVariable, V> entry : localVariableValues.entrySet()) {
-            viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue()));
         }
         if (thisValue != null) {
-            viz.visualizeStoreThisVal(thisValue);
+            res.append(viz.visualizeStoreThisVal(thisValue));
         }
         for (Entry<FlowExpressions.FieldAccess, V> entry : fieldValues.entrySet()) {
-            viz.visualizeStoreFieldVals(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreFieldVals(entry.getKey(), entry.getValue()));
         }
         for (Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues.entrySet()) {
-            viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue()));
         }
         for (Entry<MethodCall, V> entry : methodValues.entrySet()) {
-            viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue()));
         }
         for (Entry<FlowExpressions.ClassName, V> entry : classValues.entrySet()) {
-            viz.visualizeStoreClassVals(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreClassVals(entry.getKey(), entry.getValue()));
         }
+        return res.toString();
     }
 }

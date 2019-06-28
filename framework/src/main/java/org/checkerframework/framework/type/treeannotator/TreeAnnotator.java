@@ -16,7 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  *
  * @see ListTreeAnnotator
  * @see PropagationTreeAnnotator
- * @see ImplicitsTreeAnnotator
+ * @see LiteralTreeAnnotator
  */
 public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> {
 

@@ -4,9 +4,9 @@ public class PlusPlusBug {
     int[] array = {};
 
     void test(@LTLengthOf("array") int x) {
-        // :: error: (compound.assignment.type.incompatible)
+        // :: error: (unary.increment.type.incompatible)
         x++;
-        // :: error: (compound.assignment.type.incompatible)
+        // :: error: (unary.increment.type.incompatible)
         ++x;
         // :: error: (assignment.type.incompatible)
         x = x + 1;
