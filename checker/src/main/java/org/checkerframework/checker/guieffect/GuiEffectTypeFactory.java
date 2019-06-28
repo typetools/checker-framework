@@ -600,6 +600,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
+        return qualHierarchy.getBottomAnnotations();
+    }
+
+    @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(super.createTreeAnnotator(), new GuiEffectTreeAnnotator());
     }

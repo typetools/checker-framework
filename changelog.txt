@@ -1,11 +1,36 @@
 Version 2.9.0, July 2, 2019
 
 Renamed the Signedness Checker's @Constant annotation to @SignednessGlb.
-
-Improved the diagnostic text for uninitialized static fields.  The new
-error key is initialization.static.fields.uninitialized.
+Introduced an alias, @SignedPositive, for use by programmers.
 
 Annotated the first argument of Opt.get and Opt.orElseThrow as @NonNull.
+
+Removed meta-annotation @ImplicitFor:
+ * Use the new meta-annotation @QualifierForLiteral to replace
+ @ImplicitFor(literals, stringpatterns).
+ * Use the meta-annotation @DefaultFor to replace @ImplicitFor(typeKinds,
+ types).
+ * Use the new meta-annotation @UpperBoundFor to specifiy a qualifier upper
+ bound for certain types.
+* You can competely remove @ImplicitFor(typeNames =
+ Void.class, literals = LiteralKind.NULL) on bottom qualifiers.
+ @DefaultFor(types = Void.class) and @QualifierForLiterals(literals =
+ LiteralKind.NULL) are added to the bottom qualifier by default.
+
+Add @DefaultQualifierOnUse and @NoDefaultQualifierOnUse type declaration annotations
+
+Implementation detail:
+ * Renamed QualifierPolymorphism#annotate methods to #resolve
+ * Renamed `ImplicitsTreeAnnotator` to `LiteralTreeAnnotator`
+ * Renamed ImplicitsTypeAnnotator to DefaultForTypeAnnotator.
+ * Removed TypeUseLocation.TYPE_DECLARATION
+ * Removed InheritedFromClassAnnotator, replace with DefaultQualifierForUseTypeAnnotator
+
+
+New/changed error message keys:
+ * initialization.static.fields.uninitialized for uninitialized static fields
+ * unary.increment.type.incompatible and unary.decrement.type.incompatible
+   replace some occurrences of compound.assignment.type.incompatible
 
 ---------------------------------------------------------------------------
 

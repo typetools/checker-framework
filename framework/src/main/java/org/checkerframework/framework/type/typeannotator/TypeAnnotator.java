@@ -9,7 +9,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
  *
  * @see org.checkerframework.framework.type.typeannotator.ListTypeAnnotator
  * @see org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator
- * @see org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator
+ * @see DefaultForTypeAnnotator
  */
 public abstract class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
 

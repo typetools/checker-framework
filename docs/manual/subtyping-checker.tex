@@ -8,9 +8,8 @@ the type qualifier annotations.
 
 The Subtyping Checker can accommodate all of the type system enhancements that
 can be declaratively specified (see Chapter~\ref{creating-a-checker}).
-This includes type introduction rules (implicit
-annotations, e.g., literals are implicitly considered \refqualclass{checker/nullness/qual}{NonNull}) via
-the \refqualclass{framework/qual}{ImplicitFor} meta-annotation, and other features such as
+This includes type introduction rules via the
+\refqualclass{framework/qual}{QualifierForLiterals} meta-annotation , and other features such as
 type refinement (Section~\ref{type-refinement}) and
 qualifier polymorphism (Section~\ref{qualifier-polymorphism}).
 
@@ -35,8 +34,8 @@ extend the framework as discussed in Chapter~\ref{creating-a-checker}.
 The Subtyping Checker is used in the same way as other checkers (using the
 \code{-processor org.checkerframework.common.subtyping.SubtypingChecker} option; see Chapter~\ref{using-a-checker}), except that it
 requires an additional annotation processor argument via the standard
-``\code{-A}'' switch. One of the two following arguments must be used with the
-Subtyping Checker:
+``\code{-A}'' switch. You must provide one or both of the two following
+command-line arguments:
 \end{sloppypar}
 
 \begin{itemize}
@@ -52,12 +51,6 @@ notation:
         -Aquals=\textit{myPackage.qual.MyQual},\textit{myPackage.qual.OtherQual} MyFile.java ...
 \end{alltt}
 
-The annotations listed in \code{-Aquals} must be accessible to
-the compiler during compilation in the classpath.  In other words, they must
-already be compiled (and, typically, be on the javac classpath)
-before you run the Subtyping Checker with \code{javac}.  It
-is not sufficient to supply their source files on the command line.
-
 \item
 Provide the fully-qualified paths to a set of directories that contain the
 annotations in the custom type system through the \code{-AqualDirs} option,
@@ -69,20 +62,15 @@ using a colon-no-space-separated notation. For example:
         -AqualDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} MyFile.java
 \end{alltt}
 
-Note that in these two examples, the compiled class file of the
-\<myPackage.qual.MyQual> and \<myPackage.qual.OtherQual> annotations must exist
-in either the \<myProject/bin> directory or the \<myLibrary/bin> directory. The
-following placement of the class files will work with the above commands:
-
-\begin{alltt}
-  .../myProject/bin/myPackage/qual/MyQual.class
-  .../myLibrary/bin/myPackage/qual/OtherQual.class
-\end{alltt}
-
-The two options can be used at the same time to provide groups of annotations
-from directories, and individually named annotations.
-
 \end{itemize}
+
+The annotations listed in \code{-Aquals} or \code{-AqualDirs} must be accessible to
+the compiler during compilation in the classpath.  In other words, they must
+already be compiled (and, typically, be on the javac classpath)
+before you run the Subtyping Checker with \code{javac}.  It
+is not sufficient to supply their source files on the command line.
+
+\medskip
 
 To suppress a warning issued by the Subtyping Checker, use a
 \sunjavadocanno{java/lang/SuppressWarnings.html}{SuppressWarnings}
@@ -90,8 +78,7 @@ annotation, with the argument being the unqualified, uncapitalized name of
 any of the annotations passed to \code{-Aquals}.  This will suppress all
 warnings, regardless of which of the annotations is involved in the
 warning.  (As a matter of style, you should choose one of the annotations
-as your \code{@SuppressWarnings} key and stick with it for that entire type
-hierarchy.)
+as your \code{@SuppressWarnings} key and stick with it.)
 
 
 \sectionAndLabel{Subtyping Checker example\label{encrypted-example}}{subtyping-example}
@@ -116,7 +103,6 @@ import java.lang.annotation.Target;
  * Denotes that the representation of an object is encrypted.
  */
 @SubtypeOf(PossiblyUnencrypted.class)
-@ImplicitFor(literal=\{LiteralKind.NULL\})
 @DefaultFor(\{TypeUseLocation.LOWER_BOUND\})
 @Target(\{ElementType.TYPE_USE, ElementType.TYPE_PARAMETER\})
 public @interface Encrypted \{\}
