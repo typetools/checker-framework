@@ -1048,8 +1048,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 && TreeUtils.elementFromDeclaration((VariableTree) node).getKind()
                         == ElementKind.ENUM_CONSTANT) {
             // Enums constants are "public static final" by default, so the annotation always
-            // appears
-            // to be before public.
+            // appears to be before public.
             return;
         }
         Set<Modifier> modifierSet = modifiersTree.getFlags();
