@@ -77,7 +77,7 @@ import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * This class consists exclusively of static methods that operate on files,

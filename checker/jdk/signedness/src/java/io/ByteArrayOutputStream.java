@@ -27,7 +27,7 @@ package java.io;
 
 import java.util.Arrays;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * This class implements an output stream in which the data is

@@ -36,8 +36,8 @@ import java.util.stream.StreamSupport;
 
 import sun.misc.Unsafe;
 
-import org.checkerframework.checker.signedness.qual.*;
-import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
+import org.checkerframework.checker.index.qual.NonNegative;
 
 /**
  * An instance of this class is used to generate a stream of

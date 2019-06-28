@@ -27,7 +27,7 @@ package java.rmi.server;
 import java.io.*;
 import java.util.*;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * <code>LogStream</code> provides a mechanism for logging errors that are

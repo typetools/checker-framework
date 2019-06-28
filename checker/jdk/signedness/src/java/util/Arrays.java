@@ -43,8 +43,8 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.checkerframework.checker.signedness.qual.*;
-import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
+import org.checkerframework.checker.index.qual.NonNegative;
 
 /**
  * This class contains various methods for manipulating arrays (such as

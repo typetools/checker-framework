@@ -28,8 +28,12 @@ package java.lang;
 import java.lang.annotation.Native;
 import java.math.*;
 
-import org.checkerframework.checker.index.qual.*;
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.signedness.qual.Unsigned;
+import org.checkerframework.checker.signedness.qual.UnknownSignedness;
+import org.checkerframework.checker.signedness.qual.SignednessGlb;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * The {@code Long} class wraps a value of the primitive type {@code

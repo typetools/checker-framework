@@ -29,7 +29,7 @@ import java.io.StringWriter;
 import java.io.OutputStream;
 import java.io.IOException;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * Writes each input byte as a 2 byte hexidecimal output pair making it

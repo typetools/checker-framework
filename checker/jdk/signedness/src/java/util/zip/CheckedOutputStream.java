@@ -29,7 +29,7 @@ import java.io.FilterOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * An output stream that also maintains a checksum of the data being

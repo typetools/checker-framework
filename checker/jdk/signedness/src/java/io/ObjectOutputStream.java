@@ -38,7 +38,7 @@ import static java.io.ObjectStreamClass.processQueue;
 import java.io.SerialCallbackContext;
 import sun.reflect.misc.ReflectUtil;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * An ObjectOutputStream writes primitive data types and graphs of Java objects

@@ -32,7 +32,7 @@ import java.io.FilterOutputStream;
 import java.io.PrintStream;
 import java.io.ByteArrayOutputStream;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * A transparent stream that updates the associated message digest using

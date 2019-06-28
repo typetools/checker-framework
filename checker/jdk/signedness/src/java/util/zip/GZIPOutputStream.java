@@ -28,7 +28,7 @@ package java.util.zip;
 import java.io.OutputStream;
 import java.io.IOException;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * This class implements a stream filter for writing compressed data in

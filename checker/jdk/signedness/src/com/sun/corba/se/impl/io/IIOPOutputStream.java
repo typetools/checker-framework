@@ -64,7 +64,7 @@ import com.sun.corba.se.impl.util.RepositoryId;
 import com.sun.corba.se.spi.logging.CORBALogDomains ;
 import com.sun.corba.se.impl.logging.UtilSystemException ;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * IIOPOutputStream is ...

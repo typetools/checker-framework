@@ -24,7 +24,7 @@
  */
 package org.omg.CORBA;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
 * The Helper for <tt>OctetSeq</tt>.  For more information on

@@ -25,7 +25,7 @@
 
 package java.io;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * The class implements a buffered output stream. By setting up such

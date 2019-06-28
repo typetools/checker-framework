@@ -25,7 +25,7 @@
 
 package java.io;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * This abstract class is the superclass of all classes representing

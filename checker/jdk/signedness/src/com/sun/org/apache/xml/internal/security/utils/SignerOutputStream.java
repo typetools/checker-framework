@@ -27,7 +27,7 @@ import java.io.ByteArrayOutputStream;
 import com.sun.org.apache.xml.internal.security.algorithms.SignatureAlgorithm;
 import com.sun.org.apache.xml.internal.security.signature.XMLSignatureException;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * @author raul

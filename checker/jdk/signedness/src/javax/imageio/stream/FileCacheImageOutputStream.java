@@ -32,7 +32,7 @@ import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import com.sun.imageio.stream.StreamCloser;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * An implementation of <code>ImageOutputStream</code> that writes its

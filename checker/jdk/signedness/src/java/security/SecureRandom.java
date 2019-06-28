@@ -34,7 +34,7 @@ import sun.security.jca.*;
 import sun.security.jca.GetInstance.Instance;
 import sun.security.util.Debug;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * This class provides a cryptographically strong random number

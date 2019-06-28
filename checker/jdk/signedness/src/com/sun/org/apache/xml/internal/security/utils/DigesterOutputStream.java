@@ -26,7 +26,7 @@ import java.io.ByteArrayOutputStream;
 
 import com.sun.org.apache.xml.internal.security.algorithms.MessageDigestAlgorithm;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * @author raul

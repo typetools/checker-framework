@@ -28,7 +28,7 @@ package javax.imageio.stream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * An implementation of <code>ImageOutputStream</code> that writes its

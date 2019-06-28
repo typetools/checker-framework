@@ -25,7 +25,7 @@
 
 package javax.sound.sampled;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * A source data line is a data line to which data may be written.  It acts as

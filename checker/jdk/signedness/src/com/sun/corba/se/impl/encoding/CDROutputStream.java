@@ -46,7 +46,7 @@ import com.sun.corba.se.impl.orbutil.ORBConstants;
 import com.sun.corba.se.impl.logging.ORBUtilSystemException;
 import com.sun.corba.se.impl.protocol.giopmsgheaders.Message;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * This is delegates to the real implementation.

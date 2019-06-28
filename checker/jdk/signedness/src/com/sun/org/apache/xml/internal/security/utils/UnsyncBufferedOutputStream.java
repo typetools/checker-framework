@@ -25,7 +25,7 @@ package com.sun.org.apache.xml.internal.security.utils;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * A class that buffers without synchronizing its methods

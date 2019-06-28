@@ -25,7 +25,7 @@
 
 package java.io;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * A data output stream lets an application write primitive Java data

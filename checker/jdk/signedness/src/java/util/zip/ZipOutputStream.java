@@ -34,7 +34,7 @@ import java.util.HashSet;
 import static java.util.zip.ZipConstants64.*;
 import static java.util.zip.ZipUtils.*;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * This class implements an output stream filter for writing files in the

@@ -27,7 +27,7 @@ package javax.swing.text.rtf;
 import java.io.*;
 import java.lang.*;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * A generic superclass for streams which read and parse text

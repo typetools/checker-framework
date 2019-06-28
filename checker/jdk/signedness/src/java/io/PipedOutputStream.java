@@ -27,7 +27,7 @@ package java.io;
 
 import java.io.*;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * A piped output stream can be connected to a piped input stream

@@ -28,7 +28,8 @@ package java.io;
 import java.nio.channels.FileChannel;
 import sun.nio.ch.FileChannelImpl;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 
 /**
  * Instances of this class support both reading and writing to a

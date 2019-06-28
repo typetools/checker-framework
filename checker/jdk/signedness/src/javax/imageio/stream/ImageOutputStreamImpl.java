@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.io.UTFDataFormatException;
 import java.nio.ByteOrder;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * An abstract class implementing the <code>ImageOutputStream</code> interface.

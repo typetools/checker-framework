@@ -1,6 +1,6 @@
 package org.omg.PortableInterceptor;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
 * org/omg/PortableInterceptor/ObjectIdHelper.java .

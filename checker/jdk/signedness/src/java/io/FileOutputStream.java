@@ -28,7 +28,7 @@ package java.io;
 import java.nio.channels.FileChannel;
 import sun.nio.ch.FileChannelImpl;
 
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * A file output stream is an output stream for writing data to a
