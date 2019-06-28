@@ -96,15 +96,19 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
         if (exprLTAnno != null) {
             List<String> initialAnnotations =
                     LessThanAnnotatedTypeFactory.getLessThanExpressions(exprLTAnno);
-            List<String> updatedAnnotations = new ArrayList<>();
 
-            for (String annotation : initialAnnotations) {
-                OffsetEquation updatedAnnotation =
-                        OffsetEquation.createOffsetFromJavaExpression(annotation);
-                updatedAnnotations.add(updatedAnnotation.toString());
+            if (initialAnnotations != null) {
+                List<String> updatedAnnotations = new ArrayList<>();
+
+                for (String annotation : initialAnnotations) {
+                    OffsetEquation updatedAnnotation =
+                            OffsetEquation.createOffsetFromJavaExpression(annotation);
+                    updatedAnnotations.add(updatedAnnotation.toString());
+                }
+
+                exprType.replaceAnnotation(
+                        atypeFactory.createLessThanQualifier(updatedAnnotations));
             }
-
-            exprType.replaceAnnotation(atypeFactory.createLessThanQualifier(updatedAnnotations));
         }
 
         return super.isTypeCastSafe(castType, exprType);
