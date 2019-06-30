@@ -395,8 +395,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // Don't check extends clause on anonymous classes.
             return;
         }
-
-        AnnotatedTypeMirror classType = atypeFactory.getAnnotatedType(classTree);
+        Set<AnnotationMirror> classBounds =
+                atypeFactory.getTypeDeclarationBounds(atypeFactory.getAnnotatedType(classTree));
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
         // classTree.getExtendsClause() is null when there is no explicitly-written extends clause,
@@ -404,8 +404,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // there is no need to do any subtype checking.
         if (classTree.getExtendsClause() != null) {
             Set<AnnotationMirror> extendsAnnos =
-                    atypeFactory.getAnnotatedType(classTree.getExtendsClause()).getAnnotations();
-            for (AnnotationMirror classAnno : classType.getAnnotations()) {
+                    atypeFactory
+                            .getTypeOfExtendsImplements(classTree.getExtendsClause())
+                            .getAnnotations();
+            for (AnnotationMirror classAnno : classBounds) {
                 AnnotationMirror extendsAnno =
                         qualifierHierarchy.findAnnotationInSameHierarchy(extendsAnnos, classAnno);
                 if (!qualifierHierarchy.isSubtype(classAnno, extendsAnno)) {
@@ -421,8 +423,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Do the same check as above for implements clauses.
         for (Tree implementsClause : classTree.getImplementsClause()) {
             Set<AnnotationMirror> implementsClauseAnnos =
-                    atypeFactory.getAnnotatedType(implementsClause).getAnnotations();
-            for (AnnotationMirror classAnno : classType.getAnnotations()) {
+                    atypeFactory.getTypeOfExtendsImplements(implementsClause).getAnnotations();
+
+            for (AnnotationMirror classAnno : classBounds) {
                 AnnotationMirror implementsAnno =
                         qualifierHierarchy.findAnnotationInSameHierarchy(
                                 implementsClauseAnnos, classAnno);
@@ -1041,6 +1044,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param modifiersTree the modifiers sub-tree of node
      */
     private void warnAboutTypeAnnotationsTooEarly(Tree node, ModifiersTree modifiersTree) {
+        if (node.getKind() == Tree.Kind.VARIABLE
+                && TreeUtils.elementFromDeclaration((VariableTree) node).getKind()
+                        == ElementKind.ENUM_CONSTANT) {
+            // Enums constants are "public static final" by default, so the annotation always
+            // appears to be before public.
+            return;
+        }
         Set<Modifier> modifierSet = modifiersTree.getFlags();
         List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
 
@@ -1050,7 +1060,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Warn about type annotations written before modifiers such as "public".  javac retains no
         // information about modifier locations.  So, this is a very partial check:  Issue a warning
-        // if a type annotation is at the very beginning of the VariableTree, and a modifer follows
+        // if a type annotation is at the very beginning of the VariableTree, and a modifier follows
         // it.
 
         // Check if a type annotation precedes a declaration annotation.
@@ -1240,16 +1250,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         ExecutableElement invokedMethodElement = invokedMethod.getElement();
-        if (!ElementUtils.isStatic(invokedMethodElement) && !TreeUtils.isSuperCall(node)) {
+        if (!ElementUtils.isStatic(invokedMethodElement)
+                && !TreeUtils.isSuperConstructorCall(node)) {
             checkMethodInvocability(invokedMethod, node);
         }
 
         // check precondition annotations
         checkPreconditions(node, contractsUtils.getPreconditions(invokedMethodElement));
 
-        if (TreeUtils.isSuperCall(node)) {
+        if (TreeUtils.isSuperConstructorCall(node)) {
             checkSuperConstructorCall(node);
-        } else if (TreeUtils.isThisCall(node)) {
+        } else if (TreeUtils.isThisConstructorCall(node)) {
             checkThisConstructorCall(node);
         }
 
@@ -1874,18 +1885,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param exprType annotated type of the casted expression
      * @return true if the type cast is safe, false otherwise
      */
-    private boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
+    protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
         if (castType.getKind() == TypeKind.DECLARED) {
-            // eliminate false positives, where the annotations are
-            // implicitly added by the declared type declaration
+            // Don't issue an error if the annotations are equivalent to the qualifier upper bound
+            // of the type.
             AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType) castType;
-            AnnotatedDeclaredType elementType =
-                    atypeFactory.fromElement(
-                            (TypeElement) castDeclared.getUnderlyingType().asElement());
-            if (AnnotationUtils.areSame(
-                    castDeclared.getAnnotations(), elementType.getAnnotations())) {
+            Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(castDeclared);
+
+            if (AnnotationUtils.areSame(castDeclared.getAnnotations(), bounds)) {
                 return true;
             }
         }
@@ -3006,7 +3015,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Use the function type's parameters to resolve polymorphic qualifiers.
         QualifierPolymorphism poly = atypeFactory.getQualifierPolymorphism();
-        poly.annotate(functionType, invocationType);
+        poly.resolve(functionType, invocationType);
 
         AnnotatedTypeMirror invocationReturnType;
         if (compileTimeDeclaration.getKind() == ElementKind.CONSTRUCTOR) {
@@ -3389,20 +3398,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return success;
         }
 
+        /**
+         * Issue an "override.receiver.invalid" error if the receiver override is not valid.
+         *
+         * @return true if the override is legal
+         */
         protected boolean checkReceiverOverride() {
+            AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
+            AnnotatedDeclaredType overriddenReceiver = overridden.getReceiverType();
+            QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
             // Check the receiver type.
             // isSubtype() requires its arguments to be actual subtypes with
             // respect to JLS, but overrider receiver is not a subtype of the
-            // overridden receiver.  Hence copying the annotations.
+            // overridden receiver.   So, just check primary annotations.
             // TODO: this will need to be improved for generic receivers.
-            AnnotatedTypeMirror overriddenReceiver =
-                    overrider.getReceiverType().getErased().shallowCopy(false);
-            overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
-            if (!atypeFactory
-                    .getTypeHierarchy()
-                    .isSubtype(overriddenReceiver, overrider.getReceiverType().getErased())) {
-                FoundRequired pair =
-                        FoundRequired.of(overrider.getReceiverType(), overridden.getReceiverType());
+            Set<AnnotationMirror> overriderAnnos = overriderReceiver.getAnnotations();
+            Set<AnnotationMirror> overriddenAnnos = overriddenReceiver.getAnnotations();
+            if (!qualifierHierarchy.isSubtype(overriddenAnnos, overriderAnnos)) {
+                Set<AnnotationMirror> declaredAnnos =
+                        atypeFactory.getTypeDeclarationBounds(overridingType);
+                if (qualifierHierarchy.isSubtype(overriderAnnos, declaredAnnos)
+                        && qualifierHierarchy.isSubtype(declaredAnnos, overriderAnnos)) {
+                    // All the type of an object must be no higher than its upper bound. So if the
+                    // receiver is annotated with the upper bound qualifiers, then the override is
+                    // safe.
+                    return true;
+                }
+                FoundRequired pair = FoundRequired.of(overriderReceiver, overriddenReceiver);
                 checker.report(
                         Result.failure(
                                 "override.receiver.invalid",
@@ -3814,15 +3836,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Tests that the qualifiers present on the primitive type are valid.
      *
-     * <p>The default implementation always returns true. Subclasses should override this method to
-     * limit what annotations are allowed on primitive types.
-     *
      * @param type the use of the primitive type
      * @param tree the tree where the type is used
      * @return true if the type is a valid use of the primitive type
      */
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
-        return true;
+        Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(type);
+        return atypeFactory.getQualifierHierarchy().isSubtype(type.getAnnotations(), bounds);
     }
 
     /**
@@ -3830,15 +3850,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * for each array level independently, i.e. this method only needs to check the top-level
      * qualifiers of an array.
      *
-     * <p>The default implementation always returns true. Subclasses should override this method to
-     * limit what annotations are allowed on array types.
-     *
      * @param type the array type use
      * @param tree the tree where the type is used
      * @return true if the type is a valid array type
      */
     public boolean isValidUse(AnnotatedArrayType type, Tree tree) {
-        return true;
+        Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(type);
+        return atypeFactory.getQualifierHierarchy().isSubtype(type.getAnnotations(), bounds);
     }
 
     /**

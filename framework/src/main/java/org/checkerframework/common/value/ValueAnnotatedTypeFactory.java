@@ -60,8 +60,8 @@ import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.StructuralEqualityComparer;
 import org.checkerframework.framework.type.TypeHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
@@ -978,7 +978,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 };
         return new ListTreeAnnotator(
-                new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this), arrayCreation);
+                new ValueTreeAnnotator(this),
+                new LiteralTreeAnnotator(this).addStandardLiteralQualifiers(),
+                arrayCreation);
     }
 
     /**

@@ -10,6 +10,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -47,11 +48,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
@@ -348,13 +349,13 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        ImplicitsTypeAnnotator implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
-        implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
-        implicitsTypeAnnotator.addTypeClass(
+        DefaultForTypeAnnotator defaultForTypeAnnotator = new DefaultForTypeAnnotator(this);
+        defaultForTypeAnnotator.addAtmClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
+        defaultForTypeAnnotator.addAtmClass(
                 AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
         return new ListTypeAnnotator(
                 new PropagationTypeAnnotator(this),
-                implicitsTypeAnnotator,
+                defaultForTypeAnnotator,
                 new NullnessTypeAnnotator(this),
                 new CommitmentTypeAnnotator(this));
     }
@@ -363,14 +364,10 @@ public class NullnessAnnotatedTypeFactory
     protected TreeAnnotator createTreeAnnotator() {
         // Don't call super.createTreeAnnotator because the default tree annotators are incorrect
         // for the Nullness Checker.
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, NONNULL);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, NONNULL);
-
         return new ListTreeAnnotator(
                 // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
                 new NullnessPropagationTreeAnnotator(this),
-                implicitsTreeAnnotator,
+                new LiteralTreeAnnotator(this),
                 new NullnessTreeAnnotator(this),
                 new CommitmentTreeAnnotator(this));
     }
@@ -396,6 +393,20 @@ public class NullnessAnnotatedTypeFactory
         @Override
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
             return null;
+        }
+
+        @Override
+        public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
+            if (type.getKind().isPrimitive()) {
+                AnnotationMirror NONNULL = ((NullnessAnnotatedTypeFactory) atypeFactory).NONNULL;
+                // If a @Nullable expression is cast to a primitive, then an unboxing.of.nullable
+                // error is issued.  Treat the cast as if it were annotated as @NonNull to avoid an
+                // type.invalid.annotations.on.use error.
+                if (!type.isAnnotatedInHierarchy(NONNULL)) {
+                    type.addAnnotation(NONNULL);
+                }
+            }
+            return super.visitTypeCast(node, type);
         }
     }
 
@@ -474,6 +485,11 @@ public class NullnessAnnotatedTypeFactory
 
         @Override
         public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+            // The result of newly allocated structures is always non-null.
+            if (!type.isAnnotatedInHierarchy(NONNULL)) {
+                type.replaceAnnotation(NONNULL);
+            }
+
             // The most precise element type for `new Object[] {null}` is @FBCBottom, but
             // the most useful element type is @Initialized (which is also accurate).
             AnnotatedArrayType arrayType = (AnnotatedArrayType) type;

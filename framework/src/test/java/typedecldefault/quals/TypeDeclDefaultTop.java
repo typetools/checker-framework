@@ -10,5 +10,5 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})
-@DefaultFor({TypeUseLocation.TYPE_DECLARATION, TypeUseLocation.CONSTRUCTOR_RESULT})
+@DefaultFor(TypeUseLocation.CONSTRUCTOR_RESULT)
 public @interface TypeDeclDefaultTop {}
