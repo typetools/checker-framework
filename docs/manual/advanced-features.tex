@@ -120,6 +120,44 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 
 \end{enumerate}
 
+\sectionAndLabel{Upper bound of qualifiers on uses of a given type}{upper-bound-for-use}
+The examples in this section use the usual type qualifier hierarchy \code{@A :> @B :> @C>}.
+
+The upper bound of qualifiers used on a given type is specified by annotating the type declaration
+with some qualifier.
+\begin{Verbatim}
+@C class MyClass {}
+\end{Verbatim}
+
+This means that \<@B MyClass> is an invalid type.
+
+If no annotation is present on a type declaration, then the bound is top. This can be changed by
+overriding a method in AnnotatedTypeFactory.
+
+There are two exceptions.
+\begin{itemize}
+\item
+  An expression can have a super-qualifier of the class annotation; that is, some expression could
+  have type \<@B MyClass>.  This type is not written explicitly, but results from viewpoint adaptation.
+\item
+  Using usual CLIMB-to-top rules, local variables of type MyClass default to \<@A MyClass>.
+  It is legal for \<@A MyClass> to be the type of a local variable.
+  For consistency, users are allowed to write such a type on a local variable declaration.
+\end{itemize}
+
+Due to existing type rules, an expression of type \<A MyClass> can only be used in limited ways.
+\begin{itemize}
+\item
+  Since every field, formal parameter, and return type of type MyClass (or lower) is annotated as
+  \<@B> (or lower), it cannot be assigned to a field, passed to a method, or returned from a method.
+\item
+  It can be used in a context that requires \<@A Object> (or whatever the least supertype is of MyClass
+  for which the \<@A> qualifier is permitted).  Examples include being tested against null or
+  (for most type systems) being passed to polymorphic routines such as println or System.identityHashCode.
+\end{itemize}
+
+These operations might type-refine it.  If a user wishes to annotate a method that does type refinement,
+its formal parameter must be of illegal type \<@A MyClass>, which requires a warning suppression.
 
 %TODO: Where does @QualifierForLiterals go?
 
@@ -141,9 +179,10 @@ rules are used in order, until one applies.
 \begin{enumerate}
 \item
   The qualifier specified via \<@DefaultQualifierForUse> on the declaration of the \<MyClass>.
+  (Section~\ref{default-for-use})
 \item
   If no \<@NoDefaultQualifierForUse> is written on the declaration of \<MyClass>, the qualifier
-  explicitly written on the declaration of \<MyClass>.
+  explicitly written on the declaration of \<MyClass>. (Section~\ref{default-for-use})
 \item
   The qualifier with a meta-annotation \<@DefaultFor(types = MyClass.class)>.
 \item
@@ -166,6 +205,18 @@ rules 6 and 7 apply.  This makes the type local variables top so they can be ref
 % (Implementation detail:  setting defaults is implemented by the
 % \refclass{framework/util}{QualifierDefaults} class.)
 
+\subsectionAndLabel{Default for use of a type}{default-for-use}
+The type declaration annotation \refqualclass{framework/qual}{DefaultQualifierForUses}
+indicates that the specified qualifier should be added to all unannotated uses of the type.
+
+For example:
+\begin{Verbatim}
+@DefaultQualifierForUses(B.class)
+class MyClass {}
+\end{Verbatim}
+
+This means any unannotated use of \<MyClass> is treated as \<@B MyClass> by the checker.
+(Except for locals, which can be refined. See %TODO)
 
 \subsectionAndLabel{Controlling defaults in source code}{default-qualifier}
 The end-user programmer specifies a default qualifier by writing the
