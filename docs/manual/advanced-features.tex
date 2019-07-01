@@ -210,10 +210,10 @@ rules are used in order, until one applies.
   If no \<@NoDefaultQualifierForUse> is written on the declaration of \<MyClass>, the qualifier
   explicitly written on the declaration of \<MyClass>. (Section~\ref{default-for-use})
 \item
-  The qualifier with a meta-annotation \<@DefaultFor(types = MyClass.class)>.
+  The qualifier with a meta-annotation \<@DefaultFor(types = MyClass.class)>. (Section~\ref{default-for-use})
 \item
   The qualifier with a meta-annotation \<@DefaultFor(typeKinds = KIND)>, where \<KIND> is the
-  \<TypeKind> of \<MyClass>.
+  \<TypeKind> of \<MyClass>. (Section~\ref{default-for-use})
 \item
   The qualifier in the innermost user-written \<@DefaultQualifier> for the location of the use of \<MyClass>.
   (Section~\ref{default-qualifier})
@@ -232,17 +232,45 @@ rules 6 and 7 apply.  This makes the type local variables top so they can be ref
 % \refclass{framework/util}{QualifierDefaults} class.)
 
 \subsectionAndLabel{Default for use of a type}{default-for-use}
-The type declaration annotation \refqualclass{framework/qual}{DefaultQualifierForUses}
+The type declaration annotation \refqualclass{framework/qual}{DefaultQualifierForUse}
 indicates that the specified qualifier should be added to all unannotated uses of the type.
 
 For example:
 \begin{Verbatim}
-@DefaultQualifierForUses(B.class)
+@DefaultQualifierForUse(B.class)
 class MyClass {}
 \end{Verbatim}
 
 This means any unannotated use of \<MyClass> is treated as \<@B MyClass> by the checker.
 (Except for locals, which can be refined.)
+
+Similarly, the meta-annotation \refqualclass{framework/qual}{DefaultFor} can be used to specify defaults
+for uses of of types, using the \<types> element, or type kinds, using the \<typeKinds> elements.
+
+Interaction between qualifier bounds and \<DefaultQualifierForUse>:
+\begin{itemize}
+\item
+  If a type declaration is annotated with a qualifier bound, but not a \<@DefaultQualifierForUse>,
+  then the qualifier bound is implicitly added to all unannotated uses of that type (except locals).
+  For example, \<@C class MyClass {}> is equivalent to
+\begin{Verbatim}
+@DefaultQualifierForUse(C.class)
+@C class MyClass {}
+\end{Verbatim}
+
+\item
+  If the qualifier bound should not be added to all unannotated uses, then
+  \refqualclass{framework/qual}{NoDefaultQualifierForUse} should be written on the declaration:
+\begin{Verbatim}
+@NoDefaultQualifierForUse
+@C class MyClass {}
+\end{Verbatim}
+  This means that unannotated uses of MyClass are defaulted normally.
+\item
+  If neither \<@DefaultQualifierForUse> nor a qualifier bound is present on a type declaration, that
+  is equivalent to writing \<@NoDefaultQualifierForUse>.
+
+\end{itemize}
 
 \subsectionAndLabel{Controlling defaults in source code}{default-qualifier}
 The end-user programmer specifies a default qualifier by writing the
