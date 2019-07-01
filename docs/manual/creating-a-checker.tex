@@ -160,8 +160,8 @@ Framework:
   the type system and the subtyping relationships among qualified types
   (for instance, \<@NonNull Object> is a subtype of \<@Nullable
   Object>).  This is also where you specify the default annotation that
-  applies whenever the programmer wrote no annotation and no implicit
-  annotation applies.
+  applies whenever the programmer wrote no annotation and no other defaulting
+  rule applies.
 
 \item{\ref{creating-compiler-interface}}
   \textbf{Interface to the compiler.}  The compiler interface indicates
@@ -617,7 +617,7 @@ generic \code{List}.
 \subsectionAndLabel{Defining a default annotation}{creating-typesystem-defaults}
 
 A type system applies a default qualifier where the user has not written a
-qualifier (and no implicit qualifier is applicable), as explained in
+qualifier (and no other default qualifier is applicable), as explained in
 Section~\ref{defaults}.
 
 The type system designer may specify a default annotation declaratively,
