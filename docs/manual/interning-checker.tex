@@ -237,28 +237,15 @@ warning at the constructor.
 \end{Verbatim}
 
 
-\subsectionAndLabel{Implicit qualifiers}{interning-implicit-qualifiers}
+\subsectionAndLabel{Default qualifiers and qualifiers for literals}{interning-implicit-qualifiers}
 
 The Interning Checker
-adds implicit qualifiers, reducing the number of annotations that must
+adds qualifiers to unannotated types, reducing the number of annotations that must
 appear in your code (see Section~\ref{effective-qualifier}).
-For example, String literals and the \<null> literal are always considered interned, and
-object creation expressions (using \code{new}) are never considered
-\refqualclass{checker/interning/qual}{Interned} unless they are annotated as such, as in
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-@Interned Double internedDoubleZero = new @Interned Double(0); // canonical representation for Double zero
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+For example, String literals and the \<null> literal are always considered interned.
 
 For a complete description of all implicit interning qualifiers, see the
 Javadoc for \refclass{checker/interning}{InterningAnnotatedTypeFactory}.
-
 
 \subsectionAndLabel{InternedDistinct: values not equals() to any other value}{interning-distinct}
 
