@@ -10,6 +10,7 @@ import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
@@ -39,6 +40,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Implements dataflow refinement rules based on tests: &lt;, &gt;, ==, and their derivatives.
@@ -155,6 +157,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *   <li>30. anything right-shifted by a non-negative is non-negative
  *   <li>31. anything bitwise-anded by a non-negative is non-negative
  *   <li>32. If a and b are non-negative and {@code a <= b} and {@code a != b}, then b is pos.
+ *   <li>33. A char is always non-negative
  * </ul>
  */
 public class LowerBoundTransfer extends IndexAbstractTransfer {
@@ -699,6 +702,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         return UNKNOWN;
     }
 
+    /** Adds a default NonNegative annotation to every character. Implements case 33. */
     @Override
     protected void addInformationFromPreconditions(
             CFStore info,
@@ -711,7 +715,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         List<? extends VariableTree> paramTrees = methodTree.getParameters();
 
         for (VariableTree variableTree : paramTrees) {
-            if (variableTree.getType().toString().equalsIgnoreCase("char")) {
+            if (TreeUtils.typeOf(variableTree).getKind().equals(TypeKind.CHAR)) {
 
                 Receiver rec = null;
                 try {

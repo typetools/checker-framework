@@ -76,7 +76,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         if (valueType.getKind().equals(TypeKind.CHAR)
                 && valueType.hasAnnotation(getTypeFactory().UNKNOWNVAL)) {
             valueType.addAnnotation(
-                    getTypeFactory().createIntRangeAnnotation(new Range(0, Character.MAX_VALUE)));
+                    getTypeFactory().createIntRangeAnnotation(Range.CHAR_EVERYTHING));
         }
 
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
