@@ -128,7 +128,7 @@ These qualifiers are part of the Interning type system:
 
 \item[\refqualclass{checker/interning/qual}{InternMethod}]
   is a method annotation that indicates that this method returns an interned object and maybe be invoked
-  on an uninterned object.
+  on an uninterned object. See Section~\ref{interning-intern-methods} for more details.
 \end{description}
 
 \sectionAndLabel{Annotating your code with \code{@Interned}}{interning-annotating}
@@ -158,15 +158,83 @@ object:
 The Interning Checker ensures that only interned
 values can be assigned to \code{s2}.
 
-To specify that \emph{all} objects of a given type are interned, annotate the
-class declaration:
+\sectionAndLabel{Interned classes}{interning-interned-classes}
+
+An interned annotation on a class declaration indicates that all objects of a
+type are interned \textit{except for newly created objects}. That means that
+all uses of such types are \<@Interned> by default and the type \<@UnknownInterned
+MyClass> is an invalid type.
+
+An exception is \textit{constructor results}. Constructor results and \<this> within the
+body of the constructor are \<@UnknownInterned> by default, but no ``type.invalid''
+error is issued at the declaration. (It would be issued because
+\<@UnknownInterned InternedClass> is not a legal type, given the
+qualifier \<@Interned> on \<InternedClass>.)  Instead, an ``interned.object.creation''
+error is issued at the invocation of the constructor. The user should inspect
+this location and suppress the warning if the newly created object is interned.
+For example:
 
 \begin{Verbatim}
-  public @Interned class MyInternedClass { ... }
+@Interned class InternedClass {
+  @UnknownInterned InternedClass() {
+  // error, "this" is @UnknownInterned.
+  @Interned InternedClass that = this;
+  }
+
+  @SuppressWarnings("intern") // ONE is interned for some reason.
+  static final InternedClass ONE = new InternedClass();
+}
 \end{Verbatim}
 
-This makes every use of \code{MyInternedClass}, in a
-declaration or elsewhere, implicitly \<@Interned>.
+\subsectionAndLabel{The intern() methods}{interning-intern-methods}
+Some interned classes use an \<intern()> method to look up the interned version of
+the object. These methods must be annotated with the declaration annotation
+\<@InternMethod>. This allows the checker to verify that a newly created object
+is immediately interned and therefore not issue an interned object creation
+error.
+
+\begin{Verbatim}
+new InternedClass().intern() // no error
+\end{Verbatim}
+
+Because an \<intern> method is expected to be called on uninterned objects, the
+type of \<this> in \<intern> is implicitly \<@UnknownInterned>. This will cause an
+error if \<this> is used someplace where an interned object is expected.  Some
+of these warnings will be false positives that should be suppressed by the
+user.
+
+\begin{Verbatim}
+@InternMethod
+public InternedClass intern() {
+  // Type of "this" inside an @InternMethod is @UnknownInterned
+  @Interned InternedClass that = this; // error
+
+  if (!pool.contains(this)) {
+    @SuppressWarning("interning:assignment.type.incompatible")
+    @Interned InternedClass internedThis = this;
+    pool.add(internedThis);
+  }
+  return pool.get(this);
+}
+\end{Verbatim}
+
+Some interned classes do not use an intern method to ensure that every object
+of that class is interned.  For these classes, the user will have to manually
+inspect every constructor invocation and suppress the ``interned.object.creation''
+error.
+
+If every invocation of a constructor is guaranteed to be interned, then the
+user should annotate the constructor result with \<@Interned> and suppress a
+warning at the constructor.
+
+\begin{Verbatim}
+@Interned class AnotherInternedClass {
+  // manually verified that all constructor invocations used such that all
+  // new objects are interned
+  @SuppressWarnings("super.invocation.invalid")
+  @Interned AnotherInternedClass() {}
+}
+\end{Verbatim}
 
 
 \subsectionAndLabel{Implicit qualifiers}{interning-implicit-qualifiers}
