@@ -188,12 +188,8 @@ Framework:
 \end{itemize}
 
 \item{\ref{creating-type-introduction}}
-  \textbf{Type introduction rules.}  For some types and
-  expressions, a qualifier should be treated as implicitly present even if a
-  programmer did not explicitly write it.  For example, in the Nullness
-  type system every literal
-  other than \<null> has a \refqualclass{checker/nullness/qual}{NonNull} type.
-  Examples of literals include \code{"some string"} and \<java.util.Date.class>.
+  \textbf{Type introduction rules.}  You specify the type of some expressions where
+the rules differ from the built in framework rules
 
 \item{\ref{creating-dataflow}}
   \textbf{Dataflow rules.}  These optional rules enhance flow-sensitive
@@ -1140,7 +1136,7 @@ rule for method invocation, where your rule checks the name of the method
 being called and then treats the method in a special way.
 
 
-\sectionAndLabel{Type factory: Type introduction rules)}{creating-type-introduction}
+\sectionAndLabel{Type factory: Type introduction rules}{creating-type-introduction}
 
 The annotated type of expressions and types are defined via type introduction rules in the
 type factory.  For most expressions and types, these rules are the same regardless of the type system.
