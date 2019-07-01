@@ -251,7 +251,7 @@ Interaction between qualifier bounds and \<DefaultQualifierForUse>:
 \begin{itemize}
 \item
   If a type declaration is annotated with a qualifier bound, but not a \<@DefaultQualifierForUse>,
-  then the qualifier bound is implicitly added to all unannotated uses of that type (except locals).
+  then the qualifier bound is added to all unannotated uses of that type (except locals).
   For example, \<@C class MyClass {}> is equivalent to
 \begin{Verbatim}
 @DefaultQualifierForUse(C.class)
