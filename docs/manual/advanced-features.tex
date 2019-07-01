@@ -82,6 +82,7 @@ If you prefer a specific type for a constructed array, you can indicate
 that either in the context (change the declaration of \<myStrings>) or in a
 \<new> construct (change the expression to \<new @Regex String[] >\verb|{"hello"}|).
 
+
 \sectionAndLabel{Upper bound of qualifiers on uses of a given type}{upper-bound-for-use}
 The examples in this section use the usual type qualifier hierarchy \code{@A :> @B :> @C>}.
 
@@ -93,8 +94,11 @@ with some qualifier.
 
 This means that \<@B MyClass> is an invalid type.
 
-If no annotation is present on a type declaration, then the bound is top. This can be changed by
-overriding a method in AnnotatedTypeFactory.
+An upper bound can also be specified by the type-system designer using the meta-annotation
+\refqualclass{framework/qual}{UpperBoundFor}.
+
+If no annotation is present on a type declaration and if no \<@UpperBoundFor> mentions the type, then
+the bound is top. This can be changed by overriding a method in AnnotatedTypeFactory.
 
 There are two exceptions.
 \begin{itemize}
