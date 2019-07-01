@@ -90,6 +90,8 @@ command-line option to javac.  For examples, see Section~\ref{interning-example}
 
 \sectionAndLabel{Interning annotations}{interning-annotations}
 
+\subsectionAndLabel{Interning qualifiers}{interning-qualifiers}
+
 These qualifiers are part of the Interning type system:
 
 \begin{description}
@@ -110,6 +112,12 @@ These qualifiers are part of the Interning type system:
   indicates qualifier polymorphism (see
   Section~\ref{qualifier-polymorphism}).
 
+\end{description}
+
+\subsectionAndLabel{Interning method and class annotations}{interning-declaration-annotations}
+
+\begin{description}
+
 \item[\refqualclass{checker/interning/qual}{UsesObjectEquals}]
   is a class annotation (not a type annotation) that indicates that this class's
   \<equals> method is the same as that of \<Object>.  In other words,
@@ -118,8 +126,10 @@ These qualifiers are part of the Interning type system:
   for such a class, \<==> and \<equals> are equivalent, and so the
   Interning Checker does not issue errors or warnings for either one.
 
+\item[\refqualclass{checker/interning/qual}{InternMethod}]
+  is a method annotation that indicates that this method returns an interned object and maybe be invoked
+  on an uninterned object.
 \end{description}
-
 
 \sectionAndLabel{Annotating your code with \code{@Interned}}{interning-annotating}
 
