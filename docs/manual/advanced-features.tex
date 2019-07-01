@@ -92,7 +92,8 @@ with some qualifier.
   @C class MyClass {}
 \end{Verbatim}
 
-This means that \<@B MyClass> is an invalid type.
+This means that \<@B MyClass> is an invalid type.  (Annotations on class declarations may also specify
+default annotations for uses of the type; see Section~\ref{default-for-use})
 
 An upper bound can also be specified by the type-system designer using the meta-annotation
 \refqualclass{framework/qual}{UpperBoundFor}.
@@ -158,11 +159,6 @@ you to write too many qualifiers in your program.
 In particular, qualifiers in method bodies are rare (except occasionally on
 type arguments).
 
-Most of this section is about defaults for source code that is read by
-the compiler.  When the compiler reads a \<.class> file, different
-defaulting rules apply.
-See Section~\ref{defaults-classfile} for these rules.
-
 The following steps determine the effective
 qualifier on a type --- the qualifier that the checkers treat as being present.
 
@@ -196,6 +192,10 @@ Defaulting never applies to uses of type variables, even if they do not
 have an explicit type annotation.
 % TODO: If the type of a local variable is a use of a type parameter, then it is defaulted to top,
 % so it can be refined. I don't know that's worth mentioning here.  Maybe just change never to does not?
+Most of this section is about defaults for source code that is read by
+the compiler.  When the compiler reads a \<.class> file, different
+defaulting rules apply.
+See Section~\ref{defaults-classfile} for these rules.
 
 There are several defaulting mechanisms, for convenience and flexibility.
 When determining the default qualifier for a use of an unannotated type, \<MyClass>, the following
@@ -615,29 +615,7 @@ misbehave at run time.
 
 
 \newpage
-
-\sectionAndLabel{Annotations on classes and constructors}{annotations-on-classes-and-constructors}
-
-\subsectionAndLabel{Annotations on type declarations}{annotations-on-type-declarations}
-
-% TODO: use a more realistic example.
-
-Writing an annotation on a type (class or interface) declaration makes that annotation implicit
-for all uses of the type (see Section~\ref{effective-qualifier}).
-That is, the annotation is an upper bound for all uses of the type.
-
-Consider the type hierarchy \code{@A :> @B :> @C} and the following
-declaration:
-
-\begin{Verbatim}
-@B class MyClass { ... }
-\end{Verbatim}
-
-\noindent
-Every unannotated use of \<MyClass> is \<@B MyClass>, and every use of
-\<MyClass> must be a subtype of \<@B> --- that is, \<@A MyClass> is not a
-valid type, but \<@C MyClass> is valid.
-
+\sectionAndLabel{Annotations on constructors}{annotations-on-constructors}
 
 \subsectionAndLabel{Annotations on constructor declarations}{annotations-on-constructor-declarations}
 
