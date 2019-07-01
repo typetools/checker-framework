@@ -159,6 +159,29 @@ Due to existing type rules, an expression of type \<A MyClass> can only be used 
 These operations might type-refine it.  If a user wishes to annotate a method that does type refinement,
 its formal parameter must be of illegal type \<@A MyClass>, which requires a warning suppression.
 
+If we forbid expressions and local variables from having types forbidden by the class annotation,
+then important APIs and common coding paradigms will no longer type-check.
+
+Consider the annotation
+\begin{Verbatim}
+@NonNull class Optional { ... }
+\end{Verbatim}
+and the client code
+
+\begin{Verbatim}
+Map<String, Optional> m;
+String key = ...;
+Optional value = m.get(key);
+if (value != null) {
+...;
+}
+\end{Verbatim}
+
+The type of \<m.get(key)> is \<@Nullable Optional>, which is an illegal type.
+However, this is a very common paradigm.  Programmers should not need to rewrite the code to test
+\<m.containsKey(key)> nor suppress a warning in this safe code.
+
+
 %TODO: Where does @QualifierForLiterals go?
 
 \sectionAndLabel{Default qualifier for unannotated types}{defaults}
