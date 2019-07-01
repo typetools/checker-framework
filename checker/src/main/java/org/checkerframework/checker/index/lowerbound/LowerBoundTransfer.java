@@ -4,9 +4,12 @@ import static org.checkerframework.checker.index.IndexUtil.getExactValue;
 
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
@@ -19,6 +22,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.BitwiseAndNode;
 import org.checkerframework.dataflow.cfg.node.IntegerDivisionNode;
@@ -32,6 +36,8 @@ import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -691,6 +697,36 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             return NN;
         }
         return UNKNOWN;
+    }
+
+    @Override
+    protected void addInformationFromPreconditions(
+            CFStore info,
+            AnnotatedTypeFactory factory,
+            UnderlyingAST.CFGMethod method,
+            MethodTree methodTree,
+            ExecutableElement methodElement) {
+        super.addInformationFromPreconditions(info, factory, method, methodTree, methodElement);
+
+        List<? extends VariableTree> paramTrees = methodTree.getParameters();
+
+        for (VariableTree variableTree : paramTrees) {
+            if (variableTree.getType().toString().equalsIgnoreCase("char")) {
+
+                Receiver rec = null;
+                try {
+                    rec =
+                            FlowExpressionParseUtil.internalReprOfVariable(
+                                    aTypeFactory, variableTree);
+                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    // do nothing
+                }
+
+                if (rec != null) {
+                    info.insertValue(rec, aTypeFactory.NN);
+                }
+            }
+        }
     }
 
     /**
