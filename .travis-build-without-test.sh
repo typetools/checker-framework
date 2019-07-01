@@ -32,7 +32,7 @@ echo SLUGOWNER=$SLUGOWNER
 
 ## Build annotation-tools (Annotation File Utilities)
 if [ -d ../annotation-tools ] ; then
-    git -C ../annotation-tools -q pull || true
+    git -C ../annotation-tools pull -q || true
 else
     [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
     REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools annotation-tools`
