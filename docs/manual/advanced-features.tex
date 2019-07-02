@@ -84,8 +84,9 @@ that either in the context (change the declaration of \<myStrings>) or in a
 
 
 \sectionAndLabel{Upper bound of qualifiers on uses of a given type}{upper-bound-for-use}
-The examples in this section use the usual type qualifier hierarchy \code{@A :> @B :> @C}.
+The examples in this section use the type qualifier hierarchy \code{@A :> @B :> @C}.
 
+A qualifier on a use of a certain type must be a subtype or equal to the upper bound for that type.
 The upper bound of qualifiers used on a given type is specified by annotating the type declaration
 with some qualifier.
 \begin{Verbatim}
@@ -99,12 +100,13 @@ An upper bound can also be specified by the type-system designer using the meta-
 \refqualclass{framework/qual}{UpperBoundFor}.
 
 If no annotation is present on a type declaration and if no \<@UpperBoundFor> mentions the type, then
-the bound is top. This can be changed by overriding a method in AnnotatedTypeFactory.
+the bound is top. This can be changed by overriding
+\refmethodanchortext{framework/type}{AnnotatedTypeFactory}{getTypeDeclarationBounds}{-javax.lang.model.type.TypeMirror-}{AnnotatedTypeFactory\#getTypeDeclarationBounds}.
 
 There are two exceptions.
 \begin{itemize}
   \item
-  An expression can have a super-qualifier of the class annotation; that is, some expression could
+  An expression can have a supertype of the upper bound; that is, some expression could
   have type \<@B MyClass>.  This type is not written explicitly, but results from viewpoint adaptation.
   \item
   Using usual CLIMB-to-top rules, local variables of type MyClass default to \<@A MyClass>.
@@ -119,14 +121,14 @@ Due to existing type rules, an expression of type \<A MyClass> can only be used 
   \<@B> (or lower), it cannot be assigned to a field, passed to a method, or returned from a method.
   \item
   It can be used in a context that requires \<@A Object> (or whatever the least supertype is of MyClass
-  for which the \<@A> qualifier is permitted).  Examples include being tested against null or
-  (for most type systems) being passed to polymorphic routines such as println or System.identityHashCode.
+  for which the \<@A> qualifier is permitted).  Examples include being tested against \<null> or
+  (for most type systems) being passed to polymorphic routines such as \<System.out.println> or \<System.identityHashCode>.
 \end{itemize}
 
-These operations might type-refine it.  If a user wishes to annotate a method that does type refinement,
+These operations might refine its type.  If a user wishes to annotate a method that does type refinement,
 its formal parameter must be of illegal type \<@A MyClass>, which requires a warning suppression.
 
-If we forbid expressions and local variables from having types forbidden by the class annotation,
+If the framework forbid expressions and local variables from having types inconsistent with the class annotation,
 then important APIs and common coding paradigms will no longer type-check.
 
 Consider the annotation
@@ -157,7 +159,7 @@ Most readers can skip this section on first reading, because you will
 probably find the system simply ``does what you mean'', without forcing
 you to write too many qualifiers in your program.
 In particular, qualifiers in method bodies are rare (except occasionally on
-type arguments).
+type arguments and array component types).
 
 The following steps determine the effective
 qualifier on a type --- the qualifier that the checkers treat as being present.
@@ -171,7 +173,7 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
   qualifier
   % except for type parameters, but don't clutter this text with that detail
   is applied; see Section~\ref{defaults}. Defaulted qualifiers are treated by checkers
-  as exactly as if the programmer had written them explicitly.
+  exactly as if the programmer had written them explicitly.
 
 \item
   The type system may refine a qualified type on a local variable --- that
@@ -200,7 +202,7 @@ See Section~\ref{defaults-classfile} for these rules.
 There are several defaulting mechanisms, for convenience and flexibility.
 When determining the default qualifier for a use of an unannotated type, \<MyClass>, the following
 rules are used in order, until one applies.
-(Some of these currently do not work in stub files.)
+%TODO: I don't think this is true.(Some of these currently do not work in stub files.)
 
 \begin{enumerate}
 \item

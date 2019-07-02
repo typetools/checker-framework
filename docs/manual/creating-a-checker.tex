@@ -641,7 +641,7 @@ qualifier file.  For instance, \code{int value() default 0;} would make
 described above can be used.
 
 The default qualifier applies to most, but not all, unannotated types, Section~\ref{climb-to-top}
-other defaulting rules are autmatically added to every checker. Also, Section~\ref{defaults}
+other defaulting rules are automatically added to every checker. Also, Section~\ref{defaults}
 describes other meta-annotations used to specify default annotations.
 
 \subsectionAndLabel{Relevant Java types}{creating-relevant-java-types}
@@ -1141,8 +1141,8 @@ being called and then treats the method in a special way.
 The annotated type of expressions and types are defined via type introduction rules in the
 type factory.  For most expressions and types, these rules are the same regardless of the type system.
 For example, the type of a method invocation expression is the return type of the invoked method
-view-point-adapted for the call site.  The framework implements these rules so that all type systems
-automatcally use them.  For other expressions, such as string literals, their (annotated) types depend
+viewpoint-adapted for the call site.  The framework implements these rules so that all type systems
+automatically use them.  For other expressions, such as string literals, their (annotated) types depend
 on the type system, so the framework provides way to specify what qualifiers should apply to these expressions.
 
 Defaulting rules are type introduction rules for computing the annotated type for an unannotated type;
