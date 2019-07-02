@@ -1159,14 +1159,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return type;
     }
 
-    /** Returns the set of qualifiers that are the upper bounds for a use of the type. */
-    public Set<AnnotationMirror> getTypeDeclarationBounds(AnnotatedTypeMirror type) {
-        return qualifierUpperBounds.getBoundQualifiers(type.getUnderlyingType());
-    }
-
-    /** Returns the set of qualifiers that are the upper bounds for a use of the type. */
-    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeElement typeElement) {
-        return qualifierUpperBounds.getBoundQualifiers(typeElement.asType());
+    /**
+     * Returns the set of qualifiers that are the upper bounds for a use of the type.
+     *
+     * @param type
+     */
+    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
+        return qualifierUpperBounds.getBoundQualifiers(type);
     }
 
     /**
@@ -1194,7 +1193,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror getTypeOfExtendsImplements(Tree clause) {
         AnnotatedTypeMirror fromTypeTree = fromTypeTree(clause);
-        Set<AnnotationMirror> bound = getTypeDeclarationBounds(fromTypeTree);
+        Set<AnnotationMirror> bound = getTypeDeclarationBounds(fromTypeTree.getUnderlyingType());
         fromTypeTree.addMissingAnnotations(bound);
         return fromTypeTree;
     }

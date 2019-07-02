@@ -8,7 +8,9 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternMethod;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.PolyInterned;
@@ -109,10 +111,9 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public Set<AnnotationMirror> getTypeDeclarationBounds(AnnotatedTypeMirror typeMirror) {
+    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror typeMirror) {
         if (typeMirror.getKind() == TypeKind.DECLARED
-                && ((AnnotatedDeclaredType) typeMirror).getUnderlyingType().asElement().getKind()
-                        == ElementKind.ENUM) {
+                && ((DeclaredType) typeMirror).asElement().getKind() == ElementKind.ENUM) {
             return AnnotationMirrorSet.singleElementSet(INTERNED);
         }
         return super.getTypeDeclarationBounds(typeMirror);
