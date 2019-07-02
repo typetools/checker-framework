@@ -1,5 +1,6 @@
 package org.checkerframework.common.value;
 
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -66,6 +67,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -2217,5 +2219,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         return getMinLenValue(lengthAnno);
+    }
+
+    @Override
+    public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
+        if (tree instanceof ConditionalExpressionTree) {
+            AnnotatedTypeMirror atmTrue =
+                    getAnnotatedType(((ConditionalExpressionTree) tree).getTrueExpression());
+            AnnotatedTypeMirror atmFalse =
+                    getAnnotatedType(((ConditionalExpressionTree) tree).getFalseExpression());
+            TypeMirror alub = TreeUtils.typeOf(tree);
+            return AnnotatedTypes.leastUpperBound(this, atmTrue, atmFalse, alub);
+        }
+
+        return super.getAnnotatedType(tree);
     }
 }
