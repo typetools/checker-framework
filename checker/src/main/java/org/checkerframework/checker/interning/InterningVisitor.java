@@ -302,8 +302,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return true;
         } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
             NewClassTree newClassTree = (NewClassTree) tree;
-            Element elt = TreeUtils.elementFromUse(newClassTree).getEnclosingElement();
-            Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds((TypeElement) elt);
+            TypeMirror typeMirror = TreeUtils.elementFromUse(newClassTree).asType();
+            Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(typeMirror);
             // Don't issue an invalid type warning for creations of objects of interned classes;
             // instead, issue an interned.object.creation if required.
             if (AnnotationUtils.containsSameByClass(bounds, Interned.class)) {
@@ -844,8 +844,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                     tm.getClass());
         }
         if (classElt != null) {
-            Set<AnnotationMirror> bound =
-                    atypeFactory.getTypeDeclarationBounds((TypeElement) classElt);
+            Set<AnnotationMirror> bound = atypeFactory.getTypeDeclarationBounds(tm);
             return AnnotationUtils.containsSameByClass(bound, Interned.class);
         }
         return false;

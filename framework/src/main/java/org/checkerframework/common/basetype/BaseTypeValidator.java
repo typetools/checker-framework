@@ -252,7 +252,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             // Ensure that type use is a subtype of the element type
             // isValidUse determines the erasure of the types.
 
-            Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(type);
+            Set<AnnotationMirror> bounds =
+                    atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
 
             AnnotatedDeclaredType elemType = type.deepCopy();
             elemType.clearAnnotations();
