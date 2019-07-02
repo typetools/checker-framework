@@ -127,7 +127,7 @@ These qualifiers are part of the Interning type system:
   Interning Checker does not issue errors or warnings for either one.
 
 \item[\refqualclass{checker/interning/qual}{InternMethod}]
-  is a method annotation that indicates that this method returns an interned object and maybe be invoked
+  is a method declaration annotation that indicates that this method returns an interned object and maybe be invoked
   on an uninterned object. See Section~\ref{interning-intern-methods} for more details.
 \end{description}
 
@@ -166,12 +166,12 @@ all uses of such types are \<@Interned> by default and the type \<@UnknownIntern
 MyClass> is an invalid type.
 
 An exception is \textit{constructor results}. Constructor results and \<this> within the
-body of the constructor are \<@UnknownInterned> by default, but no ``type.invalid''
-error is issued at the declaration. (It would be issued because
-\<@UnknownInterned InternedClass> is not a legal type, given the
-qualifier \<@Interned> on \<InternedClass>.)  Instead, an ``interned.object.creation''
+body of the constructor are \<@UnknownInterned> by default. Although \<@UnknownInterned InternClass>
+is not a legal type, no ``type.invalid'' error is issued at constructor declarations.
+Instead, an ``interned.object.creation''
 error is issued at the invocation of the constructor. The user should inspect
 this location and suppress the warning if the newly created object is interned.
+
 For example:
 
 \begin{Verbatim}
@@ -181,7 +181,7 @@ For example:
   @Interned InternedClass that = this;
   }
 
-  @SuppressWarnings("intern") // ONE is interned for some reason.
+  @SuppressWarnings("intern") // Only creation of an InternedClass object.
   static final InternedClass ONE = new InternedClass();
 }
 \end{Verbatim}
@@ -242,9 +242,8 @@ warning at the constructor.
 The Interning Checker
 adds qualifiers to unannotated types, reducing the number of annotations that must
 appear in your code (see Section~\ref{effective-qualifier}).
-For example, String literals and the \<null> literal are always considered interned.
 
-For a complete description of all implicit interning qualifiers, see the
+For a complete description of all defaulting rules for interning qualifiers, see the
 Javadoc for \refclass{checker/interning}{InterningAnnotatedTypeFactory}.
 
 \subsectionAndLabel{InternedDistinct: values not equals() to any other value}{interning-distinct}
