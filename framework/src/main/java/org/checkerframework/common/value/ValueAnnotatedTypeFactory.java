@@ -2223,15 +2223,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
-        if (tree instanceof ConditionalExpressionTree) {
+        AnnotatedTypeMirror atm = super.getAnnotatedType(tree);
+
+        if (atm.isAnnotatedInHierarchy(UNKNOWNVAL) && tree instanceof ConditionalExpressionTree) {
             AnnotatedTypeMirror atmTrue =
                     getAnnotatedType(((ConditionalExpressionTree) tree).getTrueExpression());
             AnnotatedTypeMirror atmFalse =
                     getAnnotatedType(((ConditionalExpressionTree) tree).getFalseExpression());
             TypeMirror alub = TreeUtils.typeOf(tree);
-            return AnnotatedTypes.leastUpperBound(this, atmTrue, atmFalse, alub);
+            atm.replaceAnnotation(
+                    AnnotatedTypes.leastUpperBound(this, atmTrue, atmFalse, alub)
+                            .getEffectiveAnnotationInHierarchy(UNKNOWNVAL));
         }
 
-        return super.getAnnotatedType(tree);
+        return atm;
     }
 }
