@@ -302,7 +302,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return true;
         } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
             NewClassTree newClassTree = (NewClassTree) tree;
-            TypeMirror typeMirror = TreeUtils.elementFromUse(newClassTree).asType();
+            TypeMirror typeMirror = TreeUtils.typeOf(newClassTree);
             Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(typeMirror);
             // Don't issue an invalid type warning for creations of objects of interned classes;
             // instead, issue an interned.object.creation if required.
