@@ -329,16 +329,22 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (constructor.getReturnType().hasAnnotation(Interned.class)) {
             return true;
         }
-        if (getCurrentPath() != null
-                && getCurrentPath().getParentPath() != null
-                && getCurrentPath().getParentPath().getParentPath() != null) {
-            Tree parent = getCurrentPath().getParentPath().getParentPath().getLeaf();
-            if (parent.getKind() == Tree.Kind.METHOD_INVOCATION) {
-                // Allow new MyInternType().intern(), where "intern" is any method marked
-                // @InternMethod.
-                ExecutableElement elt = TreeUtils.elementFromUse((MethodInvocationTree) parent);
-                if (atypeFactory.getDeclAnnotation(elt, InternMethod.class) != null) {
-                    return true;
+        TreePath path = getCurrentPath();
+        if (path != null) {
+            TreePath parentPath = path.getParentPath();
+            while (parentPath != null
+                    && parentPath.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
+                parentPath = parentPath.getParentPath();
+            }
+            if (parentPath != null && parentPath.getParentPath() != null) {
+                Tree parent = parentPath.getParentPath().getLeaf();
+                if (parent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                    // Allow new MyInternType().intern(), where "intern" is any method marked
+                    // @InternMethod.
+                    ExecutableElement elt = TreeUtils.elementFromUse((MethodInvocationTree) parent);
+                    if (atypeFactory.getDeclAnnotation(elt, InternMethod.class) != null) {
+                        return true;
+                    }
                 }
             }
         }
