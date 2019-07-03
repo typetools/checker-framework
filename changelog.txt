@@ -10,9 +10,9 @@ Removed meta-annotation @ImplicitFor:
  @ImplicitFor(literals, stringpatterns).
  * Use the meta-annotation @DefaultFor to replace @ImplicitFor(typeKinds,
  types).
- * Use the new meta-annotation @UpperBoundFor to specifiy a qualifier upper
+ * Use the new meta-annotation @UpperBoundFor to specify a qualifier upper
  bound for certain types.
-* You can competely remove @ImplicitFor(typeNames =
+* You can completely remove @ImplicitFor(typeNames =
  Void.class, literals = LiteralKind.NULL) on bottom qualifiers.
  @DefaultFor(types = Void.class) and @QualifierForLiterals(literals =
  LiteralKind.NULL) are added to the bottom qualifier by default.
