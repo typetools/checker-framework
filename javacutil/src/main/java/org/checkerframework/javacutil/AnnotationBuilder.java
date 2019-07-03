@@ -1,5 +1,7 @@
 package org.checkerframework.javacutil;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -146,13 +148,32 @@ public class AnnotationBuilder {
         if (res == null) {
             throw new UserError(
                     "AnnotationBuilder: error: fromClass can't load Class %s%n"
-                            + "ensure the class is on the compilation classpath%n%s",
-                    aClass.getCanonicalName(), classpathToString());
+                            + "Ensure the class is on the compilation classpath.%n%s"
+                            + "%n"
+                            + stacktraceToString(new Throwable("Here is the stack trace")),
+                    aClass.getCanonicalName(),
+                    classpathToString());
         }
         return res;
     }
 
-    /** Print the classpath. */
+    /**
+     * Format the stacktrace of an exception, as a string.
+     *
+     * @param e an exception
+     * @return the exception's stacktrace
+     */
+    private static String stacktraceToString(Throwable e) {
+        StringWriter result = new StringWriter();
+        e.printStackTrace(new PrintWriter(result));
+        return result.toString();
+    }
+
+    /**
+     * Format the classpath as a string.
+     *
+     * @return the classpath, as a string
+     */
     private static String classpathToString() {
         URLClassLoader sysLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
         if (sysLoader == null) {
