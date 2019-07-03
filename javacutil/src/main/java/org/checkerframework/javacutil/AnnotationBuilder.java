@@ -1,6 +1,8 @@
 package org.checkerframework.javacutil;
 
 import java.lang.annotation.Annotation;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -92,7 +95,9 @@ public class AnnotationBuilder {
         this.types = env.getTypeUtils();
         this.annotationElt = elements.getTypeElement(name);
         if (annotationElt == null) {
-            throw new UserError("Could not find annotation: " + name + ". Is it on the classpath?");
+            throw new UserError(
+                    "Could not find annotation: " + name + ". Is it on the classpath?%n%s",
+                    classpathToString());
         }
         assert annotationElt.getKind() == ElementKind.ANNOTATION_TYPE;
         this.annotationType = (DeclaredType) annotationElt.asType();
@@ -141,10 +146,25 @@ public class AnnotationBuilder {
         if (res == null) {
             throw new UserError(
                     "AnnotationBuilder: error: fromClass can't load Class %s%n"
-                            + "ensure the class is on the compilation classpath",
-                    aClass.getCanonicalName());
+                            + "ensure the class is on the compilation classpath%n%s",
+                    aClass.getCanonicalName(), classpathToString());
         }
         return res;
+    }
+
+    /** Print the classpath. */
+    private static String classpathToString() {
+        URLClassLoader sysLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+        if (sysLoader == null) {
+            return "No system class loader. (Maybe the bootstrap class loader is being used?)";
+        }
+
+        StringJoiner result = new StringJoiner(System.lineSeparator());
+        result.add("Classpath:");
+        for (URL url : sysLoader.getURLs()) {
+            result.add(url.getFile());
+        }
+        return result.toString();
     }
 
     /**
@@ -550,7 +570,9 @@ public class AnnotationBuilder {
                         "given value differs from expected, but same string representation; "
                                 + "this is likely a bootclasspath/classpath issue; "
                                 + "found: "
-                                + found);
+                                + found
+                                + System.lineSeparator()
+                                + classpathToString());
             } else {
                 throw new BugInCF(
                         "given value differs from expected; "
