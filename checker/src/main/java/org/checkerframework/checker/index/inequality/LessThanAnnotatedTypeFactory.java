@@ -260,8 +260,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Creates a less than qualifier given the expressions.
      *
      * <p>If expressions is null, {@link LessThanBottom} is returned. If expressions is empty,
-     * {@link LessThanUnknown} is returned. Otherwise, {@code LessThanUnknown(expressions)} is
-     * returned.
+     * {@link LessThanUnknown} is returned. Otherwise, {@code LessThan(expressions)} is returned.
      */
     public AnnotationMirror createLessThanQualifier(List<String> expressions) {
         if (expressions == null) {

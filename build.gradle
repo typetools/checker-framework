@@ -44,6 +44,7 @@ ext {
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
+    plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
 
     javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
@@ -376,6 +377,24 @@ task getCodeFormatScriptsInGradle {
   }
 }
 
+task getPlumeScripts() {
+    description 'Obtain or update plume-scripts'
+    if (file(plumeScriptsHome).exists()) {
+        exec {
+            workingDir plumeScriptsHome
+            executable 'git'
+            args = ['pull', '-q']
+            ignoreExitValue = true
+        }
+    } else {
+        exec {
+            workingDir "${plumeScriptsHome}/../"
+            executable 'git'
+            args = ['clone', '-q', 'https://github.com/plume-lib/plume-scripts.git', '.plume-scripts']
+        }
+    }
+}
+
 task pythonIsInstalled(type: Exec) {
   description "Check that the python executable is installed."
   executable = "python"
@@ -531,10 +550,7 @@ subprojects {
                         if (isJava8) {
                             args += [
                                 // Required for checker/jtreg/nullness/PersistUtil.java and other tests
-                                // Must use langtools javap.jar rather than tools.jar because the
-                                // tools.jar in the docker vm doesn't have the required classes.
                                 "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}:" +
-                                        "${parentDir}/jsr308-langtools/dist/lib/javap.jar:" +
                                         "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
                                 "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                                 "-javacoptions:-source 8",
@@ -684,6 +700,7 @@ task checkBasicStyle(group: 'Format') {
     String[] ignoreDirectories = ['.git',
                                   '.gradle',
                                   '.idea',
+                                  '.plume-scripts',
                                   'annotated',
                                   'api',
                                   'bib',

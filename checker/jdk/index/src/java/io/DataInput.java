@@ -279,7 +279,7 @@ interface DataInput {
      *               all the bytes.
      * @exception  IOException   if an I/O error occurs.
      */
-    void readFully(byte b[], int off, int len) throws IOException;
+    void readFully(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException;
 
     /**
      * Makes an attempt to skip over
@@ -302,7 +302,7 @@ interface DataInput {
      * @return     the number of bytes actually skipped.
      * @exception  IOException   if an I/O error occurs.
      */
-    int skipBytes(int n) throws IOException;
+    @NonNegative int skipBytes(int n) throws IOException;
 
     /**
      * Reads one input byte and returns

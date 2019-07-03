@@ -51,9 +51,9 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
     }
 
     @Override
-    protected void internalVisualize(CFGVisualizer<NullnessValue, NullnessStore, ?> viz) {
-        super.internalVisualize(viz);
-        viz.visualizeStoreKeyVal("isPolyNonNull", isPolyNullNull);
+    protected String internalVisualize(CFGVisualizer<NullnessValue, NullnessStore, ?> viz) {
+        return super.internalVisualize(viz)
+                + viz.visualizeStoreKeyVal("isPolyNonNull", isPolyNullNull);
     }
 
     public boolean isPolyNullNull() {

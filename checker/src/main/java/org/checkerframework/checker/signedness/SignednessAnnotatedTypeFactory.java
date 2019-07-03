@@ -11,7 +11,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.signedness.qual.Signed;
-import org.checkerframework.checker.signedness.qual.SignednessEither;
+import org.checkerframework.checker.signedness.qual.SignedPositive;
+import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -32,9 +33,9 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 /** @checker_framework.manual #signedness-checker Signedness Checker */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** The @SignednessEither annotation. */
-    private final AnnotationMirror SIGNEDNESS_EITHER =
-            AnnotationBuilder.fromClass(elements, SignednessEither.class);
+    /** The @SignednessGlb annotation. */
+    private final AnnotationMirror SIGNEDNESS_GLB =
+            AnnotationBuilder.fromClass(elements, SignednessGlb.class);
     /** The @Signed annotation. */
     private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
     /** The @UnknownSignedness annotation. */
@@ -54,12 +55,16 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
+        addAliasedAnnotation(SignedPositive.class, SIGNEDNESS_GLB);
+
         postInit();
     }
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll();
+        Set<Class<? extends Annotation>> result = getBundledTypeQualifiersWithoutPolyAll();
+        result.remove(SignedPositive.class); // this method should not return aliases
+        return result;
     }
 
     @Override
@@ -147,7 +152,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        // Refines the type of an integer primitive to @SignednessEither if it is within the signed
+        // Refines the type of an integer primitive to @SignednessGlb if it is within the signed
         // positive range (i.e. its MSB is zero).
         @Override
         public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
@@ -165,7 +170,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
                                 || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
                         && type.hasAnnotation(SIGNED)) {
-                    type.replaceAnnotation(SIGNEDNESS_EITHER);
+                    type.replaceAnnotation(SIGNEDNESS_GLB);
                 } else {
                     Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
 
@@ -174,22 +179,22 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             case BYTE:
                             case CHAR:
                                 if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
-                                    type.replaceAnnotation(SIGNEDNESS_EITHER);
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
                                 }
                                 break;
                             case SHORT:
                                 if (treeRange.isWithin(0, Short.MAX_VALUE)) {
-                                    type.replaceAnnotation(SIGNEDNESS_EITHER);
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
                                 }
                                 break;
                             case INT:
                                 if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
-                                    type.replaceAnnotation(SIGNEDNESS_EITHER);
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
                                 }
                                 break;
                             case LONG:
                                 if (treeRange.isWithin(0, Long.MAX_VALUE)) {
-                                    type.replaceAnnotation(SIGNEDNESS_EITHER);
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
                                 }
                                 break;
                             default:

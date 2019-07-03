@@ -32,7 +32,7 @@ echo SLUGOWNER=$SLUGOWNER
 
 ## Build annotation-tools (Annotation File Utilities)
 if [ -d ../annotation-tools ] ; then
-    git -C ../annotation-tools -q pull || true
+    git -C ../annotation-tools pull -q || true
 else
     [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
     REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools annotation-tools`
@@ -61,13 +61,6 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
 
 ## Compile
-
-# Download jsr308-langtools replacement for javac.jar that fixes some bugs
-if [ ! -d ../jsr308-langtools ] ; then
-  (cd .. && wget -q https://checkerframework.org/jsr308/jsr308-langtools-2.4.0.zip)
-  (cd .. && unzip -q jsr308-langtools-2.4.0.zip)
-  (cd .. && mv jsr308-langtools-2.4.0 jsr308-langtools)
-fi
 
 # Two options: rebuild the JDK or download a prebuilt JDK.
 if [[ "${BUILDJDK}" == "buildjdk" ]]; then

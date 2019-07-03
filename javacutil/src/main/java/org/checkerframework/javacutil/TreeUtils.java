@@ -93,8 +93,20 @@ public final class TreeUtils {
      *
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to super
+     * @deprecated use {@link #isSuperConstructorCall(MethodInvocationTree)}
      */
+    @Deprecated // use isSuperConstructorCall
     public static boolean isSuperCall(MethodInvocationTree tree) {
+        return isNamedMethodCall("super", tree);
+    }
+
+    /**
+     * Checks if the method invocation is a call to super.
+     *
+     * @param tree a tree defining a method invocation
+     * @return true iff tree describes a call to super
+     */
+    public static boolean isSuperConstructorCall(MethodInvocationTree tree) {
         return isNamedMethodCall("super", tree);
     }
 
@@ -103,8 +115,20 @@ public final class TreeUtils {
      *
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to this
+     * @deprecated use {@link #isThisConstructorCall(MethodInvocationTree)}
      */
+    @Deprecated // use isThisConstructorCall
     public static boolean isThisCall(MethodInvocationTree tree) {
+        return isNamedMethodCall("this", tree);
+    }
+
+    /**
+     * Checks if the method invocation is a call to "this".
+     *
+     * @param tree a tree defining a method invocation
+     * @return true iff tree describes a call to this
+     */
+    public static boolean isThisConstructorCall(MethodInvocationTree tree) {
         return isNamedMethodCall("this", tree);
     }
 
@@ -1286,6 +1310,18 @@ public final class TreeUtils {
         return Collections.emptyList();
     }
 
+    /** @return true if the tree is the declaration or use of a local variable */
+    public static boolean isLocalVariable(Tree tree) {
+        if (tree.getKind() == Kind.VARIABLE) {
+            return elementFromDeclaration((VariableTree) tree).getKind()
+                    == ElementKind.LOCAL_VARIABLE;
+        } else if (tree.getKind() == Kind.IDENTIFIER) {
+            return elementFromUse((ExpressionTree) tree).getKind() == ElementKind.LOCAL_VARIABLE;
+        }
+        return false;
+    }
+
+    /** @return the type as a TypeMirror of {@code tree} */
     public static TypeMirror typeOf(Tree tree) {
         return ((JCTree) tree).type;
     }

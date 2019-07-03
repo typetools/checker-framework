@@ -1536,7 +1536,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     specified {@code int} value.
      * @since 1.5
      */
-    public static @SignednessEither int reverse(@UnknownSignedness int i) {
+    public static @SignednessGlb int reverse(@UnknownSignedness int i) {
         // HD, Figure 7-1
         i = (i & 0x55555555) << 1 | (i >>> 1) & 0x55555555;
         i = (i & 0x33333333) << 2 | (i >>> 2) & 0x33333333;
@@ -1569,7 +1569,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     {@code int} value.
      * @since 1.5
      */
-    public static @SignednessEither int reverseBytes(@UnknownSignedness int i) {
+    public static @SignednessGlb int reverseBytes(@UnknownSignedness int i) {
         return ((i >>> 24)           ) |
                ((i >>   8) &   0xFF00) |
                ((i <<   8) & 0xFF0000) |
@@ -3133,7 +3133,7 @@ public final class Long extends Number implements Comparable<Long> {
      *     specified {@code long} value.
      * @since 1.5
      */
-    public static @SignednessEither long reverse(@UnknownSignedness long i) {
+    public static @SignednessGlb long reverse(@UnknownSignedness long i) {
         // HD, Figure 7-1
         i = (i & 0x5555555555555555L) << 1 | (i >>> 1) & 0x5555555555555555L;
         i = (i & 0x3333333333333333L) << 2 | (i >>> 2) & 0x3333333333333333L;
@@ -3167,7 +3167,7 @@ public final class Long extends Number implements Comparable<Long> {
      *     {@code long} value.
      * @since 1.5
      */
-    public static @SignednessEither long reverseBytes(@UnknownSignedness long i) {
+    public static @SignednessGlb long reverseBytes(@UnknownSignedness long i) {
         i = (i & 0x00ff00ff00ff00ffL) << 8 | (i >>> 8) & 0x00ff00ff00ff00ffL;
         return (i << 48) | ((i & 0xffff0000L) << 16) |
             ((i >>> 16) & 0xffff0000L) | (i >>> 48);
