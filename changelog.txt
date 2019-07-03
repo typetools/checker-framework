@@ -1,4 +1,4 @@
-Version 2.9.0, July 2, 2019
+Version 2.9.0, July 3, 2019
 
 Renamed the Signedness Checker's @Constant annotation to @SignednessGlb.
 Introduced an alias, @SignedPositive, for use by programmers.
