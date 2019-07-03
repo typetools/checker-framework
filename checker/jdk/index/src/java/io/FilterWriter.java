@@ -62,7 +62,7 @@ public abstract class FilterWriter extends Writer {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public void write(@NonNegative int c) throws IOException {
+    public void write(int c) throws IOException {
         out.write(c);
     }
 
