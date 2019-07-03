@@ -74,7 +74,7 @@ public class StringWriter extends Writer {
     /**
      * Write a single character.
      */
-    public void write(@NonNegative int c) {
+    public void write(int c) {
         buf.append((char) c);
     }
 
