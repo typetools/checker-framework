@@ -11,8 +11,8 @@ import org.checkerframework.framework.source.SupportedLintOptions;
 
 /**
  * An implementation of the nullness type-system, parameterized by an initialization type-system for
- * safe initialization. It can use freedom-before-commitment or rawness as its initialization type
- * system.
+ * safe initialization. It use freedom-before-commitment, augmented by type frames, as its
+ * initialization type system.
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
@@ -46,10 +46,6 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
     /** Default for {@link #LINT_REDUNDANTNULLCOMPARISON}. */
     public static final boolean LINT_DEFAULT_REDUNDANTNULLCOMPARISON = false;
 
-    public AbstractNullnessChecker(boolean useFbc) {
-        super(useFbc);
-    }
-
     /*
     @Override
     public void initChecker() {
@@ -74,6 +70,6 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
 
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
-        return new NullnessVisitor(this, useFbc);
+        return new NullnessVisitor(this);
     }
 }

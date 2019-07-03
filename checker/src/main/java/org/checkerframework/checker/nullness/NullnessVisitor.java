@@ -78,7 +78,7 @@ public class NullnessVisitor
     /** The element for java.util.Collection.toArray(T). */
     private final ExecutableElement collectionToArray;
 
-    public NullnessVisitor(BaseTypeChecker checker, boolean useFbc) {
+    public NullnessVisitor(BaseTypeChecker checker) {
         super(checker);
 
         NONNULL = atypeFactory.NONNULL;
@@ -95,11 +95,7 @@ public class NullnessVisitor
 
     @Override
     public NullnessAnnotatedTypeFactory createTypeFactory() {
-        // We need to directly access useFbc from the checker, because this method gets called
-        // by the superclass constructor and a field in this class would not be initialized
-        // yet. Oh the pain.
-        return new NullnessAnnotatedTypeFactory(
-                checker, ((AbstractNullnessChecker) checker).useFbc);
+        return new NullnessAnnotatedTypeFactory(checker);
     }
 
     @Override

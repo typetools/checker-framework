@@ -4,6 +4,6 @@ package org.checkerframework.checker.nullness;
 public class NullnessChecker extends AbstractNullnessChecker {
 
     public NullnessChecker() {
-        super(true);
+        super();
     }
 }
