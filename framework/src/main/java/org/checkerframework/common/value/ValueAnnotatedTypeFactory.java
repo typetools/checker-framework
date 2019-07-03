@@ -67,7 +67,6 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -1452,6 +1451,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             */
             return COVERED_CLASS_STRINGS.contains(tm.toString());
         }
+
+        @Override
+        public Void visitConditionalExpression(
+                ConditionalExpressionTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+            // Work around for https://github.com/typetools/checker-framework/issues/602.
+            annotatedTypeMirror.replaceAnnotation(UNKNOWNVAL);
+            return super.visitConditionalExpression(node, annotatedTypeMirror);
+        }
     }
 
     /**
@@ -2219,23 +2226,5 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         return getMinLenValue(lengthAnno);
-    }
-
-    @Override
-    public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
-        AnnotatedTypeMirror atm = super.getAnnotatedType(tree);
-
-        if (atm.isAnnotatedInHierarchy(UNKNOWNVAL) && tree instanceof ConditionalExpressionTree) {
-            AnnotatedTypeMirror atmTrue =
-                    getAnnotatedType(((ConditionalExpressionTree) tree).getTrueExpression());
-            AnnotatedTypeMirror atmFalse =
-                    getAnnotatedType(((ConditionalExpressionTree) tree).getFalseExpression());
-            TypeMirror alub = TreeUtils.typeOf(tree);
-            atm.replaceAnnotation(
-                    AnnotatedTypes.leastUpperBound(this, atmTrue, atmFalse, alub)
-                            .getEffectiveAnnotationInHierarchy(UNKNOWNVAL));
-        }
-
-        return atm;
     }
 }
