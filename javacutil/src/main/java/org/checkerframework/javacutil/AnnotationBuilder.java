@@ -147,7 +147,7 @@ public class AnnotationBuilder {
         AnnotationMirror res = fromName(elements, aClass.getCanonicalName());
         if (res == null) {
             throw new UserError(
-                    "AnnotationBuilder: error: fromClass can't load Class %s%n"
+                    "AnnotationBuilder: error: fromClass can't load %s .%n"
                             + "Ensure the class is on the compilation classpath.%n%s"
                             + "%n"
                             + stacktraceToString(new Throwable("Here is the stack trace")),
