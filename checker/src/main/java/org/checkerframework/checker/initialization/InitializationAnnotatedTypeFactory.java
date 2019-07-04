@@ -69,7 +69,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 Flow extends CFAbstractAnalysis<Value, Store, Transfer>>
         extends GenericAnnotatedTypeFactory<Value, Store, Transfer, Flow> {
 
-    /** {@link UnknownInitialization} or {@link Raw}. */
+    /** {@link UnknownInitialization}. */
     protected final AnnotationMirror UNCLASSIFIED;
 
     /** {@link Initialized}. */
@@ -203,10 +203,10 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Creates a {@link UnknownInitialization} or {@link Raw} annotation with a given type frame.
+     * Creates a {@link UnknownInitialization} annotation with a given type frame.
      *
      * @param typeFrame the type down to which some value has been initialized
-     * @return an {@link UnknownInitialization} or {@link Raw} annotation with the given argument
+     * @return an {@link UnknownInitialization} annotation with the given argument
      */
     public AnnotationMirror createUnclassifiedAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
@@ -217,10 +217,10 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Creates an {@link UnknownInitialization} or {@link Raw} annotation with a given type frame.
+     * Creates an {@link UnknownInitialization} annotation with a given type frame.
      *
      * @param typeFrame the type down to which some value has been initialized
-     * @return an {@link UnknownInitialization} or {@link Raw} annotation with the given argument
+     * @return an {@link UnknownInitialization} annotation with the given argument
      */
     public AnnotationMirror createUnclassifiedAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
@@ -256,7 +256,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * Is {@code anno} the {@link UnknownInitialization} annotation (with any type frame)?
      *
      * @param anno the annotation to check
-     * @return true if {@code anno} is {@link UnknownInitialization} or {@link Raw}
+     * @return true if {@code anno} is {@link UnknownInitialization}
      */
     public boolean isUnclassified(AnnotationMirror anno) {
         return AnnotationUtils.areSameByClass(anno, UnknownInitialization.class);
@@ -296,7 +296,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * Does {@code anno} have the annotation {@link UnknownInitialization} (with any type frame)?
      *
      * @param anno the annotation to check
-     * @return true if {@code anno} has {@link UnknownInitialization} or {@link Raw}
+     * @return true if {@code anno} has {@link UnknownInitialization}
      */
     public boolean isUnclassified(AnnotatedTypeMirror anno) {
         return anno.hasEffectiveAnnotation(UnknownInitialization.class);
