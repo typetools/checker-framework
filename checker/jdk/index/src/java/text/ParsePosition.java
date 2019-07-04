@@ -64,7 +64,7 @@ public class ParsePosition {
      * This is designed to be used serially,
      * with each call setting index up for the next one.
      */
-    int index = 0;
+    @NonNegative int index = 0;
     int errorIndex = -1;
 
     /**
@@ -83,7 +83,7 @@ public class ParsePosition {
      *
      * @param index the current parse position
      */
-    public void setIndex(int index) {
+    public void setIndex(@NonNegative int index) {
         this.index = index;
     }
 
@@ -92,7 +92,7 @@ public class ParsePosition {
      *
      * @param index initial index
      */
-    public ParsePosition(int index) {
+    public ParsePosition(@NonNegative int index) {
         this.index = index;
     }
     /**
