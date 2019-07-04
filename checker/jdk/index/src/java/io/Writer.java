@@ -105,7 +105,7 @@ public abstract class Writer implements Appendable, Closeable, Flushable {
      * @throws  IOException
      *          If an I/O error occurs
      */
-    public void write(@NonNegative int c) throws IOException {
+    public void write(int c) throws IOException {
         synchronized (lock) {
             if (writeBuffer == null){
                 writeBuffer = new char[writeBufferSize];
