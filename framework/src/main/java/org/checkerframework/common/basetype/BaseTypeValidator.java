@@ -185,8 +185,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             final Tree p) {
         // TODO: if underlying is a compound type such as List<@Palindrome String>, then it would be
         // nice to print it as "List" instead of as "List<@Palindrome String>".
-        TypeMirror underlying = type.getUnderlyingType();
-        checker.report(Result.failure(errorType, type.getAnnotations(), underlying.toString()), p);
+        TypeMirror unannotated = TypeAnnotationUtils.unannotatedType(type.getUnderlyingType());
+        checker.report(Result.failure(errorType, type.getAnnotations(), unannotated.toString()), p);
         isValid = false;
     }
 
