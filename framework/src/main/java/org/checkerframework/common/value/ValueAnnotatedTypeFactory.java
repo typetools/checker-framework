@@ -1457,7 +1457,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ConditionalExpressionTree node, AnnotatedTypeMirror annotatedTypeMirror) {
             // Work around for https://github.com/typetools/checker-framework/issues/602.
             annotatedTypeMirror.replaceAnnotation(UNKNOWNVAL);
-            return super.visitConditionalExpression(node, annotatedTypeMirror);
+            return null;
         }
     }
 
