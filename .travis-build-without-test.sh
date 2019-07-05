@@ -70,7 +70,7 @@ fi
 
 if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   echo "running \"./gradlew assemble\" for checker-framework"
-  ./gradlew assemble --console=plain --warning-mode=all -s --no-daemon
+  ./gradlew assemble printJdkJarManifest --console=plain --warning-mode=all -s --no-daemon
 fi
 
 echo Exiting `pwd`/.travis-build-without-test.sh
