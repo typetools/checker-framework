@@ -2149,10 +2149,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Set<AnnotationMirror> newAnnos = AnnotationUtils.createAnnotationSet();
         Set<AnnotationMirror> typeBoundAnnos =
                 getTypeDeclarationBounds(newBound.getUnderlyingType());
+        Set<AnnotationMirror> wildcardBoundAnnos =
+                classWildcardArg.getExtendsBound().getAnnotations();
         for (AnnotationMirror typeBoundAnno : typeBoundAnnos) {
             AnnotationMirror wildcardAnno =
-                    qualHierarchy.findAnnotationInSameHierarchy(
-                            classWildcardArg.getExtendsBound().getAnnotations(), typeBoundAnno);
+                    qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, typeBoundAnno);
             if (qualHierarchy.isSubtype(typeBoundAnno, wildcardAnno)) {
                 newAnnos.add(typeBoundAnno);
             } else {
