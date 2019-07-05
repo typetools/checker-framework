@@ -65,10 +65,10 @@ class ThreadGroup implements Thread.UncaughtExceptionHandler {
     boolean vmAllowSuspension;
 
     int nUnstartedThreads = 0;
-    @NonNegative int nthreads;
+    int nthreads;
     Thread threads[];
 
-    @NonNegative int ngroups;
+    int ngroups;
     ThreadGroup groups[];
 
     /**
@@ -258,7 +258,6 @@ class ThreadGroup implements Thread.UncaughtExceptionHandler {
      * @see        java.lang.ThreadGroup#checkAccess()
      * @since      JDK1.0
      */
-    @SuppressWarnings("index:array.access.unsafe.high.range") // #1: groupsSnapshot.length = ngroupsSnapshot by #0.1
     public final void setMaxPriority(int pri) {
         int ngroupsSnapshot;
         ThreadGroup[] groupsSnapshot;
@@ -336,7 +335,6 @@ class ThreadGroup implements Thread.UncaughtExceptionHandler {
      *
      * @since   JDK1.0
      */
-    @SuppressWarnings("index:array.access.unsafe.high.range") // #1: groupsSnapshot.length = ngroupsSnapshot by #0.1
     public @NonNegative int activeCount() {
         int result;
         // Snapshot sub-group data so we don't hold this lock
@@ -426,7 +424,7 @@ class ThreadGroup implements Thread.UncaughtExceptionHandler {
         return enumerate(list, 0, recurse);
     }
 
-    private @NonNegative int enumerate(Thread list[], @NonNegative int n, boolean recurse) {
+    private @NonNegative int enumerate(Thread list[], int n, boolean recurse) {
         int ngroupsSnapshot = 0;
         ThreadGroup[] groupsSnapshot = null;
         synchronized (this) {
@@ -475,7 +473,7 @@ class ThreadGroup implements Thread.UncaughtExceptionHandler {
      * @since   JDK1.0
      */
     public @NonNegative int activeGroupCount() {
-        @NonNegative int ngroupsSnapshot;
+        int ngroupsSnapshot;
         ThreadGroup[] groupsSnapshot;
         synchronized (this) {
             if (destroyed) {
@@ -560,7 +558,7 @@ class ThreadGroup implements Thread.UncaughtExceptionHandler {
         return enumerate(list, 0, recurse);
     }
 
-    private @NonNegative int enumerate(ThreadGroup list[], @NonNegative int n, boolean recurse) {
+    private @NonNegative int enumerate(ThreadGroup list[], int n, boolean recurse) {
         int ngroupsSnapshot = 0;
         ThreadGroup[] groupsSnapshot = null;
         synchronized (this) {
