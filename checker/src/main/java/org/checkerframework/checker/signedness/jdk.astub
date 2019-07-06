@@ -3218,6 +3218,16 @@ public final class Long extends Number implements Comparable<Long> {
     @Native private static final long serialVersionUID = 4290774380558885855L;
 }
 
+class String {
+    public String(@PolySigned byte bytes[], int offset, int length, Charset charset);
+    public String(@PolySigned byte bytes[], Charset charset);
+    public @PolySigned byte[] getBytes(String charsetName) throws UnsupportedEncodingException;
+    public @PolySigned byte[] getBytes(Charset charset);
+    public @PolySigned byte[] getBytes();
+
+
+}
+
 package java.io;
 
 class BufferedOutputStream {
@@ -3226,6 +3236,15 @@ class BufferedOutputStream {
 
 class ByteArrayOutputStream {
     public synchronized void write(@PolySigned byte b[], int off, int len);
+    public @PolySigned byte[] toByteArray();
+}
+
+class DataInputStream {
+    public final int read(@PolySigned byte[] b) throws IOException;
+    public final int read(@PolySigned byte[] b, int off, int len) throws IOException;
+    public final void readFully(@PolySigned byte[] b) throws IOException;
+    public final void readFully(@PolySigned byte[] b, int off, int len) throws IOException;
+
 }
 
 class DataOutputStream {
@@ -3412,6 +3431,16 @@ class InflaterOutputStream {
 
 class ZipOutputStream {
     public synchronized void write(@PolySigned byte[] b, int off, int len);
+}
+
+package java.util.Base64;
+
+class Decoder {
+    public @PolySigned byte[] decode(String src);
+}
+
+class Encoder {
+    public String encodeToString(@PolySigned byte[] src);
 }
 
 package javax.imageio.stream;
