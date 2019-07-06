@@ -3224,8 +3224,6 @@ class String {
     public @PolySigned byte[] getBytes(String charsetName) throws UnsupportedEncodingException;
     public @PolySigned byte[] getBytes(Charset charset);
     public @PolySigned byte[] getBytes();
-
-
 }
 
 package java.io;
