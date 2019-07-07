@@ -162,7 +162,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools guava`
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
   if [ $BRANCH = "master" ] ; then
-    REPO=https://github.com/typetools/guava.git
+    REPO=https://github.com/${SLUGOWNER}/guava.git
     BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
     if [ $BRANCH = "master" ] ; then
       BRANCH=cf-master
