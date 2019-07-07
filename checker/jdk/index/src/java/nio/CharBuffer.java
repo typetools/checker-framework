@@ -1503,7 +1503,6 @@ public abstract class CharBuffer
 
 
 
-    @Override
 
     public IntStream chars() {
         return StreamSupport.intStream(() -> new CharBufferSpliterator(this),
