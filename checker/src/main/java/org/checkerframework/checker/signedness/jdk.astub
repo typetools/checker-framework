@@ -3219,7 +3219,7 @@ public final class Long extends Number implements Comparable<Long> {
 }
 
 class String {
-    public String(@PolySigned byte[] bytes)
+    public String(@PolySigned byte[] bytes);
     public String(@PolySigned byte[] bytes, int offset, int length);
     public String(@PolySigned byte[] bytes, int offset, int length, String charsetName) throws UnsupportedEncodingException;
     public String(@PolySigned byte[] bytes, String charsetName) throws UnsupportedEncodingException;
