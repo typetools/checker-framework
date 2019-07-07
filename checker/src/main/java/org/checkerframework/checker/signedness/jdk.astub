@@ -3246,7 +3246,6 @@ class DataInputStream {
     public final int read(@PolySigned byte[] b, int off, int len) throws IOException;
     public final void readFully(@PolySigned byte[] b) throws IOException;
     public final void readFully(@PolySigned byte[] b, int off, int len) throws IOException;
-
 }
 
 class DataOutputStream {
