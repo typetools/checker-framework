@@ -55,6 +55,7 @@ package java.text;
  */
 
 import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.GTENegativeOne;
 
 public class ParsePosition {
 
@@ -65,7 +66,7 @@ public class ParsePosition {
      * with each call setting index up for the next one.
      */
     @NonNegative int index = 0;
-    int errorIndex = -1;
+    @GTENegativeOne int errorIndex = -1;
 
     /**
      * Retrieve the current parse position.  On input to a parse method, this
@@ -103,7 +104,7 @@ public class ParsePosition {
      * @param ei the index at which an error occurred
      * @since 1.2
      */
-    public void setErrorIndex(int ei)
+    public void setErrorIndex(@GTENegativeOne int ei)
     {
         errorIndex = ei;
     }
@@ -115,7 +116,7 @@ public class ParsePosition {
      * @return the index at which an error occurred
      * @since 1.2
      */
-    public int getErrorIndex()
+    public @GTENegativeOne int getErrorIndex()
     {
         return errorIndex;
     }
