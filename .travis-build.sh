@@ -157,10 +157,12 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools guava`
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
   if [ $BRANCH = "master" ] ; then
+    # ${SLUGOWNER} has a fork of Guava, but no branch that corresponds to the pull-requested branch.
+    # Use upstream instead.
     REPO=https://github.com/typetools/guava.git
     BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
     if [ $BRANCH = "master" ] ; then
-      BRANCH=cf-master
+      BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} cf-master master`
     fi
   fi
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava)
