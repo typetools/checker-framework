@@ -30,6 +30,9 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
 SLUGOWNER=`/tmp/plume-scripts/git-organization typetools`
 echo SLUGOWNER=$SLUGOWNER
 
+echo TRAVIS=$TRAVIS
+echo AZURE_HTTP_USER_AGENT=$AZURE_HTTP_USER_AGENT
+
 ## Build annotation-tools (Annotation File Utilities)
 if [ -d ../annotation-tools ] ; then
     git -C ../annotation-tools pull -q || true
