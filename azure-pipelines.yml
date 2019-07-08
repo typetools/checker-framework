@@ -3,21 +3,39 @@
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
-trigger:
-- master
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-- task: Gradle@2
-  inputs:
-    workingDirectory: ''
-    gradleWrapperFile: 'gradlew'
-    gradleOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: false
-    testResultsFiles: '**/TEST-*.xml'
-    tasks: 'build'
+jobs:
+- job: build
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/ubuntu-for-cf-jdk8:latest
+  steps:
+  - bash: ./checker/bin-devel/build.sh
+    displayName: test-nonSystemTest.sh
+# - job: systemTest_jdk8
+#   pool:
+#     vmImage: 'ubuntu-16.04'
+#   container: mdernst/ubuntu-for-cf-jdk8:latest
+#   steps:
+#   - bash: ./scripts/test-systemTest.sh
+#     displayName: test-systemTest.sh
+# # - job: nonSystemTest_jdk11
+# #   pool:
+# #     vmImage: 'ubuntu-16.04'
+# #   container: mdernst/ubuntu-for-cf-jdk11:latest
+# #   steps:
+# #   - bash: ./scripts/test-nonSystemTest.sh
+# #     displayName: test-nonSystemTest.sh
+# # - job: systemTest_jdk11
+# #   pool:
+# #     vmImage: 'ubuntu-16.04'
+# #   container: mdernst/ubuntu-for-cf-jdk11:latest
+# #   steps:
+# #   - bash: ./scripts/test-systemTest.sh
+# #     displayName: test-systemTest.sh
+# - job: misc
+#   pool:
+#     vmImage: 'ubuntu-16.04'
+#   container: mdernst/ubuntu-for-cf-jdkany:latest
+#   steps:
+#   - bash: ./scripts/test-misc.sh
+#     displayName: test-misc.sh
