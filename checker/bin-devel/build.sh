@@ -27,7 +27,7 @@ export JAVA_HOME
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
     || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 
-SLUGOWNER=`/tmp/plume-scripts/git-owner typetools`
+SLUGOWNER=`/tmp/plume-scripts/git-organization typetools`
 echo SLUGOWNER=$SLUGOWNER
 
 ## Build annotation-tools (Annotation File Utilities)
