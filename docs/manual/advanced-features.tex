@@ -83,6 +83,73 @@ that either in the context (change the declaration of \<myStrings>) or in a
 \<new> construct (change the expression to \<new @Regex String[] >\verb|{"hello"}|).
 
 
+\sectionAndLabel{Upper bound of qualifiers on uses of a given type}{upper-bound-for-use}
+The examples in this section use the type qualifier hierarchy \code{@A :> @B :> @C}.
+
+A qualifier on a use of a certain type must be a subtype or equal to the upper bound for that type.
+The upper bound of qualifiers used on a given type is specified by annotating the type declaration
+with some qualifier.
+\begin{Verbatim}
+  @C class MyClass {}
+\end{Verbatim}
+
+This means that \<@B MyClass> is an invalid type.  (Annotations on class declarations may also specify
+default annotations for uses of the type; see Section~\ref{default-for-use})
+
+An upper bound can also be specified by the type-system designer using the meta-annotation
+\refqualclass{framework/qual}{UpperBoundFor}.
+
+If no annotation is present on a type declaration and if no \<@UpperBoundFor> mentions the type, then
+the bound is top. This can be changed by overriding
+\refmethodanchortext{framework/type}{AnnotatedTypeFactory}{getTypeDeclarationBounds}{-javax.lang.model.type.TypeMirror-}{AnnotatedTypeFactory\#getTypeDeclarationBounds}.
+
+There are two exceptions.
+\begin{itemize}
+  \item
+  An expression can have a supertype of the upper bound; that is, some expression could
+  have type \<@B MyClass>.  This type is not written explicitly, but results from viewpoint adaptation.
+  \item
+  Using usual CLIMB-to-top rules, local variables of type MyClass default to \<@A MyClass>.
+  It is legal for \<@A MyClass> to be the type of a local variable.
+  For consistency, users are allowed to write such a type on a local variable declaration.
+\end{itemize}
+
+Due to existing type rules, an expression of type \<A MyClass> can only be used in limited ways.
+\begin{itemize}
+  \item
+  Since every field, formal parameter, and return type of type MyClass (or lower) is annotated as
+  \<@B> (or lower), it cannot be assigned to a field, passed to a method, or returned from a method.
+  \item
+  It can be used in a context that requires \<@A Object> (or whatever the least supertype is of MyClass
+  for which the \<@A> qualifier is permitted).  Examples include being tested against \<null> or
+  (for most type systems) being passed to polymorphic routines such as \<System.out.println> or \<System.identityHashCode>.
+\end{itemize}
+
+These operations might refine its type.  If a user wishes to annotate a method that does type refinement,
+its formal parameter must be of illegal type \<@A MyClass>, which requires a warning suppression.
+
+If the framework forbid expressions and local variables from having types inconsistent with the class annotation,
+then important APIs and common coding paradigms will no longer type-check.
+
+Consider the annotation
+\begin{Verbatim}
+  @NonNull class Optional { ... }
+\end{Verbatim}
+and the client code
+
+\begin{Verbatim}
+  Map<String, Optional> m;
+  String key = ...;
+  Optional value = m.get(key);
+  if (value != null) {
+  ...;
+  }
+\end{Verbatim}
+
+The type of \<m.get(key)> is \<@Nullable Optional>, which is an illegal type.
+However, this is a very common paradigm.  Programmers should not need to rewrite the code to test
+\<m.containsKey(key)> nor suppress a warning in this safe code.
+
 \sectionAndLabel{The effective qualifier on a type (defaults and inference)}{effective-qualifier}
 
 A checker sometimes treats a type as having a slightly different qualifier
@@ -92,12 +159,7 @@ Most readers can skip this section on first reading, because you will
 probably find the system simply ``does what you mean'', without forcing
 you to write too many qualifiers in your program.
 In particular, qualifiers in method bodies are rare (except occasionally on
-type arguments).
-
-Most of this section is about defaults for source code that is read by
-the compiler.  When the compiler reads a \<.class> file, different
-defaulting rules apply.
-See Section~\ref{defaults-classfile} for these rules.
+type arguments and array component types).
 
 The following steps determine the effective
 qualifier on a type --- the qualifier that the checkers treat as being present.
@@ -106,66 +168,12 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 \item
   If a type qualifier is present in the source code, that qualifier is used.
 
-  If the type would have an implicit qualifier (step 2, immediately below),
-  then it is an error to write an
-  explicit qualifier that is equal to (redundant with) or a supertype of
-  (weaker than) the implicit qualifier.  A programmer may strengthen
-  (write a subtype of) an implicit qualifier, however.
-
 \item
-  If there is no explicit type qualifier,
-  the type system adds implicit qualifiers.
-
-  Implicit qualifiers arise from two sources:
-\begin{description}
-\item[built-in]
-  Implicit qualifiers can be
-  built into a type system (Section~\ref{creating-type-introduction}), in
-  which case the type system's documentation explains all of the type
-  system's implicit qualifiers.
-
-  Here are some examples of built-in implicit qualifiers:
-
-\begin{itemize}
-\item
-  In the Nullness type system (see \chapterpageref{nullness-checker}),
-  \<enum> values, string literals, and method receivers are always non-null.
-\item
-  In the Interning type system (see \chapterpageref{interning-checker}),
-  string literals and \<enum> values are always interned.
-\end{itemize}
-
-\item[programmer-declared]
-  A programmer may introduce an implicit annotation on each use of class
-  $C$ by writing a qualifier on the declaration of class $C$.  If \<MyClass>
-  is declared as \<class @MyAnno MyClass \ttlcb...\ttrcb>, then each
-  unqualified occurrence of
-  \<MyClass> in the source code is treated as if it were \<@MyAnno
-  MyClass>.
-
-  A programmer may introduce an implicit annotation on each invocation of a
-  constructor
-  by writing a qualifier on the declaration of the constructor.  Given
-  declaration \<@MyAnno MyClass(int arg) \ttlcb...\ttrcb>, then each
-  unqualified occurrence of
-  \<new MyClass(myInt)> in the source code is treated as if it were \<new @MyAnno
-  MyClass(myInt)>.
-\end{description}
-
-
-
-\item
-  If there is no explicit or implicit qualifier on a type, then a default
+  If there is no explicit qualifier on a type, then a default
   qualifier
   % except for type parameters, but don't clutter this text with that detail
-  is applied; see Section~\ref{defaults}.
-
-%BEGIN LATEX
-  % This looks bad in HTML.
-  \smallskip
-%END LATEX
-
-  At this point (after step 3), every type has a qualifier.
+  is applied; see Section~\ref{defaults}. Defaulted qualifiers are treated by checkers
+  exactly as if the programmer had written them explicitly.
 
 \item
   The type system may refine a qualified type on a local variable --- that
@@ -173,45 +181,100 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
   refinement is always sound and has the effect of eliminating false
   positive error messages.  See Section~\ref{type-refinement}.
 
-  % Type
-  % qualifier refinement is implemented by the \refclass{framework/flow}{Flow} class.
-
 \end{enumerate}
 
+%TODO: Where does @QualifierForLiterals go?
 
-
-\subsectionAndLabel{Default qualifier for unannotated types}{defaults}
+\sectionAndLabel{Default qualifier for unannotated types}{defaults}
 
 An unannotated
 Java type is treated as if it had a default annotation.
 Both the type system designer and an end-user programmer can control the defaulting.
 Defaulting never applies to uses of type variables, even if they do not
 have an explicit type annotation.
+% TODO: If the type of a local variable is a use of a type parameter, then it is defaulted to top,
+% so it can be refined. I don't know that's worth mentioning here.  Maybe just change never to does not?
+Most of this section is about defaults for source code that is read by
+the compiler.  When the compiler reads a \<.class> file, different
+defaulting rules apply.
+See Section~\ref{defaults-classfile} for these rules.
 
 There are several defaulting mechanisms, for convenience and flexibility.
-When determining the default qualifier for a use of a type, the following
+When determining the default qualifier for a use of an unannotated type, \<MyClass>, the following
 rules are used in order, until one applies.
-(Some of these currently do not work in stub files.)
-\begin{itemize}
+%TODO: I don't think this is true.(Some of these currently do not work in stub files.)
+
+\begin{enumerate}
 \item
-  Use the innermost user-written \code{@DefaultQualifier}, as explained in
-  this section.
+  The qualifier specified via \<@DefaultQualifierForUse> on the declaration of the \<MyClass>.
+  (Section~\ref{default-for-use})
 \item
-  Use the default specified by the type system designer
-  (Section~\ref{creating-typesystem-defaults});
+  If no \<@NoDefaultQualifierForUse> is written on the declaration of \<MyClass>, the qualifier
+  explicitly written on the declaration of \<MyClass>. (Section~\ref{default-for-use})
+\item
+  The qualifier with a meta-annotation \<@DefaultFor(types = MyClass.class)>. (Section~\ref{default-for-use})
+\item
+  The qualifier with a meta-annotation \<@DefaultFor(typeKinds = KIND)>, where \<KIND> is the
+  \<TypeKind> of \<MyClass>. (Section~\ref{default-for-use})
+\item
+  The qualifier in the innermost user-written \<@DefaultQualifier> for the location of the use of \<MyClass>.
+  (Section~\ref{default-qualifier})
+\item
+  The qualifier in the meta-annotation \<@DefaultFor> for the location of the use of \<MyClass>.
+  These are defaults specified by the type system designer (Section~\ref{creating-typesystem-defaults});
   this is usually CLIMB-to-top (Section~\ref{climb-to-top}).
 \item
-  When using the Subtyping Checker,
-  use \refqualclass{common/subtyping/qual}{Unqualified}
-  as default, if it is a supported qualifier and nothing else is specified by the
-  type system designer.
-  This makes initial experiments with the Subtyping Checker convenient.
-\end{itemize}
+  The qualifier with the meta-annotation \<@DefaultQualifierInHierarchy>
+\end{enumerate}
+
+If the unannotated type is the type of a local variable, then the first 5 rules are skipped and only
+rules 6 and 7 apply.  This makes the type local variables top so they can be refined.
 
 % (Implementation detail:  setting defaults is implemented by the
 % \refclass{framework/util}{QualifierDefaults} class.)
 
+\subsectionAndLabel{Default for use of a type}{default-for-use}
+The type declaration annotation \refqualclass{framework/qual}{DefaultQualifierForUse}
+indicates that the specified qualifier should be added to all unannotated uses of the type.
 
+For example:
+\begin{Verbatim}
+@DefaultQualifierForUse(B.class)
+class MyClass {}
+\end{Verbatim}
+
+This means any unannotated use of \<MyClass> is treated as \<@B MyClass> by the checker.
+(Except for locals, which can be refined.)
+
+Similarly, the meta-annotation \refqualclass{framework/qual}{DefaultFor} can be used to specify defaults
+for uses of of types, using the \<types> element, or type kinds, using the \<typeKinds> elements.
+
+Interaction between qualifier bounds and \<DefaultQualifierForUse>:
+\begin{itemize}
+\item
+  If a type declaration is annotated with a qualifier bound, but not a \<@DefaultQualifierForUse>,
+  then the qualifier bound is added to all unannotated uses of that type (except locals).
+  For example, \<@C class MyClass {}> is equivalent to
+\begin{Verbatim}
+@DefaultQualifierForUse(C.class)
+@C class MyClass {}
+\end{Verbatim}
+
+\item
+  If the qualifier bound should not be added to all unannotated uses, then
+  \refqualclass{framework/qual}{NoDefaultQualifierForUse} should be written on the declaration:
+\begin{Verbatim}
+@NoDefaultQualifierForUse
+@C class MyClass {}
+\end{Verbatim}
+  This means that unannotated uses of MyClass are defaulted normally.
+\item
+  If neither \<@DefaultQualifierForUse> nor a qualifier bound is present on a type declaration, that
+  is equivalent to writing \<@NoDefaultQualifierForUse>.
+
+\end{itemize}
+
+\subsectionAndLabel{Controlling defaults in source code}{default-qualifier}
 The end-user programmer specifies a default qualifier by writing the
 \refqualclass{framework/qual}{DefaultQualifier}\code{(\emph{ClassName}, }[\emph{locations}]\<)>
 annotation on a package, class, method, or variable declaration.  The
@@ -254,13 +317,6 @@ all subpackages.
 % This is slightly at odds with Java's treatment of packages of different
 % names as essentially unrelated, but is more intuitive and useful.
 
-Recall that an annotation on a class definition indicates an implicit
-qualifier (Section~\ref{effective-qualifier}) that can only be
-strengthened, not weakened.  This can lead to unexpected results if
-the default qualifier applies to a class definition.  Thus, you may want to
-put explicit qualifiers on class declarations (which prevents the default
-from taking effect), or exclude class declarations from defaulting.
-
 
 %% Don't even bother to bring this up; it will just sow confusion without
 %% being helpful.
@@ -270,9 +326,9 @@ from taking effect), or exclude class declarations from defaulting.
 % Section~\ref{bottom-and-top-qualifier}.
 
 
-When a programmer omits an \<extends> clause at a declaration of a type
-parameter, the implicit upper bound is defaulted to the top qualifier; see
-Section~\ref{climb-to-top}.
+%When a programmer omits an \<extends> clause at a declaration of a type
+%parameter, the implicit upper bound is defaulted to the top qualifier; see
+%Section~\ref{climb-to-top}.
 
 
 \subsectionAndLabel{Defaulting rules and CLIMB-to-top}{climb-to-top}
@@ -561,29 +617,7 @@ misbehave at run time.
 
 
 \newpage
-
-\sectionAndLabel{Annotations on classes and constructors}{annotations-on-classes-and-constructors}
-
-\subsectionAndLabel{Annotations on type declarations}{annotations-on-type-declarations}
-
-% TODO: use a more realistic example.
-
-Writing an annotation on a type (class or interface) declaration makes that annotation implicit
-for all uses of the type (see Section~\ref{effective-qualifier}).
-That is, the annotation is an upper bound for all uses of the type.
-
-Consider the type hierarchy \code{@A :> @B :> @C} and the following
-declaration:
-
-\begin{Verbatim}
-@B class MyClass { ... }
-\end{Verbatim}
-
-\noindent
-Every unannotated use of \<MyClass> is \<@B MyClass>, and every use of
-\<MyClass> must be a subtype of \<@B> --- that is, \<@A MyClass> is not a
-valid type, but \<@C MyClass> is valid.
-
+\sectionAndLabel{Annotations on constructors}{annotations-on-constructors}
 
 \subsectionAndLabel{Annotations on constructor declarations}{annotations-on-constructor-declarations}
 

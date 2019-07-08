@@ -137,7 +137,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * @param type the type to annotate
      */
     @Override
-    public void annotate(MethodInvocationTree tree, AnnotatedExecutableType type) {
+    public void resolve(MethodInvocationTree tree, AnnotatedExecutableType type) {
         if (polyQuals.isEmpty()) {
             return;
         }
@@ -161,8 +161,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         // type. So, just skip those.  This is consistent with skipping receivers of constructors
         // below.
         if (type.getReceiverType() != null
-                && !TreeUtils.isSuperCall(tree)
-                && !TreeUtils.isThisCall(tree)) {
+                && !TreeUtils.isSuperConstructorCall(tree)
+                && !TreeUtils.isThisConstructorCall(tree)) {
             instantiationMapping =
                     collector.reduce(
                             instantiationMapping,
@@ -179,7 +179,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     @Override
-    public void annotate(NewClassTree tree, AnnotatedExecutableType type) {
+    public void resolve(NewClassTree tree, AnnotatedExecutableType type) {
         if (polyQuals.isEmpty()) {
             return;
         }
@@ -235,7 +235,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     @Override
-    public void annotate(
+    public void resolve(
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference) {
         for (AnnotationMirror type : functionalInterface.getReturnType().getAnnotations()) {
             if (QualifierPolymorphism.hasPolymorphicQualifier(type)) {

@@ -2705,11 +2705,11 @@ public class ObjectInputStream
             readFully(b, 0, b.length, false);
         }
 
-        public void readFully(byte[] b, int off, int len) throws IOException {
+        public void readFully(byte[] b, @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
             readFully(b, off, len, false);
         }
 
-        public void readFully(byte[] b, int off, int len, boolean copy)
+        public void readFully(byte[] b, @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len, boolean copy)
             throws IOException
         {
             while (len > 0) {

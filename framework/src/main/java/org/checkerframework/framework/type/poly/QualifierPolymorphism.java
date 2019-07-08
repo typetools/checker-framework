@@ -119,7 +119,7 @@ public interface QualifierPolymorphism {
      * @param tree the tree associated with the type
      * @param type the type to annotate; is side-effected by this method
      */
-    void annotate(MethodInvocationTree tree, AnnotatedExecutableType type);
+    void resolve(MethodInvocationTree tree, AnnotatedExecutableType type);
 
     /**
      * Resolves polymorphism annotations for the given type.
@@ -127,7 +127,7 @@ public interface QualifierPolymorphism {
      * @param tree the tree associated with the type
      * @param type the type to annotate; is side-effected by this method
      */
-    void annotate(NewClassTree tree, AnnotatedExecutableType type);
+    void resolve(NewClassTree tree, AnnotatedExecutableType type);
 
     /**
      * Resolves polymorphism annotations for the given type.
@@ -135,7 +135,7 @@ public interface QualifierPolymorphism {
      * @param functionalInterface the function type of {@code memberReference}
      * @param memberReference the type of a member reference; is side-effected by this method
      */
-    void annotate(
+    void resolve(
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference);
 
     /**

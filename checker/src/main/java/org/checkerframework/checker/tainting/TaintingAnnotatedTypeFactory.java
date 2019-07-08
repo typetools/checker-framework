@@ -2,15 +2,9 @@ package org.checkerframework.checker.tainting;
 
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
-import java.util.ArrayList;
-import java.util.List;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
-import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
-import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class TaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -31,16 +25,5 @@ public class TaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     getAnnotatedType(((MemberSelectTree) tree).getExpression());
             type.replaceAnnotations(arrayType.getEffectiveAnnotations());
         }
-    }
-
-    @Override
-    protected TypeAnnotator createTypeAnnotator() {
-        List<TypeAnnotator> typeAnnotators = new ArrayList<>();
-
-        typeAnnotators.add(new PropagationTypeAnnotator(this));
-        ImplicitsTypeAnnotator implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
-        typeAnnotators.add(implicitsTypeAnnotator);
-        //        implicitsTypeAnnotator.addTypeClass(AnnotatedArrayType.class, UNTAINTED);
-        return new ListTypeAnnotator(typeAnnotators);
     }
 }
