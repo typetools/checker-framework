@@ -137,7 +137,7 @@ task updateJdk() {
         }
     }
 }
-''
+
 task printJdkJarManifest(type: Copy) {
     description 'Outputs the manifest file for checker/dist/jdk8.jar'
     outputs.upToDateWhen { false }
