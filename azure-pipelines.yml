@@ -10,7 +10,7 @@ jobs:
   container: mdernst/ubuntu-for-cf-jdk8:latest
   steps:
   - bash: ./checker/bin-devel/build.sh
-    displayName: test-nonSystemTest.sh
+    displayName: build.sh
 # - job: systemTest_jdk8
 #   pool:
 #     vmImage: 'ubuntu-16.04'
