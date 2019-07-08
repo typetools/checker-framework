@@ -4,7 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
 jobs:
-- job: nonSystemTest_jdk8
+- job: build
   pool:
     vmImage: 'ubuntu-16.04'
   container: mdernst/ubuntu-for-cf-jdk8:latest
