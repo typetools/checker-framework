@@ -32,6 +32,8 @@ jdk.jar-unconditionally: clean classes
 # the original JDK.
 jdk.jar-insertion:
 	echo Checker-Framework-Version: `git rev-parse --short HEAD` > manifest.txt
+	echo Checker-Framework-Commit-Author: `git show -s --pretty=%aN\ \<%ae\> HEAD` >> manifest.txt
+	echo Checker-Framework-Commit-Refs: `git show -s --pretty=%d HEAD` >> manifest.txt
 	echo Creation-Date: `date` >> manifest.txt
 	cd annotated; jar cfm ../jdk.jar ../manifest.txt .
 	rm manifest.txt

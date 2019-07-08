@@ -1,3 +1,5 @@
+import java.util.zip.ZipFile
+
 ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
@@ -134,6 +136,21 @@ task updateJdk() {
             }
         }
     }
+}
+''
+task printJdkJarManifest(type: Copy) {
+    description 'Outputs the manifest file for checker/dist/jdk8.jar'
+    outputs.upToDateWhen { false }
+
+      from (zipTree('dist/jdk8.jar')) {
+          include"META-INF/MANIFEST.MF"
+        }
+    into 'tmp'
+    doLast{
+        println(new File(projectDir,'tmp/META-INF/MANIFEST.MF').text)
+        delete 'tmp/META-INF/MANIFEST.MF'
+    }
+
 }
 
 task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
