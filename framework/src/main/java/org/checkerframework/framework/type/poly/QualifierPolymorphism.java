@@ -145,5 +145,5 @@ public interface QualifierPolymorphism {
      * @param owner the type of the object whose field is being typed
      * @param type type of the field which still has poly annotations
      */
-    void annotate(VariableElement field, AnnotatedTypeMirror owner, AnnotatedTypeMirror type);
+    void resolve(VariableElement field, AnnotatedTypeMirror owner, AnnotatedTypeMirror type);
 }

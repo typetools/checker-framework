@@ -209,7 +209,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     @Override
-    public void annotate(
+    public void resolve(
             VariableElement field, AnnotatedTypeMirror owner, AnnotatedTypeMirror type) {
         if (polyQuals.isEmpty()) {
             return;

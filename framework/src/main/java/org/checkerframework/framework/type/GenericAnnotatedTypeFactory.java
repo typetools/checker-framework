@@ -1761,7 +1761,7 @@ public abstract class GenericAnnotatedTypeFactory<
             AnnotatedTypeMirror type, AnnotatedTypeMirror owner, Element element) {
         super.postAsMemberOf(type, owner, element);
         if (element.getKind() == ElementKind.FIELD) {
-            poly.annotate(((VariableElement) element), owner, type);
+            poly.resolve(((VariableElement) element), owner, type);
         }
     }
 
