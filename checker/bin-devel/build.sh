@@ -27,15 +27,18 @@ if [[ "$TRAVIS" == "true" ]]; then
     SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
   fi
 elif [ -n "$AZURE_HTTP_USER_AGENT" ]; then
-  SLUG=`curl https://api.github.com/repos/${BUILD_REPOSITORY_NAME}/pulls/${SYSTEM_PULLREQUEST_PULLREQUESTNUMBER} | jq .head.label`
+  SLUG=`wget -q -O - https://api.github.com/repos/randoop/randoop/pulls/536 | jq .head.label`
   echo "SLUG=$SLUG"
-  SLUGOWNER=${SLUG%:*}  # will drop part of string from last occur of `SubStr` to the end
-  SLUGREPO=${SLUG#*:}  # will drop begin of string up to first occur of `SubStr`
+  SLUGOWNER=${SLUG%:*}
+  SLUGREPO=${SLUG#*:}
 fi
 if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=typetools
 fi
 echo SLUGOWNER=$SLUGOWNER
+
+JAVA_HOME=${JAVA_HOME:-`which javac|xargs readlink -f|xargs dirname|xargs dirname`}
+export JAVA_HOME
 
 ## Build annotation-tools (Annotation File Utilities)
 if [ -d ../annotation-tools ] ; then
