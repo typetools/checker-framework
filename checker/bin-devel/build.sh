@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-echo Entering $DIR/build.sh
+echo Entering $0
 
 # Fail the whole script if any command fails
 set -e
@@ -30,8 +30,6 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
 SLUGOWNER=`/tmp/plume-scripts/git-organization typetools`
 echo SLUGOWNER=$SLUGOWNER
 
-echo TRAVIS=$TRAVIS
-echo AZURE_HTTP_USER_AGENT=$AZURE_HTTP_USER_AGENT
 
 ## Build annotation-tools (Annotation File Utilities)
 if [ -d ../annotation-tools ] ; then
@@ -74,4 +72,4 @@ else
   ./gradlew assemble printJdkJarManifest -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
 fi
 
-echo Exiting $DIR/build.sh
+echo Exiting $0
