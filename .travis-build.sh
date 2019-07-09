@@ -94,16 +94,15 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   make -C docs/manual all
 
   # This comes last, in case we wish to ignore it
-  echo "TRAVIS_COMMIT_RANGE = $TRAVIS_COMMIT_RANGE"
-  # $TRAVIS_COMMIT_RANGE is empty for builds triggered by the initial commit of a new branch.
-  if [ -n "$TRAVIS_COMMIT_RANGE" ] ; then
-    # Until https://github.com/travis-ci/travis-ci/issues/4596 is fixed, $TRAVIS_COMMIT_RANGE is a
-    # good argument to `git diff` but a bad argument to `git log` (they interpret "..." differently!).
-    (git diff $TRAVIS_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
-    (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/rjp-output.txt 2>&1) || true
-    [ -s /tmp/diff.txt ] || ([[ "${TRAVIS_BRANCH}" != "master" && "${TRAVIS_EVENT_TYPE}" == "push" ]] || (echo "/tmp/diff.txt is empty; try pulling base branch (often master) into compare branch (often feature branch)" && false))
-    wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
-    python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
+  git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
+    || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+  source /tmp/plume-scripts/git-set-commit-range
+  echo "COMMIT_RANGE = $COMMIT_RANGE"
+  if [ -n "$COMMIT_RANGE" ] ; then
+    (git diff $COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
+    (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/warnings.txt 2>&1) || true
+    [ -s /tmp/diff.txt ] || (echo "/tmp/diff.txt is empty for COMMIT_RANGE=$COMMIT_RANGE; try pulling base branch (often master) into compare branch (often your feature branch)" && false)
+    python /tmp/plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings.txt
   fi
 
 fi
@@ -158,10 +157,12 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools guava`
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
   if [ $BRANCH = "master" ] ; then
+    # ${SLUGOWNER} has a fork of Guava, but no branch that corresponds to the pull-requested branch.
+    # Use upstream instead.
     REPO=https://github.com/typetools/guava.git
     BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
     if [ $BRANCH = "master" ] ; then
-      BRANCH=cf-master
+      BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} cf-master master`
     fi
   fi
   (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava)
