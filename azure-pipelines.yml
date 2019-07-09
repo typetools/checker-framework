@@ -1,41 +1,88 @@
-# Gradle
-# Build your Java project and run tests with Gradle using a Gradle wrapper script.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
 jobs:
-- job: build
+- job: all_tests_jdk8
   pool:
     vmImage: 'ubuntu-16.04'
   container: mdernst/ubuntu-for-cf-jdk8:latest
   steps:
-  - bash: ./checker/bin-devel/build.sh
-    displayName: test-nonSystemTest.sh
-# - job: systemTest_jdk8
-#   pool:
-#     vmImage: 'ubuntu-16.04'
-#   container: mdernst/ubuntu-for-cf-jdk8:latest
-#   steps:
-#   - bash: ./scripts/test-systemTest.sh
-#     displayName: test-systemTest.sh
-# # - job: nonSystemTest_jdk11
-# #   pool:
-# #     vmImage: 'ubuntu-16.04'
-# #   container: mdernst/ubuntu-for-cf-jdk11:latest
-# #   steps:
-# #   - bash: ./scripts/test-nonSystemTest.sh
-# #     displayName: test-nonSystemTest.sh
-# # - job: systemTest_jdk11
-# #   pool:
-# #     vmImage: 'ubuntu-16.04'
-# #   container: mdernst/ubuntu-for-cf-jdk11:latest
-# #   steps:
-# #   - bash: ./scripts/test-systemTest.sh
-# #     displayName: test-systemTest.sh
-# - job: misc
-#   pool:
-#     vmImage: 'ubuntu-16.04'
-#   container: mdernst/ubuntu-for-cf-jdkany:latest
-#   steps:
-#   - bash: ./scripts/test-misc.sh
-#     displayName: test-misc.sh
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-all-tests.sh
+    displayName: test-all-tests.sh
+- job: jdk_jar_jdk8
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/ubuntu-for-cf-jdk8:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-jdk-jar.sh
+    displayName: test-jdk-jar.sh
+- job: misc_jdk8
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/ubuntu-for-cf-jdkany:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-misc.sh
+    displayName: test-misc.sh
+- job: cf_inference_jdk8
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/ubuntu-for-cf-jdk8:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-cf-inference.sh
+    displayName: test-cf-inference.sh
+- job: plume_lib_jdk8
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/ubuntu-for-cf-jdk8:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-plume-lib.sh
+    displayName: test-plume-lib.sh
+- job: downstream_jdk8
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/ubuntu-for-cf-jdk8:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-downstream.sh
+    displayName: test-downstream.sh
+
+trigger:
+  batch: true
+
+## TODO: trigger downstream jobs
+#     - stage: trigger-downstream
+#       script: |
+#           echo "TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
+#           if [[ ($TRAVIS_BRANCH == master) &&
+#                 ($TRAVIS_PULL_REQUEST == false) ]] ; then
+#             SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+#             if [[ "$SLUGOWNER" == "" ]]; then
+#               SLUGOWNER=typetools
+#             fi
+#
+#             curl -LO --retry 3 https://raw.github.com/plume-lib/trigger-travis/master/trigger-travis.sh
+#
+#             git ls-remote https://github.com/${SLUGOWNER}/checker-framework.demos.git &>/dev/null
+#             if [ "$?" -eq 0 ]; then
+#               sh trigger-travis.sh ${SLUGOWNER} checker-framework.demos $TRAVIS_ACCESS_TOKEN
+#             fi
+#
+#             git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>/dev/null
+#             if [ "$?" -eq 0 ]; then
+#               sh trigger-travis.sh ${SLUGOWNER} checker-framework-inference $TRAVIS_ACCESS_TOKEN
+#             fi
+#
+#             if [[ "${SLUGOWNER}" == "typetools" ]]; then
+#               sh trigger-travis.sh typetests daikon-typecheck $TRAVIS_ACCESS_TOKEN
+#               sh trigger-travis.sh typetests guava-typecheck $TRAVIS_ACCESS_TOKEN
+#               sh trigger-travis.sh typetests plume-lib-typecheck $TRAVIS_ACCESS_TOKEN
+#             fi
+#           fi

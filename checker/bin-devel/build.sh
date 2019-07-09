@@ -1,17 +1,17 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-echo Entering $DIR/build.sh
+echo Entering $0
 
 # Fail the whole script if any command fails
 set -e
 
 # Optional argument $1 is one of:
 #  downloadjdk, buildjdk
-# If it is omitted, this script uses buildjdk.
+# If it is omitted, this script uses downloadjdk.
 export BUILDJDK=$1
 if [[ "${BUILDJDK}" == "" ]]; then
-  export BUILDJDK=buildjdk
+  export BUILDJDK=downloadjdk
 fi
 
 if [[ "${BUILDJDK}" != "buildjdk" && "${BUILDJDK}" != "downloadjdk" ]]; then
@@ -21,24 +21,15 @@ fi
 
 export SHELLOPTS
 
-if [[ "$TRAVIS" == "true" ]]; then
-  SLUGOWNER=${TRAVIS_PULL_REQUEST_SLUG%/*}
-  if [[ "$SLUGOWNER" == "" ]]; then
-    SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
-  fi
-elif [ -n "$AZURE_HTTP_USER_AGENT" ]; then
-  SLUG=`wget -q -O - https://api.github.com/repos/randoop/randoop/pulls/536 | jq .head.label`
-  echo "SLUG=$SLUG"
-  SLUGOWNER=${SLUG%:*}
-  SLUGREPO=${SLUG#*:}
-fi
-if [[ "$SLUGOWNER" == "" ]]; then
-  SLUGOWNER=typetools
-fi
-echo SLUGOWNER=$SLUGOWNER
-
 JAVA_HOME=${JAVA_HOME:-`which javac|xargs readlink -f|xargs dirname|xargs dirname`}
 export JAVA_HOME
+
+git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
+    || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+
+SLUGOWNER=`/tmp/plume-scripts/git-organization typetools`
+echo SLUGOWNER=$SLUGOWNER
+
 
 ## Build annotation-tools (Annotation File Utilities)
 if [ -d ../annotation-tools ] ; then
@@ -73,14 +64,12 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 ## Compile
 
 # Two options: rebuild the JDK or download a prebuilt JDK.
-if [[ "${BUILDJDK}" == "buildjdk" ]]; then
-  echo "running \"./gradlew assemble -PuseLocalJdk\" for checker-framework"
-  ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
-fi
-
 if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   echo "running \"./gradlew assemble\" for checker-framework"
-  ./gradlew assemble --console=plain --warning-mode=all -s --no-daemon
+  ./gradlew assemble printJdkJarManifest --console=plain --warning-mode=all -s --no-daemon
+else
+  echo "running \"./gradlew assemble -PuseLocalJdk\" for checker-framework"
+  ./gradlew assemble printJdkJarManifest -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
 fi
 
-echo Exiting $DIR/build.sh
+echo Exiting $0
