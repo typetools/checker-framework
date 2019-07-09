@@ -51,7 +51,7 @@ echo SLUGOWNER=$SLUGOWNER
 export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
-source ./.travis-build-without-test.sh ${BUILDJDK}
+source checker/bin-devel/build.sh ${BUILDJDK}
 # The above command builds or downloads the JDK, so there is no need for a
 # subsequent command to build it except to test building it.
 
@@ -75,7 +75,7 @@ fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   ## jdkany tests: miscellaneous tests that shouldn't depend on JDK version.
-  ## (Maybe they don't even need the full ./.travis-build-without-test.sh ;
+  ## (Maybe they don't even need the full checker/bin-devel/build.sh ;
   ## for example they currently don't need the annotated JDK.)
 
   set -e
