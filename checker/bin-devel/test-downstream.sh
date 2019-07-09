@@ -47,6 +47,6 @@ if [ $BRANCH = "master" ] ; then
     BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} cf-master master`
   fi
 fi
-(cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava)
+git clone -C $ROOT -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava || git clone -C $ROOT -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava
 export CHECKERFRAMEWORK=${CHECKERFRAMEWORK:-$ROOT/checker-framework}
 (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
