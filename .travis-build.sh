@@ -51,7 +51,8 @@ echo SLUGOWNER=$SLUGOWNER
 export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPTDIR=$ROOTDIR/checker/bin-devel/
 
 source $SCRIPTDIR/build.sh ${BUILDJDK}
 # The above command builds or downloads the JDK, so there is no need for a
