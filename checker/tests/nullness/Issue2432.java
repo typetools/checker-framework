@@ -54,9 +54,7 @@ class Issue2432 {
         return pc.add(nno, po);
     }
 
-    void fooo(@PolyNull Object o1, @PolyNull Object o2) {
-
-    }
+    void fooo(@PolyNull Object o1, @PolyNull Object o2) {}
 
     void foo2_t(@Nullable Object no, @NonNull Object nno) {
         fooo(no, nno);
