@@ -7,9 +7,7 @@ export SHELLOPTS
 
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
   || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-
-SLUGOWNER=`/tmp/plume-scripts/git-organization typetools`
-echo SLUGOWNER=$SLUGOWNER
+eval `/tmp/plume-scripts/ci-info typetools`
 
 export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
@@ -32,11 +30,8 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 make -C docs/manual all
 
 # This comes last, in case we wish to ignore it
-source /tmp/plume-scripts/git-set-commit-range
-echo "COMMIT_RANGE = $COMMIT_RANGE"
-if [ -n "$COMMIT_RANGE" ] ; then
-  (git diff $COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
-  (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/warnings.txt 2>&1) || true
-  [ -s /tmp/diff.txt ] || (echo "/tmp/diff.txt is empty for COMMIT_RANGE=$COMMIT_RANGE; try pulling base branch (often master) into compare branch (often your feature branch)" && false)
-  python /tmp/plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings.txt
-fi
+# if [ -n "$CI_IS_PR" ] ; then
+(git diff $CI_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
+(./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/warnings.txt 2>&1) || true
+[ -s /tmp/diff.txt ] || (echo "/tmp/diff.txt is empty for $CI_COMMIT_RANGE; try pulling base branch (often master) into compare branch (often your feature branch)" && false)
+python /tmp/plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings.txt
