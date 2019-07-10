@@ -608,16 +608,15 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             }
 
             CheckerMessage that = (CheckerMessage) o;
-            // Do not consider checker.
             return this.kind == that.kind
                     && this.source == that.source
-                    && this.message.equals(that.message);
+                    && this.message.equals(that.message)
+                    && this.checker == that.checker;
         }
 
         @Override
         public int hashCode() {
-            // Do not consider checker.
-            return Objects.hash(kind, message, source);
+            return Objects.hash(kind, message, source, checker);
         }
 
         @Override
