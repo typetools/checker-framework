@@ -78,6 +78,11 @@ public class NullnessVisitor
     /** The element for java.util.Collection.toArray(T). */
     private final ExecutableElement collectionToArray;
 
+    /**
+     * Create a new NullnessVisitor.
+     *
+     * @param checker the checker to which this visitor belongs
+     */
     public NullnessVisitor(BaseTypeChecker checker) {
         super(checker);
 

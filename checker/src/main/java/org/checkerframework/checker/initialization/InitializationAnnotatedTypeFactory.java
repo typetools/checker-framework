@@ -84,9 +84,14 @@ public abstract class InitializationAnnotatedTypeFactory<
     /** {@link FBCBottom}. */
     protected final AnnotationMirror FBCBOTTOM;
 
-    // Cache for the initialization annotations
+    /** Cache for the initialization annotations. */
     protected final Set<Class<? extends Annotation>> initAnnos;
 
+    /**
+     * Create a new InitializationAnnotatedTypeFactory.
+     *
+     * @param checker the checker to which the new type factory belongs
+     */
     public InitializationAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
