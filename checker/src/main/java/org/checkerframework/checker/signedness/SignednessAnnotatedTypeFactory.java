@@ -79,10 +79,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
     }
 
-    /**
-     * If the tree is a local variable and the type is byte, short, int, or long, then add the
-     * UnknownSignedness annotation so that dataflow can refine it.
-     */
     private void addSignednessAnnotation(Tree tree, AnnotatedTypeMirror type) {
         TypeMirror javaType = type.getUnderlyingType();
         TypeKind javaTypeKind = javaType.getKind();
