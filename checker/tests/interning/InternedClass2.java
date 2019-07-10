@@ -67,4 +67,11 @@ public @Interned class InternedClass2 {
     public int hashCode() {
         return i;
     }
+
+    public boolean hasNodeOfType(Class<?> type) {
+        if (type == this.getClass()) {
+            return true;
+        }
+        return false;
+    }
 }
