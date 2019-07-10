@@ -130,6 +130,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         }
                     }
                 }
+            default:
+                // Nothing for other cases.
         }
     }
 
