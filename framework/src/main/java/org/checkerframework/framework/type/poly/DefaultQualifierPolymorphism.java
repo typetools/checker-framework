@@ -1,5 +1,6 @@
 package org.checkerframework.framework.type.poly;
 
+import java.util.List;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -77,6 +78,21 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
         for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : replacements.entrySet()) {
             AnnotationMirror poly = pqentry.getKey();
             if (type.hasAnnotation(poly)) {
+                type.removeAnnotation(poly);
+                AnnotationMirrorSet quals = pqentry.getValue();
+                type.replaceAnnotations(quals);
+            }
+        }
+    }
+
+    @Override
+    protected void replace(
+            AnnotatedTypeMirror type,
+            List<AnnotatedTypeMirror> params,
+            AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
+        for (Map.Entry<AnnotationMirror, AnnotationMirrorSet> pqentry : replacements.entrySet()) {
+            AnnotationMirror poly = pqentry.getKey();
+            if (type.hasAnnotation(poly) && params.indexOf(type) == -1) {
                 type.removeAnnotation(poly);
                 AnnotationMirrorSet quals = pqentry.getValue();
                 type.replaceAnnotations(quals);

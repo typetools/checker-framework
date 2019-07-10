@@ -2,6 +2,9 @@ package org.checkerframework.framework.type.poly;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -81,7 +84,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
     /** Resolves each polymorphic qualifier by replacing it with its instantiation. */
     private AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> replacer =
-            new Replacer();
+            new PartReplacer();
 
     /**
      * Completes a type by removing any unresolved polymorphic qualifiers, replacing them with the
@@ -144,6 +147,34 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         List<AnnotatedTypeMirror> arguments =
                 AnnotatedTypes.getAnnotatedTypes(atypeFactory, parameters, tree.getArguments());
 
+        List<AnnotatedTypeMirror> typeArgList = new ArrayList<>();
+        // Get raw parameter from JCTree with generic info
+        List<Symbol.VarSymbol> symList = null;
+        if (tree instanceof JCTree.JCMethodInvocation) {
+            symList = TreeUtils.getParameterListFromMeth((JCTree.JCMethodInvocation) tree);
+        }
+
+        // remove all generic type parameter: see issue 2432
+        if (symList != null && symList.size() == parameters.size()) {
+            ArrayList<AnnotatedTypeMirror> newParameters = new ArrayList<>(),
+                    newArguments = new ArrayList<>();
+            for (int i = 0; i < symList.size(); i++) {
+                if (!(symList.get(i).type instanceof Type.TypeVar
+                        && // TypeVar=type variable. this is a generic param
+                        symList.get(i)
+                                .type
+                                .toString()
+                                .equals("E"))) { // "E" have a actual type and "T" does not have
+                    newParameters.add(parameters.get(i));
+                    newArguments.add(arguments.get(i));
+                } else {
+                    typeArgList.add(parameters.get(i));
+                }
+            }
+            parameters = newParameters;
+            arguments = newArguments;
+        }
+
         AnnotationMirrorMap<AnnotationMirrorSet> instantiationMapping =
                 collector.visit(arguments, parameters);
 
@@ -161,6 +192,18 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         }
 
         if (instantiationMapping != null && !instantiationMapping.isEmpty()) {
+
+            // exclude list of type args which will be ignored when replacing
+            // if return type is TypeVar also exclude
+            if (tree instanceof JCTree.JCMethodInvocation
+                    && TreeUtils.getReturnTypeFromMeth((JCTree.JCMethodInvocation) tree)
+                            instanceof Type.TypeVar
+                    && TreeUtils.getReturnTypeFromMeth((JCTree.JCMethodInvocation) tree)
+                            .toString()
+                            .equals("E")) { // instanceof ensure nonnull
+                typeArgList.add(type.getReturnType());
+            }
+            ((PartReplacer) replacer).setExcludeScope(typeArgList);
             replacer.visit(type, instantiationMapping);
         } else {
             completer.visit(type);
@@ -260,12 +303,40 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     protected abstract void replace(
             AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements);
 
+    protected abstract void replace(
+            AnnotatedTypeMirror type,
+            List<AnnotatedTypeMirror> paramsSubset,
+            AnnotationMirrorMap<AnnotationMirrorSet> replacements);
+
     /** Replaces each polymorphic qualifier with its instantiation. */
     class Replacer extends AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> {
         @Override
         public Void scan(
                 AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
             replace(type, replacements);
+            return super.scan(type, replacements);
+        }
+    }
+
+    /** Replaces selected polymorphic qualifier (excluded with scope) with its instantiation. */
+    class PartReplacer
+            extends AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirrorSet>> {
+
+        private List<AnnotatedTypeMirror> subParams = new ArrayList<>();
+
+        /**
+         * Set the exclude scope of
+         *
+         * @param paramSubset
+         */
+        public void setExcludeScope(List<AnnotatedTypeMirror> paramSubset) {
+            subParams = paramSubset;
+        }
+
+        @Override
+        public Void scan(
+                AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
+            replace(type, subParams, replacements);
             return super.scan(type, replacements);
         }
     }

@@ -1351,4 +1351,23 @@ public final class TreeUtils {
         return tree.getKind() == Kind.LAMBDA_EXPRESSION
                 && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
     }
+
+    public static List<Symbol.VarSymbol> getParameterListFromMeth(JCTree.JCMethodInvocation tree) {
+        if (tree.meth instanceof JCTree.JCFieldAccess) {
+            return ((Symbol.MethodSymbol) ((JCTree.JCFieldAccess) tree.meth).sym).params;
+
+        } else if (tree.meth instanceof JCTree.JCIdent) {
+            return ((Symbol.MethodSymbol) ((JCTree.JCIdent) tree.meth).sym).params;
+        }
+        return null;
+    }
+
+    public static Type getReturnTypeFromMeth(JCTree.JCMethodInvocation tree) {
+        if (tree.meth instanceof JCTree.JCFieldAccess) {
+            return ((JCTree.JCFieldAccess) tree.meth).type.getReturnType();
+        } else if (tree.meth instanceof JCTree.JCIdent) {
+            return ((JCTree.JCIdent) tree.meth).type.getReturnType();
+        }
+        return null;
+    }
 }
