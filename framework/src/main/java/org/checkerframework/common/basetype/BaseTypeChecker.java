@@ -468,7 +468,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         if (getSubcheckers().size() > 0) {
             if (messageStore == null) {
                 messageStore = new TreeSet<>(checkerMessageComparator);
-            } else if (parentChecker == null) {
+            } else {
+                // TODO: I expected this to only be necessary if (parentChecker == null).
+                // However, the NestedAggregateChecker fails otherwise.
                 messageStore.clear();
             }
         }
