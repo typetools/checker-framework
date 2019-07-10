@@ -465,7 +465,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     // AbstractTypeProcessor delegation
     @Override
     public void typeProcess(TypeElement element, TreePath tree) {
-        if (getSubcheckers().size() > 0) {
+        if (!getSubcheckers().isEmpty()) {
             if (messageStore == null) {
                 messageStore = new TreeSet<>(checkerMessageComparator);
             } else {
