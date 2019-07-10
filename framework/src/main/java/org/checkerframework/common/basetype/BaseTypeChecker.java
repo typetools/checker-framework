@@ -83,6 +83,10 @@ import org.checkerframework.javacutil.UserError;
  */
 public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {
 
+    public BaseTypeChecker() {
+        checkerMessageComparator = new CheckerMessageComparator();
+    }
+
     @Override
     public void initChecker() {
         // initialize all checkers and share options as necessary
@@ -124,6 +128,12 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     /** Supported options for this checker. */
     private Set<String> supportedOptions;
+
+    /**
+     * Sort by position at which the error will be printed, then by the order in which the checkers
+     * run, then by kind of message, and finally by the message string.
+     */
+    private final Comparator<CheckerMessage> checkerMessageComparator;
 
     /**
      * TreePathCacher to share between instances. Initialized either in instantiateSubcheckers or in
@@ -450,41 +460,36 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         return treePathCacher;
     }
 
-    /**
-     * Sort by position at which the error will be printed, then by the order in which the checkers
-     * run, then by kind of message, and finally by the message string.
-     */
-    private final Comparator<CheckerMessage> checkerMessageComparator =
-            new Comparator<CheckerMessage>() {
-                @Override
-                public int compare(CheckerMessage o1, CheckerMessage o2) {
-                    int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
-                    if (byPos != 0) {
-                        return byPos;
-                    }
+    class CheckerMessageComparator implements Comparator<CheckerMessage> {
+        @Override
+        public int compare(CheckerMessage o1, CheckerMessage o2) {
+            int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
+            if (byPos != 0) {
+                return byPos;
+            }
 
-                    // Sort by order in which the checkers are run. (All the subcheckers in
-                    // followed by the checker.)
-                    int o1Index = BaseTypeChecker.this.getSubcheckers().indexOf(o1.checker);
-                    int o2Index = BaseTypeChecker.this.getSubcheckers().indexOf(o2.checker);
-                    if (o1Index != o2Index) {
-                        if (o1Index == -1) {
-                            o1Index = BaseTypeChecker.this.getSubcheckers().size();
-                        }
-                        if (o2Index == -1) {
-                            o2Index = BaseTypeChecker.this.getSubcheckers().size();
-                        }
-                        return Integer.compare(o1Index, o2Index);
-                    }
-
-                    int kind = o1.kind.compareTo(o2.kind);
-                    if (kind != 0) {
-                        return kind;
-                    }
-
-                    return o1.message.compareTo(o2.message);
+            // Sort by order in which the checkers are run. (All the subcheckers in
+            // followed by the checker.)
+            int o1Index = BaseTypeChecker.this.getSubcheckers().indexOf(o1.checker);
+            int o2Index = BaseTypeChecker.this.getSubcheckers().indexOf(o2.checker);
+            if (o1Index != o2Index) {
+                if (o1Index == -1) {
+                    o1Index = BaseTypeChecker.this.getSubcheckers().size();
                 }
-            };
+                if (o2Index == -1) {
+                    o2Index = BaseTypeChecker.this.getSubcheckers().size();
+                }
+                return Integer.compare(o1Index, o2Index);
+            }
+
+            int kind = o1.kind.compareTo(o2.kind);
+            if (kind != 0) {
+                return kind;
+            }
+
+            return o1.message.compareTo(o2.message);
+        }
+    }
 
     // AbstractTypeProcessor delegation
     @Override
