@@ -2145,7 +2145,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // arguments.  So, we just copy the annotations from the bound of the declared type to the
         // new bound.
         final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
-        newBound.replaceAnnotations(classWildcardArg.getExtendsBound().getAnnotations());
+        Set<AnnotationMirror> newAnnos = AnnotationUtils.createAnnotationSet();
+        Set<AnnotationMirror> typeBoundAnnos =
+                getTypeDeclarationBounds(newBound.getUnderlyingType());
+        Set<AnnotationMirror> wildcardBoundAnnos =
+                classWildcardArg.getExtendsBound().getAnnotations();
+        for (AnnotationMirror typeBoundAnno : typeBoundAnnos) {
+            AnnotationMirror wildcardAnno =
+                    qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, typeBoundAnno);
+            if (qualHierarchy.isSubtype(typeBoundAnno, wildcardAnno)) {
+                newAnnos.add(typeBoundAnno);
+            } else {
+                newAnnos.add(wildcardAnno);
+            }
+        }
+        newBound.replaceAnnotations(newAnnos);
 
         classWildcardArg.setExtendsBound(newBound);
     }
