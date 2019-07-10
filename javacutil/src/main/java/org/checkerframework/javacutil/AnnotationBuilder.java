@@ -149,10 +149,9 @@ public class AnnotationBuilder {
             throw new UserError(
                     "AnnotationBuilder: error: fromClass can't load %s .%n"
                             + "Ensure the class is on the compilation classpath.%n%s"
-                            + "%n"
-                            + stacktraceToString(new Throwable("Here is the stack trace")),
-                    aClass.getCanonicalName(),
-                    classpathToString());
+                    // + "%n" + stacktraceToString(new Throwable("Here is the stack trace"))
+                    ,
+                    aClass.getCanonicalName(), classpathToString());
         }
         return res;
     }
