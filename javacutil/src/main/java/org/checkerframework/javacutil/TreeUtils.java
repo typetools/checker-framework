@@ -1351,23 +1351,43 @@ public final class TreeUtils {
         return tree.getKind() == Kind.LAMBDA_EXPRESSION
                 && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
     }
+    
 
-    public static List<Symbol.VarSymbol> getParameterListFromMeth(JCTree.JCMethodInvocation tree) {
-        if (tree.meth instanceof JCTree.JCFieldAccess) {
-            return ((Symbol.MethodSymbol) ((JCTree.JCFieldAccess) tree.meth).sym).params;
+    /**
+     * Return parameter list in JCMethodInvocation.mech, which retains type arguments.
+     * @param tree JCMethodInvocation tree only
+     * @return parameter list
+     */
+    public static List<Symbol.VarSymbol> getParameterListFromMeth(JCMethodInvocation tree) {
+        if (tree.meth instanceof JCTree.JCFieldAccess) {  // Method call of a generic class
+            JCTree.JCFieldAccess faMeth = (JCTree.JCFieldAccess) (tree.meth);
+            return ((MethodSymbol)faMeth.sym).params;
+        } else if (tree.meth instanceof JCTree.JCIdent) {  // Simple method call, may useless
+            JCTree.JCIdent iMeth = (JCTree.JCIdent) (tree.meth);
+            return ((MethodSymbol)iMeth.sym).params;
 
-        } else if (tree.meth instanceof JCTree.JCIdent) {
-            return ((Symbol.MethodSymbol) ((JCTree.JCIdent) tree.meth).sym).params;
+        } else {
+            return null;
         }
-        return null;
+
     }
 
-    public static Type getReturnTypeFromMeth(JCTree.JCMethodInvocation tree) {
-        if (tree.meth instanceof JCTree.JCFieldAccess) {
-            return ((JCTree.JCFieldAccess) tree.meth).type.getReturnType();
-        } else if (tree.meth instanceof JCTree.JCIdent) {
-            return ((JCTree.JCIdent) tree.meth).type.getReturnType();
+    /**
+     * Return the type of return value in JCMethodInvocation.mech, which also retains type arguments.
+     * @param tree JCMethodInvocation tree only
+     * @return parameter list
+     */
+    public static Type getReturnTypeFromMeth(JCMethodInvocation tree) {
+        if (tree.meth instanceof JCTree.JCFieldAccess) {  // Method call of a generic class
+            JCTree.JCFieldAccess faMeth = (JCTree.JCFieldAccess) (tree.meth);
+            return (((MethodSymbol)faMeth.sym).type).getReturnType();
+        } else if (tree.meth instanceof JCTree.JCIdent) {  // Simple method call, may useless
+            JCTree.JCIdent iMeth = (JCTree.JCIdent) (tree.meth);
+            return (((MethodSymbol)iMeth.sym).type).getReturnType();
+
+        } else {
+            return null;
         }
-        return null;
+
     }
 }
