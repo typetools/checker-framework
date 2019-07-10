@@ -72,6 +72,13 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             @CompilerMessageKey String errorKey) {
 
         replaceSpecialIntRangeAnnotations(varType);
+
+        if (valueType.getKind().equals(TypeKind.CHAR)
+                && valueType.hasAnnotation(getTypeFactory().UNKNOWNVAL)) {
+            valueType.addAnnotation(
+                    getTypeFactory().createIntRangeAnnotation(Range.CHAR_EVERYTHING));
+        }
+
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 

@@ -191,6 +191,15 @@ keys.  This checker can be used to help enforce a compliance requirement
 (such as from SOC or PCI-DSS) that customer data is always encrypted with
 256-bit keys.
 
+The KMS compliance checker is available in Maven Central.  To use it in
+\<build.gradle>, add the following dependency:
+
+\begin{Verbatim}
+compile group: 'software.amazon.checkerframework', name: 'aws-kms-compliance-checker', version: '1.0.2'
+\end{Verbatim}
+
+\ahref{https://mvnrepository.com/artifact/software.amazon.checkerframework/aws-kms-compliance-checker/1.0.2}{Other build systems} are similar.
+
 
 \sectionAndLabel{AWS crypto policy compliance checker}{crypto-policy-compliance-checker}
 

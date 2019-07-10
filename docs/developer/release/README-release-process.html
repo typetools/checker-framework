@@ -102,36 +102,36 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <a href="#pre_release_checklist">Pre-release Checklist</a>.
   </li>
   <li>
-    Update dependencies, preferably a few days before the release to let any problems be discovered.
+    <b>Update dependencies</b>, preferably a few days before the release to let any problems be discovered.
     Run in a branch, then make a pull request to ensure that everything works:
     <code>./gradlew useLatestVersions</code>
   </li>
   <li>
-    If there has been
+    <b>Update stubparser.</b> If there has been
     a <a href="https://github.com/javaparser/javaparser/releases">JavaParser
     release</a> since the last Checker Framework
     release, <a href="https://github.com/typetools/stubparser#updating-from-upstream-javaparser">update
     Stubparser from JavaParser</a>.
   </li>
   <li>
-    Rebuild jdk8.jar and upload it to https://github.com/typetools/annotated-libraries.
+    <b>Rebuild jdk8.jar</b> and upload it to https://github.com/typetools/annotated-libraries.
     See <a href="https://github.com/typetools/annotated-libraries/blob/master/README.md">the README</a> for instructions.
     Check that all tests pass (when using the <code>typetools/master</code> branch).
   </li>
   <li>Update the Checker Framework source code:
     <ul>
       <li>
-	Update the list of contributors by running
+        <b>Update the list of contributors</b> by running
 	<code>make contributors.tex</code>
 	in <code>checker-framework/docs/manual/</code>.  Double-check the edits
 	with <code>git diff</code>; update file <code>contributors.sed</code> if
 	any customizations are necessary.
       </li>
       <li>
-	Update AFU and Checker Framework change logs by following the instructions
+        <b>Update AFU and Checker Framework change logs</b> by following the instructions
 	at <a href="#content_guidelines">content guidelines</a>.
       </li>
-      <li> Update the Checker Framework version number
+      <li> <b>Update the Checker Framework version number</b>
 	in <code>checker-framework/build.gradle</code>,
 	in the <code>allprojects</code> block.
 	(The AFU version is updated as part of the release scripts.)
@@ -170,7 +170,7 @@ TreeAnnotator
 	</p>
       </li>
       <li>
-	Commit and push these changes to typetools/master.
+        <b>Commit and push</b> these changes to typetools/master.
       </li>
     </ul>
   <li>
