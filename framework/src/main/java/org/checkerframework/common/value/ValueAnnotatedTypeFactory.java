@@ -1,5 +1,6 @@
 package org.checkerframework.common.value;
 
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -1449,6 +1450,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || tm.toString().equals("char[]"); // Why?
             */
             return COVERED_CLASS_STRINGS.contains(tm.toString());
+        }
+
+        @Override
+        public Void visitConditionalExpression(
+                ConditionalExpressionTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+            // Work around for https://github.com/typetools/checker-framework/issues/602.
+            annotatedTypeMirror.replaceAnnotation(UNKNOWNVAL);
+            return null;
         }
     }
 

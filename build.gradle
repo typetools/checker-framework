@@ -142,7 +142,7 @@ allprojects {
 
 task cloneAndBuildDependencies(type: Exec) {
     description 'Clones (or updates) and builds all dependencies'
-    executable './.travis-build-without-test.sh'
+    executable 'checker/bin-devel/build.sh'
     args = ['downloadjdk']
 }
 
