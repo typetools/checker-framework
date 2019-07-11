@@ -79,6 +79,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
     }
 
+    /**
+     * Refines the type of an integer primitive to @SignednessGlb if it is within the signed
+     * positive range (i.e. its MSB is zero).
+     */
     private void addSignednessAnnotation(Tree tree, AnnotatedTypeMirror type) {
         TypeMirror javaType = type.getUnderlyingType();
         TypeKind javaTypeKind = javaType.getKind();
