@@ -236,7 +236,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the type frame of a given annotation.
+     * Returns the type frame (that is, the argument) of a given initialization annotation.
      *
      * @param annotation a {@link UnderInitialization} or {@link UnknownInitialization} annotation
      * @return the annotation's argument
@@ -568,6 +568,14 @@ public abstract class InitializationAnnotatedTypeFactory<
         return false;
     }
 
+    /**
+     * Return true if the type is initialized with respect to the given frame -- that is, all of the
+     * fields of the frame are initialized.
+     *
+     * @param type the type whose initialization type qualifiers to check
+     * @param frame a class in {@code type}'s class hierarchy
+     * @return true if the type is initialized for the given frame
+     */
     public boolean isInitializedForFrame(AnnotatedTypeMirror type, TypeMirror frame) {
         AnnotationMirror initializationAnno =
                 type.getEffectiveAnnotationInHierarchy(UNKNOWN_INITIALIZATION);
