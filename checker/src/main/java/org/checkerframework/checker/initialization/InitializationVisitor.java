@@ -68,9 +68,10 @@ public class InitializationVisitor<
             "initialization.invalid.field.type";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
             "initialization.invalid.constructor.return.type";
-    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED =
-            "initialization.invalid.field.write.unknown";
-    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED =
+    private static final @CompilerMessageKey String
+            COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION =
+                    "initialization.invalid.field.write.unknown";
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED =
             "initialization.invalid.field.write.initialized";
 
     public InitializationVisitor(BaseTypeChecker checker) {
@@ -124,16 +125,17 @@ public class InitializationVisitor<
             // UnknownInitialization annotation
             Set<AnnotationMirror> fieldAnnotations =
                     atypeFactory.getAnnotatedType(TreeUtils.elementFromUse(lhs)).getAnnotations();
-            if (!AnnotationUtils.containsSameByName(fieldAnnotations, atypeFactory.UNCLASSIFIED)) {
+            if (!AnnotationUtils.containsSameByName(
+                    fieldAnnotations, atypeFactory.UNKNOWN_INITIALIZATION)) {
                 if (!ElementUtils.isStatic(el)
                         && !(atypeFactory.isCommitted(yType)
                                 || atypeFactory.isFree(xType)
                                 || atypeFactory.isFbcBottom(yType))) {
                     @CompilerMessageKey String err;
                     if (atypeFactory.isCommitted(xType)) {
-                        err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
+                        err = COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED;
                     } else {
-                        err = COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED;
+                        err = COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION;
                     }
                     checker.report(Result.failure(err, varTree), varTree);
                     return; // prevent issuing another errow about subtyping

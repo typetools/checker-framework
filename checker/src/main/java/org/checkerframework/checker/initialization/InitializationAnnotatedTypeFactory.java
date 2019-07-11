@@ -70,16 +70,16 @@ public abstract class InitializationAnnotatedTypeFactory<
         extends GenericAnnotatedTypeFactory<Value, Store, Transfer, Flow> {
 
     /** {@link UnknownInitialization}. */
-    protected final AnnotationMirror UNCLASSIFIED;
+    protected final AnnotationMirror UNKNOWN_INITIALIZATION;
 
     /** {@link Initialized}. */
-    protected final AnnotationMirror COMMITTED;
+    protected final AnnotationMirror INITIALIZED;
 
     /** {@link UnderInitialization} or null. */
-    protected final AnnotationMirror FREE;
+    protected final AnnotationMirror UNDER_INITALIZATION;
 
     /** {@link NotOnlyInitialized} or null. */
-    protected final AnnotationMirror NOT_ONLY_COMMITTED;
+    protected final AnnotationMirror NOT_ONLY_INITIALIZED;
 
     /** {@link FBCBottom}. */
     protected final AnnotationMirror FBCBOTTOM;
@@ -97,11 +97,11 @@ public abstract class InitializationAnnotatedTypeFactory<
 
         Set<Class<? extends Annotation>> tempInitAnnos = new LinkedHashSet<>();
 
-        COMMITTED = AnnotationBuilder.fromClass(elements, Initialized.class);
-        FREE = AnnotationBuilder.fromClass(elements, UnderInitialization.class);
-        NOT_ONLY_COMMITTED = AnnotationBuilder.fromClass(elements, NotOnlyInitialized.class);
+        INITIALIZED = AnnotationBuilder.fromClass(elements, Initialized.class);
+        UNDER_INITALIZATION = AnnotationBuilder.fromClass(elements, UnderInitialization.class);
+        NOT_ONLY_INITIALIZED = AnnotationBuilder.fromClass(elements, NotOnlyInitialized.class);
         FBCBOTTOM = AnnotationBuilder.fromClass(elements, FBCBottom.class);
-        UNCLASSIFIED = AnnotationBuilder.fromClass(elements, UnknownInitialization.class);
+        UNKNOWN_INITIALIZATION = AnnotationBuilder.fromClass(elements, UnknownInitialization.class);
 
         tempInitAnnos.add(UnderInitialization.class);
         tempInitAnnos.add(Initialized.class);
@@ -126,9 +126,9 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     protected boolean isInitializationAnnotation(AnnotationMirror anno) {
         assert anno != null;
-        return AnnotationUtils.areSameByName(anno, UNCLASSIFIED)
-                || AnnotationUtils.areSameByName(anno, FREE)
-                || AnnotationUtils.areSameByName(anno, COMMITTED)
+        return AnnotationUtils.areSameByName(anno, UNKNOWN_INITIALIZATION)
+                || AnnotationUtils.areSameByName(anno, UNDER_INITALIZATION)
+                || AnnotationUtils.areSameByName(anno, INITIALIZED)
                 || AnnotationUtils.areSameByName(anno, FBCBOTTOM);
     }
 
@@ -284,7 +284,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @return true if {@code anno} is {@link Initialized}
      */
     public boolean isCommitted(AnnotationMirror anno) {
-        return AnnotationUtils.areSame(anno, COMMITTED);
+        return AnnotationUtils.areSame(anno, INITIALIZED);
     }
 
     /**
@@ -452,7 +452,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                     && getUninitializedInvariantFields(store, path, false, Collections.emptyList())
                             .isEmpty()) {
                 if (classType.isFinal()) {
-                    annotation = COMMITTED;
+                    annotation = INITIALIZED;
                 } else annotation = createFreeAnnotation(classType);
             }
         }
@@ -569,7 +569,8 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     public boolean isInitializedForFrame(AnnotatedTypeMirror type, TypeMirror frame) {
-        AnnotationMirror initializationAnno = type.getEffectiveAnnotationInHierarchy(UNCLASSIFIED);
+        AnnotationMirror initializationAnno =
+                type.getEffectiveAnnotationInHierarchy(UNKNOWN_INITIALIZATION);
         TypeMirror typeFrame = getTypeFrameFromAnnotation(initializationAnno);
         Types types = processingEnv.getTypeUtils();
         return types.isSubtype(typeFrame, types.erasure(frame));
@@ -595,7 +596,8 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
         // not necessary if there is an explicit UnknownInitialization
         // annotation on the field
-        if (AnnotationUtils.containsSameByName(fieldAnnotations.getAnnotations(), UNCLASSIFIED)) {
+        if (AnnotationUtils.containsSameByName(
+                fieldAnnotations.getAnnotations(), UNKNOWN_INITIALIZATION)) {
             return;
         }
         if (isUnclassified(receiverType) || isFree(receiverType)) {
@@ -607,13 +609,13 @@ public abstract class InitializationAnnotatedTypeFactory<
                 // The receiver is initialized for this frame.
                 // Change the type of the field to @UnknownInitialization so that
                 // anything can be assigned to this field.
-                type.replaceAnnotation(UNCLASSIFIED);
+                type.replaceAnnotation(UNKNOWN_INITIALIZATION);
             } else if (computingAnnotatedTypeMirrorOfLHS) {
                 // The receiver is not initialized for this frame, but the type of a lhs is being
                 // computed.
                 // Change the type of the field to @UnknownInitialization so that
                 // anything can be assigned to this field.
-                type.replaceAnnotation(UNCLASSIFIED);
+                type.replaceAnnotation(UNKNOWN_INITIALIZATION);
             } else {
                 // The receiver is not initialized for this frame and the type being computed is not
                 // a LHS.
@@ -622,10 +624,10 @@ public abstract class InitializationAnnotatedTypeFactory<
                 type.addAnnotations(qualHierarchy.getTopAnnotations());
             }
 
-            if (!AnnotationUtils.containsSame(declaredFieldAnnotations, NOT_ONLY_COMMITTED)) {
+            if (!AnnotationUtils.containsSame(declaredFieldAnnotations, NOT_ONLY_INITIALIZED)) {
                 // add root annotation for all other hierarchies, and
                 // Committed for the commitment hierarchy
-                type.replaceAnnotation(COMMITTED);
+                type.replaceAnnotation(INITIALIZED);
             }
         }
     }
@@ -695,14 +697,14 @@ public abstract class InitializationAnnotatedTypeFactory<
                 p.replaceAnnotation(createFreeAnnotation(type));
                 return null;
             }
-            p.replaceAnnotation(COMMITTED);
+            p.replaceAnnotation(INITIALIZED);
             return null;
         }
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (tree.getKind() != Tree.Kind.NULL_LITERAL) {
-                type.addAnnotation(COMMITTED);
+                type.addAnnotation(INITIALIZED);
             }
             return super.visitLiteral(tree, type);
         }
