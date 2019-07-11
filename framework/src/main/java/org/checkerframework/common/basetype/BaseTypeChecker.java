@@ -101,6 +101,10 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             checker.setSupportedLintOptions(this.getSupportedLintOptions());
         }
 
+        if (!getSubcheckers().isEmpty()) {
+            messageStore = new TreeSet<>(checkerMessageComparator);
+        }
+
         super.initChecker();
     }
 
@@ -130,12 +134,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     /** Supported options for this checker. */
     private Set<String> supportedOptions;
 
-    /**
-     * Sort by position at which the error will be printed, then by kind of message, and finally by
-     * the message string. If different checkers have different messages, sort them by the order in
-     * which the checkers run.
-     */
-    private final Comparator<CheckerMessage> checkerMessageComparator;
+    /** Comparator for CheckerMessage objects. */
+    private final CheckerMessageComparator checkerMessageComparator;
 
     /**
      * TreePathCacher to share between instances. Initialized either in instantiateSubcheckers or in
@@ -466,13 +466,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     @Override
     public void typeProcess(TypeElement element, TreePath tree) {
         if (!getSubcheckers().isEmpty()) {
-            if (messageStore == null) {
-                messageStore = new TreeSet<>(checkerMessageComparator);
-            } else {
-                // TODO: I expected this to only be necessary if (parentChecker == null).
-                // However, the NestedAggregateChecker fails otherwise.
-                messageStore.clear();
-            }
+            // TODO: I expected this to only be necessary if (parentChecker == null).
+            // However, the NestedAggregateChecker fails otherwise.
+            messageStore.clear();
         }
 
         // Errors (or other messages) issued via
@@ -635,6 +631,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         }
     }
 
+    /**
+     * Comparator for CheckerMessage objects. Sort by position at which the error will be printed,
+     * then by kind of message, and finally by the message string. If different checkers have
+     * different messages, sort the messages by the order in which the checkers run.
+     */
     private final class CheckerMessageComparator implements Comparator<CheckerMessage> {
         @Override
         public int compare(CheckerMessage o1, CheckerMessage o2) {
