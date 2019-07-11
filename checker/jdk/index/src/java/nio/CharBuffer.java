@@ -39,6 +39,8 @@ import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
+import org.checkerframework.checker.index.qual.LTLengthOf;
+import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 
 
@@ -275,14 +277,14 @@ public abstract class CharBuffer
     // values, which is especially costly when coding small buffers.
     //
     final char[] hb;                  // Non-null only for heap buffers
-    final @NonNegative int offset;
+    final @IndexOrHigh("this.hb") int offset;
     boolean isReadOnly;                 // Valid only for heap buffers
 
     // Creates a new buffer with the given mark, position, limit, capacity,
     // backing array, and array offset
     //
     CharBuffer(@GTENegativeOne @LessThan("#2 + 1") int mark, @NonNegative @LessThan("#3 + 1") int pos, @NonNegative @LessThan("#4 + 1") int lim, @NonNegative int cap,   // package-private
-                 char[] hb, @NonNegative int offset)
+                 char[] hb, @IndexOrHigh("this.hb") int offset)
     {
         super(mark, pos, lim, cap);
         this.hb = hb;
@@ -335,7 +337,7 @@ public abstract class CharBuffer
      * @throws  IllegalArgumentException
      *          If the <tt>capacity</tt> is a negative integer
      */
-    public static CharBuffer allocate(int capacity) {
+    public static CharBuffer allocate(@NonNegative int capacity) {
         if (capacity < 0)
             throw new IllegalArgumentException();
         return new HeapCharBuffer(capacity, capacity);
@@ -373,7 +375,7 @@ public abstract class CharBuffer
      *          parameters do not hold
      */
     public static CharBuffer wrap(char[] array,
-                                    int offset, int length)
+                                    @NonNegative @LTEqLengthOf("#1") int offset, @NonNegative @LTLengthOf(value = {"#1"}, offset = {"#2 - 1"}) int length)
     {
         try {
             return new HeapCharBuffer(array, offset, length);
@@ -467,7 +469,7 @@ public abstract class CharBuffer
      *          If the preconditions on the <tt>start</tt> and <tt>end</tt>
      *          parameters do not hold
      */
-    public static CharBuffer wrap(CharSequence csq, int start, int end) {
+    public static CharBuffer wrap(CharSequence csq, @IndexOrHigh("#1") @LessThan("#3 + 1") int start, @IndexOrHigh("#1") int end) {
         try {
             return new StringCharBuffer(csq, start, end);
         } catch (IllegalArgumentException x) {
@@ -597,7 +599,7 @@ public abstract class CharBuffer
      *          If <tt>index</tt> is negative
      *          or not smaller than the buffer's limit
      */
-    public abstract char get(int index);
+    public abstract char get(@NonNegative @LessThan("this.limit") int index);
 
 
     /**
@@ -633,7 +635,7 @@ public abstract class CharBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    public abstract CharBuffer put(int index, char c);
+    public abstract CharBuffer put(@NonNegative @LessThan("this.limit") int index, char c);
 
 
     // -- Bulk get operations --
@@ -688,14 +690,13 @@ public abstract class CharBuffer
      *          If the preconditions on the <tt>offset</tt> and <tt>length</tt>
      *          parameters do not hold
      */
-    @SuppressWarnings({"index:array.access.unsafe.low","index:array.access.unsafe.high.range"}) // #1: checkBounds() => offset + length <= dst.length and offset and length are @NonNegative
-    public CharBuffer get(char[] dst, int offset, int length) {
+    public CharBuffer get(char[] dst, @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = {"#1"}, offset = {"#2 - 1"}) int length) {
         checkBounds(offset, length, dst.length);
         if (length > remaining())
             throw new BufferUnderflowException();
         int end = offset + length;
         for (int i = offset; i < end; i++)
-            dst[i] = get(); // #1
+            dst[i] = get();
         return this;
     }
 
@@ -830,14 +831,13 @@ public abstract class CharBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    @SuppressWarnings({"index:array.access.unsafe.low","array.access.unsafe.high.range"}) // #1: checkBounds() => offset + length <= dst.length and offset and length are @NonNegative
-    public CharBuffer put(char[] src, int offset, int length) {
+    public CharBuffer put(char[] src, @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = {"#1"}, offset = {"#2 - 1"}) int length) {
         checkBounds(offset, length, src.length);
         if (length > remaining())
             throw new BufferOverflowException();
         int end = offset + length;
         for (int i = offset; i < end; i++)
-            this.put(src[i]); // #1
+            this.put(src[i]);
         return this;
     }
 
@@ -922,8 +922,7 @@ public abstract class CharBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    @SuppressWarnings("index:argument.type.incompatible") // checkBounds() => start + end - start = end <= src.length() and that start and end - start are @NonNegative
-    public CharBuffer put(String src, int start, int end) {
+    public CharBuffer put(String src, @IndexOrHigh("#1") int start, @NonNegative @LTLengthOf(value = {"#1"}, offset = {"#2 - 1"}) int end) {
         checkBounds(start, end - start, src.length());
         if (isReadOnly())
             throw new ReadOnlyBufferException();
@@ -1026,7 +1025,7 @@ public abstract class CharBuffer
      * @throws  UnsupportedOperationException
      *          If this buffer is not backed by an accessible array
      */
-    public final @NonNegative int arrayOffset() {
+    public final @IndexOrHigh("this.hb") int arrayOffset() {
         if (hb == null)
             throw new UnsupportedOperationException();
         if (isReadOnly)
@@ -1285,7 +1284,7 @@ public abstract class CharBuffer
      * @throws  IndexOutOfBoundsException
      *          If the preconditions on <tt>index</tt> do not hold
      */
-    public final char charAt(int index) {
+    public final char charAt(@NonNegative @LTLengthOf("this.remaining()") int index) {
         return get(position() + checkIndex(index, 1));
     }
 
@@ -1319,7 +1318,7 @@ public abstract class CharBuffer
      *          If the preconditions on <tt>start</tt> and <tt>end</tt>
      *          do not hold
      */
-    public abstract CharBuffer subSequence(int start, int end);
+    public abstract CharBuffer subSequence(@NonNegative @LessThan("#2 + 1") int start, @NonNegative @LTEqLengthOf("this.remaining()") int end);
 
 
     // --- Methods to support Appendable ---
@@ -1394,10 +1393,10 @@ public abstract class CharBuffer
      *
      * @since  1.5
      */
-    @SuppressWarnings("index:argument.type.incompatible") // cs.length = csq.length
-    public CharBuffer append(CharSequence csq, @NonNegative @LTEqLengthOf("#1") int start, @NonNegative @LTEqLengthOf("#1") int end) {
-        CharSequence cs = (csq == null ? "null" : csq);
-        return put(cs.subSequence(start, end).toString());
+    @SuppressWarnings("index:argument.type.incompatible") // #1: cs.length = csq.length as assigned in #0.1
+    public CharBuffer append(CharSequence csq, @NonNegative @LTEqLengthOf("#1") @LessThan("#3 + 1") int start, @NonNegative @LTEqLengthOf("#1") int end) {
+        CharSequence cs = (csq == null ? "null" : csq); // #0.1
+        return put(cs.subSequence(start, end).toString()); // #1
     }
 
     /**
