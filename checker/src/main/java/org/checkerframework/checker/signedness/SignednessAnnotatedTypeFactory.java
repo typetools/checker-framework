@@ -73,7 +73,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // but adding the top type to them, which permits flow-sensitive type refinement.
         // (When it is possible to default types based on their TypeKinds,
         // this whole method will no longer be needed.)
-        addSignednessAnnotation(tree, type);
+        addSignednessGlbAnnotation(tree, type);
         addUnknownSignednessToSomeLocals(tree, type);
 
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
@@ -83,7 +83,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Refines the type of an integer primitive to @SignednessGlb if it is within the signed
      * positive range (i.e. its MSB is zero).
      */
-    private void addSignednessAnnotation(Tree tree, AnnotatedTypeMirror type) {
+    private void addSignednessGlbAnnotation(Tree tree, AnnotatedTypeMirror type) {
         TypeMirror javaType = type.getUnderlyingType();
         TypeKind javaTypeKind = javaType.getKind();
         switch (tree.getKind()) {
