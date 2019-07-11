@@ -17,7 +17,11 @@ class Issue2534 {
         @Unsigned int c = field;
     }
 
-    void m3(@IntRange(from = 0, to = Integer.MAX_VALUE) int array[]) {
+    void m3() {
+        @Unsigned int c = this.field;
+    }
+
+    void m4(@IntRange(from = 0, to = Integer.MAX_VALUE) int array[]) {
         @Unsigned int c = array[0];
     }
 }
