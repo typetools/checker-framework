@@ -82,9 +82,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private void addSignednessAnnotation(Tree tree, AnnotatedTypeMirror type) {
         TypeMirror javaType = type.getUnderlyingType();
         TypeKind javaTypeKind = javaType.getKind();
-
         switch (tree.getKind()) {
             case IDENTIFIER:
+            case ARRAY_ACCESS:
             case METHOD_INVOCATION:
                 if (javaTypeKind == TypeKind.BYTE
                         || javaTypeKind == TypeKind.CHAR
