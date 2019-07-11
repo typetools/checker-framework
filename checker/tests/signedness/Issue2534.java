@@ -1,7 +1,7 @@
 import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.value.qual.IntRange;
 
-class SignednessGlbIssue {
+class Issue2534 {
 
     @IntRange(from = 0, to = Integer.MAX_VALUE) int field = 3;
 
@@ -18,6 +18,6 @@ class SignednessGlbIssue {
     }
 
     void m3(@IntRange(from = 0, to = Integer.MAX_VALUE) int array[]) {
-        @Unsigned int c=array[0];        
+        @Unsigned int c = array[0];
     }
 }
