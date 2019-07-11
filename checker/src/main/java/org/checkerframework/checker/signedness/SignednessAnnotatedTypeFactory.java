@@ -80,8 +80,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Refines the expressions and literals of type integer to @SignednessGlb if it is within the
-     * signed positive range. (i.e. its MSB is zero).
+     * Refines an integer expression to @SignednessGlb if its value is within the signed positive
+     * range (i.e. its MSB is zero).
      */
     private void addSignednessGlbAnnotation(Tree tree, AnnotatedTypeMirror type) {
         TypeMirror javaType = type.getUnderlyingType();
