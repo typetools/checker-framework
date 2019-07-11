@@ -80,8 +80,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Refines the type of an expression such as array, method invocation or an integer primitive
-     * to @SignednessGlb if it is within the signed positive range. (i.e. its MSB is zero).
+     * Refines the expressions and literals of type integer to @SignednessGlb if it is within the
+     * signed positive range. (i.e. its MSB is zero).
      */
     private void addSignednessGlbAnnotation(Tree tree, AnnotatedTypeMirror type) {
         TypeMirror javaType = type.getUnderlyingType();
@@ -90,6 +90,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             case IDENTIFIER:
             case ARRAY_ACCESS:
             case METHOD_INVOCATION:
+            case MEMBER_SELECT:
                 if (javaTypeKind == TypeKind.BYTE
                         || javaTypeKind == TypeKind.CHAR
                         || javaTypeKind == TypeKind.SHORT
