@@ -8,17 +8,20 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
 #  * Put "apt-get update" and "apt-get install" in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
-RUN apt-get -qqy update && apt-get -qqy install \
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update && apt-get -qqy install \
   ant \
   cpp \
   git \
   gradle \
+  jq \
   libcurl3-gnutls \
   make \
   maven \
   mercurial \
   unzip \
   wget \
-  default-jdk \
+  openjdk-8-jdk \
+&& update-java-alternatives --set java-1.8.0-openjdk-amd64 \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*
