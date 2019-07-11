@@ -8,7 +8,8 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * THIS CLASS IS DESIGNED FOR USE WITH DefaultTypeHierarchy and StructuralEqualityComparer ONLY.
+ * THIS CLASS IS DESIGNED FOR USE WITH DefaultTypeHierarchy, DefaultRawnessComparer, and
+ * StructuralEqualityComparer ONLY.
  *
  * <p>VisitHistory keeps track of all visits and allows clients of this class to check whether or
  * not they have visited an equivalent pair of AnnotatedTypeMirrors already. This is necessary in

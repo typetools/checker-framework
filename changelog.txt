@@ -1132,10 +1132,10 @@ Renamed method annotations used by the Nullness Checker:
 Removed annotations used by the Nullness Checker:
   @AssertParametersNonNull
 Renamed type annotations used by the Initialization Checker:
-  => @Initialized
-  => @UnknownInitialization
+  @NonRaw => @Initialized
+  @Raw => @UnknownInitialization
   new annotation @UnderInitialization
-The old Initialization Checker (that uses and @NonRaw) can be invoked
+The old Initialization Checker (that uses @Raw and @NonRaw) can be invoked
   by invoking the NullnessRawnessChecker rather than the NullnessChecker.
 
 Purity (side effect) analysis uses new annotations @SideEffectFree,
@@ -2711,7 +2711,7 @@ Javari Checker
 NonNull Checker
   Updated the annotated JDK
   Fixed bugs in which default annotations were not correctly applied
-  Added types to handle partial object initialization.
+  Added @Raw types to handle partial object initialization.
   Fixed several minor bugs in the checker implementation.
 
 Custom Checker

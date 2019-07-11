@@ -605,13 +605,13 @@ public abstract class InitializationAnnotatedTypeFactory<
                     isInitializedForFrame(receiverType, fieldDeclarationType);
             if (isInitializedForFrame) {
                 // The receiver is initialized for this frame.
-                // Change the type of the field to @UnknownInitialization or so that
+                // Change the type of the field to @UnknownInitialization so that
                 // anything can be assigned to this field.
                 type.replaceAnnotation(UNCLASSIFIED);
             } else if (computingAnnotatedTypeMirrorOfLHS) {
                 // The receiver is not initialized for this frame, but the type of a lhs is being
                 // computed.
-                // Change the type of the field to @UnknownInitialization or so that
+                // Change the type of the field to @UnknownInitialization so that
                 // anything can be assigned to this field.
                 type.replaceAnnotation(UNCLASSIFIED);
             } else {
