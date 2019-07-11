@@ -491,8 +491,9 @@ public abstract class CharBuffer
      *
      * @return  The new character buffer
      */
+    @SuppressWarnings("index:argument.type.incompatible") // #1: csq.length() + 1 > 0
     public static CharBuffer wrap(CharSequence csq) {
-        return wrap(csq, 0, csq.length());
+        return wrap(csq, 0, csq.length()); // #1
     }
 
 
@@ -922,6 +923,7 @@ public abstract class CharBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
+    @SuppressWarnings("index:argument.type.incompatible") // #1: i < src.length() - start, where start is @NonNegative, hence i is @IndexFor("src")
     public CharBuffer put(String src, @IndexOrHigh("#1") int start, @NonNegative @LTLengthOf(value = {"#1"}, offset = {"#2 - 1"}) int end) {
         checkBounds(start, end - start, src.length());
         if (isReadOnly())
@@ -1120,6 +1122,7 @@ public abstract class CharBuffer
      *
      * @return  The current hash code of this buffer
      */
+    @SuppressWarnings("index:argument.type.incompatible") // i < limit() as can be seen through the loop definition, i starts from limit() - 1 and is only decremented
     public int hashCode() {
         int h = 1;
         int p = position();
@@ -1127,7 +1130,7 @@ public abstract class CharBuffer
 
 
 
-            h = 31 * h + (int)get(i);
+            h = 31 * h + (int)get(i); // #1
 
         return h;
     }
@@ -1164,6 +1167,7 @@ public abstract class CharBuffer
      * @return  <tt>true</tt> if, and only if, this buffer is equal to the
      *           given object
      */
+    @SuppressWarnings("index:argument.type.incompatible") // #1: i < this.limit() and j < that.limit() as can be seen by the loop's definition
     public boolean equals(Object ob) {
         if (this == ob)
             return true;
@@ -1174,7 +1178,7 @@ public abstract class CharBuffer
             return false;
         int p = this.position();
         for (int i = this.limit() - 1, j = that.limit() - 1; i >= p; i--, j--)
-            if (!equals(this.get(i), that.get(j)))
+            if (!equals(this.get(i), that.get(j))) // #1
                 return false;
         return true;
     }
@@ -1210,10 +1214,11 @@ public abstract class CharBuffer
      * @return  A negative integer, zero, or a positive integer as this buffer
      *          is less than, equal to, or greater than the given buffer
      */
+    @SuppressWarnings("index:argument.type.incompatible") // #1: i < this.limit() and j < that.limit() as can be seen by the loop's definition
     public int compareTo(CharBuffer that) {
         int n = this.position() + Math.min(this.remaining(), that.remaining());
         for (int i = this.position(), j = that.position(); i < n; i++, j++) {
-            int cmp = compare(this.get(i), that.get(j));
+            int cmp = compare(this.get(i), that.get(j)); // #1
             if (cmp != 0)
                 return cmp;
         }
@@ -1284,6 +1289,10 @@ public abstract class CharBuffer
      * @throws  IndexOutOfBoundsException
      *          If the preconditions on <tt>index</tt> do not hold
      */
+    @SuppressWarnings({"index:override.param.invalid", "index:argument.type.incompatible"}) /*
+    index has to be @LTLengthOf("this.remaining()") as written in the documentation.
+    #1: index being @LTLengthOf("this.remaining()") => position() + checkIndex(index, 1) is @LTLengthOf("this.limit")
+    */
     public final char charAt(@NonNegative @LTLengthOf("this.remaining()") int index) {
         return get(position() + checkIndex(index, 1));
     }
@@ -1318,6 +1327,7 @@ public abstract class CharBuffer
      *          If the preconditions on <tt>start</tt> and <tt>end</tt>
      *          do not hold
      */
+    @SuppressWarnings("index:override.param.invalid") // the annotations are as per the documentation
     public abstract CharBuffer subSequence(@NonNegative @LessThan("#2 + 1") int start, @NonNegative @LTEqLengthOf("this.remaining()") int end);
 
 
@@ -1393,7 +1403,7 @@ public abstract class CharBuffer
      *
      * @since  1.5
      */
-    @SuppressWarnings("index:argument.type.incompatible") // #1: cs.length = csq.length as assigned in #0.1
+    @SuppressWarnings({"index:argument.type.incompatible","index:override.param.invalid"}) // #1: cs.length = csq.length as assigned in #0.1, also, the annotations are as per the documentation
     public CharBuffer append(CharSequence csq, @NonNegative @LTEqLengthOf("#1") @LessThan("#3 + 1") int start, @NonNegative @LTEqLengthOf("#1") int end) {
         CharSequence cs = (csq == null ? "null" : csq); // #0.1
         return put(cs.subSequence(start, end).toString()); // #1
