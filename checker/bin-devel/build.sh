@@ -26,9 +26,7 @@ export JAVA_HOME
 
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
     || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-
-SLUGOWNER=`/tmp/plume-scripts/git-organization typetools`
-echo SLUGOWNER=$SLUGOWNER
+eval `/tmp/plume-scripts/ci-info typetools`
 
 
 ## Build annotation-tools (Annotation File Utilities)
@@ -36,8 +34,8 @@ if [ -d ../annotation-tools ] ; then
     git -C ../annotation-tools pull -q || true
 else
     [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
-    REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools annotation-tools`
-    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+    REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetools annotation-tools`
+    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
     (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
 fi
 
@@ -51,8 +49,8 @@ if [ -d ../stubparser ] ; then
     git -C ../stubparser pull
 else
     [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
-    REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools stubparser`
-    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
+    REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetools stubparser`
+    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
     (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
 fi
 
