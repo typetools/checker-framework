@@ -86,58 +86,51 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private void addSignednessGlbAnnotation(Tree tree, AnnotatedTypeMirror type) {
         TypeMirror javaType = type.getUnderlyingType();
         TypeKind javaTypeKind = javaType.getKind();
-        switch (tree.getKind()) {
-            case IDENTIFIER:
-            case ARRAY_ACCESS:
-            case METHOD_INVOCATION:
-            case MEMBER_SELECT:
-                if (javaTypeKind == TypeKind.BYTE
-                        || javaTypeKind == TypeKind.CHAR
-                        || javaTypeKind == TypeKind.SHORT
-                        || javaTypeKind == TypeKind.INT
-                        || javaTypeKind == TypeKind.LONG) {
-                    AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
-                    // These annotations are trusted rather than checked.  Maybe have an option to
-                    // disable using them?
-                    if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
-                                    || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
-                            && type.hasAnnotation(SIGNED)) {
-                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                    } else {
-                        Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
+        if (tree.getKind() != Tree.Kind.VARIABLE) {
+            if (javaTypeKind == TypeKind.BYTE
+                    || javaTypeKind == TypeKind.CHAR
+                    || javaTypeKind == TypeKind.SHORT
+                    || javaTypeKind == TypeKind.INT
+                    || javaTypeKind == TypeKind.LONG) {
+                AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
+                // These annotations are trusted rather than checked.  Maybe have an option to
+                // disable using them?
+                if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
+                                || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
+                        && type.hasAnnotation(SIGNED)) {
+                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                } else {
+                    Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
 
-                        if (treeRange != null) {
-                            switch (javaType.getKind()) {
-                                case BYTE:
-                                case CHAR:
-                                    if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
-                                    break;
-                                case SHORT:
-                                    if (treeRange.isWithin(0, Short.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
-                                    break;
-                                case INT:
-                                    if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
-                                    break;
-                                case LONG:
-                                    if (treeRange.isWithin(0, Long.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
-                                    break;
-                                default:
-                                    // Nothing
-                            }
+                    if (treeRange != null) {
+                        switch (javaType.getKind()) {
+                            case BYTE:
+                            case CHAR:
+                                if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case SHORT:
+                                if (treeRange.isWithin(0, Short.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case INT:
+                                if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case LONG:
+                                if (treeRange.isWithin(0, Long.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            default:
+                                // Nothing
                         }
                     }
                 }
-                break;
-            default:
-                // Nothing for other cases.
+            }
         }
     }
 
