@@ -94,6 +94,11 @@ public interface ProgramElementDoc extends Doc {
     @Pure public abstract boolean isFinal();
 }
 
+public interface MethodDoc extends MemberDoc {
+    @Pure public abstract com.sun.javadoc.ClassDoc containingClass();
+    @Pure public abstract com.sun.javadoc.Parameter[] parameters();
+}
+
 public interface RootDoc extends Doc, DocErrorReporter {
     String [] @MinLen(1) [] options();
     PackageDoc[] specifiedPackages();
