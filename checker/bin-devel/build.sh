@@ -29,7 +29,7 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
 git branch
 git branch | grep \*
 git branch | grep \* | cut -d ' ' -f2
-env
+env | sort
 eval `/tmp/plume-scripts/ci-info typetools`
 
 
