@@ -1350,7 +1350,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     the specified value is itself equal to zero.
      * @since 1.5
      */
-    public static int highestOneBit(@UnknownSignedness int i) {
+    public static int highestOneBit(@PolySigned int i) {
         // HD, Figure 3-1
         i |= (i >>  1);
         i |= (i >>  2);
@@ -1373,7 +1373,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     the specified value is itself equal to zero.
      * @since 1.5
      */
-    public static int lowestOneBit(@UnknownSignedness int i) {
+    public static int lowestOneBit(@PolySigned  int i) {
         // HD, Section 2-1
         return i & -i;
     }
@@ -1516,7 +1516,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     specified {@code int} value.
      * @since 1.5
      */
-    public static @SignednessGlb int reverse(@UnknownSignedness int i) {
+    public static @SignednessGlb int reverse(@PolySigned int i) {
         // HD, Figure 7-1
         i = (i & 0x55555555) << 1 | (i >>> 1) & 0x55555555;
         i = (i & 0x33333333) << 2 | (i >>> 2) & 0x33333333;
@@ -1549,7 +1549,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     {@code int} value.
      * @since 1.5
      */
-    public static @SignednessGlb int reverseBytes(@UnknownSignedness int i) {
+    public static @SignednessGlb int reverseBytes(@PolySigned int i) {
         return ((i >>> 24)           ) |
                ((i >>   8) &   0xFF00) |
                ((i <<   8) & 0xFF0000) |
