@@ -1370,7 +1370,7 @@ public final class Long extends Number implements Comparable<Long> {
      *     the specified value is itself equal to zero.
      * @since 1.5
      */
-    public static long highestOneBit(@UnknownSignedness long i) {
+    public static long highestOneBit(@PolySigned long i) {
         // HD, Figure 3-1
         i |= (i >>  1);
         i |= (i >>  2);
@@ -1394,7 +1394,7 @@ public final class Long extends Number implements Comparable<Long> {
      *     the specified value is itself equal to zero.
      * @since 1.5
      */
-    public static long lowestOneBit(@UnknownSignedness long i) {
+    public static long lowestOneBit(@PolySigned long i) {
         // HD, Section 2-1
         return i & -i;
     }
@@ -1541,7 +1541,7 @@ public final class Long extends Number implements Comparable<Long> {
      *     specified {@code long} value.
      * @since 1.5
      */
-    public static @SignednessGlb long reverse(@UnknownSignedness long i) {
+    public static @SignednessGlb long reverse(@PolySigned long i) {
         // HD, Figure 7-1
         i = (i & 0x5555555555555555L) << 1 | (i >>> 1) & 0x5555555555555555L;
         i = (i & 0x3333333333333333L) << 2 | (i >>> 2) & 0x3333333333333333L;
@@ -1575,7 +1575,7 @@ public final class Long extends Number implements Comparable<Long> {
      *     {@code long} value.
      * @since 1.5
      */
-    public static @SignednessGlb long reverseBytes(@UnknownSignedness long i) {
+    public static @SignednessGlb long reverseBytes(@PolySigned long i) {
         i = (i & 0x00ff00ff00ff00ffL) << 8 | (i >>> 8) & 0x00ff00ff00ff00ffL;
         return (i << 48) | ((i & 0xffff0000L) << 16) |
             ((i >>> 16) & 0xffff0000L) | (i >>> 48);
