@@ -1047,12 +1047,12 @@ public abstract class CFAbstractTransfer<
                                 expression, flowExprContext, localScope, false);
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDTION) {
                     if (((ConditionalPostcondition) p).annoResult) {
-                        thenStore.insertValue(r, anno);
+                        thenStore.insertGlb(r, anno);
                     } else {
-                        elseStore.insertValue(r, anno);
+                        elseStore.insertGlb(r, anno);
                     }
                 } else {
-                    thenStore.insertValue(r, anno);
+                    thenStore.insertGlb(r, anno);
                 }
             } catch (FlowExpressionParseException e) {
                 Result result;
