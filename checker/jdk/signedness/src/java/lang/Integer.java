@@ -236,7 +236,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @see #toUnsignedString(int, int)
      * @since   JDK1.0.2
      */
-    public static String toHexString(@UnknownSignedness int i) {
+    public static String toHexString(@Unsigned int i) {
         return toUnsignedString0(i, 4);
     }
 
@@ -274,7 +274,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @see #toUnsignedString(int, int)
      * @since   JDK1.0.2
      */
-    public static String toOctalString(@UnknownSignedness int i) {
+    public static String toOctalString(@Unsigned int i) {
         return toUnsignedString0(i, 3);
     }
 
@@ -306,14 +306,14 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @see #toUnsignedString(int, int)
      * @since   JDK1.0.2
      */
-    public static String toBinaryString(@UnknownSignedness int i) {
+    public static String toBinaryString(@Unsigned int i) {
         return toUnsignedString0(i, 1);
     }
 
     /**
      * Convert the integer to an unsigned number.
      */
-    private static String toUnsignedString0(int val, int shift) {
+    private static String toUnsignedString0(@Unsigned int val, int shift) {
         // assert shift > 0 && shift <=5 : "Illegal shift value";
         int mag = Integer.SIZE - Integer.numberOfLeadingZeros(val);
         int chars = Math.max(((mag + (shift - 1)) / shift), 1);
