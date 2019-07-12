@@ -7,4 +7,11 @@ class Issue2613 {
     }
 
     void require_lt(@LessThan("#2") int a, int b) {}
+
+    void method(@LessThan("1") int a) {
+        @LessThan("2") int x = a;
+        if (a < 2.0) {
+            a = a;
+        }
+    }
 }
