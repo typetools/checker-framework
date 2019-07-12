@@ -275,7 +275,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @see #toUnsignedString(long, int)
      * @since   JDK 1.0.2
      */
-    public static String toHexString(@UnknownSignedness long i) {
+    public static String toHexString(@Unsigned long i) {
         return toUnsignedString0(i, 4);
     }
 
@@ -314,7 +314,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @see #toUnsignedString(long, int)
      * @since   JDK 1.0.2
      */
-    public static String toOctalString(@UnknownSignedness long i) {
+    public static String toOctalString(@Unsigned long i) {
         return toUnsignedString0(i, 3);
     }
 
@@ -347,7 +347,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @see #toUnsignedString(long, int)
      * @since   JDK 1.0.2
      */
-    public static String toBinaryString(@UnknownSignedness long i) {
+    public static String toBinaryString(@Unsigned long i) {
         return toUnsignedString0(i, 1);
     }
 
@@ -356,7 +356,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @param val the value to format
      * @param shift the log2 of the base to format in (4 for hex, 3 for octal, 1 for binary)
      */
-    static String toUnsignedString0(long val, int shift) {
+    static String toUnsignedString0(@Unsigned long val, int shift) {
         // assert shift > 0 && shift <=5 : "Illegal shift value";
         int mag = Long.SIZE - Long.numberOfLeadingZeros(val);
         int chars = Math.max(((mag + (shift - 1)) / shift), 1);
