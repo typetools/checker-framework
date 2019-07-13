@@ -34,7 +34,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PostconditionAnnotation(qualifier = KeyFor.class)
 @InheritedAnnotation
-@Repeatable(EnsuresKeyForMultiple.class)
+@Repeatable(EnsuresKeyFor.List.class)
 public @interface EnsuresKeyFor {
     /**
      * Java expressions that are keys in the given maps on successful method termination.
@@ -52,4 +52,19 @@ public @interface EnsuresKeyFor {
     @JavaExpression
     @QualifierArgument("value")
     String[] map();
+
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @PostconditionAnnotation(qualifier = KeyFor.class)
+    @InheritedAnnotation
+    @interface List {
+        /**
+         * The Java expressions that are keys in the given maps on successful method
+         * termination.
+         *
+         * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+         */
+        EnsuresKeyFor[] value();
+    }
 }

@@ -22,7 +22,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = LockHeld.class)
 @InheritedAnnotation
-@Repeatable(EnsuresLockHeldIfMultiple.class)
+@Repeatable(EnsuresLockHeldIf.List.class)
 public @interface EnsuresLockHeldIf {
     /**
      * Java expressions whose values are held after the method returns the given result.
@@ -37,4 +37,19 @@ public @interface EnsuresLockHeldIf {
 
     /** The return value of the method that needs to hold for the postcondition to hold. */
     boolean result();
+
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @ConditionalPostconditionAnnotation(qualifier = LockHeld.class)
+    @InheritedAnnotation
+    @interface List {
+        /**
+         * The Java expressions whose values are held after the method returns the given
+         * result.
+         *
+         * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+         */
+        EnsuresLockHeldIf[] value();
+    }
 }

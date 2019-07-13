@@ -23,7 +23,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @InheritedAnnotation
-@Repeatable(EnsuresMinLenIfMultiple.class)
+@Repeatable(EnsuresMinLenIf.List.class)
 public @interface EnsuresMinLenIf {
     /**
      * Java expression(s) that are a sequence with the given minimum length after the method returns
@@ -39,4 +39,18 @@ public @interface EnsuresMinLenIf {
     /** The minimum number of elements in the sequence. */
     @QualifierArgument("value")
     int targetValue() default 0;
+
+    @ConditionalPostconditionAnnotation(qualifier = MinLen.class)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @InheritedAnnotation
+    public @interface List {
+        /**
+         * The Java expression(s) that are a sequence with the given minimum length after
+         * the method returns the given result.
+         *
+         * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+         */
+        EnsuresMinLenIf[] value();
+    }
 }

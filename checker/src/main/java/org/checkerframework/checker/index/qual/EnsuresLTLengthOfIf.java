@@ -54,7 +54,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
 @InheritedAnnotation
-@Repeatable(EnsuresLTLengthOfIfMultiple.class)
+@Repeatable(EnsuresLTLengthOfIf.List.class)
 public @interface EnsuresLTLengthOfIf {
     /**
      * Java expression(s) that are less than the length of the given sequences after the method
@@ -83,4 +83,20 @@ public @interface EnsuresLTLengthOfIf {
     @JavaExpression
     @QualifierArgument("offset")
     String[] offset() default {};
+
+
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
+    @InheritedAnnotation
+    @interface List {
+        /**
+         * The Java expression(s) that are less than the length of the given sequences after
+         * the method returns the given result.
+         *
+         * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+        */
+        EnsuresLTLengthOfIf[] value();
+    }
 }

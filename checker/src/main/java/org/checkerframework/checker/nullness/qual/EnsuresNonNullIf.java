@@ -68,7 +68,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
 @InheritedAnnotation
-@Repeatable(EnsuresNonNullIfMultiple.class)
+@Repeatable(EnsuresNonNullIf.List.class)
 public @interface EnsuresNonNullIf {
     /**
      * Java expression(s) that are non-null after the method returns the given result.
@@ -79,4 +79,19 @@ public @interface EnsuresNonNullIf {
 
     /** The return value of the method that needs to hold for the postcondition to hold. */
     boolean result();
+
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
+    @InheritedAnnotation
+    @interface List {
+    	/**
+	     * The Java expressions that are ensured to be {@link NonNull} after the method
+	     * returns the given result.
+	     *
+	     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+	     */
+	    EnsuresNonNullIf[] value();
+    }
 }

@@ -34,7 +34,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = KeyFor.class)
 @InheritedAnnotation
-@Repeatable(EnsuresKeyForIfMultiple.class)
+@Repeatable(EnsuresKeyForIf.List.class)
 public @interface EnsuresKeyForIf {
     /** The value the method must return, in order for the postcondition to hold. */
     boolean result();
@@ -55,4 +55,19 @@ public @interface EnsuresKeyForIf {
     @JavaExpression
     @QualifierArgument("value")
     String[] map();
+
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @ConditionalPostconditionAnnotation(qualifier = KeyFor.class)
+    @InheritedAnnotation
+    @interface List {
+        /**
+         * The Java expressions that are keys in the given maps after the method returns the
+         * given result.
+         *
+         * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+         */
+        EnsuresKeyForIf[] value();
+    }
 }

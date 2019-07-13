@@ -21,7 +21,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PostconditionAnnotation(qualifier = LockHeld.class)
 @InheritedAnnotation
-@Repeatable(EnsuresLockHeldMultiple.class)
+@Repeatable(EnsuresLockHeld.List.class)
 public @interface EnsuresLockHeld {
     /**
      * The Java expressions whose values are held after the method terminates successfully.
@@ -30,4 +30,20 @@ public @interface EnsuresLockHeld {
      *     Java expressions</a>
      */
     String[] value();
+
+    @Documented
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+	@PostconditionAnnotation(qualifier = LockHeld.class)
+	@InheritedAnnotation
+	@interface List {
+		/**
+	     * The Java expressions whose values are held after the method terminates
+	     * successfully.
+	     *
+	     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+	     */
+	    EnsuresLockHeld[] value();
+	}
+
 }
