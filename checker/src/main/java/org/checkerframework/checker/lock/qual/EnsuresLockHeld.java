@@ -32,18 +32,16 @@ public @interface EnsuresLockHeld {
     String[] value();
 
     @Documented
-	@Retention(RetentionPolicy.RUNTIME)
-	@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-	@PostconditionAnnotation(qualifier = LockHeld.class)
-	@InheritedAnnotation
-	@interface List {
-		/**
-	     * The Java expressions whose values are held after the method terminates
-	     * successfully.
-	     *
-	     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-	     */
-	    EnsuresLockHeld[] value();
-	}
-
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @PostconditionAnnotation(qualifier = LockHeld.class)
+    @InheritedAnnotation
+    @interface List {
+        /**
+         * The Java expressions whose values are held after the method terminates successfully.
+         *
+         * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+         */
+        EnsuresLockHeld[] value();
+    }
 }

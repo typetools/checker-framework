@@ -60,8 +60,7 @@ public @interface EnsuresKeyFor {
     @InheritedAnnotation
     @interface List {
         /**
-         * The Java expressions that are keys in the given maps on successful method
-         * termination.
+         * The Java expressions that are keys in the given maps on successful method termination.
          *
          * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
          */

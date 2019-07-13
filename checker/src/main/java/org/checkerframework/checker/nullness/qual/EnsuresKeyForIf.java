@@ -63,8 +63,8 @@ public @interface EnsuresKeyForIf {
     @InheritedAnnotation
     @interface List {
         /**
-         * The Java expressions that are keys in the given maps after the method returns the
-         * given result.
+         * The Java expressions that are keys in the given maps after the method returns the given
+         * result.
          *
          * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
          */

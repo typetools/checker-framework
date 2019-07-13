@@ -46,8 +46,8 @@ public @interface EnsuresMinLenIf {
     @InheritedAnnotation
     public @interface List {
         /**
-         * The Java expression(s) that are a sequence with the given minimum length after
-         * the method returns the given result.
+         * The Java expression(s) that are a sequence with the given minimum length after the method
+         * returns the given result.
          *
          * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
          */

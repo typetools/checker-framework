@@ -84,7 +84,6 @@ public @interface EnsuresLTLengthOfIf {
     @QualifierArgument("offset")
     String[] offset() default {};
 
-
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
@@ -92,11 +91,11 @@ public @interface EnsuresLTLengthOfIf {
     @InheritedAnnotation
     @interface List {
         /**
-         * The Java expression(s) that are less than the length of the given sequences after
-         * the method returns the given result.
+         * The Java expression(s) that are less than the length of the given sequences after the
+         * method returns the given result.
          *
          * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-        */
+         */
         EnsuresLTLengthOfIf[] value();
     }
 }

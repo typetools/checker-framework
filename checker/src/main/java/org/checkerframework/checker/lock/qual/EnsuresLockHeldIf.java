@@ -45,8 +45,7 @@ public @interface EnsuresLockHeldIf {
     @InheritedAnnotation
     @interface List {
         /**
-         * The Java expressions whose values are held after the method returns the given
-         * result.
+         * The Java expressions whose values are held after the method returns the given result.
          *
          * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
          */

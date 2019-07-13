@@ -53,12 +53,12 @@ public @interface EnsuresNonNull {
     @PostconditionAnnotation(qualifier = NonNull.class)
     @InheritedAnnotation
     @interface List {
-    	/**
-	     * The Java expressions that are ensured to be {@link NonNull} on successful method
-	     * termination.
-	     *
-	     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-	     */
-	    EnsuresNonNull[] value();
-	}
+        /**
+         * The Java expressions that are ensured to be {@link NonNull} on successful method
+         * termination.
+         *
+         * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+         */
+        EnsuresNonNull[] value();
+    }
 }

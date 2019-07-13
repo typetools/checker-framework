@@ -86,10 +86,10 @@ public @interface EnsuresLTLengthOf {
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @PostconditionAnnotation(qualifier = LTLengthOf.class)
     @InheritedAnnotation
-    @interface List{
+    @interface List {
         /**
-         * The Java expressions that are less than the length of the given sequences on
-         * successful method termination.
+         * The Java expressions that are less than the length of the given sequences on successful
+         * method termination.
          *
          * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
          */
