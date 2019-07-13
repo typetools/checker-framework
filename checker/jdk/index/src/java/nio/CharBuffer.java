@@ -41,6 +41,7 @@ import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
+import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 
 
@@ -420,7 +421,7 @@ public abstract class CharBuffer
      * @throws ReadOnlyBufferException if target is a read only buffer
      * @since 1.5
      */
-    public int read(CharBuffer target) throws IOException {
+    public @GTENegativeOne int read(CharBuffer target) throws IOException {
         // Determine the number of bytes n that can be transferred
         int targetRemaining = target.remaining();
         int remaining = remaining();
@@ -600,7 +601,7 @@ public abstract class CharBuffer
      *          If <tt>index</tt> is negative
      *          or not smaller than the buffer's limit
      */
-    public abstract char get(@NonNegative @LessThan("this.limit") int index);
+    public abstract char get(@NonNegative @LessThan("this.limit()") int index);
 
 
     /**
@@ -636,7 +637,7 @@ public abstract class CharBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    public abstract CharBuffer put(@NonNegative @LessThan("this.limit") int index, char c);
+    public abstract CharBuffer put(@NonNegative @LessThan("this.limit()") int index, char c);
 
 
     // -- Bulk get operations --
@@ -923,7 +924,7 @@ public abstract class CharBuffer
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
      */
-    @SuppressWarnings("index:argument.type.incompatible") // #1: i < src.length() - start, where start is @NonNegative, hence i is @IndexFor("src")
+    @SuppressWarnings("index:argument.type.incompatible") // #1: i < src.length() - start, where start is @NonNegative, hence i is @IndexFor("src"), also start is @IndexOrHigh("src"), hence the expression is @NonNegative as well
     public CharBuffer put(String src, @IndexOrHigh("#1") int start, @NonNegative @LTLengthOf(value = {"#1"}, offset = {"#2 - 1"}) int end) {
         checkBounds(start, end - start, src.length());
         if (isReadOnly())
@@ -1290,10 +1291,10 @@ public abstract class CharBuffer
      *          If the preconditions on <tt>index</tt> do not hold
      */
     @SuppressWarnings({"index:override.param.invalid", "index:argument.type.incompatible"}) /*
-    index has to be @LTLengthOf("this.remaining()") as written in the documentation.
-    #1: index being @LTLengthOf("this.remaining()") => position() + checkIndex(index, 1) is @LTLengthOf("this.limit")
+    index has to be @LessThan("this.remaining()") as written in the documentation, deliberately inconsistent with the super class
+    #1: index being @LessThan("this.remaining()") => position() + checkIndex(index, 1) is @LessThan("this.limit")
     */
-    public final char charAt(@NonNegative @LTLengthOf("this.remaining()") int index) {
+    public final char charAt(@LessThan("this.remaining()") int index) {
         return get(position() + checkIndex(index, 1));
     }
 
@@ -1327,8 +1328,8 @@ public abstract class CharBuffer
      *          If the preconditions on <tt>start</tt> and <tt>end</tt>
      *          do not hold
      */
-    @SuppressWarnings("index:override.param.invalid") // the annotations are as per the documentation
-    public abstract CharBuffer subSequence(@NonNegative @LessThan("#2 + 1") int start, @NonNegative @LTEqLengthOf("this.remaining()") int end);
+    @SuppressWarnings("index:override.param.invalid") // the annotations are as per the documentation, deliberately inconsistent with the super class
+    public abstract CharBuffer subSequence(@NonNegative @LessThan("#2 + 1") int start, @NonNegative @LessThan("this.remaining()") int end);
 
 
     // --- Methods to support Appendable ---
@@ -1403,7 +1404,7 @@ public abstract class CharBuffer
      *
      * @since  1.5
      */
-    @SuppressWarnings({"index:argument.type.incompatible","index:override.param.invalid"}) // #1: cs.length = csq.length as assigned in #0.1, also, the annotations are as per the documentation
+    @SuppressWarnings({"index:argument.type.incompatible", "index:override.param.invalid"}) // #1: cs.length = csq.length as assigned in #0.1. Also, the annotations are as per the documentation, deliberately inconsistent with the super class
     public CharBuffer append(CharSequence csq, @NonNegative @LTEqLengthOf("#1") @LessThan("#3 + 1") int start, @NonNegative @LTEqLengthOf("#1") int end) {
         CharSequence cs = (csq == null ? "null" : csq); // #0.1
         return put(cs.subSequence(start, end).toString()); // #1
