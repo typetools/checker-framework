@@ -504,9 +504,8 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            try {
-                // If multiple contracts, then this will throw an exception which is catched at Line
-                // 521
+            DeclaredType type = anno.getAnnotationType();
+            if (!type.toString().contains("List")) {
                 List<String> expressions =
                         AnnotationUtils.getElementValueArray(
                                 anno, "expression", String.class, false);
@@ -519,7 +518,7 @@ public class ContractsUtils {
                 for (String expr : expressions) {
                     result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
                 }
-            } catch (Throwable e) {
+            } else {
                 List<AnnotationMirror> annotations =
                         AnnotationUtils.getElementValueArray(
                                 anno, "value", AnnotationMirror.class, false);
