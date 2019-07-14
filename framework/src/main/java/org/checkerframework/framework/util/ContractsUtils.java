@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
@@ -418,9 +420,8 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            try {
-                // If multiple contracts, then this will throw an exception which is catched at Line
-                // 433
+            DeclaredType type = anno.getAnnotationType();
+            if (!type.toString().contains("List")) {
                 List<String> expressions =
                         AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
                 AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
@@ -430,7 +431,7 @@ public class ContractsUtils {
                 for (String expr : expressions) {
                     result.add(new Postcondition(expr, postcondAnno, anno));
                 }
-            } catch (ClassCastException e) {
+            } else {
                 List<AnnotationMirror> annotations =
                         AnnotationUtils.getElementValueArray(
                                 anno, "value", AnnotationMirror.class, false);
