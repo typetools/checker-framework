@@ -244,6 +244,7 @@ public class KeyForAnnotatedTypeFactory
                 set.retainAll(a2Values);
                 return createKeyForAnnotationMirrorWithValue(set);
             }
+            // a1 or a2 is @PolyKeyFor.
             // Ignore annotation values to ensure that annotation is in supertype map.
             if (AnnotationUtils.areSameByName(a1, KEYFOR)) {
                 a1 = KEYFOR;
@@ -273,6 +274,7 @@ public class KeyForAnnotatedTypeFactory
                 set.addAll(a2Values);
                 return createKeyForAnnotationMirrorWithValue(set);
             }
+            // a1 or a2 is @PolyKeyFor.
             // Ignore annotation values to ensure that annotation is in supertype map.
             if (AnnotationUtils.areSameByName(a1, KEYFOR)) {
                 a1 = KEYFOR;
