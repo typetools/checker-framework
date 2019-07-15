@@ -484,7 +484,7 @@ public class DependentTypesHelper {
                     && ((FlowExpressions.FieldAccess) result).isFinal()) {
                 Object constant =
                         ((FlowExpressions.FieldAccess) result).getField().getConstantValue();
-                if (constant != null) {
+                if (constant != null && !(constant instanceof String)) {
                     return constant.toString();
                 }
             }
