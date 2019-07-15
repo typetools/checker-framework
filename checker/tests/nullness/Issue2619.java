@@ -8,19 +8,7 @@ public class Issue2619 {
 
     void m01(Aux aux1, Aux aux2) {
         if (aux1.hasValue(Aux.MINIMUM_VALUE) && aux2.hasValue(Aux.MINIMUM_VALUE)) {
-            @KeyFor("aux1.map") String s1 = Aux.MINIMUM_VALUE;
-        }
-    }
-
-    void m02(Aux aux1, Aux aux2) {
-        if (aux1.hasValue(Aux.MINIMUM_VALUE) && aux2.hasValue(Aux.MINIMUM_VALUE)) {
-            @KeyFor("aux2.map") String s2 = Aux.MINIMUM_VALUE;
-        }
-    }
-
-    void m03(Aux aux1, Aux aux2) {
-        if (aux2.hasValue(Aux.MINIMUM_VALUE)) {
-            @KeyFor("aux2.map") String s2 = Aux.MINIMUM_VALUE;
+            @KeyFor({"aux1.map", "aux2.map"}) String s1 = Aux.MINIMUM_VALUE;
         }
     }
 
