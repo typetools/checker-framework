@@ -76,4 +76,9 @@ public class SubtypeVisitHistory {
     public String toString() {
         return "VisitHistory( " + visited + " )";
     }
+
+    /** Clears the history. */
+    public void clear() {
+        visited.clear();
+    }
 }
