@@ -177,15 +177,17 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * Like {@link #reportValidityResult}, but the type is printed in the error message without
      * annotations. This method would print "annotation @NonNull is not permitted on type int",
      * whereas {@link #reportValidityResult} would print "annotation @NonNull is not permitted on
-     * type @NonNull int".
+     * type @NonNull int". In addition, when underlying is a compound type such as @Bad
+     * List&lt;String&gt;, the erased type will be used, i.e., "List" will be print instead of "@Bad
+     * List&lt;String&gt;".
      */
     protected void reportValidityResultOnUnannotatedType(
             final @CompilerMessageKey String errorType,
             final AnnotatedTypeMirror type,
             final Tree p) {
-        TypeMirror unannotated =
+        TypeMirror underlying =
                 TypeAnnotationUtils.unannotatedType(type.getErased().getUnderlyingType());
-        checker.report(Result.failure(errorType, type.getAnnotations(), unannotated.toString()), p);
+        checker.report(Result.failure(errorType, type.getAnnotations(), underlying.toString()), p);
         isValid = false;
     }
 
