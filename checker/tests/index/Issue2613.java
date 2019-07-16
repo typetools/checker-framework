@@ -16,4 +16,9 @@ class Issue2613 {
     void require_lt(@LessThan("#2") int a, int b) {}
 
     void require_lt(@LTLengthOf("#2") int a, String b) {}
+
+    void method(@LessThan("Integer.MAX_VALUE") long x, @LessThan("Integer.MAX_VALUE") long y) {
+        x = y;
+        @LessThan("2147483647") long z = y;
+    }
 }
