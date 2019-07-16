@@ -277,7 +277,7 @@ public abstract class CharBuffer
     // reduce the number of virtual method invocations needed to access these
     // values, which is especially costly when coding small buffers.
     //
-    final char[] hb;                  // Non-null only for heap buffers
+    final char @SameLen("this") [] hb;                  // Non-null only for heap buffers
     final @IndexOrHigh("this.hb") int offset;
     boolean isReadOnly;                 // Valid only for heap buffers
 
@@ -285,7 +285,7 @@ public abstract class CharBuffer
     // backing array, and array offset
     //
     CharBuffer(@GTENegativeOne @LessThan("#2 + 1") int mark, @NonNegative @LessThan("#3 + 1") int pos, @NonNegative @LessThan("#4 + 1") int lim, @NonNegative int cap,   // package-private
-                 char[] hb, @IndexOrHigh("this.hb") int offset)
+                 char @SameLen("this") [] hb, @IndexOrHigh("this.hb") int offset)
     {
         super(mark, pos, lim, cap);
         this.hb = hb;
@@ -1000,7 +1000,7 @@ public abstract class CharBuffer
      * @throws  UnsupportedOperationException
      *          If this buffer is not backed by an accessible array
      */
-    public final char[] array() {
+    public final char @SameLen("this") [] array() {
         if (hb == null)
             throw new UnsupportedOperationException();
         if (isReadOnly)
