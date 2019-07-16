@@ -225,6 +225,66 @@ public class KeyForAnnotatedTypeFactory
             }
             return super.isSubtype(subAnno, superAnno);
         }
+
+        @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSameByName(a1, UNKNOWNKEYFOR)) {
+                return a1;
+            } else if (AnnotationUtils.areSameByName(a2, UNKNOWNKEYFOR)) {
+                return a2;
+            } else if (AnnotationUtils.areSameByName(a1, KEYFORBOTTOM)) {
+                return a2;
+            } else if (AnnotationUtils.areSameByName(a2, KEYFORBOTTOM)) {
+                return a1;
+            } else if (AnnotationUtils.areSameByName(a1, KEYFOR)
+                    && AnnotationUtils.areSameByName(a2, KEYFOR)) {
+                List<String> a1Values = extractValues(a1);
+                List<String> a2Values = extractValues(a2);
+                LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
+                set.retainAll(a2Values);
+                return createKeyForAnnotationMirrorWithValue(set);
+            }
+            // a1 or a2 is @PolyKeyFor.
+            // Ignore annotation values to ensure that annotation is in supertype map.
+            if (AnnotationUtils.areSameByName(a1, KEYFOR)) {
+                a1 = KEYFOR;
+            }
+            if (AnnotationUtils.areSameByName(a2, KEYFOR)) {
+                a2 = KEYFOR;
+            }
+            // Let super handle @PolyKeyFor.
+            return super.leastUpperBound(a1, a2);
+        }
+
+        @Override
+        public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSameByName(a1, UNKNOWNKEYFOR)) {
+                return a2;
+            } else if (AnnotationUtils.areSameByName(a2, UNKNOWNKEYFOR)) {
+                return a1;
+            } else if (AnnotationUtils.areSameByName(a1, KEYFORBOTTOM)) {
+                return a1;
+            } else if (AnnotationUtils.areSameByName(a2, KEYFORBOTTOM)) {
+                return a2;
+            } else if (AnnotationUtils.areSameByName(a1, KEYFOR)
+                    && AnnotationUtils.areSameByName(a2, KEYFOR)) {
+                List<String> a1Values = extractValues(a1);
+                List<String> a2Values = extractValues(a2);
+                LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
+                set.addAll(a2Values);
+                return createKeyForAnnotationMirrorWithValue(set);
+            }
+            // a1 or a2 is @PolyKeyFor.
+            // Ignore annotation values to ensure that annotation is in supertype map.
+            if (AnnotationUtils.areSameByName(a1, KEYFOR)) {
+                a1 = KEYFOR;
+            }
+            if (AnnotationUtils.areSameByName(a2, KEYFOR)) {
+                a2 = KEYFOR;
+            }
+            // Let super handle @PolyKeyFor.
+            return super.greatestLowerBound(a1, a2);
+        }
     }
 
     /** Returns true if the node is an invocation of Map.containsKey. */

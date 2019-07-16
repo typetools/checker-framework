@@ -13,4 +13,4 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 
 
 ## Run the tests for the type systems that use the annotated JDK
-./gradlew IndexTest LockTest NullnessFbcTest OptionalTest printJdkJarManifest -PuseLocalJdk --console=plain --warning-mode=all --no-daemon
+./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk --console=plain --warning-mode=all --no-daemon
