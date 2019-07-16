@@ -480,14 +480,6 @@ public class DependentTypesHelper {
             if (result == null) {
                 return new DependentTypesError(expression, " ").toString();
             }
-            if (result instanceof FlowExpressions.FieldAccess
-                    && ((FlowExpressions.FieldAccess) result).isFinal()) {
-                Object constant =
-                        ((FlowExpressions.FieldAccess) result).getField().getConstantValue();
-                if (constant != null && !(constant instanceof String)) {
-                    return constant.toString();
-                }
-            }
             return result.toString();
         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
