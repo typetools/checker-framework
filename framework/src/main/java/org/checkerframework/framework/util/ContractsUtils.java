@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import javax.lang.model.*;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -422,22 +424,17 @@ public class ContractsUtils {
         }
 
         // Check type-system specific annotations.
-        EnsuresNonNull[] ensureNonNull = methodElement.getAnnotationsByType(EnsuresNonNull.class);
-        EnsuresKeyFor[] ensureKeyFor = methodElement.getAnnotationsByType(EnsuresKeyFor.class);
-        EnsuresLTLengthOf[] ensureLTLengthOf =
-                methodElement.getAnnotationsByType(EnsuresLTLengthOf.class);
-        EnsuresLockHeld[] ensureLockHeld =
-                methodElement.getAnnotationsByType(EnsuresLockHeld.class);
         Class<PostconditionAnnotation> metaAnnotation = PostconditionAnnotation.class;
         List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
                 factory.getDeclAnnotationWithMetaAnnotation(methodElement, metaAnnotation);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            if (ensureNonNull.length == 1
-                    || ensureKeyFor.length == 1
-                    || ensureLTLengthOf.length == 1
-                    || ensureLockHeld.length == 1) {
+            Annotation p = methodElement.getAnnotation(EnsuresNonNull.List.class);
+            if (p == null) p = methodElement.getAnnotation(EnsuresKeyFor.List.class);
+            if (p == null) p = methodElement.getAnnotation(EnsuresLTLengthOf.List.class);
+            if (p == null) p = methodElement.getAnnotation(EnsuresLockHeld.List.class);
+            if (p == null) {
                 List<String> expressions =
                         AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
                 AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
@@ -468,7 +465,6 @@ public class ContractsUtils {
 
         return result;
     }
-
     /** Returns the set of postconditions according to the given {@link EnsuresQualifier}. */
     private Set<Postcondition> getPostcondition(AnnotationMirror ensuresAnnotation) {
         if (ensuresAnnotation == null) {
@@ -511,18 +507,7 @@ public class ContractsUtils {
                 result.addAll(getConditionalPostcondition(a));
             }
         }
-
         // Check type-system specific annotations.
-        EnsuresNonNullIf[] ensureNonNullif =
-                methodElement.getAnnotationsByType(EnsuresNonNullIf.class);
-        EnsuresKeyForIf[] ensureKeyForif =
-                methodElement.getAnnotationsByType(EnsuresKeyForIf.class);
-        EnsuresLTLengthOfIf[] ensureLTLengthOfif =
-                methodElement.getAnnotationsByType(EnsuresLTLengthOfIf.class);
-        EnsuresLockHeldIf[] ensureLockHeldif =
-                methodElement.getAnnotationsByType(EnsuresLockHeldIf.class);
-        EnsuresMinLenIf[] ensureMinLenif =
-                methodElement.getAnnotationsByType(EnsuresMinLenIf.class);
         Class<ConditionalPostconditionAnnotation> metaAnnotation =
                 ConditionalPostconditionAnnotation.class;
         List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
@@ -530,11 +515,12 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            if (ensureNonNullif.length == 1
-                    || ensureKeyForif.length == 1
-                    || ensureLTLengthOfif.length == 1
-                    || ensureLockHeldif.length == 1
-                    || ensureMinLenif.length == 1) {
+            Annotation p = methodElement.getAnnotation(EnsuresNonNullIf.List.class);
+            if (p == null) p = methodElement.getAnnotation(EnsuresKeyForIf.List.class);
+            if (p == null) p = methodElement.getAnnotation(EnsuresLTLengthOfIf.List.class);
+            if (p == null) p = methodElement.getAnnotation(EnsuresLockHeldIf.List.class);
+            if (p == null) p = methodElement.getAnnotation(EnsuresMinLenIf.List.class);
+            if (p == null) {
                 List<String> expressions =
                         AnnotationUtils.getElementValueArray(
                                 anno, "expression", String.class, false);
