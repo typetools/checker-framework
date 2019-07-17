@@ -67,7 +67,7 @@ if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   ./gradlew assemble printJdkJarManifest --console=plain --warning-mode=all -s --no-daemon
 else
   echo "running \"./gradlew assemble -PuseLocalJdk\" for checker-framework"
-  ./gradlew assemble printJdkJarManifest -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
+  ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
 fi
 
 echo Exiting $0
