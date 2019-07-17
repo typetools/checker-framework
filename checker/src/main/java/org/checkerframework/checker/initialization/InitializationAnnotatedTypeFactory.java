@@ -453,7 +453,9 @@ public abstract class InitializationAnnotatedTypeFactory<
                             .isEmpty()) {
                 if (classType.isFinal()) {
                     annotation = INITIALIZED;
-                } else annotation = createFreeAnnotation(classType);
+                } else {
+                    annotation = createFreeAnnotation(classType);
+                }
             }
         }
 
