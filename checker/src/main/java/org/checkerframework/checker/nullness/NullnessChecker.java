@@ -17,8 +17,8 @@ import org.checkerframework.framework.source.SupportedLintOptions;
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @SupportedLintOptions({
-    AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
-    AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
+    NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
+    NullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
     // Temporary option to forbid non-null array component types,
     // which is allowed by default.
     // Forbidding is sound and will eventually be the default.
@@ -29,7 +29,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
     // See issue #986: https://github.com/typetools/checker-framework/issues/986
     "forbidnonnullarraycomponents"
 })
-public abstract class AbstractNullnessChecker extends InitializationChecker {
+public class NullnessChecker extends InitializationChecker {
 
     /** Should we be strict about initialization of {@link MonotonicNonNull} variables. */
     public static final String LINT_NOINITFORMONOTONICNONNULL = "noInitForMonotonicNonNull";

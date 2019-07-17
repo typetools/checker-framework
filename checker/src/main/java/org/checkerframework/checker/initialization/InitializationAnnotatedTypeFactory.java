@@ -727,7 +727,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * and {@link InitializationQualifierHierarchy#leastUpperBoundInitialization(AnnotationMirror,
      * AnnotationMirror)} for appropriate qualifiers. See protected subclass
      * NullnessQualifierHierarchy within class {@link
-     * org.checkerframework.checker.nullness.AbstractNullnessChecker} for an example.
+     * org.checkerframework.checker.nullness.NullnessChecker} for an example.
      */
     protected abstract class InitializationQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
