@@ -39,22 +39,11 @@ set -o xtrace
 
 export SHELLOPTS
 
-<<<<<<< HEAD
-SLUGOWNER=${TRAVIS_PULL_REQUEST_SLUG%/*}
-if [[ "$SLUGOWNER" == "" ]]; then
-  SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
-fi
-if [[ "$SLUGOWNER" == "" ]]; then
-  SLUGOWNER=eisop
-fi
-echo SLUGOWNER=$SLUGOWNER
-=======
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
   || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 # For debugging
-/tmp/plume-scripts/ci-info typetools
-eval `/tmp/plume-scripts/ci-info typetools`
->>>>>>> 5000c1ecb72581aeebd3c10a2851cf003eeb554c
+/tmp/plume-scripts/ci-info eisop
+eval `/tmp/plume-scripts/ci-info eisop`
 
 export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
