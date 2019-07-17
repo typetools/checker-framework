@@ -1,5 +1,9 @@
 package org.checkerframework.framework.util;
 
+import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.SuperExpr;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -139,26 +143,50 @@ public class FlowExpressionParseUtil {
             throws FlowExpressionParseException {
         expression = expression.trim();
 
+        Expression expr = null;
+        if (!expression.contains("#")) {
+            try {
+                expr = StaticJavaParser.parseExpression(expression);
+            } catch (ParseProblemException e) {
+                if (expression.equals("super")) {
+                    expr = new SuperExpr();
+                } else {
+                    throw constructParserException(expression, "invalid");
+                }
+            }
+        }
+
         ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
         Types types = env.getTypeUtils();
 
-        if (isNullLiteral(expression, context)) {
-            return parseNullLiteral(types);
-        } else if (isIntLiteral(expression, context)) {
-            return parseIntLiteral(expression, types);
-        } else if (isLongLiteral(expression, context)) {
-            return parseLongLiteral(expression, types);
-        } else if (isFloatLiteral(expression, context)) {
-            throw constructParserException(
-                    expression,
-                    String.format("floating-point values '%s' cannot be parsed", expression));
-        } else if (isStringLiteral(expression, context)) {
-            return parseStringLiteral(expression, types, env.getElementUtils());
-        } else if (isThisLiteral(expression, context)) {
-            return parseThis(context);
-        } else if (isSuperLiteral(expression, context)) {
-            return parseSuper(expression, types, context);
-        } else if (isIdentifier(expression)) {
+        if (expr != null) {
+            if (expr.isNullLiteralExpr()) {
+                return new ValueLiteral(types.getNullType(), (Object) null);
+            } else if (expr.isIntegerLiteralExpr()) {
+                return new ValueLiteral(
+                        types.getPrimitiveType(TypeKind.INT), expr.asIntegerLiteralExpr().asInt());
+            } else if (expr.isLongLiteralExpr()) {
+                return new ValueLiteral(
+                        types.getPrimitiveType(TypeKind.LONG), expr.asLongLiteralExpr().asLong());
+            } else if (expr.isDoubleLiteralExpr()) {
+                return new ValueLiteral(
+                        types.getPrimitiveType(TypeKind.DOUBLE),
+                        expr.asDoubleLiteralExpr().asDouble());
+            } else if (expr.isStringLiteralExpr()) {
+                TypeElement stringTypeElem =
+                        env.getElementUtils().getTypeElement("java.lang.String");
+                return new ValueLiteral(
+                        types.getDeclaredType(stringTypeElem),
+                        expr.asStringLiteralExpr().asString());
+            } else if (expr.isThisExpr()) {
+                return parseThis(context);
+            } else if (expr.isSuperExpr()) {
+                return parseSuper(expression, types, context);
+            } else if (expr.isEnclosedExpr()) {
+                return parseHelper(expression.substring(1, expression.length() - 1), context, path);
+            }
+        }
+        if (isIdentifier(expression)) {
             return parseIdentifier(expression, env, path, context);
         } else if (isParameter(expression, context)) {
             return parseParameter(expression, context);
@@ -168,8 +196,6 @@ public class FlowExpressionParseUtil {
             return parseMethodCall(expression, context, path, env);
         } else if (isMemberSelect(expression)) {
             return parseMemberSelect(expression, env, context, path);
-        } else if (isParentheses(expression, context)) {
-            return parseParentheses(expression, context, path);
         } else {
             String message;
             if (expression.equals("#0")) {
