@@ -178,7 +178,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * annotations. This method would print "annotation @NonNull is not permitted on type int",
      * whereas {@link #reportValidityResult} would print "annotation @NonNull is not permitted on
      * type @NonNull int". In addition, when the underlying type is a compound type such as
-     * {@code @Bad List<String>}, the erased type will be used, i.e., "{@code List}" will be print
+     * {@code @Bad List<String>}, the erased type will be used, i.e., "{@code List}" will print
      * instead of "{@code @Bad List<String>}".
      */
     protected void reportValidityResultOnUnannotatedType(
