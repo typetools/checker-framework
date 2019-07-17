@@ -53,6 +53,7 @@ public @interface EnsuresKeyFor {
     @QualifierArgument("value")
     String[] map();
 
+    /** An inner annotation which makes {@link EnsuresKeyFor} annotation repeatable */
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
@@ -60,7 +61,8 @@ public @interface EnsuresKeyFor {
     @InheritedAnnotation
     @interface List {
         /**
-         * The Java expressions that are keys in the given maps on successful method termination.
+         * Programmers generally do not need to use this; it is created by Java when a programmer
+         * writes more than one {@link EnsuresKeyFor} annotation at the same location.
          *
          * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
          */

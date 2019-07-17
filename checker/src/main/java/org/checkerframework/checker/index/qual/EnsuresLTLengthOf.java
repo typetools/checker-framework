@@ -81,6 +81,7 @@ public @interface EnsuresLTLengthOf {
     @QualifierArgument("offset")
     String[] offset() default {};
 
+    /** An inner annotation which makes {@link EnsuresLTLengthOf} annotation repeatable */
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
@@ -88,8 +89,8 @@ public @interface EnsuresLTLengthOf {
     @InheritedAnnotation
     @interface List {
         /**
-         * The Java expressions that are less than the length of the given sequences on successful
-         * method termination.
+         * Programmers generally do not need to use this; it is created by Java when a programmer
+         * writes more than one {@link EnsuresLTLengthOf} annotation at the same location.
          *
          * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
          */

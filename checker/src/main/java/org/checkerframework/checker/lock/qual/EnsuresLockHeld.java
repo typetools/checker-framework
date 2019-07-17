@@ -31,6 +31,7 @@ public @interface EnsuresLockHeld {
      */
     String[] value();
 
+    /** An inner annotation which makes {@link EnsuresLockHeld} annotation repeatable */
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
@@ -38,7 +39,8 @@ public @interface EnsuresLockHeld {
     @InheritedAnnotation
     @interface List {
         /**
-         * The Java expressions whose values are held after the method terminates successfully.
+         * Programmers generally do not need to use this; it is created by Java when a programmer
+         * writes more than one {@link EnsuresLockHeld} annotation at the same location.
          *
          * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
          */

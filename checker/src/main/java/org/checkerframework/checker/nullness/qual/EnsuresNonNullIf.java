@@ -80,6 +80,7 @@ public @interface EnsuresNonNullIf {
     /** The return value of the method that needs to hold for the postcondition to hold. */
     boolean result();
 
+    /** An inner annotation which makes {@link EnsuresNonNullIf} annotation repeatable */
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
@@ -87,8 +88,8 @@ public @interface EnsuresNonNullIf {
     @InheritedAnnotation
     @interface List {
         /**
-         * The Java expressions that are ensured to be {@link NonNull} after the method returns the
-         * given result.
+         * Programmers generally do not need to use this; it is created by Java when a programmer
+         * writes more than one {@link EnsuresNonNullIf} annotation at the same location.
          *
          * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
          */
