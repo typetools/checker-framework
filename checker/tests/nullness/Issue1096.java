@@ -3,7 +3,6 @@
 
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 class PreCond {
@@ -17,22 +16,22 @@ class PreCond {
         doNullable();
     }
 
-    void earlyBad(@UnknownInitialization @Raw PreCond this) {
+    void earlyBad(@UnknownInitialization PreCond this) {
         // :: error: (dereference.of.nullable)
         f.toString();
     }
 
     @RequiresNonNull("this.f")
-    void early(@UnknownInitialization @Raw PreCond this) {
+    void early(@UnknownInitialization PreCond this) {
         f.toString();
     }
 
     @RequiresNonNull("this.g")
-    void doNullable(@UnknownInitialization @Raw PreCond this) {
+    void doNullable(@UnknownInitialization PreCond this) {
         g.toString();
     }
 
-    void foo(@UnknownInitialization @Raw PreCond this) {
+    void foo(@UnknownInitialization PreCond this) {
         // Receiver is not fully initialized, so raise error
         // :: error: (contracts.precondition.not.satisfied)
         early();
@@ -48,7 +47,7 @@ class PreCond {
 }
 
 class User {
-    void foo(@UnknownInitialization @Raw PreCond pc) {
+    void foo(@UnknownInitialization PreCond pc) {
         // Receiver is not fully initialized, so raise error
         // :: error: (contracts.precondition.not.satisfied)
         pc.early();
