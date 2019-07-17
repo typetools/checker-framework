@@ -3,6 +3,7 @@ package org.checkerframework.framework.type;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
@@ -29,12 +30,12 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>See also DefaultTypeHierarchy, and SubtypeVisitHistory
  */
 public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean, Void> {
-    protected final SubtypeVisitHistory visitHistory;
+    protected final SubtypeTypeArgVisitHistory visitHistory;
 
     // See org.checkerframework.framework.type.DefaultTypeHierarchy.currentTop
     private AnnotationMirror currentTop = null;
 
-    public StructuralEqualityComparer(SubtypeVisitHistory typeargVisitHistory) {
+    public StructuralEqualityComparer(SubtypeTypeArgVisitHistory typeargVisitHistory) {
         this.visitHistory = typeargVisitHistory;
     }
 
@@ -174,8 +175,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      */
     protected boolean checkOrAreEqual(
             final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-        if (visitHistory.contains(type1, type2, currentTop)) {
-            return true;
+        Optional<Boolean> pastResult = visitHistory.result(type1, type2, currentTop);
+        if (pastResult.isPresent()) {
+            return pastResult.get();
         }
 
         final Boolean result = areEqual(type1, type2);
@@ -213,8 +215,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitDeclared_Declared(
             final AnnotatedDeclaredType type1, final AnnotatedDeclaredType type2, final Void p) {
-        if (visitHistory.contains(type1, type2, currentTop)) {
-            return true;
+        Optional<Boolean> pastResult = visitHistory.result(type1, type2, currentTop);
+        if (pastResult.isPresent()) {
+            return pastResult.get();
         }
 
         // TODO: same class/interface is not enforced. Why?
@@ -319,8 +322,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitTypevar_Typevar(
             final AnnotatedTypeVariable type1, final AnnotatedTypeVariable type2, final Void p) {
-        if (visitHistory.contains(type1, type2, currentTop)) {
-            return true;
+        Optional<Boolean> pastResult = visitHistory.result(type1, type2, currentTop);
+        if (pastResult.isPresent()) {
+            return pastResult.get();
         }
 
         // TODO: Remove this code when capture conversion is implemented
@@ -420,8 +424,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitWildcard_Wildcard(
             final AnnotatedWildcardType type1, final AnnotatedWildcardType type2, final Void p) {
-        if (visitHistory.contains(type1, type2, currentTop)) {
-            return true;
+        Optional<Boolean> pastResult = visitHistory.result(type1, type2, currentTop);
+        if (pastResult.isPresent()) {
+            return pastResult.get();
         }
 
         if (type1.atypeFactory.ignoreUninferredTypeArguments
@@ -475,8 +480,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitWildcard_Typevar(
             final AnnotatedWildcardType type1, final AnnotatedTypeVariable type2, final Void p) {
-        if (visitHistory.contains(type1, type2, currentTop)) {
-            return true;
+        Optional<Boolean> pastResult = visitHistory.result(type1, type2, currentTop);
+        if (pastResult.isPresent()) {
+            return pastResult.get();
         }
 
         if (type1.atypeFactory.ignoreUninferredTypeArguments && type1.isUninferredTypeArgument()) {

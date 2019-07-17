@@ -57,6 +57,20 @@ public class SubtypeVisitHistory {
         }
     }
 
+    public void remove(
+            final AnnotatedTypeMirror type1,
+            final AnnotatedTypeMirror type2,
+            AnnotationMirror currentTop) {
+        Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
+        Set<AnnotationMirror> hit = visited.get(key);
+        if (hit != null) {
+            hit.remove(currentTop);
+            if (hit.isEmpty()) {
+                visited.remove(key);
+            }
+        }
+    }
+
     /**
      * Returns true if type1 and type2 (or an equivalent pair) have been passed to the add method
      * previously.
