@@ -34,7 +34,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -96,17 +95,7 @@ public class FlowExpressionParseUtil {
     /** Matches a string starting with an identifier. */
     protected static final Pattern STARTS_WITH_IDENTIFIER_PATTERN =
             anchored("(" + IDENTIFIER_REGEX + ").*");
-    /** Matches integer literals. */
-    protected static final Pattern INT_PATTERN = anchored("[-+]?[0-9]+");
-    /** Matches long literals. */
-    protected static final Pattern LONG_PATTERN = anchored("[-+]?[0-9]+[Ll]");
-    /** Matches (some) floating-point and double literals. */
-    protected static final Pattern FLOAT_PATTERN = anchored("[+-]?([0-9]+[.][0-9]*|[.][0-9]+)");
 
-    /** Matches string literals. */
-    protected static final Pattern STRING_PATTERN = anchored(STRING_REGEX);
-    /** Matches an expression contained in matching start and end parentheses. */
-    protected static final Pattern PARENTHESES_PATTERN = anchored("\\((.*)\\)");
     /** Matches an expression that starts with a string. */
     protected static final Pattern STARTS_WITH_STRING_PATTERN =
             anchored("(" + STRING_REGEX + ").*");
@@ -302,81 +291,6 @@ public class FlowExpressionParseUtil {
         return parseHelper(memberSelected, newContext, path);
     }
 
-    // ########
-
-    private static boolean isNullLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        return s.equals("null");
-    }
-
-    private static Receiver parseNullLiteral(Types types) {
-        return new ValueLiteral(types.getNullType(), (Object) null);
-    }
-
-    private static boolean isIntLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        Matcher intMatcher = INT_PATTERN.matcher(s);
-        return intMatcher.matches();
-    }
-
-    private static Receiver parseIntLiteral(String s, Types types) {
-        int val = Integer.parseInt(s);
-        return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), val);
-    }
-
-    private static boolean isLongLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        Matcher longMatcher = LONG_PATTERN.matcher(s);
-        return longMatcher.matches();
-    }
-
-    private static Receiver parseLongLiteral(String s, Types types) {
-        // Remove L or l at the end of a long literal
-        s = s.substring(0, s.length() - 1);
-        long val = Long.parseLong(s);
-        return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), val);
-    }
-
-    private static boolean isFloatLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        Matcher floatMatcher = FLOAT_PATTERN.matcher(s);
-        return floatMatcher.matches();
-    }
-
-    /** Return true iff s is a string literal. */
-    private static boolean isStringLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        Matcher stringMatcher = STRING_PATTERN.matcher(s);
-        return stringMatcher.matches();
-    }
-
-    private static Receiver parseStringLiteral(String s, Types types, Elements elements) {
-        TypeElement stringTypeElem = elements.getTypeElement("java.lang.String");
-        return new ValueLiteral(
-                types.getDeclaredType(stringTypeElem), s.substring(1, s.length() - 1));
-    }
-
-    private static boolean isThisLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            // TODO: this is probably wrong because you could have an inner class receiver
-            // Outer.this
-            return false;
-        }
-        // Do not allow "#0" because it's ambiguous:  a reader might assume that #0 is the first
-        // formal parameter.
-        return s.equals("this");
-    }
-
     private static Receiver parseThis(FlowExpressionContext context) {
         if (!(context.receiver == null || context.receiver.containsUnknown())) {
             // "this" is the receiver of the context
@@ -384,13 +298,6 @@ public class FlowExpressionParseUtil {
         } else {
             return new ThisReference(context.receiver == null ? null : context.receiver.getType());
         }
-    }
-
-    private static boolean isSuperLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        return s.equals("super");
     }
 
     private static Receiver parseSuper(String s, Types types, FlowExpressionContext context)
@@ -772,25 +679,6 @@ public class FlowExpressionParseUtil {
         TypeMirror componentType = ((ArrayType) receiverType).getComponentType();
         ArrayAccess result = new ArrayAccess(componentType, receiver, index);
         return result;
-    }
-
-    // TODO: This incorrectly returns true for "(a)+(b)" where the inital and final parens do not
-    // match.
-    private static boolean isParentheses(
-            String s, @SuppressWarnings("UnusedVariable") FlowExpressionContext contex) {
-        return s.length() > 2 && s.charAt(0) == '(' && s.charAt(s.length() - 1) == ')';
-    }
-
-    private static Receiver parseParentheses(String s, FlowExpressionContext context, TreePath path)
-            throws FlowExpressionParseException {
-        if (!isParentheses(s, context)) {
-            return null;
-        }
-        // TODO: this is the wrong thing for an expression like "(a)+(b)".
-        String expressionString = s.substring(1, s.length() - 1);
-        // Do not modify the value of recursiveCall, since a parenthesis match is essentially
-        // a match to a no-op and should not semantically affect the parsing.
-        return parseHelper(expressionString, context, path);
     }
 
     /**
