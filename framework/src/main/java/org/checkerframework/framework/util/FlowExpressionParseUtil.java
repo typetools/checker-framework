@@ -134,6 +134,7 @@ public class FlowExpressionParseUtil {
         try {
             expr = StaticJavaParser.parseExpression(dummyExpression);
         } catch (ParseProblemException e) {
+            // "super" cannot be parsed correctly by parseExpression(String). This is temporary.
             if (expression.equals("super")) {
                 expr = new SuperExpr();
             } else {
@@ -167,21 +168,27 @@ public class FlowExpressionParseUtil {
                 return parseThis(context);
             } else if (expr.isSuperExpr()) {
                 return parseSuper(expression, types, context);
-            } else if (expr.isEnclosedExpr()) {
+            } else if (expr.isEnclosedExpr()) { // Expression between parentheses
                 return parseHelper(expression.substring(1, expression.length() - 1), context, path);
             } else if (expr.isArrayAccessExpr()) {
                 return parseArray(expression, context, path);
             } else if (expr.isNameExpr()
                     && dummyExpression.startsWith("_param_")
-                    && !context.parsingMember) {
+                    && !context.parsingMember) { // The old parameter check
                 return parseParameter(expression, context);
-            } else if (expr.isNameExpr()) {
+            } else if (expr
+                    .isNameExpr()) { // a name expression that is not a parameter is an identifier
                 return parseIdentifier(expression, env, path, context);
             } else if (expr.isMethodCallExpr() && !expr.asMethodCallExpr().getScope().isPresent()) {
+                // According to the previous implementation, "get()" is a method call,
+                // but "item.get()" is a member select. This is temporary.
                 return parseMethodCall(expression, context, path, env);
             } else if (expr.isMethodCallExpr()) {
+                // if this point is reached, the expression is "item.get()", so it should be treated
+                // as member select. This is temporary.
                 return parseMemberSelect(expression, env, context, path);
             } else if (expr.isFieldAccessExpr() || expr.isClassExpr()) {
+                // a field access or a class expression (like Object.class)
                 return parseMemberSelect(expression, env, context, path);
             } else {
                 String message;
@@ -198,9 +205,11 @@ public class FlowExpressionParseUtil {
             }
         }
 
+        // Only if expr is null. Will be removed.
         return null;
     }
 
+    // Replaces every occurrence of "#(number)" with "_param_(number)"
     private static String noHashTags(String expression) {
         String updatedExpression = expression;
 
