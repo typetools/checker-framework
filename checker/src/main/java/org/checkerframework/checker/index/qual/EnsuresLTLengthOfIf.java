@@ -84,19 +84,19 @@ public @interface EnsuresLTLengthOfIf {
     @QualifierArgument("offset")
     String[] offset() default {};
 
-    /** An inner annotation which makes {@link EnsuresLTLengthOfIf} annotation repeatable */
+    /**
+     * An inner annotation that makes {@link EnsuresLTLengthOfIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to use this; it is created by Java when a programmer
+     * writes more than one {@link EnsuresLTLengthOfIf} annotation at the same location.
+     */
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
     @InheritedAnnotation
     @interface List {
-        /**
-         * Programmers generally do not need to use this; it is created by Java when a programmer
-         * writes more than one {@link EnsuresLTLengthOfIf} annotation at the same location.
-         *
-         * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-         */
+        /** The array that contains all the repeatable annotations. */
         EnsuresLTLengthOfIf[] value();
     }
 }

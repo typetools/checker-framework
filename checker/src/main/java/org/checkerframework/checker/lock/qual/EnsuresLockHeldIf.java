@@ -38,19 +38,19 @@ public @interface EnsuresLockHeldIf {
     /** The return value of the method that needs to hold for the postcondition to hold. */
     boolean result();
 
-    /** An inner annotation which makes {@link EnsuresLockHeldIf} annotation repeatable */
+    /**
+     * An inner annotation that makes {@link EnsuresLockHeldIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to use this; it is created by Java when a programmer
+     * writes more than one {@link EnsuresLockHeldIf} annotation at the same location.
+     */
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @ConditionalPostconditionAnnotation(qualifier = LockHeld.class)
     @InheritedAnnotation
     @interface List {
-        /**
-         * Programmers generally do not need to use this; it is created by Java when a programmer
-         * writes more than one {@link EnsuresLockHeldIf} annotation at the same location.
-         *
-         * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-         */
+        /** The array that contains all the repeatable annotations. */
         EnsuresLockHeldIf[] value();
     }
 }

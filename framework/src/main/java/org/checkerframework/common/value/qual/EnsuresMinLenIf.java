@@ -40,18 +40,18 @@ public @interface EnsuresMinLenIf {
     @QualifierArgument("value")
     int targetValue() default 0;
 
-    /** An inner annotation which makes {@link EnsuresMinLenIf} annotation repeatable */
+    /**
+     * An inner annotation that makes {@link EnsuresMinLenIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to use this; it is created by Java when a programmer
+     * writes more than one {@link EnsuresMinLenIf} annotation at the same location.
+     */
     @ConditionalPostconditionAnnotation(qualifier = MinLen.class)
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @InheritedAnnotation
     public @interface List {
-        /**
-         * Programmers generally do not need to use this; it is created by Java when a programmer
-         * writes more than one {@link EnsuresMinLenIf} annotation at the same location.
-         *
-         * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-         */
+        /** The array that contains all the repeatable annotations. */
         EnsuresMinLenIf[] value();
     }
 }

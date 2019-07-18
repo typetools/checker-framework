@@ -56,19 +56,19 @@ public @interface EnsuresKeyForIf {
     @QualifierArgument("value")
     String[] map();
 
-    /** An inner annotation which makes {@link EnsuresKeyForIf} annotation repeatable */
+    /**
+     * An inner annotation that makes {@link EnsuresKeyForIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to use this; it is created by Java when a programmer
+     * writes more than one {@link EnsuresKeyForIf} annotation at the same location.
+     */
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @ConditionalPostconditionAnnotation(qualifier = KeyFor.class)
     @InheritedAnnotation
     @interface List {
-        /**
-         * Programmers generally do not need to use this; it is created by Java when a programmer
-         * writes more than one {@link EnsuresKeyForIf} annotation at the same location.
-         *
-         * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-         */
+        /** The array that contains all the repeatable annotations. */
         EnsuresKeyForIf[] value();
     }
 }
