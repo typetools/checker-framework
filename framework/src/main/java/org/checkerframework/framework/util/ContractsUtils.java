@@ -1,6 +1,5 @@
 package org.checkerframework.framework.util;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,15 +15,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.checker.index.qual.EnsuresLTLengthOf;
-import org.checkerframework.checker.index.qual.EnsuresLTLengthOfIf;
-import org.checkerframework.checker.lock.qual.EnsuresLockHeld;
-import org.checkerframework.checker.lock.qual.EnsuresLockHeldIf;
-import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
-import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
-import org.checkerframework.common.value.qual.EnsuresMinLenIf;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -430,11 +420,12 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            Annotation p = methodElement.getAnnotation(EnsuresNonNull.List.class);
-            if (p == null) p = methodElement.getAnnotation(EnsuresKeyFor.List.class);
-            if (p == null) p = methodElement.getAnnotation(EnsuresLTLengthOf.List.class);
-            if (p == null) p = methodElement.getAnnotation(EnsuresLockHeld.List.class);
-            if (p == null) {
+            /**
+             * If the {@code value} field is a list of Strings, then the try block will work
+             * otherwise if the {@code value} field is a list of AnnotationMirrors it will throw an
+             * exception and the catch block will work.
+             */
+            try {
                 List<String> expressions =
                         AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
                 AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
@@ -444,19 +435,19 @@ public class ContractsUtils {
                 for (String expr : expressions) {
                     result.add(new Postcondition(expr, postcondAnno, anno));
                 }
-            } else {
+            } catch (ClassCastException e) {
                 List<AnnotationMirror> annotations =
                         AnnotationUtils.getElementValueArray(
                                 anno, "value", AnnotationMirror.class, false);
                 for (AnnotationMirror a : annotations) {
-                    List<String> expressions =
+                    List<String> expressionss =
                             AnnotationUtils.getElementValueArray(a, "value", String.class, false);
                     AnnotationMirror postcondAnno =
                             getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
                     if (postcondAnno == null) {
                         continue;
                     }
-                    for (String expr : expressions) {
+                    for (String expr : expressionss) {
                         result.add(new Postcondition(expr, postcondAnno, a));
                     }
                 }
@@ -515,12 +506,12 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            Annotation p = methodElement.getAnnotation(EnsuresNonNullIf.List.class);
-            if (p == null) p = methodElement.getAnnotation(EnsuresKeyForIf.List.class);
-            if (p == null) p = methodElement.getAnnotation(EnsuresLTLengthOfIf.List.class);
-            if (p == null) p = methodElement.getAnnotation(EnsuresLockHeldIf.List.class);
-            if (p == null) p = methodElement.getAnnotation(EnsuresMinLenIf.List.class);
-            if (p == null) {
+            /**
+             * If the {@code expression} field is a list of Strings, then the try block will work
+             * otherwise it means it is a {@code value} field that will contain a list of
+             * AnnotationMirrors so it will throw an exception and the catch block will work.
+             */
+            try {
                 List<String> expressions =
                         AnnotationUtils.getElementValueArray(
                                 anno, "expression", String.class, false);
@@ -533,12 +524,12 @@ public class ContractsUtils {
                 for (String expr : expressions) {
                     result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
                 }
-            } else {
+            } catch (Throwable e) {
                 List<AnnotationMirror> annotations =
                         AnnotationUtils.getElementValueArray(
                                 anno, "value", AnnotationMirror.class, false);
                 for (AnnotationMirror a : annotations) {
-                    List<String> expressions =
+                    List<String> expressionss =
                             AnnotationUtils.getElementValueArray(
                                     a, "expression", String.class, false);
                     AnnotationMirror postcondAnno =
@@ -548,7 +539,7 @@ public class ContractsUtils {
                     }
                     boolean annoResult =
                             AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
-                    for (String expr : expressions) {
+                    for (String expr : expressionss) {
                         result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
                     }
                 }
