@@ -90,8 +90,6 @@ public class FlowExpressionParseUtil {
     // Each of the below patterns is anchored with ^...$.
     /** Matches a parameter. */
     protected static final Pattern PARAMETER_PATTERN = anchored(PARAMETER_REGEX);
-    /** Matches an identifier. */
-    protected static final Pattern IDENTIFIER_PATTERN = anchored(IDENTIFIER_REGEX);
     /** Matches a string starting with an identifier. */
     protected static final Pattern STARTS_WITH_IDENTIFIER_PATTERN =
             anchored("(" + IDENTIFIER_REGEX + ").*");
@@ -151,23 +149,23 @@ public class FlowExpressionParseUtil {
         if (expr != null) {
             if (expr.isNullLiteralExpr()) {
                 return new ValueLiteral(types.getNullType(), (Object) null);
-            } else if (expr.isIntegerLiteralExpr()) {
+            } else if (expr.isIntegerLiteralExpr() && !context.parsingMember) {
                 return new ValueLiteral(
                         types.getPrimitiveType(TypeKind.INT), expr.asIntegerLiteralExpr().asInt());
-            } else if (expr.isLongLiteralExpr()) {
+            } else if (expr.isLongLiteralExpr() && !context.parsingMember) {
                 return new ValueLiteral(
                         types.getPrimitiveType(TypeKind.LONG), expr.asLongLiteralExpr().asLong());
-            } else if (expr.isDoubleLiteralExpr()) {
+            } else if (expr.isDoubleLiteralExpr() && !context.parsingMember) {
                 return new ValueLiteral(
                         types.getPrimitiveType(TypeKind.DOUBLE),
                         expr.asDoubleLiteralExpr().asDouble());
-            } else if (expr.isStringLiteralExpr()) {
+            } else if (expr.isStringLiteralExpr() && !context.parsingMember) {
                 TypeElement stringTypeElem =
                         env.getElementUtils().getTypeElement("java.lang.String");
                 return new ValueLiteral(
                         types.getDeclaredType(stringTypeElem),
                         expr.asStringLiteralExpr().asString());
-            } else if (expr.isThisExpr()) {
+            } else if (expr.isThisExpr() && !context.parsingMember) {
                 return parseThis(context);
             } else if (expr.isSuperExpr()) {
                 return parseSuper(expression, types, context);
@@ -175,14 +173,16 @@ public class FlowExpressionParseUtil {
                 return parseHelper(expression.substring(1, expression.length() - 1), context, path);
             } else if (expr.isArrayAccessExpr()) {
                 return parseArray(expression, context, path);
+            } else if (expr.isNameExpr()
+                    && dummyExpression.startsWith("_param_")
+                    && !context.parsingMember) {
+                return parseParameter(expression, context);
+            } else if (expr.isNameExpr()) {
+                return parseIdentifier(expression, env, path, context);
             }
         }
 
-        if (isParameter(expression, context)) {
-            return parseParameter(expression, context);
-        } else if (isIdentifier(expression)) {
-            return parseIdentifier(expression, env, path, context);
-        } else if (isMethodCall(expression)) {
+        if (isMethodCall(expression)) {
             return parseMethodCall(expression, context, path, env);
         } else if (isMemberSelect(expression)) {
             return parseMemberSelect(expression, env, context, path);
@@ -334,10 +334,6 @@ public class FlowExpressionParseUtil {
         return new ThisReference(superType);
     }
 
-    private static boolean isIdentifier(String s) {
-        return IDENTIFIER_PATTERN.matcher(s).matches();
-    }
-
     private static Receiver parseIdentifier(
             String s, ProcessingEnvironment env, TreePath path, FlowExpressionContext context)
             throws FlowExpressionParseException {
@@ -429,14 +425,6 @@ public class FlowExpressionParseUtil {
                     s, "a non-static field cannot have a class name as a receiver.");
         }
         return new FieldAccess(locationOfField, fieldType, fieldElem);
-    }
-
-    private static boolean isParameter(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        Matcher parameterMatcher = PARAMETER_PATTERN.matcher(s);
-        return parameterMatcher.matches();
     }
 
     private static Receiver parseParameter(String s, FlowExpressionContext context)
@@ -663,11 +651,6 @@ public class FlowExpressionParseUtil {
             }
         }
         return -1;
-    }
-
-    private static boolean isArray(String s) {
-        Pair<Pair<String, String>, String> result = parseArray(s);
-        return result != null && result.second.isEmpty();
     }
 
     private static Receiver parseArray(String s, FlowExpressionContext context, TreePath path)
