@@ -162,12 +162,7 @@ public class FlowExpressions {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn.getTree());
 
-            if (allowNonDeterministic
-                    || PurityUtils.isDeterministic(provider, invokedMethod)
-                    // check if this represents a boxing operation of a constant, in which
-                    // case we treat the method call as deterministic, because there is no way
-                    // to behave differently in two executions where two constants are being used.
-                    || isBoxingOfConstant(mn, invokedMethod)) {
+            if (allowNonDeterministic || PurityUtils.isDeterministic(provider, invokedMethod)) {
                 List<Receiver> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
                     parameters.add(internalReprOf(provider, p));
@@ -186,25 +181,6 @@ public class FlowExpressions {
             receiver = new Unknown(receiverNode.getType());
         }
         return receiver;
-    }
-
-    /** Returns true if {@code mn} is a boxing operation of a constant */
-    private static boolean isBoxingOfConstant(
-            MethodInvocationNode mn, ExecutableElement methodElement) {
-        // Less efficient implementation:
-        // return method.toString().equals("valueOf(long)")
-        //     && mn.getTarget().getReceiver().toString().equals("Long")
-
-        if (ElementUtils.isStatic(methodElement)
-                && mn.getArguments().size() == 1
-                && mn.getArgument(0) instanceof ValueLiteralNode
-                && mn.getArgument(0).getType().getKind().isPrimitive()
-                && mn.getTarget().getReceiver() != null
-                && TypesUtils.isBoxedPrimitive(
-                        ElementUtils.enclosingClass(methodElement).asType())) {
-            return methodElement.getSimpleName().contentEquals("valueOf");
-        }
-        return false;
     }
 
     /**
