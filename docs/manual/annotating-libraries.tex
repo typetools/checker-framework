@@ -106,9 +106,13 @@ third-party library.
 
 \subsectionAndLabel{Don't change the code}{library-tips-dont-change-the-code}
 
-When you annotate a library, you should only add annotations and, when
-necessary, documentation of those annotations in a Java comment (\<//>
-or \</*...*/>).
+If you annotate a library that you maintain, you can refactor it to improve
+its design.
+
+When you annotate a library that you do not maintain, you should only add
+annotations and, when necessary, documentation of those annotations.  You
+can place the documentation in a Java comment (\<//> or \</*...*/>) or in a
+\refqualclass{framework/qual}{CFComment} annotation.
 
 Do not change the library's code, which will change its behavior and make
 the annotated version inconsistent with the unannotated version.
