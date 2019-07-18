@@ -88,8 +88,6 @@ public class FlowExpressionParseUtil {
     }
 
     // Each of the below patterns is anchored with ^...$.
-    /** Matches a parameter. */
-    protected static final Pattern PARAMETER_PATTERN = anchored(PARAMETER_REGEX);
     /** Matches a string starting with an identifier. */
     protected static final Pattern STARTS_WITH_IDENTIFIER_PATTERN =
             anchored("(" + IDENTIFIER_REGEX + ").*");
@@ -429,16 +427,12 @@ public class FlowExpressionParseUtil {
 
     private static Receiver parseParameter(String s, FlowExpressionContext context)
             throws FlowExpressionParseException {
-        Matcher parameterMatcher = PARAMETER_PATTERN.matcher(s);
-        if (!parameterMatcher.matches()) {
-            return null;
-        }
         if (context.arguments == null) {
             throw constructParserException(s, "no parameter found");
         }
         int idx = -1;
         try {
-            idx = Integer.parseInt(parameterMatcher.group(1));
+            idx = Integer.parseInt(s.substring(1));
         } catch (NumberFormatException e) {
             // cannot occur by the way the pattern is defined (matches only numbers)
             assert false;
