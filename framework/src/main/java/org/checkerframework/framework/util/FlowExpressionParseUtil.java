@@ -175,54 +175,30 @@ public class FlowExpressionParseUtil {
                 return parseHelper(expression.substring(1, expression.length() - 1), context, path);
             } else if (expr.isArrayAccessExpr()) {
                 return parseArray(expression, context, path);
-            } else if (expr.isMethodCallExpr()) {
-                return parseMethodCall(expression, context, path, env);
-            } else if (expr.isFieldAccessExpr() || expr.isClassExpr()) {
-                return parseMemberSelect(expression, env, context, path);
-            } else if (expr.isNameExpr() && !expr.toString().contains("_param_")) {
-                return parseIdentifier(expression, env, path, context);
-            } else if (expr.isNameExpr() && expr.toString().contains("_param_")) {
-                return parseParameter(expression, context);
-            } else {
-                String message;
-                if (expression.equals("#0")) {
-                    message =
-                            "one should use \"this\" for the receiver or \"#1\" for the first formal parameter";
-                } else {
-                    message = String.format("is an unrecognized expression");
-                }
-                if (context.parsingMember) {
-                    message += " in a context with parsingMember=true";
-                }
-                throw constructParserException(expression, message);
             }
         }
 
-        return null;
-        //        if (isIdentifier(expression)) {
-        //            return parseIdentifier(expression, env, path, context);
-        //        } else if (isParameter(expression, context)) {
-        //            return parseParameter(expression, context);
-        //        } else if (isArray(expression)) {
-        //            return parseArray(expression, context, path);
-        //        } else if (isMethodCall(expression)) {
-        //            return parseMethodCall(expression, context, path, env);
-        //        } else if (isMemberSelect(expression)) {
-        //            return parseMemberSelect(expression, env, context, path);
-        //        } else {
-        //            String message;
-        //            if (expression.equals("#0")) {
-        //                message =
-        //                        "one should use \"this\" for the receiver or \"#1\" for the first
-        // formal parameter";
-        //            } else {
-        //                message = String.format("is an unrecognized expression");
-        //            }
-        //            if (context.parsingMember) {
-        //                message += " in a context with parsingMember=true";
-        //            }
-        //            throw constructParserException(expression, message);
-        //        }
+        if (isParameter(expression, context)) {
+            return parseParameter(expression, context);
+        } else if (isIdentifier(expression)) {
+            return parseIdentifier(expression, env, path, context);
+        } else if (isMethodCall(expression)) {
+            return parseMethodCall(expression, context, path, env);
+        } else if (isMemberSelect(expression)) {
+            return parseMemberSelect(expression, env, context, path);
+        } else {
+            String message;
+            if (expression.equals("#0")) {
+                message =
+                        "one should use \"this\" for the receiver or \"#1\" for the first formal parameter";
+            } else {
+                message = String.format("is an unrecognized expression");
+            }
+            if (context.parsingMember) {
+                message += " in a context with parsingMember=true";
+            }
+            throw constructParserException(expression, message);
+        }
     }
 
     private static String noHashTags(String expression) {
@@ -499,7 +475,7 @@ public class FlowExpressionParseUtil {
         if (!m.matches()) {
             return null;
         }
-        String ident = s.substring(0, s.indexOf("("));
+        String ident = m.group(1);
         int i = ident.length();
 
         int rparenPos = matchingCloseParen(s, i, '(', ')');
