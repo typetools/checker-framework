@@ -177,26 +177,28 @@ public class FlowExpressionParseUtil {
                 return parseParameter(expression, context);
             } else if (expr.isNameExpr()) {
                 return parseIdentifier(expression, env, path, context);
+            } else if (expr.isMethodCallExpr() && !expr.asMethodCallExpr().getScope().isPresent()) {
+                return parseMethodCall(expression, context, path, env);
+            } else if (expr.isMethodCallExpr()) {
+                return parseMemberSelect(expression, env, context, path);
+            } else if (expr.isFieldAccessExpr() || expr.isClassExpr()) {
+                return parseMemberSelect(expression, env, context, path);
+            } else {
+                String message;
+                if (expression.equals("#0")) {
+                    message =
+                            "one should use \"this\" for the receiver or \"#1\" for the first formal parameter";
+                } else {
+                    message = String.format("is an unrecognized expression");
+                }
+                if (context.parsingMember) {
+                    message += " in a context with parsingMember=true";
+                }
+                throw constructParserException(expression, message);
             }
         }
 
-        if (isMethodCall(expression)) {
-            return parseMethodCall(expression, context, path, env);
-        } else if (isMemberSelect(expression)) {
-            return parseMemberSelect(expression, env, context, path);
-        } else {
-            String message;
-            if (expression.equals("#0")) {
-                message =
-                        "one should use \"this\" for the receiver or \"#1\" for the first formal parameter";
-            } else {
-                message = String.format("is an unrecognized expression");
-            }
-            if (context.parsingMember) {
-                message += " in a context with parsingMember=true";
-            }
-            throw constructParserException(expression, message);
-        }
+        return null;
     }
 
     private static String noHashTags(String expression) {
@@ -207,10 +209,6 @@ public class FlowExpressionParseUtil {
         }
 
         return updatedExpression;
-    }
-
-    private static boolean isMemberSelect(String s) {
-        return parseMemberSelect(s) != null;
     }
 
     /**
@@ -468,11 +466,6 @@ public class FlowExpressionParseUtil {
         String arguments = s.substring(i + 1, rparenPos);
         String remaining = s.substring(rparenPos + 1);
         return Pair.of(Pair.of(ident, arguments), remaining);
-    }
-
-    private static boolean isMethodCall(String s) {
-        Pair<Pair<String, String>, String> result = parseMethodCall(s);
-        return result != null && result.second.isEmpty();
     }
 
     private static Receiver parseMethodCall(
