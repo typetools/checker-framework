@@ -2,6 +2,7 @@ package org.checkerframework.framework.util;
 
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.SuperExpr;
 import com.sun.source.tree.ClassTree;
@@ -167,11 +168,11 @@ public class FlowExpressionParseUtil {
             } else if (expr.isThisExpr() && !context.parsingMember) {
                 return parseThis(context);
             } else if (expr.isSuperExpr()) {
-                return parseSuper(expression, types, context);
+                return parseSuper(types, context);
             } else if (expr.isEnclosedExpr()) { // Expression between parentheses
                 return parseHelper(expression.substring(1, expression.length() - 1), context, path);
             } else if (expr.isArrayAccessExpr()) {
-                return parseArray(expression, context, path);
+                return parseArray(expr.asArrayAccessExpr(), context, path);
             } else if (expr.isNameExpr()
                     && dummyExpression.startsWith("_param_")
                     && !context.parsingMember) { // The old parameter check
@@ -196,7 +197,7 @@ public class FlowExpressionParseUtil {
                     message =
                             "one should use \"this\" for the receiver or \"#1\" for the first formal parameter";
                 } else {
-                    message = String.format("is an unrecognized expression");
+                    message = "is an unrecognized expression";
                 }
                 if (context.parsingMember) {
                     message += " in a context with parsingMember=true";
@@ -316,12 +317,11 @@ public class FlowExpressionParseUtil {
         }
     }
 
-    private static Receiver parseSuper(String s, Types types, FlowExpressionContext context)
+    private static Receiver parseSuper(Types types, FlowExpressionContext context)
             throws FlowExpressionParseException {
         // super literal
         List<? extends TypeMirror> superTypes = types.directSupertypes(context.receiver.getType());
         // find class supertype
-        TypeMirror superType = null;
         for (TypeMirror t : superTypes) {
             // ignore interface types
             if (!(t instanceof ClassType)) {
@@ -329,14 +329,11 @@ public class FlowExpressionParseUtil {
             }
             ClassType tt = (ClassType) t;
             if (!tt.isInterface()) {
-                superType = t;
-                break;
+                return new ThisReference(t);
             }
         }
-        if (superType == null) {
-            throw constructParserException(s, "super class not found");
-        }
-        return new ThisReference(superType);
+
+        throw constructParserException("super", "super class not found");
     }
 
     private static Receiver parseIdentifier(
@@ -649,26 +646,23 @@ public class FlowExpressionParseUtil {
         return -1;
     }
 
-    private static Receiver parseArray(String s, FlowExpressionContext context, TreePath path)
+    private static Receiver parseArray(
+            ArrayAccessExpr expr, FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
-        Pair<Pair<String, String>, String> array = parseArray(s);
-        if (array == null) {
-            return null;
-        }
 
-        String receiverStr = array.first.first;
-        String indexStr = array.first.second;
+        String receiverStr = expr.getName().toString();
+        String indexStr = expr.getIndex().toString();
         Receiver receiver = parseHelper(receiverStr, context, path);
         FlowExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
         Receiver index = parseHelper(indexStr, contextForIndex, path);
         TypeMirror receiverType = receiver.getType();
         if (!(receiverType instanceof ArrayType)) {
             throw constructParserException(
-                    s, String.format("receiver not an array: %s : %s", receiver, receiverType));
+                    expr.toString(),
+                    String.format("receiver not an array: %s : %s", receiver, receiverType));
         }
         TypeMirror componentType = ((ArrayType) receiverType).getComponentType();
-        ArrayAccess result = new ArrayAccess(componentType, receiver, index);
-        return result;
+        return new ArrayAccess(componentType, receiver, index);
     }
 
     /**
