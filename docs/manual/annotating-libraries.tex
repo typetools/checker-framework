@@ -106,9 +106,13 @@ third-party library.
 
 \subsectionAndLabel{Don't change the code}{library-tips-dont-change-the-code}
 
-When you annotate a library, you should only add annotations and, when
-necessary, documentation of those annotations in a Java comment (\<//>
-or \</*...*/>).
+If you annotate a library that you maintain, you can refactor it to improve
+its design.
+
+When you annotate a library that you do not maintain, you should only add
+annotations and, when necessary, documentation of those annotations.  You
+can place the documentation in a Java comment (\<//> or \</*...*/>) or in a
+\refqualclass{framework/qual}{CFComment} annotation.
 
 Do not change the library's code, which will change its behavior and make
 the annotated version inconsistent with the unannotated version.
@@ -123,9 +127,6 @@ suppress a warning.  Perform refactoring only when you cannot use
 Do not change publicly-visible documentation, such as Javadoc comments.
 That also makes the annotated version inconsistent with the unannotated
 version.
-
-When adding documentation related to Checker Framework it is recommended to
-use \refqualclass{framework/qual}{CFComment} annotation.
 
 Do not change formatting and whitespace.
 
