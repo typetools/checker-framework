@@ -6,7 +6,7 @@ class OverrideANNA {
         Object f;
 
         @EnsuresNonNull("f")
-        void setf(@Raw @UnknownInitialization Super this) {
+        void setf(@UnknownInitialization Super this) {
             f = new Object();
         }
 
@@ -18,7 +18,7 @@ class OverrideANNA {
     static class Sub extends Super {
         @Override
         // :: error: (contracts.postcondition.not.satisfied)
-        void setf(@Raw @UnknownInitialization Sub this) {}
+        void setf(@UnknownInitialization Sub this) {}
     }
 
     public static void main(String[] args) {

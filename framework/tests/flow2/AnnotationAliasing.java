@@ -2,9 +2,6 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.test.*;
 import testlib.util.*;
 
-// Disable the test.  The Checker Framework behaves correctly, but the
-// compiler issues a warning because the test uses a deprecated class
-// (checkers.nullness.quals.Pure), and this warning makes the test fail.
 /** Various tests for annotation aliasing. */
 class AnnotationAliasing {
 

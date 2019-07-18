@@ -21,12 +21,12 @@ class MethodInvocation {
 
     public void a() {}
 
-    public void b(@UnderInitialization @Raw MethodInvocation this) {
+    public void b(@UnderInitialization MethodInvocation this) {
         // :: error: (dereference.of.nullable)
         s.hashCode();
     }
 
-    public void c(@UnknownInitialization @Raw MethodInvocation this) {
+    public void c(@UnknownInitialization MethodInvocation this) {
         // :: error: (dereference.of.nullable)
         s.hashCode();
     }
