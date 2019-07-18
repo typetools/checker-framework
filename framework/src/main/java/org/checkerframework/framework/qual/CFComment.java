@@ -22,14 +22,18 @@ import java.lang.annotation.RetentionPolicy;
  * </code></pre>
  *
  * <p>As a matter of style, programmers should use this annotation on the most deeply nested element
- * to which the comment applies.
- *
- * <p>It is optional to prefix each comment by the name of the type system. Doing so makes the
- * comments easier to understand and search for.
+ * to which the comment applies (e.g., local variable rather than method, and method rather than
+ * class).
  */
 @Documented
 @Retention(RetentionPolicy.SOURCE)
 public @interface CFComment {
-    /** Comments about Checker Framework annotations. */
+    /**
+     * Comments about Checker Framework annotations. The text is not interpreted by the Checker
+     * Framework.
+     *
+     * <p>If you prefix each comment by the name of the type system, the comments are easier to
+     * understand and search for.
+     */
     String[] value();
 }
