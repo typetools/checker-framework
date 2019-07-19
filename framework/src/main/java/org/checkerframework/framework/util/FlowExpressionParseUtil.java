@@ -6,6 +6,7 @@ import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -188,7 +189,7 @@ public class FlowExpressionParseUtil {
             } else if (expr.isMethodCallExpr() && !expr.asMethodCallExpr().getScope().isPresent()) {
                 // According to the previous implementation, "get()" is a method call,
                 // but "item.get()" is a member select. This is temporary.
-                return parseMethodCall(expression, context, path, env);
+                return parseMethodCall(expr.asMethodCallExpr(), context, path, env);
             } else if (expr.isMethodCallExpr()) {
                 // if this point is reached, the expression is "item.get()", so it should be treated
                 // as member select. This is temporary.
@@ -524,27 +525,28 @@ public class FlowExpressionParseUtil {
     }
 
     private static Receiver parseMethodCall(
-            String s, FlowExpressionContext context, TreePath path, ProcessingEnvironment env)
+            MethodCallExpr expr,
+            FlowExpressionContext context,
+            TreePath path,
+            ProcessingEnvironment env)
             throws FlowExpressionParseException {
-        Pair<Pair<String, String>, String> method = parseMethodCall(s);
-        if (method == null) {
-            return null;
-        }
-
-        String methodName = method.first.first;
+        String s = expr.toString();
+        String methodName = expr.getNameAsString();
 
         // parse parameter list
-        String parameterList = method.first.second;
-        List<Receiver> parameters =
-                ParameterListParser.parseParameterList(
-                        parameterList, true, context.copyAndUseOuterReceiver(), path);
+        List<Receiver> parameters = new ArrayList<>();
+
+        for (Expression expression : expr.getArguments()) {
+            parameters.add(
+                    parseHelper(expression.toString(), context.copyAndUseOuterReceiver(), path));
+        }
 
         // get types for parameters
         List<TypeMirror> parameterTypes = new ArrayList<>();
         for (Receiver p : parameters) {
             parameterTypes.add(p.getType());
         }
-        ExecutableElement methodElement = null;
+        ExecutableElement methodElement;
         try {
             Element element = null;
 
@@ -595,7 +597,7 @@ public class FlowExpressionParseUtil {
             }
             throw constructParserException(s, t.getMessage());
         }
-        assert methodElement != null;
+
         // TODO: reinstate this test, but issue a warning that the user
         // can override, rather than halting parsing which the user cannot override.
         /*if (!PurityUtils.isDeterministic(context.checkerContext.getAnnotationProvider(),
@@ -867,135 +869,6 @@ public class FlowExpressionParseUtil {
         assert remainingString != null;
 
         return Pair.of(result, remainingString);
-    }
-
-    /**
-     * A very simple parser for parameter lists, i.e. strings of the form {@code a, b, c} for some
-     * expressions {@code a}, {@code b} and {@code c}.
-     */
-    private static class ParameterListParser {
-
-        /**
-         * Parse a parameter list and return the parameters as a list (or throw a {@link
-         * FlowExpressionParseException}).
-         */
-        private static List<Receiver> parseParameterList(
-                String parameterString,
-                boolean allowEmptyList,
-                FlowExpressionContext context,
-                TreePath path)
-                throws FlowExpressionParseException {
-            ArrayList<Receiver> result = new ArrayList<>();
-            // the index of the character in 'parameterString' that the parser
-            // is currently looking at
-            int idx = 0;
-            // how deeply are method calls nested at this point? callLevel is 0
-            // in the beginning, and increases with every method call by 1. For
-            // instance it would be 2 at the end of the following string:
-            // "get(get(1,2,"
-            int callLevel = 0;
-            // is the parser currently in a string literal?
-            boolean inString = false;
-            while (true) {
-                // end of string reached
-                if (idx == parameterString.length()) {
-                    // finish current param
-                    if (inString) {
-                        throw constructParserException(parameterString, "unterminated string");
-                    } else if (callLevel > 0) {
-                        throw constructParserException(
-                                parameterString,
-                                "unterminated method invocation, callLevel==" + callLevel);
-                    } else {
-                        finishParam(parameterString, allowEmptyList, context, path, result, idx);
-                        return result;
-                    }
-                }
-
-                // get next character
-                char next = parameterString.charAt(idx);
-                idx++;
-
-                // case split on character
-                switch (next) {
-                    case ',':
-                        if (inString) {
-                            // stay in same state and consume the character
-                        } else {
-                            if (callLevel == 0) {
-                                // parse first parameter
-                                finishParam(
-                                        parameterString,
-                                        allowEmptyList,
-                                        context,
-                                        path,
-                                        result,
-                                        idx - 1);
-                                // parse remaining parameters
-                                List<Receiver> rest =
-                                        parseParameterList(
-                                                parameterString.substring(idx),
-                                                false,
-                                                context,
-                                                path);
-                                result.addAll(rest);
-                                return result;
-                            } else {
-                                // not the outermost method call, defer parsing of
-                                // this parameter list to recursive call.
-                            }
-                        }
-                        break;
-                    case '"':
-                        // start or finish string
-                        inString = !inString;
-                        break;
-                    case '(':
-                        if (inString) {
-                            // stay in same state and consume the character
-                        } else {
-                            callLevel++;
-                        }
-                        break;
-                    case ')':
-                        if (inString) {
-                            // stay in same state and consume the character
-                        } else {
-                            if (callLevel == 0) {
-                                throw constructParserException(parameterString, "callLevel==0");
-                            } else {
-                                callLevel--;
-                            }
-                        }
-                        break;
-                    case '\\':
-                        idx++;
-                        break;
-                    default:
-                        // stay in same state and consume the character
-                        break;
-                }
-            }
-        }
-
-        private static void finishParam(
-                String parameterString,
-                boolean allowEmptyList,
-                FlowExpressionContext context,
-                TreePath path,
-                ArrayList<Receiver> result,
-                int idx)
-                throws FlowExpressionParseException {
-            if (idx == 0) {
-                if (allowEmptyList) {
-                    return;
-                } else {
-                    throw constructParserException(parameterString, "empty parameter list; idx==0");
-                }
-            } else {
-                result.add(parseHelper(parameterString.substring(0, idx), context, path));
-            }
-        }
     }
 
     /**
