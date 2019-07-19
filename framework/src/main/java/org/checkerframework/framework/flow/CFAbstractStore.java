@@ -263,7 +263,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * changes to certain parts of the state.
      *
      * <p>If there is already a value {@code v} present for {@code r}, then the greatest lower bound
-     * of the new and old value is inserted into the store unless it's bottom. If the greates lower
+     * of the new and old value is inserted into the store unless it's bottom. If the greatest lower
      * bound is bottom, then the new value is inserted.
      *
      * <p>Note that this happens per hierarchy, and if the store already contains information about
