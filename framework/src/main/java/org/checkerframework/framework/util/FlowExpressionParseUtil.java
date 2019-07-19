@@ -165,7 +165,9 @@ public class FlowExpressionParseUtil {
                 return new ValueLiteral(
                         types.getDeclaredType(stringTypeElem),
                         expr.asStringLiteralExpr().asString());
-            } else if (expr.isThisExpr() && !context.parsingMember) {
+            } else if (expr.isThisExpr()
+                    && !expr.asThisExpr().getTypeName().isPresent()
+                    && !context.parsingMember) {
                 return parseThis(context);
             } else if (expr.isSuperExpr()) {
                 return parseSuper(types, context);
