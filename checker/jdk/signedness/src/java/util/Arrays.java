@@ -44,7 +44,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.checkerframework.checker.signedness.qual.PolySigned;
-import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.signedness.qual.SignedPositive;
 
 /**
  * This class contains various methods for manipulating arrays (such as
@@ -3817,7 +3817,7 @@ public class Arrays {
         }
 
         @Override
-        public @NonNegative int size() {
+        public @SignedPositive int size() {
             return a.length;
         }
 

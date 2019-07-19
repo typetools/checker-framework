@@ -27,12 +27,11 @@ package java.lang;
 
 import java.lang.annotation.Native;
 
-import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
+import org.checkerframework.checker.signedness.qual.SignedPositive;
 
 /**
  * The {@code Integer} class wraps a value of the primitive type
@@ -67,7 +66,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * A constant holding the maximum value an {@code int} can
      * have, 2<sup>31</sup>-1.
      */
-    @Native public static final @Positive int   MAX_VALUE = 0x7fffffff;
+    @Native public static final @SignedPositive int   MAX_VALUE = 0x7fffffff;
 
     /**
      * The {@code Class} instance representing the primitive type
@@ -1327,7 +1326,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *
      * @since 1.5
      */
-    @Native public static final @Positive int SIZE = 32;
+    @Native public static final @SignedPositive int SIZE = 32;
 
     /**
      * The number of bytes used to represent a {@code int} value in two's
@@ -1335,7 +1334,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *
      * @since 1.8
      */
-    public static final @Positive int BYTES = SIZE / Byte.SIZE;
+    public static final @SignedPositive int BYTES = SIZE / Byte.SIZE;
 
     /**
      * Returns an {@code int} value with at most a single one-bit, in the
@@ -1399,7 +1398,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     is equal to zero.
      * @since 1.5
      */
-    public static @NonNegative int numberOfLeadingZeros(@UnknownSignedness int i) {
+    public static @SignedPositive int numberOfLeadingZeros(@UnknownSignedness int i) {
         // HD, Figure 5-6
         if (i == 0)
             return 32;
@@ -1426,7 +1425,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     to zero.
      * @since 1.5
      */
-    public static @NonNegative int numberOfTrailingZeros(@UnknownSignedness int i) {
+    public static @SignedPositive int numberOfTrailingZeros(@UnknownSignedness int i) {
         // HD, Figure 5-14
         int y;
         if (i == 0) return 32;
@@ -1448,7 +1447,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     representation of the specified {@code int} value.
      * @since 1.5
      */
-    public static @NonNegative int bitCount(@UnknownSignedness int i) {
+    public static @SignedPositive int bitCount(@UnknownSignedness int i) {
         // HD, Figure 5-2
         i = i - ((i >>> 1) & 0x55555555);
         i = (i & 0x33333333) + ((i >>> 2) & 0x33333333);

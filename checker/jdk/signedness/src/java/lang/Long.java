@@ -28,12 +28,11 @@ package java.lang;
 import java.lang.annotation.Native;
 import java.math.*;
 
-import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.PolySigned;
+import org.checkerframework.checker.signedness.qual.SignedPositive;
 
 /**
  * The {@code Long} class wraps a value of the primitive type {@code
@@ -68,7 +67,7 @@ public final class Long extends Number implements Comparable<Long> {
      * A constant holding the maximum value a {@code long} can
      * have, 2<sup>63</sup>-1.
      */
-    @Native public static final @Positive long MAX_VALUE = 0x7fffffffffffffffL;
+    @Native public static final @SignedPositive long MAX_VALUE = 0x7fffffffffffffffL;
 
     /**
      * The {@code Class} instance representing the primitive type
@@ -1347,7 +1346,7 @@ public final class Long extends Number implements Comparable<Long> {
      *
      * @since 1.5
      */
-    @Native public static final @Positive int SIZE = 64;
+    @Native public static final @SignedPositive int SIZE = 64;
 
     /**
      * The number of bytes used to represent a {@code long} value in two's
@@ -1355,7 +1354,7 @@ public final class Long extends Number implements Comparable<Long> {
      *
      * @since 1.8
      */
-    public static final @Positive int BYTES = SIZE / Byte.SIZE;
+    public static final @SignedPositive int BYTES = SIZE / Byte.SIZE;
 
     /**
      * Returns a {@code long} value with at most a single one-bit, in the
@@ -1420,7 +1419,7 @@ public final class Long extends Number implements Comparable<Long> {
      *     is equal to zero.
      * @since 1.5
      */
-    public static @NonNegative int numberOfLeadingZeros(@UnknownSignedness long i) {
+    public static @SignedPositive int numberOfLeadingZeros(@UnknownSignedness long i) {
         // HD, Figure 5-6
          if (i == 0)
             return 64;
@@ -1449,7 +1448,7 @@ public final class Long extends Number implements Comparable<Long> {
      *     to zero.
      * @since 1.5
      */
-    public static @NonNegative int numberOfTrailingZeros(@UnknownSignedness long i) {
+    public static @SignedPositive int numberOfTrailingZeros(@UnknownSignedness long i) {
         // HD, Figure 5-14
         int x, y;
         if (i == 0) return 64;
@@ -1472,7 +1471,7 @@ public final class Long extends Number implements Comparable<Long> {
      *     representation of the specified {@code long} value.
      * @since 1.5
      */
-     public static @NonNegative int bitCount(@UnknownSignedness long i) {
+     public static @SignedPositive int bitCount(@UnknownSignedness long i) {
         // HD, Figure 5-14
         i = i - ((i >>> 1) & 0x5555555555555555L);
         i = (i & 0x3333333333333333L) + ((i >>> 2) & 0x3333333333333333L);
