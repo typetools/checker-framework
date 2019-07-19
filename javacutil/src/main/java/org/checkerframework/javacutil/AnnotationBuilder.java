@@ -570,7 +570,7 @@ public class AnnotationBuilder {
 
     /** Implementation of AnnotationMirror used by the Checker Framework. */
     /* default visibility to allow access from within package. */
-    static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
+    public static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
 
         private @Interned String toStringVal;
         private final DeclaredType annotationType;
@@ -585,6 +585,16 @@ public class AnnotationBuilder {
             final TypeElement elm = (TypeElement) at.asElement();
             this.annotationName = elm.getQualifiedName().toString().intern();
             this.elementValues = ev;
+        }
+
+        public CheckerFrameworkAnnotationMirror(AnnotationMirror other) {
+            this.annotationType = other.getAnnotationType();
+            final TypeElement elm = (TypeElement) annotationType.asElement();
+            this.annotationName = elm.getQualifiedName().toString().intern();
+            @SuppressWarnings("unchecked")
+            Map<ExecutableElement, AnnotationValue> copy =
+                    (Map<ExecutableElement, AnnotationValue>) other.getElementValues();
+            this.elementValues = copy;
         }
 
         @Override
