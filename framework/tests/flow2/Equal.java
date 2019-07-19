@@ -33,6 +33,7 @@ class Equal {
         // :: error: (assignment.type.incompatible)
         @Odd Long l1 = Long.valueOf(2L);
         if (Long.valueOf(2L) == p1) {
+            // The result of valueOf is not deterministic, so it can't be refined.
             // :: error: (assignment.type.incompatible)
             @Odd Long l2 = Long.valueOf(2L);
         } else {
