@@ -21,8 +21,12 @@ public class Issue2470 {
     }
 
     static void buggy() {
-        (new Example())
+        new Example()
                 // :: error: (contracts.precondition.not.satisfied)
                 .print();
+    }
+
+    static void ok() {
+        new Example().setS("test").print();
     }
 }
