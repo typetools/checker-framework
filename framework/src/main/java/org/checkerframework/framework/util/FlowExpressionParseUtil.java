@@ -3,7 +3,9 @@ package org.checkerframework.framework.util;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -178,10 +180,11 @@ public class FlowExpressionParseUtil {
             } else if (expr.isNameExpr()
                     && dummyExpression.startsWith("_param_")
                     && !context.parsingMember) { // The old parameter check
-                return parseParameter(expression, context);
+                // dummyExpression is the same as expr.asNameExpr().getName().asString()
+                return parseParameter(expr.asNameExpr().getNameAsString(), context);
             } else if (expr
                     .isNameExpr()) { // a name expression that is not a parameter is an identifier
-                return parseIdentifier(expression, env, path, context);
+                return parseIdentifier(expr.asNameExpr().getNameAsString(), env, path, context);
             } else if (expr.isMethodCallExpr() && !expr.asMethodCallExpr().getScope().isPresent()) {
                 // According to the previous implementation, "get()" is a method call,
                 // but "item.get()" is a member select. This is temporary.
@@ -190,9 +193,10 @@ public class FlowExpressionParseUtil {
                 // if this point is reached, the expression is "item.get()", so it should be treated
                 // as member select. This is temporary.
                 return parseMemberSelect(expression, env, context, path);
-            } else if (expr.isFieldAccessExpr() || expr.isClassExpr()) {
-                // a field access or a class expression (like Object.class)
-                return parseMemberSelect(expression, env, context, path);
+            } else if (expr.isFieldAccessExpr()) { // a field access
+                return parseFieldAccess(expr.asFieldAccessExpr(), env, context, path);
+            } else if (expr.isClassExpr() && !context.parsingMember) { // Object.class
+                return parseClassExpression(expr.asClassExpr(), env, context, path);
             } else {
                 String message;
                 if (expression.equals("#0")) {
@@ -221,6 +225,54 @@ public class FlowExpressionParseUtil {
         }
 
         return updatedExpression;
+    }
+
+    // parseMemberSelect will be removed
+    private static Receiver parseFieldAccess(
+            FieldAccessExpr expr,
+            ProcessingEnvironment env,
+            FlowExpressionContext context,
+            TreePath path)
+            throws FlowExpressionParseException {
+        Receiver receiver;
+        String memberSelected;
+
+        Resolver resolver = new Resolver(env);
+
+        // Attempt to match a package and class name first.
+        Pair<ClassName, String> classAndRemainingString =
+                matchPackageAndClassNameWithinExpression(expr.toString(), resolver, path);
+        if (classAndRemainingString != null) {
+            receiver = classAndRemainingString.first;
+            memberSelected = classAndRemainingString.second;
+            if (memberSelected == null) {
+                throw constructParserException(
+                        expr.toString(), "a class cannot terminate a flow expression string");
+            }
+        } else {
+            String receiverString = expr.getScope().toString();
+            memberSelected = expr.getName().asString();
+            receiver = parseHelper(receiverString, context, path);
+        }
+
+        // Parse the rest, with a new receiver.
+        FlowExpressionContext newContext = context.copyChangeToParsingMemberOfReceiver(receiver);
+        return parseHelper(memberSelected, newContext, path);
+    }
+
+    private static Receiver parseClassExpression(
+            ClassExpr expr, ProcessingEnvironment env, FlowExpressionContext context, TreePath path)
+            throws FlowExpressionParseException {
+        Resolver resolver = new Resolver(env);
+
+        Pair<ClassName, String> classAndRemainingString =
+                matchPackageAndClassNameWithinExpression(expr.toString(), resolver, path);
+
+        if (classAndRemainingString != null) {
+            return classAndRemainingString.first;
+        }
+
+        return parseHelper(expr.getTypeAsString(), context, path);
     }
 
     /**
@@ -436,13 +488,8 @@ public class FlowExpressionParseUtil {
         if (context.arguments == null) {
             throw constructParserException(s, "no parameter found");
         }
-        int idx = -1;
-        try {
-            idx = Integer.parseInt(s.substring(1));
-        } catch (NumberFormatException e) {
-            // cannot occur by the way the pattern is defined (matches only numbers)
-            assert false;
-        }
+        int idx = Integer.parseInt(s.substring(7));
+
         if (idx > context.arguments.size()) {
             throw new FlowExpressionParseException(
                     "flowexpr.parse.index.too.big", Integer.toString(idx));
