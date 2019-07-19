@@ -71,37 +71,11 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  */
 public class FlowExpressionParseUtil {
 
-    /**
-     * Regular expression for an identifier. Permits '$' in the name, though that character never
-     * appears in Java source code.
-     */
-    protected static final String IDENTIFIER_REGEX = "[a-zA-Z_$][a-zA-Z_$0-9]*";
     /** Regular expression for a formal parameter use. */
     protected static final String PARAMETER_REGEX = "#([1-9][0-9]*)";
 
-    /** Regular expression for a string literal. */
-    // Regex can be found at, for example, http://stackoverflow.com/a/481587/173852
-    protected static final String STRING_REGEX = "\"(?:[^\"\\\\]|\\\\.)*\"";
-
     /** Unanchored; can be used to find all formal parameter uses. */
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
-
-    /** Returns a Pattern, anchored at the beginning and end, for the regex. */
-    private static Pattern anchored(String regex) {
-        return Pattern.compile("^" + regex + "$");
-    }
-
-    // Each of the below patterns is anchored with ^...$.
-    /** Matches a string starting with an identifier. */
-    protected static final Pattern STARTS_WITH_IDENTIFIER_PATTERN =
-            anchored("(" + IDENTIFIER_REGEX + ").*");
-
-    /** Matches an expression that starts with a string. */
-    protected static final Pattern STARTS_WITH_STRING_PATTERN =
-            anchored("(" + STRING_REGEX + ").*");
-    /** Matches member select on a string, such as {@code "hello".length}. */
-    protected static final Pattern STRING_SELECT_PATTERN =
-            anchored("(" + STRING_REGEX + ")" + "\\.(.*)");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
@@ -186,14 +160,8 @@ public class FlowExpressionParseUtil {
             } else if (expr
                     .isNameExpr()) { // a name expression that is not a parameter is an identifier
                 return parseIdentifier(expr.asNameExpr().getNameAsString(), env, path, context);
-            } else if (expr.isMethodCallExpr() && !expr.asMethodCallExpr().getScope().isPresent()) {
-                // According to the previous implementation, "get()" is a method call,
-                // but "item.get()" is a member select. This is temporary.
+            } else if (expr.isMethodCallExpr()) { // a method call
                 return parseMethodCall(expr.asMethodCallExpr(), context, path, env);
-            } else if (expr.isMethodCallExpr()) {
-                // if this point is reached, the expression is "item.get()", so it should be treated
-                // as member select. This is temporary.
-                return parseMemberSelect(expression, env, context, path);
             } else if (expr.isFieldAccessExpr()) { // a field access
                 return parseFieldAccess(expr.asFieldAccessExpr(), env, context, path);
             } else if (expr.isClassExpr() && !context.parsingMember) { // Object.class
@@ -282,36 +250,8 @@ public class FlowExpressionParseUtil {
      * @param s expression string
      * @return pair of object and field
      */
+    // This is not a member select. Changing its name soon.
     private static Pair<String, String> parseMemberSelect(String s) {
-        Pair<Pair<String, String>, String> method = parseMethodCall(s);
-        if (method != null && method.second.startsWith(".")) {
-            return Pair.of(
-                    method.first.first + "(" + method.first.second + ")",
-                    method.second.substring(1));
-        }
-
-        Pair<Pair<String, String>, String> array = parseArray(s);
-        if (array != null && array.second.startsWith(".")) {
-            return Pair.of(
-                    array.first.first + "[" + array.first.second + "]", array.second.substring(1));
-        }
-
-        Matcher m = STRING_SELECT_PATTERN.matcher(s);
-        if (m.matches()) {
-            return Pair.of(m.group(1), m.group(2));
-        }
-
-        int nextRParenPos = matchingCloseParen(s, 0, '(', ')');
-        if (nextRParenPos != -1) {
-            if (nextRParenPos + 1 < s.length() && s.charAt(nextRParenPos + 1) == '.') {
-                String receiver = s.substring(0, nextRParenPos + 1);
-                String remaining = s.substring(nextRParenPos + 2);
-                return Pair.of(receiver, remaining);
-            } else {
-                return null;
-            }
-        }
-
         int i = s.indexOf(".");
         if (i == -1) {
             return null;
@@ -321,46 +261,6 @@ public class FlowExpressionParseUtil {
         String remaining = s.substring(i + 1);
 
         return Pair.of(receiver, remaining);
-    }
-
-    private static Receiver parseMemberSelect(
-            String s, ProcessingEnvironment env, FlowExpressionContext context, TreePath path)
-            throws FlowExpressionParseException {
-        Pair<String, String> select = parseMemberSelect(s);
-        assert select != null : "isMemberSelect must be called first";
-
-        Receiver receiver;
-        String memberSelected;
-
-        Resolver resolver = new Resolver(env);
-
-        // Attempt to match a package and class name first.
-        Pair<ClassName, String> classAndRemainingString =
-                matchPackageAndClassNameWithinExpression(s, resolver, path);
-        if (classAndRemainingString != null) {
-            receiver = classAndRemainingString.first;
-            memberSelected = classAndRemainingString.second;
-            if (memberSelected == null) {
-                throw constructParserException(
-                        s, "a class cannot terminate a flow expression string");
-            }
-        } else {
-            String receiverString = select.first;
-            memberSelected = select.second;
-            receiver = parseHelper(receiverString, context, path);
-        }
-
-        if (memberSelected.equals("class")) {
-            if (receiver instanceof FlowExpressions.ClassName && !context.parsingMember) {
-                return receiver;
-            } else {
-                throw constructParserException(s, "class is not a legal identifier");
-            }
-        }
-
-        // Parse the rest, with a new receiver.
-        FlowExpressionContext newContext = context.copyChangeToParsingMemberOfReceiver(receiver);
-        return parseHelper(memberSelected, newContext, path);
     }
 
     private static Receiver parseThis(FlowExpressionContext context) {
@@ -498,32 +398,6 @@ public class FlowExpressionParseUtil {
         return context.arguments.get(idx - 1);
     }
 
-    /**
-     * Parse a method call. First of returned pair is a pair of method name and arguments. Second of
-     * returned pair is a remaining string.
-     *
-     * @param s expression string
-     * @return pair of (pair of method name and arguments) and remaining
-     */
-    private static Pair<Pair<String, String>, String> parseMethodCall(String s) {
-        // Parse Identifier
-        Matcher m = STARTS_WITH_IDENTIFIER_PATTERN.matcher(s);
-        if (!m.matches()) {
-            return null;
-        }
-        String ident = m.group(1);
-        int i = ident.length();
-
-        int rparenPos = matchingCloseParen(s, i, '(', ')');
-        if (rparenPos == -1) {
-            return null;
-        }
-
-        String arguments = s.substring(i + 1, rparenPos);
-        String remaining = s.substring(rparenPos + 1);
-        return Pair.of(Pair.of(ident, arguments), remaining);
-    }
-
     private static Receiver parseMethodCall(
             MethodCallExpr expr,
             FlowExpressionContext context,
@@ -531,6 +405,31 @@ public class FlowExpressionParseUtil {
             ProcessingEnvironment env)
             throws FlowExpressionParseException {
         String s = expr.toString();
+        Resolver resolver = new Resolver(env);
+
+        if (expr.getScope().isPresent()) {
+            Pair<ClassName, String> classAndRemainingString =
+                    matchPackageAndClassNameWithinExpression(s, resolver, path);
+            Receiver receiver;
+            String method;
+            if (classAndRemainingString != null) {
+                receiver = classAndRemainingString.first;
+                method = classAndRemainingString.second;
+            } else {
+                receiver = parseHelper(expr.getScope().get().toString(), context, path);
+                method =
+                        expr.getNameAsString()
+                                + "("
+                                + expr.getArguments()
+                                        .toString()
+                                        .substring(1, expr.getArguments().toString().length() - 1)
+                                + ")";
+            }
+            FlowExpressionContext newContext =
+                    context.copyChangeToParsingMemberOfReceiver(receiver);
+            return parseHelper(method, newContext, path);
+        }
+
         String methodName = expr.getNameAsString();
 
         // parse parameter list
@@ -551,7 +450,6 @@ public class FlowExpressionParseUtil {
             Element element = null;
 
             // try to find the correct method
-            Resolver resolver = new Resolver(env);
             TypeMirror receiverType = context.receiver.getType();
 
             if (receiverType.getKind() == TypeKind.ARRAY) {
@@ -624,77 +522,6 @@ public class FlowExpressionParseUtil {
                             methodElement, context.receiver.getType(), env);
             return new MethodCall(methodType, methodElement, context.receiver, parameters);
         }
-    }
-
-    /**
-     * Parse a array access. First of returned pair is a pair of an array to be accessed and an
-     * index. Second of returned pair is a remaining string.
-     *
-     * @param s expression string
-     * @return pair of (pair of an array to be accessed and an index) and remaining. Returns null if
-     *     parsing fails.
-     */
-    private static Pair<Pair<String, String>, String> parseArray(String s) {
-        int i = 0;
-        while (i < s.length() && s.charAt(i) != '[') {
-            i++;
-        }
-
-        if (i >= s.length()) {
-            return null;
-        }
-
-        while (true) {
-            int nextRBracketPos = matchingCloseParen(s, i, '[', ']');
-            if (nextRBracketPos == -1) {
-                return null;
-            }
-
-            int nextLBracketPos = nextRBracketPos + 1;
-            if (nextLBracketPos < s.length() && s.charAt(nextLBracketPos) == '[') {
-                i = nextLBracketPos;
-                continue;
-            }
-
-            return Pair.of(
-                    Pair.of(s.substring(0, i), s.substring(i + 1, nextRBracketPos)),
-                    s.substring(nextLBracketPos));
-        }
-    }
-
-    /**
-     * Find occurrence of {@code close} that matches the occurrence of {@code open} at {@code
-     * openPos}. Handles nested occurrences of "{@code open} ... {@code close}".
-     *
-     * @return matching occurrence of {@code close}, or -1 if not found
-     */
-    private static int matchingCloseParen(String s, int openPos, char open, char close) {
-        // expect `open` at `openPos` in `s`
-        if (s.length() <= openPos || s.charAt(openPos) != open) {
-            return -1;
-        }
-
-        int i = openPos + 1;
-        int depth = 1;
-        while (i < s.length()) {
-            char ch = s.charAt(i++);
-            if (ch == '"') {
-                i--;
-                Matcher m = STARTS_WITH_STRING_PATTERN.matcher(s.substring(i));
-                if (!m.matches()) {
-                    break;
-                }
-                i += m.group(1).length();
-            } else if (ch == open) {
-                depth++;
-            } else if (ch == close) {
-                depth--;
-                if (depth == 0) {
-                    return i - 1;
-                }
-            }
-        }
-        return -1;
     }
 
     private static Receiver parseArray(
