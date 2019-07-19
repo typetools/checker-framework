@@ -748,15 +748,28 @@ public class FlowExpressions {
 
     public static class LocalVariable extends Receiver {
         protected final Element element;
+        private final int hashcode;
 
         public LocalVariable(LocalVariableNode localVar) {
             super(localVar.getType());
             this.element = localVar.getElement();
+            VarSymbol vs = (VarSymbol) element;
+            this.hashcode =
+                    Objects.hash(
+                            vs.name.toString(),
+                            TypeAnnotationUtils.unannotatedType(vs.type).toString(),
+                            vs.owner.toString());
         }
 
         public LocalVariable(Element elem) {
             super(ElementUtils.getType(elem));
             this.element = elem;
+            VarSymbol vs = (VarSymbol) element;
+            this.hashcode =
+                    Objects.hash(
+                            vs.name.toString(),
+                            TypeAnnotationUtils.unannotatedType(vs.type).toString(),
+                            vs.owner.toString());
         }
 
         @Override
@@ -783,11 +796,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            VarSymbol vs = (VarSymbol) element;
-            return Objects.hash(
-                    vs.name.toString(),
-                    TypeAnnotationUtils.unannotatedType(vs.type).toString(),
-                    vs.owner.toString());
+            return hashcode;
         }
 
         @Override
