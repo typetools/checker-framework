@@ -15,26 +15,26 @@ public class RepeatMinLenIf {
 
     @EnsuresMinLenIf(
             expression = {"a", "b"},
-            targetValue = 5,
+            targetValue = 6,
             result = true)
     @EnsuresMinLenIf(expression = "c", targetValue = 6, result = true)
-    public boolean samefunc1() {
+    public boolean withcondpostconditionsfunc1() {
         a = "checker";
         c = "framework";
-        b = "open"; // condition not satisfied here
+        b = "hello"; // condition not satisfied here
         // :: error:  (contracts.conditional.postcondition.not.satisfied)
         return true;
     }
 
     @EnsuresMinLenIf.List({
         @EnsuresMinLenIf(expression = "a", targetValue = 6, result = true),
-        @EnsuresMinLenIf(expression = "b", targetValue = 6, result = true)
+        @EnsuresMinLenIf(expression = "b", targetValue = 4, result = true)
     })
     @EnsuresMinLenIf(expression = "c", targetValue = 6, result = true)
-    public boolean func2() {
+    public boolean withcondpostconditionfunc1() {
         a = "checker";
         c = "framework";
-        b = "source";
+        b = "hello";
         return true;
     }
 }

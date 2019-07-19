@@ -7,7 +7,6 @@ public class RepeatNonNull {
     protected @Nullable String value1;
     protected @Nullable String value2;
     protected @Nullable String value3;
-    protected @Nullable String value4;
 
     public boolean func1() {
         value1 = "value1";
@@ -26,7 +25,7 @@ public class RepeatNonNull {
             expression = {"value1", "value2"},
             result = true)
     @EnsuresNonNullIf(expression = "value3", result = true)
-    public boolean samefunc1() {
+    public boolean withcondpostconditionsfunc1() {
         value1 = "value1";
         value2 = "value2";
         value3 = null; // condition not satisfied here
@@ -37,33 +36,29 @@ public class RepeatNonNull {
     @EnsuresNonNull("value1")
     @EnsuresNonNull(value = {"value2", "value3"})
     // :: error:  (contracts.postcondition.not.satisfied)
-    public void samefunc2() {
+    public void withpostconditionsfunc2() {
         value1 = "value1";
         value2 = null; // condition not satisfied here
         value3 = "value3";
     }
 
     @EnsuresNonNullIf.List({
-        @EnsuresNonNullIf(
-                expression = {"value1", "value2"},
-                result = true),
-        @EnsuresNonNullIf(expression = "value3", result = true)
+        @EnsuresNonNullIf(expression = "value1", result = true),
+        @EnsuresNonNullIf(expression = "value2", result = true),
     })
-    @EnsuresNonNullIf(expression = "value4", result = true)
-    public boolean func3() {
+    @EnsuresNonNullIf(expression = "value3", result = false)
+    public boolean withcondpostconditionfunc1() {
         value1 = "value1";
         value2 = "value2";
-        value3 = "value3";
-        value4 = "value4";
+        value3 = null;
         return true;
     }
 
-    @EnsuresNonNull.List({@EnsuresNonNull("value1"), @EnsuresNonNull(value = {"value2", "value3"})})
-    @EnsuresNonNull("value4")
-    public void func4() {
+    @EnsuresNonNull.List({@EnsuresNonNull("value1")})
+    @EnsuresNonNull("value3")
+    public void withpostconditionfunc2() {
         value1 = "value1";
-        value2 = "value2";
+        value2 = null;
         value3 = "value3";
-        value4 = "value4";
     }
 }
