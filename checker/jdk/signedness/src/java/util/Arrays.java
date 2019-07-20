@@ -143,7 +143,7 @@ public class Arrays {
      *
      * @param a the array to be sorted
      */
-    public static void sort(@PolySigned int[] a) {
+    public static void sort(int[] a) {
         DualPivotQuicksort.sort(a, 0, a.length - 1, null, 0, 0);
     }
 
@@ -167,7 +167,7 @@ public class Arrays {
      * @throws ArrayIndexOutOfBoundsException
      *     if {@code fromIndex < 0} or {@code toIndex > a.length}
      */
-    public static void sort(@PolySigned int[] a, int fromIndex, int toIndex) {
+    public static void sort(int[] a, int fromIndex, int toIndex) {
         rangeCheck(a.length, fromIndex, toIndex);
         DualPivotQuicksort.sort(a, fromIndex, toIndex - 1, null, 0, 0);
     }
@@ -183,7 +183,7 @@ public class Arrays {
      *
      * @param a the array to be sorted
      */
-    public static void sort(@PolySigned long[] a) {
+    public static void sort(long[] a) {
         DualPivotQuicksort.sort(a, 0, a.length - 1, null, 0, 0);
     }
 
@@ -207,7 +207,7 @@ public class Arrays {
      * @throws ArrayIndexOutOfBoundsException
      *     if {@code fromIndex < 0} or {@code toIndex > a.length}
      */
-    public static void sort(@PolySigned long[] a, int fromIndex, int toIndex) {
+    public static void sort(long[] a, int fromIndex, int toIndex) {
         rangeCheck(a.length, fromIndex, toIndex);
         DualPivotQuicksort.sort(a, fromIndex, toIndex - 1, null, 0, 0);
     }
@@ -223,7 +223,7 @@ public class Arrays {
      *
      * @param a the array to be sorted
      */
-    public static void sort(@PolySigned short[] a) {
+    public static void sort(short[] a) {
         DualPivotQuicksort.sort(a, 0, a.length - 1, null, 0, 0);
     }
 
@@ -247,7 +247,7 @@ public class Arrays {
      * @throws ArrayIndexOutOfBoundsException
      *     if {@code fromIndex < 0} or {@code toIndex > a.length}
      */
-    public static void sort(@PolySigned short[] a, int fromIndex, int toIndex) {
+    public static void sort(short[] a, int fromIndex, int toIndex) {
         rangeCheck(a.length, fromIndex, toIndex);
         DualPivotQuicksort.sort(a, fromIndex, toIndex - 1, null, 0, 0);
     }
@@ -263,7 +263,7 @@ public class Arrays {
      *
      * @param a the array to be sorted
      */
-    public static void sort(@PolySigned char[] a) {
+    public static void sort(char[] a) {
         DualPivotQuicksort.sort(a, 0, a.length - 1, null, 0, 0);
     }
 
@@ -287,7 +287,7 @@ public class Arrays {
      * @throws ArrayIndexOutOfBoundsException
      *     if {@code fromIndex < 0} or {@code toIndex > a.length}
      */
-    public static void sort(@PolySigned char[] a, int fromIndex, int toIndex) {
+    public static void sort(char[] a, int fromIndex, int toIndex) {
         rangeCheck(a.length, fromIndex, toIndex);
         DualPivotQuicksort.sort(a, fromIndex, toIndex - 1, null, 0, 0);
     }
@@ -303,7 +303,7 @@ public class Arrays {
      *
      * @param a the array to be sorted
      */
-    public static void sort(@PolySigned byte[] a) {
+    public static void sort(byte[] a) {
         DualPivotQuicksort.sort(a, 0, a.length - 1);
     }
 
@@ -327,7 +327,7 @@ public class Arrays {
      * @throws ArrayIndexOutOfBoundsException
      *     if {@code fromIndex < 0} or {@code toIndex > a.length}
      */
-    public static void sort(@PolySigned byte[] a, int fromIndex, int toIndex) {
+    public static void sort(byte[] a, int fromIndex, int toIndex) {
         rangeCheck(a.length, fromIndex, toIndex);
         DualPivotQuicksort.sort(a, fromIndex, toIndex - 1);
     }
@@ -462,7 +462,7 @@ public class Arrays {
      *
      * @since 1.8
      */
-    public static void parallelSort(@PolySigned byte[] a) {
+    public static void parallelSort(byte[] a) {
         int n = a.length, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
             (p = ForkJoinPool.getCommonPoolParallelism()) == 1)
@@ -501,7 +501,7 @@ public class Arrays {
      *
      * @since 1.8
      */
-    public static void parallelSort(@PolySigned byte[] a, int fromIndex, int toIndex) {
+    public static void parallelSort(byte[] a, int fromIndex, int toIndex) {
         rangeCheck(a.length, fromIndex, toIndex);
         int n = toIndex - fromIndex, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
@@ -532,7 +532,7 @@ public class Arrays {
      *
      * @since 1.8
      */
-    public static void parallelSort(@PolySigned char[] a) {
+    public static void parallelSort(char[] a) {
         int n = a.length, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
             (p = ForkJoinPool.getCommonPoolParallelism()) == 1)
@@ -571,7 +571,7 @@ public class Arrays {
      *
      * @since 1.8
      */
-    public static void parallelSort(@PolySigned char[] a, int fromIndex, int toIndex) {
+    public static void parallelSort(char[] a, int fromIndex, int toIndex) {
         rangeCheck(a.length, fromIndex, toIndex);
         int n = toIndex - fromIndex, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
@@ -602,7 +602,7 @@ public class Arrays {
      *
      * @since 1.8
      */
-    public static void parallelSort(@PolySigned short[] a) {
+    public static void parallelSort(short[] a) {
         int n = a.length, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
             (p = ForkJoinPool.getCommonPoolParallelism()) == 1)
@@ -641,7 +641,7 @@ public class Arrays {
      *
      * @since 1.8
      */
-    public static void parallelSort(@PolySigned short[] a, int fromIndex, int toIndex) {
+    public static void parallelSort(short[] a, int fromIndex, int toIndex) {
         rangeCheck(a.length, fromIndex, toIndex);
         int n = toIndex - fromIndex, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
@@ -672,7 +672,7 @@ public class Arrays {
      *
      * @since 1.8
      */
-    public static void parallelSort(@PolySigned int[] a) {
+    public static void parallelSort(int[] a) {
         int n = a.length, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
             (p = ForkJoinPool.getCommonPoolParallelism()) == 1)
@@ -711,7 +711,7 @@ public class Arrays {
      *
      * @since 1.8
      */
-    public static void parallelSort(@PolySigned int[] a, int fromIndex, int toIndex) {
+    public static void parallelSort(int[] a, int fromIndex, int toIndex) {
         rangeCheck(a.length, fromIndex, toIndex);
         int n = toIndex - fromIndex, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
@@ -742,7 +742,7 @@ public class Arrays {
      *
      * @since 1.8
      */
-    public static void parallelSort(@PolySigned long[] a) {
+    public static void parallelSort(long[] a) {
         int n = a.length, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
             (p = ForkJoinPool.getCommonPoolParallelism()) == 1)
@@ -781,7 +781,7 @@ public class Arrays {
      *
      * @since 1.8
      */
-    public static void parallelSort(@PolySigned long[] a, int fromIndex, int toIndex) {
+    public static void parallelSort(long[] a, int fromIndex, int toIndex) {
         rangeCheck(a.length, fromIndex, toIndex);
         int n = toIndex - fromIndex, p, g;
         if (n <= MIN_ARRAY_SORT_GRAN ||
@@ -1782,7 +1782,7 @@ public class Arrays {
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
      */
-    public static int binarySearch(@PolySigned long[] a, @PolySigned long key) {
+    public static int binarySearch(long[] a, long key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -1818,15 +1818,15 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static int binarySearch(@PolySigned long[] a, int fromIndex, int toIndex,
-                                   @PolySigned long key) {
+    public static int binarySearch(long[] a, int fromIndex, int toIndex,
+                                   long key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
     }
 
     // Like public version, but without range checks.
-    private static int binarySearch0(@PolySigned long[] a, int fromIndex, int toIndex,
-                                     @PolySigned long key) {
+    private static int binarySearch0(long[] a, int fromIndex, int toIndex,
+                                     long key) {
         int low = fromIndex;
         int high = toIndex - 1;
 
@@ -1863,7 +1863,7 @@ public class Arrays {
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
      */
-    public static int binarySearch(@PolySigned int[] a, @PolySigned int key) {
+    public static int binarySearch(int[] a, int key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -1899,15 +1899,15 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static int binarySearch(@PolySigned int[] a, int fromIndex, int toIndex,
-                                   @PolySigned int key) {
+    public static int binarySearch(int[] a, int fromIndex, int toIndex,
+                                   int key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
     }
 
     // Like public version, but without range checks.
-    private static int binarySearch0(@PolySigned int[] a, int fromIndex, int toIndex,
-                                     @PolySigned int key) {
+    private static int binarySearch0(int[] a, int fromIndex, int toIndex,
+                                     int key) {
         int low = fromIndex;
         int high = toIndex - 1;
 
@@ -1944,7 +1944,7 @@ public class Arrays {
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
      */
-    public static int binarySearch(@PolySigned short[] a, @PolySigned short key) {
+    public static int binarySearch(short[] a, short key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -1980,15 +1980,15 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static int binarySearch(@PolySigned short[] a, int fromIndex, int toIndex,
-                                   @PolySigned short key) {
+    public static int binarySearch(short[] a, int fromIndex, int toIndex,
+                                   short key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
     }
 
     // Like public version, but without range checks.
-    private static int binarySearch0(@PolySigned short[] a, int fromIndex, int toIndex,
-                                     @PolySigned short key) {
+    private static int binarySearch0(short[] a, int fromIndex, int toIndex,
+                                     short key) {
         int low = fromIndex;
         int high = toIndex - 1;
 
@@ -2025,7 +2025,7 @@ public class Arrays {
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
      */
-    public static int binarySearch(@PolySigned char[] a, @PolySigned char key) {
+    public static int binarySearch(char[] a, char key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -2061,15 +2061,15 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static int binarySearch(@PolySigned char[] a, int fromIndex, int toIndex,
-                                   @PolySigned char key) {
+    public static int binarySearch(char[] a, int fromIndex, int toIndex,
+                                   char key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
     }
 
     // Like public version, but without range checks.
-    private static int binarySearch0(@PolySigned char[] a, int fromIndex, int toIndex,
-                                     @PolySigned char key) {
+    private static int binarySearch0(char[] a, int fromIndex, int toIndex,
+                                     char key) {
         int low = fromIndex;
         int high = toIndex - 1;
 
@@ -2106,7 +2106,7 @@ public class Arrays {
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
      */
-    public static int binarySearch(@PolySigned byte[] a, @PolySigned byte key) {
+    public static int binarySearch(byte[] a, byte key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -2142,15 +2142,15 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static int binarySearch(@PolySigned byte[] a, int fromIndex, int toIndex,
-                                   @PolySigned byte key) {
+    public static int binarySearch(byte[] a, int fromIndex, int toIndex,
+                                   byte key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
     }
 
     // Like public version, but without range checks.
-    private static int binarySearch0(@PolySigned byte[] a, int fromIndex, int toIndex,
-                                     @PolySigned byte key) {
+    private static int binarySearch0(byte[] a, int fromIndex, int toIndex,
+                                     byte key) {
         int low = fromIndex;
         int high = toIndex - 1;
 
