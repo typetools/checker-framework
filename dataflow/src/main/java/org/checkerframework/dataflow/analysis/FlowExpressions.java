@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -1015,6 +1016,9 @@ public class FlowExpressions {
             if (!(obj instanceof MethodCall)) {
                 return false;
             }
+            if (method.getKind() == ElementKind.CONSTRUCTOR) {
+                return this == obj;
+            }
             MethodCall other = (MethodCall) obj;
             return parameters.equals(other.parameters)
                     && receiver.equals(other.receiver)
@@ -1023,6 +1027,9 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
+            if (method.getKind() == ElementKind.CONSTRUCTOR) {
+                return super.hashCode();
+            }
             return Objects.hash(method, receiver, parameters);
         }
 
