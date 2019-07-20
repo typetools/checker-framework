@@ -21,6 +21,8 @@ public class RepeatKeyFor {
         return true;
     }
 
+    // Error occured because "map" can contain only String a and String b as keys as described in
+    // the postcondition.
     @EnsuresKeyFor(
             value = {"#1", "#2"},
             map = "map")
@@ -32,6 +34,8 @@ public class RepeatKeyFor {
         map2.put(a, 3);
     }
 
+    // Error occured because "map" can contain only String a and String b as keys if the return is
+    // true as described in the postcondition.
     @EnsuresKeyForIf(
             expression = {"#1", "#2"},
             map = "map",

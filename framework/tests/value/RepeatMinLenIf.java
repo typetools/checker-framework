@@ -13,6 +13,8 @@ public class RepeatMinLenIf {
         return true;
     }
 
+    // Error occurred because "b" minimum length should be "6" if the return is true as described in
+    // the postcondition.
     @EnsuresMinLenIf(
             expression = {"a", "b"},
             targetValue = 6,

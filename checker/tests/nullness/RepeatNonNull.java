@@ -21,6 +21,8 @@ public class RepeatNonNull {
         value3 = "value3";
     }
 
+    // Error occurred because "value3" should not be null if the return is true as described in the
+    // postcondition.
     @EnsuresNonNullIf(
             expression = {"value1", "value2"},
             result = true)
@@ -33,6 +35,7 @@ public class RepeatNonNull {
         return true;
     }
 
+    // Error occurred because "value2" should not be null as described in the postcondition.
     @EnsuresNonNull("value1")
     @EnsuresNonNull(value = {"value2", "value3"})
     // :: error:  (contracts.postcondition.not.satisfied)
