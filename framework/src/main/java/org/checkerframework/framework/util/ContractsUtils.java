@@ -516,6 +516,7 @@ public class ContractsUtils {
                 result.addAll(getConditionalPostcondition(a));
             }
         }
+
         // Check type-system specific annotations.
         Class<ConditionalPostconditionAnnotation> metaAnnotation =
                 ConditionalPostconditionAnnotation.class;
