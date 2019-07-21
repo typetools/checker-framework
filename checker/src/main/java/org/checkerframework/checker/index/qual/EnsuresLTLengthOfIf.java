@@ -85,9 +85,7 @@ public @interface EnsuresLTLengthOfIf {
     String[] offset() default {};
 
     /**
-     * An inner annotation that makes {@link EnsuresLTLengthOfIf} annotation repeatable.
-     *
-     * <p>Programmers generally do not need to use this; it is created by Java when a programmer
+     * Programmers generally do not need to write this; it is created by Java when a programmer
      * writes more than one {@link EnsuresLTLengthOfIf} annotation at the same location.
      */
     @Documented

@@ -54,9 +54,7 @@ public @interface EnsuresKeyFor {
     String[] map();
 
     /**
-     * An inner annotation that makes {@link EnsuresKeyFor} annotation repeatable.
-     *
-     * <p>Programmers generally do not need to use this; it is created by Java when a programmer
+     * Programmers generally do not need to write this; it is created by Java when a programmer
      * writes more than one {@link EnsuresKeyFor} annotation at the same location.
      */
     @Documented
