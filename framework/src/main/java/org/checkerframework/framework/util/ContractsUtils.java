@@ -454,6 +454,7 @@ public class ContractsUtils {
         return result;
     }
 
+    /** Returns the set of repeatable postconditions. */
     private Set<Postcondition> getRepeatablePostConditionAnnotations(
             AnnotationMirror anno,
             AnnotationMirror metaAnno,
@@ -462,7 +463,7 @@ public class ContractsUtils {
         Set<Postcondition> result = new LinkedHashSet<>();
 
         List<AnnotationMirror> annotations = new ArrayList<>(elementValue.size());
-
+        // Check for multiple contracts.
         for (AnnotationValue a : elementValue) {
             if (a.getClass().getName().equals("javax.lang.model.element.AnnotationMirror")
                     || a.getClass()
@@ -471,6 +472,7 @@ public class ContractsUtils {
                 annotations.add(annotationmirrorType.cast(a.getValue()));
             }
         }
+
         for (AnnotationMirror a : annotations) {
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, false);
@@ -541,6 +543,7 @@ public class ContractsUtils {
             Map<? extends ExecutableElement, ? extends AnnotationValue> valmap;
             valmap = anno.getElementValues();
             for (ExecutableElement elem : valmap.keySet()) {
+                // Check for multiple contracts.
                 if (elem.getSimpleName().contentEquals("value")) {
                     result.addAll(
                             getRepeatableConditionalPostConditionAnnotations(
@@ -576,6 +579,7 @@ public class ContractsUtils {
         return result;
     }
 
+    /** Returns the set of conditionals repeatable postconditions. */
     private Set<ConditionalPostcondition> getRepeatableConditionalPostConditionAnnotations(
             AnnotationMirror anno,
             AnnotationMirror metaAnno,
@@ -595,14 +599,14 @@ public class ContractsUtils {
             }
         }
         for (AnnotationMirror a : annotations) {
-            List<String> expressionss =
+            List<String> expressions =
                     AnnotationUtils.getElementValueArray(a, "expression", String.class, false);
             AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
             if (postcondAnno == null) {
                 continue;
             }
             boolean annoResult = AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
-            for (String expr : expressionss) {
+            for (String expr : expressions) {
                 result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
             }
         }
