@@ -428,52 +428,63 @@ public class ContractsUtils {
             List<AnnotationValue> la =
                     AnnotationUtils.getElementValue(anno, "value", List.class, false);
 
-            {
-                List<AnnotationMirror> annotations = new ArrayList<>(la.size());
-                for (AnnotationValue a : la) {
-                    if (a.getClass().getName().equals("javax.lang.model.element.AnnotationMirror")
-                            || a.getClass()
-                                    .getName()
-                                    .equals("com.sun.tools.javac.code.Attribute$Compound")) {
-                        annotations.add(annotationmirrorType.cast(a.getValue()));
-                    }
-                }
-                for (AnnotationMirror a : annotations) {
-                    List<String> expressionss =
-                            AnnotationUtils.getElementValueArray(a, "value", String.class, false);
-                    AnnotationMirror postcondAnno =
-                            getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
-                    if (postcondAnno == null) {
-                        continue;
-                    }
-                    for (String expr : expressionss) {
-                        result.add(new Postcondition(expr, postcondAnno, a));
-                    }
+            result.addAll(
+                    getRepeatablePostConditionAnnotations(
+                            anno, metaAnno, annotationmirrorType, la));
+            List<String> expressions = new ArrayList<>(la.size());
+
+            for (AnnotationValue a : la) {
+                if (a.getClass().getName().equals("java.lang.String")
+                        || a.getClass()
+                                .getName()
+                                .equals("com.sun.tools.javac.code.Attribute$Constant")) {
+                    expressions.add(stringType.cast(a.getValue()));
                 }
             }
 
-            {
-                List<String> expressions = new ArrayList<>(la.size());
-                for (AnnotationValue a : la) {
-                    if (a.getClass().getName().equals("java.lang.String")
-                            || a.getClass()
-                                    .getName()
-                                    .equals("com.sun.tools.javac.code.Attribute$Constant")) {
-                        expressions.add(stringType.cast(a.getValue()));
-                    }
-                }
-                AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
-                if (postcondAnno == null) {
-                    continue;
-                }
-                for (String expr : expressions) {
-                    result.add(new Postcondition(expr, postcondAnno, anno));
-                }
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
+            if (postcondAnno == null) {
+                continue;
+            }
+            for (String expr : expressions) {
+                result.add(new Postcondition(expr, postcondAnno, anno));
             }
         }
 
         return result;
     }
+
+    private Set<Postcondition> getRepeatablePostConditionAnnotations(
+            AnnotationMirror anno,
+            AnnotationMirror metaAnno,
+            Class<AnnotationMirror> annotationmirrorType,
+            List<AnnotationValue> elementValue) {
+        Set<Postcondition> result = new LinkedHashSet<>();
+
+        List<AnnotationMirror> annotations = new ArrayList<>(elementValue.size());
+
+        for (AnnotationValue a : elementValue) {
+            if (a.getClass().getName().equals("javax.lang.model.element.AnnotationMirror")
+                    || a.getClass()
+                            .getName()
+                            .equals("com.sun.tools.javac.code.Attribute$Compound")) {
+                annotations.add(annotationmirrorType.cast(a.getValue()));
+            }
+        }
+        for (AnnotationMirror a : annotations) {
+            List<String> expressions =
+                    AnnotationUtils.getElementValueArray(a, "value", String.class, false);
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
+            if (postcondAnno == null) {
+                continue;
+            }
+            for (String expr : expressions) {
+                result.add(new Postcondition(expr, postcondAnno, a));
+            }
+        }
+        return result;
+    }
+
     /** Returns the set of postconditions according to the given {@link EnsuresQualifier}. */
     private Set<Postcondition> getPostcondition(AnnotationMirror ensuresAnnotation) {
         if (ensuresAnnotation == null) {
@@ -531,37 +542,9 @@ public class ContractsUtils {
             valmap = anno.getElementValues();
             for (ExecutableElement elem : valmap.keySet()) {
                 if (elem.getSimpleName().contentEquals("value")) {
-                    @SuppressWarnings("unchecked")
-                    List<AnnotationValue> la =
-                            AnnotationUtils.getElementValue(anno, "value", List.class, false);
-                    List<AnnotationMirror> annotations = new ArrayList<>(la.size());
-                    for (AnnotationValue a : la) {
-                        if (a.getClass()
-                                        .getName()
-                                        .equals("javax.lang.model.element.AnnotationMirror")
-                                || a.getClass()
-                                        .getName()
-                                        .equals("com.sun.tools.javac.code.Attribute$Compound")) {
-                            annotations.add(annotationmirrorType.cast(a.getValue()));
-                        }
-                    }
-                    for (AnnotationMirror a : annotations) {
-                        List<String> expressionss =
-                                AnnotationUtils.getElementValueArray(
-                                        a, "expression", String.class, false);
-                        AnnotationMirror postcondAnno =
-                                getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
-                        if (postcondAnno == null) {
-                            continue;
-                        }
-                        boolean annoResult =
-                                AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
-                        for (String expr : expressionss) {
-                            result.add(
-                                    new ConditionalPostcondition(
-                                            expr, annoResult, postcondAnno, a));
-                        }
-                    }
+                    result.addAll(
+                            getRepeatableConditionalPostConditionAnnotations(
+                                    anno, metaAnno, annotationmirrorType));
                 } else {
                     @SuppressWarnings("unchecked")
                     List<AnnotationValue> la =
@@ -587,10 +570,42 @@ public class ContractsUtils {
                                 new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
                     }
                 }
-                break;
             }
         }
 
+        return result;
+    }
+
+    private Set<ConditionalPostcondition> getRepeatableConditionalPostConditionAnnotations(
+            AnnotationMirror anno,
+            AnnotationMirror metaAnno,
+            Class<AnnotationMirror> annotationmirrorType) {
+        Set<ConditionalPostcondition> result = new LinkedHashSet<>();
+
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> la =
+                AnnotationUtils.getElementValue(anno, "value", List.class, false);
+        List<AnnotationMirror> annotations = new ArrayList<>(la.size());
+        for (AnnotationValue a : la) {
+            if (a.getClass().getName().equals("javax.lang.model.element.AnnotationMirror")
+                    || a.getClass()
+                            .getName()
+                            .equals("com.sun.tools.javac.code.Attribute$Compound")) {
+                annotations.add(annotationmirrorType.cast(a.getValue()));
+            }
+        }
+        for (AnnotationMirror a : annotations) {
+            List<String> expressionss =
+                    AnnotationUtils.getElementValueArray(a, "expression", String.class, false);
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
+            if (postcondAnno == null) {
+                continue;
+            }
+            boolean annoResult = AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
+            for (String expr : expressionss) {
+                result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
+            }
+        }
         return result;
     }
 
