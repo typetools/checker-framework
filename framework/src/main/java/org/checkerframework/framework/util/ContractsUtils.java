@@ -429,8 +429,7 @@ public class ContractsUtils {
                     AnnotationUtils.getElementValue(anno, "value", List.class, false);
 
             result.addAll(
-                    getRepeatablePostConditionAnnotations(
-                            anno, metaAnno, annotationmirrorType, la));
+                    getRepeatablePostConditionAnnotations(metaAnno, annotationmirrorType, la));
             List<String> expressions = new ArrayList<>(la.size());
 
             for (AnnotationValue a : la) {
@@ -454,9 +453,14 @@ public class ContractsUtils {
         return result;
     }
 
-    /** Returns the set of repeatable postconditions. */
+    /**
+     * Returns the set of repeatable postconditions.
+     *
+     * @param metaAnno set of post condition meta annotations
+     * @param annotationmirrorType the class type used to cast the element value
+     * @param elementValue the element value
+     */
     private Set<Postcondition> getRepeatablePostConditionAnnotations(
-            AnnotationMirror anno,
             AnnotationMirror metaAnno,
             Class<AnnotationMirror> annotationmirrorType,
             List<AnnotationValue> elementValue) {
@@ -579,7 +583,13 @@ public class ContractsUtils {
         return result;
     }
 
-    /** Returns the set of conditionals repeatable postconditions. */
+    /**
+     * Returns the set of repeatable conditional postconditions.
+     *
+     * @param anno set of conditional post condition annotations
+     * @param metaAnno set of conditional post condition meta annotations
+     * @param annotationmirrorType the class type used to cast the element value
+     */
     private Set<ConditionalPostcondition> getRepeatableConditionalPostConditionAnnotations(
             AnnotationMirror anno,
             AnnotationMirror metaAnno,
