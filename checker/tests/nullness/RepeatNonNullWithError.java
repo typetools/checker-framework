@@ -80,7 +80,7 @@ public class RepeatNonNullWithError {
         value1 = "value1";
         value2 = "value2";
         value3 = null; // condition not satisfied here
-        // :: error:  (contracts.postcondition.not.satisfied)
+        // :: error:  (contracts.conditional.postcondition.not.satisfied)
         return true;
     }
 
