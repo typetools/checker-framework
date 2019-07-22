@@ -48,9 +48,7 @@ public @interface EnsuresNonNull {
     String[] value();
 
     /**
-     * An inner annotation that makes {@link EnsuresNonNull} annotation repeatable.
-     *
-     * <p>Programmers generally do not need to use this; it is created by Java when a programmer
+     * Programmers generally do not need to write this; it is created by Java when a programmer
      * writes more than one {@link EnsuresNonNull} annotation at the same location.
      */
     @Documented

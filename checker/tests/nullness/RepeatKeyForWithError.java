@@ -3,19 +3,17 @@ import java.util.Map;
 import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
 import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 
-public class RepeatKeyFor {
+public class RepeatKeyForWithError {
 
     Map<String, Integer> map = new HashMap<>();
 
     public void func1(String a, String b, String c) {
         map.put(a, 1);
-        map.put(b, 2);
         map.put(c, 3);
     }
 
     public boolean func2(String a, String b, String c) {
         map.put(a, 1);
-        map.put(b, 2);
         map.put(c, 3);
         return true;
     }
@@ -58,9 +56,9 @@ public class RepeatKeyFor {
             value = {"#1", "#2"},
             map = "map")
     @EnsuresKeyFor(value = "#3", map = "map")
+    // :: error:  (contracts.postcondition.not.satisfied)
     public void withpostconditionsfunc1(String a, String b, String c) {
         map.put(a, 1);
-        map.put(b, 2);
         map.put(c, 3);
     }
 
@@ -71,8 +69,8 @@ public class RepeatKeyFor {
     @EnsuresKeyForIf(expression = "#3", map = "map", result = true)
     public boolean withcondpostconditionsfunc2(String a, String b, String c) {
         map.put(a, 1);
-        map.put(b, 2);
         map.put(c, 3);
+        // :: error:  (contracts.conditional.postcondition.not.satisfied)
         return true;
     }
 
@@ -81,9 +79,9 @@ public class RepeatKeyFor {
         @EnsuresKeyFor(value = "#2", map = "map"),
     })
     @EnsuresKeyFor(value = "#3", map = "map")
+    // :: error:  (contracts.postcondition.not.satisfied)
     public void withpostconditionfunc1(String a, String b, String c) {
         map.put(a, 1);
-        map.put(b, 2);
         map.put(c, 3);
     }
 
@@ -94,8 +92,8 @@ public class RepeatKeyFor {
     @EnsuresKeyForIf(expression = "#3", map = "map", result = true)
     public boolean withcondpostconditionfunc2(String a, String b, String c) {
         map.put(a, 1);
-        map.put(b, 2);
         map.put(c, 3);
+        // :: error:  (contracts.conditional.postcondition.not.satisfied)
         return true;
     }
 }

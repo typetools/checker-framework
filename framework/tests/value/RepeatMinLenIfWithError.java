@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.EnsuresMinLenIf;
 
-public class RepeatMinLenIf {
+public class RepeatMinLenIfWithError {
 
     protected String a;
     protected String b;
@@ -9,7 +9,7 @@ public class RepeatMinLenIf {
     public boolean func1() {
         a = "checker";
         c = "framework";
-        b = "opensource";
+        b = "hello";
         return true;
     }
 
@@ -17,7 +17,7 @@ public class RepeatMinLenIf {
             expression = {"a", "b"},
             targetValue = 6,
             result = true)
-    @EnsuresMinLenIf(expression = "c", targetValue = 4, result = true)
+    @EnsuresMinLenIf(expression = "c", targetValue = 6, result = true)
     public boolean client1() {
         return withcondpostconditionsfunc1();
     }
@@ -26,7 +26,7 @@ public class RepeatMinLenIf {
         @EnsuresMinLenIf(expression = "a", targetValue = 6, result = true),
         @EnsuresMinLenIf(expression = "b", targetValue = 6, result = true)
     })
-    @EnsuresMinLenIf(expression = "c", targetValue = 4, result = true)
+    @EnsuresMinLenIf(expression = "c", targetValue = 6, result = true)
     public boolean client2() {
         return withcondpostconditionfunc1();
     }
@@ -35,11 +35,12 @@ public class RepeatMinLenIf {
             expression = {"a", "b"},
             targetValue = 6,
             result = true)
-    @EnsuresMinLenIf(expression = "c", targetValue = 4, result = true)
+    @EnsuresMinLenIf(expression = "c", targetValue = 6, result = true)
     public boolean withcondpostconditionsfunc1() {
         a = "checker";
         c = "framework";
-        b = "opensource";
+        b = "hello"; // condition not satisfied here
+        // :: error:  (contracts.conditional.postcondition.not.satisfied)
         return true;
     }
 
@@ -47,11 +48,12 @@ public class RepeatMinLenIf {
         @EnsuresMinLenIf(expression = "a", targetValue = 6, result = true),
         @EnsuresMinLenIf(expression = "b", targetValue = 6, result = true)
     })
-    @EnsuresMinLenIf(expression = "c", targetValue = 4, result = true)
+    @EnsuresMinLenIf(expression = "c", targetValue = 6, result = true)
     public boolean withcondpostconditionfunc1() {
         a = "checker";
         c = "framework";
-        b = "opensource";
+        b = "hello"; // condition not satisfied here
+        // :: error:  (contracts.conditional.postcondition.not.satisfied)
         return true;
     }
 }
