@@ -3,7 +3,6 @@ package org.checkerframework.framework.util;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
-import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -149,9 +148,12 @@ public class FlowExpressionParseUtil {
             } else if (expr.isMethodCallExpr()) {
                 return parseMethodCall(expr.asMethodCallExpr(), context, path, env);
             } else if (expr.isFieldAccessExpr()) {
-                return parseFieldAccess(expr.asFieldAccessExpr(), env, context, path);
+                return parseMemberSelect(expr.asFieldAccessExpr(), env, context, path);
             } else if (expr.isClassExpr() && !context.parsingMember) {
-                return parseClassExpression(expr.asClassExpr(), env, path);
+                return parseHelper(
+                        StaticJavaParser.parseExpression(expr.asClassExpr().getTypeAsString()),
+                        context,
+                        path);
             } else {
                 String message;
                 if (expr.toString().equals("_param_0")) {
@@ -181,7 +183,7 @@ public class FlowExpressionParseUtil {
         return updatedExpression;
     }
 
-    private static Receiver parseFieldAccess(
+    private static Receiver parseMemberSelect(
             FieldAccessExpr expr,
             ProcessingEnvironment env,
             FlowExpressionContext context,
@@ -189,11 +191,13 @@ public class FlowExpressionParseUtil {
             throws FlowExpressionParseException {
         Resolver resolver = new Resolver(env);
 
-        // A class with its package specified, like "java.lang.String", is treated as field access.
-        // This code checks it and parses it as a class expression if necessary.
-        if (ElementUtils.getType(resolver.findClass(expr.getNameAsString(), path)) != null) {
-            return parseHelper(
-                    StaticJavaParser.parseExpression(expr.toString() + ".class"), context, path);
+        Symbol.PackageSymbol packageSymbol = resolver.findPackage(expr.getScope().toString(), path);
+        if (packageSymbol != null) {
+            ClassSymbol classSymbol =
+                    resolver.findClassInPackage(expr.getNameAsString(), packageSymbol, path);
+            if (classSymbol != null) {
+                return new ClassName(classSymbol.asType());
+            }
         }
 
         Receiver receiver = parseHelper(expr.getScope(), context, path);
@@ -201,16 +205,6 @@ public class FlowExpressionParseUtil {
         // Parse the rest, with a new receiver.
         FlowExpressionContext newContext = context.copyChangeToParsingMemberOfReceiver(receiver);
         return parseHelper(expr.getNameAsExpression(), newContext, path);
-    }
-
-    private static Receiver parseClassExpression(
-            ClassExpr expr, ProcessingEnvironment env, TreePath path) {
-        Resolver resolver = new Resolver(env);
-        String clazz = expr.getTypeAsString();
-        // Only search for the class name, not the entire path. Searching for "java.lang.String"
-        // instead of "String" fails.
-        Element classElem = resolver.findClass(clazz.substring(clazz.lastIndexOf('.') + 1), path);
-        return new ClassName(ElementUtils.getType(classElem));
     }
 
     private static Receiver parseThis(FlowExpressionContext context) {
