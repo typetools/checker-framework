@@ -1370,7 +1370,7 @@ public final class Long extends Number implements Comparable<Long> {
      *     the specified value is itself equal to zero.
      * @since 1.5
      */
-    public static long highestOneBit(@PolySigned long i) {
+    public static long highestOneBit(@UnknownSignedness long i) {
         // HD, Figure 3-1
         i |= (i >>  1);
         i |= (i >>  2);
@@ -1394,7 +1394,7 @@ public final class Long extends Number implements Comparable<Long> {
      *     the specified value is itself equal to zero.
      * @since 1.5
      */
-    public static long lowestOneBit(@PolySigned long i) {
+    public static long lowestOneBit(@UnknownSignedness long i) {
         // HD, Section 2-1
         return i & -i;
     }
@@ -1527,7 +1527,7 @@ public final class Long extends Number implements Comparable<Long> {
      *     specified number of bits.
      * @since 1.5
      */
-    public static @Unsigned long rotateRight(@Unsigned long i, int distance) {
+    public static @PolySigned long rotateRight(@PolySigned long i, int distance) {
         return (i >>> distance) | (i << -distance);
     }
 
