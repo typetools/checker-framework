@@ -32,7 +32,9 @@ public @interface EnsuresLockHeld {
     String[] value();
 
     /**
-     * Programmers generally do not need to write this; it is created by Java when a programmer
+     * An annotation that makes {@link EnsuresLockHeld} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this; it is created by Java when a programmer
      * writes more than one {@link EnsuresLockHeld} annotation at the same location.
      */
     @Documented

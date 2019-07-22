@@ -41,7 +41,9 @@ public @interface EnsuresMinLenIf {
     int targetValue() default 0;
 
     /**
-     * Programmers generally do not need to write this; it is created by Java when a programmer
+     * An annotation that makes {@link EnsuresMinLenIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this; it is created by Java when a programmer
      * writes more than one {@link EnsuresMinLenIf} annotation at the same location.
      */
     @ConditionalPostconditionAnnotation(qualifier = MinLen.class)
