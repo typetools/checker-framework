@@ -95,7 +95,7 @@ public class FlowExpressionParseUtil {
         } catch (ParseProblemException e) {
             throw constructParserException(expression, "is an invalid expression");
         }
-        Receiver result = parseHelper(expr, context, localScope);
+        Receiver result = getReceiverFromExpression(expr, context, localScope);
         if (result instanceof ClassName && !expression.endsWith("class")) {
             throw constructParserException(
                     expression, "a class name cannot terminate a flow expression string");
@@ -103,7 +103,7 @@ public class FlowExpressionParseUtil {
         return result;
     }
 
-    private static Receiver parseHelper(
+    private static Receiver getReceiverFromExpression(
             Expression expr, FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
 
@@ -132,25 +132,29 @@ public class FlowExpressionParseUtil {
             } else if (expr.isThisExpr()
                     && !expr.asThisExpr().getTypeName().isPresent()
                     && !context.parsingMember) {
-                return parseThis(context);
+                return getThisReceiver(context);
             } else if (expr.isSuperExpr()) {
-                return parseSuper(types, context);
+                return getSuperReceiver(types, context);
             } else if (expr.isEnclosedExpr()) {
-                return parseHelper(expr.asEnclosedExpr().getInner(), context, path);
+                return getReceiverFromExpression(expr.asEnclosedExpr().getInner(), context, path);
             } else if (expr.isArrayAccessExpr()) {
-                return parseArray(expr.asArrayAccessExpr(), context, path);
+                return getArrayAccessReceiver(expr.asArrayAccessExpr(), context, path);
             } else if (expr.isNameExpr()
                     && expr.asNameExpr().getNameAsString().startsWith("_param_")
                     && !context.parsingMember) {
-                return parseParameter(expr.asNameExpr().getNameAsString(), context);
+                return getParameterReceiver(expr.asNameExpr().getNameAsString(), context);
             } else if (expr.isNameExpr()) {
-                return parseIdentifier(expr.asNameExpr().getNameAsString(), env, path, context);
+                return getIdentifierReceiver(
+                        expr.asNameExpr().getNameAsString(), env, path, context);
             } else if (expr.isMethodCallExpr()) {
-                return parseMethodCall(expr.asMethodCallExpr(), context, path, env);
+                return getMethodCallReceiver(expr.asMethodCallExpr(), context, path, env);
             } else if (expr.isFieldAccessExpr()) {
-                return parseMemberSelect(expr.asFieldAccessExpr(), env, context, path);
+                return getMemberSelectReceiver(expr.asFieldAccessExpr(), env, context, path);
             } else if (expr.isClassExpr() && !context.parsingMember) {
-                return parseHelper(
+                // Class literals.
+                // The parsing returns a NameExpr to be handled by getIdentifierReceiver
+                // or a FieldAccessExpr to be handled by getMemberSelectReceiver.
+                return getReceiverFromExpression(
                         StaticJavaParser.parseExpression(expr.asClassExpr().getTypeAsString()),
                         context,
                         path);
@@ -183,7 +187,8 @@ public class FlowExpressionParseUtil {
         return updatedExpression;
     }
 
-    private static Receiver parseMemberSelect(
+    /** @param expr a field access, a class within a package, or a package within another package */
+    private static Receiver getMemberSelectReceiver(
             FieldAccessExpr expr,
             ProcessingEnvironment env,
             FlowExpressionContext context,
@@ -198,16 +203,22 @@ public class FlowExpressionParseUtil {
             if (classSymbol != null) {
                 return new ClassName(classSymbol.asType());
             }
+            throw constructParserException(
+                    expr.toString(),
+                    "could not find class "
+                            + expr.getNameAsString()
+                            + " inside "
+                            + expr.getScope().toString());
         }
 
-        Receiver receiver = parseHelper(expr.getScope(), context, path);
+        Receiver receiver = getReceiverFromExpression(expr.getScope(), context, path);
 
         // Parse the rest, with a new receiver.
         FlowExpressionContext newContext = context.copyChangeToParsingMemberOfReceiver(receiver);
-        return parseHelper(expr.getNameAsExpression(), newContext, path);
+        return getReceiverFromExpression(expr.getNameAsExpression(), newContext, path);
     }
 
-    private static Receiver parseThis(FlowExpressionContext context) {
+    private static Receiver getThisReceiver(FlowExpressionContext context) {
         if (!(context.receiver == null || context.receiver.containsUnknown())) {
             // "this" is the receiver of the context
             return context.receiver;
@@ -215,7 +226,7 @@ public class FlowExpressionParseUtil {
         return new ThisReference(context.receiver == null ? null : context.receiver.getType());
     }
 
-    private static Receiver parseSuper(Types types, FlowExpressionContext context)
+    private static Receiver getSuperReceiver(Types types, FlowExpressionContext context)
             throws FlowExpressionParseException {
         // super literal
         List<? extends TypeMirror> superTypes = types.directSupertypes(context.receiver.getType());
@@ -234,7 +245,7 @@ public class FlowExpressionParseUtil {
         throw constructParserException("super", "super class not found");
     }
 
-    private static Receiver parseIdentifier(
+    private static Receiver getIdentifierReceiver(
             String s, ProcessingEnvironment env, TreePath path, FlowExpressionContext context)
             throws FlowExpressionParseException {
         Resolver resolver = new Resolver(env);
@@ -327,12 +338,12 @@ public class FlowExpressionParseUtil {
         return new FieldAccess(locationOfField, fieldType, fieldElem);
     }
 
-    private static Receiver parseParameter(String s, FlowExpressionContext context)
+    private static Receiver getParameterReceiver(String s, FlowExpressionContext context)
             throws FlowExpressionParseException {
         if (context.arguments == null) {
             throw constructParserException(s, "no parameter found");
         }
-        int idx = Integer.parseInt(s.substring(7)); // "_param_".length = 7
+        int idx = Integer.parseInt(s.substring(7)); // "_param_".length() = 7
 
         if (idx > context.arguments.size()) {
             throw new FlowExpressionParseException(
@@ -341,7 +352,7 @@ public class FlowExpressionParseUtil {
         return context.arguments.get(idx - 1);
     }
 
-    private static Receiver parseMethodCall(
+    private static Receiver getMethodCallReceiver(
             MethodCallExpr expr,
             FlowExpressionContext context,
             TreePath path,
@@ -352,10 +363,10 @@ public class FlowExpressionParseUtil {
 
         // methods with scope, like "item.get()", need special treatment.
         if (expr.getScope().isPresent()) {
-            Receiver receiver = parseHelper(expr.getScope().get(), context, path);
+            Receiver receiver = getReceiverFromExpression(expr.getScope().get(), context, path);
             FlowExpressionContext newContext =
                     context.copyChangeToParsingMemberOfReceiver(receiver);
-            return parseHelper(expr.removeScope(), newContext, path);
+            return getReceiverFromExpression(expr.removeScope(), newContext, path);
         }
 
         String methodName = expr.getNameAsString();
@@ -364,7 +375,8 @@ public class FlowExpressionParseUtil {
         List<Receiver> parameters = new ArrayList<>();
 
         for (Expression expression : expr.getArguments()) {
-            parameters.add(parseHelper(expression, context.copyAndUseOuterReceiver(), path));
+            parameters.add(
+                    getReceiverFromExpression(expression, context.copyAndUseOuterReceiver(), path));
         }
 
         // get types for parameters
@@ -451,13 +463,13 @@ public class FlowExpressionParseUtil {
         }
     }
 
-    private static Receiver parseArray(
+    private static Receiver getArrayAccessReceiver(
             ArrayAccessExpr expr, FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
 
-        Receiver receiver = parseHelper(expr.getName(), context, path);
+        Receiver receiver = getReceiverFromExpression(expr.getName(), context, path);
         FlowExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
-        Receiver index = parseHelper(expr.getIndex(), contextForIndex, path);
+        Receiver index = getReceiverFromExpression(expr.getIndex(), contextForIndex, path);
         TypeMirror receiverType = receiver.getType();
         if (!(receiverType instanceof ArrayType)) {
             throw constructParserException(
