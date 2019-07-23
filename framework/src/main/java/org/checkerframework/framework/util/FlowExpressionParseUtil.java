@@ -30,7 +30,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -63,7 +62,11 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
 
 /**
  * A collection of helper methods to parse a string that represents a restricted Java expression.
- * Such expressions can be found in annotations (e.g., to specify a pre- or postcondition).
+ *
+ * @checker_framework.manual #java-expressions-as-arguments Writing Java expressions as annotation
+ *     arguments
+ * @checker_framework.manual #dependent-types Annotations whose argument is a Java expression
+ *     (dependent type annotations)
  */
 public class FlowExpressionParseUtil {
 
@@ -91,7 +94,7 @@ public class FlowExpressionParseUtil {
         context = context.copyAndSetUseLocalScope(useLocalScope);
         Expression expr;
         try {
-            expr = StaticJavaParser.parseExpression(noHashTags(expression));
+            expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
         } catch (ParseProblemException e) {
             throw constructParserException(expression, "is an invalid expression");
         }
@@ -103,7 +106,11 @@ public class FlowExpressionParseUtil {
         return result;
     }
 
-    /** @return the Receiver of the passed expression */
+    /**
+     * Converts the passed Javaparser Expression to a {@link Receiver}.
+     *
+     * @return the Receiver of the passed expression
+     */
     private static Receiver getReceiverFromExpression(
             Expression expr, FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
@@ -125,11 +132,9 @@ public class FlowExpressionParseUtil {
                         types.getPrimitiveType(TypeKind.DOUBLE),
                         expr.asDoubleLiteralExpr().asDouble());
             } else if (expr.isStringLiteralExpr() && !context.parsingMember) {
-                TypeElement stringTypeElem =
-                        env.getElementUtils().getTypeElement("java.lang.String");
-                return new ValueLiteral(
-                        types.getDeclaredType(stringTypeElem),
-                        expr.asStringLiteralExpr().asString());
+                TypeMirror stringTM =
+                        TypesUtils.typeFromClass(String.class, types, env.getElementUtils());
+                return new ValueLiteral(stringTM, expr.asStringLiteralExpr().asString());
             } else if (expr.isThisExpr()
                     && !expr.asThisExpr().getTypeName().isPresent()
                     && !context.parsingMember) {
@@ -177,8 +182,11 @@ public class FlowExpressionParseUtil {
         return null;
     }
 
-    /** Replaces every occurrence of "#(number)" with "_param_(number)" */
-    private static String noHashTags(String expression) {
+    /**
+     * Replaces every occurrence of "#(number)" with "_param_(number)" where number is an index of a
+     * parameter.
+     */
+    private static String replaceParameterSyntax(String expression) {
         String updatedExpression = expression;
 
         for (Integer integer : parameterIndices(expression)) {
@@ -188,7 +196,7 @@ public class FlowExpressionParseUtil {
         return updatedExpression;
     }
 
-    /** @param expr a field access, a class within a package, or a package within another package */
+    /** @param expr a field access, a fully qualified class name, or qualified class name */
     private static Receiver getMemberSelectReceiver(
             FieldAccessExpr expr,
             ProcessingEnvironment env,
