@@ -143,9 +143,6 @@ public class FlowExpressionParseUtil {
                 return getReceiverFromExpression(expr.asEnclosedExpr().getInner(), context, path);
             } else if (expr.isArrayAccessExpr()) {
                 return getArrayAccessReceiver(expr.asArrayAccessExpr(), context, path);
-            } else if (expr.isNameExpr()
-                    && expr.asNameExpr().getNameAsString().startsWith("_param_")) {
-                return getParameterReceiver(expr.asNameExpr().getNameAsString(), context);
             } else if (expr.isNameExpr()) {
                 return getIdentifierReceiver(
                         expr.asNameExpr().getNameAsString(), env, path, context);
@@ -259,7 +256,9 @@ public class FlowExpressionParseUtil {
             String s, ProcessingEnvironment env, TreePath path, FlowExpressionContext context)
             throws FlowExpressionParseException {
         Resolver resolver = new Resolver(env);
-        if (!context.parsingMember && context.useLocalScope) {
+        if (!context.parsingMember && s.startsWith("_param_")) {
+            return getParameterReceiver(s, context);
+        } else if (!context.parsingMember && context.useLocalScope) {
             // Attempt to match a local variable within the scope of the
             // given path before attempting to match a field.
             VariableElement varElem = resolver.findLocalVariableOrParameterOrField(s, path);
