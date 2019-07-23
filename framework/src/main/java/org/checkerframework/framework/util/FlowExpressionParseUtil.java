@@ -121,23 +121,21 @@ public class FlowExpressionParseUtil {
         if (expr != null) {
             if (expr.isNullLiteralExpr()) {
                 return new ValueLiteral(types.getNullType(), (Object) null);
-            } else if (expr.isIntegerLiteralExpr() && !context.parsingMember) {
+            } else if (expr.isIntegerLiteralExpr()) {
                 return new ValueLiteral(
                         types.getPrimitiveType(TypeKind.INT), expr.asIntegerLiteralExpr().asInt());
-            } else if (expr.isLongLiteralExpr() && !context.parsingMember) {
+            } else if (expr.isLongLiteralExpr()) {
                 return new ValueLiteral(
                         types.getPrimitiveType(TypeKind.LONG), expr.asLongLiteralExpr().asLong());
-            } else if (expr.isDoubleLiteralExpr() && !context.parsingMember) {
+            } else if (expr.isDoubleLiteralExpr()) {
                 return new ValueLiteral(
                         types.getPrimitiveType(TypeKind.DOUBLE),
                         expr.asDoubleLiteralExpr().asDouble());
-            } else if (expr.isStringLiteralExpr() && !context.parsingMember) {
+            } else if (expr.isStringLiteralExpr()) {
                 TypeMirror stringTM =
                         TypesUtils.typeFromClass(String.class, types, env.getElementUtils());
                 return new ValueLiteral(stringTM, expr.asStringLiteralExpr().asString());
-            } else if (expr.isThisExpr()
-                    && !expr.asThisExpr().getTypeName().isPresent()
-                    && !context.parsingMember) {
+            } else if (expr.isThisExpr() && !expr.asThisExpr().getTypeName().isPresent()) {
                 return getThisReceiver(context);
             } else if (expr.isSuperExpr()) {
                 return getSuperReceiver(types, context);
@@ -146,8 +144,7 @@ public class FlowExpressionParseUtil {
             } else if (expr.isArrayAccessExpr()) {
                 return getArrayAccessReceiver(expr.asArrayAccessExpr(), context, path);
             } else if (expr.isNameExpr()
-                    && expr.asNameExpr().getNameAsString().startsWith("_param_")
-                    && !context.parsingMember) {
+                    && expr.asNameExpr().getNameAsString().startsWith("_param_")) {
                 return getParameterReceiver(expr.asNameExpr().getNameAsString(), context);
             } else if (expr.isNameExpr()) {
                 return getIdentifierReceiver(
@@ -156,7 +153,7 @@ public class FlowExpressionParseUtil {
                 return getMethodCallReceiver(expr.asMethodCallExpr(), context, path, env);
             } else if (expr.isFieldAccessExpr()) {
                 return getMemberSelectReceiver(expr.asFieldAccessExpr(), env, context, path);
-            } else if (expr.isClassExpr() && !context.parsingMember) {
+            } else if (expr.isClassExpr()) {
                 // Class literals.
                 // The parsing returns a NameExpr to be handled by getIdentifierReceiver
                 // or a FieldAccessExpr to be handled by getMemberSelectReceiver.
