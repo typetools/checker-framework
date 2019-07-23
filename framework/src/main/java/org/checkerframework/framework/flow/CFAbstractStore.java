@@ -256,8 +256,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Add the annotation {@code a} for the expression {@code r} (correctly deciding where to store
-     * the information depending on the type of the expression {@code r}).
+     * Add the annotation {@code newAnno} for the expression {@code r} (correctly deciding where to
+     * store the information depending on the type of the expression {@code r}).
      *
      * <p>This method does not take care of removing other information that might be influenced by
      * changes to certain parts of the state.
@@ -269,7 +269,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * <p>Note that this happens per hierarchy, and if the store already contains information about
      * a hierarchy other than {@code a}s hierarchy, that information is preserved.
      */
-    public void insertGlb(FlowExpressions.Receiver r, AnnotationMirror newAnno) {
+    public void insertOrRefine(FlowExpressions.Receiver r, AnnotationMirror newAnno) {
         if (!canInsertReceiver(r)) {
             return;
         }
