@@ -302,8 +302,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return true;
         } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
             NewClassTree newClassTree = (NewClassTree) tree;
-            Element elt = TreeUtils.elementFromUse(newClassTree).getEnclosingElement();
-            Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds((TypeElement) elt);
+            TypeMirror typeMirror = TreeUtils.typeOf(newClassTree);
+            Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(typeMirror);
             // Don't issue an invalid type warning for creations of objects of interned classes;
             // instead, issue an interned.object.creation if required.
             if (AnnotationUtils.containsSameByClass(bounds, Interned.class)) {
@@ -329,16 +329,22 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (constructor.getReturnType().hasAnnotation(Interned.class)) {
             return true;
         }
-        if (getCurrentPath() != null
-                && getCurrentPath().getParentPath() != null
-                && getCurrentPath().getParentPath().getParentPath() != null) {
-            Tree parent = getCurrentPath().getParentPath().getParentPath().getLeaf();
-            if (parent.getKind() == Tree.Kind.METHOD_INVOCATION) {
-                // Allow new MyInternType().intern(), where "intern" is any method marked
-                // @InternMethod.
-                ExecutableElement elt = TreeUtils.elementFromUse((MethodInvocationTree) parent);
-                if (atypeFactory.getDeclAnnotation(elt, InternMethod.class) != null) {
-                    return true;
+        TreePath path = getCurrentPath();
+        if (path != null) {
+            TreePath parentPath = path.getParentPath();
+            while (parentPath != null
+                    && parentPath.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
+                parentPath = parentPath.getParentPath();
+            }
+            if (parentPath != null && parentPath.getParentPath() != null) {
+                Tree parent = parentPath.getParentPath().getLeaf();
+                if (parent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                    // Allow new MyInternType().intern(), where "intern" is any method marked
+                    // @InternMethod.
+                    ExecutableElement elt = TreeUtils.elementFromUse((MethodInvocationTree) parent);
+                    if (atypeFactory.getDeclAnnotation(elt, InternMethod.class) != null) {
+                        return true;
+                    }
                 }
             }
         }
@@ -838,8 +844,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                     tm.getClass());
         }
         if (classElt != null) {
-            Set<AnnotationMirror> bound =
-                    atypeFactory.getTypeDeclarationBounds((TypeElement) classElt);
+            Set<AnnotationMirror> bound = atypeFactory.getTypeDeclarationBounds(tm);
             return AnnotationUtils.containsSameByClass(bound, Interned.class);
         }
         return false;
