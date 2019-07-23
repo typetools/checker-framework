@@ -103,6 +103,7 @@ public class FlowExpressionParseUtil {
         return result;
     }
 
+    /** @return the Receiver of the passed expression */
     private static Receiver getReceiverFromExpression(
             Expression expr, FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
@@ -245,6 +246,10 @@ public class FlowExpressionParseUtil {
         throw constructParserException("super", "super class not found");
     }
 
+    /**
+     * @param s a String representing an identifier (name expression, no dots in it)
+     * @return the receiver of the passed String name
+     */
     private static Receiver getIdentifierReceiver(
             String s, ProcessingEnvironment env, TreePath path, FlowExpressionContext context)
             throws FlowExpressionParseException {
@@ -338,6 +343,10 @@ public class FlowExpressionParseUtil {
         return new FieldAccess(locationOfField, fieldType, fieldElem);
     }
 
+    /**
+     * @param s A String that starts with "_param_"
+     * @return The receiver of the parameter passed
+     */
     private static Receiver getParameterReceiver(String s, FlowExpressionContext context)
             throws FlowExpressionParseException {
         if (context.arguments == null) {
@@ -352,6 +361,7 @@ public class FlowExpressionParseUtil {
         return context.arguments.get(idx - 1);
     }
 
+    /** @return the receiver of the passed MethodCallExpr */
     private static Receiver getMethodCallReceiver(
             MethodCallExpr expr,
             FlowExpressionContext context,
@@ -463,6 +473,7 @@ public class FlowExpressionParseUtil {
         }
     }
 
+    /** @return the Receiver of the passed ArrayAccessExpr */
     private static Receiver getArrayAccessReceiver(
             ArrayAccessExpr expr, FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
