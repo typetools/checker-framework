@@ -11,7 +11,7 @@ public class Uninit8 {
     }
 
     @EnsuresNonNull("f")
-    void setFields(@Raw @UnknownInitialization Uninit8 this) {
+    void setFields(@UnknownInitialization Uninit8 this) {
         f = new Object();
     }
 }

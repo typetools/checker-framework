@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class PostconditionBug {
 
-    void a(@UnknownInitialization @Raw PostconditionBug this) {
+    void a(@UnknownInitialization PostconditionBug this) {
         @NonNull String f = "abc";
         // :: error: (assignment.type.incompatible)
         f = null;

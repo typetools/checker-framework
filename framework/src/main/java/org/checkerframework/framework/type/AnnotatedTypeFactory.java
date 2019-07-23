@@ -129,7 +129,7 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
  *
  * This implementation only adds qualifiers explicitly specified by the programmer. Subclasses
  * override {@link #addComputedTypeAnnotations} to add defaults, implicits, flow-sensitive
- * refinemont, and type-system-specific rules.
+ * refinement, and type-system-specific rules.
  *
  * <p>Unless otherwise indicated, each public method in this class returns a "fully annotated" type,
  * which is one that has an annotation in all positions.
@@ -1159,14 +1159,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return type;
     }
 
-    /** Returns the set of qualifiers that are the upper bounds for a use of the type. */
-    public Set<AnnotationMirror> getTypeDeclarationBounds(AnnotatedTypeMirror type) {
-        return qualifierUpperBounds.getBoundQualifiers(type.getUnderlyingType());
-    }
-
-    /** Returns the set of qualifiers that are the upper bounds for a use of the type. */
-    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeElement typeElement) {
-        return qualifierUpperBounds.getBoundQualifiers(typeElement.asType());
+    /**
+     * Returns the set of qualifiers that are the upper bounds for a use of the type.
+     *
+     * @param type
+     */
+    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
+        return qualifierUpperBounds.getBoundQualifiers(type);
     }
 
     /**
@@ -1194,7 +1193,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror getTypeOfExtendsImplements(Tree clause) {
         AnnotatedTypeMirror fromTypeTree = fromTypeTree(clause);
-        Set<AnnotationMirror> bound = getTypeDeclarationBounds(fromTypeTree);
+        Set<AnnotationMirror> bound = getTypeDeclarationBounds(fromTypeTree.getUnderlyingType());
         fromTypeTree.addMissingAnnotations(bound);
         return fromTypeTree;
     }
@@ -1739,7 +1738,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (path == null) {
                     // The path is null if the field is in a compilation unit we haven't
                     // processed yet. TODO: is there a better way?
-                    // This only arises in the Nullness Checker when substituting rawness.
                     return null;
                 }
                 TypeElement typeElt = ElementUtils.enclosingClass(element);
@@ -2147,7 +2145,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // arguments.  So, we just copy the annotations from the bound of the declared type to the
         // new bound.
         final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
-        newBound.replaceAnnotations(classWildcardArg.getExtendsBound().getAnnotations());
+        Set<AnnotationMirror> newAnnos = AnnotationUtils.createAnnotationSet();
+        Set<AnnotationMirror> typeBoundAnnos =
+                getTypeDeclarationBounds(newBound.getUnderlyingType());
+        Set<AnnotationMirror> wildcardBoundAnnos =
+                classWildcardArg.getExtendsBound().getAnnotations();
+        for (AnnotationMirror typeBoundAnno : typeBoundAnnos) {
+            AnnotationMirror wildcardAnno =
+                    qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, typeBoundAnno);
+            if (qualHierarchy.isSubtype(typeBoundAnno, wildcardAnno)) {
+                newAnnos.add(typeBoundAnno);
+            } else {
+                newAnnos.add(wildcardAnno);
+            }
+        }
+        newBound.replaceAnnotations(newAnnos);
 
         classWildcardArg.setExtendsBound(newBound);
     }

@@ -16,6 +16,8 @@ public @Interned class InternedClass2 {
     InternedClass2 factory(int i) {
         // :: error: (interned.object.creation) :: error: (method.invocation.invalid)
         new InternedClass2(i).someMethod(); // error, call to constructor on for @Interned class.
+        (new InternedClass2(i)).intern(); // ok, call to constructor receiver to @InternMethod
+        ((((new InternedClass2(i))))).intern(); // ok, call to constructor receiver to @InternMethod
         return new InternedClass2(i).intern(); // ok, call to constructor receiver to @InternMethod
     }
 
@@ -64,5 +66,12 @@ public @Interned class InternedClass2 {
     @Override
     public int hashCode() {
         return i;
+    }
+
+    public boolean hasNodeOfType(Class<?> type) {
+        if (type == this.getClass()) {
+            return true;
+        }
+        return false;
     }
 }
