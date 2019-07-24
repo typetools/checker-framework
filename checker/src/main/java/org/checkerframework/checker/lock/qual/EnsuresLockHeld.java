@@ -32,9 +32,9 @@ public @interface EnsuresLockHeld {
     String[] value();
 
     /**
-     * An annotation that makes {@link EnsuresLockHeld} annotation repeatable.
+     * A wrapper annotation that makes the {@link EnsuresLockHeld} annotation repeatable.
      *
-     * <p>Programmers generally do not need to write this; it is created by Java when a programmer
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
      * writes more than one {@link EnsuresLockHeld} annotation at the same location.
      */
     @Documented
@@ -43,7 +43,7 @@ public @interface EnsuresLockHeld {
     @PostconditionAnnotation(qualifier = LockHeld.class)
     @InheritedAnnotation
     @interface List {
-        /** The array that contains all the repeatable annotations. */
+        /** The repeatable annotations. */
         EnsuresLockHeld[] value();
     }
 }

@@ -57,9 +57,9 @@ public @interface EnsuresKeyForIf {
     String[] map();
 
     /**
-     * An annotation that makes {@link EnsuresKeyForIf} annotation repeatable.
+     * A wrapper annotation that makes the {@link EnsuresKeyForIf} annotation repeatable.
      *
-     * <p>Programmers generally do not need to write this; it is created by Java when a programmer
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
      * writes more than one {@link EnsuresKeyForIf} annotation at the same location.
      */
     @Documented
@@ -68,7 +68,7 @@ public @interface EnsuresKeyForIf {
     @ConditionalPostconditionAnnotation(qualifier = KeyFor.class)
     @InheritedAnnotation
     @interface List {
-        /** The array that contains all the repeatable annotations. */
+        /** The repeatable annotations. */
         EnsuresKeyForIf[] value();
     }
 }

@@ -82,9 +82,9 @@ public @interface EnsuresLTLengthOf {
     String[] offset() default {};
 
     /**
-     * An annotation that makes {@link EnsuresLTLengthOf} annotation repeatable.
+     * A wrapper annotation that makes the {@link EnsuresLTLengthOf} annotation repeatable.
      *
-     * <p>Programmers generally do not need to write this; it is created by Java when a programmer
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
      * writes more than one {@link EnsuresLTLengthOf} annotation at the same location.
      */
     @Documented
@@ -93,7 +93,7 @@ public @interface EnsuresLTLengthOf {
     @PostconditionAnnotation(qualifier = LTLengthOf.class)
     @InheritedAnnotation
     @interface List {
-        /** The array that contains all the repeatable annotations. */
+        /** The repeatable annotations. */
         EnsuresLTLengthOf[] value();
     }
 }

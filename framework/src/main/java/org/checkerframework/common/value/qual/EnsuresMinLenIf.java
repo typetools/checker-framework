@@ -41,9 +41,9 @@ public @interface EnsuresMinLenIf {
     int targetValue() default 0;
 
     /**
-     * An annotation that makes {@link EnsuresMinLenIf} annotation repeatable.
+     * A wrapper annotation that makes the {@link EnsuresMinLenIf} annotation repeatable.
      *
-     * <p>Programmers generally do not need to write this; it is created by Java when a programmer
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
      * writes more than one {@link EnsuresMinLenIf} annotation at the same location.
      */
     @ConditionalPostconditionAnnotation(qualifier = MinLen.class)
@@ -51,7 +51,7 @@ public @interface EnsuresMinLenIf {
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @InheritedAnnotation
     public @interface List {
-        /** The array that contains all the repeatable annotations. */
+        /** The repeatable annotations. */
         EnsuresMinLenIf[] value();
     }
 }

@@ -54,9 +54,9 @@ public @interface EnsuresKeyFor {
     String[] map();
 
     /**
-     * An annotation that makes {@link EnsuresKeyFor} annotation repeatable.
+     * A wrapper annotation that makes the {@link EnsuresKeyFor} annotation repeatable.
      *
-     * <p>Programmers generally do not need to write this; it is created by Java when a programmer
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
      * writes more than one {@link EnsuresKeyFor} annotation at the same location.
      */
     @Documented
@@ -65,7 +65,7 @@ public @interface EnsuresKeyFor {
     @PostconditionAnnotation(qualifier = KeyFor.class)
     @InheritedAnnotation
     @interface List {
-        /** The array that contains all the repeatable annotations. */
+        /** The repeatable annotations. */
         EnsuresKeyFor[] value();
     }
 }

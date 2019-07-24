@@ -39,9 +39,9 @@ public @interface EnsuresLockHeldIf {
     boolean result();
 
     /**
-     * An annotation that makes {@link EnsuresLockHeldIf} annotation repeatable.
+     * A wrapper annotation that makes the {@link EnsuresLockHeldIf} annotation repeatable.
      *
-     * <p>Programmers generally do not need to write this; it is created by Java when a programmer
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
      * writes more than one {@link EnsuresLockHeldIf} annotation at the same location.
      */
     @Documented
@@ -50,7 +50,7 @@ public @interface EnsuresLockHeldIf {
     @ConditionalPostconditionAnnotation(qualifier = LockHeld.class)
     @InheritedAnnotation
     @interface List {
-        /** The array that contains all the repeatable annotations. */
+        /** The repeatable annotations. */
         EnsuresLockHeldIf[] value();
     }
 }

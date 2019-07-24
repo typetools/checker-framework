@@ -81,9 +81,9 @@ public @interface EnsuresNonNullIf {
     boolean result();
 
     /**
-     * * An annotation that makes {@link EnsuresNonNullIf} annotation repeatable.
+     * * A wrapper annotation that makes the {@link EnsuresNonNullIf} annotation repeatable.
      *
-     * <p>Programmers generally do not need to write this; it is created by Java when a programmer
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
      * writes more than one {@link EnsuresNonNullIf} annotation at the same location.
      */
     @Documented
@@ -92,7 +92,7 @@ public @interface EnsuresNonNullIf {
     @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
     @InheritedAnnotation
     @interface List {
-        /** The array that contains all the repeatable annotations. */
+        /** The repeatable annotations. */
         EnsuresNonNullIf[] value();
     }
 }
