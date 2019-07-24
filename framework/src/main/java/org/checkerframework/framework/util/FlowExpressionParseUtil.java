@@ -882,6 +882,8 @@ public class FlowExpressionParseUtil {
      * An exception that indicates a parse error. Call {@link #getResult} to obtain a {@link Result}
      * that can be used for error reporting.
      */
+    // TODO: This class extends RuntimeException so that it can be thrown in
+    // ExpressionToReceiverVisitor.
     public static class FlowExpressionParseException extends RuntimeException {
         private static final long serialVersionUID = 2L;
         private @CompilerMessageKey String errorKey;
