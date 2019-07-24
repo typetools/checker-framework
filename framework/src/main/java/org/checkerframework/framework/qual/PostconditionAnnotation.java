@@ -12,9 +12,11 @@ import java.lang.annotation.Target;
  * necessary for a postcondition specified with {@link EnsuresQualifier} is specified here with the
  * value {@code qualifier}.
  *
- * <p>The annotation E that is meta-annotated as {@link PostconditionAnnotation} must have an
- * element called {@code value} that is an array of {@code String}s of the same format and with the
- * same meaning as the value {@code expression} in {@link EnsuresQualifier}.
+ * <p>The annotation E that is meta-annotated as {@link PostconditionAnnotation} can have an element
+ * called {@code value} that is an array of {@code String}s of the same format and with the same
+ * meaning as the value {@code expression} in {@link EnsuresQualifier} or a list of postcondition
+ * annotations of the same format and with the same meaning as the {@code value} in {@link
+ * EnsuresQualifiers}.
  *
  * <p>The established postcondition P has type specified by the {@code qualifier} field of this
  * annotation. If the annotation E has elements annotated by {@link QualifierArgument}, their values
