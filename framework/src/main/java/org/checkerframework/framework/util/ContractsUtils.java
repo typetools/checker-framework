@@ -422,51 +422,36 @@ public class ContractsUtils {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
 
-            @SuppressWarnings("unchecked")
-            List<AnnotationValue> la =
-                    AnnotationUtils.getElementValue(anno, "value", List.class, false);
-
             result.addAll(
-                    getRepeatablePostConditionAnnotations(metaAnno, annotationmirrorType, la));
-            List<String> expressions = new ArrayList<>(la.size());
-
-            for (AnnotationValue a : la) {
-                if (a.getClass().getName().equals("java.lang.String")
-                        || a.getClass()
-                                .getName()
-                                .equals("com.sun.tools.javac.code.Attribute$Constant")) {
-                    expressions.add(stringType.cast(a.getValue()));
-                }
-            }
-
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
-            if (postcondAnno == null) {
-                continue;
-            }
-            for (String expr : expressions) {
-                result.add(new Postcondition(expr, postcondAnno, anno));
-            }
+                    getPostConditionAnnotations(anno, metaAnno, annotationmirrorType, stringType));
         }
 
         return result;
     }
 
     /**
-     * Returns the set of repeatable postconditions.
+     * Returns postcondition annotations.
      *
-     * @param metaAnno set of post condition meta annotations
-     * @param annotationmirrorType the class type used to cast the element value
-     * @param elementValue the element value
+     * @param anno set of conditional post condition annotations
+     * @param metaAnno set of conditional post condition meta annotations
+     * @param annotationmirrorType the AnnotationMirror class type used to cast the element value
+     * @param stringType the String class type used to cast the element value
      */
-    private Set<Postcondition> getRepeatablePostConditionAnnotations(
+    private Set<Postcondition> getPostConditionAnnotations(
+            AnnotationMirror anno,
             AnnotationMirror metaAnno,
             Class<AnnotationMirror> annotationmirrorType,
-            List<AnnotationValue> elementValue) {
+            Class<String> stringType) {
+
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> la =
+                AnnotationUtils.getElementValue(anno, "value", List.class, false);
+
         Set<Postcondition> result = new LinkedHashSet<>();
 
-        List<AnnotationMirror> annotations = new ArrayList<>(elementValue.size());
         // Check for multiple contracts.
-        for (AnnotationValue a : elementValue) {
+        List<AnnotationMirror> annotations = new ArrayList<>(la.size());
+        for (AnnotationValue a : la) {
             if (a.getClass().getName().equals("javax.lang.model.element.AnnotationMirror")
                     || a.getClass()
                             .getName()
@@ -476,16 +461,36 @@ public class ContractsUtils {
         }
 
         for (AnnotationMirror a : annotations) {
-            List<String> expressions =
+            List<String> expression =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, false);
             AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
             if (postcondAnno == null) {
                 continue;
             }
-            for (String expr : expressions) {
+            for (String expr : expression) {
                 result.add(new Postcondition(expr, postcondAnno, a));
             }
         }
+
+        // Check for a single contract.
+        List<String> expressions = new ArrayList<>(la.size());
+
+        for (AnnotationValue a : la) {
+            if (a.getClass().getName().equals("java.lang.String")
+                    || a.getClass()
+                            .getName()
+                            .equals("com.sun.tools.javac.code.Attribute$Constant")) {
+                expressions.add(stringType.cast(a.getValue()));
+            }
+        }
+
+        AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
+        if (postcondAnno != null) {
+            for (String expr : expressions) {
+                result.add(new Postcondition(expr, postcondAnno, anno));
+            }
+        }
+
         return result;
     }
 
@@ -543,32 +548,80 @@ public class ContractsUtils {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
 
-            Map<? extends ExecutableElement, ? extends AnnotationValue> valmap;
-            valmap = anno.getElementValues();
-            for (ExecutableElement elem : valmap.keySet()) {
-                // Check for multiple contracts.
-                if (elem.getSimpleName().contentEquals("value")) {
-                    result.addAll(
-                            getRepeatableConditionalPostConditionAnnotations(
-                                    anno, metaAnno, annotationmirrorType));
-                } else {
-                    @SuppressWarnings("unchecked")
-                    List<AnnotationValue> la =
-                            AnnotationUtils.getElementValue(anno, "expression", List.class, false);
-                    List<String> expressions = new ArrayList<>(la.size());
-                    for (AnnotationValue a : la) {
-                        if (a.getClass().getName().equals("java.lang.String")
-                                || a.getClass()
-                                        .getName()
-                                        .equals("com.sun.tools.javac.code.Attribute$Constant")) {
-                            expressions.add(stringType.cast(a.getValue()));
-                        }
+            result.addAll(
+                    getConditionalPostConditionAnnotations(
+                            anno, metaAnno, annotationmirrorType, stringType));
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns conditional postcondition annotations.
+     *
+     * @param anno set of conditional post condition annotations
+     * @param metaAnno set of conditional post condition meta annotations
+     * @param annotationmirrorType the AnnotationMirror class type used to cast the element value
+     * @param stringType the String class type used to cast the element value
+     */
+    private Set<ConditionalPostcondition> getConditionalPostConditionAnnotations(
+            AnnotationMirror anno,
+            AnnotationMirror metaAnno,
+            Class<AnnotationMirror> annotationmirrorType,
+            Class<String> stringType) {
+
+        Set<ConditionalPostcondition> result = new LinkedHashSet<>();
+
+        Map<? extends ExecutableElement, ? extends AnnotationValue> valmap;
+        valmap = anno.getElementValues();
+        for (ExecutableElement elem : valmap.keySet()) {
+            // Check for multiple contracts
+            if (elem.getSimpleName().contentEquals("value")) {
+
+                @SuppressWarnings("unchecked")
+                List<AnnotationValue> la =
+                        AnnotationUtils.getElementValue(anno, "value", List.class, false);
+
+                List<AnnotationMirror> annotations = new ArrayList<>(la.size());
+                for (AnnotationValue a : la) {
+                    if (a.getClass().getName().equals("javax.lang.model.element.AnnotationMirror")
+                            || a.getClass()
+                                    .getName()
+                                    .equals("com.sun.tools.javac.code.Attribute$Compound")) {
+                        annotations.add(annotationmirrorType.cast(a.getValue()));
                     }
+                }
+                for (AnnotationMirror a : annotations) {
+                    List<String> expressions =
+                            AnnotationUtils.getElementValueArray(
+                                    a, "expression", String.class, false);
                     AnnotationMirror postcondAnno =
-                            getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
+                            getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
                     if (postcondAnno == null) {
                         continue;
                     }
+                    boolean annoResult =
+                            AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
+                    for (String expr : expressions) {
+                        result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
+                    }
+                }
+            } else {
+                // Check for a single contract
+                @SuppressWarnings("unchecked")
+                List<AnnotationValue> la =
+                        AnnotationUtils.getElementValue(anno, "expression", List.class, false);
+                List<String> expressions = new ArrayList<>(la.size());
+                for (AnnotationValue a : la) {
+                    if (a.getClass().getName().equals("java.lang.String")
+                            || a.getClass()
+                                    .getName()
+                                    .equals("com.sun.tools.javac.code.Attribute$Constant")) {
+                        expressions.add(stringType.cast(a.getValue()));
+                    }
+                }
+                AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
+                if (postcondAnno != null) {
                     boolean annoResult =
                             AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
                     for (String expr : expressions) {
@@ -576,47 +629,6 @@ public class ContractsUtils {
                                 new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
                     }
                 }
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Returns the set of repeatable conditional postconditions.
-     *
-     * @param anno set of conditional post condition annotations
-     * @param metaAnno set of conditional post condition meta annotations
-     * @param annotationmirrorType the class type used to cast the element value
-     */
-    private Set<ConditionalPostcondition> getRepeatableConditionalPostConditionAnnotations(
-            AnnotationMirror anno,
-            AnnotationMirror metaAnno,
-            Class<AnnotationMirror> annotationmirrorType) {
-        Set<ConditionalPostcondition> result = new LinkedHashSet<>();
-
-        @SuppressWarnings("unchecked")
-        List<AnnotationValue> la =
-                AnnotationUtils.getElementValue(anno, "value", List.class, false);
-        List<AnnotationMirror> annotations = new ArrayList<>(la.size());
-        for (AnnotationValue a : la) {
-            if (a.getClass().getName().equals("javax.lang.model.element.AnnotationMirror")
-                    || a.getClass()
-                            .getName()
-                            .equals("com.sun.tools.javac.code.Attribute$Compound")) {
-                annotations.add(annotationmirrorType.cast(a.getValue()));
-            }
-        }
-        for (AnnotationMirror a : annotations) {
-            List<String> expressions =
-                    AnnotationUtils.getElementValueArray(a, "expression", String.class, false);
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
-            if (postcondAnno == null) {
-                continue;
-            }
-            boolean annoResult = AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
-            for (String expr : expressions) {
-                result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
             }
         }
         return result;
