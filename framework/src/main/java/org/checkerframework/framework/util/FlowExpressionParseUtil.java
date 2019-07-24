@@ -218,7 +218,7 @@ public class FlowExpressionParseUtil {
             FlowExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
             Receiver index = expr.getIndex().accept(this, contextForIndex);
             TypeMirror receiverType = receiver.getType();
-            if (!(receiverType instanceof ArrayType)) {
+            if (receiverType.getKind() == TypeKind.ARRAY) {
                 throw new ParseRuntimeException(
                         constructParserException(
                                 expr.toString(),
