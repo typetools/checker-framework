@@ -19,4 +19,12 @@ public class ClassLiterals {
         @FlowExp("java.lang.String.class") Object l5 = p2;
         @FlowExp("java.lang.String.class") Object l6 = p3;
     }
+
+    @FlowExp("int.class") String s0;
+
+    @FlowExp("int[].class") String s1;
+
+    @FlowExp("String[].class") String s2;
+
+    @FlowExp("java.lang.String[].class") String s3;
 }

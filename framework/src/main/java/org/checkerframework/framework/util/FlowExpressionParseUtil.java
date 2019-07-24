@@ -107,7 +107,6 @@ public class FlowExpressionParseUtil {
             throws FlowExpressionParseException {
         context = context.copyAndSetUseLocalScope(useLocalScope);
         ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
-        Types types = env.getTypeUtils();
         Expression expr;
         try {
             expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
