@@ -371,8 +371,9 @@ public class AnnotatedTypes {
             case TYPE_PARAMETER:
                 return atypeFactory.fromElement(elem);
             default:
-                AnnotatedTypeMirror type = asMemberOfImpl(types, atypeFactory, t, elem);
-                type = asMemberOfImpl(types, atypeFactory, t, elem, type);
+                AnnotatedTypeMirror type =
+                        asMemberOfImplPreSubstitution(types, atypeFactory, t, elem);
+                type = asMemberOfImplDoSubstitution(types, atypeFactory, t, elem, type);
 
                 if (!ElementUtils.isStatic(elem)) {
                     atypeFactory.postAsMemberOf(type, t, elem);
@@ -381,6 +382,16 @@ public class AnnotatedTypes {
         }
     }
 
+    /**
+     * Logic is the same with asMemberOf, but only returns the unsubstituted version of
+     * INTERSECTION, UNION, or DECLARED type to allow modifications on the type before type variable
+     * substitution. Other types are not affected. Remember to call asMemberOfDoSubstitution when
+     * everything is done.
+     *
+     * @param t a type
+     * @param elem en element
+     * @return unsubstituted version of DECLARED type, otherwise
+     */
     public static AnnotatedTypeMirror asMemberOfPreSubstitution(
             Types types, AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror t, Element elem) {
         // asMemberOf is only for fields, variables, and methods!
@@ -393,10 +404,19 @@ public class AnnotatedTypes {
             case TYPE_PARAMETER:
                 return atypeFactory.fromElement(elem);
             default:
-                return asMemberOfImpl(types, atypeFactory, t, elem);
+                return asMemberOfImplPreSubstitution(types, atypeFactory, t, elem);
         }
     }
 
+    /**
+     * Complete the substitution process of asMemberOf on a substitutable type. Have no impact on
+     * non-substitutable types so calling on this method could be omitted on such types.
+     *
+     * @param t a type
+     * @param elem en element
+     * @param memberType the AnnotatedTypeMirror returned by asMemberOfPreSubstitution
+     * @return unsubstituted version of DECLARED type, otherwise return itself
+     */
     public static AnnotatedTypeMirror asMemberOfDoSubstitution(
             Types types,
             AnnotatedTypeFactory atypeFactory,
@@ -411,7 +431,7 @@ public class AnnotatedTypes {
             case TYPE_PARAMETER:
                 return memberType; // no-op
             default:
-                memberType = asMemberOfImpl(types, atypeFactory, t, elem, memberType);
+                memberType = asMemberOfImplDoSubstitution(types, atypeFactory, t, elem, memberType);
 
                 if (!ElementUtils.isStatic(elem)) {
                     atypeFactory.postAsMemberOf(memberType, t, elem);
@@ -420,7 +440,12 @@ public class AnnotatedTypes {
         }
     }
 
-    private static AnnotatedTypeMirror asMemberOfImpl(
+    /**
+     * Returns pre-substitution version of substitutable type.
+     *
+     * @return unsubstituted version of DECLARED type, otherwise the default logic
+     */
+    private static AnnotatedTypeMirror asMemberOfImplPreSubstitution(
             final Types types,
             final AnnotatedTypeFactory atypeFactory,
             final AnnotatedTypeMirror of,
@@ -458,7 +483,13 @@ public class AnnotatedTypes {
         }
     }
 
-    private static AnnotatedTypeMirror asMemberOfImpl(
+    /**
+     * Returns do substitution on a substitutable type.
+     *
+     * @param memberType a type returned by asMemberOfImplPreSubstitution
+     * @return substituted version of a substitutable type, otherwise return itself
+     */
+    private static AnnotatedTypeMirror asMemberOfImplDoSubstitution(
             final Types types,
             final AnnotatedTypeFactory atypeFactory,
             final AnnotatedTypeMirror of,

@@ -2069,7 +2069,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
         AnnotatedExecutableType methodType =
-                AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt);
+                AnnotatedTypes.asMemberOfPreSubstitution(types, this, receiverType, methodElt);
+        // something may need to be done before typevar substitution
+        this.methodFromUsePreSubstitution(tree, methodType);
+        methodType =
+                AnnotatedTypes.asMemberOfDoSubstitution(
+                        types, this, receiverType, methodElt, methodType);
+
         List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
 
         Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
