@@ -163,20 +163,7 @@ public class FlowExpressions {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn.getTree());
 
-            // check if this represents a boxing operation of a constant, in which
-            // case we treat the method call as deterministic, because there is no way
-            // to behave differently in two executions where two constants are being used.
-            boolean considerDeterministic = false;
-            if (isLongValueOf(mn, invokedMethod)) {
-                Node arg = mn.getArgument(0);
-                if (arg instanceof ValueLiteralNode) {
-                    considerDeterministic = true;
-                }
-            }
-
-            if (PurityUtils.isDeterministic(provider, invokedMethod)
-                    || allowNonDeterministic
-                    || considerDeterministic) {
+            if (allowNonDeterministic || PurityUtils.isDeterministic(provider, invokedMethod)) {
                 List<Receiver> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
                     parameters.add(internalReprOf(provider, p));
@@ -195,30 +182,6 @@ public class FlowExpressions {
             receiver = new Unknown(receiverNode.getType());
         }
         return receiver;
-    }
-
-    /** Return true iff the invoked method is Long.valueOf(long). */
-    private static boolean isLongValueOf(MethodInvocationNode mn, ExecutableElement method) {
-
-        // Less efficient implementation:
-        // return method.toString().equals("valueOf(long)")
-        //     && mn.getTarget().getReceiver().toString().equals("Long")
-
-        if (mn.getTarget().getReceiver() == null
-                || !mn.getTarget().getReceiver().toString().equals("Long")) {
-            return false;
-        }
-
-        if (!method.getSimpleName().contentEquals("valueOf")) {
-            return false;
-        }
-        List<? extends VariableElement> params = method.getParameters();
-        if (params.size() != 1) {
-            return false;
-        }
-        VariableElement param = params.get(0);
-        TypeMirror paramType = param.asType();
-        return paramType.getKind() == TypeKind.LONG;
     }
 
     /**
