@@ -57,7 +57,9 @@ public @interface EnsuresKeyForIf {
     String[] map();
 
     /**
-     * Programmers generally do not need to write this; it is created by Java when a programmer
+     * An annotation that makes {@link EnsuresKeyForIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this; it is created by Java when a programmer
      * writes more than one {@link EnsuresKeyForIf} annotation at the same location.
      */
     @Documented
