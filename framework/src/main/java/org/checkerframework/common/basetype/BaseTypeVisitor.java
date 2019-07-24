@@ -396,7 +396,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
         Set<AnnotationMirror> classBounds =
-                atypeFactory.getTypeDeclarationBounds(atypeFactory.getAnnotatedType(classTree));
+                atypeFactory.getTypeDeclarationBounds(TreeUtils.typeOf(classTree));
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
         // classTree.getExtendsClause() is null when there is no explicitly-written extends clause,
@@ -1892,7 +1892,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // Don't issue an error if the annotations are equivalent to the qualifier upper bound
             // of the type.
             AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType) castType;
-            Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(castDeclared);
+            Set<AnnotationMirror> bounds =
+                    atypeFactory.getTypeDeclarationBounds(castDeclared.getUnderlyingType());
 
             if (AnnotationUtils.areSame(castDeclared.getAnnotations(), bounds)) {
                 return true;
@@ -3416,7 +3417,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<AnnotationMirror> overriddenAnnos = overriddenReceiver.getAnnotations();
             if (!qualifierHierarchy.isSubtype(overriddenAnnos, overriderAnnos)) {
                 Set<AnnotationMirror> declaredAnnos =
-                        atypeFactory.getTypeDeclarationBounds(overridingType);
+                        atypeFactory.getTypeDeclarationBounds(overridingType.getUnderlyingType());
                 if (qualifierHierarchy.isSubtype(overriderAnnos, declaredAnnos)
                         && qualifierHierarchy.isSubtype(declaredAnnos, overriderAnnos)) {
                     // All the type of an object must be no higher than its upper bound. So if the
@@ -3841,7 +3842,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return true if the type is a valid use of the primitive type
      */
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
-        Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(type);
+        Set<AnnotationMirror> bounds =
+                atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
         return atypeFactory.getQualifierHierarchy().isSubtype(type.getAnnotations(), bounds);
     }
 
@@ -3855,7 +3857,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return true if the type is a valid array type
      */
     public boolean isValidUse(AnnotatedArrayType type, Tree tree) {
-        Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(type);
+        Set<AnnotationMirror> bounds =
+                atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
         return atypeFactory.getQualifierHierarchy().isSubtype(type.getAnnotations(), bounds);
     }
 

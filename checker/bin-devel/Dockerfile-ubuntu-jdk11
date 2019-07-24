@@ -13,6 +13,7 @@ RUN apt-get -qqy update && apt-get -qqy install \
   cpp \
   git \
   gradle \
+  jq \
   libcurl3-gnutls \
   make \
   maven \
