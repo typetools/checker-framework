@@ -317,6 +317,25 @@ public class AnnotatedTypes {
         return (AnnotatedExecutableType) asMemberOf(types, atypeFactory, t, (Element) elem);
     }
 
+    public static AnnotatedExecutableType asMemberOfPreSubstitution(
+            Types types,
+            AnnotatedTypeFactory atypeFactory,
+            AnnotatedTypeMirror t,
+            ExecutableElement elem) {
+        return (AnnotatedExecutableType)
+                asMemberOfPreSubstitution(types, atypeFactory, t, (Element) elem);
+    }
+
+    public static AnnotatedExecutableType asMemberOfDoSubstitution(
+            Types types,
+            AnnotatedTypeFactory atypeFactory,
+            AnnotatedTypeMirror t,
+            ExecutableElement elem,
+            AnnotatedExecutableType memberType) {
+        return (AnnotatedExecutableType)
+                asMemberOfDoSubstitution(types, atypeFactory, t, (Element) elem, memberType);
+    }
+
     /**
      * Returns the type of an element when that element is viewed as a member of, or otherwise
      * directly contained by, a given type.
@@ -353,11 +372,49 @@ public class AnnotatedTypes {
                 return atypeFactory.fromElement(elem);
             default:
                 AnnotatedTypeMirror type = asMemberOfImpl(types, atypeFactory, t, elem);
+                if (t != null && t.getKind() == TypeKind.DECLARED) {
+                    type = substituteTypeVariables(types, atypeFactory, t, elem, type);
+                }
+
                 if (!ElementUtils.isStatic(elem)) {
                     atypeFactory.postAsMemberOf(type, t, elem);
                 }
                 return type;
         }
+    }
+
+    public static AnnotatedTypeMirror asMemberOfPreSubstitution(
+            Types types, AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror t, Element elem) {
+        // asMemberOf is only for fields, variables, and methods!
+        // Otherwise, simply use fromElement.
+        switch (elem.getKind()) {
+            case PACKAGE:
+            case INSTANCE_INIT:
+            case OTHER:
+            case STATIC_INIT:
+            case TYPE_PARAMETER:
+                return atypeFactory.fromElement(elem);
+            default:
+                return asMemberOfImpl(types, atypeFactory, t, elem);
+        }
+    }
+
+    public static AnnotatedTypeMirror asMemberOfDoSubstitution(
+            Types types,
+            AnnotatedTypeFactory atypeFactory,
+            AnnotatedTypeMirror t,
+            Element elem,
+            AnnotatedTypeMirror memberType) {
+        if (t != null && t.getKind() == TypeKind.DECLARED) {
+            AnnotatedTypeMirror type =
+                    substituteTypeVariables(types, atypeFactory, t, elem, memberType);
+            if (!ElementUtils.isStatic(elem)) {
+                atypeFactory.postAsMemberOf(type, t, elem);
+            }
+            return type;
+        }
+
+        return memberType; // no-op
     }
 
     private static AnnotatedTypeMirror asMemberOfImpl(
@@ -391,7 +448,9 @@ public class AnnotatedTypes {
             case INTERSECTION:
             case UNION:
             case DECLARED:
-                return substituteTypeVariables(types, atypeFactory, of, member, memberType);
+                //                return substituteTypeVariables(types, atypeFactory, of, member,
+                // memberType);
+                return memberType;
             default:
                 throw new BugInCF("asMemberOf called on unexpected type.\nt: " + of);
         }

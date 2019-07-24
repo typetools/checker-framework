@@ -2102,6 +2102,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return new ParameterizedExecutableType(methodType, typeargs);
     }
 
+    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedTypeMirror mirror) {
+        // No-op in default implementation
+    }
+
     /**
      * Java special-cases the return type of {@link java.lang.Class#getClass() getClass()}. Though
      * the method has a return type of {@code Class<?>}, the compiler special cases this return-type

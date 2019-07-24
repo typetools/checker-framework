@@ -27,15 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
@@ -1567,8 +1563,59 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
-        poly.resolve(tree, method);
+        // poly.resolve(tree, method);
         return mType;
+    }
+
+    @Override
+    public ParameterizedExecutableType methodFromUse(
+            ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
+
+        AnnotatedExecutableType methodType =
+                AnnotatedTypes.asMemberOfPreSubstitution(types, this, receiverType, methodElt);
+        this.methodFromUsePreSubstitution(tree, methodType);
+        methodType =
+                AnnotatedTypes.asMemberOfDoSubstitution(
+                        types, this, receiverType, methodElt, methodType);
+
+        List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
+
+        Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
+                AnnotatedTypes.findTypeArguments(processingEnv, this, tree, methodElt, methodType);
+
+        if (!typeVarMapping.isEmpty()) {
+            for (AnnotatedTypeMirror.AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
+                if (typeVarMapping.get(tv.getUnderlyingType()) == null) {
+                    throw new BugInCF(
+                            "AnnotatedTypeFactory.methodFromUse:"
+                                    + "mismatch between declared method type variables and the inferred method type arguments. "
+                                    + "Method type variables: "
+                                    + methodType.getTypeVariables()
+                                    + "; "
+                                    + "Inferred method type arguments: "
+                                    + typeVarMapping);
+                }
+                typeargs.add(typeVarMapping.get(tv.getUnderlyingType()));
+            }
+            methodType =
+                    (AnnotatedExecutableType)
+                            typeVarSubstitutor.substitute(typeVarMapping, methodType);
+        }
+
+        if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
+                && TreeUtils.isMethodInvocation(tree, objectGetClass, processingEnv)) {
+            adaptGetClassReturnTypeToReceiver(methodType, receiverType);
+        }
+
+        return new ParameterizedExecutableType(methodType, typeargs);
+    }
+
+    @Override
+    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedTypeMirror mirror) {
+        if (mirror instanceof AnnotatedExecutableType && tree instanceof MethodInvocationTree) {
+            AnnotatedExecutableType method = (AnnotatedExecutableType) mirror;
+            poly.resolve((MethodInvocationTree) tree, method);
+        }
     }
 
     @Override
