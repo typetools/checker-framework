@@ -1,8 +1,6 @@
 // Test case for issue 2432:
 // https://github.com/typetools/checker-framework/issues/2432
 
-// @skip-test until the issue is fixed
-
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;

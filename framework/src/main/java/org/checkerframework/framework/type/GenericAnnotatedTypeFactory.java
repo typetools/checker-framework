@@ -1560,9 +1560,9 @@ public abstract class GenericAnnotatedTypeFactory<
     public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
         ParameterizedExecutableType mType = super.methodFromUse(tree);
         AnnotatedExecutableType method = mType.executableType;
-        if (dependentTypesHelper != null) {
-            dependentTypesHelper.viewpointAdaptMethod(tree, method);
-        }
+        // if (dependentTypesHelper != null) {
+        //    dependentTypesHelper.viewpointAdaptMethod(tree, method);
+        // }
         // poly.resolve(tree, method);
         return mType;
     }
@@ -1577,6 +1577,8 @@ public abstract class GenericAnnotatedTypeFactory<
         methodType =
                 AnnotatedTypes.asMemberOfDoSubstitution(
                         types, this, receiverType, methodElt, methodType);
+        //        AnnotatedExecutableType methodType = AnnotatedTypes.asMemberOf(types, this,
+        // receiverType, methodElt);
 
         List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
 
@@ -1614,7 +1616,11 @@ public abstract class GenericAnnotatedTypeFactory<
     public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedTypeMirror mirror) {
         if (mirror instanceof AnnotatedExecutableType && tree instanceof MethodInvocationTree) {
             AnnotatedExecutableType method = (AnnotatedExecutableType) mirror;
-            poly.resolve((MethodInvocationTree) tree, method);
+            MethodInvocationTree mtree = (MethodInvocationTree) tree;
+            if (dependentTypesHelper != null) {
+                dependentTypesHelper.viewpointAdaptMethod(mtree, method);
+            }
+            poly.resolve(mtree, method);
         }
     }
 

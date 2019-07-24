@@ -372,9 +372,7 @@ public class AnnotatedTypes {
                 return atypeFactory.fromElement(elem);
             default:
                 AnnotatedTypeMirror type = asMemberOfImpl(types, atypeFactory, t, elem);
-                if (t != null && t.getKind() == TypeKind.DECLARED) {
-                    type = substituteTypeVariables(types, atypeFactory, t, elem, type);
-                }
+                type = asMemberOfImpl(types, atypeFactory, t, elem, type);
 
                 if (!ElementUtils.isStatic(elem)) {
                     atypeFactory.postAsMemberOf(type, t, elem);
@@ -405,16 +403,21 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror t,
             Element elem,
             AnnotatedTypeMirror memberType) {
-        if (t != null && t.getKind() == TypeKind.DECLARED) {
-            AnnotatedTypeMirror type =
-                    substituteTypeVariables(types, atypeFactory, t, elem, memberType);
-            if (!ElementUtils.isStatic(elem)) {
-                atypeFactory.postAsMemberOf(type, t, elem);
-            }
-            return type;
-        }
+        switch (elem.getKind()) {
+            case PACKAGE:
+            case INSTANCE_INIT:
+            case OTHER:
+            case STATIC_INIT:
+            case TYPE_PARAMETER:
+                return memberType; // no-op
+            default:
+                memberType = asMemberOfImpl(types, atypeFactory, t, elem, memberType);
 
-        return memberType; // no-op
+                if (!ElementUtils.isStatic(elem)) {
+                    atypeFactory.postAsMemberOf(memberType, t, elem);
+                }
+                return memberType;
+        }
     }
 
     private static AnnotatedTypeMirror asMemberOfImpl(
@@ -448,9 +451,34 @@ public class AnnotatedTypes {
             case INTERSECTION:
             case UNION:
             case DECLARED:
-                //                return substituteTypeVariables(types, atypeFactory, of, member,
-                // memberType);
+                // return substituteTypeVariables(types, atypeFactory, of, member, memberType);
                 return memberType;
+            default:
+                throw new BugInCF("asMemberOf called on unexpected type.\nt: " + of);
+        }
+    }
+
+    private static AnnotatedTypeMirror asMemberOfImpl(
+            final Types types,
+            final AnnotatedTypeFactory atypeFactory,
+            final AnnotatedTypeMirror of,
+            final Element member,
+            final AnnotatedTypeMirror memberType) {
+
+        if (ElementUtils.isStatic(member)) {
+            return memberType;
+        }
+
+        switch (of.getKind()) {
+            case ARRAY:
+            case TYPEVAR:
+            case WILDCARD:
+                return memberType;
+            case INTERSECTION:
+            case UNION:
+            case DECLARED:
+                return substituteTypeVariables(types, atypeFactory, of, member, memberType);
+                //                return memberType;
             default:
                 throw new BugInCF("asMemberOf called on unexpected type.\nt: " + of);
         }
