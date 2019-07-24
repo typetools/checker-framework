@@ -219,7 +219,7 @@ public final class Long extends Number implements Comparable<Long> {
      * argument.
      */
     // TODO: Annotate return type when Signedness Checker handles boxed types
-    private static BigInteger toUnsignedBigInteger(long i) {
+    private static BigInteger toUnsignedBigInteger(@Unsigned long i) {
         if (i >= 0L)
             return BigInteger.valueOf(i);
         else {

@@ -1274,7 +1274,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *         conversion
      * @since 1.8
      */
-    public static @Unsigned long toUnsignedLong(@UnknownSignedness int x) {
+    public static @SignedPositive long toUnsignedLong(int x) {
         return ((long) x) & 0xffffffffL;
     }
 
