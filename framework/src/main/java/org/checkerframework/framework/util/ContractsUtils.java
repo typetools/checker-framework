@@ -432,10 +432,10 @@ public class ContractsUtils {
     /**
      * Returns postcondition annotations.
      *
-     * @param anno Postcondition annotations
-     * @param metaAnno PostCondition meta annotations
-     * @param annotationmirrorType the AnnotationMirror class type used to cast the element value
-     * @param stringType the String class type used to cast the element value
+     * @param anno the type qualifier that {@code methodElement} should have
+     * @param metaAnno postCondition meta-annotation
+     * @param annotationmirrorType the annotationMirror class type used to cast the element value
+     * @param stringType the string class type used to cast the element value
      */
     private Set<Postcondition> getPostConditionAnnotations(
             AnnotationMirror anno,
@@ -559,10 +559,10 @@ public class ContractsUtils {
     /**
      * Returns conditional postcondition annotations.
      *
-     * @param anno Conditional Postcondition annotations
-     * @param metaAnno Conditional Postcondition meta annotations
-     * @param annotationmirrorType the AnnotationMirror class type used to cast the element value
-     * @param stringType the String class type used to cast the element value
+     * @param anno the type qualifier that {@code methodElement} should have
+     * @param metaAnno conditional postcondition meta-annotation
+     * @param annotationmirrorType the annotationMirror class type used to cast the element value
+     * @param stringType the string class type used to cast the element value
      */
     private Set<ConditionalPostcondition> getConditionalPostConditionAnnotations(
             AnnotationMirror anno,
