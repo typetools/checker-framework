@@ -13,8 +13,8 @@ import java.lang.annotation.Target;
  *
  * <p>The annotation E that is meta-annotated as {@link ConditionalPostconditionAnnotation} must
  * have an element called {@code expression} that is an array of {@code String}s of the same format
- * and with the same meaning as the value {@code expression} in {@link EnsuresQualifierIf}. or a
- * list of conditional postcondition annotations of the same format and with the same meaning as the
+ * and with the same meaning as the value {@code expression} in {@link EnsuresQualifierIf} or a list
+ * of conditional postcondition annotations of the same format and with the same meaning as the
  * {@code value} in {@link EnsuresQualifiersIf}. E must also have an element {@code result} with the
  * same meaning as the element {@code result} in {@link EnsuresQualifierIf}.
  *
