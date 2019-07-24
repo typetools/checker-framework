@@ -108,6 +108,7 @@ public class UtilsJava8 {
         // :: error: (assignment.type.incompatible)
         resLong = Integer.toUnsignedLong(sint);
 
+        // :: error: (assignment.type.incompatible)
         ulong = Integer.toUnsignedLong(uint);
 
         // :: error: (argument.type.incompatible)
