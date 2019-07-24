@@ -62,6 +62,7 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -394,6 +395,40 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, p);
+        if (n.getTarget().getReceiver().getType().toString().equals("java.lang.Math")) {
+            // The ValueChecker annotations for both arguments
+            AnnotatedTypeMirror atm1 = atypefactory.getAnnotatedType(n.getArgument(0).getTree());
+            AnnotatedTypeMirror atm2 = atypefactory.getAnnotatedType(n.getArgument(1).getTree());
+            long from = Integer.MIN_VALUE, to = Integer.MAX_VALUE;
+            // Calculate 'from' and 'to' for each case.
+            if (n.getTarget().getMethod().getSimpleName().contentEquals("min")) {
+                from =
+                        Math.min(
+                                atypefactory.getFromValueFromIntRange(atm1),
+                                atypefactory.getFromValueFromIntRange(atm2));
+                to =
+                        Math.min(
+                                atypefactory.getToValueFromIntRange(atm1),
+                                atypefactory.getToValueFromIntRange(atm2));
+            } else if (n.getTarget().getMethod().getSimpleName().contentEquals("max")) {
+                from =
+                        Math.max(
+                                atypefactory.getFromValueFromIntRange(atm1),
+                                atypefactory.getFromValueFromIntRange(atm2));
+                to =
+                        Math.max(
+                                atypefactory.getToValueFromIntRange(atm1),
+                                atypefactory.getToValueFromIntRange(atm2));
+            }
+            // If the members didn't have IntRange annotations, from and to are Integer.MIN_VALUE
+            // and Integer.MAX_VALUE.
+            if (from != Integer.MIN_VALUE && to != Integer.MAX_VALUE) {
+                AnnotationMirror anm = atypefactory.createIntRangeAnnotation(new Range(from, to));
+                result.getRegularStore()
+                        .insertValue(
+                                FlowExpressions.internalReprOf(atypefactory, n.getTarget()), anm);
+            }
+        }
         refineStringAtLengthInvocation(n, result.getRegularStore());
         return result;
     }
