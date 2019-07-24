@@ -112,7 +112,7 @@ public class FlowExpressionParseUtil {
 
         Receiver result;
         try {
-            result = expr.accept(new ExpressionToReceiverVisitor(path, env, types), context);
+            result = expr.accept(new ExpressionToReceiverVisitor(path, env), context);
         } catch (ParseRuntimeException e) {
             throw e.getCheckedException();
         }
@@ -123,16 +123,30 @@ public class FlowExpressionParseUtil {
         return result;
     }
 
+    /**
+     * Replaces every occurrence of "#(number)" with "_param_(number)" where number is an index of a
+     * parameter.
+     */
+    private static String replaceParameterSyntax(String expression) {
+        String updatedExpression = expression;
+
+        for (Integer integer : parameterIndices(expression)) {
+            updatedExpression = updatedExpression.replaceAll("#" + integer, "_param_" + integer);
+        }
+
+        return updatedExpression;
+    }
+
     private static class ExpressionToReceiverVisitor
             extends GenericVisitorWithDefaults<Receiver, FlowExpressionContext> {
         private final TreePath path;
         private final ProcessingEnvironment env;
         private final Types types;
 
-        ExpressionToReceiverVisitor(TreePath path, ProcessingEnvironment env, Types types) {
+        ExpressionToReceiverVisitor(TreePath path, ProcessingEnvironment env) {
             this.path = path;
             this.env = env;
-            this.types = types;
+            this.types = env.getTypeUtils();
         }
 
         @Override
@@ -214,19 +228,20 @@ public class FlowExpressionParseUtil {
 
         @Override
         public Receiver visit(ArrayAccessExpr expr, FlowExpressionContext context) {
-            Receiver receiver = expr.getName().accept(this, context);
+            Receiver array = expr.getName().accept(this, context);
             FlowExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
             Receiver index = expr.getIndex().accept(this, contextForIndex);
-            TypeMirror receiverType = receiver.getType();
-            if (receiverType.getKind() == TypeKind.ARRAY) {
+
+            TypeMirror arrayType = array.getType();
+            if (arrayType.getKind() == TypeKind.ARRAY) {
                 throw new ParseRuntimeException(
                         constructParserException(
                                 expr.toString(),
-                                String.format(
-                                        "receiver not an array: %s : %s", receiver, receiverType)));
+                                String.format("array not an array: %s : %s", array, arrayType)));
             }
-            TypeMirror componentType = ((ArrayType) receiverType).getComponentType();
-            return new ArrayAccess(componentType, receiver, index);
+
+            TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
+            return new ArrayAccess(componentType, array, index);
         }
 
         @Override
@@ -234,6 +249,8 @@ public class FlowExpressionParseUtil {
             String s = n.getNameAsString();
             Resolver resolver = new Resolver(env);
             if (!context.parsingMember && s.startsWith("_param_")) {
+                // A parameter is a local variable, but it can be referenced outside of local scope
+                // using the special #NN syntax.
                 return getParameterReceiver(s, context);
             } else if (!context.parsingMember && context.useLocalScope) {
                 // Attempt to match a local variable within the scope of the
@@ -313,17 +330,17 @@ public class FlowExpressionParseUtil {
 
             String methodName = expr.getNameAsString();
 
-            // parse parameter list
-            List<Receiver> parameters = new ArrayList<>();
+            // parse arguments list
+            List<Receiver> arguments = new ArrayList<>();
 
             for (Expression expression : expr.getArguments()) {
-                parameters.add(expression.accept(this, context.copyAndUseOuterReceiver()));
+                arguments.add(expression.accept(this, context.copyAndUseOuterReceiver()));
             }
 
-            // get types for parameters
-            List<TypeMirror> parameterTypes = new ArrayList<>();
-            for (Receiver p : parameters) {
-                parameterTypes.add(p.getType());
+            // get types for arguments
+            List<TypeMirror> argumentTypes = new ArrayList<>();
+            for (Receiver p : arguments) {
+                argumentTypes.add(p.getType());
             }
             ExecutableElement methodElement;
             try {
@@ -333,12 +350,12 @@ public class FlowExpressionParseUtil {
                 TypeMirror receiverType = context.receiver.getType();
 
                 if (receiverType.getKind() == TypeKind.ARRAY) {
-                    element = resolver.findMethod(methodName, receiverType, path, parameterTypes);
+                    element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
                 }
 
                 // Search for method in each enclosing class.
                 while (receiverType.getKind() == TypeKind.DECLARED) {
-                    element = resolver.findMethod(methodName, receiverType, path, parameterTypes);
+                    element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
                     if (element.getKind() == ElementKind.METHOD) {
                         break;
                     }
@@ -354,21 +371,26 @@ public class FlowExpressionParseUtil {
 
                 methodElement = (ExecutableElement) element;
 
-                for (int i = 0; i < parameters.size(); i++) {
-                    VariableElement formal = methodElement.getParameters().get(i);
-                    TypeMirror formalType = formal.asType();
-                    Receiver actual = parameters.get(i);
-                    TypeMirror actualType = actual.getType();
+                // Add valueOf around any arguments that require boxing.
+                for (int i = 0; i < arguments.size(); i++) {
+                    VariableElement parameter = methodElement.getParameters().get(i);
+                    TypeMirror parameterType = parameter.asType();
+                    Receiver argument = arguments.get(i);
+                    TypeMirror argumentType = argument.getType();
                     // boxing necessary
-                    if (TypesUtils.isBoxedPrimitive(formalType)
-                            && TypesUtils.isPrimitive(actualType)) {
-                        MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, formalType);
+                    if (TypesUtils.isBoxedPrimitive(parameterType)
+                            && TypesUtils.isPrimitive(argumentType)) {
+                        MethodSymbol valueOfMethod =
+                                TreeBuilder.getValueOfMethod(env, parameterType);
                         List<Receiver> p = new ArrayList<>();
-                        p.add(actual);
+                        p.add(argument);
                         Receiver boxedParam =
                                 new MethodCall(
-                                        formalType, valueOfMethod, new ClassName(formalType), p);
-                        parameters.set(i, boxedParam);
+                                        parameterType,
+                                        valueOfMethod,
+                                        new ClassName(parameterType),
+                                        p);
+                        arguments.set(i, boxedParam);
                     }
                 }
             } catch (Throwable t) {
@@ -393,7 +415,7 @@ public class FlowExpressionParseUtil {
                         ElementUtils.getType(methodElement),
                         methodElement,
                         staticClassReceiver,
-                        parameters);
+                        arguments);
             } else {
                 if (context.receiver instanceof ClassName) {
                     throw new ParseRuntimeException(
@@ -404,7 +426,7 @@ public class FlowExpressionParseUtil {
                 TypeMirror methodType =
                         TypesUtils.substituteMethodReturnType(
                                 methodElement, context.receiver.getType(), env);
-                return new MethodCall(methodType, methodElement, context.receiver, parameters);
+                return new MethodCall(methodType, methodElement, context.receiver, arguments);
             }
         }
 
@@ -446,20 +468,6 @@ public class FlowExpressionParseUtil {
             return StaticJavaParser.parseExpression(expr.asClassExpr().getTypeAsString())
                     .accept(this, context);
         }
-    }
-
-    /**
-     * Replaces every occurrence of "#(number)" with "_param_(number)" where number is an index of a
-     * parameter.
-     */
-    private static String replaceParameterSyntax(String expression) {
-        String updatedExpression = expression;
-
-        for (Integer integer : parameterIndices(expression)) {
-            updatedExpression = updatedExpression.replaceAll("#" + integer, "_param_" + integer);
-        }
-
-        return updatedExpression;
     }
 
     /**
