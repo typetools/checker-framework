@@ -3,9 +3,21 @@ package org.checkerframework.framework.util;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
+import com.github.javaparser.ast.expr.CharLiteralExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
+import com.github.javaparser.ast.expr.DoubleLiteralExpr;
+import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.IntegerLiteralExpr;
+import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.SuperExpr;
+import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.visitor.GenericVisitorWithDefaults;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -115,65 +127,340 @@ public class FlowExpressionParseUtil {
             Expression expr, FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
 
-        ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
-        Types types = env.getTypeUtils();
+        return expr.accept(new ExpressionToReceiverVisitor(path), context);
+    }
 
-        if (expr != null) {
-            if (expr.isNullLiteralExpr()) {
-                return new ValueLiteral(types.getNullType(), (Object) null);
-            } else if (expr.isIntegerLiteralExpr()) {
-                return new ValueLiteral(
-                        types.getPrimitiveType(TypeKind.INT), expr.asIntegerLiteralExpr().asInt());
-            } else if (expr.isLongLiteralExpr()) {
-                return new ValueLiteral(
-                        types.getPrimitiveType(TypeKind.LONG), expr.asLongLiteralExpr().asLong());
-            } else if (expr.isDoubleLiteralExpr()) {
-                return new ValueLiteral(
-                        types.getPrimitiveType(TypeKind.DOUBLE),
-                        expr.asDoubleLiteralExpr().asDouble());
-            } else if (expr.isStringLiteralExpr()) {
-                TypeMirror stringTM =
-                        TypesUtils.typeFromClass(String.class, types, env.getElementUtils());
-                return new ValueLiteral(stringTM, expr.asStringLiteralExpr().asString());
-            } else if (expr.isThisExpr() && !expr.asThisExpr().getTypeName().isPresent()) {
-                return getThisReceiver(context);
-            } else if (expr.isSuperExpr()) {
-                return getSuperReceiver(types, context);
-            } else if (expr.isEnclosedExpr()) {
-                return getReceiverFromExpression(expr.asEnclosedExpr().getInner(), context, path);
-            } else if (expr.isArrayAccessExpr()) {
-                return getArrayAccessReceiver(expr.asArrayAccessExpr(), context, path);
-            } else if (expr.isNameExpr()) {
-                return getIdentifierReceiver(
-                        expr.asNameExpr().getNameAsString(), env, path, context);
-            } else if (expr.isMethodCallExpr()) {
-                return getMethodCallReceiver(expr.asMethodCallExpr(), context, path, env);
-            } else if (expr.isFieldAccessExpr()) {
-                return getMemberSelectReceiver(expr.asFieldAccessExpr(), env, context, path);
-            } else if (expr.isClassExpr()) {
-                // Class literals.
-                // The parsing returns a NameExpr to be handled by getIdentifierReceiver
-                // or a FieldAccessExpr to be handled by getMemberSelectReceiver.
-                return getReceiverFromExpression(
-                        StaticJavaParser.parseExpression(expr.asClassExpr().getTypeAsString()),
-                        context,
-                        path);
+    private static class ExpressionToReceiverVisitor
+            extends GenericVisitorWithDefaults<Receiver, FlowExpressionContext> {
+        private final TreePath path;
+
+        ExpressionToReceiverVisitor(TreePath path) {
+            this.path = path;
+        }
+
+        @Override
+        public Receiver defaultAction(
+                com.github.javaparser.ast.Node n, FlowExpressionContext context) {
+            String message = "is an unrecognized expression";
+            if (context.parsingMember) {
+                message += " in a context with parsingMember=true";
+            }
+            throw constructParserException(n.toString(), message);
+        }
+
+        @Override
+        public Receiver visit(NullLiteralExpr expr, FlowExpressionContext context) {
+            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+            Types types = env.getTypeUtils();
+            return new ValueLiteral(types.getNullType(), (Object) null);
+        }
+
+        @Override
+        public Receiver visit(IntegerLiteralExpr expr, FlowExpressionContext context) {
+            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+            Types types = env.getTypeUtils();
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), expr.asInt());
+        }
+
+        @Override
+        public Receiver visit(LongLiteralExpr expr, FlowExpressionContext context) {
+            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+            Types types = env.getTypeUtils();
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), expr.asLong());
+        }
+
+        @Override
+        public Receiver visit(CharLiteralExpr expr, FlowExpressionContext context) {
+            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+            Types types = env.getTypeUtils();
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.CHAR), expr.asChar());
+        }
+
+        @Override
+        public Receiver visit(DoubleLiteralExpr expr, FlowExpressionContext context) {
+            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+            Types types = env.getTypeUtils();
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.DOUBLE), expr.asDouble());
+        }
+
+        @Override
+        public Receiver visit(StringLiteralExpr expr, FlowExpressionContext context) {
+            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+            Types types = env.getTypeUtils();
+            TypeMirror stringTM =
+                    TypesUtils.typeFromClass(String.class, types, env.getElementUtils());
+            return new ValueLiteral(stringTM, expr.asString());
+        }
+
+        @Override
+        public Receiver visit(ThisExpr n, FlowExpressionContext context) {
+            if (!(context.receiver == null || context.receiver.containsUnknown())) {
+                // "this" is the receiver of the context
+                return context.receiver;
+            }
+            return new ThisReference(context.receiver == null ? null : context.receiver.getType());
+        }
+
+        @Override
+        public Receiver visit(SuperExpr n, FlowExpressionContext context) {
+            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+            Types types = env.getTypeUtils();
+            // super literal
+            List<? extends TypeMirror> superTypes =
+                    types.directSupertypes(context.receiver.getType());
+            // find class supertype
+            for (TypeMirror t : superTypes) {
+                // ignore interface types
+                if (!(t instanceof ClassType)) {
+                    continue;
+                }
+                ClassType tt = (ClassType) t;
+                if (!tt.isInterface()) {
+                    return new ThisReference(t);
+                }
+            }
+
+            throw constructParserException("super", "super class not found");
+        }
+
+        @Override
+        public Receiver visit(EnclosedExpr expr, FlowExpressionContext context) {
+            return getReceiverFromExpression(expr.getInner(), context, path);
+        }
+
+        @Override
+        public Receiver visit(ArrayAccessExpr expr, FlowExpressionContext context) {
+            Receiver receiver = getReceiverFromExpression(expr.getName(), context, path);
+            FlowExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
+            Receiver index = getReceiverFromExpression(expr.getIndex(), contextForIndex, path);
+            TypeMirror receiverType = receiver.getType();
+            if (!(receiverType instanceof ArrayType)) {
+                throw constructParserException(
+                        expr.toString(),
+                        String.format("receiver not an array: %s : %s", receiver, receiverType));
+            }
+            TypeMirror componentType = ((ArrayType) receiverType).getComponentType();
+            return new ArrayAccess(componentType, receiver, index);
+        }
+
+        @Override
+        public Receiver visit(NameExpr n, FlowExpressionContext context) {
+            String s = n.getNameAsString();
+            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+            Resolver resolver = new Resolver(env);
+            if (!context.parsingMember && s.startsWith("_param_")) {
+                return getParameterReceiver(s, context);
+            } else if (!context.parsingMember && context.useLocalScope) {
+                // Attempt to match a local variable within the scope of the
+                // given path before attempting to match a field.
+                VariableElement varElem = resolver.findLocalVariableOrParameterOrField(s, path);
+                if (varElem != null) {
+                    if (varElem.getKind() == ElementKind.FIELD) {
+                        boolean isOriginalReceiver = context.receiver instanceof ThisReference;
+                        return getReceiverField(s, context, isOriginalReceiver, varElem);
+                    } else {
+                        return new LocalVariable(varElem);
+                    }
+                }
+            }
+
+            // field access
+            TypeMirror receiverType = context.receiver.getType();
+            boolean originalReceiver = true;
+            VariableElement fieldElem = null;
+
+            if (receiverType.getKind() == TypeKind.ARRAY && s.equals("length")) {
+                fieldElem = resolver.findField(s, receiverType, path);
+            }
+
+            // Search for field in each enclosing class.
+            while (receiverType.getKind() == TypeKind.DECLARED) {
+                fieldElem = resolver.findField(s, receiverType, path);
+                if (fieldElem != null) {
+                    break;
+                }
+                receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+                originalReceiver = false;
+            }
+
+            if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
+                return getReceiverField(s, context, originalReceiver, fieldElem);
+            }
+
+            // Class name
+            Element classElem = resolver.findClass(s, path);
+            TypeMirror classType = ElementUtils.getType(classElem);
+            if (classType != null) {
+                return new ClassName(classType);
+            }
+
+            MethodTree enclMethod = TreeUtils.enclosingMethod(path);
+            if (enclMethod != null) {
+                List<? extends VariableTree> params = enclMethod.getParameters();
+                for (int i = 0; i < params.size(); i++) {
+                    if (params.get(i).getName().contentEquals(s)) {
+                        throw constructParserException(
+                                s,
+                                String.format(
+                                        DependentTypesError.FORMAL_PARAM_NAME_STRING, i + 1, s));
+                    }
+                }
+            }
+
+            throw constructParserException(s, "identifier not found");
+        }
+
+        @Override
+        public Receiver visit(MethodCallExpr expr, FlowExpressionContext context) {
+            String s = expr.toString();
+            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+            Resolver resolver = new Resolver(env);
+
+            // methods with scope, like "item.get()", need special treatment.
+            if (expr.getScope().isPresent()) {
+                Receiver receiver = getReceiverFromExpression(expr.getScope().get(), context, path);
+                FlowExpressionContext newContext =
+                        context.copyChangeToParsingMemberOfReceiver(receiver);
+                return getReceiverFromExpression(expr.removeScope(), newContext, path);
+            }
+
+            String methodName = expr.getNameAsString();
+
+            // parse parameter list
+            List<Receiver> parameters = new ArrayList<>();
+
+            for (Expression expression : expr.getArguments()) {
+                parameters.add(
+                        getReceiverFromExpression(
+                                expression, context.copyAndUseOuterReceiver(), path));
+            }
+
+            // get types for parameters
+            List<TypeMirror> parameterTypes = new ArrayList<>();
+            for (Receiver p : parameters) {
+                parameterTypes.add(p.getType());
+            }
+            ExecutableElement methodElement;
+            try {
+                Element element = null;
+
+                // try to find the correct method
+                TypeMirror receiverType = context.receiver.getType();
+
+                if (receiverType.getKind() == TypeKind.ARRAY) {
+                    element = resolver.findMethod(methodName, receiverType, path, parameterTypes);
+                }
+
+                // Search for method in each enclosing class.
+                while (receiverType.getKind() == TypeKind.DECLARED) {
+                    element = resolver.findMethod(methodName, receiverType, path, parameterTypes);
+                    if (element.getKind() == ElementKind.METHOD) {
+                        break;
+                    }
+                    receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+                }
+
+                if (element == null) {
+                    throw constructParserException(s, "element==null");
+                }
+                if (element.getKind() != ElementKind.METHOD) {
+                    throw constructParserException(s, "element.getKind()==" + element.getKind());
+                }
+
+                methodElement = (ExecutableElement) element;
+
+                for (int i = 0; i < parameters.size(); i++) {
+                    VariableElement formal = methodElement.getParameters().get(i);
+                    TypeMirror formalType = formal.asType();
+                    Receiver actual = parameters.get(i);
+                    TypeMirror actualType = actual.getType();
+                    // boxing necessary
+                    if (TypesUtils.isBoxedPrimitive(formalType)
+                            && TypesUtils.isPrimitive(actualType)) {
+                        MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, formalType);
+                        List<Receiver> p = new ArrayList<>();
+                        p.add(actual);
+                        Receiver boxedParam =
+                                new MethodCall(
+                                        formalType, valueOfMethod, new ClassName(formalType), p);
+                        parameters.set(i, boxedParam);
+                    }
+                }
+            } catch (Throwable t) {
+                if (t.getMessage() == null) {
+                    throw new Error("no detail message in " + t.getClass(), t);
+                }
+                throw constructParserException(s, t.getMessage());
+            }
+
+            // TODO: reinstate this test, but issue a warning that the user
+            // can override, rather than halting parsing which the user cannot override.
+            /*if (!PurityUtils.isDeterministic(context.checkerContext.getAnnotationProvider(),
+                    methodElement)) {
+                throw new FlowExpressionParseException(Result.failure(
+                        "flowexpr.method.not.deterministic",
+                        methodElement.getSimpleName()));
+            }*/
+            if (ElementUtils.isStatic(methodElement)) {
+                Element classElem = methodElement.getEnclosingElement();
+                Receiver staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
+                return new MethodCall(
+                        ElementUtils.getType(methodElement),
+                        methodElement,
+                        staticClassReceiver,
+                        parameters);
             } else {
-                String message;
-                if (expr.toString().equals("_param_0")) {
-                    message =
-                            "one should use \"this\" for the receiver or \"#1\" for the first formal parameter";
-                } else {
-                    message = "is an unrecognized expression";
+                if (context.receiver instanceof ClassName) {
+                    throw constructParserException(
+                            s, "a non-static method call cannot have a class name as a receiver");
                 }
-                if (context.parsingMember) {
-                    message += " in a context with parsingMember=true";
-                }
-                throw constructParserException(expr.toString(), message);
+                TypeMirror methodType =
+                        TypesUtils.substituteMethodReturnType(
+                                methodElement, context.receiver.getType(), env);
+                return new MethodCall(methodType, methodElement, context.receiver, parameters);
             }
         }
 
-        return null;
+        /** @param expr a field access, a fully qualified class name, or qualified class name */
+        @Override
+        public Receiver visit(FieldAccessExpr expr, FlowExpressionContext context) {
+            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+            Resolver resolver = new Resolver(env);
+
+            Symbol.PackageSymbol packageSymbol =
+                    resolver.findPackage(expr.getScope().toString(), path);
+            if (packageSymbol != null) {
+                ClassSymbol classSymbol =
+                        resolver.findClassInPackage(expr.getNameAsString(), packageSymbol, path);
+                if (classSymbol != null) {
+                    return new ClassName(classSymbol.asType());
+                }
+                throw constructParserException(
+                        expr.toString(),
+                        "could not find class "
+                                + expr.getNameAsString()
+                                + " inside "
+                                + expr.getScope().toString());
+            }
+
+            Receiver receiver = getReceiverFromExpression(expr.getScope(), context, path);
+
+            // Parse the rest, with a new receiver.
+            FlowExpressionContext newContext =
+                    context.copyChangeToParsingMemberOfReceiver(receiver);
+            return getReceiverFromExpression(expr.getNameAsExpression(), newContext, path);
+        }
+
+        @Override
+        public Receiver visit(ClassExpr expr, FlowExpressionContext context) {
+            // Class literals.
+            // The parsing returns a NameExpr to be handled by getIdentifierReceiver
+            // or a FieldAccessExpr to be handled by getMemberSelectReceiver.
+            return getReceiverFromExpression(
+                    StaticJavaParser.parseExpression(expr.asClassExpr().getTypeAsString()),
+                    context,
+                    path);
+        }
     }
 
     /**
@@ -190,133 +477,10 @@ public class FlowExpressionParseUtil {
         return updatedExpression;
     }
 
-    /** @param expr a field access, a fully qualified class name, or qualified class name */
-    private static Receiver getMemberSelectReceiver(
-            FieldAccessExpr expr,
-            ProcessingEnvironment env,
-            FlowExpressionContext context,
-            TreePath path)
-            throws FlowExpressionParseException {
-        Resolver resolver = new Resolver(env);
-
-        Symbol.PackageSymbol packageSymbol = resolver.findPackage(expr.getScope().toString(), path);
-        if (packageSymbol != null) {
-            ClassSymbol classSymbol =
-                    resolver.findClassInPackage(expr.getNameAsString(), packageSymbol, path);
-            if (classSymbol != null) {
-                return new ClassName(classSymbol.asType());
-            }
-            throw constructParserException(
-                    expr.toString(),
-                    "could not find class "
-                            + expr.getNameAsString()
-                            + " inside "
-                            + expr.getScope().toString());
-        }
-
-        Receiver receiver = getReceiverFromExpression(expr.getScope(), context, path);
-
-        // Parse the rest, with a new receiver.
-        FlowExpressionContext newContext = context.copyChangeToParsingMemberOfReceiver(receiver);
-        return getReceiverFromExpression(expr.getNameAsExpression(), newContext, path);
-    }
-
-    private static Receiver getThisReceiver(FlowExpressionContext context) {
-        if (!(context.receiver == null || context.receiver.containsUnknown())) {
-            // "this" is the receiver of the context
-            return context.receiver;
-        }
-        return new ThisReference(context.receiver == null ? null : context.receiver.getType());
-    }
-
-    private static Receiver getSuperReceiver(Types types, FlowExpressionContext context)
-            throws FlowExpressionParseException {
-        // super literal
-        List<? extends TypeMirror> superTypes = types.directSupertypes(context.receiver.getType());
-        // find class supertype
-        for (TypeMirror t : superTypes) {
-            // ignore interface types
-            if (!(t instanceof ClassType)) {
-                continue;
-            }
-            ClassType tt = (ClassType) t;
-            if (!tt.isInterface()) {
-                return new ThisReference(t);
-            }
-        }
-
-        throw constructParserException("super", "super class not found");
-    }
-
     /**
      * @param s a String representing an identifier (name expression, no dots in it)
      * @return the receiver of the passed String name
      */
-    private static Receiver getIdentifierReceiver(
-            String s, ProcessingEnvironment env, TreePath path, FlowExpressionContext context)
-            throws FlowExpressionParseException {
-        Resolver resolver = new Resolver(env);
-        if (!context.parsingMember && s.startsWith("_param_")) {
-            return getParameterReceiver(s, context);
-        } else if (!context.parsingMember && context.useLocalScope) {
-            // Attempt to match a local variable within the scope of the
-            // given path before attempting to match a field.
-            VariableElement varElem = resolver.findLocalVariableOrParameterOrField(s, path);
-            if (varElem != null) {
-                if (varElem.getKind() == ElementKind.FIELD) {
-                    boolean isOriginalReceiver = context.receiver instanceof ThisReference;
-                    return getReceiverField(s, context, isOriginalReceiver, varElem);
-                } else {
-                    return new LocalVariable(varElem);
-                }
-            }
-        }
-
-        // field access
-        TypeMirror receiverType = context.receiver.getType();
-        boolean originalReceiver = true;
-        VariableElement fieldElem = null;
-
-        if (receiverType.getKind() == TypeKind.ARRAY && s.equals("length")) {
-            fieldElem = resolver.findField(s, receiverType, path);
-        }
-
-        // Search for field in each enclosing class.
-        while (receiverType.getKind() == TypeKind.DECLARED) {
-            fieldElem = resolver.findField(s, receiverType, path);
-            if (fieldElem != null) {
-                break;
-            }
-            receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
-            originalReceiver = false;
-        }
-
-        if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
-            return getReceiverField(s, context, originalReceiver, fieldElem);
-        }
-
-        // Class name
-        Element classElem = resolver.findClass(s, path);
-        TypeMirror classType = ElementUtils.getType(classElem);
-        if (classType != null) {
-            return new ClassName(classType);
-        }
-
-        MethodTree enclMethod = TreeUtils.enclosingMethod(path);
-        if (enclMethod != null) {
-            List<? extends VariableTree> params = enclMethod.getParameters();
-            for (int i = 0; i < params.size(); i++) {
-                if (params.get(i).getName().contentEquals(s)) {
-                    throw constructParserException(
-                            s,
-                            String.format(DependentTypesError.FORMAL_PARAM_NAME_STRING, i + 1, s));
-                }
-            }
-        }
-
-        throw constructParserException(s, "identifier not found");
-    }
-
     private static Receiver getReceiverField(
             String s,
             FlowExpressionContext context,
@@ -358,141 +522,16 @@ public class FlowExpressionParseUtil {
         }
         int idx = Integer.parseInt(s.substring(7)); // "_param_".length() = 7
 
+        if (idx == 0) {
+            throw constructParserException(
+                    s,
+                    "one should use \"this\" for the receiver or \"#1\" for the first formal parameter");
+        }
         if (idx > context.arguments.size()) {
             throw new FlowExpressionParseException(
                     "flowexpr.parse.index.too.big", Integer.toString(idx));
         }
         return context.arguments.get(idx - 1);
-    }
-
-    /** @return the receiver of the passed MethodCallExpr */
-    private static Receiver getMethodCallReceiver(
-            MethodCallExpr expr,
-            FlowExpressionContext context,
-            TreePath path,
-            ProcessingEnvironment env)
-            throws FlowExpressionParseException {
-        String s = expr.toString();
-        Resolver resolver = new Resolver(env);
-
-        // methods with scope, like "item.get()", need special treatment.
-        if (expr.getScope().isPresent()) {
-            Receiver receiver = getReceiverFromExpression(expr.getScope().get(), context, path);
-            FlowExpressionContext newContext =
-                    context.copyChangeToParsingMemberOfReceiver(receiver);
-            return getReceiverFromExpression(expr.removeScope(), newContext, path);
-        }
-
-        String methodName = expr.getNameAsString();
-
-        // parse parameter list
-        List<Receiver> parameters = new ArrayList<>();
-
-        for (Expression expression : expr.getArguments()) {
-            parameters.add(
-                    getReceiverFromExpression(expression, context.copyAndUseOuterReceiver(), path));
-        }
-
-        // get types for parameters
-        List<TypeMirror> parameterTypes = new ArrayList<>();
-        for (Receiver p : parameters) {
-            parameterTypes.add(p.getType());
-        }
-        ExecutableElement methodElement;
-        try {
-            Element element = null;
-
-            // try to find the correct method
-            TypeMirror receiverType = context.receiver.getType();
-
-            if (receiverType.getKind() == TypeKind.ARRAY) {
-                element = resolver.findMethod(methodName, receiverType, path, parameterTypes);
-            }
-
-            // Search for method in each enclosing class.
-            while (receiverType.getKind() == TypeKind.DECLARED) {
-                element = resolver.findMethod(methodName, receiverType, path, parameterTypes);
-                if (element.getKind() == ElementKind.METHOD) {
-                    break;
-                }
-                receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
-            }
-
-            if (element == null) {
-                throw constructParserException(s, "element==null");
-            }
-            if (element.getKind() != ElementKind.METHOD) {
-                throw constructParserException(s, "element.getKind()==" + element.getKind());
-            }
-
-            methodElement = (ExecutableElement) element;
-
-            for (int i = 0; i < parameters.size(); i++) {
-                VariableElement formal = methodElement.getParameters().get(i);
-                TypeMirror formalType = formal.asType();
-                Receiver actual = parameters.get(i);
-                TypeMirror actualType = actual.getType();
-                // boxing necessary
-                if (TypesUtils.isBoxedPrimitive(formalType) && TypesUtils.isPrimitive(actualType)) {
-                    MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, formalType);
-                    List<Receiver> p = new ArrayList<>();
-                    p.add(actual);
-                    Receiver boxedParam =
-                            new MethodCall(formalType, valueOfMethod, new ClassName(formalType), p);
-                    parameters.set(i, boxedParam);
-                }
-            }
-        } catch (Throwable t) {
-            if (t.getMessage() == null) {
-                throw new Error("no detail message in " + t.getClass(), t);
-            }
-            throw constructParserException(s, t.getMessage());
-        }
-
-        // TODO: reinstate this test, but issue a warning that the user
-        // can override, rather than halting parsing which the user cannot override.
-        /*if (!PurityUtils.isDeterministic(context.checkerContext.getAnnotationProvider(),
-                methodElement)) {
-            throw new FlowExpressionParseException(Result.failure(
-                    "flowexpr.method.not.deterministic",
-                    methodElement.getSimpleName()));
-        }*/
-        if (ElementUtils.isStatic(methodElement)) {
-            Element classElem = methodElement.getEnclosingElement();
-            Receiver staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
-            return new MethodCall(
-                    ElementUtils.getType(methodElement),
-                    methodElement,
-                    staticClassReceiver,
-                    parameters);
-        } else {
-            if (context.receiver instanceof ClassName) {
-                throw constructParserException(
-                        s, "a non-static method call cannot have a class name as a receiver");
-            }
-            TypeMirror methodType =
-                    TypesUtils.substituteMethodReturnType(
-                            methodElement, context.receiver.getType(), env);
-            return new MethodCall(methodType, methodElement, context.receiver, parameters);
-        }
-    }
-
-    /** @return the Receiver of the passed ArrayAccessExpr */
-    private static Receiver getArrayAccessReceiver(
-            ArrayAccessExpr expr, FlowExpressionContext context, TreePath path)
-            throws FlowExpressionParseException {
-
-        Receiver receiver = getReceiverFromExpression(expr.getName(), context, path);
-        FlowExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
-        Receiver index = getReceiverFromExpression(expr.getIndex(), contextForIndex, path);
-        TypeMirror receiverType = receiver.getType();
-        if (!(receiverType instanceof ArrayType)) {
-            throw constructParserException(
-                    expr.toString(),
-                    String.format("receiver not an array: %s : %s", receiver, receiverType));
-        }
-        TypeMirror componentType = ((ArrayType) receiverType).getComponentType();
-        return new ArrayAccess(componentType, receiver, index);
     }
 
     /**
@@ -843,7 +882,7 @@ public class FlowExpressionParseUtil {
      * An exception that indicates a parse error. Call {@link #getResult} to obtain a {@link Result}
      * that can be used for error reporting.
      */
-    public static class FlowExpressionParseException extends Exception {
+    public static class FlowExpressionParseException extends RuntimeException {
         private static final long serialVersionUID = 2L;
         private @CompilerMessageKey String errorKey;
         public final Object[] args;
