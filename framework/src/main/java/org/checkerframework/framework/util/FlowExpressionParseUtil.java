@@ -88,6 +88,11 @@ public class FlowExpressionParseUtil {
     /** Unanchored; can be used to find all formal parameter uses. */
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
+    /** Parsable replacement for parameter references. */
+    private static final String PARMETER_REPLACEMENT = "_param_";
+
+    private static final int PARAMETER_REPLACEMENT_LENGTH = PARMETER_REPLACEMENT.length();
+
     /**
      * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
      * FlowExpressionParseException}.
@@ -114,6 +119,8 @@ public class FlowExpressionParseUtil {
         try {
             result = expr.accept(new ExpressionToReceiverVisitor(path, env), context);
         } catch (ParseRuntimeException e) {
+            // The visitors can't throw exceptions because they
+            // need to override the methods in the superclass.
             throw e.getCheckedException();
         }
         if (result instanceof ClassName && !expression.endsWith("class")) {
@@ -124,14 +131,15 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Replaces every occurrence of "#(number)" with "_param_(number)" where number is an index of a
-     * parameter.
+     * Replaces every occurrence of "#(number)" with "PARAMETER_REPLACEMENT(number)" where number is
+     * an index of a parameter.
      */
     private static String replaceParameterSyntax(String expression) {
         String updatedExpression = expression;
 
         for (Integer integer : parameterIndices(expression)) {
-            updatedExpression = updatedExpression.replaceAll("#" + integer, "_param_" + integer);
+            updatedExpression =
+                    updatedExpression.replaceAll("#" + integer, PARMETER_REPLACEMENT + integer);
         }
 
         return updatedExpression;
@@ -248,7 +256,7 @@ public class FlowExpressionParseUtil {
         public Receiver visit(NameExpr n, FlowExpressionContext context) {
             String s = n.getNameAsString();
             Resolver resolver = new Resolver(env);
-            if (!context.parsingMember && s.startsWith("_param_")) {
+            if (!context.parsingMember && s.startsWith(PARMETER_REPLACEMENT)) {
                 // A parameter is a local variable, but it can be referenced outside of local scope
                 // using the special #NN syntax.
                 return getParameterReceiver(s, context);
@@ -320,12 +328,11 @@ public class FlowExpressionParseUtil {
             String s = expr.toString();
             Resolver resolver = new Resolver(env);
 
-            // methods with scope, like "item.get()", need special treatment.
+            // methods with scope (receiver expression) need to change the parsing context
             if (expr.getScope().isPresent()) {
                 Receiver receiver = expr.getScope().get().accept(this, context);
-                FlowExpressionContext newContext =
-                        context.copyChangeToParsingMemberOfReceiver(receiver);
-                return expr.removeScope().accept(this, newContext);
+                context = context.copyChangeToParsingMemberOfReceiver(receiver);
+                expr = expr.removeScope();
             }
 
             String methodName = expr.getNameAsString();
@@ -457,62 +464,64 @@ public class FlowExpressionParseUtil {
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext =
                     context.copyChangeToParsingMemberOfReceiver(receiver);
-            return expr.getNameAsExpression().accept(this, newContext);
+            return visit(expr.getNameAsExpression(), newContext);
         }
 
+        /**
+         * @param expr a Class Literal
+         * @return a NameExpr to be handled by NameExpr visitor or a FieldAccessExpr to be handled
+         *     by FieldAccess visitor
+         */
         @Override
         public Receiver visit(ClassExpr expr, FlowExpressionContext context) {
-            // Class literals.
-            // The parsing returns a NameExpr to be handled by NameExpr visitor
-            // or a FieldAccessExpr to be handled by FieldAccessExpr visitor.
             return StaticJavaParser.parseExpression(expr.asClassExpr().getTypeAsString())
                     .accept(this, context);
         }
+
+        /**
+         * @param s a String representing an identifier (name expression, no dots in it)
+         * @return the receiver of the passed String name
+         */
+        private static Receiver getReceiverField(
+                String s,
+                FlowExpressionContext context,
+                boolean originalReceiver,
+                VariableElement fieldElem) {
+            TypeMirror receiverType = context.receiver.getType();
+
+            TypeMirror fieldType = ElementUtils.getType(fieldElem);
+            if (ElementUtils.isStatic(fieldElem)) {
+                Element classElem = fieldElem.getEnclosingElement();
+                Receiver staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
+                return new FieldAccess(staticClassReceiver, fieldType, fieldElem);
+            }
+            Receiver locationOfField;
+            if (originalReceiver) {
+                locationOfField = context.receiver;
+            } else {
+                locationOfField =
+                        FlowExpressions.internalReprOf(
+                                context.checkerContext.getAnnotationProvider(),
+                                new ImplicitThisLiteralNode(receiverType));
+            }
+            if (locationOfField instanceof ClassName) {
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                s, "a non-static field cannot have a class name as a receiver."));
+            }
+            return new FieldAccess(locationOfField, fieldType, fieldElem);
+        }
     }
 
     /**
-     * @param s a String representing an identifier (name expression, no dots in it)
-     * @return the receiver of the passed String name
-     */
-    private static Receiver getReceiverField(
-            String s,
-            FlowExpressionContext context,
-            boolean originalReceiver,
-            VariableElement fieldElem) {
-        TypeMirror receiverType = context.receiver.getType();
-
-        TypeMirror fieldType = ElementUtils.getType(fieldElem);
-        if (ElementUtils.isStatic(fieldElem)) {
-            Element classElem = fieldElem.getEnclosingElement();
-            Receiver staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
-            return new FieldAccess(staticClassReceiver, fieldType, fieldElem);
-        }
-        Receiver locationOfField;
-        if (originalReceiver) {
-            locationOfField = context.receiver;
-        } else {
-            locationOfField =
-                    FlowExpressions.internalReprOf(
-                            context.checkerContext.getAnnotationProvider(),
-                            new ImplicitThisLiteralNode(receiverType));
-        }
-        if (locationOfField instanceof ClassName) {
-            throw new ParseRuntimeException(
-                    constructParserException(
-                            s, "a non-static field cannot have a class name as a receiver."));
-        }
-        return new FieldAccess(locationOfField, fieldType, fieldElem);
-    }
-
-    /**
-     * @param s A String that starts with "_param_"
+     * @param s A String that starts with PARAMETER_REPLACEMENT
      * @return The receiver of the parameter passed
      */
     private static Receiver getParameterReceiver(String s, FlowExpressionContext context) {
         if (context.arguments == null) {
             throw new ParseRuntimeException(constructParserException(s, "no parameter found"));
         }
-        int idx = Integer.parseInt(s.substring(7)); // "_param_".length() = 7
+        int idx = Integer.parseInt(s.substring(PARAMETER_REPLACEMENT_LENGTH));
 
         if (idx == 0) {
             throw new ParseRuntimeException(
@@ -925,7 +934,10 @@ public class FlowExpressionParseUtil {
                 "Invalid '" + expr + "' because " + explanation);
     }
 
-    /** The Runtime equivalent of {@link FlowExpressionParseException}. */
+    /**
+     * The Runtime equivalent of {@link FlowExpressionParseException}. This class is needed to wrap
+     * this exception into an unchecked exception
+     */
     private static class ParseRuntimeException extends RuntimeException {
         private static final long serialVersionUID = 2L;
         FlowExpressionParseException exception;
