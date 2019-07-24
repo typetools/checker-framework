@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * <p>The annotation E that is meta-annotated as {@link PostconditionAnnotation} can have an element
  * called {@code value} that is an array of {@code String}s of the same format and with the same
  * meaning as the value {@code expression} in {@link EnsuresQualifier} or a list of postcondition
- * annotations of the same format and with the same meaning as the {@code value} in {@link
+ * annotations in an array{@code value} and with the same meaning as the {@code value} in {@link
  * EnsuresQualifiers}.
  *
  * <p>The established postcondition P has type specified by the {@code qualifier} field of this

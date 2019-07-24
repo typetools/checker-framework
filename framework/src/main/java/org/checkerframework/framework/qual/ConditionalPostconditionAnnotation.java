@@ -13,10 +13,10 @@ import java.lang.annotation.Target;
  *
  * <p>The annotation E that is meta-annotated as {@link ConditionalPostconditionAnnotation} must
  * have an element called {@code expression} that is an array of {@code String}s of the same format
- * and with the same meaning as the value {@code expression} in {@link EnsuresQualifierIf} or a list
- * of conditional postcondition annotations of the same format and with the same meaning as the
- * {@code value} in {@link EnsuresQualifiersIf}. E must also have an element {@code result} with the
- * same meaning as the element {@code result} in {@link EnsuresQualifierIf}.
+ * and with the same meaning as the value {@code expression} in {@link EnsuresQualifierIf} or it
+ * must have a list of conditional postcondition annotations in an array{@code value} and with the
+ * same meaning as the {@code value} in {@link EnsuresQualifiersIf}. E must also have an element
+ * {@code result} with the same meaning as the element {@code result} in {@link EnsuresQualifierIf}.
  *
  * <p>The established postcondition P has type specified by the {@code qualifier} field of this
  * annotation. If the annotation E has elements annotated by {@link QualifierArgument}, their values
