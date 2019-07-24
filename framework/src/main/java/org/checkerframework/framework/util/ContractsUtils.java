@@ -432,8 +432,8 @@ public class ContractsUtils {
     /**
      * Returns postcondition annotations.
      *
-     * @param anno set of conditional post condition annotations
-     * @param metaAnno set of conditional post condition meta annotations
+     * @param anno Postcondition annotations
+     * @param metaAnno PostCondition meta annotations
      * @param annotationmirrorType the AnnotationMirror class type used to cast the element value
      * @param stringType the String class type used to cast the element value
      */
@@ -559,8 +559,8 @@ public class ContractsUtils {
     /**
      * Returns conditional postcondition annotations.
      *
-     * @param anno set of conditional post condition annotations
-     * @param metaAnno set of conditional post condition meta annotations
+     * @param anno Conditional Postcondition annotations
+     * @param metaAnno Conditional Postcondition meta annotations
      * @param annotationmirrorType the AnnotationMirror class type used to cast the element value
      * @param stringType the String class type used to cast the element value
      */
