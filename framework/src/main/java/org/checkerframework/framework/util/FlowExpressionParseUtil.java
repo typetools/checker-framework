@@ -109,7 +109,13 @@ public class FlowExpressionParseUtil {
         } catch (ParseProblemException e) {
             throw constructParserException(expression, "is an invalid expression");
         }
-        Receiver result = expr.accept(new ExpressionToReceiverVisitor(path, env, types), context);
+
+        Receiver result;
+        try {
+            result = expr.accept(new ExpressionToReceiverVisitor(path, env, types), context);
+        } catch (ParseRuntimeException e) {
+            throw e.getCheckedException();
+        }
         if (result instanceof ClassName && !expression.endsWith("class")) {
             throw constructParserException(
                     expression, "a class name cannot terminate a flow expression string");
@@ -136,7 +142,7 @@ public class FlowExpressionParseUtil {
             if (context.parsingMember) {
                 message += " in a context with parsingMember=true";
             }
-            throw constructParserException(n.toString(), message);
+            throw new ParseRuntimeException(constructParserException(n.toString(), message));
         }
 
         @Override
@@ -197,7 +203,8 @@ public class FlowExpressionParseUtil {
                 }
             }
 
-            throw constructParserException("super", "super class not found");
+            throw new ParseRuntimeException(
+                    constructParserException("super", "super class not found"));
         }
 
         @Override
@@ -212,9 +219,11 @@ public class FlowExpressionParseUtil {
             Receiver index = expr.getIndex().accept(this, contextForIndex);
             TypeMirror receiverType = receiver.getType();
             if (!(receiverType instanceof ArrayType)) {
-                throw constructParserException(
-                        expr.toString(),
-                        String.format("receiver not an array: %s : %s", receiver, receiverType));
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                expr.toString(),
+                                String.format(
+                                        "receiver not an array: %s : %s", receiver, receiverType)));
             }
             TypeMirror componentType = ((ArrayType) receiverType).getComponentType();
             return new ArrayAccess(componentType, receiver, index);
@@ -275,15 +284,18 @@ public class FlowExpressionParseUtil {
                 List<? extends VariableTree> params = enclMethod.getParameters();
                 for (int i = 0; i < params.size(); i++) {
                     if (params.get(i).getName().contentEquals(s)) {
-                        throw constructParserException(
-                                s,
-                                String.format(
-                                        DependentTypesError.FORMAL_PARAM_NAME_STRING, i + 1, s));
+                        throw new ParseRuntimeException(
+                                constructParserException(
+                                        s,
+                                        String.format(
+                                                DependentTypesError.FORMAL_PARAM_NAME_STRING,
+                                                i + 1,
+                                                s)));
                     }
                 }
             }
 
-            throw constructParserException(s, "identifier not found");
+            throw new ParseRuntimeException(constructParserException(s, "identifier not found"));
         }
 
         @Override
@@ -363,7 +375,7 @@ public class FlowExpressionParseUtil {
                 if (t.getMessage() == null) {
                     throw new Error("no detail message in " + t.getClass(), t);
                 }
-                throw constructParserException(s, t.getMessage());
+                throw new ParseRuntimeException(constructParserException(s, t.getMessage()));
             }
 
             // TODO: reinstate this test, but issue a warning that the user
@@ -384,8 +396,10 @@ public class FlowExpressionParseUtil {
                         parameters);
             } else {
                 if (context.receiver instanceof ClassName) {
-                    throw constructParserException(
-                            s, "a non-static method call cannot have a class name as a receiver");
+                    throw new ParseRuntimeException(
+                            constructParserException(
+                                    s,
+                                    "a non-static method call cannot have a class name as a receiver"));
                 }
                 TypeMirror methodType =
                         TypesUtils.substituteMethodReturnType(
@@ -407,12 +421,13 @@ public class FlowExpressionParseUtil {
                 if (classSymbol != null) {
                     return new ClassName(classSymbol.asType());
                 }
-                throw constructParserException(
-                        expr.toString(),
-                        "could not find class "
-                                + expr.getNameAsString()
-                                + " inside "
-                                + expr.getScope().toString());
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                expr.toString(),
+                                "could not find class "
+                                        + expr.getNameAsString()
+                                        + " inside "
+                                        + expr.getScope().toString()));
             }
 
             Receiver receiver = expr.getScope().accept(this, context);
@@ -455,8 +470,7 @@ public class FlowExpressionParseUtil {
             String s,
             FlowExpressionContext context,
             boolean originalReceiver,
-            VariableElement fieldElem)
-            throws FlowExpressionParseException {
+            VariableElement fieldElem) {
         TypeMirror receiverType = context.receiver.getType();
 
         TypeMirror fieldType = ElementUtils.getType(fieldElem);
@@ -475,8 +489,9 @@ public class FlowExpressionParseUtil {
                             new ImplicitThisLiteralNode(receiverType));
         }
         if (locationOfField instanceof ClassName) {
-            throw constructParserException(
-                    s, "a non-static field cannot have a class name as a receiver.");
+            throw new ParseRuntimeException(
+                    constructParserException(
+                            s, "a non-static field cannot have a class name as a receiver."));
         }
         return new FieldAccess(locationOfField, fieldType, fieldElem);
     }
@@ -485,21 +500,22 @@ public class FlowExpressionParseUtil {
      * @param s A String that starts with "_param_"
      * @return The receiver of the parameter passed
      */
-    private static Receiver getParameterReceiver(String s, FlowExpressionContext context)
-            throws FlowExpressionParseException {
+    private static Receiver getParameterReceiver(String s, FlowExpressionContext context) {
         if (context.arguments == null) {
-            throw constructParserException(s, "no parameter found");
+            throw new ParseRuntimeException(constructParserException(s, "no parameter found"));
         }
         int idx = Integer.parseInt(s.substring(7)); // "_param_".length() = 7
 
         if (idx == 0) {
-            throw constructParserException(
-                    s,
-                    "one should use \"this\" for the receiver or \"#1\" for the first formal parameter");
+            throw new ParseRuntimeException(
+                    constructParserException(
+                            s,
+                            "one should use \"this\" for the receiver or \"#1\" for the first formal parameter"));
         }
         if (idx > context.arguments.size()) {
-            throw new FlowExpressionParseException(
-                    "flowexpr.parse.index.too.big", Integer.toString(idx));
+            throw new ParseRuntimeException(
+                    new FlowExpressionParseException(
+                            "flowexpr.parse.index.too.big", Integer.toString(idx)));
         }
         return context.arguments.get(idx - 1);
     }
@@ -852,9 +868,7 @@ public class FlowExpressionParseUtil {
      * An exception that indicates a parse error. Call {@link #getResult} to obtain a {@link Result}
      * that can be used for error reporting.
      */
-    // TODO: This class extends RuntimeException so that it can be thrown in
-    // ExpressionToReceiverVisitor.
-    public static class FlowExpressionParseException extends RuntimeException {
+    public static class FlowExpressionParseException extends Exception {
         private static final long serialVersionUID = 2L;
         private @CompilerMessageKey String errorKey;
         public final Object[] args;
@@ -901,5 +915,19 @@ public class FlowExpressionParseUtil {
                 (Throwable) null,
                 "flowexpr.parse.error",
                 "Invalid '" + expr + "' because " + explanation);
+    }
+
+    /** The Runtime equivalent of {@link FlowExpressionParseException}. */
+    private static class ParseRuntimeException extends RuntimeException {
+        private static final long serialVersionUID = 2L;
+        FlowExpressionParseException exception;
+
+        public ParseRuntimeException(FlowExpressionParseException exception) {
+            this.exception = exception;
+        }
+
+        public FlowExpressionParseException getCheckedException() {
+            return exception;
+        }
     }
 }
