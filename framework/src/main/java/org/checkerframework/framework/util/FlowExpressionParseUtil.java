@@ -94,23 +94,22 @@ public class FlowExpressionParseUtil {
      *
      * @param expression flow expression to parse
      * @param context information about any receiver and arguments
-     * @param localScope path to local scope to use
+     * @param path path to local scope to use
      * @param useLocalScope whether {@code localScope} should be used to resolve identifiers
      */
     public static Receiver parse(
-            String expression,
-            FlowExpressionContext context,
-            TreePath localScope,
-            boolean useLocalScope)
+            String expression, FlowExpressionContext context, TreePath path, boolean useLocalScope)
             throws FlowExpressionParseException {
         context = context.copyAndSetUseLocalScope(useLocalScope);
+        ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+        Types types = env.getTypeUtils();
         Expression expr;
         try {
             expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
         } catch (ParseProblemException e) {
             throw constructParserException(expression, "is an invalid expression");
         }
-        Receiver result = getReceiverFromExpression(expr, context, localScope);
+        Receiver result = expr.accept(new ExpressionToReceiverVisitor(path, env, types), context);
         if (result instanceof ClassName && !expression.endsWith("class")) {
             throw constructParserException(
                     expression, "a class name cannot terminate a flow expression string");
@@ -118,24 +117,16 @@ public class FlowExpressionParseUtil {
         return result;
     }
 
-    /**
-     * Converts the passed Javaparser Expression to a {@link Receiver}.
-     *
-     * @return the Receiver of the passed expression
-     */
-    private static Receiver getReceiverFromExpression(
-            Expression expr, FlowExpressionContext context, TreePath path)
-            throws FlowExpressionParseException {
-
-        return expr.accept(new ExpressionToReceiverVisitor(path), context);
-    }
-
     private static class ExpressionToReceiverVisitor
             extends GenericVisitorWithDefaults<Receiver, FlowExpressionContext> {
         private final TreePath path;
+        private final ProcessingEnvironment env;
+        private final Types types;
 
-        ExpressionToReceiverVisitor(TreePath path) {
+        ExpressionToReceiverVisitor(TreePath path, ProcessingEnvironment env, Types types) {
             this.path = path;
+            this.env = env;
+            this.types = types;
         }
 
         @Override
@@ -150,43 +141,31 @@ public class FlowExpressionParseUtil {
 
         @Override
         public Receiver visit(NullLiteralExpr expr, FlowExpressionContext context) {
-            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
-            Types types = env.getTypeUtils();
             return new ValueLiteral(types.getNullType(), (Object) null);
         }
 
         @Override
         public Receiver visit(IntegerLiteralExpr expr, FlowExpressionContext context) {
-            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
-            Types types = env.getTypeUtils();
             return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), expr.asInt());
         }
 
         @Override
         public Receiver visit(LongLiteralExpr expr, FlowExpressionContext context) {
-            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
-            Types types = env.getTypeUtils();
             return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), expr.asLong());
         }
 
         @Override
         public Receiver visit(CharLiteralExpr expr, FlowExpressionContext context) {
-            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
-            Types types = env.getTypeUtils();
             return new ValueLiteral(types.getPrimitiveType(TypeKind.CHAR), expr.asChar());
         }
 
         @Override
         public Receiver visit(DoubleLiteralExpr expr, FlowExpressionContext context) {
-            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
-            Types types = env.getTypeUtils();
             return new ValueLiteral(types.getPrimitiveType(TypeKind.DOUBLE), expr.asDouble());
         }
 
         @Override
         public Receiver visit(StringLiteralExpr expr, FlowExpressionContext context) {
-            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
-            Types types = env.getTypeUtils();
             TypeMirror stringTM =
                     TypesUtils.typeFromClass(String.class, types, env.getElementUtils());
             return new ValueLiteral(stringTM, expr.asString());
@@ -203,8 +182,6 @@ public class FlowExpressionParseUtil {
 
         @Override
         public Receiver visit(SuperExpr n, FlowExpressionContext context) {
-            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
-            Types types = env.getTypeUtils();
             // super literal
             List<? extends TypeMirror> superTypes =
                     types.directSupertypes(context.receiver.getType());
@@ -225,14 +202,14 @@ public class FlowExpressionParseUtil {
 
         @Override
         public Receiver visit(EnclosedExpr expr, FlowExpressionContext context) {
-            return getReceiverFromExpression(expr.getInner(), context, path);
+            return expr.getInner().accept(this, context);
         }
 
         @Override
         public Receiver visit(ArrayAccessExpr expr, FlowExpressionContext context) {
-            Receiver receiver = getReceiverFromExpression(expr.getName(), context, path);
+            Receiver receiver = expr.getName().accept(this, context);
             FlowExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
-            Receiver index = getReceiverFromExpression(expr.getIndex(), contextForIndex, path);
+            Receiver index = expr.getIndex().accept(this, contextForIndex);
             TypeMirror receiverType = receiver.getType();
             if (!(receiverType instanceof ArrayType)) {
                 throw constructParserException(
@@ -246,7 +223,6 @@ public class FlowExpressionParseUtil {
         @Override
         public Receiver visit(NameExpr n, FlowExpressionContext context) {
             String s = n.getNameAsString();
-            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
             Resolver resolver = new Resolver(env);
             if (!context.parsingMember && s.startsWith("_param_")) {
                 return getParameterReceiver(s, context);
@@ -313,15 +289,14 @@ public class FlowExpressionParseUtil {
         @Override
         public Receiver visit(MethodCallExpr expr, FlowExpressionContext context) {
             String s = expr.toString();
-            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
             Resolver resolver = new Resolver(env);
 
             // methods with scope, like "item.get()", need special treatment.
             if (expr.getScope().isPresent()) {
-                Receiver receiver = getReceiverFromExpression(expr.getScope().get(), context, path);
+                Receiver receiver = expr.getScope().get().accept(this, context);
                 FlowExpressionContext newContext =
                         context.copyChangeToParsingMemberOfReceiver(receiver);
-                return getReceiverFromExpression(expr.removeScope(), newContext, path);
+                return expr.removeScope().accept(this, newContext);
             }
 
             String methodName = expr.getNameAsString();
@@ -330,9 +305,7 @@ public class FlowExpressionParseUtil {
             List<Receiver> parameters = new ArrayList<>();
 
             for (Expression expression : expr.getArguments()) {
-                parameters.add(
-                        getReceiverFromExpression(
-                                expression, context.copyAndUseOuterReceiver(), path));
+                parameters.add(expression.accept(this, context.copyAndUseOuterReceiver()));
             }
 
             // get types for parameters
@@ -424,7 +397,6 @@ public class FlowExpressionParseUtil {
         /** @param expr a field access, a fully qualified class name, or qualified class name */
         @Override
         public Receiver visit(FieldAccessExpr expr, FlowExpressionContext context) {
-            ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
             Resolver resolver = new Resolver(env);
 
             Symbol.PackageSymbol packageSymbol =
@@ -443,23 +415,21 @@ public class FlowExpressionParseUtil {
                                 + expr.getScope().toString());
             }
 
-            Receiver receiver = getReceiverFromExpression(expr.getScope(), context, path);
+            Receiver receiver = expr.getScope().accept(this, context);
 
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext =
                     context.copyChangeToParsingMemberOfReceiver(receiver);
-            return getReceiverFromExpression(expr.getNameAsExpression(), newContext, path);
+            return expr.getNameAsExpression().accept(this, newContext);
         }
 
         @Override
         public Receiver visit(ClassExpr expr, FlowExpressionContext context) {
             // Class literals.
-            // The parsing returns a NameExpr to be handled by getIdentifierReceiver
-            // or a FieldAccessExpr to be handled by getMemberSelectReceiver.
-            return getReceiverFromExpression(
-                    StaticJavaParser.parseExpression(expr.asClassExpr().getTypeAsString()),
-                    context,
-                    path);
+            // The parsing returns a NameExpr to be handled by NameExpr visitor
+            // or a FieldAccessExpr to be handled by FieldAccessExpr visitor.
+            return StaticJavaParser.parseExpression(expr.asClassExpr().getTypeAsString())
+                    .accept(this, context);
         }
     }
 
