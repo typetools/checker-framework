@@ -99,11 +99,14 @@ public class FlowExpressionParseUtil {
      *
      * @param expression flow expression to parse
      * @param context information about any receiver and arguments
-     * @param path path to local scope to use
+     * @param localScope path to local scope to use
      * @param useLocalScope whether {@code localScope} should be used to resolve identifiers
      */
     public static Receiver parse(
-            String expression, FlowExpressionContext context, TreePath path, boolean useLocalScope)
+            String expression,
+            FlowExpressionContext context,
+            TreePath localScope,
+            boolean useLocalScope)
             throws FlowExpressionParseException {
         context = context.copyAndSetUseLocalScope(useLocalScope);
         ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
@@ -116,10 +119,10 @@ public class FlowExpressionParseUtil {
 
         Receiver result;
         try {
-            result = expr.accept(new ExpressionToReceiverVisitor(path, env), context);
+            result = expr.accept(new ExpressionToReceiverVisitor(localScope, env), context);
         } catch (ParseRuntimeException e) {
-            // The visitors can't throw exceptions because they
-            // need to override the methods in the superclass.
+            // The visitors can't throw exceptions because they need to override the methods in the
+            // superclass.
             throw e.getCheckedException();
         }
         if (result instanceof ClassName && !expression.endsWith("class")) {
@@ -957,11 +960,11 @@ public class FlowExpressionParseUtil {
 
     /**
      * The Runtime equivalent of {@link FlowExpressionParseException}. This class is needed to wrap
-     * this exception into an unchecked exception
+     * this exception into an unchecked exception.
      */
     private static class ParseRuntimeException extends RuntimeException {
         private static final long serialVersionUID = 2L;
-        FlowExpressionParseException exception;
+        private final FlowExpressionParseException exception;
 
         public ParseRuntimeException(FlowExpressionParseException exception) {
             this.exception = exception;
