@@ -966,11 +966,11 @@ public class FlowExpressionParseUtil {
         private static final long serialVersionUID = 2L;
         private final FlowExpressionParseException exception;
 
-        public ParseRuntimeException(FlowExpressionParseException exception) {
+        private ParseRuntimeException(FlowExpressionParseException exception) {
             this.exception = exception;
         }
 
-        public FlowExpressionParseException getCheckedException() {
+        private FlowExpressionParseException getCheckedException() {
             return exception;
         }
     }
