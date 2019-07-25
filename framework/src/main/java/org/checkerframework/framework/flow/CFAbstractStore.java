@@ -263,8 +263,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * changes to certain parts of the state.
      *
      * <p>If there is already a value {@code v} present for {@code r}, then the greatest lower bound
-     * of the new and old value is inserted into the store unless it's bottom. If the greatest lower
-     * bound is bottom, then the new value is inserted.
+     * of the new and old value is inserted into the store unless it's bottom. Some checkers do not
+     * override {@link QualifierHierarchy#greatestLowerBound(AnnotationMirror, AnnotationMirror)}
+     * and the default implementation will return the bottom qualifier incorrectly. So this method
+     * conservatively does not insert the glb if it is bottom.
      *
      * <p>Note that this happens per hierarchy, and if the store already contains information about
      * a hierarchy other than {@code a}s hierarchy, that information is preserved.
