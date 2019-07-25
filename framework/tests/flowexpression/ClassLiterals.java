@@ -20,11 +20,15 @@ public class ClassLiterals {
         @FlowExp("java.lang.String.class") Object l6 = p3;
     }
 
+    // :: error: (expression.unparsable.type.invalid)
     @FlowExp("int.class") String s0;
 
+    // :: error: (expression.unparsable.type.invalid)
     @FlowExp("int[].class") String s1;
 
+    // :: error: (expression.unparsable.type.invalid)
     @FlowExp("String[].class") String s2;
 
+    // :: error: (expression.unparsable.type.invalid)
     @FlowExp("java.lang.String[].class") String s3;
 }

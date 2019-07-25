@@ -198,6 +198,7 @@ public class FlowExpressionParseUtil {
             return new ValueLiteral(stringTM, expr.asString());
         }
 
+        /** @return The receiver of the context. */
         @Override
         public Receiver visit(ThisExpr n, FlowExpressionContext context) {
             if (!(context.receiver == null || context.receiver.containsUnknown())) {
@@ -207,6 +208,7 @@ public class FlowExpressionParseUtil {
             return new ThisReference(context.receiver == null ? null : context.receiver.getType());
         }
 
+        /** @return The receiver of the superclass of the context. */
         @Override
         public Receiver visit(SuperExpr n, FlowExpressionContext context) {
             // super literal
@@ -233,6 +235,7 @@ public class FlowExpressionParseUtil {
             return expr.getInner().accept(this, context);
         }
 
+        /** @return The receiver of an array access. */
         @Override
         public Receiver visit(ArrayAccessExpr expr, FlowExpressionContext context) {
             Receiver array = expr.getName().accept(this, context);
@@ -251,9 +254,10 @@ public class FlowExpressionParseUtil {
             return new ArrayAccess(componentType, array, index);
         }
 
+        /** @param expr a unique identifier with no dots in its name. */
         @Override
-        public Receiver visit(NameExpr n, FlowExpressionContext context) {
-            String s = n.getNameAsString();
+        public Receiver visit(NameExpr expr, FlowExpressionContext context) {
+            String s = expr.getNameAsString();
             Resolver resolver = new Resolver(env);
             if (!context.parsingMember && s.startsWith(PARMETER_REPLACEMENT)) {
                 // A parameter is a local variable, but it can be referenced outside of local scope
@@ -322,6 +326,7 @@ public class FlowExpressionParseUtil {
             throw new ParseRuntimeException(constructParserException(s, "identifier not found"));
         }
 
+        /** @param expr a method call with or without scope */
         @Override
         public Receiver visit(MethodCallExpr expr, FlowExpressionContext context) {
             String s = expr.toString();
@@ -473,8 +478,12 @@ public class FlowExpressionParseUtil {
          */
         @Override
         public Receiver visit(ClassExpr expr, FlowExpressionContext context) {
-            return StaticJavaParser.parseExpression(expr.asClassExpr().getTypeAsString())
-                    .accept(this, context);
+            if (!expr.getType().isClassOrInterfaceType()) {
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                expr.toString(), "is an unparsable class literal"));
+            }
+            return StaticJavaParser.parseExpression(expr.getTypeAsString()).accept(this, context);
         }
 
         /**
@@ -661,7 +670,9 @@ public class FlowExpressionParseUtil {
                                 checkerContext.getAnnotationProvider(),
                                 new LocalVariableNode(arg, receiver)));
             }
-            return new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+            FlowExpressionContext flowExprContext =
+                    new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+            return flowExprContext;
         }
 
         public static FlowExpressionContext buildContextForLambda(
@@ -678,7 +689,9 @@ public class FlowExpressionParseUtil {
                                 checkerContext.getAnnotationProvider(),
                                 new LocalVariableNode(arg, receiver)));
             }
-            return new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+            FlowExpressionContext flowExprContext =
+                    new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+            return flowExprContext;
         }
 
         /**
@@ -710,7 +723,9 @@ public class FlowExpressionParseUtil {
                     FlowExpressions.internalReprOf(
                             checkerContext.getAnnotationProvider(), receiver);
             List<Receiver> internalArguments = new ArrayList<>();
-            return new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+            FlowExpressionContext flowExprContext =
+                    new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+            return flowExprContext;
         }
 
         /**
@@ -730,7 +745,9 @@ public class FlowExpressionParseUtil {
                         FlowExpressions.internalReprOf(
                                 checkerContext.getAnnotationProvider(), arg));
             }
-            return new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+            FlowExpressionContext flowExprContext =
+                    new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+            return flowExprContext;
         }
 
         /**
@@ -782,7 +799,9 @@ public class FlowExpressionParseUtil {
                                 checkerContext.getAnnotationProvider(), arg));
             }
 
-            return new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+            FlowExpressionContext flowExprContext =
+                    new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+            return flowExprContext;
         }
 
         /**
