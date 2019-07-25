@@ -965,7 +965,7 @@ public abstract class CFAbstractTransfer<
      * a @SuppressWarning, then this method returns false.
      */
     private boolean shouldPerformWholeProgramInference(Tree tree) {
-        return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(tree, null));
+        return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(tree, ""));
     }
 
     /**
@@ -979,7 +979,7 @@ public abstract class CFAbstractTransfer<
             return false;
         }
         Element elt = TreeUtils.elementFromTree(lhsTree);
-        return !analysis.checker.shouldSuppressWarnings(elt, null);
+        return !analysis.checker.shouldSuppressWarnings(elt, "");
     }
 
     /**
@@ -988,7 +988,7 @@ public abstract class CFAbstractTransfer<
      */
     private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
         return shouldPerformWholeProgramInference(tree)
-                && !analysis.checker.shouldSuppressWarnings(elt, null);
+                && !analysis.checker.shouldSuppressWarnings(elt, "");
     }
 
     /**

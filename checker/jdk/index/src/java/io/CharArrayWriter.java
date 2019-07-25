@@ -76,7 +76,7 @@ class CharArrayWriter extends Writer {
     /**
      * Writes a character to the buffer.
      */
-    public void write(@NonNegative int c) {
+    public void write(int c) {
         synchronized (lock) {
             int newcount = count + 1;
             if (newcount > buf.length) {

@@ -1,8 +1,10 @@
+import java.util.zip.ZipFile
+
 ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = '71e2793bbcd537f1ae2dad79d9571c9153efccbe'
+    jdkShaHash = 'ebe000b9f989aa28a6be30a00b2718ddac58befb'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -134,6 +136,23 @@ task updateJdk() {
             }
         }
     }
+}
+
+task printJdkJarManifest(type: Copy) {
+    description 'Outputs the manifest file for checker/dist/jdk8.jar'
+    outputs.upToDateWhen { false }
+
+    from(zipTree('dist/jdk8.jar')) {
+        include "META-INF/MANIFEST.MF"
+    }
+
+    String tmpDir = "${buildDir}/tmpJDKManifest"
+    into tmpDir
+    doLast {
+        println(new File(tmpDir, 'META-INF/MANIFEST.MF').text)
+        delete tmpDir
+    }
+
 }
 
 task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {

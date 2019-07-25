@@ -19,6 +19,15 @@ if [ ! -z "$CHANGED_JAVA_FILES" ]; then
     ## For debugging:
     # echo "CHANGED_JAVA_FILES: ${CHANGED_JAVA_FILES}"
     python checker/bin-devel/.run-google-java-format/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES} || (echo "Try running: ./gradlew reformat" && /bin/false)
+
+    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$BRANCH" == "master" ]; then
+	./gradlew getPlumeScripts -q
+	(git diff --staged > /tmp/diff.txt 2>&1) || true
+	[ -s /tmp/diff.txt ] || (echo "/tmp/diff.txt is empty" && false)
+	(./gradlew requireJavadocPrivate > /tmp/warnings.txt 2>&1) || true
+	python checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings.txt
+    fi
 fi
 
 # This is to handle non-.java files, since the above already handled .java files.

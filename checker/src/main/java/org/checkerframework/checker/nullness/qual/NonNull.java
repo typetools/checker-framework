@@ -8,11 +8,12 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeKind;
 import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.framework.qual.UpperBoundFor;
 
 /**
  * {@link NonNull} is a type annotation that indicates that an expression is never {@code null}.
@@ -28,18 +29,20 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * <p>This annotation is rarely written in source code, because it is the default.
  *
  * <p>This annotation is associated with the {@link
- * org.checkerframework.checker.nullness.AbstractNullnessChecker}.
+ * org.checkerframework.checker.nullness.NullnessChecker}.
  *
  * @see Nullable
  * @see MonotonicNonNull
- * @see org.checkerframework.checker.nullness.AbstractNullnessChecker
+ * @see org.checkerframework.checker.nullness.NullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
  * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf(MonotonicNonNull.class)
-@ImplicitFor(
-        literals = {LiteralKind.STRING},
-        types = {
+@QualifierForLiterals(LiteralKind.STRING)
+@DefaultQualifierInHierarchy
+@DefaultFor(TypeUseLocation.EXCEPTION_PARAMETER)
+@UpperBoundFor(
+        typeKinds = {
             TypeKind.PACKAGE,
             TypeKind.INT,
             TypeKind.BOOLEAN,
@@ -50,8 +53,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
             TypeKind.SHORT,
             TypeKind.BYTE
         })
-@DefaultQualifierInHierarchy
-@DefaultFor({TypeUseLocation.EXCEPTION_PARAMETER})
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -67,7 +67,8 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <li>Changes invalid expression strings to an error string that includes the reason why the
  *       expression is invalid. For example, {@code @KeyFor("m")} would be changed to
  *       {@code @KeyFor("[error for expression: m error: m: identifier not found]")} if m is not a
- *       valid identifier.
+ *       valid identifier. This allows subtyping checks to assume that if two strings are equal and
+ *       not errors, the reference the same valid Java expression.
  *   <li>Checks annotated types for error strings that have been added by this class and issues an
  *       error if any are found.
  * </ol>
@@ -338,6 +339,7 @@ public class DependentTypesHelper {
                 standardizeUseLocals(localContext, path, type);
                 break;
             case FIELD:
+            case ENUM_CONSTANT:
                 FlowExpressions.Receiver receiverF;
                 if (node.getKind() == Tree.Kind.IDENTIFIER) {
                     FlowExpressions.Receiver r =

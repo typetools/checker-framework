@@ -66,10 +66,4 @@ public class ExpressionsNullness {
     public ExpressionsNullness(Object obj) {
         this.obj = obj;
     }
-
-    void testRawness(@Raw Object obj) {
-        @SuppressWarnings("rawness")
-        @NonRaw Object nonRaw = obj;
-        this.obj = nonRaw;
-    }
 }

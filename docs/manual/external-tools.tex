@@ -109,7 +109,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.8.2'
+    ext.checkerFrameworkVersion = '2.9.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
@@ -262,13 +262,13 @@ Here is an example Buck \<BUILD> file:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-2.8.2.jar',
+    binary_jar = 'checker-2.9.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-2.8.2.jar',
+    binary_jar = 'checker-qual-2.9.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -436,14 +436,14 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-2.8.2/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-2.9.0/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.8.2
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.9.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -467,7 +467,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.8.2
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.9.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -486,11 +486,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.8.2
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.9.0
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.8.2\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.9.0\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 

@@ -1,7 +1,5 @@
 // Test case for issue #2540: https://github.com/typetools/checker-framework/issues/2540
 
-// @skip-test until the issue is fixed
-
 import org.checkerframework.common.value.qual.IntRange;
 
 public class CharToIntCast {
