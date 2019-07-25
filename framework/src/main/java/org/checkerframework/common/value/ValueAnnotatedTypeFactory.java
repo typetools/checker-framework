@@ -1302,26 +1302,37 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-            if ((getMethodIdentifier().isMathMin(tree, processingEnv)
-                            || getMethodIdentifier().isMathMax(tree, processingEnv))
+            if (getMethodIdentifier().isMathMin(tree, processingEnv)
                     && type.hasAnnotation(UNKNOWNVAL)) {
-                AnnotatedTypeMirror atm1 = getAnnotatedType(tree.getArguments().get(0));
-                AnnotatedTypeMirror atm2 = getAnnotatedType(tree.getArguments().get(1));
-                if (atm1.hasAnnotation(IntRange.class) && atm2.hasAnnotation(IntRange.class)) {
-                    long from, to;
-                    if (getMethodIdentifier().isMathMin(tree, processingEnv)) {
-                        from =
-                                Math.min(
-                                        getFromValueFromIntRange(atm1),
-                                        getFromValueFromIntRange(atm2));
-                        to = Math.min(getToValueFromIntRange(atm1), getToValueFromIntRange(atm2));
-                    } else {
-                        from =
-                                Math.max(
-                                        getFromValueFromIntRange(atm1),
-                                        getFromValueFromIntRange(atm2));
-                        to = Math.max(getToValueFromIntRange(atm1), getToValueFromIntRange(atm2));
-                    }
+                AnnotatedTypeMirror argType1 = getAnnotatedType(tree.getArguments().get(0));
+                AnnotatedTypeMirror argType2 = getAnnotatedType(tree.getArguments().get(1));
+                if (argType1.hasAnnotation(IntRange.class)
+                        && argType2.hasAnnotation(IntRange.class)) {
+                    long from =
+                            Math.min(
+                                    getFromValueFromIntRange(argType1),
+                                    getFromValueFromIntRange(argType2));
+                    long to =
+                            Math.min(
+                                    getToValueFromIntRange(argType1),
+                                    getToValueFromIntRange(argType2));
+                    type.replaceAnnotation(createIntRangeAnnotation(from, to));
+                }
+            }
+            if (getMethodIdentifier().isMathMax(tree, processingEnv)
+                    && type.hasAnnotation(UNKNOWNVAL)) {
+                AnnotatedTypeMirror argType1 = getAnnotatedType(tree.getArguments().get(0));
+                AnnotatedTypeMirror argType2 = getAnnotatedType(tree.getArguments().get(1));
+                if (argType1.hasAnnotation(IntRange.class)
+                        && argType2.hasAnnotation(IntRange.class)) {
+                    long from =
+                            Math.max(
+                                    getFromValueFromIntRange(argType1),
+                                    getFromValueFromIntRange(argType2));
+                    long to =
+                            Math.max(
+                                    getToValueFromIntRange(argType1),
+                                    getToValueFromIntRange(argType2));
                     type.replaceAnnotation(createIntRangeAnnotation(from, to));
                 }
             }
