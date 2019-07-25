@@ -1020,7 +1020,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (atypeFactory.getDependentTypesHelper() != null) {
                 atypeFactory
                         .getDependentTypesHelper()
-                        .checkType(visitorState.getAssignmentContext().second, node);
+                        .checkType(atypeFactory.getAnnotatedTypeLhs(node), node);
             }
             // If there's no assignment in this variable declaration, skip it.
             if (node.getInitializer() != null) {
