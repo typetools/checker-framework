@@ -1329,12 +1329,46 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
+        /**
+         * @return The constant value of the Math.min or Math.max method, or null if the argument is
+         *     none of these methods or their arguments are not constants.
+         */
+        private Long getMathMinMaxExactValue(MethodInvocationTree tree) {
+            if (getMethodIdentifier().isMathMin(tree, processingEnv)) {
+                AnnotatedTypeMirror arg1 = getAnnotatedType(tree.getArguments().get(0));
+                AnnotatedTypeMirror arg2 = getAnnotatedType(tree.getArguments().get(1));
+                if (arg1.hasAnnotation(IntVal.class) && arg2.hasAnnotation(IntVal.class)) {
+                    List<Long> intValArgs1 = getIntValues(arg1.getAnnotation(IntVal.class));
+                    List<Long> intValArgs2 = getIntValues(arg2.getAnnotation(IntVal.class));
+                    if (intValArgs1.size() == 1 && intValArgs2.size() == 1) {
+                        return Math.min(intValArgs1.get(0), intValArgs2.get(0));
+                    }
+                }
+            } else if (getMethodIdentifier().isMathMax(tree, processingEnv)) {
+                AnnotatedTypeMirror arg1 = getAnnotatedType(tree.getArguments().get(0));
+                AnnotatedTypeMirror arg2 = getAnnotatedType(tree.getArguments().get(1));
+                if (arg1.hasAnnotation(IntVal.class) && arg2.hasAnnotation(IntVal.class)) {
+                    List<Long> intValArgs1 = getIntValues(arg1.getAnnotation(IntVal.class));
+                    List<Long> intValArgs2 = getIntValues(arg2.getAnnotation(IntVal.class));
+                    if (intValArgs1.size() == 1 && intValArgs2.size() == 1) {
+                        return Math.max(intValArgs1.get(0), intValArgs2.get(0));
+                    }
+                }
+            }
+            return null;
+        }
+
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
             if (type.hasAnnotation(UNKNOWNVAL)) {
                 Range range = getRangeForMathMinMax(tree);
                 if (range != null) {
                     type.replaceAnnotation(createIntRangeAnnotation(range));
+                }
+                Long constantValue = getMathMinMaxExactValue(tree);
+                if (constantValue != null) {
+                    type.replaceAnnotation(
+                            createIntValAnnotation(Collections.singletonList(constantValue)));
                 }
             }
 
