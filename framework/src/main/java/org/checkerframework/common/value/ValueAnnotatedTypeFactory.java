@@ -1302,6 +1302,30 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+            if ((getMethodIdentifier().isMathMin(tree, processingEnv)
+                            || getMethodIdentifier().isMathMax(tree, processingEnv))
+                    && type.hasAnnotation(UNKNOWNVAL)) {
+                AnnotatedTypeMirror atm1 = getAnnotatedType(tree.getArguments().get(0));
+                AnnotatedTypeMirror atm2 = getAnnotatedType(tree.getArguments().get(1));
+                if (atm1.hasAnnotation(IntRange.class) && atm2.hasAnnotation(IntRange.class)) {
+                    long from, to;
+                    if (getMethodIdentifier().isMathMin(tree, processingEnv)) {
+                        from =
+                                Math.min(
+                                        getFromValueFromIntRange(atm1),
+                                        getFromValueFromIntRange(atm2));
+                        to = Math.min(getToValueFromIntRange(atm1), getToValueFromIntRange(atm2));
+                    } else {
+                        from =
+                                Math.max(
+                                        getFromValueFromIntRange(atm1),
+                                        getFromValueFromIntRange(atm2));
+                        to = Math.max(getToValueFromIntRange(atm1), getToValueFromIntRange(atm2));
+                    }
+                    type.replaceAnnotation(createIntRangeAnnotation(from, to));
+                }
+            }
+
             if (!methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))
                     || !handledByValueChecker(type)) {
                 return null;
