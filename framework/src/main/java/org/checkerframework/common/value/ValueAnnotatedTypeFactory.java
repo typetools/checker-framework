@@ -1309,19 +1309,21 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror arg1 = getAnnotatedType(tree.getArguments().get(0));
                 AnnotatedTypeMirror arg2 = getAnnotatedType(tree.getArguments().get(1));
                 if (arg1.hasAnnotation(IntRange.class) && arg2.hasAnnotation(IntRange.class)) {
-                    long from, to;
-                    from = Math.min(getFromValueFromIntRange(arg1), getFromValueFromIntRange(arg2));
-                    to = Math.min(getToValueFromIntRange(arg1), getToValueFromIntRange(arg2));
-                    return new Range(from, to);
+                    Range rangeArg1 =
+                            new Range(getFromValueFromIntRange(arg1), getToValueFromIntRange(arg2));
+                    Range rangeArg2 =
+                            new Range(getFromValueFromIntRange(arg2), getToValueFromIntRange(arg2));
+                    return rangeArg1.min(rangeArg2);
                 }
             } else if (getMethodIdentifier().isMathMax(tree, processingEnv)) {
                 AnnotatedTypeMirror arg1 = getAnnotatedType(tree.getArguments().get(0));
                 AnnotatedTypeMirror arg2 = getAnnotatedType(tree.getArguments().get(1));
                 if (arg1.hasAnnotation(IntRange.class) && arg2.hasAnnotation(IntRange.class)) {
-                    long from, to;
-                    from = Math.max(getFromValueFromIntRange(arg1), getFromValueFromIntRange(arg2));
-                    to = Math.max(getToValueFromIntRange(arg1), getToValueFromIntRange(arg2));
-                    return new Range(from, to);
+                    Range rangeArg1 =
+                            new Range(getFromValueFromIntRange(arg1), getToValueFromIntRange(arg2));
+                    Range rangeArg2 =
+                            new Range(getFromValueFromIntRange(arg2), getToValueFromIntRange(arg2));
+                    return rangeArg1.max(rangeArg2);
                 }
             }
             return null;
