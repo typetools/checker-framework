@@ -68,7 +68,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * A constant holding the maximum value an {@code int} can
      * have, 2<sup>31</sup>-1.
      */
-    @Native public static final @Positive int   MAX_VALUE = 0x7fffffff;
+    @Native public static final @SignedPositive int   MAX_VALUE = 0x7fffffff;
 
     /**
      * The {@code Class} instance representing the primitive type
@@ -1328,7 +1328,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *
      * @since 1.5
      */
-    @Native public static final @Positive int SIZE = 32;
+    @Native public static final @SignedPositive int SIZE = 32;
 
     /**
      * The number of bytes used to represent a {@code int} value in two's
@@ -1336,7 +1336,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *
      * @since 1.8
      */
-    public static final @Positive int BYTES = SIZE / Byte.SIZE;
+    public static final @SignedPositive int BYTES = SIZE / Byte.SIZE;
 
     /**
      * Returns an {@code int} value with at most a single one-bit, in the
