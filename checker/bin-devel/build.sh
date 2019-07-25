@@ -50,7 +50,7 @@ if [ -d ../stubparser ] ; then
     git -C ../stubparser pull
 else
     [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
-    REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} ${GITHUB_ORGANIZATION} stubparser`
+    REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetools stubparser`
     BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
     (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
 fi
