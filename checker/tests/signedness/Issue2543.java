@@ -1,17 +1,17 @@
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
-import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 
 public class Issue2543 {
 
     public static @PolySigned int rotateRight(@PolySigned int i, int distance) {
-		// :: error: (shift.unsigned)
+        // :: error: (shift.unsigned)
         return (i >>> distance) | (i << -distance);
     }
-    
+
     public static @Signed int rotateRightSigned(@Signed int i, int distance) {
-		// :: error: (shift.unsigned)
+        // :: error: (shift.unsigned)
         return (i >>> distance) | (i << -distance);
     }
 
@@ -19,8 +19,9 @@ public class Issue2543 {
         return (i >>> distance) | (i << -distance);
     }
 
-    public static @Unsigned int rotateRightUnknownSignedness(@UnknownSignedness int i, int distance) {
-    	// :: error: (return.type.incompatible)
+    public static @Unsigned int rotateRightUnknownSignedness(
+            @UnknownSignedness int i, int distance) {
+        // :: error: (return.type.incompatible)
         return (i >>> distance) | (i << -distance);
     }
 }
