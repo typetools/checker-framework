@@ -71,12 +71,14 @@ script:
      export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
      java -version &&
      javac -version &&
-     export TRAVIS_REPO_SLUG=$TRAVIS_REPO_SLUG &&
+     export TRAVIS=$TRAVIS &&
+     export TRAVIS_BRANCH=${TRAVIS_BRANCH} &&
      export TRAVIS_BUILD_DIR=$TRAVIS_BUILD_DIR &&
      export TRAVIS_COMMIT_RANGE=$TRAVIS_COMMIT_RANGE &&
+     export TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST} &&
      export TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH} &&
      export TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG} &&
-     export TRAVIS_BRANCH=${TRAVIS_BRANCH} &&
+     export TRAVIS_REPO_SLUG=$TRAVIS_REPO_SLUG &&
      ./.travis-build.sh $GROUP $BUILDJDK"
 
 jobs:
