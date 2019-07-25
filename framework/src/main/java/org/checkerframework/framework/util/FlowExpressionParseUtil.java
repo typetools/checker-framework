@@ -147,6 +147,10 @@ public class FlowExpressionParseUtil {
         return updatedExpression;
     }
 
+    /**
+     * A visitor class that converts a JavaParser {@link Expression} to a {@link
+     * FlowExpressionContext#receiver}.
+     */
     private static class ExpressionToReceiverVisitor
             extends GenericVisitorWithDefaults<Receiver, FlowExpressionContext> {
 
@@ -160,10 +164,11 @@ public class FlowExpressionParseUtil {
             this.types = env.getTypeUtils();
         }
 
+        /** If the expression is not supported, throw a {@link ParseRuntimeException} by default. */
         @Override
         public Receiver defaultAction(
                 com.github.javaparser.ast.Node n, FlowExpressionContext context) {
-            String message = "is an unrecognized expression";
+            String message = "is not a supported expression";
             if (context.parsingMember) {
                 message += " in a context with parsingMember=true";
             }
