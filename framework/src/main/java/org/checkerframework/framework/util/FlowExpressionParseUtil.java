@@ -146,6 +146,7 @@ public class FlowExpressionParseUtil {
 
     private static class ExpressionToReceiverVisitor
             extends GenericVisitorWithDefaults<Receiver, FlowExpressionContext> {
+
         private final TreePath path;
         private final ProcessingEnvironment env;
         private final Types types;
@@ -198,10 +199,10 @@ public class FlowExpressionParseUtil {
             return new ValueLiteral(stringTM, expr.asString());
         }
 
-        /** @return The receiver of the context. */
+        /** @return The receiver, {@link FlowExpressionContext#receiver}, of the context. */
         @Override
         public Receiver visit(ThisExpr n, FlowExpressionContext context) {
-            if (!(context.receiver == null || context.receiver.containsUnknown())) {
+            if (context.receiver != null && !context.receiver.containsUnknown()) {
                 // "this" is the receiver of the context
                 return context.receiver;
             }
@@ -230,6 +231,7 @@ public class FlowExpressionParseUtil {
                     constructParserException("super", "super class not found"));
         }
 
+        /** @param expr an expression in parentheses. */
         @Override
         public Receiver visit(EnclosedExpr expr, FlowExpressionContext context) {
             return expr.getInner().accept(this, context);
@@ -326,13 +328,14 @@ public class FlowExpressionParseUtil {
             throw new ParseRuntimeException(constructParserException(s, "identifier not found"));
         }
 
-        /** @param expr a method call with or without scope */
+        /** @param expr a method call with or without a receiver expressions. */
         @Override
         public Receiver visit(MethodCallExpr expr, FlowExpressionContext context) {
             String s = expr.toString();
             Resolver resolver = new Resolver(env);
 
-            // methods with scope (receiver expression) need to change the parsing context
+            // methods with scope (receiver expression) need to change the parsing context so that
+            // identifiers are resolved with respect to the receiver.
             if (expr.getScope().isPresent()) {
                 Receiver receiver = expr.getScope().get().accept(this, context);
                 context = context.copyChangeToParsingMemberOfReceiver(receiver);
@@ -344,8 +347,8 @@ public class FlowExpressionParseUtil {
             // parse arguments list
             List<Receiver> arguments = new ArrayList<>();
 
-            for (Expression expression : expr.getArguments()) {
-                arguments.add(expression.accept(this, context.copyAndUseOuterReceiver()));
+            for (Expression argument : expr.getArguments()) {
+                arguments.add(argument.accept(this, context.copyAndUseOuterReceiver()));
             }
 
             // get types for arguments
@@ -519,30 +522,30 @@ public class FlowExpressionParseUtil {
             }
             return new FieldAccess(locationOfField, fieldType, fieldElem);
         }
-    }
 
-    /**
-     * @param s A String that starts with PARAMETER_REPLACEMENT
-     * @return The receiver of the parameter passed
-     */
-    private static Receiver getParameterReceiver(String s, FlowExpressionContext context) {
-        if (context.arguments == null) {
-            throw new ParseRuntimeException(constructParserException(s, "no parameter found"));
-        }
-        int idx = Integer.parseInt(s.substring(PARAMETER_REPLACEMENT_LENGTH));
+        /**
+         * @param s A String that starts with PARAMETER_REPLACEMENT
+         * @return The receiver of the parameter passed
+         */
+        private static Receiver getParameterReceiver(String s, FlowExpressionContext context) {
+            if (context.arguments == null) {
+                throw new ParseRuntimeException(constructParserException(s, "no parameter found"));
+            }
+            int idx = Integer.parseInt(s.substring(PARAMETER_REPLACEMENT_LENGTH));
 
-        if (idx == 0) {
-            throw new ParseRuntimeException(
-                    constructParserException(
-                            s,
-                            "one should use \"this\" for the receiver or \"#1\" for the first formal parameter"));
+            if (idx == 0) {
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                s,
+                                "one should use \"this\" for the receiver or \"#1\" for the first formal parameter"));
+            }
+            if (idx > context.arguments.size()) {
+                throw new ParseRuntimeException(
+                        new FlowExpressionParseException(
+                                "flowexpr.parse.index.too.big", Integer.toString(idx)));
+            }
+            return context.arguments.get(idx - 1);
         }
-        if (idx > context.arguments.size()) {
-            throw new ParseRuntimeException(
-                    new FlowExpressionParseException(
-                            "flowexpr.parse.index.too.big", Integer.toString(idx)));
-        }
-        return context.arguments.get(idx - 1);
     }
 
     /**
