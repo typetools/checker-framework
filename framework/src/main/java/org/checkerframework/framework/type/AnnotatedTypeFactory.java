@@ -2068,8 +2068,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public ParameterizedExecutableType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
+        AnnotatedTypeMirror memberType = getAnnotatedType(methodElt);
+        methodFromUsePreSubstitution(tree, memberType);
+        // memberType may replaced after asMemberOf(). Why poly not affected?
         AnnotatedExecutableType methodType =
-                AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt);
+                AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt, memberType);
         List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
 
         Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
@@ -2100,6 +2103,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         return new ParameterizedExecutableType(methodType, typeargs);
+    }
+
+    /**
+     * An empty slot to be overridden for any potential operation to AnnotatedTypeMirror before type
+     * variable substitution. Default operation is "no operation".
+     *
+     * @param tree an ExpressionTree
+     * @param mirror mirror to be modified
+     */
+    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedTypeMirror mirror) {
+        // no-op in super
     }
 
     /**
