@@ -2070,7 +2070,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         AnnotatedTypeMirror memberType = getAnnotatedType(methodElt);
         methodFromUsePreSubstitution(tree, memberType);
-        // memberType may replaced after asMemberOf(). Why poly not affected?
+        // memberType may replaced after asMemberOf().  Why poly not affected?
         AnnotatedExecutableType methodType =
                 AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt, memberType);
         List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
