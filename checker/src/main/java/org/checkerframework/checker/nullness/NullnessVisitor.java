@@ -79,7 +79,12 @@ public class NullnessVisitor
     /** The element for java.util.Collection.toArray(T). */
     private final ExecutableElement collectionToArray;
 
-    public NullnessVisitor(BaseTypeChecker checker, boolean useFbc) {
+    /**
+     * Create a new NullnessVisitor.
+     *
+     * @param checker the checker to which this visitor belongs
+     */
+    public NullnessVisitor(BaseTypeChecker checker) {
         super(checker);
 
         NONNULL = atypeFactory.NONNULL;
@@ -101,11 +106,7 @@ public class NullnessVisitor
 
     @Override
     public NullnessAnnotatedTypeFactory createTypeFactory() {
-        // We need to directly access useFbc from the checker, because this method gets called
-        // by the superclass constructor and a field in this class would not be initialized
-        // yet. Oh the pain.
-        return new NullnessAnnotatedTypeFactory(
-                checker, ((AbstractNullnessChecker) checker).useFbc);
+        return new NullnessAnnotatedTypeFactory(checker);
     }
 
     @Override
@@ -172,8 +173,8 @@ public class NullnessVisitor
             Element elem = TreeUtils.elementFromDeclaration((VariableTree) varTree);
             if (atypeFactory.fromElement(elem).hasEffectiveAnnotation(MONOTONIC_NONNULL)
                     && !checker.getLintOption(
-                            AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
-                            AbstractNullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
+                            NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
+                            NullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
                 return;
             }
         }
@@ -372,8 +373,8 @@ public class NullnessVisitor
 
         // respect command-line option
         if (!checker.getLintOption(
-                AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
-                AbstractNullnessChecker.LINT_DEFAULT_REDUNDANTNULLCOMPARISON)) {
+                NullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
+                NullnessChecker.LINT_DEFAULT_REDUNDANTNULLCOMPARISON)) {
             return;
         }
 

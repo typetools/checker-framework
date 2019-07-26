@@ -129,7 +129,7 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
  *
  * This implementation only adds qualifiers explicitly specified by the programmer. Subclasses
  * override {@link #addComputedTypeAnnotations} to add defaults, implicits, flow-sensitive
- * refinemont, and type-system-specific rules.
+ * refinement, and type-system-specific rules.
  *
  * <p>Unless otherwise indicated, each public method in this class returns a "fully annotated" type,
  * which is one that has an annotation in all positions.
@@ -1738,7 +1738,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (path == null) {
                     // The path is null if the field is in a compilation unit we haven't
                     // processed yet. TODO: is there a better way?
-                    // This only arises in the Nullness Checker when substituting rawness.
                     return null;
                 }
                 TypeElement typeElt = ElementUtils.enclosingClass(element);

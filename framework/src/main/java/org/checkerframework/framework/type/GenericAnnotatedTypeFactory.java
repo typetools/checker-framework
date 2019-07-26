@@ -223,10 +223,6 @@ public abstract class GenericAnnotatedTypeFactory<
             flowResultAnalysisCaches = null;
         }
 
-        // Add common aliases.
-        // addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
-        //         Pure.class, AnnotationUtils.fromClass(elements, Pure.class));
-
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
     }

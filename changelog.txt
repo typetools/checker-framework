@@ -1,3 +1,7 @@
+Version ??, August 1, 2019
+
+Removed the NullnessRawnessChecker.  Use the NullnessChecker instead.
+
 Version 2.9.0, July 3, 2019
 
 Renamed the Signedness Checker's @Constant annotation to @SignednessGlb.
