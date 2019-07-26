@@ -30,10 +30,10 @@ import java.lang.annotation.Native;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.signedness.qual.PolySigned;
-import org.checkerframework.checker.signedness.qual.Unsigned;
-import org.checkerframework.checker.signedness.qual.UnknownSignedness;
-import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
+import org.checkerframework.checker.signedness.qual.SignednessGlb;
+import org.checkerframework.checker.signedness.qual.UnknownSignedness;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 
 /**
  * The {@code Integer} class wraps a value of the primitive type
@@ -68,6 +68,9 @@ public final class Integer extends Number implements Comparable<Integer> {
      * A constant holding the maximum value an {@code int} can
      * have, 2<sup>31</sup>-1.
      */
+    // TODO: Shubham, make this @SignedPositive in the annotated JDK.
+    // (It's @Positive here because of a peculiarity in the way the
+    // annotated JDK is currently constructed.)
     @Native public static final @Positive int   MAX_VALUE = 0x7fffffff;
 
     /**
@@ -1328,6 +1331,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *
      * @since 1.5
      */
+    // TODO: Shubham, make this @SignedPositive in the annotated JDK.
     @Native public static final @Positive int SIZE = 32;
 
     /**
@@ -1336,6 +1340,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *
      * @since 1.8
      */
+    // TODO: Shubham, make this @SignedPositive in the annotated JDK.
     public static final @Positive int BYTES = SIZE / Byte.SIZE;
 
     /**

@@ -30,10 +30,11 @@ import java.math.*;
 
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
-import org.checkerframework.checker.signedness.qual.Unsigned;
-import org.checkerframework.checker.signedness.qual.UnknownSignedness;
-import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.PolySigned;
+import org.checkerframework.checker.signedness.qual.SignedPositive;
+import org.checkerframework.checker.signedness.qual.SignednessGlb;
+import org.checkerframework.checker.signedness.qual.UnknownSignedness;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 
 /**
  * The {@code Long} class wraps a value of the primitive type {@code
@@ -68,6 +69,7 @@ public final class Long extends Number implements Comparable<Long> {
      * A constant holding the maximum value a {@code long} can
      * have, 2<sup>63</sup>-1.
      */
+    // TODO: Shubham, make this @SignedPositive in the annotated JDK.
     @Native public static final @Positive long MAX_VALUE = 0x7fffffffffffffffL;
 
     /**
@@ -1347,6 +1349,7 @@ public final class Long extends Number implements Comparable<Long> {
      *
      * @since 1.5
      */
+    // TODO: Shubham, make this @SignedPositive in the annotated JDK.
     @Native public static final @Positive int SIZE = 64;
 
     /**
@@ -1355,6 +1358,7 @@ public final class Long extends Number implements Comparable<Long> {
      *
      * @since 1.8
      */
+    // TODO: Shubham, make this @SignedPositive in the annotated JDK.
     public static final @Positive int BYTES = SIZE / Byte.SIZE;
 
     /**
