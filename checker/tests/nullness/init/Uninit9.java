@@ -17,5 +17,5 @@ class Uninit9Sub extends Uninit9 {
     }
 
     @RequiresNonNull("f")
-    void fIsSetOnEntry(@Raw @UnknownInitialization Uninit9Sub this) {}
+    void fIsSetOnEntry(@UnknownInitialization Uninit9Sub this) {}
 }
