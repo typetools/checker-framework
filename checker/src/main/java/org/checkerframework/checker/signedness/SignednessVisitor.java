@@ -411,7 +411,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                                     kindWithoutAssignment(kind)),
                             var);
                 } else if (exprType.hasAnnotation(Unsigned.class)
-                        || varType.hasAnnotation(PolySigned.class)) {
+                        || exprType.hasAnnotation(PolySigned.class)) {
                     checker.report(
                             Result.failure(
                                     "compound.assignment.unsigned.expression",
