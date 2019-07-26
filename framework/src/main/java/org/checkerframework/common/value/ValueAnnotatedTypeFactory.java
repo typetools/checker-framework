@@ -1302,57 +1302,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * @return The Range of the Math.min or Math.max method, or null if the argument is none of
-         *     these methods or their arguments are not annotated with @IntRange.
+         *     these methods or their arguments are not annotated in ValueChecker hierarchy.
          */
         private Range getRangeForMathMinMax(MethodInvocationTree tree) {
             if (getMethodIdentifier().isMathMin(tree, processingEnv)) {
                 AnnotatedTypeMirror arg1 = getAnnotatedType(tree.getArguments().get(0));
                 AnnotatedTypeMirror arg2 = getAnnotatedType(tree.getArguments().get(1));
-                if (arg1.hasAnnotation(IntRange.class) && arg2.hasAnnotation(IntRange.class)) {
-                    Range rangeArg1 =
-                            new Range(getFromValueFromIntRange(arg1), getToValueFromIntRange(arg2));
-                    Range rangeArg2 =
-                            new Range(getFromValueFromIntRange(arg2), getToValueFromIntRange(arg2));
+                Range rangeArg1 = getRange(arg1.getAnnotationInHierarchy(UNKNOWNVAL));
+                Range rangeArg2 = getRange(arg2.getAnnotationInHierarchy(UNKNOWNVAL));
+                if (rangeArg1 != null && rangeArg2 != null) {
                     return rangeArg1.min(rangeArg2);
                 }
             } else if (getMethodIdentifier().isMathMax(tree, processingEnv)) {
                 AnnotatedTypeMirror arg1 = getAnnotatedType(tree.getArguments().get(0));
                 AnnotatedTypeMirror arg2 = getAnnotatedType(tree.getArguments().get(1));
-                if (arg1.hasAnnotation(IntRange.class) && arg2.hasAnnotation(IntRange.class)) {
-                    Range rangeArg1 =
-                            new Range(getFromValueFromIntRange(arg1), getToValueFromIntRange(arg2));
-                    Range rangeArg2 =
-                            new Range(getFromValueFromIntRange(arg2), getToValueFromIntRange(arg2));
+                Range rangeArg1 = getRange(arg1.getAnnotationInHierarchy(UNKNOWNVAL));
+                Range rangeArg2 = getRange(arg2.getAnnotationInHierarchy(UNKNOWNVAL));
+                if (rangeArg1 != null && rangeArg2 != null) {
                     return rangeArg1.max(rangeArg2);
-                }
-            }
-            return null;
-        }
-
-        /**
-         * @return The constant value of the Math.min or Math.max method, or null if the argument is
-         *     none of these methods or their arguments are not constants.
-         */
-        private Long getMathMinMaxExactValue(MethodInvocationTree tree) {
-            if (getMethodIdentifier().isMathMin(tree, processingEnv)) {
-                AnnotatedTypeMirror arg1 = getAnnotatedType(tree.getArguments().get(0));
-                AnnotatedTypeMirror arg2 = getAnnotatedType(tree.getArguments().get(1));
-                if (arg1.hasAnnotation(IntVal.class) && arg2.hasAnnotation(IntVal.class)) {
-                    List<Long> intValArgs1 = getIntValues(arg1.getAnnotation(IntVal.class));
-                    List<Long> intValArgs2 = getIntValues(arg2.getAnnotation(IntVal.class));
-                    if (intValArgs1.size() == 1 && intValArgs2.size() == 1) {
-                        return Math.min(intValArgs1.get(0), intValArgs2.get(0));
-                    }
-                }
-            } else if (getMethodIdentifier().isMathMax(tree, processingEnv)) {
-                AnnotatedTypeMirror arg1 = getAnnotatedType(tree.getArguments().get(0));
-                AnnotatedTypeMirror arg2 = getAnnotatedType(tree.getArguments().get(1));
-                if (arg1.hasAnnotation(IntVal.class) && arg2.hasAnnotation(IntVal.class)) {
-                    List<Long> intValArgs1 = getIntValues(arg1.getAnnotation(IntVal.class));
-                    List<Long> intValArgs2 = getIntValues(arg2.getAnnotation(IntVal.class));
-                    if (intValArgs1.size() == 1 && intValArgs2.size() == 1) {
-                        return Math.max(intValArgs1.get(0), intValArgs2.get(0));
-                    }
                 }
             }
             return null;
@@ -1364,11 +1331,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Range range = getRangeForMathMinMax(tree);
                 if (range != null) {
                     type.replaceAnnotation(createIntRangeAnnotation(range));
-                }
-                Long constantValue = getMathMinMaxExactValue(tree);
-                if (constantValue != null) {
-                    type.replaceAnnotation(
-                            createIntValAnnotation(Collections.singletonList(constantValue)));
                 }
             }
 
