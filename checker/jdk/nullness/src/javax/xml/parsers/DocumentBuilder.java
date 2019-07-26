@@ -38,7 +38,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.checkerframework.checker.nullness.qual.* ;
+import org.checkerframework.checker.nullness.qual.*;
 
 /**
  * Defines the API to obtain DOM Document instances from an XML

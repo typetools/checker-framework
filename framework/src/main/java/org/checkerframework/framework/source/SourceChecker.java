@@ -1907,7 +1907,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Set the supported lint options. Use of this method should be limited to the AggregateChecker,
      * who needs to set the lint options to the union of all subcheckers. Also, e.g. the
-     * NullnessSubchecker/RawnessSubchecker need to use this method, as one is created by the other.
+     * NullnessSubchecker need to use this method, as one is created by the other.
      */
     protected void setSupportedLintOptions(Set<String> newlints) {
         supportedLints = newlints;
