@@ -27,7 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -217,6 +222,10 @@ public abstract class GenericAnnotatedTypeFactory<
         } else {
             flowResultAnalysisCaches = null;
         }
+
+        // Add common aliases.
+        // addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
+        //         Pure.class, AnnotationUtils.fromClass(elements, Pure.class));
 
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
@@ -1558,17 +1567,8 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
+        poly.resolve(tree, method);
         return mType;
-    }
-
-    @Override
-    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedTypeMirror mirror) {
-        if (mirror instanceof AnnotatedExecutableType && tree instanceof MethodInvocationTree) {
-            AnnotatedExecutableType method = (AnnotatedExecutableType) mirror;
-            MethodInvocationTree mtree = (MethodInvocationTree) tree;
-
-            poly.resolve(mtree, method);
-        }
     }
 
     @Override

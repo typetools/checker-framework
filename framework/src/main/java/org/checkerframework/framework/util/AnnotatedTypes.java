@@ -318,33 +318,6 @@ public class AnnotatedTypes {
     }
 
     /**
-     * @see #asMemberOfPreSubstitution(Types, AnnotatedTypeFactory, AnnotatedTypeMirror,
-     *     ExecutableElement)
-     */
-    public static AnnotatedExecutableType asMemberOfPreSubstitution(
-            Types types,
-            AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror t,
-            ExecutableElement elem) {
-        return (AnnotatedExecutableType)
-                asMemberOfPreSubstitution(types, atypeFactory, t, (Element) elem);
-    }
-
-    /**
-     * @see #asMemberOfImplDoSubstitution(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element,
-     *     AnnotatedTypeMirror)
-     */
-    public static AnnotatedExecutableType asMemberOfDoSubstitution(
-            Types types,
-            AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror t,
-            ExecutableElement elem,
-            AnnotatedExecutableType memberType) {
-        return (AnnotatedExecutableType)
-                asMemberOfDoSubstitution(types, atypeFactory, t, (Element) elem, memberType);
-    }
-
-    /**
      * Returns the type of an element when that element is viewed as a member of, or otherwise
      * directly contained by, a given type.
      *
@@ -379,10 +352,7 @@ public class AnnotatedTypes {
             case TYPE_PARAMETER:
                 return atypeFactory.fromElement(elem);
             default:
-                AnnotatedTypeMirror type =
-                        asMemberOfImplPreSubstitution(types, atypeFactory, t, elem);
-                type = asMemberOfImplDoSubstitution(types, atypeFactory, t, elem, type);
-
+                AnnotatedTypeMirror type = asMemberOfImpl(types, atypeFactory, t, elem);
                 if (!ElementUtils.isStatic(elem)) {
                     atypeFactory.postAsMemberOf(type, t, elem);
                 }
@@ -390,70 +360,7 @@ public class AnnotatedTypes {
         }
     }
 
-    /**
-     * Logic is the same with asMemberOf, but only returns the unsubstituted version of
-     * INTERSECTION, UNION, or DECLARED type to allow modifications on the type before type variable
-     * substitution. Other types are not affected. Remember to call asMemberOfDoSubstitution when
-     * everything is done.
-     *
-     * @param t a type
-     * @param elem en element
-     * @return unsubstituted version of DECLARED type, otherwise
-     */
-    public static AnnotatedTypeMirror asMemberOfPreSubstitution(
-            Types types, AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror t, Element elem) {
-        // asMemberOf is only for fields, variables, and methods!
-        // Otherwise, simply use fromElement.
-        switch (elem.getKind()) {
-            case PACKAGE:
-            case INSTANCE_INIT:
-            case OTHER:
-            case STATIC_INIT:
-            case TYPE_PARAMETER:
-                return atypeFactory.fromElement(elem);
-            default:
-                return asMemberOfImplPreSubstitution(types, atypeFactory, t, elem);
-        }
-    }
-
-    /**
-     * Complete the substitution process of asMemberOf on a substitutable type. Have no impact on
-     * non-substitutable types so calling on this method could be omitted on such types.
-     *
-     * @param t a type
-     * @param elem en element
-     * @param memberType the AnnotatedTypeMirror returned by asMemberOfPreSubstitution
-     * @return unsubstituted version of DECLARED type, otherwise return itself
-     */
-    public static AnnotatedTypeMirror asMemberOfDoSubstitution(
-            Types types,
-            AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror t,
-            Element elem,
-            AnnotatedTypeMirror memberType) {
-        switch (elem.getKind()) {
-            case PACKAGE:
-            case INSTANCE_INIT:
-            case OTHER:
-            case STATIC_INIT:
-            case TYPE_PARAMETER:
-                return memberType; // no-op
-            default:
-                memberType = asMemberOfImplDoSubstitution(types, atypeFactory, t, elem, memberType);
-
-                if (!ElementUtils.isStatic(elem)) {
-                    atypeFactory.postAsMemberOf(memberType, t, elem);
-                }
-                return memberType;
-        }
-    }
-
-    /**
-     * Returns pre-substitution version of substitutable type.
-     *
-     * @return unsubstituted version of DECLARED type, otherwise the default logic
-     */
-    private static AnnotatedTypeMirror asMemberOfImplPreSubstitution(
+    private static AnnotatedTypeMirror asMemberOfImpl(
             final Types types,
             final AnnotatedTypeFactory atypeFactory,
             final AnnotatedTypeMirror of,
@@ -484,40 +391,7 @@ public class AnnotatedTypes {
             case INTERSECTION:
             case UNION:
             case DECLARED:
-                // return substituteTypeVariables(types, atypeFactory, of, member, memberType);
-                return memberType;
-            default:
-                throw new BugInCF("asMemberOf called on unexpected type.\nt: " + of);
-        }
-    }
-
-    /**
-     * Returns do substitution on a substitutable type.
-     *
-     * @param memberType a type returned by asMemberOfImplPreSubstitution
-     * @return substituted version of a substitutable type, otherwise return itself
-     */
-    private static AnnotatedTypeMirror asMemberOfImplDoSubstitution(
-            final Types types,
-            final AnnotatedTypeFactory atypeFactory,
-            final AnnotatedTypeMirror of,
-            final Element member,
-            final AnnotatedTypeMirror memberType) {
-
-        if (ElementUtils.isStatic(member)) {
-            return memberType;
-        }
-
-        switch (of.getKind()) {
-            case ARRAY:
-            case TYPEVAR:
-            case WILDCARD:
-                return memberType;
-            case INTERSECTION:
-            case UNION:
-            case DECLARED:
                 return substituteTypeVariables(types, atypeFactory, of, member, memberType);
-                //                return memberType;
             default:
                 throw new BugInCF("asMemberOf called on unexpected type.\nt: " + of);
         }
