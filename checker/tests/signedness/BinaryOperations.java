@@ -123,7 +123,7 @@ public class BinaryOperations {
         unknownresult = unknown >>> polysigned;
     }
 
-    public void LeftTest(
+    public void LeftShiftTest(
             @Signed int signed,
             @Unsigned int unsigned,
             @PolySigned int polysigned,
