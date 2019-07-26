@@ -2108,6 +2108,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return new ParameterizedExecutableType(methodType, typeargs);
     }
 
+    /**
+     * A callback slot in methodFromUse for modifications to mirror before type variable
+     * substitution
+     */
     public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedTypeMirror mirror) {
         // No-op in default implementation
     }

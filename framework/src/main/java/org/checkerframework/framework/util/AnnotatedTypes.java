@@ -317,6 +317,10 @@ public class AnnotatedTypes {
         return (AnnotatedExecutableType) asMemberOf(types, atypeFactory, t, (Element) elem);
     }
 
+    /**
+     * @see #asMemberOfPreSubstitution(Types, AnnotatedTypeFactory, AnnotatedTypeMirror,
+     *     ExecutableElement)
+     */
     public static AnnotatedExecutableType asMemberOfPreSubstitution(
             Types types,
             AnnotatedTypeFactory atypeFactory,
@@ -326,6 +330,10 @@ public class AnnotatedTypes {
                 asMemberOfPreSubstitution(types, atypeFactory, t, (Element) elem);
     }
 
+    /**
+     * @see #asMemberOfImplDoSubstitution(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element,
+     *     AnnotatedTypeMirror)
+     */
     public static AnnotatedExecutableType asMemberOfDoSubstitution(
             Types types,
             AnnotatedTypeFactory atypeFactory,
