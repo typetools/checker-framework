@@ -69,7 +69,8 @@ public final class Long extends Number implements Comparable<Long> {
      * A constant holding the maximum value a {@code long} can
      * have, 2<sup>63</sup>-1.
      */
-    @Native public static final @SignedPositive long MAX_VALUE = 0x7fffffffffffffffL;
+    // TODO: Shubham, make this @SignedPositive in the annotated JDK.
+    @Native public static final @Positive long MAX_VALUE = 0x7fffffffffffffffL;
 
     /**
      * The {@code Class} instance representing the primitive type
@@ -1348,7 +1349,8 @@ public final class Long extends Number implements Comparable<Long> {
      *
      * @since 1.5
      */
-    @Native public static final @SignedPositive int SIZE = 64;
+    // TODO: Shubham, make this @SignedPositive in the annotated JDK.
+    @Native public static final @Positive int SIZE = 64;
 
     /**
      * The number of bytes used to represent a {@code long} value in two's
@@ -1356,7 +1358,8 @@ public final class Long extends Number implements Comparable<Long> {
      *
      * @since 1.8
      */
-    public static final @SignedPositive int BYTES = SIZE / Byte.SIZE;
+    // TODO: Shubham, make this @SignedPositive in the annotated JDK.
+    public static final @Positive int BYTES = SIZE / Byte.SIZE;
 
     /**
      * Returns a {@code long} value with at most a single one-bit, in the
