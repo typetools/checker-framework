@@ -121,6 +121,38 @@ public class CompoundAssignments {
         unknown >>>= polysigned;
     }
 
+    public void LeftTest(
+            @Signed int signed,
+            @Unsigned int unsigned,
+            @PolySigned int polysigned,
+            @UnknownSignedness int unknown,
+            @SignednessGlb int constant) {
+
+        signed <<= constant;
+
+        constant <<= signed;
+
+        signed <<= unknown;
+
+        unknown <<= signed;
+
+        unsigned <<= constant;
+
+        constant <<= unsigned;
+
+        unsigned <<= unknown;
+
+        unknown <<= unsigned;
+
+        polysigned <<= constant;
+
+        constant <<= polysigned;
+
+        polysigned <<= unknown;
+
+        unknown <<= polysigned;
+    }
+
     public void mixedTest(@Unsigned int unsigned, @Signed int signed) {
 
         // :: error: (compound.assignment.mixed.unsigned.variable)
