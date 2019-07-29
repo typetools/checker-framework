@@ -331,6 +331,16 @@ public class Range {
         return createRangeOrNothing(resultFrom, resultTo);
     }
 
+    /** @return the range with the lowest to and from values of this range and the passed range. */
+    public Range min(Range other) {
+        return new Range(Math.min(this.from, other.from), Math.min(this.to, other.to));
+    }
+
+    /** @return the range with the highest to and from values of this range and the passed range. */
+    public Range max(Range other) {
+        return new Range(Math.max(this.from, other.from), Math.max(this.to, other.to));
+    }
+
     /**
      * Returns the smallest range that includes all possible values resulting from adding an
      * arbitrary value in the specified range to an arbitrary value in this range. We call this the
