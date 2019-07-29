@@ -68,7 +68,7 @@ public class LambdaResultExpressionNode extends Node {
     public int hashCode() {
         // No need to incorporate tree, since in a well-formed LambdaResultExpressionNode, result
         // will be the same only when tree is the same (this is similar to ReturnNode).
-        return Objects.hash(result);
+        return Objects.hash(LambdaResultExpressionNode.class, result);
     }
 
     @Override
