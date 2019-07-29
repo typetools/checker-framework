@@ -43,4 +43,4 @@ if [ $BRANCH = "master" ] ; then
   fi
 fi
 git -C .. clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava || git -C .. clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava
-(cd ../guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
+(cd ../guava/guava && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)

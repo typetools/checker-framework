@@ -31,6 +31,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -252,6 +253,48 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public void insertValue(FlowExpressions.Receiver r, AnnotationMirror a) {
         insertValue(r, analysis.createSingleAnnotationValue(a, r.getType()));
+    }
+
+    /**
+     * Add the annotation {@code newAnno} for the expression {@code r} (correctly deciding where to
+     * store the information depending on the type of the expression {@code r}).
+     *
+     * <p>This method does not take care of removing other information that might be influenced by
+     * changes to certain parts of the state.
+     *
+     * <p>If there is already a value {@code v} present for {@code r}, then the greatest lower bound
+     * of the new and old value is inserted into the store unless it's bottom. Some checkers do not
+     * override {@link QualifierHierarchy#greatestLowerBound(AnnotationMirror, AnnotationMirror)}
+     * and the default implementation will return the bottom qualifier incorrectly. So this method
+     * conservatively does not insert the glb if it is bottom.
+     *
+     * <p>Note that this happens per hierarchy, and if the store already contains information about
+     * a hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
+     */
+    public void insertOrRefine(FlowExpressions.Receiver r, AnnotationMirror newAnno) {
+        if (!canInsertReceiver(r)) {
+            return;
+        }
+        V oldValue = getValue(r);
+        if (oldValue == null) {
+            insertValue(r, analysis.createSingleAnnotationValue(newAnno, r.getType()));
+            return;
+        }
+        QualifierHierarchy qualifierHierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+        AnnotationMirror top = qualifierHierarchy.getTopAnnotation(newAnno);
+        AnnotationMirror oldAnno =
+                qualifierHierarchy.findAnnotationInHierarchy(oldValue.annotations, top);
+        if (oldAnno == null) {
+            insertValue(r, analysis.createSingleAnnotationValue(newAnno, r.getType()));
+            return;
+        }
+
+        AnnotationMirror glb = qualifierHierarchy.greatestLowerBound(newAnno, oldAnno);
+        if (AnnotationUtils.areSame(qualifierHierarchy.getBottomAnnotation(top), glb)) {
+            glb = newAnno;
+        }
+
+        insertValue(r, analysis.createSingleAnnotationValue(glb, r.getType()));
     }
 
     /** Returns true if the receiver {@code r} can be stored in this store. */
