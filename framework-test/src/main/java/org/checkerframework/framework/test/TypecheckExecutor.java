@@ -58,6 +58,9 @@ public class TypecheckExecutor {
         nonJvmOptions.add("100000");
         nonJvmOptions.add("-Xmaxwarns");
         nonJvmOptions.add("100000");
+
+        nonJvmOptions.add("-Anocheckjdk");
+
         options.addAll(nonJvmOptions);
 
         if (configuration.shouldEmitDebugInfo()) {

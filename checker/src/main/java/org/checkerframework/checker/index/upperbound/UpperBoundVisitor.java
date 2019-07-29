@@ -175,7 +175,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                             valMax + 1,
                             valMax + 1),
                     indexTree);
-        } else if (valMax != null && qualifier.isUnknown()) {
+        } else if (valMax != null && qualifier.isUnknown() && valMax != Integer.MAX_VALUE) {
 
             checker.report(
                     Result.failure(
