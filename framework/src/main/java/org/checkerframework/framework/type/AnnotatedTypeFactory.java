@@ -2055,6 +2055,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return mType;
     }
 
+    private boolean shouldBeSubstituted(Element elem) {
+        switch (elem.getKind()) {
+            case PACKAGE:
+            case INSTANCE_INIT:
+            case OTHER:
+            case STATIC_INIT:
+            case TYPE_PARAMETER:
+                return false;
+            default:
+                return true;
+        }
+    }
+
     /**
      * Determines the type of the invoked method based on the passed expression tree, executable
      * element, and receiver type.
@@ -2069,10 +2082,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
         AnnotatedTypeMirror memberType = getAnnotatedType(methodElt);
-        methodFromUsePreSubstitution(tree, memberType);
-        // memberType may replaced after asMemberOf().  Why poly not affected?
+        if (shouldBeSubstituted(methodElt)) {
+            methodFromUsePreSubstitution(tree, memberType);
+        }
+
+        // memberType may replaced after asMemberOf(). Why poly not affected?
         AnnotatedExecutableType methodType =
                 AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt, memberType);
+        if (!shouldBeSubstituted(methodElt)) {
+            methodFromUsePreSubstitution(tree, memberType);
+        }
+
         List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
 
         Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
