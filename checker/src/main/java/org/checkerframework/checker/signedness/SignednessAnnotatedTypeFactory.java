@@ -17,8 +17,10 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
+import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -47,6 +49,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The @Positive annotation of the Index Checker, as represented by the Value Checker. */
     private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
             AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
+
+    private final AnnotationMirror INT_RANGE =
+            AnnotationBuilder.fromClass(elements, IntRange.class);
+    private final AnnotationMirror INT_VAL = AnnotationBuilder.fromClass(elements, IntVal.class);
 
     ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
 
@@ -96,16 +102,19 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || javaTypeKind == TypeKind.INT
                     || javaTypeKind == TypeKind.LONG) {
                 AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
+
                 // These annotations are trusted rather than checked.  Maybe have an option to
                 // disable using them?
                 if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
                                 || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
                         && type.hasAnnotation(SIGNED)) {
                     type.replaceAnnotation(SIGNEDNESS_GLB);
-                } else {
+                } else if (valueATM.hasExplicitAnnotation(IntRange.class)
+                        || valueATM.hasExplicitAnnotation(IntVal.class)) {
                     Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
 
                     if (treeRange != null) {
+
                         switch (javaType.getKind()) {
                             case BYTE:
                             case CHAR:
