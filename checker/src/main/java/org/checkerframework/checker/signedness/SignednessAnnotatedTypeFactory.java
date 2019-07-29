@@ -50,10 +50,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
             AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
-    private final AnnotationMirror INT_RANGE =
-            AnnotationBuilder.fromClass(elements, IntRange.class);
-    private final AnnotationMirror INT_VAL = AnnotationBuilder.fromClass(elements, IntVal.class);
-
     ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
 
     /** Create a SignednessAnnotatedTypeFactory. */
@@ -113,7 +109,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
 
                     if (treeRange != null) {
-
                         switch (javaType.getKind()) {
                             case BYTE:
                             case CHAR:
