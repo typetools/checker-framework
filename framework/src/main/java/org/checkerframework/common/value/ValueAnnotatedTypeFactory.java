@@ -1301,8 +1301,40 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return getDeclAnnotation(method, StaticallyExecutable.class) != null;
         }
 
+        /**
+         * @return The Range of the Math.min or Math.max method, or null if the argument is none of
+         *     these methods or their arguments are not annotated in ValueChecker hierarchy.
+         */
+        private Range getRangeForMathMinMax(MethodInvocationTree tree) {
+            if (getMethodIdentifier().isMathMin(tree, processingEnv)) {
+                AnnotatedTypeMirror arg1 = getAnnotatedType(tree.getArguments().get(0));
+                AnnotatedTypeMirror arg2 = getAnnotatedType(tree.getArguments().get(1));
+                Range rangeArg1 = getRange(arg1.getAnnotationInHierarchy(UNKNOWNVAL));
+                Range rangeArg2 = getRange(arg2.getAnnotationInHierarchy(UNKNOWNVAL));
+                if (rangeArg1 != null && rangeArg2 != null) {
+                    return rangeArg1.min(rangeArg2);
+                }
+            } else if (getMethodIdentifier().isMathMax(tree, processingEnv)) {
+                AnnotatedTypeMirror arg1 = getAnnotatedType(tree.getArguments().get(0));
+                AnnotatedTypeMirror arg2 = getAnnotatedType(tree.getArguments().get(1));
+                Range rangeArg1 = getRange(arg1.getAnnotationInHierarchy(UNKNOWNVAL));
+                Range rangeArg2 = getRange(arg2.getAnnotationInHierarchy(UNKNOWNVAL));
+                if (rangeArg1 != null && rangeArg2 != null) {
+                    return rangeArg1.max(rangeArg2);
+                }
+            }
+            return null;
+        }
+
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+            if (type.hasAnnotation(UNKNOWNVAL)) {
+                Range range = getRangeForMathMinMax(tree);
+                if (range != null) {
+                    type.replaceAnnotation(createIntRangeAnnotation(range));
+                }
+            }
+
             if (!methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))
                     || !handledByValueChecker(type)) {
                 return null;
