@@ -102,7 +102,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || javaTypeKind == TypeKind.INT
                     || javaTypeKind == TypeKind.LONG) {
                 AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
-
                 // These annotations are trusted rather than checked.  Maybe have an option to
                 // disable using them?
                 if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
