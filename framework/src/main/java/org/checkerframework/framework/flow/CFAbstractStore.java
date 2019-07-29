@@ -269,7 +269,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * conservatively does not insert the glb if it is bottom.
      *
      * <p>Note that this happens per hierarchy, and if the store already contains information about
-     * a hierarchy other than {@code a}s hierarchy, that information is preserved.
+     * a hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
      */
     public void insertOrRefine(FlowExpressions.Receiver r, AnnotationMirror newAnno) {
         if (!canInsertReceiver(r)) {
