@@ -363,7 +363,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *     true.
      */
     protected boolean isMonotonicUpdate(FieldAccess fieldAcc, V value) {
-        if (!(analysis.atypeFactory.getSupportedMonotonicTypeQualifiers().isEmpty())) {
+        if (analysis.atypeFactory.getSupportedMonotonicTypeQualifiers().isEmpty()) {
             return false;
         }
         boolean isMonotonic = false;
