@@ -22,7 +22,7 @@ class Issue2482 {
         len *= a;
     }
 
-    void m2(int a) {
+    void m3(int a) {
 
         int len = -1; // Negative
         int len2 = 1; // Positive
