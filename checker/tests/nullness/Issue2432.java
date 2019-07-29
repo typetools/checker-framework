@@ -56,7 +56,7 @@ class Issue2432 {
 
     void test3_1(TypeArgClass<@Nullable Object> nc, @Nullable Object no) {
         @NonNull Object nno = new Object();
-        // :: error: (argument.type.incompatible)
+        // No error
         foo2(nc, no, nno);
     }
 
