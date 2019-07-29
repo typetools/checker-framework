@@ -3080,14 +3080,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
         }
 
-        if (allStubFiles.isEmpty()) {
-            this.typesFromStubFiles = typesFromStubFiles;
-            this.declAnnosFromStubFiles = declAnnosFromStubFiles;
-            return;
-        }
-
-        // Parse stub files specified via stubs compiler option, stubs system property,
-        // stubs env. variable, or @Stubfiles
+        // Parse stub files.
         for (String stubPath : allStubFiles) {
             // Special case when running in jtreg.
             String base = System.getProperty("test.src");
