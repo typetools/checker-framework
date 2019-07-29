@@ -105,9 +105,9 @@ public class UtilsJava8 {
 
         resInt = Integer.compareUnsigned(uint, uint);
 
-        // :: error: (assignment.type.incompatible)
         resLong = Integer.toUnsignedLong(sint);
 
+        // :: error: (argument.type.incompatible)
         ulong = Integer.toUnsignedLong(uint);
 
         // :: error: (argument.type.incompatible)

@@ -33,10 +33,17 @@ import org.checkerframework.javacutil.*;
 
 /** A visitor to validate the types in a tree. */
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
+    /** Is the type valid? */
     protected boolean isValid = true;
 
+    /** Should the primary annotation on the top level type be checked? */
+    protected boolean checkTopLevelDeclaredType = true;
+
+    /** BaseTypeChecker */
     protected final BaseTypeChecker checker;
+    /** BaseTypeVisitor */
     protected final BaseTypeVisitor<?> visitor;
+    /** AnnotatedTypeFactory */
     protected final AnnotatedTypeFactory atypeFactory;
 
     // TODO: clean up coupling between components
@@ -67,8 +74,26 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             return false;
         }
         this.isValid = true;
+        this.checkTopLevelDeclaredType = shouldCheckTopLevelDeclaredType(type, tree);
         visit(type, tree);
         return this.isValid;
+    }
+
+    /**
+     * Should the top-level declared type be checked?
+     *
+     * <p>Top-level type is not checked if tree is a local variable or an expression tree.
+     *
+     * @param type AnnotatedTypeMirror being validated
+     * @param tree Tree whose type is {@code type}
+     * @return whether or not the top-level type should be checked
+     */
+    protected boolean shouldCheckTopLevelDeclaredType(AnnotatedTypeMirror type, Tree tree) {
+        if (type.getKind() != TypeKind.DECLARED) {
+            return true;
+        }
+        return !TreeUtils.isLocalVariable(tree)
+                && (!TreeUtils.isExpressionTree(tree) || TreeUtils.isTypeTree(tree));
     }
 
     /**
@@ -152,15 +177,16 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * Like {@link #reportValidityResult}, but the type is printed in the error message without
      * annotations. This method would print "annotation @NonNull is not permitted on type int",
      * whereas {@link #reportValidityResult} would print "annotation @NonNull is not permitted on
-     * type @NonNull int".
+     * type @NonNull int". In addition, when the underlying type is a compound type such as
+     * {@code @Bad List<String>}, the erased type will be used, i.e., "{@code List}" will print
+     * instead of "{@code @Bad List<String>}".
      */
     protected void reportValidityResultOnUnannotatedType(
             final @CompilerMessageKey String errorType,
             final AnnotatedTypeMirror type,
             final Tree p) {
-        // TODO: if underlying is a compound type such as List<@Palindrome String>, then it would be
-        // nice to print it as "List" instead of as "List<@Palindrome String>".
-        TypeMirror underlying = type.getUnderlyingType();
+        TypeMirror underlying =
+                TypeAnnotationUtils.unannotatedType(type.getErased().getUnderlyingType());
         checker.report(Result.failure(errorType, type.getAnnotations(), underlying.toString()), p);
         isValid = false;
     }
@@ -223,17 +249,24 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
         final boolean skipChecks = checker.shouldSkipUses(type.getUnderlyingType().asElement());
 
-        if (!skipChecks) {
+        if (checkTopLevelDeclaredType && !skipChecks) {
             // Ensure that type use is a subtype of the element type
             // isValidUse determines the erasure of the types.
-            AnnotatedDeclaredType elemType =
-                    (AnnotatedDeclaredType)
-                            atypeFactory.getAnnotatedType(type.getUnderlyingType().asElement());
+
+            Set<AnnotationMirror> bounds =
+                    atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
+
+            AnnotatedDeclaredType elemType = type.deepCopy();
+            elemType.clearAnnotations();
+            elemType.addAnnotations(bounds);
 
             if (!visitor.isValidUse(elemType, type, tree)) {
                 reportInvalidAnnotationsOnUse(type, tree);
             }
         }
+        // Set checkTopLevelDeclaredType to true, because the next time visitDeclared is called,
+        // the type isn't the top level, so always do the check.
+        checkTopLevelDeclaredType = true;
 
         /*
          * Try to reconstruct the ParameterizedTypeTree from the given tree.

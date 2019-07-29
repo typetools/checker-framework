@@ -2,12 +2,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
+import org.checkerframework.checker.interning.qual.InternMethod;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.interning.qual.UnknownInterned;
 
 // The @Interned annotation indicates that much like an enum, all variables
-// declared of this type are interned (except the constuctor return value).
-// (Perhaps unless otherwise annotated with @Uninterned??  Don't bother to
-// implement that yet.)
+// declared of this type are interned (except the constructor return value).
 public @Interned class InternedClass {
 
     int value;
@@ -17,19 +17,21 @@ public @Interned class InternedClass {
     }
 
     // Private constructor
-    // :: error: (super.invocation.invalid)
     private InternedClass(int i) {
         value = i;
+        // "this" in the constructor is not interned.
+        // :: error: (assignment.type.incompatible)
+        @Interned InternedClass that = this;
     }
 
     // Overriding method
     @org.checkerframework.dataflow.qual.Pure
     public String toString() {
+        @Interned InternedClass c = this;
         return new Integer(value).toString();
     }
 
     // Factory method
-    // :: error: (super.invocation.invalid)
     private InternedClass(InternedClass ic) {
         value = ic.value;
     }
@@ -44,10 +46,12 @@ public @Interned class InternedClass {
     }
 
     // Interning method
-    private static Map<InternedClass, @Interned InternedClass> pool = new HashMap<>();
+    @SuppressWarnings("type.invalid.annotations.on.use")
+    private static Map<@UnknownInterned InternedClass, @Interned InternedClass> pool =
+            new HashMap<>();
 
-    @SuppressWarnings("interning")
-    public @Interned InternedClass intern() /*Uninterned*/ {
+    @InternMethod
+    public @Interned InternedClass intern() {
         if (!pool.containsKey(this)) {
             pool.put(this, (@Interned InternedClass) this);
         }
@@ -59,7 +63,8 @@ public @Interned class InternedClass {
         boolean b2 = (this == returnInternedObject()); // valid
         boolean b3 = (this == ica[0]); // valid
         InternedClass ic2 = returnArray()[0]; // valid
-        ica[0] = new InternedClass(22); // valid
+        // :: error: (interned.object.creation)
+        ica[0] = new InternedClass(22);
         InternedClass[] arr1 = returnArray(); // valid
         InternedClass[] arr2 = new InternedClass[22]; // valid
         InternedClass[] arr3 = new InternedClass[] {}; // valid
@@ -83,7 +88,6 @@ public @Interned class InternedClass {
     }
 
     public void internedVarargs2(String name, @Interned String... args) {
-        @SuppressWarnings("interning") // a bug, but not a high-priority one
         @Interned String arg = args[0]; // valid
     }
 
@@ -91,6 +95,7 @@ public @Interned class InternedClass {
         int len = a_old.length;
         InternedClass[] a_new = new InternedClass[len];
         for (int i = 0; i < len; i++) {
+            // :: error: (interned.object.creation)
             a_new[i] = new InternedClass(a_old[i]);
         }
         return a_new;

@@ -2,7 +2,6 @@
 // https://github.com/typetools/checker-framework/issues/1120
 
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
-import org.checkerframework.checker.nullness.qual.Raw;
 
 class Issue1120Super {
     Object f = new Object();
@@ -32,5 +31,5 @@ final class Issue1120Sub extends Issue1120Super {
         g.toString();
     }
 
-    void party(@UnknownInitialization @Raw Issue1120Sub this) {}
+    void party(@UnknownInitialization Issue1120Sub this) {}
 }

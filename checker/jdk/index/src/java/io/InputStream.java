@@ -208,7 +208,7 @@ public abstract class InputStream implements Closeable {
      * @exception  IOException  if the stream does not support seek,
      *                          or if some other I/O error occurs.
      */
-    public long skip(long n) throws IOException {
+    public @NonNegative long skip(long n) throws IOException {
 
         long remaining = n;
         int nr;

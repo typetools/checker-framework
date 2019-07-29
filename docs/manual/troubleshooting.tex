@@ -477,9 +477,7 @@ Object> only if that value is of the bottom type, since the bottom type is
 the only one that is a subtype of every subtype of \<T extends @MyQualifier
 Object>.  The value \<null> satisfies this for the Java type system, and it
 must be made to satisfy it for the pluggable type system as well.  The
-typical way to address this is to write the meta-annotation
-\<@ImplicitFor(literals={LiteralKind.NULL})> on the definition of the
-bottom type qualifier.
+typical way to address this is to call \<addStandardLiteralQualifiers> on the \<LiteralTreeAnnotator>.
 
 \item
 An error such as

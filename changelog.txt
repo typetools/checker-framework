@@ -1,11 +1,46 @@
-Version 2.9.0, July 2, 2019
+Version ??, August 1, 2019
 
-Renamed the Signedness Checker's @Constant annotation to @SignednessEither.
+Removed the NullnessRawnessChecker.  Use the NullnessChecker instead.
 
-Improved the diagnostic text for uninitialized static fields.  The new
-error key is initialization.static.fields.uninitialized.
+Version 2.9.0, July 3, 2019
+
+Renamed the Signedness Checker's @Constant annotation to @SignednessGlb.
+Introduced an alias, @SignedPositive, for use by programmers.
 
 Annotated the first argument of Opt.get and Opt.orElseThrow as @NonNull.
+
+Removed meta-annotation @ImplicitFor:
+ * Use the new meta-annotation @QualifierForLiteral to replace
+ @ImplicitFor(literals, stringpatterns).
+ * Use the meta-annotation @DefaultFor to replace @ImplicitFor(typeKinds,
+ types).
+ * Use the new meta-annotation @UpperBoundFor to specify a qualifier upper
+ bound for certain types.
+* You can completely remove @ImplicitFor(typeNames =
+ Void.class, literals = LiteralKind.NULL) on bottom qualifiers.
+ @DefaultFor(types = Void.class) and @QualifierForLiterals(literals =
+ LiteralKind.NULL) are added to the bottom qualifier by default.
+
+Add @DefaultQualifierOnUse and @NoDefaultQualifierOnUse type declaration annotations
+
+New/changed error message keys:
+ * initialization.static.fields.uninitialized for uninitialized static fields
+ * unary.increment.type.incompatible and unary.decrement.type.incompatible
+   replace some occurrences of compound.assignment.type.incompatible
+
+Implementation details:
+ * Renamed QualifierPolymorphism#annotate methods to resolve
+ * Renamed ImplicitsTreeAnnotator to LiteralTreeAnnotator
+ * Renamed ImplicitsTypeAnnotator to DefaultForTypeAnnotator
+ * Removed TypeUseLocation.TYPE_DECLARATION
+ * Removed InheritedFromClassAnnotator, replace with DefaultQualifierForUseTypeAnnotator
+ * Rename TreeUtils.isSuperCall and TreeUtils.isThisCall to
+ isSuperConstructorCall and isThisConstructorCall
+
+Closed issues:
+2247, 2247, 2391, 2391, 2409, 2409, 2434, 2434, 2451, 2451, 2457, 2457, 2468,
+2468, 2484, 2484, 2485, 2485, 2493, 2493, 2505, 2505, 2536, 2536, 2537, 2537,
+2540, 2540, 2541, 2541, 2564, 2564, 2565, 2565, 2585, 2585.
 
 ---------------------------------------------------------------------------
 

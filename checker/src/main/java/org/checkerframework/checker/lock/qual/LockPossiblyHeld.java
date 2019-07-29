@@ -9,6 +9,8 @@ import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.InvisibleQualifier;
+import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
@@ -25,7 +27,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @SubtypeOf({}) // The top type in the hierarchy
 @Documented
 @DefaultQualifierInHierarchy
-@DefaultFor({TypeUseLocation.LOWER_BOUND})
+@DefaultFor(value = TypeUseLocation.LOWER_BOUND, types = Void.class)
+@QualifierForLiterals(LiteralKind.NULL)
 @DefaultQualifierInHierarchyInUncheckedCode
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND})
 @Retention(RetentionPolicy.RUNTIME)
