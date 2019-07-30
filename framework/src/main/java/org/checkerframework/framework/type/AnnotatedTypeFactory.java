@@ -250,6 +250,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Map keys are canonical names of aliased annotations. */
     private final Map<String, Alias> aliases = new HashMap<>();
 
+    public AnnotationMirror convert(AnnotationMirror a) {
+        return a;
+    }
+
     /**
      * Information about one annotation alias.
      *

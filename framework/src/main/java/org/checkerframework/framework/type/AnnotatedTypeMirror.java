@@ -524,6 +524,9 @@ public abstract class AnnotatedTypeMirror {
         if (a == null) {
             throw new BugInCF("AnnotatedTypeMirror.addAnnotation: null argument.");
         }
+
+        a = atypeFactory.convert(a);
+
         if (!(a instanceof CheckerFrameworkAnnotationMirror)) {
             a = new CheckerFrameworkAnnotationMirror(a);
         }
