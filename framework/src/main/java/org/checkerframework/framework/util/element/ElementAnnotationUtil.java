@@ -463,11 +463,18 @@ public class ElementAnnotationUtil {
             }
         }
 
-        if (outerToInner.isEmpty() || error) {
+        if (outerToInner.isEmpty()) {
             throw new BugInCF(
                     "ElementAnnotationUtil.getLocationTypeADT: invalid location %s for type: %s",
                     location, type);
         }
+
+        // There's a bug in Java 8 compiler that creates bad bytecode such that an annotation
+        // on a lambda parameter is applied to a method parameter.  If this happens, then the
+        // location could refer to a type argument that doesn't exist.  Since Java 8 bytecode might
+        // be on the classpath don't throw an exception, just ignore the error.  (This bug has been
+        // fixed in Java 9)
+        // TODO: Issue an error if this annotation if from Java 9+ bytecode.
         return outerToInner.getFirst();
     }
 
