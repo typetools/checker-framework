@@ -14,7 +14,8 @@ public class TypeDeclDefaultTest extends FrameworkPerDirectoryTest {
                 testFiles,
                 typedecldefault.TypeDeclDefaultChecker.class,
                 "typedecldefault",
-                "-Anomsgtext");
+                "-Anomsgtext",
+                "-Astubs=tests/typedecldefault/jdk.astub");
     }
 
     @Parameters

@@ -38,12 +38,12 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>Final fields are treated as MonotonicNonNull by default.
  *
  * <p>This annotation is associated with the {@link
- * org.checkerframework.checker.nullness.AbstractNullnessChecker}.
+ * org.checkerframework.checker.nullness.NullnessChecker}.
  *
  * @see EnsuresNonNull
  * @see RequiresNonNull
  * @see MonotonicQualifier
- * @see org.checkerframework.checker.nullness.AbstractNullnessChecker
+ * @see org.checkerframework.checker.nullness.NullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @Documented

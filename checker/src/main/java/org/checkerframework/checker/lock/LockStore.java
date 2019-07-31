@@ -150,9 +150,9 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     @Override
-    protected void internalVisualize(CFGVisualizer<CFValue, LockStore, ?> viz) {
-        viz.visualizeStoreKeyVal("inConstructorOrInitializer", inConstructorOrInitializer);
-        super.internalVisualize(viz);
+    protected String internalVisualize(CFGVisualizer<CFValue, LockStore, ?> viz) {
+        return viz.visualizeStoreKeyVal("inConstructorOrInitializer", inConstructorOrInitializer)
+                + super.internalVisualize(viz);
     }
 
     @Override

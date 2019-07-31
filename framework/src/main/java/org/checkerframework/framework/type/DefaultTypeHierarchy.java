@@ -276,18 +276,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return result;
     }
 
-    protected boolean isSubtypeOfAll(
-            final AnnotatedTypeMirror subtype,
-            final Iterable<? extends AnnotatedTypeMirror> supertypes) {
-        for (final AnnotatedTypeMirror supertype : supertypes) {
-            if (!isSubtype(subtype, supertype, currentTop)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
+    /**
+     * Are all the types in {@code subtypes} a subtype of {@code superType}?
+     *
+     * <p>The underlying type mirrors of {@code subtypes} must be subtypes of the underlying type
+     * mirror of {@code superType}.
+     */
     protected boolean areAllSubtypes(
             final Iterable<? extends AnnotatedTypeMirror> subtypes,
             final AnnotatedTypeMirror supertype) {
@@ -949,7 +943,19 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         if (visitHistory.contains(subtype, supertype, currentTop)) {
             return true;
         }
-        boolean result = isSubtypeOfAll(subtype, supertype.directSuperTypes());
+        boolean result = true;
+        for (AnnotatedTypeMirror aSupertype : supertype.directSuperTypes()) {
+            // Only call isSubtype if the Java type is actually a subtype; otherwise,
+            // only check primary qualifiers.
+            if (TypesUtils.isErasedSubtype(
+                            subtype.getUnderlyingType(),
+                            aSupertype.getUnderlyingType(),
+                            subtype.atypeFactory.types)
+                    && !isSubtype(subtype, aSupertype, currentTop)) {
+                result = false;
+                break;
+            }
+        }
         visitHistory.add(subtype, supertype, currentTop, result);
         return result;
     }

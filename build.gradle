@@ -3,9 +3,9 @@ import org.gradle.internal.jvm.Jvm
 
 plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
-    id 'com.github.johnrengelman.shadow' version '5.0.0'
+    id 'com.github.johnrengelman.shadow' version '5.1.0'
     // https://plugins.gradle.org/plugin/de.undercouch.download
-    id "de.undercouch.download" version "3.4.3"
+    id "de.undercouch.download" version "4.0.0"
     id 'java'
     // TODO: Migrate to newer version: https://github.com/tbroyer/gradle-errorprone-plugin#migration-from-versions-00x
     id "net.ltgt.errorprone-base" version "0.0.13"
@@ -13,7 +13,8 @@ plugins {
     id 'org.ajoberstar.grgit' version '3.1.1' apply false
 
     // To update version numbers of dependencies in this file, run: ./gradlew useLatestVersions
-    id 'se.patrikerdes.use-latest-versions' version '0.2.10'
+    // (Not necessary if using dependabot to update dependencies.)
+    id 'se.patrikerdes.use-latest-versions' version '0.2.12'
     id 'com.github.ben-manes.versions' version '0.21.0'
 }
 apply plugin: "de.undercouch.download"
@@ -40,6 +41,7 @@ ext {
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
+    plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
 
     javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
@@ -75,7 +77,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '2.8.2'
+    version '2.9.0'
 
     repositories {
         mavenCentral()
@@ -113,6 +115,13 @@ allprojects {
             }
         }
 
+	/// TODO: This should be enabled selectively, but not everywhere yet because it would require
+	/// exhaustive @param Javadoc tags throughout.  (Fails on Travis, cannot reproduce locally.)
+	// // Turn Javadoc warnings into errors.
+	// tasks.withType(Javadoc) {
+	//     options.addStringOption('Xwerror', '-quiet')
+	// }
+
         // Add standard javac options
         tasks.withType(JavaCompile) {
             dependsOn(':installGitHooks')
@@ -134,16 +143,17 @@ allprojects {
 
 task cloneAndBuildDependencies(type: Exec) {
     description 'Clones (or updates) and builds all dependencies'
-    executable './.travis-build-without-test.sh'
+    executable 'checker/bin-devel/build.sh'
     args = ['downloadjdk']
 }
 
 task version() {
-    description 'Print checker-framework version'
+    description 'Print Checker Framework version'
     doLast {
         println version
     }
 }
+
 /**
  * Creates a task that runs the checker on the main source set of each subproject. The task is named
  * "check${shortName}", for example "checkPurity" or "checkNullness".
@@ -250,7 +260,7 @@ configurations {
 }
 dependencies {
     // https://mvnrepository.com/artifact/org.plumelib/require-javadoc
-    compileOnly group: 'org.plumelib', name: 'require-javadoc', version: '0.1.1'
+    compileOnly group: 'org.plumelib', name: 'require-javadoc', version: '0.1.2'
 }
 task requireJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Ensures that Java elements have Javadoc documentation.'
@@ -331,6 +341,24 @@ task getCodeFormatScriptsInGradle {
       rgjfGit.pull()
     }
   }
+}
+
+task getPlumeScripts() {
+    description 'Obtain or update plume-scripts'
+    if (file(plumeScriptsHome).exists()) {
+        exec {
+            workingDir plumeScriptsHome
+            executable 'git'
+            args = ['pull', '-q']
+            ignoreExitValue = true
+        }
+    } else {
+        exec {
+            workingDir "${plumeScriptsHome}/../"
+            executable 'git'
+            args = ['clone', '-q', 'https://github.com/plume-lib/plume-scripts.git', '.plume-scripts']
+        }
+    }
 }
 
 task pythonIsInstalled(type: Exec) {
@@ -451,7 +479,9 @@ subprojects {
             manifest {
                 attributes("Implementation-Version": "${version}")
                 attributes("Implementation-URL": "https://checkerframework.org")
-                attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
+		if (archiveName != "checker-source.jar") {
+                    attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
+                }
             }
         }
 
@@ -483,12 +513,8 @@ subprojects {
                                 "-keywords:!ignore",
                                 '-samevm',
                                 // Required for checker/jtreg/nullness/PersistUtil.java and other tests
-                                // Must use langtools javap.jar rather than tools.jar because the
-                                // tools.jar in the docker vm doesn't have the required classes.
                                 "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}:" +
-                                        "${parentDir}/jsr308-langtools/dist/lib/javap.jar:" +
                                         "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
-
                                 "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                         ]
                         if (project.name.is('checker')) {
@@ -611,6 +637,7 @@ task checkBasicStyle(group: 'Format') {
     String[] ignoreDirectories = ['.git',
                                   '.gradle',
                                   '.idea',
+                                  '.plume-scripts',
                                   'annotated',
                                   'api',
                                   'bib',
@@ -711,6 +738,7 @@ task releaseBuild(type: GradleBuild) {
     // This downloads rather than builds the jdk8.jar because that's what is used in all the Travis tests.
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', 'checker:allJavadocJar']
 }
+
 task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
     description 'Build everything required for a release and run allTests'
     startParameter = new StartParameter()

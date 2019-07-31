@@ -1,6 +1,7 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
@@ -44,7 +45,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -78,7 +78,12 @@ public class NullnessVisitor
     /** The element for java.util.Collection.toArray(T). */
     private final ExecutableElement collectionToArray;
 
-    public NullnessVisitor(BaseTypeChecker checker, boolean useFbc) {
+    /**
+     * Create a new NullnessVisitor.
+     *
+     * @param checker the checker to which this visitor belongs
+     */
+    public NullnessVisitor(BaseTypeChecker checker) {
         super(checker);
 
         NONNULL = atypeFactory.NONNULL;
@@ -95,11 +100,7 @@ public class NullnessVisitor
 
     @Override
     public NullnessAnnotatedTypeFactory createTypeFactory() {
-        // We need to directly access useFbc from the checker, because this method gets called
-        // by the superclass constructor and a field in this class would not be initialized
-        // yet. Oh the pain.
-        return new NullnessAnnotatedTypeFactory(
-                checker, ((AbstractNullnessChecker) checker).useFbc);
+        return new NullnessAnnotatedTypeFactory(checker);
     }
 
     @Override
@@ -144,21 +145,7 @@ public class NullnessVisitor
             }
         }
 
-        // The super implementation checks that useType is a subtype
-        // of declarationType. However, declarationType by default
-        // is NonNull, which would then forbid Nullable uses.
-        // Therefore, don't perform this check.
-        return true;
-    }
-
-    @Override
-    public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
-        if (tree.getKind() != Tree.Kind.TYPE_CAST && !type.hasAnnotation(NONNULL)) {
-            // TODO: casts are sometimes inferred as @Nullable.
-            // Find a way to correctly handle that case.
-            return false;
-        }
-        return super.isValidUse(type, tree);
+        return super.isValidUse(declarationType, useType, tree);
     }
 
     private boolean containsSameByName(
@@ -180,8 +167,8 @@ public class NullnessVisitor
             Element elem = TreeUtils.elementFromDeclaration((VariableTree) varTree);
             if (atypeFactory.fromElement(elem).hasEffectiveAnnotation(MONOTONIC_NONNULL)
                     && !checker.getLintOption(
-                            AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
-                            AbstractNullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
+                            NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
+                            NullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
                 return;
             }
         }
@@ -380,8 +367,8 @@ public class NullnessVisitor
 
         // respect command-line option
         if (!checker.getLintOption(
-                AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
-                AbstractNullnessChecker.LINT_DEFAULT_REDUNDANTNULLCOMPARISON)) {
+                NullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
+                NullnessChecker.LINT_DEFAULT_REDUNDANTNULLCOMPARISON)) {
             return;
         }
 
@@ -437,7 +424,10 @@ public class NullnessVisitor
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
         if (isPrimitive(node) && !isPrimitive(node.getExpression())) {
-            checkForNullability(node.getExpression(), UNBOXING_OF_NULLABLE);
+            if (!checkForNullability(node.getExpression(), UNBOXING_OF_NULLABLE)) {
+                // If unboxing of nullable is issued, don't issue any other errors.
+                return null;
+            }
         }
         return super.visitTypeCast(node, p);
     }
@@ -590,5 +580,11 @@ public class NullnessVisitor
         // BasetypeVisitor forces annotations on exception parameters to be top,
         // but because exceptions can never be null, the Nullness Checker
         // does not require this check.
+    }
+
+    @Override
+    public Void visitAnnotation(AnnotationTree node, Void p) {
+        // All annotation arguments are non-null and initialized, so no need to check them.
+        return null;
     }
 }
