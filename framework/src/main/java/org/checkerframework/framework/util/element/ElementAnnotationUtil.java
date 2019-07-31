@@ -418,7 +418,7 @@ public class ElementAnnotationUtil {
             default:
                 // Raise an error for all other types below.
         }
-        throw new BugInCF(
+        throw new UnexpectedAnnotationLocationException(
                 "ElementAnnotationUtil.getTypeAtLocation: "
                         + "unexpected annotation with location found for type: %s (kind: %s ) location: ",
                 type, type.getKind(), location);
