@@ -206,24 +206,7 @@ class SupertypeFinder {
             List<AnnotatedDeclaredType> supertypes = new ArrayList<>();
             // Find the super types: Start with enums and superclass
             if (typeElement.getKind() == ElementKind.ENUM) {
-                DeclaredType dt = (DeclaredType) typeElement.getSuperclass();
-                AnnotatedDeclaredType adt =
-                        (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(dt, false);
-
-                List<AnnotatedTypeMirror> tas = adt.getTypeArguments();
-                List<AnnotatedTypeMirror> newtas = new ArrayList<>();
-                for (AnnotatedTypeMirror t : tas) {
-                    // If the type argument of super is the same as the input type
-                    if (atypeFactory.types.isSameType(
-                            t.getUnderlyingType(), type.getUnderlyingType())) {
-                        t.addAnnotations(type.getAnnotations());
-                        newtas.add(t);
-                    }
-                }
-                adt.setTypeArguments(newtas);
-
-                supertypes.add(adt);
-
+                supertypes.add(createEnumSuperType(type, typeElement));
             } else if (typeElement.getSuperclass().getKind() != TypeKind.NONE) {
                 DeclaredType superClass = (DeclaredType) typeElement.getSuperclass();
                 AnnotatedDeclaredType dt =
@@ -285,21 +268,7 @@ class SupertypeFinder {
 
             TypeElement elem = TreeUtils.elementFromDeclaration(classTree);
             if (elem.getKind() == ElementKind.ENUM) {
-                DeclaredType dt = (DeclaredType) elem.getSuperclass();
-                AnnotatedDeclaredType adt =
-                        (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(dt, false);
-                List<AnnotatedTypeMirror> tas = adt.getTypeArguments();
-                List<AnnotatedTypeMirror> newtas = new ArrayList<>();
-                for (AnnotatedTypeMirror t : tas) {
-                    // If the type argument of super is the same as the input type
-                    if (atypeFactory.types.isSameType(
-                            t.getUnderlyingType(), type.getUnderlyingType())) {
-                        t.addAnnotations(type.getAnnotations());
-                        newtas.add(t);
-                    }
-                }
-                adt.setTypeArguments(newtas);
-                supertypes.add(adt);
+                supertypes.add(createEnumSuperType(type, elem));
             }
             if (type.wasRaw()) {
                 for (AnnotatedDeclaredType adt : supertypes) {
@@ -307,6 +276,33 @@ class SupertypeFinder {
                 }
             }
             return supertypes;
+        }
+
+        /**
+         * All enums implicit extend {@code Enum<MyEnum>}, where {@code MyEnum} is the type of the
+         * enum. This method creates the AnnotatedTypeMirror for {@code Enum<MyEnum>} where the
+         * annotation on {@code Enum} is copied from {@code type} and the annotation on {@code
+         * MyEnum} is copied from the qualifier upper bound for the type of {@code MyEnum}.
+         *
+         * @param type annotated type of an enum
+         * @param elem element corresponding to {@code type}
+         * @return enum super type
+         */
+        private AnnotatedDeclaredType createEnumSuperType(
+                AnnotatedDeclaredType type, TypeElement elem) {
+            DeclaredType dt = (DeclaredType) elem.getSuperclass();
+            AnnotatedDeclaredType adt =
+                    (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(dt, false);
+            for (AnnotatedTypeMirror t : adt.getTypeArguments()) {
+                // If the type argument of super is the same as the input type
+                if (atypeFactory.types.isSameType(
+                        t.getUnderlyingType(), type.getUnderlyingType())) {
+                    Set<AnnotationMirror> bounds =
+                            atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
+                    t.addAnnotations(bounds);
+                }
+            }
+            return adt;
         }
 
         /**
