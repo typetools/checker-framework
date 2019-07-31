@@ -289,7 +289,18 @@ public class ElementAnnotationUtil {
         final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
                 new IdentityHashMap<>();
         for (final TypeCompound anno : annos) {
-            AnnotatedTypeMirror target = getTypeAtLocation(type, anno.position.location);
+            AnnotatedTypeMirror target;
+            try {
+                target = getTypeAtLocation(type, anno.position.location);
+            } catch (ElementAnnotationUtilException ex) {
+                // There's a bug in Java 8 compiler that creates bad bytecode such that an
+                // annotation on a lambda parameter is applied to a method parameter.  If this
+                // happens, then the location could refer to a type argument that doesn't exist.
+                // Since Java 8 bytecode might be on the classpath don't throw an exception, just
+                // ignore the error.  (This bug has been fixed in Java 9.)
+                // TODO: Issue an error if this annotation is from Java 9+ bytecode.
+                continue;
+            }
             if (target.getKind() == TypeKind.WILDCARD) {
                 addWildcardToBoundMap((AnnotatedWildcardType) target, anno, wildcardToAnnos);
             } else {
@@ -372,7 +383,8 @@ public class ElementAnnotationUtil {
      * @return the type specified by location
      */
     static AnnotatedTypeMirror getTypeAtLocation(
-            AnnotatedTypeMirror type, List<TypeAnnotationPosition.TypePathEntry> location) {
+            AnnotatedTypeMirror type, List<TypeAnnotationPosition.TypePathEntry> location)
+            throws ElementAnnotationUtilException {
 
         if (location.isEmpty() && type.getKind() != TypeKind.DECLARED) {
             // An annotation with an empty type path on a declared type applies to the outermost
@@ -407,12 +419,9 @@ public class ElementAnnotationUtil {
                 // Raise an error for all other types below.
         }
         throw new BugInCF(
-                "ElementAnnotationUtil.getTypeAtLocation: unexpected annotation with location found for type: "
-                        + type
-                        + " (kind: "
-                        + type.getKind()
-                        + ") location: "
-                        + location);
+                "ElementAnnotationUtil.getTypeAtLocation: "
+                        + "unexpected annotation with location found for type: %s (kind: %s ) location: ",
+                type, type.getKind(), location);
     }
 
     /**
@@ -424,7 +433,8 @@ public class ElementAnnotationUtil {
      * @return the type specified by location
      */
     private static AnnotatedTypeMirror getLocationTypeADT(
-            AnnotatedDeclaredType type, List<TypeAnnotationPosition.TypePathEntry> location) {
+            AnnotatedDeclaredType type, List<TypeAnnotationPosition.TypePathEntry> location)
+            throws ElementAnnotationUtilException {
 
         // List order by outer most type to inner most type.
         ArrayDeque<AnnotatedDeclaredType> outerToInner = new ArrayDeque<>();
@@ -463,38 +473,31 @@ public class ElementAnnotationUtil {
             }
         }
 
-        if (outerToInner.isEmpty()) {
-            throw new BugInCF(
+        if (outerToInner.isEmpty() || error) {
+            throw new ElementAnnotationUtilException(
                     "ElementAnnotationUtil.getLocationTypeADT: invalid location %s for type: %s",
                     location, type);
         }
 
-        // There's a bug in Java 8 compiler that creates bad bytecode such that an annotation
-        // on a lambda parameter is applied to a method parameter.  If this happens, then the
-        // location could refer to a type argument that doesn't exist.  Since Java 8 bytecode might
-        // be on the classpath don't throw an exception, just ignore the error.  (This bug has been
-        // fixed in Java 9)
-        // TODO: Issue an error if this annotation if from Java 9+ bytecode.
         return outerToInner.getFirst();
     }
 
     private static AnnotatedTypeMirror getLocationTypeANT(
-            AnnotatedNullType type, List<TypeAnnotationPosition.TypePathEntry> location) {
+            AnnotatedNullType type, List<TypeAnnotationPosition.TypePathEntry> location)
+            throws ElementAnnotationUtilException {
         if (location.size() == 1 && location.get(0).tag == TypePathEntryKind.TYPE_ARGUMENT) {
             return type;
         }
 
-        throw new BugInCF(
-                "ElementAnnotationUtil.getLocationTypeANT: "
-                        + "invalid location "
-                        + location
-                        + " for type: "
-                        + type);
+        throw new ElementAnnotationUtilException(
+                "ElementAnnotationUtil.getLocationTypeANT: " + "invalid location %s for type: %s ",
+                location, type);
     }
 
     private static AnnotatedTypeMirror getLocationTypeAWT(
             final AnnotatedWildcardType type,
-            final List<TypeAnnotationPosition.TypePathEntry> location) {
+            final List<TypeAnnotationPosition.TypePathEntry> location)
+            throws ElementAnnotationUtilException {
 
         // the last step into the Wildcard type is handled in WildcardToBoundAnnos.addAnnotation
         if (location.size() == 1) {
@@ -512,12 +515,10 @@ public class ElementAnnotationUtil {
             }
 
         } else {
-            throw new BugInCF(
+            throw new ElementAnnotationUtilException(
                     "ElementAnnotationUtil.getLocationTypeAWT: "
-                            + "invalid location "
-                            + location
-                            + " for type: "
-                            + type);
+                            + "invalid location %s for type: %s ",
+                    location, type);
         }
     }
 
@@ -529,18 +530,16 @@ public class ElementAnnotationUtil {
      * its position.
      */
     private static AnnotatedTypeMirror getLocationTypeAAT(
-            AnnotatedArrayType type, List<TypeAnnotationPosition.TypePathEntry> location) {
+            AnnotatedArrayType type, List<TypeAnnotationPosition.TypePathEntry> location)
+            throws ElementAnnotationUtilException {
         if (location.size() >= 1
                 && location.get(0).tag.equals(TypeAnnotationPosition.TypePathEntryKind.ARRAY)) {
             AnnotatedTypeMirror comptype = type.getComponentType();
             return getTypeAtLocation(comptype, tail(location));
         } else {
-            throw new BugInCF(
-                    "ElementAnnotationUtil.annotateAAT: "
-                            + "invalid location "
-                            + location
-                            + " for type: "
-                            + type);
+            throw new ElementAnnotationUtilException(
+                    "ElementAnnotationUtil.annotateAAT: " + "invalid location %s for type: %s ",
+                    location, type);
         }
     }
 
@@ -553,14 +552,16 @@ public class ElementAnnotationUtil {
      * As a hack, always annotate the first alternative.
      */
     private static AnnotatedTypeMirror getLocationTypeAUT(
-            AnnotatedUnionType type, List<TypeAnnotationPosition.TypePathEntry> location) {
+            AnnotatedUnionType type, List<TypeAnnotationPosition.TypePathEntry> location)
+            throws ElementAnnotationUtilException {
         AnnotatedTypeMirror comptype = type.getAlternatives().get(0);
         return getTypeAtLocation(comptype, location);
     }
 
     /** Intersection types use the TYPE_ARGUMENT index to separate the individual types. */
     private static AnnotatedTypeMirror getLocationTypeAIT(
-            AnnotatedIntersectionType type, List<TypeAnnotationPosition.TypePathEntry> location) {
+            AnnotatedIntersectionType type, List<TypeAnnotationPosition.TypePathEntry> location)
+            throws ElementAnnotationUtilException {
         if (location.size() >= 1
                 && location.get(0)
                         .tag
@@ -568,16 +569,20 @@ public class ElementAnnotationUtil {
             AnnotatedTypeMirror supertype = type.directSuperTypes().get(location.get(0).arg);
             return getTypeAtLocation(supertype, tail(location));
         } else {
-            throw new BugInCF(
-                    "ElementAnnotationUtil.getLocatonTypeAIT: "
-                            + "invalid location "
-                            + location
-                            + " for type: "
-                            + type);
+            throw new ElementAnnotationUtilException(
+                    "ElementAnnotationUtil.getLocatonTypeAIT: invalid location %s for type: %s ",
+                    location, type);
         }
     }
 
     private static <T> List<T> tail(List<T> list) {
         return list.subList(1, list.size());
+    }
+
+    private static class ElementAnnotationUtilException extends Exception {
+
+        public ElementAnnotationUtilException(String fmt, Object... args) {
+            super(String.format(fmt, args));
+        }
     }
 }
