@@ -581,7 +581,7 @@ public class ElementAnnotationUtil {
 
     /** Exception indicating an invalid location for an annotation was found. */
     @SuppressWarnings("serial")
-    private static class UnexpectedAnnotationLocationException extends Exception {
+    static class UnexpectedAnnotationLocationException extends Exception {
 
         /**
          * Creates an UnexpectedAnnotationLocationException.
