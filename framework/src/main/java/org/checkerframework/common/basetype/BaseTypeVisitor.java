@@ -3956,6 +3956,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Check that the annotated JDK is being used.
     // **********************************************************************
 
+    /** True if method {@link checkForAnnotatedJdk} has been called. */
     private static boolean checkedJDK = false;
 
     // Not all subclasses call this -- only those that have an annotated JDK.
@@ -3972,49 +3973,46 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         List<? extends ExecutableElement> memberMethods =
                 ElementFilter.methodsIn(elements.getAllMembers(objectTE));
 
+        // Look for the @Nullness annotation in Object.equals(@Nullable Object).
+        // If it is found, the user is using the annotated JDK.
         for (ExecutableElement m : memberMethods) {
-            if (ElementUtils.isMethod(m, objectEquals, checker.getProcessingEnvironment())) {
-                // The Nullness JDK serves as a proxy for all annotated JDKs.
+            if (!ElementUtils.isMethod(m, objectEquals, checker.getProcessingEnvironment())) {
+                continue;
+            }
 
-                // Note that we cannot use the AnnotatedTypeMirrors from the
-                // Checker Framework, because those only return the annotations
-                // that are used by the current checker.
-                // That is, if this code is executed by something other than the
-                // Nullness Checker, we would not find the annotations.
-                // Therefore, we go to the Element and get all annotations on
-                // the parameter.
+            // We cannot use the AnnotatedTypeMirrors from the Checker Framework, because those only
+            // return the annotations that are used by the current checker.
 
-                // TODO: doing types.typeAnnotationOf(m.getParameters().get(0).asType(),
-                // Nullable.class) or types.typeAnnotationsOf(m.asType()) does not work any more. It
-                // should.
+            // That is, if this code is executed by something other than the Nullness Checker, we
+            // would not find the annotations.  Therefore, we go to the Element and get all
+            // annotations on the parameter.
 
-                boolean foundJDK = false;
-                for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
-                        ((com.sun.tools.javac.code.Symbol) m).getRawTypeAttributes()) {
-                    if (tc.position.type
-                                    == com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER
-                            && tc.position.parameter_index == 0
-                            &&
-                            // TODO: using .class would be nicer, but adds a circular dependency on
-                            // the "checker" project.
-                            // tc.type.toString().equals(org.checkerframework.checker.nullness.qual.Nullable.class.getName()) ) {
-                            tc.type
-                                    .toString()
-                                    .equals(
-                                            "org.checkerframework.checker.nullness.qual.Nullable")) {
-                        foundJDK = true;
-                    }
-                }
+            // TODO: doing types.typeAnnotationOf(m.getParameters().get(0).asType(),
+            // Nullable.class) or types.typeAnnotationsOf(m.asType()) does not work any more. It
+            // should.
 
-                if (!foundJDK) {
-                    String jdkJarName = PluginUtil.getJdkJarName();
-
-                    checker.message(
-                            Kind.WARNING,
-                            "You do not seem to be using the distributed annotated JDK.  To fix the problem, supply javac an argument like:  -Xbootclasspath/p:.../checker/dist/ .  Currently using: "
-                                    + jdkJarName);
+            for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
+                    ((com.sun.tools.javac.code.Symbol) m).getRawTypeAttributes()) {
+                if (tc.position.type == com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER
+                        && tc.position.parameter_index == 0
+                        &&
+                        // TODO: using .class would be nicer, but adds a circular dependency on
+                        // the "checker" project.
+                        // tc.type.toString().equals(org.checkerframework.checker.nullness.qual.Nullable.class.getName()) ) {
+                        tc.type
+                                .toString()
+                                .equals("org.checkerframework.checker.nullness.qual.Nullable")) {
+                    return;
                 }
             }
+
+            String jdkJarName = PluginUtil.getJdkJarName();
+            checker.message(
+                    Kind.WARNING,
+                    "You do not seem to be using the distributed annotated JDK. "
+                            + "To fix the problem, supply javac an argument like:  -Xbootclasspath/p:.../checker/dist/ . "
+                            + "Currently using: "
+                            + jdkJarName);
         }
     }
 }
