@@ -88,10 +88,12 @@ public class ElementAnnotationApplier {
             // location, such as a type argument, that doesn't exist. Since Java 8 bytecode
             // might be on the classpath, catch this exception and ignore the type.
             // TODO: Issue an error if this annotation is from Java 9+ bytecode.
-            typeFactory.checker.report(
-                    Result.warning(
-                            "invalid.annotation.location", ElementUtils.getVerboseName(report)),
-                    element);
+            if (!typeFactory.checker.hasOption("ignoreInvalidAnnotationLocations")) {
+                typeFactory.checker.report(
+                        Result.warning(
+                                "invalid.annotation.location", ElementUtils.getVerboseName(report)),
+                        element);
+            }
         }
         // Also copy annotations from type parameters to their uses.
         new TypeVarAnnotator().visit(type, typeFactory);
