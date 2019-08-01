@@ -78,7 +78,7 @@ RUN wget https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulB
 && export JT_HOME=/jtreg
 
 RUN git clone https://github.com/typetools/jdk.git \
-&& (cd jdk && bash configure --with-jtreg --disable-warnings-as-errors && make images)
+&& (export JT_HOME=/jtreg && cd jdk && bash configure --with-jtreg --disable-warnings-as-errors && make images)
 
-RUN git clone https://github.com/AdoptOpenJDK/openjdk-jdk11u.git openjdk-jdk11u \
-&& (cd jdk && bash configure --with-jtreg --disable-warnings-as-errors && make images)
+RUN git clone https://github.com/openjdk/jdk11u.git jdk11u \
+&& (export JT_HOME=/jtreg && cd jdk11u && bash configure --with-jtreg --disable-warnings-as-errors && make images)
