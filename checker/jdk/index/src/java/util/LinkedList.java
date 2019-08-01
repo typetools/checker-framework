@@ -1005,7 +1005,7 @@ public class LinkedList<E>
      *
      * @return a shallow copy of this {@code LinkedList} instance
      */
-    public Object clone() {
+    public @PolySameLen Object clone() {
         LinkedList<E> clone = superClone();
 
         // Put clone into "virgin" state

@@ -603,7 +603,7 @@ public abstract class ResourceBundle {
             }
         }
 
-        public Object clone() {
+        public @PolySameLen Object clone() {
             try {
                 CacheKey clone = (CacheKey) super.clone();
                 if (loaderRef != null) {

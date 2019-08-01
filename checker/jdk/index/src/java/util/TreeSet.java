@@ -470,7 +470,7 @@ public class TreeSet<E> extends AbstractSet<E>
      *
      * @return a shallow copy of this set
      */
-    public Object clone() {
+    public @PolySameLen Object clone() {
         TreeSet<E> clone = null;
         try {
             clone = (TreeSet<E>) super.clone();

@@ -523,7 +523,7 @@ public class Hashtable<K,V>
      *
      * @return  a clone of the hashtable
      */
-    public synchronized Object clone() {
+    public synchronized @PolySameLen Object clone() {
         try {
             Hashtable<K,V> t = (Hashtable<K,V>) super.clone();
             t.table = new Entry[table.length];
@@ -962,7 +962,7 @@ public class Hashtable<K,V>
             this.next = next;
         }
 
-        protected Object clone() {
+        protected @PolySameLen Object clone() {
             return new Entry<>(hash, key, value,
                                   (next==null ? null : (Entry<K,V>) next.clone()));
         }

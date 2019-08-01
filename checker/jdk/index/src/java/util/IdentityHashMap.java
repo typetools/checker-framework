@@ -697,7 +697,7 @@ public class IdentityHashMap<K,V>
      *
      * @return a shallow copy of this map
      */
-    public Object clone() {
+    public @PolySameLen Object clone() {
         try {
             IdentityHashMap<K,V> m = (IdentityHashMap<K,V>) super.clone();
             m.entrySet = null;

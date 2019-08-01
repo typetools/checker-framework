@@ -41,6 +41,7 @@ package java.util;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.checker.index.qual.PolySameLen;
 import sun.util.BuddhistCalendar;
 import sun.util.calendar.ZoneInfo;
 import sun.util.resources.LocaleData;
@@ -2486,7 +2487,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      *
      * @return a copy of this object.
      */
-    public Object clone() {
+    public @PolySameLen Object clone() {
         try {
             Calendar other = (Calendar) super.clone();
 

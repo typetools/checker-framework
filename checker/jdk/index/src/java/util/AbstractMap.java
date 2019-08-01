@@ -534,7 +534,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      *
      * @return a shallow copy of this map
      */
-    protected Object clone() throws CloneNotSupportedException {
+    protected @PolySameLen Object clone() throws CloneNotSupportedException {
         AbstractMap<K,V> result = (AbstractMap<K,V>)super.clone();
         result.keySet = null;
         result.values = null;

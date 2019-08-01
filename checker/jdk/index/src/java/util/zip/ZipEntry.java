@@ -315,7 +315,7 @@ class ZipEntry implements ZipConstants, Cloneable {
     /**
      * Returns a copy of this entry.
      */
-    public Object clone() {
+    public @PolySameLen Object clone() {
         try {
             ZipEntry e = (ZipEntry)super.clone();
             e.extra = (extra == null) ? null : extra.clone();

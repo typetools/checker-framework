@@ -1083,7 +1083,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
      * @return a clone of this bit set
      * @see    #size()
      */
-    public Object clone() {
+    public @PolySameLen Object clone() {
         if (! sizeIsSticky)
             trimToSize();
 
