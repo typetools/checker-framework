@@ -44,7 +44,7 @@ import sun.security.util.SecurityConstants;
 import sun.reflect.annotation.AnnotationType;
 
 import org.checkerframework.checker.signedness.qual.PolySigned;
-import org.checkerframework.common.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.NonNegative;
 
 /**
  * The <code>System</code> class contains several useful class fields
