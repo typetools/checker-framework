@@ -14,6 +14,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -72,7 +73,8 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
      *     type parameter is placed on that bound.
      */
     @Override
-    protected void handleTargeted(final List<TypeCompound> targeted) {
+    protected void handleTargeted(final List<TypeCompound> targeted)
+            throws UnexpectedAnnotationLocationException {
         final int paramIndex = getElementIndex();
         final List<TypeCompound> upperBoundAnnos = new ArrayList<>();
         final List<TypeCompound> lowerBoundAnnos = new ArrayList<>();
@@ -170,7 +172,8 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
         annoList.add(anno);
     }
 
-    private void applyComponentAnnotation(final TypeCompound anno) {
+    private void applyComponentAnnotation(final TypeCompound anno)
+            throws UnexpectedAnnotationLocationException {
         final AnnotatedTypeMirror upperBoundType = typeParam.getUpperBound();
 
         Map<AnnotatedTypeMirror, List<TypeCompound>> typeToAnnotations = new HashMap<>();

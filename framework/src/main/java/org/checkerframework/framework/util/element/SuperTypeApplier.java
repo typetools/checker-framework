@@ -1,11 +1,13 @@
 package org.checkerframework.framework.util.element;
 
 import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 
 /**
  * When discovering supertypes of an AnnotatedTypeMirror we want to annotate each supertype with the
@@ -21,8 +23,8 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
      * @param subtypeElement element that may have annotations to apply to supertypes
      */
     public static void annotateSupers(
-            List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes,
-            TypeElement subtypeElement) {
+            List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes, TypeElement subtypeElement)
+            throws UnexpectedAnnotationLocationException {
         for (int i = 0; i < supertypes.size(); i++) {
             final AnnotatedTypeMirror supertype = supertypes.get(i);
             // Offset i by -1 since typeIndex should start from -1.
@@ -104,7 +106,8 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     }
 
     @Override
-    protected void handleTargeted(List<Attribute.TypeCompound> targeted) {
+    protected void handleTargeted(List<TypeCompound> targeted)
+            throws UnexpectedAnnotationLocationException {
         ElementAnnotationUtil.annotateViaTypeAnnoPosition(type, targeted);
     }
 

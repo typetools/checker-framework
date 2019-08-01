@@ -16,6 +16,7 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
@@ -23,7 +24,8 @@ import org.checkerframework.javacutil.Pair;
 public class ParamApplier extends IndexedElementAnnotationApplier {
 
     public static void apply(
-            AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory) {
+            AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory)
+            throws UnexpectedAnnotationLocationException {
         new ParamApplier(type, element, typeFactory).extractAndApply();
     }
 
@@ -178,7 +180,8 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
      *     == getIndex
      */
     @Override
-    protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
+    protected void handleTargeted(final List<TypeCompound> targeted)
+            throws UnexpectedAnnotationLocationException {
 
         final List<TypeCompound> formalParams = new ArrayList<>();
         Map<TargetType, List<TypeCompound>> targetToAnnos =
@@ -226,7 +229,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     }
 
     @Override
-    public void extractAndApply() {
+    public void extractAndApply() throws UnexpectedAnnotationLocationException {
         ElementAnnotationUtil.addAnnotationsFromElement(type, element.getAnnotationMirrors());
         super.extractAndApply();
     }

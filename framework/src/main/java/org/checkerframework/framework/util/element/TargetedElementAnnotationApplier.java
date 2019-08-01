@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.element;
 
 import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.TargetType;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -9,6 +10,7 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 
@@ -92,7 +94,8 @@ abstract class TargetedElementAnnotationApplier {
      * @param targeted the list of annotations that were returned by getRawTypeAttributes and had a
      *     TargetType contained by annotatedTargets
      */
-    protected abstract void handleTargeted(List<Attribute.TypeCompound> targeted);
+    protected abstract void handleTargeted(List<TypeCompound> targeted)
+            throws UnexpectedAnnotationLocationException;
 
     /**
      * The default implementation of this method does nothing.
@@ -191,7 +194,7 @@ abstract class TargetedElementAnnotationApplier {
      *
      * <p>This method will throw a runtime exception if isAccepted returns false.
      */
-    public void extractAndApply() {
+    public void extractAndApply() throws UnexpectedAnnotationLocationException {
         if (!isAccepted()) {
             throw new BugInCF(
                     "LocalVariableExtractor.extractAndApply: "

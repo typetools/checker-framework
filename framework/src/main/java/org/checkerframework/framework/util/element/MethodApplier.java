@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.PluginUtil;
@@ -26,7 +27,8 @@ import org.checkerframework.javacutil.PluginUtil;
 public class MethodApplier extends TargetedElementAnnotationApplier {
 
     public static void apply(
-            AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory) {
+            AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory)
+            throws UnexpectedAnnotationLocationException {
         new MethodApplier(type, element, typeFactory).extractAndApply();
     }
 
@@ -97,7 +99,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
      * annotations.
      */
     @Override
-    public void extractAndApply() {
+    public void extractAndApply() throws UnexpectedAnnotationLocationException {
         methodType.setElement(methodSymbol); // Preserves previous behavior
 
         // Add declaration annotations to the return type if
@@ -126,7 +128,8 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
     // NOTE that these are the only locations not handled elsewhere, otherwise we call apply
     @Override
-    protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
+    protected void handleTargeted(final List<TypeCompound> targeted)
+            throws UnexpectedAnnotationLocationException {
         final List<TypeCompound> unmatched = new ArrayList<>();
         final Map<TargetType, List<TypeCompound>> targetTypeToAnno =
                 ElementAnnotationUtil.partitionByTargetType(
@@ -156,7 +159,8 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     }
 
     /** For each thrown type, collect all the annotations for that type and apply them. */
-    private void applyThrowsAnnotations(final List<Attribute.TypeCompound> annos) {
+    private void applyThrowsAnnotations(final List<Attribute.TypeCompound> annos)
+            throws UnexpectedAnnotationLocationException {
         final List<AnnotatedTypeMirror> thrown = methodType.getThrownTypes();
         if (thrown.isEmpty()) {
             return;
@@ -196,7 +200,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
      * If the return type is a use of a type variable first apply the bound annotations from the
      * type variables declaration.
      */
-    private void applyTypeVarUseOnReturnType() {
+    private void applyTypeVarUseOnReturnType() throws UnexpectedAnnotationLocationException {
         new TypeVarUseApplier(methodType.getReturnType(), methodSymbol, typeFactory)
                 .extractAndApply();
     }
