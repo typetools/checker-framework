@@ -77,5 +77,8 @@ RUN wget https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulB
 && tar xzf jtreg-4.2-b14.tar.gz \
 && export JT_HOME=/jtreg
 
-RUN git clone --depth 1 https://github.com/typetools/jdk.git \
+RUN git clone https://github.com/typetools/jdk.git \
+&& (cd jdk && bash configure --with-jtreg --disable-warnings-as-errors && make images)
+
+RUN git clone https://github.com/AdoptOpenJDK/openjdk-jdk11u.git openjdk-jdk11u \
 && (cd jdk && bash configure --with-jtreg --disable-warnings-as-errors && make images)
