@@ -45,6 +45,7 @@ import java.util.stream.StreamSupport;
 
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.common.value.qual.IntVal;
 
 /**
  * This class contains various methods for manipulating arrays (such as
@@ -2867,7 +2868,7 @@ public class Arrays {
      * @throws ArrayIndexOutOfBoundsException if <tt>fromIndex &lt; 0</tt> or
      *         <tt>toIndex &gt; a.length</tt>
      */
-    public static void fill(@PolySigned long[] a, int fromIndex, int toIndex, @PolySigned long val) {
+    public static void fill(@PolySigned long[] a, @IntVal({0, Integer.MAX_VALUE}) int fromIndex, @IntVal({0, Integer.MAX_VALUE}) int toIndex, @PolySigned long val) {
         rangeCheck(a.length, fromIndex, toIndex);
         for (int i = fromIndex; i < toIndex; i++)
             a[i] = val;
@@ -2902,7 +2903,7 @@ public class Arrays {
      * @throws ArrayIndexOutOfBoundsException if <tt>fromIndex &lt; 0</tt> or
      *         <tt>toIndex &gt; a.length</tt>
      */
-    public static void fill(@PolySigned int[] a, int fromIndex, int toIndex, @PolySigned int val) {
+    public static void fill(@PolySigned int[] a, @IntVal({0, Integer.MAX_VALUE}) int fromIndex, @IntVal({0, Integer.MAX_VALUE}) int toIndex, @PolySigned int val) {
         rangeCheck(a.length, fromIndex, toIndex);
         for (int i = fromIndex; i < toIndex; i++)
             a[i] = val;
@@ -2937,7 +2938,7 @@ public class Arrays {
      * @throws ArrayIndexOutOfBoundsException if <tt>fromIndex &lt; 0</tt> or
      *         <tt>toIndex &gt; a.length</tt>
      */
-    public static void fill(@PolySigned short[] a, int fromIndex, int toIndex, @PolySigned short val) {
+    public static void fill(@PolySigned short[] a, @IntVal({0, Integer.MAX_VALUE}) int fromIndex, @IntVal({0, Integer.MAX_VALUE}) int toIndex, @PolySigned short val) {
         rangeCheck(a.length, fromIndex, toIndex);
         for (int i = fromIndex; i < toIndex; i++)
             a[i] = val;
@@ -2972,7 +2973,7 @@ public class Arrays {
      * @throws ArrayIndexOutOfBoundsException if <tt>fromIndex &lt; 0</tt> or
      *         <tt>toIndex &gt; a.length</tt>
      */
-    public static void fill(@PolySigned char[] a, int fromIndex, int toIndex, @PolySigned char val) {
+    public static void fill(@PolySigned char[] a, @IntVal({0, Integer.MAX_VALUE}) int fromIndex, @IntVal({0, Integer.MAX_VALUE}) int toIndex, @PolySigned char val) {
         rangeCheck(a.length, fromIndex, toIndex);
         for (int i = fromIndex; i < toIndex; i++)
             a[i] = val;
@@ -3007,7 +3008,7 @@ public class Arrays {
      * @throws ArrayIndexOutOfBoundsException if <tt>fromIndex &lt; 0</tt> or
      *         <tt>toIndex &gt; a.length</tt>
      */
-    public static void fill(@PolySigned byte[] a, int fromIndex, int toIndex, @PolySigned byte val) {
+    public static void fill(@PolySigned byte[] a, @IntVal({0, Integer.MAX_VALUE}) int fromIndex, @IntVal({0, Integer.MAX_VALUE}) int toIndex, @PolySigned byte val) {
         rangeCheck(a.length, fromIndex, toIndex);
         for (int i = fromIndex; i < toIndex; i++)
             a[i] = val;
@@ -3516,7 +3517,7 @@ public class Arrays {
      * @throws NullPointerException if <tt>original</tt> is null
      * @since 1.6
      */
-    public static @PolySigned byte[] copyOfRange(@PolySigned byte[] original, int from, int to) {
+    public static @PolySigned byte[] copyOfRange(@PolySigned byte[] original, @IntVal({0, Integer.MAX_VALUE}) int from, @IntVal({0, Integer.MAX_VALUE}) int to) {
         int newLength = to - from;
         if (newLength < 0)
             throw new IllegalArgumentException(from + " > " + to);
@@ -3552,7 +3553,7 @@ public class Arrays {
      * @throws NullPointerException if <tt>original</tt> is null
      * @since 1.6
      */
-    public static @PolySigned short[] copyOfRange(@PolySigned short[] original, int from, int to) {
+    public static @PolySigned short[] copyOfRange(@PolySigned short[] original, @IntVal({0, Integer.MAX_VALUE}) int from, @IntVal({0, Integer.MAX_VALUE}) int to) {
         int newLength = to - from;
         if (newLength < 0)
             throw new IllegalArgumentException(from + " > " + to);
@@ -3588,7 +3589,7 @@ public class Arrays {
      * @throws NullPointerException if <tt>original</tt> is null
      * @since 1.6
      */
-    public static @PolySigned int[] copyOfRange(@PolySigned int[] original, int from, int to) {
+    public static @PolySigned int[] copyOfRange(@PolySigned int[] original, @IntVal({0, Integer.MAX_VALUE}) int from, @IntVal({0, Integer.MAX_VALUE}) int to) {
         int newLength = to - from;
         if (newLength < 0)
             throw new IllegalArgumentException(from + " > " + to);
@@ -3624,7 +3625,7 @@ public class Arrays {
      * @throws NullPointerException if <tt>original</tt> is null
      * @since 1.6
      */
-    public static @PolySigned long[] copyOfRange(@PolySigned long[] original, int from, int to) {
+    public static @PolySigned long[] copyOfRange(@PolySigned long[] original, @IntVal({0, Integer.MAX_VALUE}) int from, @IntVal({0, Integer.MAX_VALUE}) int to) {
         int newLength = to - from;
         if (newLength < 0)
             throw new IllegalArgumentException(from + " > " + to);
@@ -3660,7 +3661,7 @@ public class Arrays {
      * @throws NullPointerException if <tt>original</tt> is null
      * @since 1.6
      */
-    public static @PolySigned char[] copyOfRange(@PolySigned char[] original, int from, int to) {
+    public static @PolySigned char[] copyOfRange(@PolySigned char[] original, @IntVal({0, Integer.MAX_VALUE}) int from, @IntVal({0, Integer.MAX_VALUE}) int to) {
         int newLength = to - from;
         if (newLength < 0)
             throw new IllegalArgumentException(from + " > " + to);
