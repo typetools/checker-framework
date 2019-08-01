@@ -44,7 +44,6 @@ import sun.security.util.SecurityConstants;
 import sun.reflect.annotation.AnnotationType;
 
 import org.checkerframework.checker.signedness.qual.PolySigned;
-import org.checkerframework.checker.index.qual.NonNegative;
 
 /**
  * The <code>System</code> class contains several useful class fields
@@ -493,9 +492,9 @@ public final class System {
      * @exception  NullPointerException if either <code>src</code> or
      *               <code>dest</code> is <code>null</code>.
      */
-    public static native void arraycopy(@PolySigned Object src,  @NonNegative int  srcPos,
-                                        @PolySigned Object dest, @NonNegative int destPos,
-                                        @NonNegative int length);
+    public static native void arraycopy(@PolySigned Object src,  int  srcPos,
+                                        @PolySigned Object dest, int destPos,
+                                        int length);
 
     /**
      * Returns the same hash code for the given object as
