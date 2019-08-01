@@ -27,6 +27,7 @@ public class SystemGetPropertyHandler {
     protected final ProcessingEnvironment env;
     protected final NullnessAnnotatedTypeFactory factory;
 
+    /** The System.getProperty(String) method. */
     protected final ExecutableElement systemGetProperty;
 
     // This list is from the Javadoc of System.getProperties.
