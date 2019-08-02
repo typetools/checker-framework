@@ -77,8 +77,9 @@ RUN wget https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulB
 && tar xzf jtreg-4.2-b14.tar.gz \
 && export JT_HOME=/jtreg
 
+## `chmod` is necessary because Azure Pipelines runs as user vsts_azpcontainer, not as root.
 RUN git clone https://github.com/typetools/jdk.git \
-&& (export JT_HOME=/jtreg && cd jdk && bash configure --with-jtreg --disable-warnings-as-errors && make images)
+&& (export JT_HOME=/jtreg && cd jdk && bash configure --with-jtreg --disable-warnings-as-errors && make images && chmod -R og+w .)
 
 RUN git clone https://github.com/openjdk/jdk11u.git jdk11u \
-&& (export JT_HOME=/jtreg && cd jdk11u && bash configure --with-jtreg --disable-warnings-as-errors && make images)
+&& (export JT_HOME=/jtreg && cd jdk11u && bash configure --with-jtreg --disable-warnings-as-errors && make images && chmod -R og+w .)
