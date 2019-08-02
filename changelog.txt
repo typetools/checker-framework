@@ -1,6 +1,12 @@
-Version ??, August 1, 2019
+Version 2.10.0, August 1, 2019
 
 Removed the NullnessRawnessChecker.  Use the NullnessChecker instead.
+
+Closed issues:
+435, 939, 1430, 1687, 1771, 1902, 2173, 2345, 2470, 2534, 2606, 2613, 2619,
+2633, 2638.
+
+---------------------------------------------------------------------------
 
 Version 2.9.0, July 3, 2019
 
