@@ -17,6 +17,7 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class VariableApplier extends TargetedElementAnnotationApplier {
 
+    /** Apply annotations from {@code element} to {@code type}. */
     public static void apply(final AnnotatedTypeMirror type, final Element element)
             throws UnexpectedAnnotationLocationException {
         new VariableApplier(type, element).extractAndApply();

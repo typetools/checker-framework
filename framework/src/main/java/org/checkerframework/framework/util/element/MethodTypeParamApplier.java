@@ -14,6 +14,7 @@ import org.checkerframework.javacutil.BugInCF;
 /** Applies the annotations present for a method type parameter onto an AnnotatedTypeVariable. */
 public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
 
+    /** Apply annotations from {@code element} to {@code type}. */
     public static void apply(
             AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory)
             throws UnexpectedAnnotationLocationException {

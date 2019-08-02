@@ -23,6 +23,7 @@ import org.checkerframework.javacutil.Pair;
 /** Adds annotations to one formal parameter of a method or lambda within a method. */
 public class ParamApplier extends IndexedElementAnnotationApplier {
 
+    /** Apply annotations from {@code element} to {@code type}. */
     public static void apply(
             AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory)
             throws UnexpectedAnnotationLocationException {

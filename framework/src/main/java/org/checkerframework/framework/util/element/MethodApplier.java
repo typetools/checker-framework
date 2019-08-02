@@ -26,6 +26,7 @@ import org.checkerframework.javacutil.PluginUtil;
  */
 public class MethodApplier extends TargetedElementAnnotationApplier {
 
+    /** Apply annotations from {@code element} to {@code type}. */
     public static void apply(
             AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory)
             throws UnexpectedAnnotationLocationException {
