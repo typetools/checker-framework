@@ -117,7 +117,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * Stores the result of isSubtype for type arguments. Prevents infinite recursion on types that
      * refer to themselves. (Stores both true and false results.)
      */
-    protected final SubtypeTypeArgVisitHistory typeargVisitHistory;
+    protected final StructuralEqualityVisitHistory typeargVisitHistory;
 
     public DefaultTypeHierarchy(
             final BaseTypeChecker checker,
@@ -127,7 +127,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         this.checker = checker;
         this.qualifierHierarchy = qualifierHierarchy;
         this.visitHistory = new SubtypeVisitHistory();
-        this.typeargVisitHistory = new SubtypeTypeArgVisitHistory();
+        this.typeargVisitHistory = new StructuralEqualityVisitHistory();
         this.equalityComparer = createEqualityComparer();
 
         this.ignoreRawTypes = ignoreRawTypes;

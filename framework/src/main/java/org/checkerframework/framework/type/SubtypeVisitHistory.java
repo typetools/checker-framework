@@ -57,6 +57,7 @@ public class SubtypeVisitHistory {
         }
     }
 
+    /** Remove {@code type1} and {@code type2}. */
     public void remove(
             final AnnotatedTypeMirror type1,
             final AnnotatedTypeMirror type2,
@@ -89,10 +90,5 @@ public class SubtypeVisitHistory {
     @Override
     public String toString() {
         return "VisitHistory( " + visited + " )";
-    }
-
-    /** Clears the history. */
-    public void clear() {
-        visited.clear();
     }
 }
