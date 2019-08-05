@@ -1,7 +1,7 @@
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
-public class EnumRefinement {
+public class EnumTypeArgs {
 
     enum MyEnum {
         CONST1,
