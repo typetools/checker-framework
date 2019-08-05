@@ -17,15 +17,15 @@ Annotated the first argument of Opt.get and Opt.orElseThrow as @NonNull.
 
 Removed meta-annotation @ImplicitFor:
  * Use the new meta-annotation @QualifierForLiteral to replace
- @ImplicitFor(literals, stringpatterns).
+   @ImplicitFor(literals, stringpatterns).
  * Use the meta-annotation @DefaultFor to replace @ImplicitFor(typeKinds,
- types).
+   types).
  * Use the new meta-annotation @UpperBoundFor to specify a qualifier upper
- bound for certain types.
-* You can completely remove @ImplicitFor(typeNames =
- Void.class, literals = LiteralKind.NULL) on bottom qualifiers.
- @DefaultFor(types = Void.class) and @QualifierForLiterals(literals =
- LiteralKind.NULL) are added to the bottom qualifier by default.
+   bound for certain types.
+ * You can completely remove @ImplicitFor(typeNames =
+   Void.class, literals = LiteralKind.NULL) on bottom qualifiers.
+   @DefaultFor(types = Void.class) and @QualifierForLiterals(literals =
+   LiteralKind.NULL) are added to the bottom qualifier by default.
 
 Add @DefaultQualifierOnUse and @NoDefaultQualifierOnUse type declaration annotations
 
