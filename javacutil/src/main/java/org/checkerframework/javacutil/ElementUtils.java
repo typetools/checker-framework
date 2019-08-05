@@ -1,9 +1,6 @@
 package org.checkerframework.javacutil;
 
-import static com.sun.tools.javac.code.Flags.ABSTRACT;
-import static com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
-import static com.sun.tools.javac.code.Flags.FINAL;
-
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -11,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -22,9 +20,11 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -38,7 +38,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the innermost type element enclosing the given element
+     * Returns the innermost type element enclosing the given element.
      *
      * @param elem the enclosed element of a class
      * @return the innermost type element
@@ -96,7 +96,7 @@ public class ElementUtils {
 
     /**
      * Returns true if the element is a static element: whether it is a static field, static method,
-     * or static class
+     * or static class.
      *
      * @return true if element is static
      */
@@ -105,7 +105,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns true if the element is a final element: a final field, final method, or final class
+     * Returns true if the element is a final element: a final field, final method, or final class.
      *
      * @return true if the element is final
      */
@@ -121,10 +121,10 @@ public class ElementUtils {
     public static boolean isEffectivelyFinal(Element element) {
         Symbol sym = (Symbol) element;
         if (sym.getEnclosingElement().getKind() == ElementKind.METHOD
-                && (sym.getEnclosingElement().flags() & ABSTRACT) != 0) {
+                && (sym.getEnclosingElement().flags() & Flags.ABSTRACT) != 0) {
             return true;
         }
-        return (sym.flags() & (FINAL | EFFECTIVELY_FINAL)) != 0;
+        return (sym.flags() & (Flags.FINAL | Flags.EFFECTIVELY_FINAL)) != 0;
     }
 
     /**
@@ -171,8 +171,50 @@ public class ElementUtils {
                 || elt.getKind().isInterface()) {
             return getQualifiedClassName(elt).toString();
         } else {
-            return getQualifiedClassName(elt) + "." + elt.toString();
+            return getQualifiedClassName(elt) + "." + elt;
         }
+    }
+
+    /**
+     * Returns the canonical representation of the method declaration, which contains simple names
+     * of the types only.
+     */
+    public static String getSimpleName(ExecutableElement element) {
+        StringBuilder sb = new StringBuilder();
+
+        // note: constructor simple name is <init>
+        sb.append(element.getSimpleName());
+        sb.append("(");
+        for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
+                i.hasNext(); ) {
+            sb.append(simpleTypeName(i.next().asType()));
+            if (i.hasNext()) {
+                sb.append(",");
+            }
+        }
+        sb.append(")");
+
+        return sb.toString();
+    }
+
+    /**
+     * A helper method that standarizes types by printing simple names instead of fully qualified
+     * names.
+     */
+    private static String simpleTypeName(TypeMirror type) {
+        switch (type.getKind()) {
+            case ARRAY:
+                return simpleTypeName(((ArrayType) type).getComponentType()) + "[]";
+            case TYPEVAR:
+                return ((TypeVariable) type).asElement().getSimpleName().toString();
+            case DECLARED:
+                return ((DeclaredType) type).asElement().getSimpleName().toString();
+            default:
+                if (type.getKind().isPrimitive()) {
+                    return type.toString();
+                }
+        }
+        throw new BugInCF("ElementUtils: unhandled type: " + type);
     }
 
     /**
@@ -185,7 +227,7 @@ public class ElementUtils {
         return element.getQualifiedName().contentEquals("java.lang.Object");
     }
 
-    /** Returns true if the element is a constant time reference */
+    /** Returns true if the element is a constant time reference. */
     public static boolean isCompileTimeConstant(Element elt) {
         return elt != null
                 && (elt.getKind() == ElementKind.FIELD
@@ -210,13 +252,13 @@ public class ElementUtils {
                 return false;
             }
         }
-        return isElementFromByteCode(elt.getEnclosingElement(), elt);
+        return isElementFromByteCodeHelper(elt.getEnclosingElement());
     }
 
     /**
      * Returns true if the element is declared in ByteCode. Always return false if elt is a package.
      */
-    private static boolean isElementFromByteCode(Element elt, Element orig) {
+    private static boolean isElementFromByteCodeHelper(Element elt) {
         if (elt == null) {
             return false;
         }
@@ -231,10 +273,10 @@ public class ElementUtils {
                 return false;
             }
         }
-        return isElementFromByteCode(elt.getEnclosingElement(), elt);
+        return isElementFromByteCodeHelper(elt.getEnclosingElement());
     }
 
-    /** Returns the field of the class */
+    /** Returns the field of the class. */
     public static VariableElement findFieldInType(TypeElement type, String name) {
         for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (field.getSimpleName().contentEquals(name)) {
@@ -284,8 +326,17 @@ public class ElementUtils {
      */
     public static Set<VariableElement> findFieldsInTypeOrSuperType(
             TypeMirror type, Collection<String> names) {
+        int origCardinality = names.size();
         Set<VariableElement> elements = new HashSet<>();
         findFieldsInTypeOrSuperType(type, names, elements);
+        // Since names may contain duplicates, I don't trust the claim in the documentation about
+        // cardinality.  (Does any code depend on the invariant, though?)
+        if (origCardinality != names.size() + elements.size()) {
+            throw new BugInCF(
+                    String.format(
+                            "Bad sizes: %d != %d + %d",
+                            origCardinality, names.size(), elements.size()));
+        }
         return elements;
     }
 
@@ -366,7 +417,6 @@ public class ElementUtils {
                 // Looking up a supertype failed. This sometimes happens
                 // when transitive dependencies are not on the classpath.
                 // As javac didn't complain, let's also not complain.
-                // TODO: Use an expanded ErrorReporter to output a message.
                 supertypecls = null;
             }
 

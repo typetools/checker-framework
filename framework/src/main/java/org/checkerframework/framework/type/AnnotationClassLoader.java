@@ -27,8 +27,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * This class assists the {@link AnnotatedTypeFactory} by reflectively looking up the list of
@@ -48,9 +49,8 @@ import org.checkerframework.javacutil.InternalUtils;
  *
  * <p>Checker writers may wish to subclass this class if they wish to implement some custom rules to
  * filter or process loaded annotation classes, by providing an override implementation of {@link
- * #isSupportedAnnotationClass(Class)}. See {@link
- * org.checkerframework.checker.units.UnitsAnnotationClassLoader UnitsAnnotationClassLoader} for an
- * example.
+ * #isSupportedAnnotationClass(Class)}. See {@code
+ * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
 public class AnnotationClassLoader {
     // For issuing errors to the user
@@ -76,7 +76,7 @@ public class AnnotationClassLoader {
      */
     protected final ProcessingEnvironment processingEnv;
 
-    /** The resource URL of the qual directory of a checker class */
+    /** The resource URL of the qual directory of a checker class. */
     private final URL resourceURL;
 
     /** The class loader used to load annotation classes. */
@@ -150,7 +150,7 @@ public class AnnotationClassLoader {
     /**
      * Scans all classpaths and returns the resource URL to the jar which contains the checker's
      * qual package, or the qual package directory if it exists, or null if no jar or directory
-     * contains the package
+     * contains the package.
      *
      * @return a URL to the jar that contains the qual package, or to the qual package's directory,
      *     or null if no jar or directory contains the qual package
@@ -167,20 +167,20 @@ public class AnnotationClassLoader {
 
         // In checkers, there will be a resource URL for the qual directory. But
         // when called in the framework (eg GeneralAnnotatedTypeFactory), there
-        // won't be a resourceURL since there isn't a qual directory
+        // won't be a resourceURL since there isn't a qual directory.
 
-        // each path from the set of classpaths will be checked to see if it
+        // Each path from the set of classpaths will be checked to see if it
         // contains the qual directory of a checker, if so, the first
         // directory or jar that contains the package will be used as the source
-        // for loading classes from the qual package
+        // for loading classes from the qual package.
 
-        // if either a directory or a jar contains the package, resourceURL will
+        // If either a directory or a jar contains the package, resourceURL will
         // be updated to refer to that source, otherwise resourceURL remains as
-        // null
+        // null.
 
-        // if both a jar and a directory contain the qual package, then the
+        // If both a jar and a directory contain the qual package, then the
         // order of the jar and the directory in the command line option(s)
-        // or environment variables will decide which one gets examined first
+        // or environment variables will decide which one gets examined first.
         for (String path : paths) {
             // see if the current classpath segment is a jar or a directory
             if (path.endsWith(JAR_SUFFIX)) {
@@ -216,7 +216,7 @@ public class AnnotationClassLoader {
 
     /**
      * Checks to see if the jar or directory referred by the URL contains the qual package of a
-     * specific checker
+     * specific checker.
      *
      * @param url a URL referring to either a jar or a directory
      * @return true if the jar or the directory contains the qual package, false otherwise
@@ -246,7 +246,7 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Checks to see if the jar file contains the qual package of a specific checker
+     * Checks to see if the jar file contains the qual package of a specific checker.
      *
      * @param jar a jar file
      * @return true if the jar file contains the qual package, false otherwise
@@ -275,7 +275,7 @@ public class AnnotationClassLoader {
      * Checks to see if the current directory contains the qual package through recursion currentDir
      * starts at the root directory (a directory passed in as part of the classpaths), the iterator
      * goes through each segment of the fully qualified package name (each segment is separated by a
-     * dot)
+     * dot).
      *
      * <p>Each step of the recursion checks to see if there's a subdirectory in the current
      * directory that has a name matching the package name segment, if so, it recursively descends
@@ -325,7 +325,7 @@ public class AnnotationClassLoader {
 
     /**
      * Given an absolute path to a directory, this method will return a URL reference to that
-     * directory
+     * directory.
      *
      * @param absolutePathToDirectory an absolute path to a directory
      * @return a URL reference to the directory, or null if the URL is malformed
@@ -348,7 +348,7 @@ public class AnnotationClassLoader {
 
     /**
      * Given an absolute path to a jar file, this method will return a URL reference to that jar
-     * file
+     * file.
      *
      * @param absolutePathToJarFile an absolute path to a jar file
      * @return a URL reference to the jar file, or null if the URL is malformed
@@ -369,7 +369,7 @@ public class AnnotationClassLoader {
 
     /**
      * Obtains and returns a set of the classpaths from compiler options, system environment
-     * variables, and by examining the classloader to see what paths it has access to
+     * variables, and by examining the classloader to see what paths it has access to.
      *
      * <p>The classpaths will be obtained in the order of:
      *
@@ -388,7 +388,10 @@ public class AnnotationClassLoader {
         Set<String> paths = new LinkedHashSet<>();
 
         // add all extension paths
-        paths.addAll(Arrays.asList(System.getProperty("java.ext.dirs").split(File.pathSeparator)));
+        String extdirs = System.getProperty("java.ext.dirs");
+        if (extdirs != null && !extdirs.isEmpty()) {
+            paths.addAll(Arrays.asList(extdirs.split(File.pathSeparator)));
+        }
 
         // add all paths in CLASSPATH, -cp, and -classpath
         paths.addAll(
@@ -407,16 +410,17 @@ public class AnnotationClassLoader {
 
     /**
      * Obtains the classloader used to load the checker class, if that isn't available then it will
-     * try to obtain the system classloader
+     * try to obtain the system classloader.
      *
      * @return the classloader used to load the checker class, or the system classloader, or null if
      *     both are unavailable
      */
     private final @Nullable URLClassLoader getClassLoader() {
-        return (URLClassLoader) InternalUtils.getClassLoaderForClass(checker.getClass());
+        ClassLoader result = InternalUtils.getClassLoaderForClass(checker.getClass());
+        return (@Nullable URLClassLoader) result;
     }
 
-    /** Debug Use: Displays all classpaths examined by the class loader */
+    /** Debug Use: Displays all classpaths examined by the class loader. */
     @SuppressWarnings("unused") // for debugging
     protected final void printPaths() {
         // all paths in Xbootclasspath
@@ -472,18 +476,32 @@ public class AnnotationClassLoader {
             // resource URL for the qual directory will have the protocol
             // "jar". This means the whole checker is loaded as a jar file.
 
-            JarFile jarFile = null;
-            // open up that jar file and extract annotation class names
+            JarURLConnection connection;
+            // create a connection to the jar file
             try {
-                JarURLConnection connection = (JarURLConnection) resourceURL.openConnection();
-                jarFile = connection.getJarFile();
+                connection = (JarURLConnection) resourceURL.openConnection();
+
+                // disable caching / connection sharing of the low level URLConnection to the Jar
+                // file
+                connection.setDefaultUseCaches(false);
+                connection.setUseCaches(false);
+
+                // connect to the Jar file
+                connection.connect();
             } catch (IOException e) {
-                ErrorReporter.errorAbort(
-                        "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
+                throw new BugInCF(
+                        "AnnotationClassLoader: cannot open a connection to the Jar file "
+                                + resourceURL.getFile());
             }
 
-            // get class names inside the jar file within the particular package
-            annotationNames = getBundledAnnotationNamesFromJar(jarFile);
+            // open up that jar file and extract annotation class names
+            try (JarFile jarFile = connection.getJarFile()) {
+                // get class names inside the jar file within the particular package
+                annotationNames = getBundledAnnotationNamesFromJar(jarFile);
+            } catch (IOException e) {
+                throw new BugInCF(
+                        "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
+            }
 
         } else if (resourceURL.getProtocol().contentEquals("file")) {
             // if the checker class file is found within the file system itself
@@ -562,7 +580,7 @@ public class AnnotationClassLoader {
      * @param annoName canonical name of an external annotation class, e.g.
      *     "myproject.qual.myannotation"
      * @return the loaded annotation class, or null if it was not a supported annotation as decided
-     *     by {@link #isSupportedAnnotationClass(Class)}.
+     *     by {@link #isSupportedAnnotationClass(Class)}
      */
     public final @Nullable Class<? extends Annotation> loadExternalAnnotationClass(
             final String annoName) {
@@ -674,7 +692,7 @@ public class AnnotationClassLoader {
 
         // load the class
         if (classLoader == null) {
-            checker.userErrorAbort(
+            throw new UserError(
                     checker.getClass().getSimpleName()
                             + ": no classloaders are available for use to load annotation class "
                             + fullyQualifiedClassName
@@ -685,7 +703,7 @@ public class AnnotationClassLoader {
         try {
             cls = Class.forName(fullyQualifiedClassName, true, classLoader);
         } catch (ClassNotFoundException e) {
-            checker.userErrorAbort(
+            throw new UserError(
                     checker.getClass().getSimpleName()
                             + ": could not load class for annotation: "
                             + fullyQualifiedClassName
@@ -697,7 +715,7 @@ public class AnnotationClassLoader {
         // return null
         if (!cls.isAnnotation()) {
             if (issueError) {
-                checker.userErrorAbort(
+                throw new UserError(
                         checker.getClass().getSimpleName()
                                 + ": the loaded class: "
                                 + cls.getCanonicalName()
@@ -716,17 +734,17 @@ public class AnnotationClassLoader {
             // issueError is set to true for loading explicitly named external annotations
             // We issue an error here when one of those annotations is not well-defined, since the
             // user expects these external annotations to be loaded
-            checker.userErrorAbort(
+            throw new UserError(
                     checker.getClass().getSimpleName()
                             + ": the loaded annotation: "
                             + annoClass.getCanonicalName()
                             + " is not a type annotation."
                             + " Check its @Target meta-annotation.");
-            return null;
         } else {
-            // issueError is set to false for loading the qual directory or any external directories
+            // issueError is set to false for loading the qual directory or any external
+            // directories.
             // We don't issue any errors since there may be meta-annotations or non-type annotations
-            // in such directories
+            // in such directories.
             return null;
         }
     }
@@ -759,12 +777,11 @@ public class AnnotationClassLoader {
 
     /**
      * Checks to see whether a particular annotation class has the {@link Target} meta-annotation,
-     * and has the required {@link ElementType} values as checked by {@link
-     * AnnotatedTypes#hasTypeQualifierElementTypes(ElementType[], Class)}.
+     * and has the required {@link ElementType} values.
      *
      * <p>A subclass may override this method to load annotations that are not intended to be
      * annotated in source code. E.g.: {@code SubtypingChecker} overrides this method to load {@code
-     * Unqualified}
+     * Unqualified}.
      *
      * @param annoClass an annotation class
      * @return true if the annotation is well defined, false if it isn't

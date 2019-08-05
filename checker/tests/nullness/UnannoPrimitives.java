@@ -43,7 +43,7 @@ class UnannoPrimitives {
 
     void testCasts(Integer i1) {
         Object i2 = (int) i1;
-        // TODO:: error: (type.invalid)
+        // :: error: (type.invalid.annotations.on.use)
         Object i3 = (@Nullable int) i1;
     }
 }

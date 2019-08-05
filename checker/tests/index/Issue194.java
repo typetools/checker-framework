@@ -3,6 +3,7 @@
 
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LengthOf;
+import org.checkerframework.checker.index.qual.SameLen;
 
 public class Issue194 {
     class Custom {
@@ -24,8 +25,18 @@ public class Issue194 {
             return false;
         }
         for (int i = 0; i < a.length(); ++i) {
-            if (a.get(i) != b.get(i)) return false;
+            if (a.get(i) != b.get(i)) {
+                return false;
+            }
         }
         return true;
+    }
+
+    public void m2(Custom a, Custom b) {
+        if (a.length() != b.length()) {
+            return;
+        }
+        @SameLen("a") Custom a2 = b;
+        @SameLen("b") Custom b2 = a;
     }
 }

@@ -1,9 +1,9 @@
 /*
  * @test
  * @summary Test case for Issue 824 https://github.com/typetools/checker-framework/issues/824
- * @compile -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext NoStubFirst.java NoStubSecond.java
+ * @compile -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext NoStubFirst.java NoStubSecond.java
  * @compile -XDrawDiagnostics -Xlint:unchecked ../issue824lib/First.java
- * @compile -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext Second.java -Astubs=First.astub
+ * @compile -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Second.java -Astubs=First.astub
  */
 
 import org.checkerframework.checker.nullness.qual.Nullable;

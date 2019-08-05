@@ -30,6 +30,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.io.Serializable;
 
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.*;
@@ -173,6 +175,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     @Pure
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     boolean containsKey(@Nullable Object key);
 
     /**
@@ -258,6 +261,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @throws IllegalArgumentException if some property of the specified key
      *         or value prevents it from being stored in this map
      */
+    @EnsuresKeyFor(value="#1", map="this")
     @Nullable V put(K key, V value);
 
     /**
@@ -343,6 +347,9 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      *
      * @return a set view of the keys contained in this map
      */
+    // TODO: Make the below comment true.  https://tinyurl.com/cfissue/#2358
+    // This annotation is not strong enough and is overridden in KeyForAnnotatedTypeFactory.
+    // The keys are "this" and all the keys on the receiver's key type.
     @SideEffectFree
     Set<@KeyFor("this") K> keySet();
 
@@ -767,6 +774,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
+    @EnsuresKeyFor(value="#1", map="this")
     default V putIfAbsent(K key, V value) {
         V v = get(key);
         if (v == null) {
@@ -978,7 +986,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V computeIfAbsent(K key,
-            Function<? super K, ? extends V> mappingFunction) {
+            Function<? super K, ? extends @Nullable V> mappingFunction) {
         Objects.requireNonNull(mappingFunction);
         V v;
         if ((v = get(key)) == null) {
@@ -1039,7 +1047,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V computeIfPresent(K key,
-            BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+            BiFunction<? super K, ? super V, ? extends @Nullable V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         V oldValue;
         if ((oldValue = get(key)) != null) {
@@ -1115,7 +1123,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V compute(K key,
-            BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+            BiFunction<? super K, ? super @Nullable V, ? extends @Nullable V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         V oldValue = get(key);
 
@@ -1196,7 +1204,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V merge(K key, V value,
-            BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+            BiFunction<? super V, ? super V, ? extends @Nullable V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         Objects.requireNonNull(value);
         V oldValue = get(key);

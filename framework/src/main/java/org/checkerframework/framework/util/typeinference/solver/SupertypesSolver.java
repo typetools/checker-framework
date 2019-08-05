@@ -25,7 +25,7 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Equalities;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Infers type arguments by using the Least Upper Bound computation on the supertype relationships
@@ -106,9 +106,9 @@ public class SupertypesSolver {
                         // If the LUB and the Equality were the SAME typevar, and the lub was
                         // unannotated then "NO ANNOTATION" is the correct choice.
                         if (lub.getKind() == TypeKind.TYPEVAR
-                                && equalityType
-                                        .getUnderlyingType()
-                                        .equals(lub.getUnderlyingType())) {
+                                && typeFactory.types.isSameType(
+                                        equalityType.getUnderlyingType(),
+                                        lub.getUnderlyingType())) {
                             equalityAnnos.add(top);
                         } else {
                             failed = true;
@@ -201,7 +201,7 @@ public class SupertypesSolver {
 
     /**
      * For each target, lub all of the types/annotations in its supertypes constraints and return
-     * the lubs
+     * the lubs.
      *
      * @param remainingTargets targets that do not already have an inferred type argument
      * @param constraintMap the set of constraints for all targets
@@ -256,7 +256,7 @@ public class SupertypesSolver {
             lubPrimaries(lubOfPrimaries, subtypeAnnos, tops, qualifierHierarchy);
             solution.addPrimaries(target, lubOfPrimaries);
 
-            if (subtypesOfTarget.keySet().size() > 0) {
+            if (!subtypesOfTarget.isEmpty()) {
                 final AnnotatedTypeMirror lub =
                         leastUpperBound(target, typeFactory, subtypesOfTarget);
                 final AnnotationMirrorSet effectiveLubAnnos =
@@ -307,7 +307,7 @@ public class SupertypesSolver {
 
     /**
      * For each qualifier hierarchy in tops, take the lub of the annos in subtypeAnnos that
-     * correspond to that hierarchy place the lub in lubOfPrimaries
+     * correspond to that hierarchy place the lub in lubOfPrimaries.
      */
     protected static void lubPrimaries(
             AnnotationMirrorMap<AnnotationMirror> lubOfPrimaries,
@@ -332,7 +332,7 @@ public class SupertypesSolver {
 
     /**
      * For each type in typeToHierarchies, if that type does not have a corresponding annotation for
-     * a given hierarchy replace it with the corresponding value in lowerBoundAnnos
+     * a given hierarchy replace it with the corresponding value in lowerBoundAnnos.
      */
     public static AnnotatedTypeMirror groundMissingHierarchies(
             final Entry<AnnotatedTypeMirror, AnnotationMirrorSet> typeToHierarchies,
@@ -376,7 +376,7 @@ public class SupertypesSolver {
         final Iterator<Entry<AnnotatedTypeMirror, AnnotationMirrorSet>> typesIter =
                 types.entrySet().iterator();
         if (!typesIter.hasNext()) {
-            ErrorReporter.errorAbort("Calling LUB on empty list!");
+            throw new BugInCF("Calling LUB on empty list.");
         }
 
         /**

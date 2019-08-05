@@ -15,7 +15,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.field.AnnotationFieldType;
@@ -34,13 +34,20 @@ public class AnnotationConverter {
      * scenelib.annotations.Annotation}.
      */
     protected static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
-        AnnotationDef def = new AnnotationDef(AnnotationUtils.annotationName(am));
+        AnnotationDef def =
+                new AnnotationDef(
+                        AnnotationUtils.annotationName(am),
+                        String.format(
+                                "annotationMirrorToAnnotation %s [%s] keyset=%s",
+                                am, am.getClass(), am.getElementValues().keySet()));
         Map<String, AnnotationFieldType> fieldTypes = new HashMap<>();
         // Handling cases where there are fields in annotations.
         for (ExecutableElement ee : am.getElementValues().keySet()) {
             AnnotationFieldType aft =
                     getAnnotationFieldType(ee, am.getElementValues().get(ee).getValue());
-            if (aft == null) return null;
+            if (aft == null) {
+                return null;
+            }
             // Here we just add the type of the field into fieldTypes.
             fieldTypes.put(ee.getSimpleName().toString(), aft);
         }
@@ -103,7 +110,7 @@ public class AnnotationConverter {
             try {
                 return new ArrayAFT(BasicAFT.forType(Class.forName(elemType.toString())));
             } catch (ClassNotFoundException e) {
-                ErrorReporter.errorAbort(e.getMessage());
+                throw new BugInCF(e.getMessage());
             }
         } else if (value instanceof Boolean) {
             return BasicAFT.forType(boolean.class);
@@ -153,8 +160,6 @@ public class AnnotationConverter {
             builder.setValue(fieldKey, (Class<?>) obj);
         } else if (obj instanceof Double) {
             builder.setValue(fieldKey, (Double) obj);
-        } else if (obj instanceof Float) {
-            builder.setValue(fieldKey, (Float) obj);
         } else if (obj instanceof Enum<?>) {
             builder.setValue(fieldKey, (Enum<?>) obj);
         } else if (obj instanceof Enum<?>[]) {
@@ -172,7 +177,7 @@ public class AnnotationConverter {
         } else if (obj instanceof VariableElement[]) {
             builder.setValue(fieldKey, (VariableElement[]) obj);
         } else {
-            ErrorReporter.errorAbort("Unrecognized type: " + obj.getClass());
+            throw new BugInCF("Unrecognized type: " + obj.getClass());
         }
     }
 }

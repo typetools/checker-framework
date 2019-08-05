@@ -11,6 +11,7 @@ Copyright (c) 2013-2016 University of Washington. All rights reserved.
 # See README-release-process.html for more information
 
 import os
+from os.path import expanduser
 from release_vars  import *
 from release_utils import *
 from sanity_checks import *
@@ -51,7 +52,7 @@ def promote_release(path_to_releases, release_version):
     from_dir = os.path.join(path_to_releases, release_version)
     to_dir = os.path.join(path_to_releases, "..")
     # Trailing slash is crucial.
-    cmd = "rsync -a --omit-dir-times %s/ %s" % (from_dir, to_dir)
+    cmd = "rsync -aJ --omit-dir-times %s/ %s" % (from_dir, to_dir)
     execute(cmd)
 
 def copy_htaccess():
@@ -66,17 +67,6 @@ def copy_releases_to_live_site(checker_version, afu_version):
     promote_release(CHECKER_LIVE_RELEASES_DIR, checker_version)
     copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version)
     promote_release(AFU_LIVE_RELEASES_DIR, afu_version)
-
-### def update_release_symlinks(checker_version, afu_version):
-###     """Update the \"current\" subdirectories of the jsr308-langtools, the AFU
-###     and the Checker Framework live sites to point to the new releases of each
-###     project."""
-###     afu_relative_latest_release_dir = os.path.join("releases", afu_version)
-###     checker_and_jsr308_relative_latest_release_dir = os.path.join("releases", checker_version)
-###
-###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(JSR308_LIVE_SITE, "current"))
-###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(CHECKER_LIVE_SITE, "current"))
-###     force_symlink(afu_relative_latest_release_dir, os.path.join(AFU_LIVE_SITE, "current"))
 
 def ensure_group_access_to_releases():
     """Gives group access to all files and directories in the \"releases\"
@@ -113,10 +103,10 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
-    # checker.jar is a superset of checker-compat-qual.jar, so use the same javadoc jar
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_COMPAT_QUAL_RELEASE_POM,
-                            CHECKER_COMPAT_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_COMPAT_QUAL_SOURCE),
+    # checker.jar is a superset of checker-qual-andriod.jar, so use the same javadoc jar
+    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_ANDROID_RELEASE_POM,
+                            CHECKER_QUAL_ANDROID,
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_QUAL_ANDROID_SOURCE),
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
@@ -133,8 +123,8 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             DATAFLOW_SOURCE_JAR, DATAFLOW_JAVADOC_JAR,
                             pgp_user, pgp_passphrase)
 
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, TESTLIB_BINARY_RELEASE_POM, TESTLIB_BINARY,
-                            TESTLIB_SOURCE_JAR, TESTLIB_JAVADOC_JAR,
+    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, FRAMEWORKTEST_BINARY_RELEASE_POM, FRAMEWORKTEST_BINARY,
+                            FRAMEWORKTEST_SOURCE_JAR, FRAMEWORKTEST_JAVADOC_JAR,
                             pgp_user, pgp_passphrase)
 
     delete_path(mvn_dist)
@@ -208,12 +198,6 @@ def push_interm_to_release_repos():
     push_changes_prompt_if_fail(INTERM_ANNO_REPO)
     push_changes_prompt_if_fail(INTERM_CHECKER_REPO)
 
-def continue_or_exit(msg):
-    "Prompts the user whether to continue executing the script."
-    continue_script = prompt_w_default(msg + " Continue ('no' will exit the script)?", "yes", "^(Yes|yes|No|no)$")
-    if continue_script == "no" or continue_script == "No":
-        raise Exception("User elected NOT to continue at prompt: " + msg)
-
 def validate_args(argv):
     """Validate the command-line arguments to ensure that they meet the
     criteria issued in print_usage."""
@@ -252,6 +236,10 @@ def main(argv):
     auto = read_command_line_option(argv, "--auto")
     test_mode = not read_command_line_option(argv, "release")
 
+    m2_settings = expanduser("~") + "/.m2/settings.xml"
+    if not os.path.exists(m2_settings):
+        raise Exception("File does not exist: " + m2_settings)
+
     if test_mode:
         msg = ("You have chosen test_mode.\n" +
            "This means that this script will execute all build steps that " +
@@ -270,7 +258,7 @@ def main(argv):
 
     if not os.path.exists(RELEASE_BUILD_COMPLETED_FLAG_FILE):
         continue_or_exit("It appears that release_build.py has not been run since the last push to " +
-                         "the JSR308, AFU, or Checker Framework repositories.  Please ensure it has " +
+                         "the AFU or Checker Framework repositories.  Please ensure it has " +
                          "been run.")
 
     # The release script checks that the new release version is greater than the previous release version.
@@ -347,15 +335,15 @@ def main(argv):
         print_step("4b: Close staged artifacts at Maven central.")
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n" +
-            " * Browse to https://oss.sonatype.org/\n" +
+            " * Browse to https://oss.sonatype.org/#stagingRepositories\n" +
             " * Log in using your Sonatype credentials\n" +
-            " * Click \"Staging Repositories\" or browse to https://oss.sonatype.org/#stagingRepositories\n" +
-            " * Scroll to the end in the top pane, click on orgcheckerframework-XXXX\n" +
+            " * In the search box at upper right, type \"checker\"\n" +
+            " * In the top pane, click on orgcheckerframework-XXXX\n" +
             " * Click \"close\" at the top\n" +
             " * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
             " * Click the Refresh button near the top of the page until the bottom pane has:\n" +
             "   \"Activity   Last operation completed successfully\".\n" +
-            " * Copy the URL of the closed artifacts for use in the next step\n"
+            " * Copy the URL of the closed artifacts (in the bottom pane) for use in the next step\n"
             "(You can also see the instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + ")\n"
         )
 
@@ -386,6 +374,14 @@ def main(argv):
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
     print_step("Push Step 6: Run javac sanity tests on the live release.") # SEMIAUTO
+    print
+    print "*****"
+    print "***** WARNING"
+    print "*****"
+    print "***** Temporarily skip this if /bin/java is Java 11 and CF doesn't support Java 11."
+    print "*****"
+    print "***** WARNING"
+    print "*****"
     if not test_mode:
         if auto or prompt_yes_no("Run javac sanity test on live release?", True):
             javac_sanity_check(live_checker_website, new_checker_version)
@@ -455,12 +451,7 @@ def main(argv):
         # A prompt describes the email you should send to all relevant mailing lists.
         # Please fill out the email and announce the release.
 
-        print_step("Push Step 10. Announce the release.") # MANUAL
-        continue_or_exit("Please announce the release using the email structure below.\n" +
-                         "Note that this text may have changed since the last time a release was performed.\n" +
-                         get_announcement_email(new_checker_version))
-
-        print_step("Push Step 11. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
+        print_step("Push Step 10. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
 
         msg = ("\n" +
                "* Download the following files to your local machine." +
@@ -484,7 +475,11 @@ def main(argv):
                "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload annotation-tools-" + new_afu_version + ".zip from your machine.\n" +
                "* Click on the green \"Publish release\" button.\n")
 
-    print  msg
+        print  msg
+
+        print_step("Push Step 11. Announce the release.") # MANUAL
+        continue_or_exit("Please announce the release using the email structure below.\n" +
+                         get_announcement_email(new_checker_version))
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 

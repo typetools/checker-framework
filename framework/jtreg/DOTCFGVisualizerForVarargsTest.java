@@ -2,7 +2,7 @@
  * @test
  * @summary Test the DOTCFGVisualizer doesn't crash for varargs method invocation.
  *
- * @compile -Aflowdotdir=. -Averbosecfg  -processor org.checkerframework.common.value.ValueChecker DOTCFGVisualizerForVarargsTest.java -AprintErrorStack
+ * @compile -Aflowdotdir=. -Averbosecfg  -processor org.checkerframework.common.value.ValueChecker DOTCFGVisualizerForVarargsTest.java
  */
 
 class DOTCFGVisualizerForVarargsTest {

@@ -11,38 +11,26 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 
 /**
  * Tracks whether a value is initialized (all its fields are set), and checks that values are
- * initialized before being used. Supports two different type systems for initialization:
- * freedom-before-commitment (which is generally preferred) and rawness.
+ * initialized before being used. Implements the freedom-before-commitment scheme for
+ * initialization, augmented by type frames.
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
  */
 public abstract class InitializationChecker extends BaseTypeChecker {
 
-    /**
-     * Should the initialization type system be FBC? If not, the rawness type system is used for
-     * initialization.
-     */
-    public final boolean useFbc;
-
-    public InitializationChecker(boolean useFbc) {
-        this.useFbc = useFbc;
-    }
+    /** Create a new InitializationChecker. */
+    public InitializationChecker() {}
 
     @Override
     public Collection<String> getSuppressWarningsKeys() {
         Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
-        if (useFbc) {
-            result.add("initialization");
-            result.add("fbc");
-            // TODO: Temporary, to make transition easier.
-            result.add("rawness");
-        } else {
-            result.add("rawness");
-        }
+        // This key suppresses *all* warnings, not just those related to initialization.
+        result.add("initialization");
+        result.add("fbc");
         return result;
     }
 
-    /** Returns a list of all fields of the given class */
+    /** Returns a list of all fields of the given class. */
     public static List<VariableTree> getAllFields(ClassTree clazz) {
         List<VariableTree> fields = new ArrayList<>();
         for (Tree t : clazz.getMembers()) {

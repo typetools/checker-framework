@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -34,11 +35,10 @@ import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -163,20 +163,7 @@ public class FlowExpressions {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn.getTree());
 
-            // check if this represents a boxing operation of a constant, in which
-            // case we treat the method call as deterministic, because there is no way
-            // to behave differently in two executions where two constants are being used.
-            boolean considerDeterministic = false;
-            if (isLongValueOf(mn, invokedMethod)) {
-                Node arg = mn.getArgument(0);
-                if (arg instanceof ValueLiteralNode) {
-                    considerDeterministic = true;
-                }
-            }
-
-            if (PurityUtils.isDeterministic(provider, invokedMethod)
-                    || allowNonDeterministic
-                    || considerDeterministic) {
+            if (allowNonDeterministic || PurityUtils.isDeterministic(provider, invokedMethod)) {
                 List<Receiver> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
                     parameters.add(internalReprOf(provider, p));
@@ -195,30 +182,6 @@ public class FlowExpressions {
             receiver = new Unknown(receiverNode.getType());
         }
         return receiver;
-    }
-
-    /** Return true iff the invoked method is Long.valueOf(long). */
-    private static boolean isLongValueOf(MethodInvocationNode mn, ExecutableElement method) {
-
-        // Less efficient implementation:
-        // return method.toString().equals("valueOf(long)")
-        //     && mn.getTarget().getReceiver().toString().equals("Long")
-
-        if (mn.getTarget().getReceiver() == null
-                || !mn.getTarget().getReceiver().toString().equals("Long")) {
-            return false;
-        }
-
-        if (!method.getSimpleName().contentEquals("valueOf")) {
-            return false;
-        }
-        List<? extends VariableElement> params = method.getParameters();
-        if (params.size() != 1) {
-            return false;
-        }
-        VariableElement param = params.get(0);
-        TypeMirror paramType = param.asType();
-        return paramType.getKind() == TypeKind.LONG;
     }
 
     /**
@@ -375,7 +338,7 @@ public class FlowExpressions {
     }
 
     /**
-     * Returns either a new ClassName or ThisReference Receiver object for the enclosingType
+     * Returns either a new ClassName or ThisReference Receiver object for the enclosingType.
      *
      * <p>The Tree should be an expression or a statement that does not have a receiver or an
      * implicit receiver. For example, a local variable declaration.
@@ -415,9 +378,7 @@ public class FlowExpressions {
                 Receiver r = internalReprOf(provider, memberSelectTree.getExpression());
                 return new FieldAccess(r, fieldType, (VariableElement) ele);
             default:
-                ErrorReporter.errorAbort(
-                        "Unexpected element kind: %s element: %s", ele.getKind(), ele);
-                return null;
+                throw new BugInCF("Unexpected element kind: %s element: %s", ele.getKind(), ele);
         }
     }
 
@@ -442,6 +403,10 @@ public class FlowExpressions {
         return internalArguments;
     }
 
+    /**
+     * The poorly-named Receiver class is actually a Java AST. Each subclass represents a different
+     * type of expression, such as MethodCall, ArrayAccess, LocalVariable, etc.
+     */
     public abstract static class Receiver {
         protected final TypeMirror type;
 
@@ -461,9 +426,23 @@ public class FlowExpressions {
         }
 
         /**
+         * Returns true if and only if the value this expression stands for cannot be changed (with
+         * respect to ==) by a method call. This is the case for local variables, the self reference
+         * as well as final field accesses for whose receiver {@link #isUnassignableByOtherCode} is
+         * true.
+         *
+         * @see #isUnmodifiableByOtherCode
+         */
+        public abstract boolean isUnassignableByOtherCode();
+
+        /**
          * Returns true if and only if the value this expression stands for cannot be changed by a
-         * method call. This is the case for local variables, the self reference as well as final
-         * field accesses for whose receiver {@link #isUnmodifiableByOtherCode} is true.
+         * method call, including changes to any of its fields.
+         *
+         * <p>Approximately, this returns true if the expression is {@link
+         * #isUnassignableByOtherCode} and its type is immutable.
+         *
+         * @see #isUnassignableByOtherCode
          */
         public abstract boolean isUnmodifiableByOtherCode();
 
@@ -527,7 +506,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof FieldAccess)) {
+            if (!(obj instanceof FieldAccess)) {
                 return false;
             }
             FieldAccess fa = (FieldAccess) obj;
@@ -536,7 +515,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(getField(), getReceiver());
+            return Objects.hash(getField(), getReceiver());
         }
 
         @Override
@@ -576,8 +555,14 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnassignableByOtherCode() {
+            return isFinal() && getReceiver().isUnassignableByOtherCode();
+        }
+
+        @Override
         public boolean isUnmodifiableByOtherCode() {
-            return isFinal() && getReceiver().isUnmodifiableByOtherCode();
+            return isUnassignableByOtherCode()
+                    && TypesUtils.isImmutableTypeInJdk(getReceiver().type);
         }
     }
 
@@ -588,12 +573,12 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            return obj != null && obj instanceof ThisReference;
+            return obj instanceof ThisReference;
         }
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(0);
+            return 0;
         }
 
         @Override
@@ -612,8 +597,13 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return true;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return TypesUtils.isImmutableTypeInJdk(type);
         }
 
         @Override
@@ -636,7 +626,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof ClassName)) {
+            if (!(obj instanceof ClassName)) {
                 return false;
             }
             ClassName other = (ClassName) obj;
@@ -645,7 +635,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(typeString);
+            return Objects.hash(typeString);
         }
 
         @Override
@@ -661,6 +651,11 @@ public class FlowExpressions {
         @Override
         public boolean syntacticEquals(Receiver other) {
             return this.equals(other);
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
+            return true;
         }
 
         @Override
@@ -705,6 +700,11 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnassignableByOtherCode() {
+            return false;
+        }
+
+        @Override
         public boolean isUnmodifiableByOtherCode() {
             return false;
         }
@@ -725,7 +725,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof LocalVariable)) {
+            if (!(obj instanceof LocalVariable)) {
                 return false;
             }
 
@@ -748,7 +748,7 @@ public class FlowExpressions {
         @Override
         public int hashCode() {
             VarSymbol vs = (VarSymbol) element;
-            return HashCodeUtils.hash(
+            return Objects.hash(
                     vs.name.toString(),
                     TypeAnnotationUtils.unannotatedType(vs.type).toString(),
                     vs.owner.toString());
@@ -779,8 +779,13 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean isUnmodifiableByOtherCode() {
+        public boolean isUnassignableByOtherCode() {
             return true;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
         }
     }
 
@@ -804,13 +809,18 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnassignableByOtherCode() {
+            return true;
+        }
+
+        @Override
         public boolean isUnmodifiableByOtherCode() {
             return true;
         }
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof ValueLiteral)) {
+            if (!(obj instanceof ValueLiteral)) {
                 return false;
             }
             ValueLiteral other = (ValueLiteral) obj;
@@ -832,7 +842,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(value, type.toString());
+            return Objects.hash(value, type.toString());
         }
 
         @Override
@@ -850,7 +860,7 @@ public class FlowExpressions {
         }
     }
 
-    /** A method call. */
+    /** A call to a @Deterministic method. */
     public static class MethodCall extends Receiver {
 
         protected final Receiver receiver;
@@ -903,8 +913,16 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnassignableByOtherCode() {
+            // There is no need to check that the method is deterministic, because a MethodCall is
+            // only created for deterministic methods.
+            return receiver.isUnmodifiableByOtherCode()
+                    && parameters.stream().allMatch(Receiver::isUnmodifiableByOtherCode);
+        }
+
+        @Override
         public boolean isUnmodifiableByOtherCode() {
-            return false;
+            return isUnassignableByOtherCode();
         }
 
         @Override
@@ -958,27 +976,24 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof MethodCall)) {
+            if (!(obj instanceof MethodCall)) {
                 return false;
             }
-            MethodCall other = (MethodCall) obj;
-            int i = 0;
-            for (Receiver p : parameters) {
-                if (!p.equals(other.parameters.get(i))) {
-                    return false;
-                }
-                i++;
+            if (method.getKind() == ElementKind.CONSTRUCTOR) {
+                return this == obj;
             }
-            return receiver.equals(other.receiver) && method.equals(other.method);
+            MethodCall other = (MethodCall) obj;
+            return parameters.equals(other.parameters)
+                    && receiver.equals(other.receiver)
+                    && method.equals(other.method);
         }
 
         @Override
         public int hashCode() {
-            int hash = HashCodeUtils.hash(method, receiver);
-            for (Receiver p : parameters) {
-                hash = HashCodeUtils.hash(hash, p);
+            if (method.getKind() == ElementKind.CONSTRUCTOR) {
+                return super.hashCode();
             }
-            return hash;
+            return Objects.hash(method, receiver, parameters);
         }
 
         @Override
@@ -1006,7 +1021,7 @@ public class FlowExpressions {
         }
     }
 
-    /** A deterministic method call. */
+    /** An array access. */
     public static class ArrayAccess extends Receiver {
 
         protected final Receiver receiver;
@@ -1035,6 +1050,11 @@ public class FlowExpressions {
 
         public Receiver getIndex() {
             return index;
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
+            return false;
         }
 
         @Override
@@ -1071,7 +1091,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof ArrayAccess)) {
+            if (!(obj instanceof ArrayAccess)) {
                 return false;
             }
             ArrayAccess other = (ArrayAccess) obj;
@@ -1080,7 +1100,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(receiver, index);
+            return Objects.hash(receiver, index);
         }
 
         @Override
@@ -1130,23 +1150,23 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean isUnassignableByOtherCode() {
+            return false;
+        }
+
+        @Override
         public boolean isUnmodifiableByOtherCode() {
             return false;
         }
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
-            result = prime * result + ((initializers == null) ? 0 : initializers.hashCode());
-            result = prime * result + HashCodeUtils.hash(getType().toString());
-            return result;
+            return Objects.hash(dimensions, initializers, getType().toString());
         }
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof ArrayCreation)) {
+            if (!(obj instanceof ArrayCreation)) {
                 return false;
             }
             ArrayCreation other = (ArrayCreation) obj;

@@ -10,17 +10,14 @@ import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.qual.Bottom;
+import org.checkerframework.common.subtyping.qual.Bottom;
+import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
 /**
@@ -65,9 +62,13 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         BOTTOM = AnnotationBuilder.fromClass(elements, Bottom.class);
 
         this.postInit();
+    }
 
-        addTypeNameImplicit(java.lang.Void.class, BOTTOM);
-        this.defaults.addCheckedCodeDefault(BOTTOM, TypeUseLocation.LOWER_BOUND);
+    @Override
+    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
+        defs.addCheckedCodeDefault(BOTTOM, TypeUseLocation.LOWER_BOUND);
+        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elements, Unqualified.class);
+        defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
     }
 
     @Override
@@ -79,13 +80,6 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         Even.class,
                         Unqualified.class,
                         Bottom.class));
-    }
-
-    @Override
-    public TreeAnnotator createTreeAnnotator() {
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, BOTTOM);
-        return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
     }
 
     @Override

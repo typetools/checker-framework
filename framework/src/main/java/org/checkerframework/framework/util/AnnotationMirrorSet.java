@@ -1,7 +1,5 @@
 package org.checkerframework.framework.util;
 
-import static org.checkerframework.javacutil.AnnotationUtils.annotationOrdering;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -24,8 +22,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * method; therefore, the existing implementations of Set cannot be used.
  */
 public class AnnotationMirrorSet implements Set<AnnotationMirror> {
-    private Set<AnnotationMirror> shadowSet = new TreeSet<>(annotationOrdering());
+    private Set<AnnotationMirror> shadowSet = new TreeSet<>(AnnotationUtils.annotationOrdering());
 
+    /** Default constructor. */
     public AnnotationMirrorSet() {}
 
     public AnnotationMirrorSet(Collection<? extends AnnotationMirror> values) {
@@ -105,7 +104,7 @@ public class AnnotationMirrorSet implements Set<AnnotationMirror> {
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        Set<AnnotationMirror> newSet = new TreeSet<>(annotationOrdering());
+        Set<AnnotationMirror> newSet = new TreeSet<>(AnnotationUtils.annotationOrdering());
         for (Object o : c) {
             if (contains(o)) {
                 newSet.add((AnnotationMirror) o);
@@ -132,5 +131,17 @@ public class AnnotationMirrorSet implements Set<AnnotationMirror> {
     @Override
     public void clear() {
         shadowSet.clear();
+    }
+
+    /**
+     * Returns a new {@link AnnotationMirrorSet} that contains {@code value}.
+     *
+     * @param value AnnotationMirror to put in the set
+     * @return a new {@link AnnotationMirrorSet} that contains {@code value}.
+     */
+    public static AnnotationMirrorSet singleElementSet(AnnotationMirror value) {
+        AnnotationMirrorSet newSet = new AnnotationMirrorSet();
+        newSet.add(value);
+        return newSet;
     }
 }

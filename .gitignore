@@ -34,13 +34,14 @@ api
 build
 dist
 stubparser/docs/api
-# Don't want to ignore .jar files in checker/lib/
+# Don't want to ignore .jar files in checker/lib/ nor in gradle/wrapper
 # *.jar
 checker/jdk/jdk*.jar
 checker/jdk/**/*.class
 *.pyc
 checker/build-temp
 checker/bin-devel/.run-google-java-format
+checker/bin-devel/.plume-scripts
 
 # manual files
 bib
@@ -68,6 +69,7 @@ manual003.gif
 manual003.png
 manual004.gif
 manual004.png
+docs/manual/contributors.txt
 docs/manual/figures/*.eps
 docs/manual/figures/*.pdf
 docs/manual/figures/*.png
@@ -76,6 +78,7 @@ docs/manual/*.png
 docs/manual/*.svg
 docs/examples/**/*.class
 docs/examples/MavenExample/Out.txt
+docs/examples/lombok/Out.txt
 docs/manual/manual.html-e
 
 # dataflow manual
@@ -111,6 +114,7 @@ checker/jtreg/multipleexecutions/Main.class
 
 # Source is copied from elsewhere.
 checker-qual/src
+checker-qual-android/src
 
 framework/tests/whole-program-inference/annotated/
 

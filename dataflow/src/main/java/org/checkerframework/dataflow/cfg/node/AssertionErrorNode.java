@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for the {@link AssertionError} when an assertion fails.
@@ -56,7 +55,7 @@ public class AssertionErrorNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof AssertionErrorNode)) {
+        if (!(obj instanceof AssertionErrorNode)) {
             return false;
         }
         AssertionErrorNode other = (AssertionErrorNode) obj;
@@ -66,7 +65,7 @@ public class AssertionErrorNode extends Node {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getCondition(), getDetail());
+        return Objects.hash(getCondition(), getDetail());
     }
 
     @Override

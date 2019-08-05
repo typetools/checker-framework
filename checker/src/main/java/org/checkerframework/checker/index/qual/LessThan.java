@@ -16,8 +16,12 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>{@code @LessThan("end + 1")} is equivalent to {@code @LessThanOrEqual("end")}.
  *
- * <p>Subtyping: {@code @LessThan({"a", "b"}) <: @LessThan({"a"})} {@code @LessThan({"a", "b"})} is
- * not related to {@code @LessThan({"a", "c"})}.
+ * <p>Subtyping:
+ *
+ * <ul>
+ *   <li>{@code @LessThan({"a", "b"}) <: @LessThan({"a"})}
+ *   <li>{@code @LessThan({"a", "b"})} is not related to {@code @LessThan({"a", "c"})}.
+ * </ul>
  */
 @SubtypeOf({LessThanUnknown.class})
 @Retention(RetentionPolicy.RUNTIME)

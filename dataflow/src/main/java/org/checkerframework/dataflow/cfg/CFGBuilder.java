@@ -178,6 +178,7 @@ import org.checkerframework.dataflow.util.IdentityMostlySingleton;
 import org.checkerframework.dataflow.util.MostlySingleton;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BasicAnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -634,7 +635,7 @@ public class CFGBuilder {
         }
     }
 
-    /** A TryFinallyFrame applies to exceptions of any type */
+    /** A TryFinallyFrame applies to exceptions of any type. */
     protected static class TryFinallyFrame implements TryFrame {
         protected Label finallyLabel;
 
@@ -1131,7 +1132,7 @@ public class CFGBuilder {
             ArrayList<ExtendedNode> nodeList = in.nodeList;
             Set<Integer> leaders = in.leaders;
 
-            assert in.nodeList.size() > 0;
+            assert !in.nodeList.isEmpty();
 
             // exit blocks
             SpecialBlockImpl regularExitBlock = new SpecialBlockImpl(SpecialBlockType.EXIT);
@@ -2463,7 +2464,7 @@ public class CFGBuilder {
             List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
             // Look up method to invoke and possibly throw NullPointerException
-            Node receiver = getReceiver(methodSelect, TreeUtils.enclosingClass(getCurrentPath()));
+            Node receiver = getReceiver(methodSelect);
 
             MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
 
@@ -2584,9 +2585,9 @@ public class CFGBuilder {
         }
 
         /**
-         * Find nearest owner element(Method or Class) which holds current tree
+         * Find nearest owner element(Method or Class) which holds current tree.
          *
-         * @return Nearest owner element of current tree
+         * @return nearest owner element of current tree
          */
         private Element findOwner() {
             MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
@@ -2645,7 +2646,7 @@ public class CFGBuilder {
             // case 1: field access
             if (TreeUtils.isFieldAccess(variable)) {
                 // visit receiver
-                Node receiver = getReceiver(variable, TreeUtils.enclosingClass(getCurrentPath()));
+                Node receiver = getReceiver(variable);
 
                 // visit expression
                 Node expression = scan(tree.getExpression(), p);
@@ -2706,7 +2707,7 @@ public class CFGBuilder {
          * @param classTree the ClassTree enclosing the field access
          * @return the receiver of the field access
          */
-        private Node getReceiver(ExpressionTree tree, ClassTree classTree) {
+        private Node getReceiver(ExpressionTree tree) {
             assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
             if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree mtree = (MemberSelectTree) tree;
@@ -2822,7 +2823,8 @@ public class CFGBuilder {
 
                         TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
                         handleArtificialTree(castTree);
-                        TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
+                        TypeCastNode castNode =
+                                new TypeCastNode(castTree, operNode, leftType, types);
                         castNode.setInSource(false);
                         extendWithNode(castNode);
 
@@ -2872,7 +2874,8 @@ public class CFGBuilder {
 
                             TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
                             handleArtificialTree(castTree);
-                            TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
+                            TypeCastNode castNode =
+                                    new TypeCastNode(castTree, operNode, leftType, types);
                             castNode.setInSource(false);
                             extendWithNode(castNode);
 
@@ -2918,7 +2921,8 @@ public class CFGBuilder {
 
                         TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
                         handleArtificialTree(castTree);
-                        TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
+                        TypeCastNode castNode =
+                                new TypeCastNode(castTree, operNode, leftType, types);
                         castNode.setInSource(false);
                         extendWithNode(castNode);
 
@@ -2971,7 +2975,7 @@ public class CFGBuilder {
 
                     TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
                     handleArtificialTree(castTree);
-                    TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
+                    TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType, types);
                     castNode.setInSource(false);
                     extendWithNode(castNode);
 
@@ -3877,7 +3881,7 @@ public class CFGBuilder {
         public Node visitIdentifier(IdentifierTree tree, Void p) {
             Node node;
             if (TreeUtils.isFieldAccess(tree)) {
-                Node receiver = getReceiver(tree, TreeUtils.enclosingClass(getCurrentPath()));
+                Node receiver = getReceiver(tree);
                 node = new FieldAccessNode(tree, receiver);
             } else {
                 Element element = TreeUtils.elementFromUse(tree);
@@ -3907,8 +3911,7 @@ public class CFGBuilder {
                         node = new PackageNameNode(tree);
                         break;
                     default:
-                        throw new IllegalArgumentException(
-                                "unexpected element kind : " + element.getKind());
+                        throw new BugInCF("bad element kind " + element.getKind());
                 }
             }
             extendWithNode(node);
@@ -4532,14 +4535,14 @@ public class CFGBuilder {
 
         @Override
         public Node visitArrayType(ArrayTypeTree tree, Void p) {
-            return extendWithNode(new ArrayTypeNode(tree));
+            return extendWithNode(new ArrayTypeNode(tree, types));
         }
 
         @Override
         public Node visitTypeCast(TypeCastTree tree, Void p) {
             final Node operand = scan(tree.getExpression(), p);
             final TypeMirror type = TreeUtils.typeOf(tree.getType());
-            final Node node = new TypeCastNode(tree, operand, type);
+            final Node node = new TypeCastNode(tree, operand, type, types);
             final TypeElement cceElement = elements.getTypeElement("java.lang.ClassCastException");
 
             extendWithNodeWithException(node, cceElement.asType());
@@ -4548,7 +4551,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitPrimitiveType(PrimitiveTypeTree tree, Void p) {
-            return extendWithNode(new PrimitiveTypeNode(tree));
+            return extendWithNode(new PrimitiveTypeNode(tree, types));
         }
 
         @Override
@@ -4681,9 +4684,9 @@ public class CFGBuilder {
          *
          * @param target Target tree for assignment node. If it's null, corresponding assignment
          *     tree will be generated.
-         * @param expr Expression node to be incremented or decremented
-         * @param isIncrement True when it's increment
-         * @return Assignment node for corresponding increment or decrement
+         * @param expr expression node to be incremented or decremented
+         * @param isIncrement true when it's increment
+         * @return assignment node for corresponding increment or decrement
          */
         private AssignmentNode createIncrementOrDecrementAssign(
                 Tree target, Node expr, boolean isIncrement) {
@@ -4841,14 +4844,12 @@ public class CFGBuilder {
 
         @Override
         public Node visitWildcard(WildcardTree tree, Void p) {
-            assert false : "WildcardTree is unexpected in AST to CFG translation";
-            return null;
+            throw new BugInCF("WildcardTree is unexpected in AST to CFG translation");
         }
 
         @Override
         public Node visitOther(Tree tree, Void p) {
-            assert false : "Unknown AST element encountered in AST to CFG translation.";
-            return null;
+            throw new BugInCF("Unknown AST element encountered in AST to CFG translation.");
         }
     }
 

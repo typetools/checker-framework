@@ -4,11 +4,12 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-import org.checkerframework.dataflow.util.HashCodeUtils;
+import java.util.Objects;
+import javax.lang.model.util.Types;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node representing a primitive type used in an expression such as a field access
+ * A node representing a primitive type used in an expression such as a field access.
  *
  * <p><em>type</em> .class
  */
@@ -16,9 +17,13 @@ public class PrimitiveTypeNode extends Node {
 
     protected final PrimitiveTypeTree tree;
 
-    public PrimitiveTypeNode(PrimitiveTypeTree tree) {
+    /** For Types.isSameType. */
+    protected final Types types;
+
+    public PrimitiveTypeNode(PrimitiveTypeTree tree, Types types) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
+        this.types = types;
     }
 
     @Override
@@ -38,16 +43,16 @@ public class PrimitiveTypeNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof PrimitiveTypeNode)) {
+        if (!(obj instanceof PrimitiveTypeNode)) {
             return false;
         }
         PrimitiveTypeNode other = (PrimitiveTypeNode) obj;
-        return getType().equals(other.getType());
+        return types.isSameType(getType(), other.getType());
     }
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getType());
+        return Objects.hash(getType());
     }
 
     @Override

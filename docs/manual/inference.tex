@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Type inference\label{type-inference}}
+\chapterAndLabel{Type inference}{type-inference}
 
 There are two different tasks that are commonly called ``type inference'':
 \begin{enumerate}
@@ -26,9 +26,9 @@ Advantages of \emph{all} varieties of type inference include:
 \end{itemize}
 
 
-\section{Local type inference during type-checking\label{type-inference-refinement}}
+\sectionAndLabel{Local type inference during type-checking}{type-inference-refinement}
 
-During type-checking, if certain variables have no type qualifier, the
+During type-checking, if certain variables have no programmer-written type qualifier, the
 type-checker determines whether there is some type qualifier that would
 permit the program to type-check.  If so, the type-checker uses that type
 qualifier, but does not change the source code.  Each time the
@@ -38,7 +38,8 @@ type-checker issues a warning.
 
 Local type inference is built into the Checker Framework.
 Every checker automatically uses it.  As a result, a programmer typically
-does not have to write any qualifiers inside the body of a method.
+does not have to write any qualifiers inside the body of a method
+(except occasionally on type arguments).
 However, it primarily
 works within a method, not across method boundaries.
 The source code must already contain annotations for method
@@ -58,11 +59,11 @@ Advantages of this variety of type inference include:
 \end{itemize}
 
 For more details about local type inference during type-checking, also
-known as ``flow-sensitive local type refinement'', see
+known as ``flow-sensitive type refinement'', see
 Section~\ref{type-refinement}.
 
 
-\section{Type inference to annotate a program\label{type-inference-to-annotate}}
+\sectionAndLabel{Type inference to annotate a program}{type-inference-to-annotate}
 
 As a separate step before type-checking, a type inference tool takes the
 program as input, and outputs a set of type qualifiers that would
@@ -85,7 +86,7 @@ Advantages of this variety of type inference include:
 \end{itemize}
 
 
-\subsection{Type inference tools\label{type-inference-tools}}
+\subsectionAndLabel{Type inference tools}{type-inference-tools}
 
 This section lists tools that take a program and output a set of
 annotations for it.
@@ -94,7 +95,7 @@ more accurate job for that type system)
 then lists general tools that work for any type system.
 
 
-\subsubsection{Type inference for specific type systems\label{type-inference-tools-specialized}}
+\subsubsectionAndLabel{Type inference for specific type systems}{type-inference-tools-specialized}
 
 Section~\ref{nullness-inference} lists several tools that infer
 annotations for the Nullness Checker.
@@ -105,7 +106,7 @@ command-line option, it will suggest methods that can be marked as
 Section~\ref{type-refinement-purity}.
 
 
-\subsubsection{Type inference for any type system\label{type-inference-tools-general}}
+\subsubsectionAndLabel{Type inference for any type system}{type-inference-tools-general}
 
 By supplying the \<-Ainfer> command-line option,
 any type-checker can infer annotations. See Section~\ref{whole-program-inference}.
@@ -121,12 +122,12 @@ Framework.
 You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
 
 
-\section{Whole-program inference\label{whole-program-inference}}
+\sectionAndLabel{Whole-program inference}{whole-program-inference}
 
 Whole-program inference is an interprocedural inference that
 infers types for fields, method parameters, and method return types that do not
-have a user-written annotation (for the given type system).
-The inferred types are inserted into
+have a user-written qualifier (for the given type system).
+The inferred type qualifiers are inserted into
 your program.
 The inferred type is the most specific type that is compatible with all the
 uses in the program.  For example, the inferred type for a field is the
@@ -136,7 +137,7 @@ into the field.
 \begin{sloppypar}
 To use whole-program inference, make sure that
 \<insert-annotations-to-source>, from the Annotation File Utilities project,
-is on your path (for example in the \<\$PATH> environment variable).
+is on your path (for example, its directory is in the \<\$PATH> environment variable).
 Then, run the script \<checker-framework/checker/bin/infer-and-annotate.sh>.
 Its command-line arguments are:
 \end{sloppypar}
@@ -155,14 +156,14 @@ Its command-line arguments are:
 \item Paths to \<.java> files in the program.
 \end{enumerate}
 
+% TODO: Change the example project that is being annotated, since plume-lib is now deprecated.
 For example, to add annotations to the \<plume-lib> project:
 \begin{Verbatim}
 git clone https://github.com/mernst/plume-lib.git
 cd plume-lib
 make jar
 $CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh \
-    "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar \
-    -AprintErrorStack \
+    "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar:$JAVA_HOME/lib/tools.jar \
     `find java/src/plume/ -name "*.java"`
 # View the results
 git diff
@@ -187,7 +188,7 @@ or a supertype of the default type, by contrast with type refinement which
 always refines the current type to a subtype.
 
 
-\subsection{Whole-program inference ignores some code\label{whole-program-inference-ignores-some-code}}
+\subsectionAndLabel{Whole-program inference ignores some code}{whole-program-inference-ignores-some-code}
 
 Whole-program inference ignores code within the scope of a
 \<@SuppressWarnings> annotation with an appropriate key
@@ -219,7 +220,7 @@ Whole-program inference, for a type-checker other than the Nullness Checker,
 ignores (pseudo-)assignments where the right-hand-side is the \<null> literal.
 
 
-\subsection{Manually checking whole-program inference results\label{whole-program-inference-manual-checking}}
+\subsectionAndLabel{Manually checking whole-program inference results}{whole-program-inference-manual-checking}
 
 As with any type inference tool, it is a good idea to manually examine the
 results.
@@ -239,7 +240,7 @@ to the corresponding upper bounds of the type variable \emph{declaration}.
 \end{itemize}
 
 
-\subsubsection{Poor whole-program inference results due to non-representative uses\label{whole-program-inference-non-representative-uses}}
+\subsubsectionAndLabel{Poor whole-program inference results due to non-representative uses}{whole-program-inference-non-representative-uses}
 
 Whole-program inference determines a method parameter's type
 annotation based on what arguments are passed to the method, but not on how the
@@ -291,54 +292,51 @@ add tests that pass additional values then re-run inference.
 \end{itemize}
 
 
-\subsection{How whole-program inference works\label{how-whole-program-inference-works}}
+\subsectionAndLabel{How whole-program inference works}{how-whole-program-inference-works}
 
 This section explains how the \<infer-and-annotate.sh> script works.  If you
 merely want to run the script and you are not encountering trouble, you can
 skip this section.
 
-If you
-supply to javac the command-line option \code{-Ainfer}, then the
-checker outputs \<.jaif> files with refined types for fields and method signatures.
-The output \<.jaif> files are located in the folder \code{build/whole-program-inference},
-relative to where you executed the javac command.
-
-You can use the Annotation File Utilities
-(\myurl{https://checkerframework.org/annotation-file-utilities/}) to
-insert these refined types in your program.  Then, the next time that you
-run type-checking, there are likely to be fewer type-checking warnings.
-
-Note that a three-step process is required:
+The \<infer-and-annotate.sh> script repeatedly runs the following steps:
 \begin{enumerate}
-\item Run the checker with the \<-Ainfer> command-line option to
-  produce a \<.jaif> file.  Some type-checking errors may result.
-\item Insert the \<.jaif> file's annotations in the program.
-\item Run the checker again.  Fewer type-checking errors may result.
+\item Run the checker with the \<-Ainfer> command-line option to infer
+  types for fields and method signatures.  The output of this step
+  is a \<.jaif> file that records the inferred types.
+\item Insert the inferred annotations in the program.  This step uses the
+  Annotation File Utilities
+  (\myurl{https://checkerframework.org/annotation-file-utilities/}).
 \end{enumerate}
-\noindent
-A good approach is to repeatedly run the above process until there are no
-more changes to the inference results (that is, the \<.jaif> file is
-unchanged between two runs).  That is exactly what the
-\<infer-and-annotate.sh> script does.
 
-The \<infer-and-annotate.sh> script insulates you from the
-clumsy multi-step process.  The multi-step process
-is required because type-checking is modular:
-it processes each class only once, independently.  Modularity enables you
-to run type-checking on only part of your program, and
-it makes type-checking fast.  However, it has some disadvantages:
+The process halts when there are no more changes to the inference results,
+that is, the \<.jaif> file is unchanged between two runs.  On each
+iteration through the process, there may be new annotations in the \<.jaif>
+file, and some type-checking errors may be eliminated (though others might
+be introduced).
+
+When the type-checker is run on the program with the final annotations
+inserted, there might still be errors.  This may be because the tool did
+not infer enough annotations, or because your program contains a defect.
+However, each of the inferred annotations is sound, and this reduces your
+manual effort in annotating the program.
+
+The iterative process is required because type-checking is modular:  it
+processes each class and each method only once, independently.  Modularity
+enables you to run type-checking on only part of your program, and it makes
+type-checking fast.  However, it has some disadvantages:
 \begin{itemize}
 \item
-  The first run of the type-checker cannot take advantage
-  of whole-program inference results because whole-program inference is only complete at the
+  The first run of the type-checker cannot take advantage of whole-program
+  inference results because whole-program inference is only complete at the
   end of type-checking, and modular type-checking does not revisit any
   already-processed classes.
 \item
-  The reason that multiple executions are required is that revisiting an
+  Revisiting an
   already-processed class may result in a better estimate.
 \end{itemize}
 
 
 
-%%  LocalWords:  Ainfer java jaif plugin classpath m2 m1 multi
-%%  LocalWords:  AsuggestPureMethods CHECKERFRAMEWORK
+%%  LocalWords:  Ainfer java jaif plugin classpath m2 m1 multi javax
+%%  LocalWords:  AsuggestPureMethods CHECKERFRAMEWORK GuardedByBottom
+%%  LocalWords:  IgnoreInWholeProgramInference

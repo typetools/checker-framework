@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * Utilities for determining tree-based heuristics.
  *
- * <p>For an example, see {@link org.checkerframework.checker.interning.InterningVisitor}.
+ * <p>For an example, see {@code org.checkerframework.checker.interning.InterningVisitor}.
  */
 public class Heuristics {
 
@@ -95,7 +95,9 @@ public class Heuristics {
                 return false;
             }
             TreePath p = path;
-            while (p.getLeaf() != stmt) p = p.getParentPath();
+            while (p.getLeaf() != stmt) {
+                p = p.getParentPath();
+            }
             assert p.getLeaf() == stmt;
 
             while (p != null && p.getLeaf() instanceof StatementTree) {
@@ -152,7 +154,7 @@ public class Heuristics {
             while (p != null) {
                 if (p.getLeaf().getKind() == Tree.Kind.IF) {
                     IfTree ifTree = (IfTree) p.getLeaf();
-                    ExpressionTree cond = TreeUtils.skipParens(ifTree.getCondition());
+                    ExpressionTree cond = TreeUtils.withoutParens(ifTree.getCondition());
                     if (ifTree.getThenStatement() == prev.getLeaf()
                             && matcher.match(new TreePath(p, cond))) {
                         return true;

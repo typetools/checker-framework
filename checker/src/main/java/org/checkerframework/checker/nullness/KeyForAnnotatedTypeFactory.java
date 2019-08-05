@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,16 +15,15 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -34,35 +34,40 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 public class KeyForAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
                 KeyForValue, KeyForStore, KeyForTransfer, KeyForAnalysis> {
 
-    protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR, KEYFORBOTTOM;
+    /** The @{@link KeyFor} annotation. */
+    protected final AnnotationMirror KEYFOR = AnnotationBuilder.fromClass(elements, KeyFor.class);
+    /** The @{@link UnknownKeyFor} annotation. */
+    protected final AnnotationMirror UNKNOWNKEYFOR =
+            AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
+    /** The @{@link KeyForBottom} annotation. */
+    protected final AnnotationMirror KEYFORBOTTOM =
+            AnnotationBuilder.fromClass(elements, KeyForBottom.class);
 
-    private final KeyForPropagator keyForPropagator;
+    /** The Map.containsKey method. */
+    private final ExecutableElement mapContainsKey =
+            TreeUtils.getMethod("java.util.Map", "containsKey", 1, processingEnv);
+    /** The Map.get method. */
+    private final ExecutableElement mapGet =
+            TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
+    /** The Map.put method. */
+    private final ExecutableElement mapPut =
+            TreeUtils.getMethod("java.util.Map", "put", 2, processingEnv);
 
-    private final TypeMirror erasedMapType;
+    private final KeyForPropagator keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
+    /** Create a new KeyForAnnotatedTypeFactory. */
     public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
-        KEYFOR = AnnotationBuilder.fromClass(elements, KeyFor.class);
-        UNKNOWNKEYFOR = AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
-        KEYFORBOTTOM = AnnotationBuilder.fromClass(elements, KeyForBottom.class);
-        keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
-
         // Add compatibility annotations:
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.KeyForDecl.class, KEYFOR);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.KeyForType.class, KEYFOR);
-
-        TypeMirror mapType = TypesUtils.typeFromClass(Map.class, types, elements);
-        erasedMapType = types.erasure(mapType);
+        addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForDecl", KEYFOR);
+        addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForType", KEYFOR);
 
         this.postInit();
     }
@@ -79,11 +84,9 @@ public class KeyForAnnotatedTypeFactory
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
-            NewClassTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> result =
-                super.constructorFromUse(tree);
-        keyForPropagator.propagateNewClassTree(tree, result.first.getReturnType(), this);
+    public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
+        ParameterizedExecutableType result = super.constructorFromUse(tree);
+        keyForPropagator.propagateNewClassTree(tree, result.executableType.getReturnType(), this);
         return result;
     }
 
@@ -206,44 +209,111 @@ public class KeyForAnnotatedTypeFactory
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, KEYFOR)
-                    && AnnotationUtils.areSameIgnoringValues(subAnno, KEYFOR)) {
+            if (AnnotationUtils.areSameByName(superAnno, KEYFOR)
+                    && AnnotationUtils.areSameByName(subAnno, KEYFOR)) {
                 List<String> lhsValues = extractValues(superAnno);
                 List<String> rhsValues = extractValues(subAnno);
 
                 return rhsValues.containsAll(lhsValues);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, KEYFOR)) {
+            if (AnnotationUtils.areSameByName(superAnno, KEYFOR)) {
                 superAnno = KEYFOR;
             }
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, KEYFOR)) {
+            if (AnnotationUtils.areSameByName(subAnno, KEYFOR)) {
                 subAnno = KEYFOR;
             }
             return super.isSubtype(subAnno, superAnno);
         }
-    }
 
-    protected boolean isInvocationOfMapMethod(MethodInvocationNode n, String methodName) {
-        String invokedMethod = getMethodName(n);
-        // First verify if the method name is correct. This is an inexpensive check.
-        if (invokedMethod.equals(methodName)) {
-            // Now verify that the receiver of the method invocation is of a type
-            // that extends that java.util.Map interface. This is a more expensive check.
-            TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
-
-            if (types.isSubtype(receiverType, erasedMapType)) {
-                return true;
+        @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSameByName(a1, UNKNOWNKEYFOR)) {
+                return a1;
+            } else if (AnnotationUtils.areSameByName(a2, UNKNOWNKEYFOR)) {
+                return a2;
+            } else if (AnnotationUtils.areSameByName(a1, KEYFORBOTTOM)) {
+                return a2;
+            } else if (AnnotationUtils.areSameByName(a2, KEYFORBOTTOM)) {
+                return a1;
+            } else if (AnnotationUtils.areSameByName(a1, KEYFOR)
+                    && AnnotationUtils.areSameByName(a2, KEYFOR)) {
+                List<String> a1Values = extractValues(a1);
+                List<String> a2Values = extractValues(a2);
+                LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
+                set.retainAll(a2Values);
+                return createKeyForAnnotationMirrorWithValue(set);
             }
+            // a1 or a2 is @PolyKeyFor.
+            // Ignore annotation values to ensure that annotation is in supertype map.
+            if (AnnotationUtils.areSameByName(a1, KEYFOR)) {
+                a1 = KEYFOR;
+            }
+            if (AnnotationUtils.areSameByName(a2, KEYFOR)) {
+                a2 = KEYFOR;
+            }
+            // Let super handle @PolyKeyFor.
+            return super.leastUpperBound(a1, a2);
         }
-        return false;
+
+        @Override
+        public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSameByName(a1, UNKNOWNKEYFOR)) {
+                return a2;
+            } else if (AnnotationUtils.areSameByName(a2, UNKNOWNKEYFOR)) {
+                return a1;
+            } else if (AnnotationUtils.areSameByName(a1, KEYFORBOTTOM)) {
+                return a1;
+            } else if (AnnotationUtils.areSameByName(a2, KEYFORBOTTOM)) {
+                return a2;
+            } else if (AnnotationUtils.areSameByName(a1, KEYFOR)
+                    && AnnotationUtils.areSameByName(a2, KEYFOR)) {
+                List<String> a1Values = extractValues(a1);
+                List<String> a2Values = extractValues(a2);
+                LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
+                set.addAll(a2Values);
+                return createKeyForAnnotationMirrorWithValue(set);
+            }
+            // a1 or a2 is @PolyKeyFor.
+            // Ignore annotation values to ensure that annotation is in supertype map.
+            if (AnnotationUtils.areSameByName(a1, KEYFOR)) {
+                a1 = KEYFOR;
+            }
+            if (AnnotationUtils.areSameByName(a2, KEYFOR)) {
+                a2 = KEYFOR;
+            }
+            // Let super handle @PolyKeyFor.
+            return super.greatestLowerBound(a1, a2);
+        }
     }
 
-    protected String getMethodName(MethodInvocationNode n) {
-        String invokedMethod = n.getTarget().getMethod().toString();
-        int index = invokedMethod.indexOf("(");
-        assert index != -1 : this.getClass() + ": expected method name to contain (";
-        invokedMethod = invokedMethod.substring(0, index);
-        return invokedMethod;
+    /** Returns true if the node is an invocation of Map.containsKey. */
+    boolean isMapContainsKey(Tree tree) {
+        return TreeUtils.isMethodInvocation(tree, mapContainsKey, getProcessingEnv());
+    }
+
+    /** Returns true if the node is an invocation of Map.get. */
+    boolean isMapGet(Tree tree) {
+        return TreeUtils.isMethodInvocation(tree, mapGet, getProcessingEnv());
+    }
+
+    /** Returns true if the node is an invocation of Map.put. */
+    boolean isMapPut(Tree tree) {
+        return TreeUtils.isMethodInvocation(tree, mapPut, getProcessingEnv());
+    }
+
+    /** Returns true if the node is an invocation of Map.containsKey. */
+    boolean isMapContainsKey(Node node) {
+        return NodeUtils.isMethodInvocation(node, mapContainsKey, getProcessingEnv());
+    }
+
+    /** Returns true if the node is an invocation of Map.get. */
+    boolean isMapGet(Node node) {
+        return NodeUtils.isMethodInvocation(node, mapGet, getProcessingEnv());
+    }
+
+    /** Returns true if the node is an invocation of Map.put. */
+    boolean isMapPut(Node node) {
+        return NodeUtils.isMethodInvocation(node, mapPut, getProcessingEnv());
     }
 }

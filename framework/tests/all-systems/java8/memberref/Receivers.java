@@ -35,7 +35,7 @@ class MyClass {
     }
 }
 
-/** Constraints for implicit inner constraints and super */
+/** Constraints for implicit inner constraints and super. */
 @SuppressWarnings("lock")
 class OuterR {
     class Inner {

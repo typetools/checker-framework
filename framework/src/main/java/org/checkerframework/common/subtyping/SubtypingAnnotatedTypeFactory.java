@@ -1,13 +1,23 @@
 package org.checkerframework.common.subtyping;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.subtyping.qual.Unqualified;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotationClassLoader;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
+import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.UserError;
 
+/** Defines {@link #createSupportedTypeQualifiers}. */
 public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SubtypingAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -32,23 +42,37 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         String qualDirectories = checker.getOption("qualDirs");
 
         if (qualNames == null && qualDirectories == null) {
-            checker.userErrorAbort(
-                    "SubtypingChecker: missing required option. Use -Aquals or -AqualDirs");
-            throw new Error("This can't happen"); // dead code
+            throw new UserError(
+                    "SubtypingChecker: missing required option. Use -Aquals or -AqualDirs.");
         }
 
         // load individually named qualifiers
         if (qualNames != null) {
             for (String qualName : qualNames.split(",")) {
-                qualSet.add(loader.loadExternalAnnotationClass(qualName));
+                Class<? extends Annotation> anno = loader.loadExternalAnnotationClass(qualName);
+                if (anno == null) {
+                    throw new UserError("Qualifier specified in -Aquals not found: " + qualName);
+                }
+                qualSet.add(anno);
             }
         }
 
         // load directories of qualifiers
         if (qualDirectories != null) {
             for (String dirName : qualDirectories.split(":")) {
-                qualSet.addAll(loader.loadExternalAnnotationClassesFromDirectory(dirName));
+                Set<Class<? extends Annotation>> annos =
+                        loader.loadExternalAnnotationClassesFromDirectory(dirName);
+                if (annos.isEmpty()) {
+                    throw new UserError(
+                            "Directory specified in -AqualsDir contains no qualifiers: " + dirName);
+                }
+                qualSet.addAll(annos);
             }
+        }
+
+        if (qualSet.isEmpty()) {
+            throw new UserError(
+                    "SubtypingChecker: no qualifiers specified via -Aquals or -AqualDirs");
         }
 
         // check for subtype meta-annotation
@@ -58,7 +82,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 for (Class<? extends Annotation> superqual :
                         qual.getAnnotation(SubtypeOf.class).value()) {
                     if (!qualSet.contains(superqual)) {
-                        checker.userErrorAbort(
+                        throw new UserError(
                                 "SubtypingChecker: qualifier "
                                         + qual
                                         + " was specified via -Aquals but its super-qualifier "
@@ -70,5 +94,38 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         return qualSet;
+    }
+
+    /**
+     * If necessary, make Unqualified the default qualifier. Keep most logic in sync with super.
+     *
+     * @see
+     *     org.checkerframework.framework.type.GenericAnnotatedTypeFactory#addCheckedCodeDefaults(org.checkerframework.framework.util.defaults.QualifierDefaults)
+     */
+    @Override
+    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
+        boolean foundOtherwise = false;
+        // Add defaults from @DefaultFor and @DefaultQualifierInHierarchy
+        for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
+            DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
+            if (defaultFor != null) {
+                final TypeUseLocation[] locations = defaultFor.value();
+                defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
+                foundOtherwise =
+                        foundOtherwise
+                                || Arrays.asList(locations).contains(TypeUseLocation.OTHERWISE);
+            }
+
+            if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
+                defs.addCheckedCodeDefault(
+                        AnnotationBuilder.fromClass(elements, qual), TypeUseLocation.OTHERWISE);
+                foundOtherwise = true;
+            }
+        }
+        // If Unqualified is a supported qualifier, make it the default.
+        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elements, Unqualified.class);
+        if (!foundOtherwise && this.isSupportedQualifier(unqualified)) {
+            defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
+        }
     }
 }

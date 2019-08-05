@@ -1,0 +1,5 @@
+StubParserEnumTest.java:33:35: compiler.err.proc.messager: [fieldreadwrite] Field read/write of StubParserEnumTest.MyTimeUnit.SECONDS
+StubParserEnumTest.java:34:35: compiler.err.proc.messager: [fieldreadwrite] Field read/write of StubParserEnumTest.MyTimeUnit.MILLISECONDS
+StubParserEnumTest.java:37:47: compiler.err.proc.messager: [methodcall] Method call of StubParserEnumTest.MyTimeUnit.toMicros(long)
+StubParserEnumTest.java:37:30: compiler.err.proc.messager: [fieldreadwrite] Field read/write of StubParserEnumTest.MyTimeUnit.SECONDS
+4 errors

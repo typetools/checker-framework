@@ -97,7 +97,10 @@ public class ControlFlowGraph {
         this.declaredLambdas = declaredLambdas;
     }
 
-    /** @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds. */
+    /**
+     * @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds. Returns
+     *     null for trees that don't produce a value.
+     */
     public Set<Node> getNodesCorrespondingToTree(Tree t) {
         if (convertedTreeLookup.containsKey(t)) {
             return convertedTreeLookup.get(t);
@@ -141,25 +144,7 @@ public class ControlFlowGraph {
                 break;
             }
 
-            Queue<Block> succs = new ArrayDeque<>();
-            if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
-                ConditionalBlock ccur = ((ConditionalBlock) cur);
-                succs.add(ccur.getThenSuccessor());
-                succs.add(ccur.getElseSuccessor());
-            } else {
-                assert cur instanceof SingleSuccessorBlock;
-                Block b = ((SingleSuccessorBlock) cur).getSuccessor();
-                if (b != null) {
-                    succs.add(b);
-                }
-            }
-
-            if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
-                ExceptionBlock ecur = (ExceptionBlock) cur;
-                for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
-                    succs.addAll(exceptionSuccSet);
-                }
-            }
+            Deque<Block> succs = getSuccessors(cur);
 
             for (Block b : succs) {
                 if (!visited.contains(b)) {
@@ -202,7 +187,7 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Get a list of all successor Blocks for cur
+     * Get a list of all successor Blocks for cur.
      *
      * @return a Deque of successor Blocks
      */

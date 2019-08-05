@@ -1,7 +1,6 @@
 import polyall.quals.*;
 
-// This is a bug
-// :: error: (type.invalid.annotations.on.use)
+// :: warning: (inconsistent.constructor.type) :: error: (super.invocation.invalid)
 @H1S1 class Inheritance {
     void bar1(@H1Bot Inheritance param) {}
 

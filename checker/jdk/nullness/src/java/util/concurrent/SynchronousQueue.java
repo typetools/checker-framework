@@ -46,6 +46,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 
 /**
  * A {@linkplain BlockingQueue blocking queue} in which each insert
@@ -1070,6 +1071,7 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      *
      * @return an empty iterator
      */
+    @SideEffectFree
     public Iterator<E> iterator() {
         return Collections.emptyIterator();
     }
@@ -1081,6 +1083,7 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      * @return an empty spliterator
      * @since 1.8
      */
+    @SideEffectFree
     public Spliterator<E> spliterator() {
         return Spliterators.emptySpliterator();
     }
@@ -1089,7 +1092,8 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      * Returns a zero-length array.
      * @return a zero-length array
      */
-    public Object[] toArray() {
+    @SideEffectFree
+    public @PolyNull Object[] toArray(SynchronousQueue<@PolyNull E> this) {
         return new Object[0];
     }
 
@@ -1101,6 +1105,7 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      * @return the specified array
      * @throws NullPointerException if the specified array is null
      */
+    @SideEffectFree
     public <T> T[] toArray(T[] a) {
         if (a.length > 0)
             a[0] = null;

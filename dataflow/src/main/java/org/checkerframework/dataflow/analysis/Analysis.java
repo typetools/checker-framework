@@ -59,7 +59,7 @@ public class Analysis<
     /** The current control flow graph to perform the analysis on. */
     protected ControlFlowGraph cfg;
 
-    /** The associated processing environment */
+    /** The associated processing environment. */
     protected final ProcessingEnvironment env;
 
     /** Instance of the types utility. */
@@ -746,7 +746,10 @@ public class Analysis<
         return merged;
     }
 
-    /** Get the set of {@link Node}s for a given {@link Tree}. */
+    /**
+     * Get the set of {@link Node}s for a given {@link Tree}. Returns null for trees that don't
+     * produce a value.
+     */
     public Set<Node> getNodesForTree(Tree t) {
         if (cfg == null) {
             return null;

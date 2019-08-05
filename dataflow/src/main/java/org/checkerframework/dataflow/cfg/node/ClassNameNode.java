@@ -6,10 +6,10 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class ClassNameNode extends Node {
 
     protected final Tree tree;
-    /** The class named by this node */
+    /** The class named by this node. */
     protected final Element element;
 
     /** The parent name, if any. */
@@ -84,7 +84,7 @@ public class ClassNameNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ClassNameNode)) {
+        if (!(obj instanceof ClassNameNode)) {
             return false;
         }
         ClassNameNode other = (ClassNameNode) obj;
@@ -97,10 +97,7 @@ public class ClassNameNode extends Node {
 
     @Override
     public int hashCode() {
-        if (parent == null) {
-            return HashCodeUtils.hash(getElement());
-        }
-        return HashCodeUtils.hash(getElement(), getParent());
+        return Objects.hash(getElement(), getParent());
     }
 
     @Override

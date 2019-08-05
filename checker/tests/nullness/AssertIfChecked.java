@@ -68,7 +68,9 @@ public class AssertIfChecked {
 
     @EnsuresNonNullIf(result = true, expression = "#1")
     boolean testLitTTgood1(final @Nullable Object param) {
-        if (param == null) return false;
+        if (param == null) {
+            return false;
+        }
         return true;
     }
 
@@ -85,14 +87,18 @@ public class AssertIfChecked {
 
     @EnsuresNonNullIf(result = false, expression = "#1")
     boolean testLitFFgood2(final @Nullable Object param) {
-        if (param == null) return true;
+        if (param == null) {
+            return true;
+        }
         return false;
     }
 
     @EnsuresNonNullIf(result = false, expression = "#1")
     boolean testLitFFbad1(final @Nullable Object param) {
-        // :: error: (contracts.conditional.postcondition.not.satisfied)
-        if (param == null) return false;
+        if (param == null) {
+            // :: error: (contracts.conditional.postcondition.not.satisfied)
+            return false;
+        }
         return true;
     }
 

@@ -105,10 +105,10 @@ public class UtilsJava8 {
 
         resInt = Integer.compareUnsigned(uint, uint);
 
-        // :: error: (argument.type.incompatible)
         resLong = Integer.toUnsignedLong(sint);
 
-        resLong = Integer.toUnsignedLong(uint);
+        // :: error: (argument.type.incompatible)
+        ulong = Integer.toUnsignedLong(uint);
 
         // :: error: (argument.type.incompatible)
         uint = Integer.divideUnsigned(sint, sint);

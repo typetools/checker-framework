@@ -106,7 +106,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
 
     /**
      * Merges values in subordinate into this result, keeping the results form any type arguments
-     * that were already contained by this InferenceResult
+     * that were already contained by this InferenceResult.
      *
      * @param subordinate a result which we wish to merge into this result
      */
@@ -127,7 +127,9 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
         resolveChainedTargets();
     }
 
-    /** Performs a merge for a specific target, we keep only results that lead to a concrete type */
+    /**
+     * Performs a merge for a specific target, we keep only results that lead to a concrete type.
+     */
     protected InferredType mergeTarget(
             final TypeVariable target, final InferenceResult subordinate) {
         final InferredValue inferred = this.get(target);
@@ -136,7 +138,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
 
             if (newType == null) {
                 final InferredValue subValue = subordinate.get(target);
-                if (subValue != null && subValue instanceof InferredType) {
+                if (subValue instanceof InferredType) {
                     this.put(target, subValue);
                     return null;
                 }
@@ -145,7 +147,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
                     // If the newType is null, then use the subordinate type, but with the
                     // primary annotations on null.
                     final InferredValue subValue = subordinate.get(target);
-                    if (subValue != null && subValue instanceof InferredType) {
+                    if (subValue instanceof InferredType) {
                         AnnotatedTypeMirror copy = ((InferredType) subValue).type.deepCopy();
                         copy.replaceAnnotations(newType.type.getAnnotations());
                         newType = new InferredType(copy);

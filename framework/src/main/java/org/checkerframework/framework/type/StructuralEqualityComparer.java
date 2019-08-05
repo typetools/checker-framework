@@ -16,7 +16,7 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -129,8 +129,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                     type1.getAnnotationInHierarchy(currentTop),
                     type2.getAnnotationInHierarchy(currentTop));
         } else {
-            ErrorReporter.errorAbort("currentTop null");
-            return false;
+            throw new BugInCF("currentTop null");
         }
     }
 
@@ -144,7 +143,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             final Collection<? extends AnnotatedTypeMirror> types1,
             final Collection<? extends AnnotatedTypeMirror> types2) {
         if (types1.size() != types2.size()) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Mismatching collection sizes:\n    types 1: "
                             + PluginUtil.join("; ", types1)
                             + " ("
@@ -227,7 +226,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         // Prevent infinite recursion e.g. in Issue1587b
         visitHistory.add(type1, type2, currentTop, true);
 
-        Boolean result = visitTypeArgs(type1, type2);
+        boolean result = visitTypeArgs(type1, type2);
         visitHistory.add(type1, type2, currentTop, result);
         return result;
     }
@@ -237,7 +236,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * need to customize the handling of type arguments. This method provides a convenient extension
      * point.
      */
-    protected Boolean visitTypeArgs(
+    protected boolean visitTypeArgs(
             final AnnotatedDeclaredType type1, final AnnotatedDeclaredType type2) {
 
         // TODO: ANYTHING WITH RAW TYPES? SHOULD WE HANDLE THEM LIKE DefaultTypeHierarchy, i.e. use
@@ -255,7 +254,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             return true;
             /* TODO! This should be an error. See framework/tests/all-systems/InitializationVisitor.java
              * for a failure.
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Mismatching type argument sizes:\n    type 1: "
                             + type1
                             + " ("
@@ -385,8 +384,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                         AnnotatedTypes.findEffectiveAnnotationInHierarchy(
                                 qualifierHierarchy, type2, currentTop));
             } else {
-                ErrorReporter.errorAbort("currentTop null");
-                return false;
+                throw new BugInCF("currentTop null");
             }
         }
 
@@ -396,12 +394,14 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     /** @return true if the underlying types of the bounds for type1 and type2 are equal */
     public boolean boundsMatch(
             final AnnotatedTypeVariable type1, final AnnotatedTypeVariable type2) {
-        return type1.getUpperBound()
-                        .getUnderlyingType()
-                        .equals(type2.getUpperBound().getUnderlyingType())
-                && type1.getLowerBound()
-                        .getUnderlyingType()
-                        .equals(type2.getLowerBound().getUnderlyingType());
+        final Types types = type1.atypeFactory.types;
+
+        return types.isSameType(
+                        type1.getUpperBound().getUnderlyingType(),
+                        type2.getUpperBound().getUnderlyingType())
+                && types.isSameType(
+                        type1.getLowerBound().getUnderlyingType(),
+                        type2.getLowerBound().getUnderlyingType());
     }
 
     /**
@@ -494,8 +494,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitWildcard_Declared(
             AnnotatedWildcardType type1, AnnotatedDeclaredType type2, Void p) {
-        if (type1.atypeFactory.ignoreUninferredTypeArguments
-                && (type1.isUninferredTypeArgument())) {
+        if (type1.atypeFactory.ignoreUninferredTypeArguments && type1.isUninferredTypeArgument()) {
             return true;
         }
         // TODO: add proper checks
@@ -505,8 +504,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitDeclared_Wildcard(
             AnnotatedDeclaredType type1, AnnotatedWildcardType type2, Void p) {
-        if (type2.atypeFactory.ignoreUninferredTypeArguments
-                && (type2.isUninferredTypeArgument())) {
+        if (type2.atypeFactory.ignoreUninferredTypeArguments && type2.isUninferredTypeArgument()) {
             return true;
         }
         final QualifierHierarchy qualifierHierarchy = type1.atypeFactory.getQualifierHierarchy();

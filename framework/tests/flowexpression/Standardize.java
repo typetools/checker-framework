@@ -73,6 +73,7 @@ public class Standardize {
     }
 
     void testNewClassTree() {
+        // :: warning: (cast.unsafe.constructor.invocation)
         @FlowExp("this.field") Object o = new @FlowExp("field") Object();
     }
 
@@ -88,6 +89,8 @@ public class Standardize {
     Object dict = new Object();
 
     void typvar() {
+        // TODO: Why doesn't the diamond operator work?
+        // Map<@FlowExp("this.dict") String, String> that = new HashMap<>();
         Map<@FlowExp("this.dict") String, String> that =
                 new HashMap<@FlowExp("dict") String, String>();
     }

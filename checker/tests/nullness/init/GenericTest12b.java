@@ -1,6 +1,5 @@
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.Raw;
 
 class GenericTest12b {
     class Cell<T1 extends @Nullable Object> {}
@@ -8,7 +7,7 @@ class GenericTest12b {
     class Node<CONTENT extends @Nullable Object> {
         public Node(Cell<CONTENT> userObject) {}
 
-        void nodecall(@Raw @UnderInitialization Node<CONTENT> this, Cell<CONTENT> userObject) {}
+        void nodecall(@UnderInitialization Node<CONTENT> this, Cell<CONTENT> userObject) {}
     }
 
     class RootNode extends Node<Void> {
@@ -18,6 +17,6 @@ class GenericTest12b {
             nodecall(new Cell<Void>());
         }
 
-        void call(@Raw @UnderInitialization RootNode this, Cell<Void> userObject) {}
+        void call(@UnderInitialization RootNode this, Cell<Void> userObject) {}
     }
 }

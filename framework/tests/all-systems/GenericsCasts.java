@@ -35,7 +35,7 @@ class GenericsCasts {
         }
 
         void trouble() {
-            Queue<K> queue = new Queue<K>();
+            Queue<K> queue = new Queue<>();
             // Warning only with -AcheckCastElementType.
             // TODO:: warning: (cast.unsafe)
             // :: warning: [unchecked] unchecked cast

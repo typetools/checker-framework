@@ -14,7 +14,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  * <p>Checkers should not extend ListTreeAnnotator; they should instead pass a custom TreeAnnotator
  * to the constructor.
  *
- * @see ImplicitsTreeAnnotator
+ * @see LiteralTreeAnnotator
  * @see PropagationTreeAnnotator
  */
 public class ListTreeAnnotator extends TreeAnnotator {
@@ -53,5 +53,10 @@ public class ListTreeAnnotator extends TreeAnnotator {
         }
 
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return "ListTreeAnnotator(" + annotators + ")";
     }
 }

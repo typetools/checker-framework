@@ -139,15 +139,17 @@ public class LockEffectAnnotations {
         }
     }
 
-    // :: error: (class.declaration.guardedby.annotation.invalid)
     @GuardedByUnknown class MyClass2 {}
-    // :: error: (class.declaration.guardedby.annotation.invalid)
+
+    // :: error: (expression.unparsable.type.invalid) :: error: (super.invocation.invalid)
+    // :: warning: (inconsistent.constructor.type)
     @GuardedBy("lock") class MyClass3 {}
 
     @GuardedBy({}) class MyClass4 {}
-    // :: error: (class.declaration.guardedby.annotation.invalid) :: error:
-    // (guardsatisfied.location.disallowed)
+    // :: error: (guardsatisfied.location.disallowed) :: error: (super.invocation.invalid)
+    // :: warning: (inconsistent.constructor.type)
     @GuardSatisfied class MyClass5 {}
-    // :: error: (class.declaration.guardedby.annotation.invalid)
+
+    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     @GuardedByBottom class MyClass6 {}
 }

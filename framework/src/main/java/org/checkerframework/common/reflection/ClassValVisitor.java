@@ -1,7 +1,5 @@
 package org.checkerframework.common.reflection;
 
-import static org.checkerframework.common.reflection.ClassValAnnotatedTypeFactory.getClassNamesFromAnnotation;
-
 import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -48,7 +46,8 @@ class ClassNameValidator extends BaseTypeValidator {
         AnnotationMirror classVal = type.getAnnotation(ClassVal.class);
         classVal = classVal == null ? type.getAnnotation(ClassBound.class) : classVal;
         if (classVal != null) {
-            List<String> classNames = getClassNamesFromAnnotation(classVal);
+            List<String> classNames =
+                    ClassValAnnotatedTypeFactory.getClassNamesFromAnnotation(classVal);
             for (String className : classNames) {
                 if (!isLegalClassName(className)) {
                     checker.report(Result.failure("illegal.classname", className, type), tree);
@@ -60,7 +59,7 @@ class ClassNameValidator extends BaseTypeValidator {
 
     /**
      * A string is a legal binary name if it has the following form: ((Java identifier)\.)*(Java
-     * identifier)([])* https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1
+     * identifier)([])* https://docs.oracle.com/javase/specs/jls/se10/html/jls-13.html#jls-13.1
      *
      * @param className string to check
      * @return true if className is a legal class name
@@ -86,8 +85,7 @@ class ClassNameValidator extends BaseTypeValidator {
      */
     private boolean isJavaIdentifier(String identifier) {
         char[] identifierChars = identifier.toCharArray();
-        if (!(identifierChars.length > 0
-                && (Character.isJavaIdentifierStart(identifierChars[0])))) {
+        if (!(identifierChars.length > 0 && Character.isJavaIdentifierStart(identifierChars[0]))) {
             return false;
         }
         for (int i = 1; i < identifierChars.length; i++) {

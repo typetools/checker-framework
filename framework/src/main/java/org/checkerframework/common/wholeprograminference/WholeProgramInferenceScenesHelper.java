@@ -18,7 +18,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -26,8 +25,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -49,7 +49,7 @@ import scenelib.annotations.io.IndexFileWriter;
  * my.package.MyClass.jaif}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
- * #jaifFilesPath} directory. Having more information in those initial .jaif files means that the
+ * #JAIF_FILES_PATH} directory. Having more information in those initial .jaif files means that the
  * precision achieved by the whole-program inference analysis will be better. {@link
  * #writeScenesToJaif} rewrites the initial .jaif files, and may create new ones.
  */
@@ -65,13 +65,13 @@ public class WholeProgramInferenceScenesHelper {
      * Directory where .jaif files will be written to and read from. This directory is relative to
      * where the CF's javac command is executed.
      */
-    public static final String jaifFilesPath =
+    public static final String JAIF_FILES_PATH =
             "build" + File.separator + "whole-program-inference" + File.separator;
 
     /** Indicates whether assignments where the rhs is null should be ignored. */
     private final boolean ignoreNullAssignments;
 
-    /** Maps .jaif file paths (Strings) to Scenes. Relatives to jaifFilesPath. */
+    /** Maps .jaif file paths (Strings) to Scenes. Relative to JAIF_FILES_PATH. */
     private final Map<String, AScene> scenes = new HashMap<>();
 
     /**
@@ -96,7 +96,7 @@ public class WholeProgramInferenceScenesHelper {
      */
     public void writeScenesToJaif() {
         // Create .jaif files directory if it doesn't exist already.
-        File jaifDir = new File(jaifFilesPath);
+        File jaifDir = new File(JAIF_FILES_PATH);
         if (!jaifDir.exists()) {
             jaifDir.mkdirs();
         }
@@ -106,19 +106,20 @@ public class WholeProgramInferenceScenesHelper {
                 AScene scene = scenes.get(jaifPath).clone();
                 removeIgnoredAnnosFromScene(scene);
                 new File(jaifPath).delete();
-                if (!scene.prune()) {
+                scene.prune();
+                if (!scene.isEmpty()) {
                     // Only write non-empty scenes into .jaif files.
                     IndexFileWriter.write(scene, new FileWriter(jaifPath));
                 }
             } catch (IOException e) {
-                ErrorReporter.errorAbort(
+                throw new UserError(
                         "Problem while reading file in: "
                                 + jaifPath
                                 + ". Exception message: "
                                 + e.getMessage(),
                         e);
             } catch (DefException e) {
-                ErrorReporter.errorAbort(e.getMessage(), e);
+                throw new BugInCF(e.getMessage(), e);
             }
         }
         modifiedScenes.clear();
@@ -126,7 +127,7 @@ public class WholeProgramInferenceScenesHelper {
 
     /** Returns the String representing the .jaif path of a class given its name. */
     protected String getJaifPath(String className) {
-        String jaifPath = jaifFilesPath + className + ".jaif";
+        String jaifPath = JAIF_FILES_PATH + className + ".jaif";
         return jaifPath;
     }
 
@@ -143,7 +144,7 @@ public class WholeProgramInferenceScenesHelper {
                 try {
                     IndexFileParser.parseFile(jaifPath, scene);
                 } catch (IOException e) {
-                    ErrorReporter.errorAbort(
+                    throw new UserError(
                             "Problem while reading file in: "
                                     + jaifPath
                                     + "."
@@ -163,7 +164,7 @@ public class WholeProgramInferenceScenesHelper {
     protected AClass getAClass(String className, String jaifPath) {
         // Possibly reads .jaif file to obtain a Scene.
         AScene scene = getScene(jaifPath);
-        return scene.classes.vivify(className);
+        return scene.classes.getVivify(className);
     }
 
     /**
@@ -175,8 +176,6 @@ public class WholeProgramInferenceScenesHelper {
      *   <li>If there was a previous annotation, the updated set will be the LUB between the
      *       previous annotation and newATM.
      * </ul>
-     *
-     * <p>
      *
      * @param type ATypeElement of the Scene which will be modified
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
@@ -240,7 +239,7 @@ public class WholeProgramInferenceScenesHelper {
      * #shouldIgnore}).
      */
     private void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl, TypeUseLocation loc) {
-        String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere.toString();
+        String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere;
         Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(firstKey, loc));
         if (annosToIgnoreForLocation != null) {
             Set<Annotation> annosToRemove = new HashSet<>();
@@ -339,16 +338,17 @@ public class WholeProgramInferenceScenesHelper {
      * https://github.com/typetools/checker-framework/issues/683
      */
     private boolean shouldIgnore(
-            AnnotationMirror am,
-            TypeUseLocation location,
-            AnnotatedTypeFactory atf,
-            AnnotatedTypeMirror atm) {
+            AnnotationMirror am, TypeUseLocation location, AnnotatedTypeMirror atm) {
         Element elt = am.getAnnotationType().asElement();
         // Checks if am is an implementation detail (a type qualifier used
         // internally by the type system and not meant to be seen by the user.)
         Target target = elt.getAnnotation(Target.class);
-        if (target != null && target.value().length == 0) return true;
-        if (elt.getAnnotation(InvisibleQualifier.class) != null) return true;
+        if (target != null && target.value().length == 0) {
+            return true;
+        }
+        if (elt.getAnnotation(InvisibleQualifier.class) != null) {
+            return true;
+        }
 
         // Checks if am is default
         if (elt.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
@@ -371,20 +371,20 @@ public class WholeProgramInferenceScenesHelper {
             }
         }
 
-        // Checks if am is an implicit annotation.
-        // This case checks if it is meta-annotated with @ImplicitFor.
-        // TODO: Handle cases of implicit annotations added via an
-        // org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator.
-        ImplicitFor implicitFor = elt.getAnnotation(ImplicitFor.class);
-        if (implicitFor != null) {
-            org.checkerframework.framework.qual.TypeKind[] types = implicitFor.types();
+        // Checks if am is a default annotation.
+        // This case checks if it is meta-annotated with @DefaultFor.
+        // TODO: Handle cases of annotations added via an
+        // org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator.
+        DefaultFor defaultFor = elt.getAnnotation(DefaultFor.class);
+        if (defaultFor != null) {
+            org.checkerframework.framework.qual.TypeKind[] types = defaultFor.typeKinds();
             TypeKind atmKind = atm.getUnderlyingType().getKind();
             if (hasMatchingTypeKind(atmKind, types)) {
                 return true;
             }
 
             try {
-                Class<?>[] names = implicitFor.typeNames();
+                Class<?>[] names = defaultFor.types();
                 for (Class<?> c : names) {
                     TypeMirror underlyingtype = atm.getUnderlyingType();
                     while (underlyingtype instanceof javax.lang.model.type.ArrayType) {
@@ -414,7 +414,10 @@ public class WholeProgramInferenceScenesHelper {
         return false;
     }
 
-    /** Returns a subset of annosSet, consisting of the annotations supported by atf. */
+    /**
+     * Returns a subset of annosSet, consisting of the annotations supported by atf. These are not
+     * necessarily legal annotations: they have the right name, but they may lack elements (fields).
+     */
     private Set<Annotation> getSupportedAnnosInSet(
             Set<Annotation> annosSet, AnnotatedTypeFactory atf) {
         Set<Annotation> output = new HashSet<>();
@@ -508,7 +511,7 @@ public class WholeProgramInferenceScenesHelper {
         if (curATM.getExplicitAnnotations().isEmpty()) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 addAnnotationsToATypeElement(
-                        newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
+                        newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         } else if (curATM.getKind() == TypeKind.TYPEVAR) {
             // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
@@ -522,7 +525,7 @@ public class WholeProgramInferenceScenesHelper {
                     break;
                 }
                 addAnnotationsToATypeElement(
-                        newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
+                        newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         }
 
@@ -534,7 +537,7 @@ public class WholeProgramInferenceScenesHelper {
                     newAAT.getComponentType(),
                     oldAAT.getComponentType(),
                     atf,
-                    typeToUpdate.innerTypes.vivify(
+                    typeToUpdate.innerTypes.getVivify(
                             new InnerTypeLocation(
                                     TypeAnnotationPosition.getTypePathFromBinary(
                                             Collections.nCopies(2 * idx, 0)))),
@@ -545,7 +548,6 @@ public class WholeProgramInferenceScenesHelper {
 
     private void addAnnotationsToATypeElement(
             AnnotatedTypeMirror newATM,
-            AnnotatedTypeFactory atf,
             ATypeElement typeToUpdate,
             TypeUseLocation defLoc,
             AnnotationMirror am,
@@ -553,12 +555,11 @@ public class WholeProgramInferenceScenesHelper {
         Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
         if (anno != null) {
             typeToUpdate.tlAnnotationsHere.add(anno);
-            if (isEffectiveAnnotation || shouldIgnore(am, defLoc, atf, newATM)) {
+            if (isEffectiveAnnotation || shouldIgnore(am, defLoc, newATM)) {
                 // firstKey works as a unique identifier for each annotation
                 // that should not be inserted in source code
                 String firstKey =
-                        typeToUpdate.description.toString()
-                                + typeToUpdate.tlAnnotationsHere.toString();
+                        typeToUpdate.description.toString() + typeToUpdate.tlAnnotationsHere;
                 Pair<String, TypeUseLocation> key = Pair.of(firstKey, defLoc);
                 Set<String> annosIgnored = annosToIgnore.get(key);
                 if (annosIgnored == null) {

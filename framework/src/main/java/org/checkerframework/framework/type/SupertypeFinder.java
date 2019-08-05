@@ -26,13 +26,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Finds the direct supertypes of an input AnnotatedTypeMirror. See
- * https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.10.2
+ * https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.10.2
  *
  * @see Types#directSupertypes(TypeMirror)
  */
@@ -151,7 +151,7 @@ class SupertypeFinder {
 
             if (type.getTypeArguments().size() != typeElement.getTypeParameters().size()) {
                 if (!type.wasRaw()) {
-                    ErrorReporter.errorAbort(
+                    throw new BugInCF(
                             "AnnotatedDeclaredType's element has a different number of type parameters than type.\n"
                                     + "type="
                                     + type
@@ -405,7 +405,7 @@ class SupertypeFinder {
                     Element elem = types.asElement(arg.getUnderlyingType());
                     if ((elem != null)
                             && (elem.getKind() == ElementKind.TYPE_PARAMETER)
-                            && (mapping.containsKey(elem))) {
+                            && mapping.containsKey(elem)) {
                         AnnotatedTypeMirror other = mapping.get(elem).deepCopy();
                         other.replaceAnnotations(arg.getAnnotationsField());
                         args.add(other);
@@ -428,7 +428,7 @@ class SupertypeFinder {
                 AnnotatedTypeMirror other;
                 if ((elem != null)
                         && (elem.getKind() == ElementKind.TYPE_PARAMETER)
-                        && (mapping.containsKey(elem))) {
+                        && mapping.containsKey(elem)) {
                     other = mapping.get(elem);
                     other.replaceAnnotations(comptype.getAnnotationsField());
                     type.setComponentType(other);

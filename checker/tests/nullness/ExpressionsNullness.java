@@ -22,7 +22,7 @@ public class ExpressionsNullness {
         ExpressionsNullness.class.getAnnotations(); // valid
     }
 
-    private HashMap<String, String> map = new HashMap<String, String>();
+    private HashMap<String, String> map = new HashMap<>();
 
     public void test() {
         @SuppressWarnings("nullness")
@@ -65,11 +65,5 @@ public class ExpressionsNullness {
 
     public ExpressionsNullness(Object obj) {
         this.obj = obj;
-    }
-
-    void testRawness(@Raw Object obj) {
-        @SuppressWarnings("rawness")
-        @NonRaw Object nonRaw = obj;
-        this.obj = nonRaw;
     }
 }

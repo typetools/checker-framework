@@ -23,6 +23,7 @@ import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -31,7 +32,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Visitor for the Constant Value type-system */
+/** Visitor for the Constant Value type system. */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     public ValueVisitor(BaseTypeChecker checker) {
@@ -43,9 +44,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * the {@link IntRangeFromPositive} annotation, the {@link IntRangeFromNonNegative} annotation,
      * or the {@link IntRangeFromGTENegativeOne} annotation. This annotation is only introduced by
      * the Index Checker's lower bound annotations. It is safe to defer checking of these values to
-     * the Index Checker because this is only introduced for explicitly-written {@link
-     * org.checkerframework.checker.index.qual.Positive}, explicitly-written {@link
-     * org.checkerframework.checker.index.qual.NonNegative}, and explicitly-written {@link
+     * the Index Checker because this is only introduced for explicitly-written {@code
+     * org.checkerframework.checker.index.qual.Positive}, explicitly-written {@code
+     * org.checkerframework.checker.index.qual.NonNegative}, and explicitly-written {@code
      * org.checkerframework.checker.index.qual.GTENegativeOne} annotations, which must be checked by
      * the Lower Bound Checker.
      *
@@ -71,6 +72,13 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             @CompilerMessageKey String errorKey) {
 
         replaceSpecialIntRangeAnnotations(varType);
+
+        if (valueType.getKind().equals(TypeKind.CHAR)
+                && valueType.hasAnnotation(getTypeFactory().UNKNOWNVAL)) {
+            valueType.addAnnotation(
+                    getTypeFactory().createIntRangeAnnotation(Range.CHAR_EVERYTHING));
+        }
+
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
@@ -102,7 +110,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * prevent these annotations from being required on the left hand side of assignments.
      *
      * @param varType an annotated type mirror that may contain IntRangeFromX annotations, which
-     *     will be used on the lhs of an assignment or pseudo-assignment.
+     *     will be used on the lhs of an assignment or pseudo-assignment
      */
     private void replaceSpecialIntRangeAnnotations(AnnotatedTypeMirror varType) {
         AnnotatedTypeScanner<Void, Void> replaceSpecialIntRangeAnnotations =
@@ -233,6 +241,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             if (castType.getKind() == TypeKind.BYTE && castRange.isByteEverything()) {
                 return p;
             }
+            if (castType.getKind() == TypeKind.CHAR && castRange.isCharEverything()) {
+                return p;
+            }
             if (castType.getKind() == TypeKind.SHORT && castRange.isShortEverything()) {
                 return p;
             }
@@ -242,22 +253,17 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             if (castType.getKind() == TypeKind.LONG && castRange.isLongEverything()) {
                 return p;
             }
-            if (Range.IGNORE_OVERFLOW) {
-                // Range.IGNORE_OVERFLOW is only set if this checker is ignoring overflow.
+            if (Range.ignoreOverflow) {
+                // Range.ignoreOverflow is only set if this checker is ignoring overflow.
                 // In that case, do not warn if the range of the expression encompasses
                 // the whole type being casted to (i.e. the warning is actually about overflow).
                 Range exprRange = ValueAnnotatedTypeFactory.getRange(exprAnno);
-                switch (castType.getKind()) {
-                    case BYTE:
-                        exprRange = exprRange.byteRange();
-                        break;
-                    case SHORT:
-                        exprRange = exprRange.shortRange();
-                        break;
-                    case INT:
-                        exprRange = exprRange.intRange();
-                        break;
-                    default:
+                TypeKind casttypekind = castType.getKind();
+                if (casttypekind == TypeKind.BYTE
+                        || casttypekind == TypeKind.CHAR
+                        || casttypekind == TypeKind.SHORT
+                        || casttypekind == TypeKind.INT) {
+                    exprRange = NumberUtils.castRange(castType.getUnderlyingType(), exprRange);
                 }
                 if (castRange.equals(exprRange)) {
                     return p;

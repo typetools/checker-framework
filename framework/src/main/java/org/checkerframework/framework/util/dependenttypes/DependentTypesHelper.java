@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.dependenttypes;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -46,8 +48,8 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -65,7 +67,8 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <li>Changes invalid expression strings to an error string that includes the reason why the
  *       expression is invalid. For example, {@code @KeyFor("m")} would be changed to
  *       {@code @KeyFor("[error for expression: m error: m: identifier not found]")} if m is not a
- *       valid identifier.
+ *       valid identifier. This allows subtyping checks to assume that if two strings are equal and
+ *       not errors, the reference the same valid Java expression.
  *   <li>Checks annotated types for error strings that have been added by this class and issues an
  *       error if any are found.
  * </ol>
@@ -226,8 +229,13 @@ public class DependentTypesHelper {
         }
 
         TreePath path = factory.getPath(tree);
+        Tree enclosingClass = TreeUtils.enclosingClass(path);
+        if (enclosingClass == null) {
+            return;
+        }
+        TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
         FlowExpressions.Receiver r =
-                FlowExpressions.internalReprOfImplicitReceiver(TreeUtils.elementFromUse(tree));
+                FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
         FlowExpressionContext context =
                 new FlowExpressionContext(
                         r,
@@ -253,6 +261,34 @@ public class DependentTypesHelper {
         standardizeDoNotUseLocals(context, factory.getPath(m), atm);
     }
 
+    /**
+     * Standardize the Java expressions in annotations in a class declaration.
+     *
+     * @param node the class declaration
+     * @param type the type of the class declaration
+     * @param ele the element of the class declaration
+     */
+    public void standardizeClass(ClassTree node, AnnotatedTypeMirror type, Element ele) {
+        if (!hasDependentType(type)) {
+            return;
+        }
+        TreePath path = factory.getPath(node);
+        if (path == null) {
+            return;
+        }
+        FlowExpressions.Receiver receiverF = FlowExpressions.internalReprOfImplicitReceiver(ele);
+        FlowExpressionContext classContext =
+                new FlowExpressionContext(receiverF, null, factory.getContext());
+        standardizeDoNotUseLocals(classContext, path, type);
+    }
+
+    /**
+     * Standardize the Java expressions in annotations in a variable declaration.
+     *
+     * @param node the variable declaration
+     * @param type the type of the variable declaration
+     * @param ele the element of the variable declaration
+     */
     public void standardizeVariable(Tree node, AnnotatedTypeMirror type, Element ele) {
         if (!hasDependentType(type)) {
             return;
@@ -303,6 +339,7 @@ public class DependentTypesHelper {
                 standardizeUseLocals(localContext, path, type);
                 break;
             case FIELD:
+            case ENUM_CONSTANT:
                 FlowExpressions.Receiver receiverF;
                 if (node.getKind() == Tree.Kind.IDENTIFIER) {
                     FlowExpressions.Receiver r =
@@ -319,10 +356,16 @@ public class DependentTypesHelper {
                 standardizeDoNotUseLocals(fieldContext, path, type);
                 break;
             default:
-                // Nothing to do.
+                throw new BugInCF(
+                        this.getClass()
+                                + ": unexpected element kind "
+                                + ele.getKind()
+                                + ": "
+                                + ele);
         }
     }
 
+    /** Standardize the Java expressions in annotations in a field access. */
     public void standardizeFieldAccess(MemberSelectTree node, AnnotatedTypeMirror type) {
         if (!hasDependentType(type)) {
             return;
@@ -387,7 +430,7 @@ public class DependentTypesHelper {
                         // a method parameter.
                         return;
                     }
-                    ErrorReporter.errorAbort(this.getClass() + ": tree not found");
+                    throw new BugInCF(this.getClass() + ": tree not found");
                 } else if (TreeUtils.typeOf(tree) == null) {
                     // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
                     // gets the assignment context for a pseudo assignment of an argument to
@@ -511,7 +554,7 @@ public class DependentTypesHelper {
     private class StandardizeTypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
         private final FlowExpressionContext context;
         private final TreePath localScope;
-        /** Whether or not the expression might contain a variable declared in local scope */
+        /** Whether or not the expression might contain a variable declared in local scope. */
         private final boolean useLocalScope;
 
         private StandardizeTypeAnnotator(
@@ -572,9 +615,9 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all expression in the given annotated type to see if the expression string is an error
-     * string as specified by {@link DependentTypesError#isExpressionError}. If the annotated type
-     * has any errors, a flowexpr.parse.error is issued at the errorTree.
+     * Checks all Java expressions in the given annotated type to see if the expression string is an
+     * error string as specified by {@link DependentTypesError#isExpressionError}. If the annotated
+     * type has any errors, a flowexpr.parse.error is issued at the errorTree.
      *
      * @param atm annotated type to check for expression errors
      * @param errorTree the tree at which to report any found errors
@@ -603,9 +646,14 @@ public class DependentTypesHelper {
         if (errors.isEmpty()) {
             return;
         }
+        StringJoiner errorsFormatted = new StringJoiner("\n");
+        for (DependentTypesError dte : errors) {
+            errorsFormatted.add(dte.format());
+        }
         SourceChecker checker = factory.getContext().getChecker();
-        String error = PluginUtil.join("\n", errors);
-        checker.report(Result.failure("expression.unparsable.type.invalid", error), errorTree);
+        checker.report(
+                Result.failure("expression.unparsable.type.invalid", errorsFormatted.toString()),
+                errorTree);
     }
 
     /**
@@ -621,7 +669,7 @@ public class DependentTypesHelper {
                     AnnotationUtils.getElementValueArray(am, element, String.class, true);
             for (String v : value) {
                 if (DependentTypesError.isExpressionError(v)) {
-                    errors.add(new DependentTypesError(v));
+                    errors.add(DependentTypesError.unparse(v));
                 }
             }
         }
@@ -647,9 +695,24 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all expressions in the method declaration AnnotatedTypeMirror to see if the expression
-     * string is an error string as specified by DependentTypesError#isExpressionError. If the
-     * annotated type has any errors, a flowexpr.parse.error is issued.
+     * Checks all Java expressions in the class declaration AnnotatedTypeMirror to see if the
+     * expression string is an error string as specified by DependentTypesError#isExpressionError.
+     * If the annotated type has any errors, a flowexpr.parse.error is issued. Note that this checks
+     * the class declaration itself, not the body or extends/implements clauses.
+     *
+     * @param classTree class to check
+     * @param type annotated type of the class
+     */
+    public void checkClass(ClassTree classTree, AnnotatedDeclaredType type) {
+        // TODO: check that invalid annotations in type variable bounds are properly
+        // formatted. They are part of the type, but the output isn't nicely formatted.
+        checkType(type, classTree);
+    }
+
+    /**
+     * Checks all Java expressions in the method declaration AnnotatedTypeMirror to see if the
+     * expression string is an error string as specified by DependentTypesError#isExpressionError.
+     * If the annotated type has any errors, a flowexpr.parse.error is issued.
      *
      * @param methodTree method to check
      * @param type annotated type of the method
@@ -662,7 +725,9 @@ public class DependentTypesHelper {
         // Check return type
         if (type.getReturnType().getKind() != TypeKind.VOID) {
             AnnotatedTypeMirror returnType = factory.getMethodReturnType(methodTree);
-            checkType(returnType, methodTree.getReturnType());
+            Tree treeForError =
+                    TreeUtils.isConstructor(methodTree) ? methodTree : methodTree.getReturnType();
+            checkType(returnType, treeForError);
         }
     }
 
@@ -765,7 +830,7 @@ public class DependentTypesHelper {
                 return null;
             }
             if (type.getKind() != p.getKind()) {
-                ErrorReporter.errorAbort("Should be the same. type: %s p: %s ", type, p);
+                throw new BugInCF("Should be the same. type: %s p: %s ", type, p);
             }
             return null;
         }

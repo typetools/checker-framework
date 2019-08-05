@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Property File Checker\label{propkey-checker}}
+\chapterAndLabel{Property File Checker}{propkey-checker}
 
 The Property File Checker ensures that a property file or resource bundle (both
 of which act like maps from keys to values) is only accessed with valid keys.
@@ -14,7 +14,7 @@ An Internationalization Checker (Section \refwithpage{i18n-checker})
 verifies that code is properly internationalized.
 A Compiler Message Key Checker (Section \refwithpage{compilermsgs-checker})
 verifies that compiler message keys used in the Checker Framework are
-declared in a property file;
+declared in a property file.
 This is an example of a simple specialization of the property
 file checker, and the Checker Framework source code shows how it is used.
 
@@ -24,20 +24,21 @@ your purposes.
 
 
 
-\section{General Property File Checker\label{genpropkey-checker}}
+\sectionAndLabel{General Property File Checker}{genpropkey-checker}
 
 The general Property File Checker ensures that a resource key is located
 in a specified property file or resource bundle.
 
 
 The annotation \refqualclass{checker/propkey/qual}{PropertyKey}
-indicates that the qualified \code{String} is a valid key
+indicates that the qualified \code{CharSequence} is a valid key
 found in the property file or resource bundle.
 You do not need to annotate \code{String} literals.
 The checker looks up every \code{String} literal in the specified
 property file or resource bundle, and adds annotations as appropriate.
 
-If you pass a \code{String} variable to be eventually used as a key, you
+If you pass a \code{CharSequence} (including \<String>) variable to be
+eventually used as a key, you
 also need to annotate all these variables with \code{@PropertyKey}.
 
 
@@ -81,7 +82,7 @@ following two command-line options:
 
 
 
-\section{Internationalization Checker (I18n Checker)\label{i18n-checker}}
+\sectionAndLabel{Internationalization Checker (I18n Checker)}{i18n-checker}
 
 The Internationalization Checker, or I18n Checker, verifies that your code is properly
 internationalized.  Internationalization is the process of designing software so that
@@ -93,10 +94,10 @@ Internationalization is sometimes called i18n, because the word starts with ``i'
 ends with ``n'', and has 18 characters in between.  Localization is similarly
 sometimes abbreviated as l10n.
 
-The checker focuses on one aspect of internationalization:  user-visible strings
+The checker focuses on one aspect of internationalization:  user-visible text
 should be presented in the user's own language, such as English, French, or
 German.  This is achieved by looking up keys in a localization resource,
-which maps keys to user-visible strings.  For instance, one version of a
+which maps keys to user-visible text.  For instance, one version of a
 resource might map \code{"CANCEL\_STRING"} to
 \code{"Cancel"}, and another version of the same resource might map
 \code{"CANCEL\_STRING"} to \code{"Abbrechen"}.
@@ -127,17 +128,17 @@ used with arguments of the proper type, so that
 \sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}
 does not fail at run time.
 
-\subsection{Internationalization annotations\label{i18n-annotations}}
+\subsectionAndLabel{Internationalization annotations}{i18n-annotations}
 
 The Internationalization Checker supports two annotations:
 
 \begin{enumerate}
 \item \refqualclass{checker/i18n/qual}{Localized}: indicates that the qualified
-\code{String} is a message that has been localized and/or formatted with
+\code{CharSequence} is a message that has been localized and/or formatted with
 respect to the used locale.
 
 \item \refqualclass{checker/i18n/qual}{LocalizableKey}: indicates that the
-qualified \code{String} or \code{Object} is a valid key found in the
+qualified \code{CharSequence} or \code{Object} is a valid key found in the
 localization resource.
 This annotation is a specialization of the \code{@PropertyKey} annotation, that
 gets checked by the general Property Key Checker.
@@ -147,7 +148,7 @@ You may need to add the \code{@Localized} annotation to more methods in the
 JDK or other libraries, or in your own code.
 
 
-\subsection{Running the Internationalization Checker\label{i18n-running}}
+\subsectionAndLabel{Running the Internationalization Checker}{i18n-running}
 
 The Internationalization Checker can be invoked by running the following
 command:
@@ -163,7 +164,7 @@ command:
 %END LATEX
 
 You must specify the localization resource, which maps keys to user-visible
-strings.  Like the general Property Key Checker, the Internationalization Checker
+text.  Like the general Property Key Checker, the Internationalization Checker
 supports two types of localization resource:
 \code{ResourceBundle}s using the
 \code{-Abundlenames=\emph{resource\_name}} option
@@ -172,7 +173,7 @@ or property files using the
 
 
 
-\section{Compiler Message Key Checker\label{compilermsgs-checker}}
+\sectionAndLabel{Compiler Message Key Checker}{compilermsgs-checker}
 
 The Checker Framework uses compiler message keys to output error messages.
 These keys are substituted by localized strings for user-visible error messages.
@@ -202,7 +203,7 @@ command:
 \end{Verbatim}
 
 You must specify the resource, which maps compiler message keys to user-visible
-strings.  The checker supports the same options as the general property key checker.
+text.  The checker supports the same options as the general property key checker.
 Within the Checker Framework we only use property files,
 so the \code{-Apropfiles=\emph{prop\_file}} option should be used.
 

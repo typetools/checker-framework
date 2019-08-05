@@ -1,7 +1,5 @@
 package org.checkerframework.javacutil;
 
-import static com.sun.tools.javac.code.TypeTag.WILDCARD;
-
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -24,6 +22,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.plumelib.util.ImmutableTypes;
 
 /** A utility class that helps with {@link TypeMirror}s. */
 // TODO: This class needs significant restructuring
@@ -118,6 +117,19 @@ public final class TypesUtils {
                 || qualifiedName.equals("java.lang.Float"));
     }
 
+    /**
+     * Return true if this is an immutable type in the JDK.
+     *
+     * <p>This does not use immutability annotations and always returns false for user-defined
+     * classes.
+     */
+    public static boolean isImmutableTypeInJdk(TypeMirror type) {
+        return isPrimitive(type)
+                || (type.getKind() == TypeKind.DECLARED
+                        && ImmutableTypes.isImmutable(
+                                getQualifiedName((DeclaredType) type).toString()));
+    }
+
     /** @return type represents a Throwable type (e.g. Exception, Error) */
     public static boolean isThrowable(TypeMirror type) {
         while (type != null && type.getKind() == TypeKind.DECLARED) {
@@ -139,9 +151,9 @@ public final class TypesUtils {
      */
     public static boolean isAnonymous(TypeMirror type) {
         return (type instanceof DeclaredType)
-                && (((TypeElement) ((DeclaredType) type).asElement())
+                && ((TypeElement) ((DeclaredType) type).asElement())
                         .getNestingKind()
-                        .equals(NestingKind.ANONYMOUS));
+                        .equals(NestingKind.ANONYMOUS);
     }
 
     /**
@@ -311,7 +323,7 @@ public final class TypesUtils {
 
     /**
      * Get the type parameter for this wildcard from the underlying type's bound field This field is
-     * sometimes null, in that case this method will return null
+     * sometimes null, in that case this method will return null.
      *
      * @return the TypeParameterElement the wildcard is an argument to
      */
@@ -355,7 +367,7 @@ public final class TypesUtils {
      */
     public static Type wildLowerBound(TypeMirror tm, ProcessingEnvironment env) {
         Type t = (Type) tm;
-        if (t.hasTag(WILDCARD)) {
+        if (t.hasTag(TypeTag.WILDCARD)) {
             Context context = ((JavacProcessingEnvironment) env).getContext();
             Symtab syms = Symtab.instance(context);
             Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(t);
@@ -379,8 +391,7 @@ public final class TypesUtils {
         } else {
             TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
             if (element == null) {
-                ErrorReporter.errorAbort("Unrecognized class: " + clazz);
-                return null; // dead code
+                throw new BugInCF("Unrecognized class: " + clazz);
             }
             return element.asType();
         }
@@ -509,10 +520,6 @@ public final class TypesUtils {
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
         com.sun.tools.javac.code.Types types =
                 com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
-        if (types.isSameType(t1, t2)) {
-            // Special case if the two types are equal.
-            return t1;
-        }
         // Handle the 'null' type manually (not done by types.lub).
         if (t1.getKind() == TypeKind.NULL) {
             return t2;
@@ -539,6 +546,10 @@ public final class TypesUtils {
                 return elements.getTypeElement("java.lang.Object").asType();
             }
             t2 = bound;
+        }
+        if (types.isSameType(t1, t2)) {
+            // Special case if the two types are equal.
+            return t1;
         }
         // Special case for primitives.
         if (isPrimitive(t1) || isPrimitive(t2)) {

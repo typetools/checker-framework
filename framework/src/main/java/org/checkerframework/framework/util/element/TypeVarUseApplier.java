@@ -12,15 +12,17 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
+import org.checkerframework.javacutil.BugInCF;
 
-/** Apply annotations to the use of a type parameter declaration */
+/** Apply annotations to the use of a type parameter declaration. */
 public class TypeVarUseApplier {
 
     public static void apply(
@@ -77,7 +79,7 @@ public class TypeVarUseApplier {
             final Element element,
             final AnnotatedTypeFactory typeFactory) {
         if (!accepts(type, element)) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "TypeParamUseApplier does not accept type/element combination ("
                             + " type ( "
                             + type
@@ -106,7 +108,7 @@ public class TypeVarUseApplier {
 
     /**
      * Applies the bound annotations from the declaration of the type parameter and then applies the
-     * explicit annotations written on the type variable
+     * explicit annotations written on the type variable.
      */
     public void extractAndApply() {
         ElementAnnotationUtil.addAnnotationsFromElement(
@@ -170,9 +172,13 @@ public class TypeVarUseApplier {
 
     private boolean isBaseComponent(
             final AnnotatedArrayType arrayType, final Attribute.TypeCompound anno) {
-        return ElementAnnotationUtil.getTypeAtLocation(arrayType, anno.getPosition().location)
-                .getClass()
-                .equals(AnnotatedTypeVariable.class);
+        try {
+            return ElementAnnotationUtil.getTypeAtLocation(arrayType, anno.getPosition().location)
+                            .getKind()
+                    == TypeKind.TYPEVAR;
+        } catch (UnexpectedAnnotationLocationException ex) {
+            return false;
+        }
     }
 
     /**
@@ -199,7 +205,7 @@ public class TypeVarUseApplier {
                 break;
 
             default:
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "TypeVarUseApplier::extractAndApply : "
                                 + "Unhandled element kind "
                                 + useElem.getKind()
@@ -209,7 +215,6 @@ public class TypeVarUseApplier {
                                 + "declarationElem ( "
                                 + declarationElem
                                 + " ) ");
-                annotations = null; // dead code
         }
 
         return annotations;
@@ -250,7 +255,7 @@ public class TypeVarUseApplier {
     private static List<Attribute.TypeCompound> getParameterAnnos(final Element paramElem) {
         final Element enclosingElement = paramElem.getEnclosingElement();
         if (!(enclosingElement instanceof ExecutableElement)) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Bad element passed to TypeFromElement.getTypeParameterAnnotationAttributes: "
                             + "element: "
                             + paramElem
@@ -287,7 +292,7 @@ public class TypeVarUseApplier {
     /** @return the annotations on the return type of the input ExecutableElement */
     private static List<Attribute.TypeCompound> getReturnAnnos(final Element methodElem) {
         if (!(methodElem instanceof ExecutableElement)) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Bad element passed to TypeVarUseApplier.getReturnAnnos:" + methodElem);
         }
 

@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-/** Test subtyping, LUB and annotation replacement in special cases */
+/** Test subtyping, LUB and annotation replacement in special cases. */
 class Basics {
 
     public void boolTest() {

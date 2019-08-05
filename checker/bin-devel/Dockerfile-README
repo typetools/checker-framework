@@ -17,7 +17,7 @@ Preliminaries:
 
 Create the Docker image:
 
-# Create the Docker image, in an empty directory, and upload to Docker Hub.
+# Alias to create the Docker image, in an empty directory, and upload to Docker Hub.
 # Takes about 12 minutes for jdk8, about 1 hour for jdkany.
 alias create_upload_docker_image=' \
   rm -rf dockerdir && \
@@ -30,6 +30,11 @@ alias create_upload_docker_image=' \
 
 export OS=ubuntu
 export JDKVER=jdk8
+export PROJECT=cf
+create_upload_docker_image
+
+export OS=ubuntu
+export JDKVER=jdk11
 export PROJECT=cf
 create_upload_docker_image
 

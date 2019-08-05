@@ -1,7 +1,6 @@
 package org.checkerframework.framework.flow;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -14,7 +13,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -96,7 +94,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     /**
-     * Returns whether or not the set of annotations can be missing an annotation for any hierarchy
+     * Returns whether or not the set of annotations can be missing an annotation for any hierarchy.
      *
      * @return whether or not the set of annotations can be missing an annotation
      */
@@ -123,6 +121,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * Returns a set of annotations. If {@link #canBeMissingAnnotations()} returns true, then the
      * set of annotations may not have an annotation for every hierarchy.
      *
+     * <p>To get the single annotation in a particular hierarchy, use {@link
+     * QualifierHierarchy#findAnnotationInHierarchy}.
+     *
      * @return returns a set of annotations
      */
     @Pure
@@ -137,12 +138,14 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof CFAbstractValue)) {
+        if (!(obj instanceof CFAbstractValue)) {
             return false;
         }
 
         CFAbstractValue<?> other = (CFAbstractValue<?>) obj;
-        if (!analysis.getTypes().isSameType(this.getUnderlyingType(), other.getUnderlyingType())) {
+        if (this.getUnderlyingType() != other.getUnderlyingType()
+                && !analysis.getTypes()
+                        .isSameType(this.getUnderlyingType(), other.getUnderlyingType())) {
             return false;
         }
         return AnnotationUtils.areSame(this.getAnnotations(), other.getAnnotations());
@@ -151,10 +154,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     @Pure
     @Override
     public int hashCode() {
-        Collection<Object> objects = new ArrayList<>();
-        objects.addAll(getAnnotations());
-        objects.add(underlyingType);
-        return HashCodeUtils.hash(objects);
+        return Objects.hash(getAnnotations(), underlyingType);
     }
 
     /** @return the string representation as a comma-separated list */

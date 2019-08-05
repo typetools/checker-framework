@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Subtyping Checker\label{subtyping-checker}}
+\chapterAndLabel{Subtyping Checker}{subtyping-checker}
 
 The Subtyping Checker enforces only subtyping rules.  It operates over
 annotations specified by a user on the command line.  Thus, users can
@@ -8,10 +8,9 @@ the type qualifier annotations.
 
 The Subtyping Checker can accommodate all of the type system enhancements that
 can be declaratively specified (see Chapter~\ref{creating-a-checker}).
-This includes type introduction rules (implicit
-annotations, e.g., literals are implicitly considered \refqualclass{checker/nullness/qual}{NonNull}) via
-the \refqualclass{framework/qual}{ImplicitFor} meta-annotation, and other features such as
-flow-sensitive type qualifier inference (Section~\ref{type-refinement}) and
+This includes type introduction rules via the
+\refqualclass{framework/qual}{QualifierForLiterals} meta-annotation , and other features such as
+type refinement (Section~\ref{type-refinement}) and
 qualifier polymorphism (Section~\ref{qualifier-polymorphism}).
 
 The Subtyping Checker is also useful to type system designers who wish to
@@ -19,9 +18,8 @@ experiment with a checker before writing code; the Subtyping Checker
 demonstrates the functionality that a checker inherits from the Checker
 Framework.
 
-If you need typestate analysis, then you can extend a typestate checker,
-much as you would extend the Subtyping Checker if you do not need typestate
-analysis.  For more details (including a definition of ``typestate''), see
+If you need typestate analysis, then you can extend a typestate checker.
+For more details (including a definition of ``typestate''), see
 Chapter~\ref{typestate-checker}.
 See Section~\ref{faq-typestate} for a simpler alternative.
 
@@ -30,14 +28,14 @@ dereferences of possibly-null values), you will need to write code and
 extend the framework as discussed in Chapter~\ref{creating-a-checker}.
 
 
-\section{Using the Subtyping Checker\label{subtyping-using}}
+\sectionAndLabel{Using the Subtyping Checker}{subtyping-using}
 
 \begin{sloppypar}
 The Subtyping Checker is used in the same way as other checkers (using the
 \code{-processor org.checkerframework.common.subtyping.SubtypingChecker} option; see Chapter~\ref{using-a-checker}), except that it
 requires an additional annotation processor argument via the standard
-``\code{-A}'' switch. One of the two following arguments must be used with the
-Subtyping Checker:
+``\code{-A}'' switch. You must provide one or both of the two following
+command-line arguments:
 \end{sloppypar}
 
 \begin{itemize}
@@ -53,12 +51,6 @@ notation:
         -Aquals=\textit{myPackage.qual.MyQual},\textit{myPackage.qual.OtherQual} MyFile.java ...
 \end{alltt}
 
-The annotations listed in \code{-Aquals} must be accessible to
-the compiler during compilation in the classpath.  In other words, they must
-already be compiled (and, typically, be on the javac classpath)
-before you run the Subtyping Checker with \code{javac}.  It
-is not sufficient to supply their source files on the command line.
-
 \item
 Provide the fully-qualified paths to a set of directories that contain the
 annotations in the custom type system through the \code{-AqualDirs} option,
@@ -70,20 +62,15 @@ using a colon-no-space-separated notation. For example:
         -AqualDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} MyFile.java
 \end{alltt}
 
-Note that in these two examples, the compiled class file of the
-\<myPackage.qual.MyQual> and \<myPackage.qual.OtherQual> annotations must exist
-in either the \<myProject/bin> directory or the \<myLibrary/bin> directory. The
-following placement of the class files will work with the above commands:
-
-\begin{alltt}
-  .../myProject/bin/myPackage/qual/MyQual.class
-  .../myLibrary/bin/myPackage/qual/OtherQual.class
-\end{alltt}
-
-The two options can be used at the same time to provide groups of annotations
-from directories, and individually named annotations.
-
 \end{itemize}
+
+The annotations listed in \code{-Aquals} or \code{-AqualDirs} must be accessible to
+the compiler during compilation in the classpath.  In other words, they must
+already be compiled (and, typically, be on the javac classpath)
+before you run the Subtyping Checker with \code{javac}.  It
+is not sufficient to supply their source files on the command line.
+
+\medskip
 
 To suppress a warning issued by the Subtyping Checker, use a
 \sunjavadocanno{java/lang/SuppressWarnings.html}{SuppressWarnings}
@@ -91,11 +78,10 @@ annotation, with the argument being the unqualified, uncapitalized name of
 any of the annotations passed to \code{-Aquals}.  This will suppress all
 warnings, regardless of which of the annotations is involved in the
 warning.  (As a matter of style, you should choose one of the annotations
-as your \code{@SuppressWarnings} key and stick with it for that entire type
-hierarchy.)
+as your \code{@SuppressWarnings} key and stick with it.)
 
 
-\section{Subtyping Checker example\label{subtyping-example}\label{encrypted-example}}
+\sectionAndLabel{Subtyping Checker example\label{encrypted-example}}{subtyping-example}
 
 Consider a hypothetical \code{Encrypted} type qualifier, which denotes that the
 representation of an object (such as a \code{String}, \code{CharSequence}, or
@@ -117,7 +103,6 @@ import java.lang.annotation.Target;
  * Denotes that the representation of an object is encrypted.
  */
 @SubtypeOf(PossiblyUnencrypted.class)
-@ImplicitFor(literal=\{LiteralKind.NULL\})
 @DefaultFor(\{TypeUseLocation.LOWER_BOUND\})
 @Target(\{ElementType.TYPE_USE, ElementType.TYPE_PARAMETER\})
 public @interface Encrypted \{\}
@@ -234,7 +219,7 @@ commands:
 Also, see the example project in the \<docs/examples/subtyping-extension> directory.
 
 
-\section{Type aliases and typedefs\label{subtyping-type-alias}}
+\sectionAndLabel{Type aliases and typedefs}{subtyping-type-alias}
 
 A type alias or typedef is a type that shares the same representation as
 another type but is conceptually distinct from it.  For example, some
@@ -358,4 +343,5 @@ parameter type.
 %%  LocalWords:  SubtypeOf LiteralKind DefaultFor TypeUseLocation fenum
 %%  LocalWords:  DefaultQualifierInHierarchy sendText sendPassword MyType
 %  LocalWords:  getUserPassword CompassDirection MyTypeUnknown NotMyType
-%  LocalWords:  MyTypeBottom typecheck
+%  LocalWords:  MyTypeBottom typecheck ciphertext plaintext decrypt fenums
+%%  LocalWords:  typedef antipattern

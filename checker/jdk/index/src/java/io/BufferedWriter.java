@@ -137,7 +137,7 @@ public class BufferedWriter extends Writer {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public void write(@NonNegative int c) throws IOException {
+    public void write(int c) throws IOException {
         synchronized (lock) {
             ensureOpen();
             if (nextChar >= nChars)
@@ -171,7 +171,7 @@ public class BufferedWriter extends Writer {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public void write(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(char cbuf[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         synchronized (lock) {
             ensureOpen();
             if ((off < 0) || (off > cbuf.length) || (len < 0) ||
@@ -217,7 +217,7 @@ public class BufferedWriter extends Writer {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public void write(String s, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(String s, @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         synchronized (lock) {
             ensureOpen();
 

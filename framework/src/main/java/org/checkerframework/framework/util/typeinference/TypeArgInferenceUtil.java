@@ -31,6 +31,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -43,7 +44,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -72,11 +73,10 @@ public class TypeArgInferenceUtil {
             argTrees = ((NewClassTree) methodInvocation).getArguments();
 
         } else {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "TypeArgumentInference.relationsFromMethodArguments:\n"
                             + "couldn't determine arguments from tree: "
                             + methodInvocation);
-            throw new Error(); // dead code
         }
 
         final List<AnnotatedTypeMirror> argTypes = new ArrayList<>(argTrees.size());
@@ -106,7 +106,7 @@ public class TypeArgInferenceUtil {
 
     /**
      * Given an AnnotatedExecutableType return a set of type variables that represents the generic
-     * type parameters of that method
+     * type parameters of that method.
      */
     public static Set<TypeVariable> methodTypeToTargets(final AnnotatedExecutableType methodType) {
         final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
@@ -160,7 +160,7 @@ public class TypeArgInferenceUtil {
             // TODO: if you called it from places like the TreeAnnotator.
             res = null;
 
-            // FIXME: This may cause infinite loop
+            // TODO: This may cause infinite loop
             //            AnnotatedTypeMirror type =
             //                    atypeFactory.getAnnotatedType((NewArrayTree)assignmentContext);
             //            type = AnnotatedTypes.innerMostType(type);
@@ -183,7 +183,7 @@ public class TypeArgInferenceUtil {
             Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
 
             if (enclosing.getKind() == Kind.METHOD) {
-                res = (atypeFactory.getAnnotatedType((MethodTree) enclosing)).getReturnType();
+                res = atypeFactory.getAnnotatedType((MethodTree) enclosing).getReturnType();
             } else {
                 Pair<AnnotatedDeclaredType, AnnotatedExecutableType> fninf =
                         atypeFactory.getFnInterfaceFromTree((LambdaExpressionTree) enclosing);
@@ -193,8 +193,7 @@ public class TypeArgInferenceUtil {
         } else if (assignmentContext instanceof VariableTree) {
             res = assignedToVariable(atypeFactory, assignmentContext);
         } else {
-            ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
-            res = null;
+            throw new BugInCF("AnnotatedTypes.assignedTo: shouldn't be here");
         }
 
         if (res != null && TypesUtils.isPrimitive(res.getUnderlyingType())) {
@@ -229,8 +228,10 @@ public class TypeArgInferenceUtil {
             // The tree wasn't found as an argument, so it has to be the receiver.
             // This can happen for inner class constructors that take an outer class argument.
             paramType = method.getReceiverType();
-        } else if (treeIndex >= method.getParameterTypes().size() && methodElt.isVarArgs()) {
-            paramType = method.getParameterTypes().get(method.getParameterTypes().size() - 1);
+        } else if (treeIndex + 1 >= method.getParameterTypes().size() && methodElt.isVarArgs()) {
+            AnnotatedTypeMirror varArgsType =
+                    method.getParameterTypes().get(method.getParameterTypes().size() - 1);
+            paramType = ((AnnotatedArrayType) varArgsType).getComponentType();
         } else {
             paramType = method.getParameterTypes().get(treeIndex);
         }
@@ -252,7 +253,7 @@ public class TypeArgInferenceUtil {
      * expression, isArgument is called recursively on the true and false expressions.
      */
     private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
-        argumentTree = TreeUtils.skipParens(argumentTree);
+        argumentTree = TreeUtils.withoutParens(argumentTree);
         if (argumentTree == path.getLeaf()) {
             return true;
         } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
@@ -351,7 +352,7 @@ public class TypeArgInferenceUtil {
 
     /**
      * Take a set of annotations and separate them into a mapping of ({@code hierarchy top &rArr;
-     * annotations in hierarchy})
+     * annotations in hierarchy}).
      */
     public static AnnotationMirrorMap<AnnotationMirror> createHierarchyMap(
             final AnnotationMirrorSet annos, final QualifierHierarchy qualifierHierarchy) {
@@ -365,23 +366,23 @@ public class TypeArgInferenceUtil {
     }
 
     /**
-     * Checks that the type is not an uninferred type argument. If it is, errorAbort will be called.
-     * The error will be caught in DefaultTypeArgumentInference#infer and inference will be aborted,
-     * but type-checking will continue.
+     * Throws an exception if the type is an uninferred type argument.
+     *
+     * <p>The error will be caught in DefaultTypeArgumentInference#infer and inference will be
+     * aborted, but type-checking will continue.
      */
     public static void checkForUninferredTypes(AnnotatedTypeMirror type) {
         if (type.getKind() != TypeKind.WILDCARD) {
             return;
         }
         if (((AnnotatedWildcardType) type).isUninferredTypeArgument()) {
-            ErrorReporter.errorAbort(
-                    "Can't make a constraint that includes an uninferred type argument.");
+            throw new BugInCF("Can't make a constraint that includes an uninferred type argument.");
         }
     }
 
     /**
      * Used to detect if the visited type contains one of the type variables in the typeVars
-     * parameter
+     * parameter.
      */
     private static class TypeVariableFinder
             extends AnnotatedTypeScanner<Boolean, Collection<TypeVariable>> {
@@ -393,7 +394,7 @@ public class TypeArgInferenceUtil {
                 return false;
             }
             Boolean result = false;
-            Boolean first = true;
+            boolean first = true;
             for (AnnotatedTypeMirror type : types) {
                 result = (first ? scan(type, typeVars) : scanAndReduce(type, typeVars, result));
                 first = false;
@@ -433,13 +434,14 @@ public class TypeArgInferenceUtil {
     private static final TypeVariableSubstitutor substitutor = new TypeVariableSubstitutor();
 
     // Substituter requires an input map that the substitute methods build.  We just reuse the same
-    // map rather than
-    // recreate it each time.
+    // map rather than recreate it each time.
     private static final Map<TypeVariable, AnnotatedTypeMirror> substituteMap = new HashMap<>(5);
 
     /**
      * Replace all uses of typeVariable with substitution in a copy of toModify using the normal
-     * substitution rules, (@see TypeVariableSubstitutor).Return the copy
+     * substitution rules. Return the copy
+     *
+     * @see TypeVariableSubstitutor
      */
     public static AnnotatedTypeMirror substitute(
             final TypeVariable typeVariable,
@@ -488,7 +490,7 @@ public class TypeArgInferenceUtil {
             final AnnotatedTypeFactory typeFactory, final Iterable<AnnotatedTypeMirror> types) {
         final Iterator<AnnotatedTypeMirror> typesIter = types.iterator();
         if (!typesIter.hasNext()) {
-            ErrorReporter.errorAbort("Calling LUB on empty list!");
+            throw new BugInCF("Calling LUB on empty list");
         }
         AnnotatedTypeMirror lubType = typesIter.next();
         AnnotatedTypeMirror nextType = null;

@@ -36,7 +36,7 @@ public class GroupCounts {
         // :: error: (assignment.type.incompatible)
         @Regex(6) Pattern p5 = Pattern.compile(r3); // error
 
-        // Make sure Pattern.compile still works when passed an @Unqualified String
+        // Make sure Pattern.compile still works when passed an @UnknownRegex String
         // that's actually a regex, with the warning suppressed.
         @SuppressWarnings("regex:argument.type.incompatible")
         Pattern p6 = Pattern.compile("(" + r + ")");

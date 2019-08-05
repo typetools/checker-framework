@@ -74,7 +74,7 @@ public class StringWriter extends Writer {
     /**
      * Write a single character.
      */
-    public void write(@NonNegative int c) {
+    public void write(int c) {
         buf.append((char) c);
     }
 
@@ -85,7 +85,7 @@ public class StringWriter extends Writer {
      * @param  off   Offset from which to start writing characters
      * @param  len   Number of characters to write
      */
-    public void write(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) {
+    public void write(char cbuf[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) {
         if ((off < 0) || (off > cbuf.length) || (len < 0) ||
             ((off + len) > cbuf.length) || ((off + len) < 0)) {
             throw new IndexOutOfBoundsException();
@@ -109,7 +109,7 @@ public class StringWriter extends Writer {
      * @param  off  Offset from which to start writing characters
      * @param  len  Number of characters to write
      */
-    public void write(String str, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len)  {
+    public void write(String str, @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len)  {
         buf.append(str.substring(off, off + len));
     }
 

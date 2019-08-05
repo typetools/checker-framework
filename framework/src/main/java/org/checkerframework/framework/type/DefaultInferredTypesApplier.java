@@ -9,7 +9,7 @@ import javax.lang.model.type.WildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /** Utility class for applying the annotations inferred by dataflow to a given type. */
 public class DefaultInferredTypesApplier {
@@ -107,9 +107,8 @@ public class DefaultInferredTypesApplier {
             AnnotationMirror top,
             AnnotationMirror notInferred) {
         if (inferredTypeMirror.getKind() != TypeKind.TYPEVAR) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "Inferred value should not be missing annotations: " + inferredTypeMirror);
-            return;
         }
 
         TypeVariable typeVar = (TypeVariable) inferredTypeMirror;
@@ -128,8 +127,7 @@ public class DefaultInferredTypesApplier {
             AnnotationMirror top,
             AnnotationMirror previousAnnotation) {
         if (inferredTypeMirror.getKind() != TypeKind.TYPEVAR) {
-            ErrorReporter.errorAbort("Missing annos");
-            return;
+            throw new BugInCF("Missing annos");
         }
         TypeVariable typeVar = (TypeVariable) inferredTypeMirror;
         AnnotatedTypeVariable typeVariableDecl =

@@ -19,8 +19,7 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
  * {@code -proc:only} javac option to stop compilation after annotation processing. (But, in general
  * {@code -proc:only} causes type annotation processors not to be run.)
  *
- * <p>A simple main method is also provided. Put jsr308-all.jar on the bootclasspath and you can
- * invoke this tool as:
+ * <p>A simple main method is also provided. You can invoke this tool as:
  *
  * <p>java org.checkerframework.common.util.debug.TreePrinter *.java
  *
@@ -49,7 +48,7 @@ public class TreePrinter extends AbstractTypeProcessor {
         try {
             pretty.printUnit((JCCompilationUnit) tree.getCompilationUnit(), null);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new Error(e);
         }
         System.out.println(out.toString());
     }

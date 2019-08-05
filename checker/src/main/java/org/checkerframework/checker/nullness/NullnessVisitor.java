@@ -1,6 +1,7 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
@@ -44,9 +45,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.util.QualifierPolymorphism;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -77,7 +78,12 @@ public class NullnessVisitor
     /** The element for java.util.Collection.toArray(T). */
     private final ExecutableElement collectionToArray;
 
-    public NullnessVisitor(BaseTypeChecker checker, boolean useFbc) {
+    /**
+     * Create a new NullnessVisitor.
+     *
+     * @param checker the checker to which this visitor belongs
+     */
+    public NullnessVisitor(BaseTypeChecker checker) {
         super(checker);
 
         NONNULL = atypeFactory.NONNULL;
@@ -94,11 +100,7 @@ public class NullnessVisitor
 
     @Override
     public NullnessAnnotatedTypeFactory createTypeFactory() {
-        // We need to directly access useFbc from the checker, because this method gets called
-        // by the superclass constructor and a field in this class would not be initialized
-        // yet. Oh the pain.
-        return new NullnessAnnotatedTypeFactory(
-                checker, ((AbstractNullnessChecker) checker).useFbc);
+        return new NullnessAnnotatedTypeFactory(checker);
     }
 
     @Override
@@ -114,12 +116,12 @@ public class NullnessVisitor
         for (AnnotationMirror anno : useType.getAnnotations()) {
             if (QualifierPolymorphism.isPolyAll(anno)) {
                 // ok.
-            } else if (containsSameIgnoringValues(initQuals, anno)) {
+            } else if (containsSameByName(initQuals, anno)) {
                 if (foundInit) {
                     return false;
                 }
                 foundInit = true;
-            } else if (containsSameIgnoringValues(nonNullQuals, anno)) {
+            } else if (containsSameByName(nonNullQuals, anno)) {
                 if (foundNonNull) {
                     return false;
                 }
@@ -143,24 +145,10 @@ public class NullnessVisitor
             }
         }
 
-        // The super implementation checks that useType is a subtype
-        // of declarationType. However, declarationType by default
-        // is NonNull, which would then forbid Nullable uses.
-        // Therefore, don't perform this check.
-        return true;
+        return super.isValidUse(declarationType, useType, tree);
     }
 
-    @Override
-    public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
-        if (tree.getKind() != Tree.Kind.TYPE_CAST && !type.hasAnnotation(NONNULL)) {
-            // TODO: casts are sometimes inferred as @Nullable.
-            // Find a way to correctly handle that case.
-            return false;
-        }
-        return super.isValidUse(type, tree);
-    }
-
-    private boolean containsSameIgnoringValues(
+    private boolean containsSameByName(
             Set<Class<? extends Annotation>> quals, AnnotationMirror anno) {
         for (Class<? extends Annotation> q : quals) {
             if (AnnotationUtils.areSameByClass(anno, q)) {
@@ -179,8 +167,8 @@ public class NullnessVisitor
             Element elem = TreeUtils.elementFromDeclaration((VariableTree) varTree);
             if (atypeFactory.fromElement(elem).hasEffectiveAnnotation(MONOTONIC_NONNULL)
                     && !checker.getLintOption(
-                            AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
-                            AbstractNullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
+                            NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
+                            NullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
                 return;
             }
         }
@@ -217,24 +205,27 @@ public class NullnessVisitor
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
-    /** Case 1: Check for null dereferencing */
+    /** Case 1: Check for null dereferencing. */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
-        boolean isType = node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE;
-        if (!TreeUtils.isSelfAccess(node) && !isType) {
+        Element e = TreeUtils.elementFromTree(node);
+        if (!(TreeUtils.isSelfAccess(node)
+                || node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE
+                // case 8. static member access
+                || ElementUtils.isStatic(e))) {
             checkForNullability(node.getExpression(), DEREFERENCE_OF_NULLABLE);
         }
         return super.visitMemberSelect(node, p);
     }
 
-    /** Case 2: Check for implicit {@code .iterator} call */
+    /** Case 2: Check for implicit {@code .iterator} call. */
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
         checkForNullability(node.getExpression(), ITERATING_NULLABLE);
         return super.visitEnhancedForLoop(node, p);
     }
 
-    /** Case 3: Check for array dereferencing */
+    /** Case 3: Check for array dereferencing. */
     @Override
     public Void visitArrayAccess(ArrayAccessTree node, Void p) {
         checkForNullability(node.getExpression(), ACCESSING_NULLABLE);
@@ -270,7 +261,7 @@ public class NullnessVisitor
         for (ExpressionTree dim : node.getDimensions()) {
             if (dim instanceof LiteralTree) {
                 Object val = ((LiteralTree) dim).getValue();
-                if (!(val instanceof Number) || !(Integer.valueOf(0).equals(val))) {
+                if (!(val instanceof Number) || !Integer.valueOf(0).equals(val)) {
                     isAllZeros = false;
                     break;
                 }
@@ -321,13 +312,13 @@ public class NullnessVisitor
         return ((IdentifierTree) rcvsize).getName() == ((IdentifierTree) rcvtoarray).getName();
     }
 
-    /** Case 4: Check for thrown exception nullness */
+    /** Case 4: Check for thrown exception nullness. */
     @Override
     protected void checkThrownExpression(ThrowTree node) {
         checkForNullability(node.getExpression(), THROWING_NULLABLE);
     }
 
-    /** Case 5: Check for synchronizing locks */
+    /** Case 5: Check for synchronizing locks. */
     @Override
     public Void visitSynchronized(SynchronizedTree node, Void p) {
         checkForNullability(node.getExpression(), LOCKING_NULLABLE);
@@ -376,8 +367,8 @@ public class NullnessVisitor
 
         // respect command-line option
         if (!checker.getLintOption(
-                AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
-                AbstractNullnessChecker.LINT_DEFAULT_REDUNDANTNULLCOMPARISON)) {
+                NullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
+                NullnessChecker.LINT_DEFAULT_REDUNDANTNULLCOMPARISON)) {
             return;
         }
 
@@ -385,15 +376,17 @@ public class NullnessVisitor
         if ((node.getKind() == Tree.Kind.EQUAL_TO || node.getKind() == Tree.Kind.NOT_EQUAL_TO)) {
             AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
-            if (leftOp.getKind() == Tree.Kind.NULL_LITERAL && right.hasEffectiveAnnotation(NONNULL))
+            if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
+                    && right.hasEffectiveAnnotation(NONNULL)) {
                 checker.report(Result.warning(KNOWN_NONNULL, rightOp.toString()), node);
-            else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
-                    && left.hasEffectiveAnnotation(NONNULL))
+            } else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
+                    && left.hasEffectiveAnnotation(NONNULL)) {
                 checker.report(Result.warning(KNOWN_NONNULL, leftOp.toString()), node);
+            }
         }
     }
 
-    /** Case 6: Check for redundant nullness tests Case 7: unboxing case: primitive operations */
+    /** Case 6: Check for redundant nullness tests Case 7: unboxing case: primitive operations. */
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
         final ExpressionTree leftOp = node.getLeftOperand();
@@ -409,14 +402,14 @@ public class NullnessVisitor
         return super.visitBinary(node, p);
     }
 
-    /** Case 7: unboxing case: primitive operation */
+    /** Case 7: unboxing case: primitive operation. */
     @Override
     public Void visitUnary(UnaryTree node, Void p) {
         checkForNullability(node.getExpression(), UNBOXING_OF_NULLABLE);
         return super.visitUnary(node, p);
     }
 
-    /** Case 7: unboxing case: primitive operation */
+    /** Case 7: unboxing case: primitive operation. */
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         // ignore String concatenation
@@ -427,11 +420,14 @@ public class NullnessVisitor
         return super.visitCompoundAssignment(node, p);
     }
 
-    /** Case 7: unboxing case: casting to a primitive */
+    /** Case 7: unboxing case: casting to a primitive. */
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
         if (isPrimitive(node) && !isPrimitive(node.getExpression())) {
-            checkForNullability(node.getExpression(), UNBOXING_OF_NULLABLE);
+            if (!checkForNullability(node.getExpression(), UNBOXING_OF_NULLABLE)) {
+                // If unboxing of nullable is issued, don't issue any other errors.
+                return null;
+            }
         }
         return super.visitTypeCast(node, p);
     }
@@ -541,7 +537,7 @@ public class NullnessVisitor
             for (AnnotationMirror a : atypeFactory.getAnnotatedType(t).getAnnotations()) {
                 // is this an annotation of the nullness checker?
                 boolean nullnessCheckerAnno =
-                        containsSameIgnoringValues(atypeFactory.getNullnessAnnotations(), a);
+                        containsSameByName(atypeFactory.getNullnessAnnotations(), a);
                 if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
                     // The type is not non-null => warning
                     checker.report(
@@ -584,5 +580,11 @@ public class NullnessVisitor
         // BasetypeVisitor forces annotations on exception parameters to be top,
         // but because exceptions can never be null, the Nullness Checker
         // does not require this check.
+    }
+
+    @Override
+    public Void visitAnnotation(AnnotationTree node, Void p) {
+        // All annotation arguments are non-null and initialized, so no need to check them.
+        return null;
     }
 }

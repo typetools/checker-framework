@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -16,6 +17,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -29,25 +31,25 @@ import org.checkerframework.javacutil.TypesUtils;
  * @checker_framework.manual #stub Using stub classes
  */
 public class StubGenerator {
-    /** The indentation for the class */
+    /** The indentation for the class. */
     private static final String INDENTION = "    ";
 
-    /** The output stream */
+    /** The output stream. */
     private final PrintStream out;
 
-    /** the current indentation for the line being processed */
+    /** the current indentation for the line being processed. */
     private String currentIndention = "";
 
-    /** the package of the class being processed */
+    /** the package of the class being processed. */
     private String currentPackage = null;
 
-    /** Constructs an instanceof {@code IndexGenerator} that outputs to {@code System.out}. */
+    /** Constructs a {@code StubGenerator} that outputs to {@code System.out}. */
     public StubGenerator() {
         this(System.out);
     }
 
     /**
-     * Constructs an instance of {@code IndexGenerator} that outputs to the provided output stream.
+     * Constructs a {@code StubGenerator} that outputs to the provided output stream.
      *
      * @param out the output stream
      */
@@ -56,7 +58,7 @@ public class StubGenerator {
     }
 
     /**
-     * Constructs an instance of {@code IndexGenerator} that outputs to the provided output stream.
+     * Constructs a {@code StubGenerator} that outputs to the provided output stream.
      *
      * @param out the output stream
      */
@@ -70,7 +72,7 @@ public class StubGenerator {
             return;
         }
 
-        String pkg = ElementUtils.getVerboseName((ElementUtils.enclosingPackage(elt)));
+        String pkg = ElementUtils.getVerboseName(ElementUtils.enclosingPackage(elt));
         if (!"".equals(pkg)) {
             currentPackage = pkg;
             currentIndention = "    ";
@@ -119,7 +121,9 @@ public class StubGenerator {
 
         // only output stub for classes or interfaces.  not enums
         if (typeElement.getKind() != ElementKind.CLASS
-                && typeElement.getKind() != ElementKind.INTERFACE) return;
+                && typeElement.getKind() != ElementKind.INTERFACE) {
+            return;
+        }
 
         String newPackageName =
                 ElementUtils.getVerboseName(ElementUtils.enclosingPackage(typeElement));
@@ -163,6 +167,14 @@ public class StubGenerator {
         List<TypeElement> innerClass = new ArrayList<>();
 
         indent();
+
+        List<? extends AnnotationMirror> teannos = typeElement.getAnnotationMirrors();
+        if (teannos != null && !teannos.isEmpty()) {
+            for (AnnotationMirror am : teannos) {
+                out.println(am);
+            }
+        }
+
         if (typeElement.getKind() == ElementKind.INTERFACE) {
             out.print("interface");
         } else if (typeElement.getKind() == ElementKind.CLASS) {
@@ -195,7 +207,11 @@ public class StubGenerator {
         if (!typeElement.getInterfaces().isEmpty()) {
             final boolean isInterface = typeElement.getKind() == ElementKind.INTERFACE;
             out.print(isInterface ? " extends " : " implements ");
-            out.print(formatType(formatList(typeElement.getInterfaces())));
+            List<String> ls = new ArrayList<>();
+            for (TypeMirror itf : typeElement.getInterfaces()) {
+                ls.add(formatType(itf));
+            }
+            out.print(formatList(ls));
         }
 
         out.println(" {");
@@ -227,7 +243,7 @@ public class StubGenerator {
         }
     }
 
-    /** Helper method that outputs the declaration of the member */
+    /** Helper method that outputs the declaration of the member. */
     private void printMember(Element member, List<TypeElement> innerClass) {
         if (member.getKind().isField()) {
             printFieldDecl((VariableElement) member);
@@ -250,6 +266,14 @@ public class StubGenerator {
         }
 
         indent();
+
+        List<? extends AnnotationMirror> veannos = field.getAnnotationMirrors();
+        if (veannos != null && !veannos.isEmpty()) {
+            for (AnnotationMirror am : veannos) {
+                out.println(am);
+            }
+        }
+
         // if protected, indicate that, but not public
         if (field.getModifiers().contains(Modifier.PROTECTED)) {
             out.print("protected ");
@@ -269,12 +293,20 @@ public class StubGenerator {
     }
 
     /**
-     * Helper method that outputs the method declaration for the given method
+     * Helper method that outputs the method declaration for the given method.
      *
      * <p>IT indicates whether the field is {@code protected}.
      */
     private void printMethodDecl(ExecutableElement method) {
         indent();
+
+        List<? extends AnnotationMirror> eeannos = method.getAnnotationMirrors();
+        if (eeannos != null && !eeannos.isEmpty()) {
+            for (AnnotationMirror am : eeannos) {
+                out.println(am);
+            }
+        }
+
         // if protected, indicate that, but not public
         if (method.getModifiers().contains(Modifier.PROTECTED)) {
             out.print("protected ");
@@ -303,7 +335,9 @@ public class StubGenerator {
 
         boolean isFirst = true;
         for (VariableElement param : method.getParameters()) {
-            if (!isFirst) out.print(", ");
+            if (!isFirst) {
+                out.print(", ");
+            }
             out.print(formatType(param.asType()));
             out.print(' ');
             out.print(param.getSimpleName());
@@ -314,18 +348,22 @@ public class StubGenerator {
 
         if (!method.getThrownTypes().isEmpty()) {
             out.print(" throws ");
-            out.print(formatType(method.getThrownTypes()));
+            List<String> ltt = new ArrayList<>();
+            for (TypeMirror tt : method.getThrownTypes()) {
+                ltt.add(formatType(tt));
+            }
+            out.print(formatList(ltt));
         }
         out.println(';');
     }
 
-    /** Indent the current line */
+    /** Indent the current line. */
     private void indent() {
         out.print(currentIndention);
     }
 
     /**
-     * Return a string representation of the list in the form of {@code item1, item2, item3, ...}
+     * Return a string representation of the list in the form of {@code item1, item2, item3, ...}.
      *
      * <p>instead of the default representation, {@code [item1, item2, item3, ...]}
      */
@@ -333,28 +371,31 @@ public class StubGenerator {
         StringBuilder sb = new StringBuilder();
         boolean isFirst = true;
         for (Object o : lst) {
-            if (!isFirst) sb.append(", ");
+            if (!isFirst) {
+                sb.append(", ");
+            }
             sb.append(o);
             isFirst = false;
         }
         return sb.toString();
     }
 
-    /** Returns true if the element is public or protected element */
+    /** Returns true if the element is public or protected element. */
     private boolean isPublicOrProtected(Element element) {
         return element.getModifiers().contains(Modifier.PUBLIC)
                 || element.getModifiers().contains(Modifier.PROTECTED);
     }
 
-    /** outputs the simple name of the type */
-    private String formatType(Object typeRep) {
+    /** Outputs the simple name of the type. */
+    private String formatType(TypeMirror typeRep) {
         StringTokenizer tokenizer = new StringTokenizer(typeRep.toString(), "()<>[], ", true);
         StringBuilder sb = new StringBuilder();
 
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
-            if (token.length() == 1 || token.lastIndexOf('.') == -1) sb.append(token);
-            else {
+            if (token.length() == 1 || token.lastIndexOf('.') == -1) {
+                sb.append(token);
+            } else {
                 int index = token.lastIndexOf('.');
                 sb.append(token.substring(index + 1));
             }
@@ -365,7 +406,7 @@ public class StubGenerator {
     public static void main(String[] args) {
         if (args.length != 1) {
             System.out.println("Usage:");
-            System.out.println("    java IndexGenerator [class or package name]");
+            System.out.println("    java StubGenerator [class or package name]");
             return;
         }
 

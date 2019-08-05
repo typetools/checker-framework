@@ -115,7 +115,7 @@ INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 # The central repositories for Checker Framework related projects
 LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
 LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
-LIVE_PLUME_LIB = "https://github.com/mernst/plume-lib"
+LIVE_PLUME_SCRIPTS = "https://github.com/plume-lib/plume-scripts"
 LIVE_CHECKLINK = "https://github.com/plume-lib/checklink"
 LIVE_PLUME_BIB = "https://github.com/mernst/plume-bib"
 LIVE_STUBPARSER = "https://github.com/typetools/stubparser"
@@ -134,21 +134,22 @@ CHECKER_BIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
 CFLOGO = os.path.join(CHECKER_FRAMEWORK, 'docs', 'logo', 'Logo', 'CFLogo.png')
 CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 
-CF_VERSION = execute("./gradlew -q version", True, True, TMP_DIR + "/checker-framework").strip()
+CF_VERSION = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework").strip()
 
 CHECKER_BINARY = os.path.join(CHECKER_BIN_DIR, 'checker.jar')
 CHECKER_LIBS_DIR = os.path.join(CHECKER_FRAMEWORK, "checker", "build", "libs")
-CHECKER_SOURCE = os.path.join(CHECKER_LIBS_DIR, 'checker-'+CF_VERSION+'-source.jar')
-CHECKER_JAVADOC = os.path.join(CHECKER_LIBS_DIR, 'checker-'+CF_VERSION+'-javadoc.jar')
+CHECKER_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-source.jar')
+CHECKER_JAVADOC = os.path.join(CHECKER_BIN_DIR, 'checker-javadoc.jar')
 
 CHECKER_QUAL = os.path.join(CHECKER_BIN_DIR, 'checker-qual.jar')
 CHECKER_QUAL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "checker-qual", "build", "libs")
 CHECKER_QUAL_SOURCE = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-'+CF_VERSION+'-source.jar')
 CHECKER_QUAL_JAVADOC_JAR = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-'+CF_VERSION+'-javadoc.jar')
 
-CHECKER_COMPAT_QUAL = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-compat-qual-'+CF_VERSION+'.jar')
-CHECKER_COMPAT_QUAL_SOURCE = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-compat-qual-'+CF_VERSION+'-source.jar')
-CHECKER_COMPAT_QUAL_JAVADOC_JAR = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-compat-qual-'+CF_VERSION+'-javadoc.jar')
+CHECKER_QUAL_ANDROID_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "checker-qual-android", "build", "libs")
+CHECKER_QUAL_ANDROID = os.path.join(CHECKER_QUAL_ANDROID_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'.jar')
+CHECKER_QUAL_ANDROID_SOURCE = os.path.join(CHECKER_QUAL_ANDROID_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'-source.jar')
+CHECKER_QUAL_ANDROID_JAVADOC_JAR = os.path.join(CHECKER_QUAL_ANDROID_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'-javadoc.jar')
 
 JAVACUTIL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "javacutil", "build", "libs")
 JAVACUTIL_BINARY = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-"+CF_VERSION+".jar")
@@ -160,16 +161,14 @@ DATAFLOW_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+".jar")
 DATAFLOW_SOURCE_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-source.jar")
 DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-javadoc.jar")
 
-TESTLIB_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "util", "build", "libs")
-TESTLIB_BINARY = os.path.join(TESTLIB_DIST_DIR, "testlib-"+CF_VERSION+".jar")
-TESTLIB_SOURCE_JAR = os.path.join(TESTLIB_DIST_DIR, "testlib-"+CF_VERSION+"-source.jar")
-TESTLIB_JAVADOC_JAR = os.path.join(TESTLIB_DIST_DIR, "testlib-"+CF_VERSION+"-javadoc.jar")
+FRAMEWORKTEST_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework-test", "build", "libs")
+FRAMEWORKTEST_BINARY = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+".jar")
+FRAMEWORKTEST_SOURCE_JAR = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+"-source.jar")
+FRAMEWORKTEST_JAVADOC_JAR = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+"-javadoc.jar")
 
 JDK8_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar')
 
 CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog.txt')
-
-JSR308_LANGTOOLS = os.path.join(BUILD_DIR, 'jsr308-langtools')
 
 ANNO_TOOLS = os.path.join(BUILD_DIR, 'annotation-tools')
 ANNO_FILE_UTILITIES = os.path.join(ANNO_TOOLS, 'annotation-file-utilities')
@@ -177,7 +176,7 @@ AFU_CHANGELOG = os.path.join(ANNO_FILE_UTILITIES, 'changelog.html')
 AFU_TAG_PREFIXES = [""]
 AFU_MANUAL = os.path.join(ANNO_FILE_UTILITIES, 'annotation-file-utilities.html')
 
-PLUME_LIB = os.path.join(BUILD_DIR, 'plume-lib')
+PLUME_SCRIPTS = os.path.join(BUILD_DIR, 'plume-scripts')
 CHECKLINK = os.path.join(BUILD_DIR, 'checklink')
 PLUME_BIB = os.path.join(BUILD_DIR, 'plume-bib')
 STUBPARSER = os.path.join(BUILD_DIR, 'stubparser')
@@ -189,18 +188,18 @@ MAVEN_POMS_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'poms')
 CHECKER_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'checkerPom.xml')
 CHECKER_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQualPom.xml')
 CHECKER_QUAL7_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQual7Pom.xml')
-CHECKER_COMPAT_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerCompatQualPom.xml')
+CHECKER_QUAL_ANDROID_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQualAndroidPom.xml')
 
 JDK8_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'jdk8Pom.xml')
 
 MAVEN_RELEASE_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'release')
 CHECKER_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerReleasePom.xml')
 CHECKER_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualReleasePom.xml')
-CHECKER_COMPAT_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerCompatQualReleasePom.xml')
+CHECKER_QUAL_ANDROID_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualAndroidReleasePom.xml')
 JDK8_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml')
 JAVACUTIL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml')
 DATAFLOW_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowReleasePom.xml')
-TESTLIB_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'testlibReleasePom.xml')
+FRAMEWORKTEST_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'frameworktestReleasePom.xml')
 
 BUILD_REPOS = (CHECKER_FRAMEWORK, ANNO_TOOLS)
 INTERM_REPOS = (INTERM_CHECKER_REPO, INTERM_ANNO_REPO)
@@ -228,18 +227,17 @@ LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
 
 CURRENT_DATE = datetime.date.today()
 
-os.environ['JSR308'] = BUILD_DIR
+os.environ['PARENT_DIR'] = BUILD_DIR
 os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
 perl_libs = TMP_DIR + "/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
 # Environment variables for tools needed during the build
-os.environ['PLUME_LIB'] = PLUME_LIB
+os.environ['PLUME_SCRIPTS'] = PLUME_SCRIPTS
 os.environ['CHECKLINK'] = CHECKLINK
 os.environ['BIBINPUTS'] = '.:' + PLUME_BIB
 os.environ['TEXINPUTS'] = '.:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/usr/share/texmf/tex/latex/hevea/:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:'
 os.environ['PERLLIB'] = getAndAppend('PERLLIB', ":")  + perl_libs
 os.environ['PERL5LIB'] = getAndAppend('PERL5LIB', ":") + perl_libs
 # Still needed for santiy checks
-os.environ['JAVA_7_HOME'] = '/scratch/secs-jenkins/java/jdk1.7.0'
 os.environ['JAVA_8_HOME'] = '/usr/lib/jvm/java-1.8.0-openjdk/'
 os.environ['JAVA_HOME'] = os.environ['JAVA_8_HOME']
 
@@ -249,7 +247,7 @@ if EDITOR is None:
 
 PATH = os.environ['JAVA_HOME'] + "/bin:/scratch/secs-jenkins/tools/hevea-1.10/bin/:" + os.environ['PATH']
 PATH = PATH + ":/usr/bin:"
-PATH = PATH + ":" + PLUME_LIB + "/bin"
+PATH = PATH + ":" + PLUME_SCRIPTS
 PATH = PATH + ":" + CHECKLINK
 PATH = PATH + ":/homes/gws/mernst/.local/bin/:." # for html5validator
 os.environ['PATH'] = PATH

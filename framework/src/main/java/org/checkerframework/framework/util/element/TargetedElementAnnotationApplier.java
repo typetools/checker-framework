@@ -9,7 +9,7 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 
 /**
@@ -116,23 +116,33 @@ abstract class TargetedElementAnnotationApplier {
             }
         }
         if (!remaining.isEmpty()) {
-            ErrorReporter.errorAbort(
-                    this.getClass().getName()
-                            + ".handleInvalid: "
+            StringBuilder msg = new StringBuilder();
+            msg.append(
+                    "handleInvalid(this="
+                            + this.getClass().getName()
+                            + "):"
+                            + "\n"
                             + "Invalid variable and element passed to extractAndApply; type: "
                             + type
-                            + ","
-                            + " element: "
+                            + "\n"
+                            + "  element: "
                             + element
                             + " (kind: "
                             + element.getKind()
-                            + "), invalid annotations: "
-                            + PluginUtil.join(", ", remaining)
-                            + "\n"
+                            + "), invalid annotations: ");
+            List<String> remainingInfo = new ArrayList<>(remaining.size());
+            for (Attribute.TypeCompound r : remaining) {
+                remainingInfo.add(r.toString() + " (" + r.position + ")");
+            }
+            msg.append(PluginUtil.join(", ", remainingInfo));
+            msg.append(
+                    "\n"
                             + "Targeted annotations: "
                             + PluginUtil.join(", ", annotatedTargets())
-                            + "; Valid annotations: "
+                            + "\n"
+                            + "Valid annotations: "
                             + PluginUtil.join(", ", validTargets()));
+            throw new BugInCF(msg.toString());
         }
     }
 
@@ -183,7 +193,7 @@ abstract class TargetedElementAnnotationApplier {
      */
     public void extractAndApply() {
         if (!isAccepted()) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "LocalVariableExtractor.extractAndApply: "
                             + "Invalid variable and element passed to "
                             + this.getClass().getName()

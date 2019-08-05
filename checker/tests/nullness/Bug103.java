@@ -35,7 +35,7 @@ public class Bug103 extends HR {
     // Crazy: remove ids.length and it compiles
     // replace return type List with ArrayList and it compiles
     List<CC> m3(CC c) {
-        ArrayList<CC> lc = new ArrayList<CC>(ids.length);
+        ArrayList<CC> lc = new ArrayList<>(ids.length);
         return lc;
     }
 

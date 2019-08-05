@@ -6,9 +6,11 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -31,25 +33,24 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.NonRaw;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
@@ -57,7 +58,6 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -67,16 +67,29 @@ public class NullnessAnnotatedTypeFactory
         extends InitializationAnnotatedTypeFactory<
                 NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
 
-    /** Annotation constants */
-    protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL;
+    /** The @{@link NonNull} annotation. */
+    protected final AnnotationMirror NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
+    /** The @{@link Nullable} annotation. */
+    protected final AnnotationMirror NULLABLE =
+            AnnotationBuilder.fromClass(elements, Nullable.class);
+    /** The @{@link PolyNull} annotation. */
+    protected final AnnotationMirror POLYNULL =
+            AnnotationBuilder.fromClass(elements, PolyNull.class);
+    /** The @{@link MonotonicNonNull} annotation. */
+    protected final AnnotationMirror MONOTONIC_NONNULL =
+            AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
 
+    /** Handles invocations of {@link java.lang.System#getProperty(String)}. */
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
+
+    /** Determines the nullness type of calls to {@link java.util.Collection#toArray()}. */
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
-    /** Cache for the nullness annotations */
+    /** Cache for the nullness annotations. */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
-    // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
+    // List is in alphabetical order.  If you update it, also update
+    // ../../../../../../../../docs/manual/nullness-checker.tex .
     /** Aliases for {@code @Nonnull}. */
     private static final List<String> NONNULL_ALIASES =
             Arrays.asList(
@@ -84,14 +97,24 @@ public class NullnessAnnotatedTypeFactory
                     "android.annotation.NonNull",
                     // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/android/support/annotation/NonNull.java
                     "android.support.annotation.NonNull",
+                    // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/androidx/annotation/NonNull.java
+                    "androidx.annotation.NonNull",
+                    // https://android.googlesource.com/platform/tools/metalava/+/master/stub-annotations/src/main/java/androidx/annotation/RecentlyNonNull.java
+                    "androidx.annotation.RecentlyNonNull",
                     "com.sun.istack.internal.NotNull",
                     // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/NonNull.html
                     "edu.umd.cs.findbugs.annotations.NonNull",
+                    // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/NonNull.java
+                    "io.reactivex.annotations.NonNull",
+                    // https://jcp.org/en/jsr/detail?id=305
                     "javax.annotation.Nonnull",
                     // https://javaee.github.io/javaee-spec/javadocs/javax/validation/constraints/NotNull.html
                     "javax.validation.constraints.NotNull",
                     // https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/NonNull.java
                     "lombok.NonNull",
+                    // https://search.maven.org/search?q=a:checker-compat-qual
+                    "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
+                    "org.checkerframework.checker.nullness.compatqual.NonNullType",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
                     "org.eclipse.jdt.annotation.NonNull",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/NonNull.java
@@ -105,7 +128,8 @@ public class NullnessAnnotatedTypeFactory
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/NonNull.java
                     "org.springframework.lang.NonNull");
 
-    // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
+    // List is in alphabetical order.  If you update it, also update
+    // ../../../../../../../../docs/manual/nullness-checker.tex .
     /** Aliases for {@code @Nullable}. */
     private static final List<String> NULLABLE_ALIASES =
             Arrays.asList(
@@ -113,6 +137,10 @@ public class NullnessAnnotatedTypeFactory
                     "android.annotation.Nullable",
                     // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/android/support/annotation/Nullable.java
                     "android.support.annotation.Nullable",
+                    // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/androidx/annotation/Nullable.java
+                    "androidx.annotation.Nullable",
+                    // https://android.googlesource.com/platform/tools/metalava/+/master/stub-annotations/src/main/java/androidx/annotation/RecentlyNullable.java
+                    "androidx.annotation.RecentlyNullable",
                     "com.sun.istack.internal.Nullable",
                     // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/CheckForNull.html
                     "edu.umd.cs.findbugs.annotations.CheckForNull",
@@ -122,15 +150,21 @@ public class NullnessAnnotatedTypeFactory
                     "edu.umd.cs.findbugs.annotations.PossiblyNull",
                     // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/UnknownNullness.html
                     "edu.umd.cs.findbugs.annotations.UnknownNullness",
+                    // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/Nullable.java
+                    "io.reactivex.annotations.Nullable",
+                    // https://jcp.org/en/jsr/detail?id=305
                     "javax.annotation.CheckForNull",
                     "javax.annotation.Nullable",
+                    // https://search.maven.org/search?q=a:checker-compat-qual
+                    "org.checkerframework.checker.nullness.compatqual.NullableDecl",
+                    "org.checkerframework.checker.nullness.compatqual.NullableType",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/Nullable.html
                     "org.eclipse.jdt.annotation.Nullable",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/Nullable.java
                     "org.eclipse.jgit.annotations.Nullable",
                     // https://github.com/JetBrains/intellij-community/blob/master/platform/annotations/java8/src/org/jetbrains/annotations/Nullable.java
                     "org.jetbrains.annotations.Nullable",
-                    // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/NonNull.java
+                    // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
                     "org.jmlspecs.annotation.Nullable",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
                     "org.netbeans.api.annotations.common.CheckForNull",
@@ -141,13 +175,9 @@ public class NullnessAnnotatedTypeFactory
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
                     "org.springframework.lang.Nullable");
 
-    public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
-        super(checker, useFbc);
-
-        NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
-        NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
-        POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
-        MONOTONIC_NONNULL = AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
+    /** Creates NullnessAnnotatedTypeFactory. */
+    public NullnessAnnotatedTypeFactory(BaseTypeChecker checker) {
+        super(checker);
 
         Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
         tempNullnessAnnos.add(NonNull.class);
@@ -162,22 +192,14 @@ public class NullnessAnnotatedTypeFactory
 
         // Add compatibility annotations:
         addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.NullableDecl.class, NULLABLE);
+                "org.checkerframework.checker.nullness.compatqual.PolyNullDecl", POLYNULL);
         addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.PolyNullDecl.class, POLYNULL);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.NonNullDecl.class, NONNULL);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl.class,
+                "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl",
                 MONOTONIC_NONNULL);
         addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.NullableType.class, NULLABLE);
+                "org.checkerframework.checker.nullness.compatqual.PolyNullType", POLYNULL);
         addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.PolyNullType.class, POLYNULL);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.NonNullType.class, NONNULL);
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType.class,
+                "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
 
         systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
@@ -190,36 +212,17 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        // NullnessATF is used by both NullnessChecker and NullnessRawnessChecker, load the correct
-        // set of qualifiers here
-        AbstractNullnessChecker ckr = (AbstractNullnessChecker) checker;
-        // if useFbc is true, then it is the NullnessChecker
-        if (ckr.useFbc) {
-            return new LinkedHashSet<>(
-                    Arrays.asList(
-                            Nullable.class,
-                            MonotonicNonNull.class,
-                            NonNull.class,
-                            UnderInitialization.class,
-                            Initialized.class,
-                            UnknownInitialization.class,
-                            FBCBottom.class,
-                            PolyNull.class,
-                            PolyAll.class));
-        }
-        // otherwise, it is the NullnessRawnessChecker
-        else {
-            return new LinkedHashSet<>(
-                    Arrays.asList(
-                            Nullable.class,
-                            MonotonicNonNull.class,
-                            NonNull.class,
-                            NonRaw.class,
-                            Raw.class,
-                            // PolyRaw.class, //TODO: support PolyRaw in the future
-                            PolyNull.class,
-                            PolyAll.class));
-        }
+        return new LinkedHashSet<>(
+                Arrays.asList(
+                        Nullable.class,
+                        MonotonicNonNull.class,
+                        NonNull.class,
+                        UnderInitialization.class,
+                        Initialized.class,
+                        UnknownInitialization.class,
+                        FBCBottom.class,
+                        PolyNull.class,
+                        PolyAll.class));
     }
 
     /**
@@ -292,15 +295,13 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
-            MethodInvocationTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                super.methodFromUse(tree);
-        AnnotatedExecutableType method = mfuPair.first;
+    public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
+        ParameterizedExecutableType mType = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mType.executableType;
 
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
-        return mfuPair;
+        return mType;
     }
 
     @Override
@@ -327,13 +328,13 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        ImplicitsTypeAnnotator implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
-        implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
-        implicitsTypeAnnotator.addTypeClass(
+        DefaultForTypeAnnotator defaultForTypeAnnotator = new DefaultForTypeAnnotator(this);
+        defaultForTypeAnnotator.addAtmClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
+        defaultForTypeAnnotator.addAtmClass(
                 AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
         return new ListTypeAnnotator(
                 new PropagationTypeAnnotator(this),
-                implicitsTypeAnnotator,
+                defaultForTypeAnnotator,
                 new NullnessTypeAnnotator(this),
                 new CommitmentTypeAnnotator(this));
     }
@@ -342,59 +343,12 @@ public class NullnessAnnotatedTypeFactory
     protected TreeAnnotator createTreeAnnotator() {
         // Don't call super.createTreeAnnotator because the default tree annotators are incorrect
         // for the Nullness Checker.
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, NONNULL);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, NONNULL);
-
         return new ListTreeAnnotator(
                 // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
-                new NullnessPropagationAnnotator(this),
-                implicitsTreeAnnotator,
+                new NullnessPropagationTreeAnnotator(this),
+                new LiteralTreeAnnotator(this),
                 new NullnessTreeAnnotator(this),
                 new CommitmentTreeAnnotator(this));
-    }
-
-    /**
-     * If the element is {@link NonNull} when used in a static member access, modifies the element's
-     * type (by adding {@link NonNull}).
-     *
-     * @param elt the element being accessed
-     * @param type the type of the element {@code elt}
-     */
-    private void annotateIfStatic(Element elt, AnnotatedTypeMirror type) {
-        if (elt == null) {
-            return;
-        }
-
-        if (elt.getKind().isClass()
-                || elt.getKind().isInterface()
-                // Workaround for System.{out,in,err} issue: assume all static
-                // fields in java.lang.System are nonnull.
-                || isSystemField(elt)) {
-            type.replaceAnnotation(NONNULL);
-        }
-    }
-
-    private static boolean isSystemField(Element elt) {
-        if (!elt.getKind().isField()) {
-            return false;
-        }
-
-        if (!ElementUtils.isStatic(elt) || !ElementUtils.isFinal(elt)) {
-            return false;
-        }
-
-        VariableElement var = (VariableElement) elt;
-
-        // Heuristic: if we have a static final field in a system package,
-        // treat it as NonNull (many like Boolean.TYPE and System.out
-        // have constant value null but are set by the VM).
-        boolean inJavaPackage =
-                ElementUtils.getQualifiedClassName(var).toString().startsWith("java.");
-
-        return (var.getConstantValue() != null
-                || var.getSimpleName().contentEquals("class")
-                || inJavaPackage);
     }
 
     /**
@@ -403,9 +357,10 @@ public class NullnessAnnotatedTypeFactory
      *
      * <p>Would this be valid to move into CommitmentTreeAnnotator.
      */
-    protected static class NullnessPropagationAnnotator extends PropagationTreeAnnotator {
+    protected static class NullnessPropagationTreeAnnotator extends PropagationTreeAnnotator {
 
-        public NullnessPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
+        /** Create the NullnessPropagationTreeAnnotator. */
+        public NullnessPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 
@@ -417,6 +372,20 @@ public class NullnessAnnotatedTypeFactory
         @Override
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
             return null;
+        }
+
+        @Override
+        public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
+            if (type.getKind().isPrimitive()) {
+                AnnotationMirror NONNULL = ((NullnessAnnotatedTypeFactory) atypeFactory).NONNULL;
+                // If a @Nullable expression is cast to a primitive, then an unboxing.of.nullable
+                // error is issued.  Treat the cast as if it were annotated as @NonNull to avoid an
+                // type.invalid.annotations.on.use error.
+                if (!type.isAnnotatedInHierarchy(NONNULL)) {
+                    type.addAnnotation(NONNULL);
+                }
+            }
+            return super.visitTypeCast(node, type);
         }
     }
 
@@ -432,8 +401,6 @@ public class NullnessAnnotatedTypeFactory
 
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
-            // case 8: class in static member access
-            annotateIfStatic(elt, type);
             return null;
         }
 
@@ -454,9 +421,6 @@ public class NullnessAnnotatedTypeFactory
 
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
-
-            // case 8. static method access
-            annotateIfStatic(elt, type);
 
             if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
                 // TODO: It's surprising that we have to do this in
@@ -495,6 +459,23 @@ public class NullnessAnnotatedTypeFactory
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
+            return null;
+        }
+
+        @Override
+        public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+            // The result of newly allocated structures is always non-null.
+            if (!type.isAnnotatedInHierarchy(NONNULL)) {
+                type.replaceAnnotation(NONNULL);
+            }
+
+            // The most precise element type for `new Object[] {null}` is @FBCBottom, but
+            // the most useful element type is @Initialized (which is also accurate).
+            AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
+            AnnotatedTypeMirror componentType = arrayType.getComponentType();
+            if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
+                componentType.replaceAnnotation(INITIALIZED);
+            }
             return null;
         }
     }

@@ -3,7 +3,7 @@
 
 // Design space:
 //  try
-//    ..
+//    ...
 //  catch: 7 varieties
 //    * absent
 //    * catch Throwable

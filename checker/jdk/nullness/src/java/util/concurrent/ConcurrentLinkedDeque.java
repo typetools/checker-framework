@@ -51,6 +51,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 
 /**
  * An unbounded concurrent {@linkplain Deque deque} based on linked nodes.
@@ -1244,7 +1245,8 @@ public class ConcurrentLinkedDeque<E extends @NonNull Object>
      *
      * @return an array containing all of the elements in this deque
      */
-    public Object[] toArray() {
+    @SideEffectFree
+    public @PolyNull Object[] toArray(ConcurrentLinkedDeque<@PolyNull E> this) {
         return toArrayList().toArray();
     }
 
@@ -1285,6 +1287,7 @@ public class ConcurrentLinkedDeque<E extends @NonNull Object>
      *         this deque
      * @throws NullPointerException if the specified array is null
      */
+    @SideEffectFree
     public <T> T[] toArray(T[] a) {
         return toArrayList().toArray(a);
     }
@@ -1298,6 +1301,7 @@ public class ConcurrentLinkedDeque<E extends @NonNull Object>
      *
      * @return an iterator over the elements in this deque in proper sequence
      */
+    @SideEffectFree
     public Iterator<E> iterator() {
         return new Itr();
     }
@@ -1506,6 +1510,7 @@ public class ConcurrentLinkedDeque<E extends @NonNull Object>
      * @return a {@code Spliterator} over the elements in this deque
      * @since 1.8
      */
+    @SideEffectFree
     public Spliterator<E> spliterator() {
         return null;
         /*

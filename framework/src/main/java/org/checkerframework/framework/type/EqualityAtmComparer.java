@@ -27,7 +27,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void v) {
         throw new UnsupportedOperationException(
-                "Comparing two different subclasses of AnnotatedTypeMirror!\n"
+                "Comparing two different subclasses of AnnotatedTypeMirror.\n"
                         + "type1="
                         + type1
                         + "\n"
@@ -51,6 +51,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
             return true;
         }
 
+        @SuppressWarnings("TypeEquals") // TODO
         boolean sameUnderlyingType = type1.getUnderlyingType().equals(type2.getUnderlyingType());
         return sameUnderlyingType && arePrimeAnnosEqual(type1, type2);
     }
@@ -67,7 +68,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
         return compare(type1, type2) && reduce(true, super.scan(type1, type2, v));
     }
 
-    /** Used to combine the results from component types or a type and its component types */
+    /** Used to combine the results from component types or a type and its component types. */
     @Override
     protected Boolean reduce(Boolean r1, Boolean r2) {
         if (r1 == null) {

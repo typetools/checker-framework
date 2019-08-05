@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.Pair;
 
 /**
  * Records any mapping between the type parameters of a subtype to the corresponding type parameters
- * of a supertype. e.g., Suppose we have the following classes:
+ * of a supertype. For example, suppose we have the following classes:
  *
  * <pre>{@code
  * class Map<M1,M2>
@@ -307,7 +307,7 @@ public class TypeArgumentMapper {
 
     /**
      * Maps a class or interface's declaration element to the type it would be if viewed from a
-     * subtype class or interface
+     * subtype class or interface.
      *
      * <p>e.g. suppose we have the elements for the declarations:
      *

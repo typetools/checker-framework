@@ -47,10 +47,7 @@ figures-all:
 	${MAKE} -C figures all
 
 manual.pdf: bib-update figures-all check-labels
-	pdflatex manual.tex
-	bibtex -min-crossrefs=9999 manual
-	pdflatex manual.tex
-	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
+	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 html: manual.html
 manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
@@ -59,19 +56,23 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 # Also, you need ImageMagick 6.8.0-2 Beta or later to avoid a bug.
 	imagen manual
 	./add-favicon-to-manual
-# The following three lines are only necessary when using Hevea before version 2.04
+# The following three lines are only necessary when using Hevea before version 2.04.
 # With version 2.04 they have no effect but do no harm.
 	\mv -f manual.html manual.html-with-htoc
 	./hevea-retarget-crossrefs < manual.html-with-htoc > manual.html
 	\rm -f manual.html-with-htoc
-# The below is not necessary since Hevea mkes good tables of contents itself.
-#	perl -pi -e 's/(<!--TOC section Introduction-->)/$$1\n\n<p>Contents:<\/p>\n<!-- start toc.  do not edit; run html-update-toc instead -->\n<!-- end toc -->\n\n<br>\n/' manual.html
-#	html-update-toc manual.html
 # Add CSS styling, since \newstyle doesn't work for me.
 	sed -i -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
+# Add CSS styling for some links, since \ahrefloc doesn't permit styling
+	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
+
+.PHONY: contributors.tex
+# The `git-authors` script is in https://github.com/plume-lib/plume-scripts
+contributors.tex:
+	git-authors --latex --punctuation > contributors.tex
 
 ../api:
-	cd .. && ln -fs ../checker/api api
+	cd ../.. && ./gradlew allJavadoc
 
 CFLogo.png: ../logo/Logo/CFLogo.png
 	cp -p $< $@
@@ -79,18 +80,14 @@ CFLogo.png: ../logo/Logo/CFLogo.png
 favicon-checkerframework.png: ../logo/Checkmark/CFCheckmark_favicon.png
 	cp -p $< $@
 
-# Ensure that every section of the manual has a \label{} command.
+# Don't use \section; use \sectionAndLabel instead
 .PHONY: check-labels
 check-labels:
-	if ( grep -n '^\\\(chapter\|\(sub\)*section\|paragraph\){' *.tex | grep -v "{.*\\label{.*}}" ) ; then false ; else true ; fi
+	if ( grep -n '^\\\(chapter\|\(sub\)*section\|paragraph\){' *.tex ) ; then false ; else true ; fi
 
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:
-ifdef PLUMEBIB
-	ln -s ${PLUMEBIB} bib
-else
 	git clone https://github.com/mernst/plume-bib.git bib
-endif
 .PHONY: bib-update
 bib-update: bib
 # Even if this command fails, it does not terminate the make job.

@@ -4,12 +4,12 @@ import com.sun.source.tree.NewClassTree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node for new object creation
+ * A node for new object creation.
  *
  * <pre>
  *   <em>new constructor(arg1, arg2, ...)</em>
@@ -85,7 +85,7 @@ public class ObjectCreationNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ObjectCreationNode)) {
+        if (!(obj instanceof ObjectCreationNode)) {
             return false;
         }
         ObjectCreationNode other = (ObjectCreationNode) obj;
@@ -99,11 +99,7 @@ public class ObjectCreationNode extends Node {
 
     @Override
     public int hashCode() {
-        int hash = HashCodeUtils.hash(constructor);
-        for (Node arg : arguments) {
-            hash = HashCodeUtils.hash(hash, arg.hashCode());
-        }
-        return hash;
+        return Objects.hash(constructor, arguments);
     }
 
     @Override

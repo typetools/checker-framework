@@ -12,12 +12,13 @@ How to run all the tests for the Checker Framework
   ./gradlew allTests
 
 Other Gradle tasks also exist to run a subset of the tests; for example,
+  # Run from the checker-framework directory:
+  ./gradlew :checker:NullnessFbcTest
   # Run from the checker directory:
-  ./gradlew NullnessFBcTest
-  ./gradlew allTests
-
+  ../gradlew NullnessFbcTest
   # To see all tasks
   ./gradlew tasks
+
 
 How to run just one test for the Checker Framework
 ==================================================
@@ -39,7 +40,7 @@ or (to build distribution files)
 or, less commonly (to rebuild the JDK):
 
   cd $CHECKERFRAMEWORK/checker/tests/framework
-  (cd $CHECKERFRAMEWORK && ./gradlew buildJdk assemble) && $CHECKERFRAMEWORK/checker/bin/javac -processor TestChecker -implicit:class GenericTest10.java
+  (cd $CHECKERFRAMEWORK && ./gradlew buildJdk assemble -PuseLocalJdk) && $CHECKERFRAMEWORK/checker/bin/javac -processor TestChecker -implicit:class GenericTest10.java
 
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from a file such as
@@ -66,10 +67,18 @@ However, its tests are more like end-to-end system tests than unit tests.
 A checker test case has two parts:
   1. the Java class to be compiled, and
   2. a set of expected errors.
-Both parts can be expressed in one Java file.
+Both parts can be expressed in one Java file (see below).
 
 Classes in checker-framework/framework/tests/src/tests/lib can be referenced by
 tests to check behavior related to unchecked bytecode.
+
+By convention, when a test is about an issue in the issue tracker, we write
+a comment at the top of the file, in this format:
+
+  // Test case for issue 266:
+  // https://github.com/typetools/checker-framework/issues/266
+
+  // @skip-test until the issue is fixed
 
 
 Specifying expected warnings and errors
@@ -97,13 +106,17 @@ or by creating the test and observing the failure.
 To indicate the expected failure, insert the line
   // :: error: (<error-message-key>)
 directly preceding the expected error line.
-If multiple errors are expected on a single line, duplicate everthing
-except the "//" comment characters, as in
-  // :: error: (<error-message-key1>) :: error: (<error-message-key2>)
 If a warning rather than an error is expected, insert the line
   // :: warning: (<warning-message-key>)
 If a stub parser warning is expected, insert the line
-//warning: StubParser: <stub parser warning>
+  //warning: StubParser: <stub parser warning>
+If multiple errors are expected on a single line, duplicate everthing
+except the "//" comment characters, as in
+  // :: error: (<error-message-key1>) :: error: (<error-message-key2>)
+If the expected failures line would be very long, you may break it across
+multiple comment lines.
+It is permitted to write a "// ::" comment after "{" that was at the end of
+a line, to indicate a warning on the line immediately after the "{".
 
 So the final test case would be:
 
@@ -136,23 +149,16 @@ a warning from the same line of code:
   // :: error: (assignment.type.incompatible) :: warning: (cast.unsafe)
   @Regex(3) String s2 = (@Regex(2) String) s;
 
-As a alternative, expected errors can be specified in a separate file
-using the .out file extension.  These files contain lines of the following
-format:
+
+As an alternative to writing expected errors in the source file using "// ::"
+syntax, expected errors can be specified in a separate file using the .out
+file extension.  These files contain lines of the following format:
 
 :19: error: (dereference.of.nullable)
 
 The number between the colons is the line number of the expected error
 message.  This format is harder to maintain, and we suggest using the
 in-line comment format.
-
-By convention, when a test is about an issue in the issue tracker, we write
-a comment at the top of the file, in this format:
-
-  // Test case for issue 266:
-  // https://github.com/typetools/checker-framework/issues/266
-
-  // @skip-test until the issue is fixed
 
 
 Writing tests for a new checker or with different command-line arguments

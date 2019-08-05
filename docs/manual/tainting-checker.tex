@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Tainting Checker\label{tainting-checker}}
+\chapterAndLabel{Tainting Checker}{tainting-checker}
 
 The Tainting Checker prevents certain kinds of trust errors.
 A \emph{tainted}, or untrusted, value is one that comes from an arbitrary,
@@ -41,7 +41,7 @@ command-line option to javac.
 %TODO: For examples, see Section~\ref{tainting-examples}.
 
 
-\section{Tainting annotations\label{tainting-annotations}}
+\sectionAndLabel{Tainting annotations}{tainting-annotations}
 
 % TODO: add both qualifiers explicitly, and then describe their relationship.
 
@@ -61,7 +61,7 @@ The Tainting type system uses the following annotations:
 \end{itemize}
 
 
-\section{Tips on writing \code{@Untainted} annotations\label{writing-untainted}}
+\sectionAndLabel{Tips on writing \code{@Untainted} annotations}{writing-untainted}
 
 Most programs are designed with a boundary that surrounds sensitive
 computations, separating them from untrusted values.  Outside this
@@ -110,7 +110,7 @@ libraries):
 \end{Verbatim}
 
 
-\section{\code{@Tainted} and \code{@Untainted} can be used for many purposes\label{tainting-many-uses}}
+\sectionAndLabel{\code{@Tainted} and \code{@Untainted} can be used for many purposes}{tainting-many-uses}
 
 The \code{@Tainted} and \code{@Untainted} annotations have only minimal
 built-in semantics.  In fact, the Tainting Checker provides only a small
@@ -151,8 +151,71 @@ sources, sinks, and validation/sanitization routines.
 See Chapter~\ref{creating-a-checker} for more
 details.
 
+
+\sectionAndLabel{A caution about polymorphism and side effects}{tainting-polymorphism-caution}
+
+Misuse of polymorphism can lead to unsoundness with the Tainting Checker
+and other similar information flow checkers. To understand the potential
+problem, consider the \code{append} function in
+\code{java.lang.StringBuffer}:
+
+\begin{Verbatim}
+  public StringBuffer append(StringBuffer this, String toAppend);
+\end{Verbatim}
+
+Given these declarations:
+
+\begin{Verbatim}
+  @Tainted StringBuffer tsb;
+  @Tainted String ts;
+  @Untainted StringBuffer usb;
+  @Untainted String us;
+\end{Verbatim}
+
+\noindent
+both of these invocations should be legal:
+
+\begin{Verbatim}
+  tsb.append(ts);
+  usb.append(us);
+\end{Verbatim}
+
+That suggests that perhaps the function should be annotated as polymorphic:
+
+\begin{Verbatim}
+  // UNSOUND annotation -- do not do this!
+  public @PolyTainted StringBuffer append(@PolyTainted StringBuffer this, @PolyTainted String toAppend);
+\end{Verbatim}
+
+The problem with the above annotation is that it permits the undesirable
+invocation:
+
+\begin{Verbatim}
+  usb.append(ts); // illegal invocation
+\end{Verbatim}
+
+\noindent
+This invocation is permitted because, in the expression, all
+\<@PolyTainted> annotations on formal parameters are instantiated to
+\<@Tainted>, the top annotation, and each argument is a subtype of the
+corresponding formal parameter.
+
+Beware this problem both in code you write, and also in annotated libraries
+(such as stub files).
+
+(Side note:  if \code{append} were purely functional (had no side effects
+and returned a new \<StringBuffer>) the method call would be acceptable,
+because the return type is instantiated to \<@Tainted StringBuffer> for the
+expression \<usb.append(ts)>.  However, the \code{append} method works via
+side-effect, and only returns a reference to the buffer as a convenience
+for writing ``fluent'' client code.)
+
+%% Uncomment this text when the Detemrinism Checker is merged into master.
+% The Determinism Checker enables sound polymorphic annotation of methods
+% like \<StringBuffer.append> via its \code{@PolyDet(``use'')} annotation.
+
 % TODO: one could add a String[] value to @Untainted to distinguish different
 % values, eg @Untainted{``SQL''} versus @Untainted{``HTML''}.
 
 % LocalWords:  quals untaint PolyTainted mis untainting sanitization java
-%%  LocalWords:  TaintingChecker untrusted unvalidated
+%%  LocalWords:  TaintingChecker untrusted unvalidated usb PolyDet

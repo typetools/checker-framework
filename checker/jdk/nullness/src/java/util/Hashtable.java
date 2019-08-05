@@ -31,6 +31,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.BiFunction;
 
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -341,6 +343,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
      * @see     #contains(Object)
      */
     @Pure
+    @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public synchronized boolean containsKey(@Nullable Object key) {
         Entry<?,?> tab[] = table;
         int hash = key.hashCode();
@@ -465,6 +468,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
      * @see     Object#equals(Object)
      * @see     #get(Object)
      */
+    @EnsuresKeyFor(value="#1", map="this")
     public synchronized @Nullable V put(K key, V value) {
         // Make sure the value is not null
         if (value == null) {
@@ -657,6 +661,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
     }
 
     private class KeySet extends AbstractSet<K> {
+        @SideEffectFree
         public Iterator<K> iterator() {
             return getIterator(KEYS);
         }
@@ -698,6 +703,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
     }
 
     private class EntrySet extends AbstractSet<Map.Entry<K,V>> {
+        @SideEffectFree
         public Iterator<Map.Entry<K,V>> iterator() {
             return getIterator(ENTRIES);
         }
@@ -781,6 +787,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
     }
 
     private class ValueCollection extends AbstractCollection<V> {
+        @SideEffectFree
         public Iterator<V> iterator() {
             return getIterator(VALUES);
         }
@@ -925,6 +932,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
     }
 
     @Override
+    @EnsuresKeyFor(value="#1", map="this")
     public synchronized V putIfAbsent(K key, V value) {
         Objects.requireNonNull(value);
 

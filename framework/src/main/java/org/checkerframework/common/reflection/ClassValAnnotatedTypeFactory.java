@@ -36,6 +36,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -77,7 +78,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns the list of classnames from {@code @ClassBound} or {@code @ClassVal} if anno is
-     * {@code @ClassBound} or {@code @ClassVal}, otherwise returns an empty list
+     * {@code @ClassBound} or {@code @ClassVal}, otherwise returns an empty list.
      *
      * @param anno any AnnotationMirror
      * @return list of classnames in anno
@@ -95,7 +96,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ClassValQualifierHierarchy(factory);
     }
 
-    /** The qualifier hierarchy for the ClassVal type system */
+    /** The qualifier hierarchy for the ClassVal type system. */
     protected class ClassValQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         public ClassValQualifierHierarchy(MultiGraphFactory f) {
@@ -109,8 +110,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (!AnnotationUtils.areSameIgnoringValues(
-                    getTopAnnotation(a1), getTopAnnotation(a2))) {
+            if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
             } else if (isSubtype(a1, a2)) {
                 return a2;
@@ -135,8 +135,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (!AnnotationUtils.areSameIgnoringValues(
-                    getTopAnnotation(a1), getTopAnnotation(a2))) {
+            if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
             } else if (isSubtype(a1, a2)) {
                 return a1;
@@ -199,7 +198,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Implements these type inference rules:
+     * Implements the following type inference rules.
      *
      * <pre>
      * C.class:             @ClassVal(fully qualified name of C)
@@ -232,7 +231,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
 
-            if (isForNameMethodInovaction(tree)) {
+            if (isForNameMethodInvocation(tree)) {
                 // Class.forName(name): @ClassVal("name")
                 ExpressionTree arg = tree.getArguments().get(0);
                 List<String> classNames = getStringValues(arg);
@@ -240,7 +239,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationMirror newQual = createClassVal(classNames);
                     type.replaceAnnotation(newQual);
                 }
-            } else if (isGetClassMethodInovaction(tree)) {
+            } else if (isGetClassMethodInvocation(tree)) {
                 // exp.getClass(): @ClassBound(fully qualified class name of exp)
                 Type clType;
                 if (TreeUtils.getReceiverTree(tree) != null) {
@@ -256,11 +255,19 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        private boolean isForNameMethodInovaction(MethodInvocationTree tree) {
+        /**
+         * Return true if this is an invocation of a method annotated with @ForName. An example of
+         * such a method is Class.forName.
+         */
+        private boolean isForNameMethodInvocation(MethodInvocationTree tree) {
             return getDeclAnnotation(TreeUtils.elementFromTree(tree), ForName.class) != null;
         }
 
-        private boolean isGetClassMethodInovaction(MethodInvocationTree tree) {
+        /**
+         * Return true if this is an invocation of a method annotated with @GetClass. An example of
+         * such a method is Object.getClassName.
+         */
+        private boolean isGetClassMethodInvocation(MethodInvocationTree tree) {
             return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetClass.class) != null;
         }
 
@@ -332,10 +339,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case VOID:
                     return "void";
                 default:
-                    checker.errorAbort(
+                    throw new BugInCF(
                             "ClassValAnnotatedTypeFactory.getClassname: did not expect "
                                     + classType.getKind());
-                    return "java.lang.Object";
             }
         }
     }

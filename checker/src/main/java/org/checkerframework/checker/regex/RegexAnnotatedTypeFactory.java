@@ -32,8 +32,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
@@ -73,65 +73,51 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /**
-     * The Pattern.compile method.
-     *
-     * @see java.util.regex.Pattern#compile(String)
-     */
-    private final ExecutableElement patternCompile;
+    /** The @{@link Regex} annotation. */
+    protected final AnnotationMirror REGEX = AnnotationBuilder.fromClass(elements, Regex.class);
+    /** The @{@link RegexBottom} annotation. */
+    protected final AnnotationMirror REGEXBOTTOM =
+            AnnotationBuilder.fromClass(elements, RegexBottom.class);
+    /** The @{@link PartialRegex} annotation. */
+    protected final AnnotationMirror PARTIALREGEX =
+            AnnotationBuilder.fromClass(elements, PartialRegex.class);
+    /** The @{@link PolyRegex} annotation. */
+    protected final AnnotationMirror POLYREGEX =
+            AnnotationBuilder.fromClass(elements, PolyRegex.class);
+
+    /** The method that returns the value element of a {@code @Regex} annotation. */
+    protected final ExecutableElement regexValueElement =
+            TreeUtils.getMethod(
+                    org.checkerframework.checker.regex.qual.Regex.class.getName(),
+                    "value",
+                    0,
+                    processingEnv);
 
     /**
      * The value method of the PartialRegex qualifier.
      *
      * @see org.checkerframework.checker.regex.qual.PartialRegex
      */
-    private final ExecutableElement partialRegexValue;
+    private final ExecutableElement partialRegexValue =
+            TreeUtils.getMethod(
+                    org.checkerframework.checker.regex.qual.PartialRegex.class.getName(),
+                    "value",
+                    0,
+                    processingEnv);
 
     /**
-     * Class names that contain an {@code asRegex(String, int)} method. These asRegex methods will
-     * return a {@code @Regex String} with the same group count as the second parameter to the
-     * asRegex call.
+     * The Pattern.compile method.
      *
-     * @see RegexUtil#asRegex(String, int)
+     * @see java.util.regex.Pattern#compile(String)
      */
-    /*package-scope*/ static final String[] regexUtilClasses =
-            new String[] {
-                "org.checkerframework.checker.regex.RegexUtil",
-                "plume.RegexUtil",
-                "daikon.util.RegexUtil"
-            };
-
-    protected final AnnotationMirror REGEX, REGEXBOTTOM, PARTIALREGEX, POLYREGEX;
-    protected final ExecutableElement regexValueElement;
+    private final ExecutableElement patternCompile =
+            TreeUtils.getMethod(
+                    java.util.regex.Pattern.class.getName(), "compile", 1, processingEnv);
 
     // TODO use? private TypeMirror[] legalReferenceTypes;
 
     public RegexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-
-        patternCompile =
-                TreeUtils.getMethod(
-                        java.util.regex.Pattern.class.getName(), "compile", 1, processingEnv);
-        partialRegexValue =
-                TreeUtils.getMethod(
-                        org.checkerframework.checker.regex.qual.PartialRegex.class.getName(),
-                        "value",
-                        0,
-                        processingEnv);
-
-        REGEX = AnnotationBuilder.fromClass(elements, Regex.class);
-        REGEXBOTTOM = AnnotationBuilder.fromClass(elements, RegexBottom.class);
-        PARTIALREGEX = AnnotationBuilder.fromClass(elements, PartialRegex.class);
-        POLYREGEX = AnnotationBuilder.fromClass(elements, PolyRegex.class);
-
-        regexValueElement =
-                TreeUtils.getMethod(
-                        org.checkerframework.checker.regex.qual.Regex.class.getName(),
-                        "value",
-                        0,
-                        processingEnv);
-
-        addAliasedAnnotation(org.checkerframework.checker.regex.qual.PolyRegex.class, POLYREGEX);
 
         /*
         legalReferenceTypes = new TypeMirror[] {
@@ -185,24 +171,24 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, REGEX)
-                    && AnnotationUtils.areSameIgnoringValues(superAnno, REGEX)) {
+            if (AnnotationUtils.areSameByName(subAnno, REGEX)
+                    && AnnotationUtils.areSameByName(superAnno, REGEX)) {
                 int rhsValue = getRegexValue(subAnno);
                 int lhsValue = getRegexValue(superAnno);
                 return lhsValue <= rhsValue;
             }
             // TODO: subtyping between PartialRegex?
             // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, REGEX)) {
+            if (AnnotationUtils.areSameByName(superAnno, REGEX)) {
                 superAnno = REGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, REGEX)) {
+            if (AnnotationUtils.areSameByName(subAnno, REGEX)) {
                 subAnno = REGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(superAnno, PARTIALREGEX)) {
+            if (AnnotationUtils.areSameByName(superAnno, PARTIALREGEX)) {
                 superAnno = PARTIALREGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(subAnno, PARTIALREGEX)) {
+            if (AnnotationUtils.areSameByName(subAnno, PARTIALREGEX)) {
                 subAnno = PARTIALREGEX;
             }
             return super.isSubtype(subAnno, superAnno);
@@ -232,8 +218,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Returns the number of groups in the given regex String. */
-    public static int getGroupCount(@Regex String regex) {
-        return Pattern.compile(regex).matcher("").groupCount();
+    public static int getGroupCount(@Regex String regexp) {
+        return Pattern.compile(regexp).matcher("").groupCount();
     }
 
     /**
@@ -256,14 +242,14 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // Don't call super.createTreeAnnotator because the PropagationTreeAnnotator types binary
         // expressions as lub.
         return new ListTreeAnnotator(
-                new ImplicitsTreeAnnotator(this),
+                new LiteralTreeAnnotator(this).addStandardLiteralQualifiers(),
                 new RegexTreeAnnotator(this),
-                new RegexPropagationAnnotator(this));
+                new RegexPropagationTreeAnnotator(this));
     }
 
-    private static class RegexPropagationAnnotator extends PropagationTreeAnnotator {
+    private static class RegexPropagationTreeAnnotator extends PropagationTreeAnnotator {
 
-        public RegexPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
+        public RegexPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 

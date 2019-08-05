@@ -22,12 +22,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  */
 public class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeVisitor<R, P> {
 
-    /** The default value to return as a default action */
+    /** The default value to return as a default action. */
     protected final R DEFAULT_VALUE;
 
     /**
      * Creates an instance of {@link SimpleAnnotatedTypeVisitor} with default value being {@code
-     * null}
+     * null}.
      */
     public SimpleAnnotatedTypeVisitor() {
         this(null);
@@ -35,7 +35,7 @@ public class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeVisitor<R,
 
     /**
      * Creates an instance of {@link SimpleAnnotatedTypeVisitor} with the default value being the
-     * passed defaultValue
+     * passed defaultValue.
      *
      * @param defaultValue the default value this class should return
      */

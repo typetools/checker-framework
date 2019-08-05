@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Constant Value Checker\label{constant-value-checker}}
+\chapterAndLabel{Constant Value Checker}{constant-value-checker}
 
 The Constant Value Checker is a constant propagation analysis: for
 each variable, it determines whether that variable's value can be
@@ -20,7 +20,8 @@ supplying the following command-line options to javac:
 \code{-processor org.checkerframework.common.value.ValueChecker -Astubs=statically-executable.astub}
 \end{itemize}
 
-\section{Annotations\label{constant-value-checker-annotations}}
+
+\sectionAndLabel{Annotations}{constant-value-checker-annotations}
 
 The Constant Value Checker uses type annotations to indicate the value of
 an expression (Section~\ref{constant-value-checker-type-annotations}), and
@@ -29,7 +30,7 @@ Checker can execute at compile time
 (Section~\ref{constant-value-staticallyexecutable-annotation}).
 
 
-\subsection{Type Annotations\label{constant-value-checker-type-annotations}}
+\subsectionAndLabel{Type Annotations}{constant-value-checker-type-annotations}
 
 Typically, the programmer does not write any type annotations.  Rather, the
 type annotations are inferred by the Constant Value Checker.
@@ -107,7 +108,10 @@ subtype of a \<@DoubleVal> annotation with the same values.
 \begin{figure}
 \includeimage{value-subtyping}{7.9cm}
 \caption{At the top, the type qualifier hierarchy of the Constant Value Checker
-annotations. Qualifiers in gray are used
+  annotations.
+  The first four qualifiers are applicable to primitives and their
+  wrappers; the next to \<String>s, and the final two to arrays.
+Qualifiers in gray are used
 internally by the type system but should never be written by a
 programmer.  At the bottom are examples of additional subtyping
 relationships that depend on the annotations' arguments.}
@@ -175,7 +179,7 @@ $\Rightarrow$
   you run the Constant Value Checker.
 }\fi
 
-\subsection{Compile-time execution of expressions\label{constant-value-compile-time-execution}}
+\subsectionAndLabel{Compile-time execution of expressions}{constant-value-compile-time-execution}
 
 Whenever all the operands of an expression are compile-time constants (that
 is, their types have constant-value type annotations), the Constant Value
@@ -187,7 +191,7 @@ The Constant Value Checker statically executes operators that do
 not throw exceptions (e.g., \<+>, \<->, \code{<\relax<}, \<!=>).
 
 
-\subsection{\<@StaticallyExecutable> methods and the classpath\label{constant-value-staticallyexecutable-annotation}}
+\subsectionAndLabel{\<@StaticallyExecutable> methods and the classpath}{constant-value-staticallyexecutable-annotation}
 
 The Constant Value Checker statically executes methods annotated with
 \refqualclass{common/value/qual}{StaticallyExecutable}, \emph{if the
@@ -233,7 +237,7 @@ might include:
 \end{Verbatim}
 
 
-\section{Warnings\label{value-checker-warnings}}
+\sectionAndLabel{Warnings}{value-checker-warnings}
 
 If the option \code{-AreportEvalWarns} options is used, the Constant Value Checker issues a warning if it cannot load and run, at
 compile time, a method marked as \<@StaticallyExecutable>.  If it issues
@@ -286,7 +290,7 @@ warning message:
 \end{sloppypar}
 
 
-\section{Unsoundly ignoring overflow\label{value-checker-overflow}}
+\sectionAndLabel{Unsoundly ignoring overflow}{value-checker-overflow}
 
 The Constant Value Checker takes Java's overflow rules into account when
 computing the possible values of expressions.
@@ -328,4 +332,5 @@ manual analysis.
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
 %%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange casted
-%  LocalWords:  qual AignoreRangeOverflow MinLen PolyValue
+%  LocalWords:  qual AignoreRangeOverflow MinLen PolyValue GTENegativeOne
+%%  LocalWords:  staticallyexecutable

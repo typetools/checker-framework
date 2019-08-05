@@ -1,8 +1,10 @@
+import java.util.zip.ZipFile
+
 ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = '8a6dcdeac824386c063d910adb77355ca135dd02'
+    jdkShaHash = '91fd565e932597a8036a2d747f463956f0045d3e'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -11,7 +13,7 @@ sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-            srcDirs = ['src/main/java']
+            srcDirs += ['src/main/java']
             exclude '**/*.java'
         }
     }
@@ -25,7 +27,7 @@ dependencies {
     compile project(':checker-qual')
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile project(':util')
+    testCompile project(':framework-test')
     testCompile sourceSets.testannotations.output
 
     testannotationsCompile project(':checker-qual')
@@ -34,6 +36,13 @@ dependencies {
 jar {
     manifest {
         attributes("Main-Class": "org.checkerframework.framework.util.CheckerMain")
+    }
+    doLast {
+        new File("$projectDir/build/libs/README.txt").text =
+"""Do not use file checker-X.Y.Z.jar, which contains only the checker subproject
+and lacks other parts of the Checker Framework.
+Instead, use checker/dist/checker.jar.
+"""
     }
 }
 
@@ -71,23 +80,21 @@ task forceBuildJdk(group: 'Build') {
 }
 
 task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
-    description 'Builds jdk8.jar. Requires that jdkShaHash == \'local\' in checker/build.gradle.'
+    description 'Builds jdk8.jar. Requires -PuseLocalJdk, or that jdkShaHash == \'local\' in checker/build.gradle.'
 
     doLast {
         if (System.getenv('JAVA_HOME') == null) {
             throw new GradleException("Environment variable JAVA_HOME is not set.")
         }
         if (!jdkShaHash.is('local')) {
-            throw new GradleException('To build jdk.jar, set jdkShaHash to \'local\' in checker/build.gradle.')
+            throw new GradleException('To build jdk.jar, pass -PuseLocalJdk, or set jdkShaHash to \'local\' in checker/build.gradle.')
         }
         delete 'dist/jdk8.jar'
         exec {
             executable 'make'
             environment CHECKERFRAMEWORK: "${projectDir}/..",
-                    LANGTOOLS: "${jsr308}/jsr308-langtools",
                     ANNOTATION_TOOLS: "${afu}/..",
-                    CLASSPATH: project(':checker').tasks.getByName('shadowJar').archivePath,
-                    LT_BIN: "${jsr308}/jsr308-langtools/dist/bin"
+                    CLASSPATH: project(':checker').tasks.getByName('shadowJar').archivePath
             args += ["-C", "jdk/"]
         }
 
@@ -108,10 +115,11 @@ task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
 
 task updateJdk() {
     description 'Downloads or builds jdk8.jar and copies into checker/dist'
+    if (jdkShaHash.is('local')) {
+        dependsOn(buildJdk)
+    }
     doLast {
-        if (jdkShaHash.is('local')) {
-            buildJdk.execute()
-        } else {
+        if (!jdkShaHash.is('local')) {
             File downloadedJdk = new File(buildDir, "jdk8-${jdkShaHash}.jar");
             if (!downloadedJdk.exists()) {
                 download {
@@ -130,6 +138,23 @@ task updateJdk() {
     }
 }
 
+task printJdkJarManifest(type: Copy) {
+    description 'Outputs the manifest file for checker/dist/jdk8.jar'
+    outputs.upToDateWhen { false }
+
+    from(zipTree('dist/jdk8.jar')) {
+        include "META-INF/MANIFEST.MF"
+    }
+
+    String tmpDir = "${buildDir}/tmpJDKManifest"
+    into tmpDir
+    doLast {
+        println(new File(tmpDir, 'META-INF/MANIFEST.MF').text)
+        delete tmpDir
+    }
+
+}
+
 task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
     description 'Builds or downloads jars required by CheckerMain and puts them in checker/dist.'
     dependsOn project(':checker-qual').tasks.jar
@@ -139,12 +164,39 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
 }
 assemble.dependsOn copyJarsToDist
 
+task printPlumeUtilJarPath {
+    description "Print the path to plume-util.jar"
+    doFirst { println project.configurations.compile.find { it.name.startsWith("plume-util") } }
+}
+
+task allSourcesJar(type: Jar) {
+    description 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
+    destinationDir = file("${projectDir}/dist")
+    archiveName = "checker-source.jar"
+    from (sourceSets.main.java, project(':framework').sourceSets.main.allJava,
+            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
+}
+
+task allJavadocJar(type: Jar) {
+    description 'Creates javadoc jar include Javadoc for all of the framework'
+    dependsOn rootProject.tasks.allJavadoc
+    destinationDir = file("${projectDir}/dist")
+    archiveName = "checker-javadoc.jar"
+    from rootProject.tasks.allJavadoc.destinationDir
+}
+
+
 shadowJar {
-    description 'Creates the "fat" checker.jar in dist.'
+    description 'Creates the "fat" checker.jar in dist/.'
     destinationDir = file("${projectDir}/dist")
     archiveName = "checker.jar"
+    // To see what files are incorporated into the shadow jar file:
+    // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
 artifacts {
+    // Don't add this here or else the Javadoc is built during the assemble task.
+    // archives allJavadocJar
+    archives allSourcesJar
     archives shadowJar
 }
 

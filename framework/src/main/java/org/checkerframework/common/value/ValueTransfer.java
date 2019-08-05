@@ -58,19 +58,27 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** The transfer class for the Value Checker. */
 public class ValueTransfer extends CFTransfer {
+    /** The Value type factory. */
     protected final ValueAnnotatedTypeFactory atypefactory;
+    /** The Value qualifier hierarchy. */
+    protected final QualifierHierarchy hierarchy;
 
+    /** Create a new ValueTransfer. */
     public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         atypefactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
+        hierarchy = atypefactory.getQualifierHierarchy();
     }
 
     /** Returns a range of possible lengths for an integer from a range, as casted to a String. */
@@ -246,10 +254,8 @@ public class ValueTransfer extends CFTransfer {
 
         if (atypefactory.isIntRange(value.getAnnotations())) {
             intAnno =
-                    atypefactory
-                            .getQualifierHierarchy()
-                            .findAnnotationInHierarchy(
-                                    value.getAnnotations(), atypefactory.UNKNOWNVAL);
+                    hierarchy.findAnnotationInHierarchy(
+                            value.getAnnotations(), atypefactory.UNKNOWNVAL);
             Range range = ValueAnnotatedTypeFactory.getRange(intAnno);
             return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
@@ -262,10 +268,15 @@ public class ValueTransfer extends CFTransfer {
         return getValueAnnotation(value);
     }
 
+    /**
+     * Extract the Value Checker annotation from a CFValue object.
+     *
+     * @param cfValue a CFValue object
+     * @return the Value Checker annotation within cfValue
+     */
     private AnnotationMirror getValueAnnotation(CFValue cfValue) {
-        return atypefactory
-                .getQualifierHierarchy()
-                .findAnnotationInHierarchy(cfValue.getAnnotations(), atypefactory.UNKNOWNVAL);
+        return hierarchy.findAnnotationInHierarchy(
+                cfValue.getAnnotations(), atypefactory.UNKNOWNVAL);
     }
 
     /**
@@ -322,22 +333,19 @@ public class ValueTransfer extends CFTransfer {
         return NumberUtils.castRange(node.getType(), range);
     }
 
-    /** a helper function to determine if this node is annotated with {@code @IntRange} */
+    /** Returns true if this node is annotated with {@code @IntRange}. */
     private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         return atypefactory.isIntRange(value.getAnnotations());
     }
 
-    /** a helper function to determine if this node is annotated with {@code @UnknownVal} */
+    /** Returns true if this node is annotated with {@code @UnknownVal}. */
     private boolean isIntegralUnknownVal(Node node, AnnotationMirror anno) {
         return AnnotationUtils.areSameByClass(anno, UnknownVal.class)
                 && TypesUtils.isIntegral(node.getType());
     }
 
-    /**
-     * a helper function to determine if this node is annotated with {@code @IntRange} or
-     * {@code @UnknownVal}
-     */
+    /** Returns true if this node is annotated with {@code @IntRange} or {@code @UnknownVal}. */
     private boolean isIntRangeOrIntegralUnknownVal(Node node, TransferInput<CFValue, CFStore> p) {
         AnnotationMirror anno = getValueAnnotation(p.getValueOfSubNode(node));
         return isIntRange(node, p) || isIntegralUnknownVal(node, anno);
@@ -481,8 +489,7 @@ public class ValueTransfer extends CFTransfer {
         if (oldRecAnno == null) {
             combinedRecAnno = newRecAnno;
         } else {
-            combinedRecAnno =
-                    atypefactory.getQualifierHierarchy().greatestLowerBound(oldRecAnno, newRecAnno);
+            combinedRecAnno = hierarchy.greatestLowerBound(oldRecAnno, newRecAnno);
         }
         Receiver receiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiverNode);
         store.insertValue(receiver, combinedRecAnno);
@@ -606,7 +613,7 @@ public class ValueTransfer extends CFTransfer {
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
-    /** binary operations that are analyzed by the value checker */
+    /** Binary operations that are analyzed by the value checker. */
     enum NumericalBinaryOps {
         ADDITION,
         SUBTRACTION,
@@ -645,7 +652,7 @@ public class ValueTransfer extends CFTransfer {
         }
     }
 
-    /** Calculate the result range after a binary operation between two numerical type nodes */
+    /** Calculate the result range after a binary operation between two numerical type nodes. */
     private Range calculateRangeBinaryOp(
             Node leftNode,
             Node rightNode,
@@ -691,8 +698,7 @@ public class ValueTransfer extends CFTransfer {
                     resultRange = leftRange.bitwiseXor(rightRange);
                     break;
                 default:
-                    ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-                    throw new RuntimeException("this can't happen");
+                    throw new BugInCF("ValueTransfer: unsupported operation: " + op);
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during
             // operations.
@@ -705,7 +711,7 @@ public class ValueTransfer extends CFTransfer {
         }
     }
 
-    /** Calculate the possible values after a binary operation between two numerical type nodes */
+    /** Calculate the possible values after a binary operation between two numerical type nodes. */
     private List<Number> calculateValuesBinaryOp(
             Node leftNode,
             Node rightNode,
@@ -761,7 +767,7 @@ public class ValueTransfer extends CFTransfer {
                         resultValues.add(nmLeft.bitwiseXor(right));
                         break;
                     default:
-                        ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+                        throw new BugInCF("ValueTransfer: unsupported operation: " + op);
                 }
             }
         }
@@ -907,7 +913,7 @@ public class ValueTransfer extends CFTransfer {
         return createNewResult(transferResult, resultAnno);
     }
 
-    /** unary operations that are analyzed by the value checker */
+    /** Unary operations that are analyzed by the value checker. */
     enum NumericalUnaryOps {
         PLUS,
         MINUS,
@@ -933,7 +939,7 @@ public class ValueTransfer extends CFTransfer {
         }
     }
 
-    /** Calculate the result range after a unary operation of a numerical type node */
+    /** Calculate the result range after a unary operation of a numerical type node. */
     private Range calculateRangeUnaryOp(
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
         if (TypesUtils.isIntegral(operand.getType())) {
@@ -950,8 +956,7 @@ public class ValueTransfer extends CFTransfer {
                     resultRange = range.bitwiseComplement();
                     break;
                 default:
-                    ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-                    throw new RuntimeException("this can't happen");
+                    throw new BugInCF("ValueTransfer: unsupported operation: " + op);
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during
             // operations.
@@ -963,7 +968,7 @@ public class ValueTransfer extends CFTransfer {
         }
     }
 
-    /** Calculate the possible values after a unary operation of a numerical type node */
+    /** Calculate the possible values after a unary operation of a numerical type node. */
     private List<Number> calculateValuesUnaryOp(
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
         List<? extends Number> lefts = getNumericalValues(operand, p);
@@ -984,7 +989,7 @@ public class ValueTransfer extends CFTransfer {
                     resultValues.add(nmLeft.bitwiseComplement());
                     break;
                 default:
-                    ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+                    throw new BugInCF("ValueTransfer: unsupported operation: " + op);
             }
         }
         return resultValues;
@@ -1049,6 +1054,7 @@ public class ValueTransfer extends CFTransfer {
             return refineIntRanges(
                     leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
         }
+        // This is a list of all the values that the expression can evaluate to.
         List<Boolean> resultValues = new ArrayList<>();
 
         List<? extends Number> lefts = getNumericalValues(leftNode, leftAnno);
@@ -1094,8 +1100,7 @@ public class ValueTransfer extends CFTransfer {
                         result = nmLeft.notEqualTo(right);
                         break;
                     default:
-                        ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-                        throw new RuntimeException("this can't happen");
+                        throw new BugInCF("ValueTransfer: unsupported operation: " + op);
                 }
                 resultValues.add(result);
                 if (result) {
@@ -1175,8 +1180,7 @@ public class ValueTransfer extends CFTransfer {
                 elseLeftRange = elseRightRange; // Equality only needs to be computed once.
                 break;
             default:
-                ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-                throw new RuntimeException("this is impossible, but javac issues a warning");
+                throw new BugInCF("ValueTransfer: unsupported operation: " + op);
         }
 
         createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
@@ -1210,17 +1214,24 @@ public class ValueTransfer extends CFTransfer {
     }
 
     private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
+        // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
         for (Node internal : splitAssignments(node)) {
-            AnnotationMirror currentAnno =
-                    atypefactory
-                            .getAnnotatedType(internal.getTree())
-                            .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+            CFValue currentValueFromStore;
+            if (CFAbstractStore.canInsertReceiver(rec)) {
+                currentValueFromStore = store.getValue(rec);
+            } else {
+                // Don't just `continue;` which would skip the calls to refine{Array,String}...
+                currentValueFromStore = null;
+            }
+            AnnotationMirror currentAnno =
+                    (currentValueFromStore == null
+                            ? atypefactory.UNKNOWNVAL
+                            : getValueAnnotation(currentValueFromStore));
             // Combine the new annotations based on the results of the comparison with the existing
             // type.
-            store.insertValue(
-                    rec,
-                    atypefactory.getQualifierHierarchy().greatestLowerBound(anno, currentAnno));
+            AnnotationMirror newAnno = hierarchy.greatestLowerBound(anno, currentAnno);
+            store.insertValue(rec, newAnno);
 
             if (node instanceof FieldAccessNode) {
                 refineArrayAtLengthAccess((FieldAccessNode) internal, store);
@@ -1420,8 +1431,7 @@ public class ValueTransfer extends CFTransfer {
                 }
                 return resultValues;
         }
-        ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-        throw new RuntimeException("this can't happen");
+        throw new BugInCF("ValueTransfer: unsupported operation: " + op);
     }
 
     @Override

@@ -7,10 +7,13 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.element.ClassTypeParamApplier;
 import org.checkerframework.framework.util.element.MethodApplier;
 import org.checkerframework.framework.util.element.MethodTypeParamApplier;
@@ -19,7 +22,7 @@ import org.checkerframework.framework.util.element.SuperTypeApplier;
 import org.checkerframework.framework.util.element.TypeDeclarationApplier;
 import org.checkerframework.framework.util.element.TypeVarUseApplier;
 import org.checkerframework.framework.util.element.VariableApplier;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -69,8 +72,19 @@ public class ElementAnnotationApplier {
             final AnnotatedTypeMirror type,
             final Element element,
             final AnnotatedTypeFactory typeFactory) {
+        applyInternal(type, element, typeFactory);
+        // Also copy annotations from type parameters to their uses.
+        new TypeVarAnnotator().visit(type, typeFactory);
+    }
+
+    /** Same as apply except that annotations aren't copied from type parameter declarations. */
+    private static void applyInternal(
+            final AnnotatedTypeMirror type,
+            final Element element,
+            final AnnotatedTypeFactory typeFactory) {
+
         if (element == null) {
-            ErrorReporter.errorAbort("ElementAnnotationUtil.apply: element cannot be null");
+            throw new BugInCF("ElementAnnotationUtil.apply: element cannot be null");
 
         } else if (TypeVarUseApplier.accepts(type, element)) {
             TypeVarUseApplier.apply(type, element, typeFactory);
@@ -97,7 +111,7 @@ public class ElementAnnotationApplier {
             // Types resulting from capture conversion cannot have explicit annotations
 
         } else {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "ElementAnnotationUtil.apply: illegal argument: "
                             + element
                             + " ["
@@ -110,7 +124,7 @@ public class ElementAnnotationApplier {
 
     /**
      * Annotate the list of supertypes using the annotations on the TypeElement representing a class
-     * or interface
+     * or interface.
      *
      * @param supertypes types representing supertype declarations of TypeElement
      * @param subtypeElement an element representing the declaration of the class which is a subtype
@@ -153,5 +167,24 @@ public class ElementAnnotationApplier {
     private static boolean isCaptureConvertedTypeVar(final Element element) {
         final Element enclosure = element.getEnclosingElement();
         return (((Symbol) enclosure).kind == com.sun.tools.javac.code.Kinds.NIL);
+    }
+
+    /**
+     * Annotates uses of type variables with annotation written explicitly on the type parameter
+     * declaration and/or its upper bound.
+     */
+    private static class TypeVarAnnotator extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
+        @Override
+        public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory factory) {
+            TypeParameterElement tpelt =
+                    (TypeParameterElement) type.getUnderlyingType().asElement();
+
+            if (type.getAnnotations().isEmpty()
+                    && type.getUpperBound().getAnnotations().isEmpty()
+                    && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
+                ElementAnnotationApplier.applyInternal(type, tpelt, factory);
+            }
+            return super.visitTypeVariable(type, factory);
+        }
     }
 }

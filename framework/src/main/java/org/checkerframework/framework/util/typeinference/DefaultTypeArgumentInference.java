@@ -49,7 +49,7 @@ import org.checkerframework.framework.util.typeinference.solver.InferredValue;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -208,18 +208,18 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (!hasNullType(inferredArgs)) {
             return;
         }
-        final Map<TypeVariable, AnnotatedTypeMirror> inferredArgsWithOutNull =
+        final Map<TypeVariable, AnnotatedTypeMirror> inferredArgsWithoutNull =
                 infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, false);
         for (AnnotatedTypeVariable atv : methodType.getTypeVariables()) {
             TypeVariable typeVar = atv.getUnderlyingType();
             AnnotatedTypeMirror result = inferredArgs.get(typeVar);
             if (result == null) {
-                AnnotatedTypeMirror withoutNullResult = inferredArgsWithOutNull.get(typeVar);
+                AnnotatedTypeMirror withoutNullResult = inferredArgsWithoutNull.get(typeVar);
                 if (withoutNullResult != null) {
                     inferredArgs.put(typeVar, withoutNullResult);
                 }
             } else if (result.getKind() == TypeKind.NULL) {
-                AnnotatedTypeMirror withoutNullResult = inferredArgsWithOutNull.get(typeVar);
+                AnnotatedTypeMirror withoutNullResult = inferredArgsWithoutNull.get(typeVar);
                 if (withoutNullResult == null) {
                     // withoutNullResult is null when the only constraint on a type argument is
                     // where a method argument is null.
@@ -404,7 +404,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     /**
      * If we have inferred a type argument from the supertype constraints and this type argument is
-     * BELOW the lower bound, make it AT the lower bound
+     * BELOW the lower bound, make it AT the lower bound.
      *
      * <p>e.g.
      *
@@ -439,7 +439,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         for (AnnotatedTypeVariable targetDecl : targetDeclarations) {
             InferredValue inferred = fromArgSupertypes.get(targetDecl.getUnderlyingType());
-            if (inferred != null && inferred instanceof InferredType) {
+            if (inferred instanceof InferredType) {
                 final AnnotatedTypeMirror lowerBoundAsArgument = targetDecl.getLowerBound();
                 for (AnnotationMirror top : tops) {
                     final AnnotationMirror lowerBoundAnno =
@@ -477,8 +477,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 AnnotatedTypes.expandVarArgsFromTypes(methodType, argTypes);
 
         if (argTypes.size() != paramTypes.size()) {
-            ErrorReporter.errorAbort(
-                    "Mismatch between formal parameter count and argument count!\n"
+            throw new BugInCF(
+                    "Mismatch between formal parameter count and argument count.\n"
                             + "paramTypes="
                             + PluginUtil.join(",", paramTypes)
                             + "\n"
@@ -686,9 +686,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final InferredValue supertypeInferred = supertypeResult.get(target);
 
             final InferredValue outputValue;
-            if (equalityInferred != null && equalityInferred instanceof InferredType) {
+            if (equalityInferred instanceof InferredType) {
 
-                if (supertypeInferred != null && supertypeInferred instanceof InferredType) {
+                if (supertypeInferred instanceof InferredType) {
                     AnnotatedTypeMirror superATM = ((InferredType) supertypeInferred).type;
                     AnnotatedTypeMirror equalityATM = ((InferredType) equalityInferred).type;
                     if (TypesUtils.isErasedSubtype(
@@ -782,8 +782,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     }
 
                     if (!handled) {
-                        ErrorReporter.errorAbort(
-                                "Unhandled constraint type: " + constraint.toString());
+                        throw new BugInCF("Unhandled constraint type: " + constraint);
                     }
 
                     toProcess.addAll(newConstraints);
@@ -793,13 +792,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
     }
 
-    /** Convert AFConstraints to TUConstraints */
+    /** Convert AFConstraints to TUConstraints. */
     protected Set<TUConstraint> afToTuConstraints(
             Set<? extends AFConstraint> afConstraints, Set<TypeVariable> targets) {
         final Set<TUConstraint> outgoing = new LinkedHashSet<>();
         for (final AFConstraint afConstraint : afConstraints) {
             if (!afConstraint.isIrreducible(targets)) {
-                ErrorReporter.errorAbort(
+                throw new BugInCF(
                         "All afConstraints should be irreducible before conversion.\n"
                                 + "afConstraints=[ "
                                 + PluginUtil.join(", ", afConstraints)

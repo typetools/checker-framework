@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -92,7 +93,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
     /**
-     * Returns a list of class names for the given tree using the Class Val Checker
+     * Returns a list of class names for the given tree using the Class Val Checker.
      *
      * @param tree ExpressionTree whose class names are requested
      * @param mustBeExact whether @ClassBound may be used
@@ -157,14 +158,13 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (!AnnotationUtils.areSameIgnoringValues(
-                    getTopAnnotation(a1), getTopAnnotation(a2))) {
+            if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
             } else if (isSubtype(a1, a2)) {
                 return a2;
             } else if (isSubtype(a2, a1)) {
                 return a1;
-            } else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
+            } else if (AnnotationUtils.areSameByName(a1, a2)) {
                 List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
                 List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
 
@@ -207,7 +207,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ListTreeAnnotator(new MethodValTreeAnnotator(this), super.createTreeAnnotator());
     }
 
-    /** TreeAnnotator with the visitMethodInvocation method overridden */
+    /** TreeAnnotator with the visitMethodInvocation method overridden. */
     protected class MethodValTreeAnnotator extends TreeAnnotator {
 
         protected MethodValTreeAnnotator(MethodValAnnotatedTypeFactory factory) {
@@ -227,14 +227,14 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> methodNames;
             List<Integer> params;
             List<String> classNames;
-            if (isGetConstructorMethodInovaction(tree)) {
+            if (isGetConstructorMethodInvocation(tree)) {
                 // method name for constructors is always <init>
                 methodNames = Arrays.asList(ReflectionResolver.INIT);
                 params = getConstructorParamsLen(tree.getArguments());
                 classNames =
                         getClassNamesFromClassValChecker(TreeUtils.getReceiverTree(tree), true);
 
-            } else if (isGetMethodMethodInovaction(tree)) {
+            } else if (isGetMethodMethodInvocation(tree)) {
                 ExpressionTree methodNameArg = tree.getArguments().get(0);
                 methodNames = getMethodNamesFromStringArg(methodNameArg);
                 params = getMethodParamsLen(tree.getArguments());
@@ -270,22 +270,24 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        private boolean isGetConstructorMethodInovaction(MethodInvocationTree tree) {
-            if (getDeclAnnotation(TreeUtils.elementFromTree(tree), GetConstructor.class) != null) {
-                return true;
-            }
-            return false;
+        /**
+         * Returns true if the method being invoked is annotated with @GetConstructor. An example of
+         * such a method is Class.getConstructor.
+         */
+        private boolean isGetConstructorMethodInvocation(MethodInvocationTree tree) {
+            return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetConstructor.class) != null;
         }
 
-        private boolean isGetMethodMethodInovaction(MethodInvocationTree tree) {
-            if (getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null) {
-                return true;
-            }
-            return false;
+        /**
+         * Returns true if the method being invoked is annotated with @GetMethod. An example of such
+         * a method is Class.getMethod.
+         */
+        private boolean isGetMethodMethodInvocation(MethodInvocationTree tree) {
+            return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null;
         }
 
         private List<Integer> getMethodParamsLen(List<? extends ExpressionTree> args) {
-            assert args.size() > 0 : "getMethod must have at least one parameter";
+            assert !args.isEmpty() : "getMethod must have at least one parameter";
 
             // Number of parameters in the created method object
             int numParams = args.size() - 1;
@@ -347,7 +349,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 }
 /**
  * An object that represents a the tuple that identifies a method signature: (fully qualified class
- * name, method name, number of parameters)
+ * name, method name, number of parameters).
  */
 class MethodSignature {
     String className;
@@ -362,12 +364,7 @@ class MethodSignature {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((className == null) ? 0 : className.hashCode());
-        result = prime * result + ((methodName == null) ? 0 : methodName.hashCode());
-        result = prime * result + params;
-        return result;
+        return Objects.hash(className, methodName, params);
     }
 
     @Override

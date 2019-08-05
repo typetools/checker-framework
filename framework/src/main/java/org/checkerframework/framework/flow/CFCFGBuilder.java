@@ -23,8 +23,8 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * A control-flow graph builder (see {@link CFGBuilder}) that knows about the Checker Framework
@@ -43,7 +43,7 @@ public class CFCFGBuilder extends CFGBuilder {
         boolean assumeAssertionsEnabled = checker.hasOption("assumeAssertionsAreEnabled");
         boolean assumeAssertionsDisabled = checker.hasOption("assumeAssertionsAreDisabled");
         if (assumeAssertionsEnabled && assumeAssertionsDisabled) {
-            ErrorReporter.errorAbort(
+            throw new UserError(
                     "Assertions cannot be assumed to be enabled and disabled at the same time.");
         }
 
@@ -116,12 +116,12 @@ public class CFCFGBuilder extends CFGBuilder {
             MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
             if (enclosingMethod != null) {
                 Element methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
-                factory.setPathHack(tree, methodElement);
+                factory.setEnclosingElementForArtificialTree(tree, methodElement);
             } else {
                 ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
                 if (enclosingClass != null) {
                     Element classElement = TreeUtils.elementFromDeclaration(enclosingClass);
-                    factory.setPathHack(tree, classElement);
+                    factory.setEnclosingElementForArtificialTree(tree, classElement);
                 }
             }
         }

@@ -31,12 +31,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Converts type trees into AnnotatedTypeMirrors
+ * Converts type trees into AnnotatedTypeMirrors.
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
@@ -47,8 +47,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitAnnotatedType(AnnotatedTypeTree node, AnnotatedTypeFactory f) {
         AnnotatedTypeMirror type = visit(node.getUnderlyingType(), f);
-        if (type == null) // e.g., for receiver type
-        type = f.toAnnotatedType(f.types.getNoType(TypeKind.NONE), false);
+        if (type == null) { // e.g., for receiver type
+            type = f.toAnnotatedType(f.types.getNoType(TypeKind.NONE), false);
+        }
         assert AnnotatedTypeFactory.validAnnotatedType(type);
         List<? extends AnnotationMirror> annos = TreeUtils.annotationsFromTree(node);
 
@@ -67,8 +68,13 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
 
             } else {
-                ErrorReporter.errorAbort(
-                        "Unexpected kind for type!  node=" + node + " type=" + type);
+                throw new BugInCF(
+                        "Unexpected kind for type.  node="
+                                + node
+                                + " type="
+                                + type
+                                + " kind="
+                                + underlyingTree.getKind());
             }
         } else {
             type.addAnnotations(annos);
@@ -173,11 +179,17 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         return result;
     }
 
+    /**
+     * Returns an AnnotatedTypeMirror for uses of type variables with annotations written explicitly
+     * on the type parameter declaration and/or its upper bound.
+     *
+     * <p>Note for type variable uses in method signatures, explicit annotations on the declaration
+     * are added by {@link TypeFromMemberVisitor#typeVarAnnotator}.
+     */
     private AnnotatedTypeMirror forTypeVariable(AnnotatedTypeMirror type, AnnotatedTypeFactory f) {
         if (type.getKind() != TypeKind.TYPEVAR) {
-            ErrorReporter.errorAbort(
+            throw new BugInCF(
                     "TypeFromTree.forTypeVariable: should only be called on type variables");
-            return null; // dead code
         }
 
         TypeVariable typeVar = (TypeVariable) type.getUnderlyingType();
@@ -213,8 +225,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 ((AnnotatedTypeVariable) result).setDeclaration(false);
                 return result;
             } else {
-                // ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: did not find source for:
-                // " + elt);
+                // throw new BugInCF("TypeFromTree.forTypeVariable: did not find source for: "
+                //                   + elt);
                 return type;
             }
         } else {
@@ -223,9 +235,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
             if (TypesUtils.isCaptured(typeVar)) {
                 return type;
             } else {
-                ErrorReporter.errorAbort(
-                        "TypeFromTree.forTypeVariable: not a supported element: " + elt);
-                return null; // dead code
+                throw new BugInCF("TypeFromTree.forTypeVariable: not a supported element: " + elt);
             }
         }
     }

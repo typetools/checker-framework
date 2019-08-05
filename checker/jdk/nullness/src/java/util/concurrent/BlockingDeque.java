@@ -636,6 +636,7 @@ public interface BlockingDeque<E extends @NonNull Object> extends BlockingQueue<
      *
      * @return an iterator over the elements in this deque in proper sequence
      */
+    @SideEffectFree
     Iterator<E> iterator();
 
     // *** Stack methods ***

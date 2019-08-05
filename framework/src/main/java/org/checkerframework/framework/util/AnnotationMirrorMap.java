@@ -1,7 +1,5 @@
 package org.checkerframework.framework.util;
 
-import static org.checkerframework.javacutil.AnnotationUtils.annotationOrdering;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -26,12 +24,21 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
 
     /** The actual map to which all work is delegated. */
-    private final Map<AnnotationMirror, V> shadowMap = new TreeMap<>(annotationOrdering());
+    private final Map<AnnotationMirror, V> shadowMap;
 
-    public AnnotationMirrorMap() {}
+    /** Default constructor. */
+    public AnnotationMirrorMap() {
+        this.shadowMap = new TreeMap<>(AnnotationUtils.annotationOrdering());
+    }
 
-    public AnnotationMirrorMap(Map<AnnotationMirror, ? extends V> primaries) {
-        this.putAll(primaries);
+    /**
+     * Creates an annotation mirror map and adds all the mappings in {@code copy}.
+     *
+     * @param copy a map whose contents should be copied to the newly created map
+     */
+    public AnnotationMirrorMap(Map<AnnotationMirror, ? extends V> copy) {
+        this();
+        this.putAll(copy);
     }
 
     @Override

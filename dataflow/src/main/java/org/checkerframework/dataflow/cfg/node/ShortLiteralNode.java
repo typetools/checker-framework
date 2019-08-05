@@ -37,7 +37,7 @@ public class ShortLiteralNode extends ValueLiteralNode {
     @Override
     public boolean equals(Object obj) {
         // test that obj is a ShortLiteralNode
-        if (obj == null || !(obj instanceof ShortLiteralNode)) {
+        if (!(obj instanceof ShortLiteralNode)) {
             return false;
         }
         // super method compares values

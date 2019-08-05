@@ -32,6 +32,7 @@ import java.util.stream.StreamSupport;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * The root interface in the <i>collection hierarchy</i>.  A collection
@@ -194,6 +195,7 @@ public interface Collection<E> extends Iterable<E> {
      *
      * @return an <tt>Iterator</tt> over the elements in this collection
      */
+    @SideEffectFree
     Iterator<E> iterator();
 
     /**
@@ -212,7 +214,8 @@ public interface Collection<E> extends Iterable<E> {
      *
      * @return an array containing all of the elements in this collection
      */
-    Object[] toArray();
+    @SideEffectFree
+    @PolyNull Object[] toArray(Collection<@PolyNull E> this);
 
     /**
      * Returns an array containing all of the elements in this collection;
@@ -257,6 +260,10 @@ public interface Collection<E> extends Iterable<E> {
      *         this collection
      * @throws NullPointerException if the specified array is null
      */
+    // The Nullness Checker does NOT use this signature; rather, the checker has hard-coded rules
+    // for toArray(), because the most useful type for toArray() is not expressible in the surface
+    // syntax that the nullness annotations support.
+    @SideEffectFree
     <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a);
 
     // Modification Operations
@@ -569,6 +576,7 @@ public interface Collection<E> extends Iterable<E> {
      * @since 1.8
      */
     @Override
+    @SideEffectFree
     default Spliterator<E> spliterator() {
         return Spliterators.spliterator(this, 0);
     }

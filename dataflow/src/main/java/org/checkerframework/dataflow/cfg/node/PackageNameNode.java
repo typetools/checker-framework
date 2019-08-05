@@ -5,13 +5,13 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node representing a package name used in an expression such as a constructor invocation
+ * A node representing a package name used in an expression such as a constructor invocation.
  *
  * <p><em>package</em>.class.object(...)
  *
@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class PackageNameNode extends Node {
 
     protected final Tree tree;
-    /** The package named by this node */
+    /** The package named by this node. */
     protected final Element element;
 
     /** The parent name, if any. */
@@ -65,7 +65,7 @@ public class PackageNameNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof PackageNameNode)) {
+        if (!(obj instanceof PackageNameNode)) {
             return false;
         }
         PackageNameNode other = (PackageNameNode) obj;
@@ -78,10 +78,7 @@ public class PackageNameNode extends Node {
 
     @Override
     public int hashCode() {
-        if (parent == null) {
-            return HashCodeUtils.hash(getElement());
-        }
-        return HashCodeUtils.hash(getElement(), getParent());
+        return Objects.hash(getElement(), getParent());
     }
 
     @Override

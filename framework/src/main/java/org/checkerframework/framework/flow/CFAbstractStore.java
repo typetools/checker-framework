@@ -20,6 +20,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.StringCFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -30,9 +31,10 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -217,7 +219,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 }
 
                 // case 2:
-                if (!fieldAccess.isUnmodifiableByOtherCode()) {
+                if (!fieldAccess.isUnassignableByOtherCode()) {
                     continue; // remove information completely
                 }
 
@@ -227,7 +229,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             fieldValues = newFieldValues;
 
             // update method values
-            methodValues.clear();
+            methodValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
 
             arrayValues.clear();
         }
@@ -253,13 +255,56 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         insertValue(r, analysis.createSingleAnnotationValue(a, r.getType()));
     }
 
+    /**
+     * Add the annotation {@code newAnno} for the expression {@code r} (correctly deciding where to
+     * store the information depending on the type of the expression {@code r}).
+     *
+     * <p>This method does not take care of removing other information that might be influenced by
+     * changes to certain parts of the state.
+     *
+     * <p>If there is already a value {@code v} present for {@code r}, then the greatest lower bound
+     * of the new and old value is inserted into the store unless it's bottom. Some checkers do not
+     * override {@link QualifierHierarchy#greatestLowerBound(AnnotationMirror, AnnotationMirror)}
+     * and the default implementation will return the bottom qualifier incorrectly. So this method
+     * conservatively does not insert the glb if it is bottom.
+     *
+     * <p>Note that this happens per hierarchy, and if the store already contains information about
+     * a hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
+     */
+    public void insertOrRefine(FlowExpressions.Receiver r, AnnotationMirror newAnno) {
+        if (!canInsertReceiver(r)) {
+            return;
+        }
+        V oldValue = getValue(r);
+        if (oldValue == null) {
+            insertValue(r, analysis.createSingleAnnotationValue(newAnno, r.getType()));
+            return;
+        }
+        QualifierHierarchy qualifierHierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+        AnnotationMirror top = qualifierHierarchy.getTopAnnotation(newAnno);
+        AnnotationMirror oldAnno =
+                qualifierHierarchy.findAnnotationInHierarchy(oldValue.annotations, top);
+        if (oldAnno == null) {
+            insertValue(r, analysis.createSingleAnnotationValue(newAnno, r.getType()));
+            return;
+        }
+
+        AnnotationMirror glb = qualifierHierarchy.greatestLowerBound(newAnno, oldAnno);
+        if (AnnotationUtils.areSame(qualifierHierarchy.getBottomAnnotation(top), glb)) {
+            glb = newAnno;
+        }
+
+        insertValue(r, analysis.createSingleAnnotationValue(glb, r.getType()));
+    }
+
     /** Returns true if the receiver {@code r} can be stored in this store. */
     public static boolean canInsertReceiver(Receiver r) {
         if (r instanceof FlowExpressions.FieldAccess
                 || r instanceof FlowExpressions.ThisReference
                 || r instanceof FlowExpressions.LocalVariable
                 || r instanceof FlowExpressions.MethodCall
-                || r instanceof FlowExpressions.ArrayAccess) {
+                || r instanceof FlowExpressions.ArrayAccess
+                || r instanceof FlowExpressions.ClassName) {
             return !r.containsUnknown();
         }
         return false;
@@ -299,7 +344,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
             boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
-            if (sequentialSemantics || isMonotonic || fieldAcc.isUnmodifiableByOtherCode()) {
+            if (sequentialSemantics || isMonotonic || fieldAcc.isUnassignableByOtherCode()) {
                 V oldValue = fieldValues.get(fieldAcc);
                 V newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
@@ -327,7 +372,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             }
         } else if (r instanceof FlowExpressions.ThisReference) {
             FlowExpressions.ThisReference thisRef = (FlowExpressions.ThisReference) r;
-            if (sequentialSemantics || thisRef.isUnmodifiableByOtherCode()) {
+            if (sequentialSemantics || thisRef.isUnassignableByOtherCode()) {
                 V oldValue = thisValue;
                 V newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
@@ -336,7 +381,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             }
         } else if (r instanceof FlowExpressions.ClassName) {
             FlowExpressions.ClassName className = (FlowExpressions.ClassName) r;
-            if (sequentialSemantics || className.isUnmodifiableByOtherCode()) {
+            if (sequentialSemantics || className.isUnassignableByOtherCode()) {
                 V oldValue = classValues.get(className);
                 V newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
@@ -460,9 +505,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             FlowExpressions.ClassName c = (FlowExpressions.ClassName) expr;
             return classValues.get(c);
         } else {
-            ErrorReporter.errorAbort(
-                    "Unexpected FlowExpression: " + expr + " (" + expr.getClass() + ")");
-            return null;
+            throw new BugInCF("Unexpected FlowExpression: " + expr + " (" + expr.getClass() + ")");
         }
     }
 
@@ -508,7 +551,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (receiver instanceof LocalVariable) {
             updateForLocalVariableAssignment((LocalVariable) receiver, val);
         } else {
-            ErrorReporter.errorAbort("Unexpected receiver of class " + receiver.getClass());
+            throw new BugInCF("Unexpected receiver of class " + receiver.getClass());
         }
     }
 
@@ -525,7 +568,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
             boolean isMonotonic = isMonotonicUpdate(fieldAccess, val);
-            if (sequentialSemantics || isMonotonic || fieldAccess.isUnmodifiableByOtherCode()) {
+            if (sequentialSemantics || isMonotonic || fieldAccess.isUnassignableByOtherCode()) {
                 fieldValues.put(fieldAccess, val);
             }
         }
@@ -658,9 +701,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 continue; // remove information completely
             }
             if (canAlias(arrayAccess.getReceiver(), otherArrayAccess.getReceiver())) {
-                // TODO: one could be less strict here, and only raise the
-                // abstract value
-                // for all array expressions with potentially aliasing receivers
+                // TODO: one could be less strict here, and only raise the abstract
+                // value for all array expressions with potentially aliasing receivers.
                 continue; // remove information completely
             }
             // information is save to be carried over
@@ -925,7 +967,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     @Override
     public boolean equals(Object o) {
-        if (o != null && o instanceof CFAbstractStore) {
+        if (o instanceof CFAbstractStore) {
             @SuppressWarnings("unchecked")
             CFAbstractStore<V, S> other = (CFAbstractStore<V, S>) o;
             return this.supersetOf(other) && other.supersetOf(this);
@@ -943,41 +985,47 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     @SideEffectFree
     @Override
     public String toString() {
-        return "Use a CFGVisualizer to see the Store: " + this.hashCode();
+        return visualize(new StringCFGVisualizer<>());
     }
 
     @Override
-    public void visualize(CFGVisualizer<?, S, ?> viz) {
+    public String visualize(CFGVisualizer<?, S, ?> viz) {
         /* This cast is guaranteed to be safe, as long as the CFGVisualizer is created by
          * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
         @SuppressWarnings("unchecked")
-        CFGVisualizer<V, S, ?> casted_viz = (CFGVisualizer<V, S, ?>) viz;
-        casted_viz.visualizeStoreHeader(this.getClass().getCanonicalName());
-        internalVisualize(casted_viz);
-        casted_viz.visualizeStoreFooter();
+        CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
+        StringBuilder sbVisualize = new StringBuilder();
+        sbVisualize.append(castedViz.visualizeStoreHeader(this.getClass().getCanonicalName()));
+        sbVisualize.append(internalVisualize(castedViz));
+        sbVisualize.append(castedViz.visualizeStoreFooter());
+        return sbVisualize.toString();
     }
 
     /**
-     * Adds a representation of the internal information of this store to visualizer {@code viz}.
+     * Adds a representation of the internal information of this Store to visualizer {@code viz}.
+     *
+     * @return a representation of the internal information of this {@link Store}
      */
-    protected void internalVisualize(CFGVisualizer<V, S, ?> viz) {
+    protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
+        StringBuilder res = new StringBuilder();
         for (Entry<FlowExpressions.LocalVariable, V> entry : localVariableValues.entrySet()) {
-            viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue()));
         }
         if (thisValue != null) {
-            viz.visualizeStoreThisVal(thisValue);
+            res.append(viz.visualizeStoreThisVal(thisValue));
         }
         for (Entry<FlowExpressions.FieldAccess, V> entry : fieldValues.entrySet()) {
-            viz.visualizeStoreFieldVals(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreFieldVals(entry.getKey(), entry.getValue()));
         }
         for (Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues.entrySet()) {
-            viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue()));
         }
         for (Entry<MethodCall, V> entry : methodValues.entrySet()) {
-            viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue()));
         }
         for (Entry<FlowExpressions.ClassName, V> entry : classValues.entrySet()) {
-            viz.visualizeStoreClassVals(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreClassVals(entry.getKey(), entry.getValue()));
         }
+        return res.toString();
     }
 }

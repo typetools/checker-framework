@@ -17,7 +17,6 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * <p>Consider the following example, from the Index Checker's regression tests:
  *
  * <pre>
- *
  * {@code @EnsuresLTLengthOf(value = "end", targetValue = "array", offset = "#1 - 1")
  *  public void shiftIndex(@NonNegative int x) {
  *      int newEnd = end - x;
@@ -29,8 +28,8 @@ import org.checkerframework.framework.qual.QualifierArgument;
  *
  * where {@code end} is annotated as {@code @NonNegative @LTEqLengthOf("array") int end;}
  *
- * <p>What this method guarantees is that end has a particular type - @LTLengthOf(value="array",
- * offset="x - 1") - after the method returns. This is useful in cases like this one:
+ * <p>This method guarantees that {@code end} has type {@code @LTLengthOf(value="array", offset="x -
+ * 1")} after the method returns. This is useful in cases like this one:
  *
  * <pre>{@code
  * public void useShiftIndex(@NonNegative int x) {
@@ -46,7 +45,6 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * be accepted as {@code @LTLengthOf("array")}.
  *
  * @see LTLengthOf
- * @see org.checkerframework.checker.index.IndexChecker
  * @checker_framework.manual #index-checker Index Checker
  */
 @Documented
@@ -61,6 +59,7 @@ public @interface EnsuresLTLengthOf {
      *
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
+    @JavaExpression
     String[] value();
 
     /**

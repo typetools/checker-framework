@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.dependenttypes;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
@@ -24,6 +25,13 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
             AnnotatedTypeFactory atypeFactory, DependentTypesHelper helper) {
         super(atypeFactory);
         this.helper = helper;
+    }
+
+    @Override
+    public Void visitClass(ClassTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+        Element ele = TreeUtils.elementFromDeclaration(node);
+        helper.standardizeClass(node, annotatedTypeMirror, ele);
+        return super.visitClass(node, annotatedTypeMirror);
     }
 
     @Override
@@ -54,7 +62,7 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror annotatedTypeMirror) {
         Element ele = TreeUtils.elementFromUse(node);
-        if (ele.getKind() == ElementKind.FIELD) {
+        if (ele.getKind() == ElementKind.FIELD || ele.getKind() == ElementKind.ENUM_CONSTANT) {
             helper.standardizeVariable(node, annotatedTypeMirror, ele);
         }
         return super.visitIdentifier(node, annotatedTypeMirror);
