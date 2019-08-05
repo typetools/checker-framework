@@ -279,7 +279,7 @@ class SupertypeFinder {
         }
 
         /**
-         * All enums implicit extend {@code Enum<MyEnum>}, where {@code MyEnum} is the type of the
+         * All enums implicitly extend {@code Enum<MyEnum>}, where {@code MyEnum} is the type of the
          * enum. This method creates the AnnotatedTypeMirror for {@code Enum<MyEnum>} where the
          * annotation on {@code MyEnum} is copied from the annotation on the upper bound of the type
          * argument to Enum. For example, {@code class Enum<E extend @HERE Enum<E>>}.
