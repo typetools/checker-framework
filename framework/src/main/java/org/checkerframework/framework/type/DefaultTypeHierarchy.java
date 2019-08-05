@@ -108,6 +108,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     // Final note: all annotation comparisons are done via isPrimarySubtype, isBottom, and
     // isAnnoSubtype in order to ensure that we first get the annotations in the hierarchy of
     // currentTop before passing annotations to qualifierHierarchy.
+    /** The top annotation of the hierarchy currently being checked. */
     protected AnnotationMirror currentTop;
 
     /** Stores the result of isSubtype, if that result is true. */
@@ -119,6 +120,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      */
     protected final StructuralEqualityVisitHistory typeargVisitHistory;
 
+    /** Creates a DefaultTypeHierarchy. */
     public DefaultTypeHierarchy(
             final BaseTypeChecker checker,
             final QualifierHierarchy qualifierHierarchy,

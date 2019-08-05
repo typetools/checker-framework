@@ -30,11 +30,17 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>See also DefaultTypeHierarchy, and SubtypeVisitHistory
  */
 public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean, Void> {
+    /** History saving the result of previous comparisons */
     protected final StructuralEqualityVisitHistory visitHistory;
 
     // See org.checkerframework.framework.type.DefaultTypeHierarchy.currentTop
     private AnnotationMirror currentTop = null;
 
+    /**
+     * Create a StructuralEqualityComparer.
+     *
+     * @param typeargVisitHistory history saving the result of previous comparisons.
+     */
     public StructuralEqualityComparer(StructuralEqualityVisitHistory typeargVisitHistory) {
         this.visitHistory = typeargVisitHistory;
     }
