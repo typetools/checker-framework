@@ -1049,7 +1049,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror newQual;
                 Class<?> clazz = ValueCheckerUtils.getClassFromType(type.getUnderlyingType());
                 String stringVal = null;
-                if (clazz.equals(char[].class)) {
+                if (clazz.equals(char[].class) || clazz.equals(byte[].class)) {
                     stringVal = getCharArrayStringVal(initializers);
                 }
 
@@ -1187,6 +1187,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
                     char charVal = (((Character) ((LiteralTree) e).getValue()));
                     stringVal.append(charVal);
+                } else if (e.getKind() == Tree.Kind.IDENTIFIER) {
+                    Range range =
+                            getRange(getAnnotatedType(e).getAnnotationInHierarchy(UNKNOWNVAL));
+                    if (range != null && range.from == range.to) {
+                        char charVal = (char) range.from;
+                        stringVal.append(charVal);
+                    }
                 } else {
                     allLiterals = false;
                 }
