@@ -1049,7 +1049,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror newQual;
                 Class<?> clazz = ValueCheckerUtils.getClassFromType(type.getUnderlyingType());
                 String stringVal = null;
-                if (clazz.equals(char[].class) || clazz.equals(byte[].class)) {
+                if (clazz.equals(char[].class)) {
                     stringVal = getCharArrayStringVal(initializers);
                 }
 
