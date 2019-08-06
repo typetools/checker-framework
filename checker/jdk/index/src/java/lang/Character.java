@@ -4395,7 +4395,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @return  the primitive {@code char} value represented by
      *          this object.
      */
-    public char charValue() {
+    public @NonNegative char charValue() {
         return value;
     }
 
