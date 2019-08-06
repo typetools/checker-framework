@@ -452,7 +452,10 @@ public class FlowExpressionParseUtil {
             }
         }
 
-        /** @param expr a field access, a fully qualified class name, or qualified class name */
+        /**
+         * @param expr a field access, a fully qualified class name, or class name qualified with
+         *     another class name (e.g. {@code OuterClass.InnerClass})
+         */
         @Override
         public Receiver visit(FieldAccessExpr expr, FlowExpressionContext context) {
             Resolver resolver = new Resolver(env);
