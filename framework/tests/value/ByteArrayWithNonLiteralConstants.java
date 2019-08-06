@@ -5,7 +5,7 @@ public class ByteArrayWithNonLiteralConstants {
 
     public static void main(String[] args) {
         char @StringVal("hello") [] greeting1 = {'h', 'e', 'l', 'l', 'o'};
-        @IntVal('e') byte e = 'e';
+        @IntVal('e') char e = 'e';
         char @StringVal("hello") [] greeting2 = {'h', e, 'l', 'l', 'o'};
     }
 }
