@@ -1354,6 +1354,9 @@ public abstract class GenericAnnotatedTypeFactory<
             case ARRAY_ACCESS:
                 res = getAnnotatedType(lhsTree);
                 break;
+            case PARENTHESIZED:
+                res = getAnnotatedTypeLhs(TreeUtils.withoutParens((ExpressionTree) lhsTree));
+                break;
             default:
                 if (TreeUtils.isTypeTree(lhsTree)) {
                     // lhsTree is a type tree at the pseudo assignment of a returned expression to
