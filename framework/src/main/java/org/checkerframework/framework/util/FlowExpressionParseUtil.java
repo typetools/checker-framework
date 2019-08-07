@@ -313,7 +313,7 @@ public class FlowExpressionParseUtil {
                                         .getModifiers()
                                         .getFlags()
                                         .contains(Modifier.STATIC)
-                                || TreeUtils.enclosingClass(path).getKind().equals(Tree.Kind.ENUM))
+                                || TreeUtils.enclosingClass(path).getKind() == Tree.Kind.ENUM)
                         && !ElementUtils.isStatic(fieldElem)) {
                     throw new ParseRuntimeException(
                             constructParserException(
