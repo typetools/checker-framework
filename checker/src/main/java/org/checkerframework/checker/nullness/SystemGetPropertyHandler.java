@@ -24,7 +24,10 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class SystemGetPropertyHandler {
 
+    /** The processing environment. */
     protected final ProcessingEnvironment env;
+
+    /** The factory for constructing and looking up types. */
     protected final NullnessAnnotatedTypeFactory factory;
 
     /** The System.getProperty(String) method. */
