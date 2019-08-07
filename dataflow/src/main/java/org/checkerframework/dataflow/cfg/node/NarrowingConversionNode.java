@@ -63,7 +63,7 @@ public class NarrowingConversionNode extends Node {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getOperand());
+        return Objects.hash(NarrowingConversionNode.class, getOperand());
     }
 
     @Override

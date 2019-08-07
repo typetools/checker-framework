@@ -1,5 +1,4 @@
 import org.checkerframework.checker.initialization.qual.*;
-import org.checkerframework.checker.nullness.qual.Raw;
 
 public class PrivateMethodUnknownInit {
 
@@ -13,7 +12,7 @@ public class PrivateMethodUnknownInit {
     }
 
     private void m1(
-                    @UnknownInitialization(PrivateMethodUnknownInit.class) @Raw(PrivateMethodUnknownInit.class) PrivateMethodUnknownInit this) {}
+            @UnknownInitialization(PrivateMethodUnknownInit.class) PrivateMethodUnknownInit this) {}
 
     public void m2() {}
 }

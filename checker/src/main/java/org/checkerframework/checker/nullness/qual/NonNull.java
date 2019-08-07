@@ -29,11 +29,11 @@ import org.checkerframework.framework.qual.UpperBoundFor;
  * <p>This annotation is rarely written in source code, because it is the default.
  *
  * <p>This annotation is associated with the {@link
- * org.checkerframework.checker.nullness.AbstractNullnessChecker}.
+ * org.checkerframework.checker.nullness.NullnessChecker}.
  *
  * @see Nullable
  * @see MonotonicNonNull
- * @see org.checkerframework.checker.nullness.AbstractNullnessChecker
+ * @see org.checkerframework.checker.nullness.NullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
  * @checker_framework.manual #bottom-type the bottom type
  */

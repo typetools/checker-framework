@@ -35,7 +35,6 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.Raw;
 
 /**
  * This is the common base class of all Java language enumeration types.
@@ -80,7 +79,7 @@ public abstract class Enum<E extends Enum<E>>
      *
      * @return the name of this enum constant
      */
-    public final String name(@UnknownInitialization(Enum.class) @Raw(Enum.class) Enum<E> this) {
+    public final String name(@UnknownInitialization(Enum.class) Enum<E> this) {
         return name;
     }
 

@@ -80,7 +80,7 @@ public class InstanceOfNode extends Node {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getOperand());
+        return Objects.hash(InstanceOfNode.class, getOperand());
     }
 
     @Override

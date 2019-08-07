@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
 // see https://github.com/typetools/checker-framework/issues/223
 class RawField {
 
-    public @Raw @UnknownInitialization RawField a;
+    public @UnknownInitialization RawField a;
 
     public RawField() {
         // :: error: (assignment.type.incompatible)
@@ -22,16 +22,16 @@ class RawField {
         a.t1();
     }
 
-    void t2(@Raw @UnknownInitialization RawField a) {
+    void t2(@UnknownInitialization RawField a) {
         this.a = a;
     }
 }
 
 class Options {
 
-    @UnknownInitialization @Raw Object arg;
+    @UnknownInitialization Object arg;
 
-    public Options(@UnknownInitialization @Raw Object arg) {
+    public Options(@UnknownInitialization Object arg) {
         this.arg = arg;
     }
 
@@ -43,7 +43,7 @@ class Options {
 class MultiVersionControl {
 
     @SuppressWarnings("fbc") // see https://github.com/typetools/checker-framework/issues/223
-    public void parseArgs(@UnknownInitialization @Raw MultiVersionControl this) {
+    public void parseArgs(@UnknownInitialization MultiVersionControl this) {
         Options options = new Options(this);
         options.parse_or_usage();
     }
@@ -53,7 +53,7 @@ class MultiVersionControl {
 // FBC type system permits arbitrary assignments in a constructor, but it
 // also makes assumptions that our implementation does not currently check.)
 // class HasStaticUnknownInitializationField {
-//     static @UnknownInitialization @Raw Object f;
+//     static @UnknownInitialization Object f;
 // }
 //
 // class UseUnknownInitializationField {
