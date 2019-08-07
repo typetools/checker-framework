@@ -310,6 +310,23 @@ public class FlowExpressionParseUtil {
                 return getReceiverField(s, context, originalReceiver, fieldElem);
             }
 
+            if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
+                if (!originalReceiver
+                        && TreeUtils.enclosingClass(path) != null
+                        && (TreeUtils.enclosingClass(path)
+                                        .getModifiers()
+                                        .getFlags()
+                                        .contains(Modifier.STATIC)
+                                || TreeUtils.enclosingClass(path).getKind().equals(Tree.Kind.ENUM))
+                        && !ElementUtils.isStatic(fieldElem)) {
+                    throw new ParseRuntimeException(
+                            constructParserException(
+                                    s,
+                                    "a non-static field can't be referenced from a static inner class or enum"));
+                }
+                return getReceiverField(s, context, originalReceiver, fieldElem);
+            }
+
             // Class name
             Element classElem = resolver.findClass(s, path);
             TypeMirror classType = ElementUtils.getType(classElem);
