@@ -307,10 +307,6 @@ public class FlowExpressionParseUtil {
             }
 
             if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
-                return getReceiverField(s, context, originalReceiver, fieldElem);
-            }
-
-            if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
                 if (!originalReceiver
                         && TreeUtils.enclosingClass(path) != null
                         && (TreeUtils.enclosingClass(path)
