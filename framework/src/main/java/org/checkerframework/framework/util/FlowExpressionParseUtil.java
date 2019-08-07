@@ -501,52 +501,38 @@ public class FlowExpressionParseUtil {
             } else if (expr.getType().isPrimitiveType()) {
                 switch (expr.getType().asPrimitiveType().getType()) {
                     case BOOLEAN:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(
-                                        boolean.class, types, env.getElementUtils()));
+                        return new ClassName(types.getPrimitiveType(TypeKind.BOOLEAN));
                     case BYTE:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(byte.class, types, env.getElementUtils()));
+                        return new ClassName(types.getPrimitiveType(TypeKind.BYTE));
                     case SHORT:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(
-                                        short.class, types, env.getElementUtils()));
+                        return new ClassName(types.getPrimitiveType(TypeKind.SHORT));
                     case INT:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(int.class, types, env.getElementUtils()));
+                        return new ClassName(types.getPrimitiveType(TypeKind.INT));
                     case CHAR:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(char.class, types, env.getElementUtils()));
+                        return new ClassName(types.getPrimitiveType(TypeKind.CHAR));
                     case FLOAT:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(
-                                        float.class, types, env.getElementUtils()));
+                        return new ClassName(types.getPrimitiveType(TypeKind.FLOAT));
                     case LONG:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(long.class, types, env.getElementUtils()));
+                        return new ClassName(types.getPrimitiveType(TypeKind.LONG));
                     case DOUBLE:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(
-                                        double.class, types, env.getElementUtils()));
+                        return new ClassName(types.getPrimitiveType(TypeKind.DOUBLE));
                 }
             } else if (expr.getType().isVoidType()) {
-                return new ClassName(
-                        TypesUtils.typeFromClass(void.class, types, env.getElementUtils()));
+                return new ClassName(types.getNoType(TypeKind.VOID));
             }
 
             throw new ParseRuntimeException(
                     constructParserException(expr.toString(), "is an unparsable class literal"));
         }
 
+        /** @param expr an array creation expression, with dimensions and/or initializers. */
         @Override
         public Receiver visit(ArrayCreationExpr expr, FlowExpressionContext context) {
 
             // Parse the type as a class literal
             Receiver receiver =
-                    visit(
-                            StaticJavaParser.parseExpression(expr.getElementType() + ".class")
-                                    .asClassExpr(),
-                            context);
+                    StaticJavaParser.parseExpression(expr.getElementType() + ".class")
+                            .accept(this, context);
 
             List<Receiver> dimensions = new ArrayList<>();
             for (ArrayCreationLevel dimension : expr.getLevels()) {
