@@ -15,7 +15,7 @@ plugins {
     // To update version numbers of dependencies in this file, run: ./gradlew useLatestVersions
     // (Not necessary if using dependabot to update dependencies.)
     id 'se.patrikerdes.use-latest-versions' version '0.2.12'
-    id 'com.github.ben-manes.versions' version '0.21.0'
+    id 'com.github.ben-manes.versions' version '0.22.0'
 }
 apply plugin: "de.undercouch.download"
 
