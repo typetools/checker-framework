@@ -2,6 +2,7 @@ package org.checkerframework.checker.signedness;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
@@ -13,6 +14,7 @@ import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -104,11 +106,22 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     type.replaceAnnotation(SIGNEDNESS_GLB);
                 } else {
                     Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
-
-                    if (tree.getKind() != Tree.Kind.PLUS_ASSIGNMENT
-                            || tree.getKind() != Tree.Kind.MULTIPLY_ASSIGNMENT
-                            || tree.getKind() != Tree.Kind.DIVIDE_ASSIGNMENT
-                            || tree.getKind() != Tree.Kind.MINUS_ASSIGNMENT) {
+                    if (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
+                            || tree.getKind() == Tree.Kind.MULTIPLY_ASSIGNMENT
+                            || tree.getKind() == Tree.Kind.DIVIDE_ASSIGNMENT
+                            || tree.getKind() == Tree.Kind.MINUS_ASSIGNMENT) {
+                        CompoundAssignmentTree t = (CompoundAssignmentTree) tree;
+                        ExpressionTree var = t.getVariable();
+                        ExpressionTree expr = t.getExpression();
+                        AnnotatedTypeMirror varType = getAnnotatedType(var);
+                        AnnotatedTypeMirror exprType = getAnnotatedType(expr);
+                        AnnotatedTypeMirror lht = getAnnotatedType(var);
+                        if (!(varType.hasAnnotation(Unsigned.class)
+                                        && exprType.hasAnnotation(Signed.class))
+                                && !(varType.hasAnnotation(Signed.class)
+                                        && exprType.hasAnnotation(Unsigned.class)))
+                            type.replaceAnnotations(lht.getAnnotations());
+                    } else {
 
                         if (treeRange != null) {
                             switch (javaType.getKind()) {
