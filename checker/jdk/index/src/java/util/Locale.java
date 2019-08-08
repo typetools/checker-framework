@@ -1854,7 +1854,7 @@ public final class Locale implements Cloneable, Serializable {
     /**
      * Overrides Cloneable.
      */
-    public @PolySameLen Object clone()
+    public @PolySameLen Object clone(@PolySameLen Locale this)
     {
         try {
             Locale that = (Locale)super.clone();

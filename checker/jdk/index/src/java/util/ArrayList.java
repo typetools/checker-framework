@@ -299,7 +299,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @return a clone of this <tt>ArrayList</tt> instance
      */
-    public @PolySameLen Object clone() {
+    public @PolySameLen Object clone(@PolySameLen ArrayList this) {
         try {
             @SuppressWarnings("unchecked")
                 ArrayList<E> v = (ArrayList<E>) super.clone();

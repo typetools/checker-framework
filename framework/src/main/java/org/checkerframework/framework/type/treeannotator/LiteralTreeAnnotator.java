@@ -111,7 +111,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
      * @return this
      */
     public LiteralTreeAnnotator addStandardLiteralQualifiers() {
-        // Set null to bottom if no other implicit is given.
+        // Set null to bottom if no other qualifier is given.
         if (!treeKinds.containsKey(Kind.NULL_LITERAL)) {
             for (AnnotationMirror bottom : qualHierarchy.getBottomAnnotations()) {
                 addLiteralKind(LiteralKind.NULL, bottom);
@@ -119,22 +119,22 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
             return this;
         }
         Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
-        Set<AnnotationMirror> implicitForNull = treeKinds.get(Kind.NULL_LITERAL);
-        if (tops.size() == implicitForNull.size()) {
+        Set<AnnotationMirror> defaultForNull = treeKinds.get(Kind.NULL_LITERAL);
+        if (tops.size() == defaultForNull.size()) {
             return this;
         }
         for (AnnotationMirror top : tops) {
-            if (qualHierarchy.findAnnotationInHierarchy(implicitForNull, top) == null) {
-                implicitForNull.add(qualHierarchy.getBottomAnnotation(top));
+            if (qualHierarchy.findAnnotationInHierarchy(defaultForNull, top) == null) {
+                defaultForNull.add(qualHierarchy.getBottomAnnotation(top));
             }
         }
         return this;
     }
 
     /**
-     * Added a implicit rule for a particular {@link LiteralKind}
+     * Added a rule for a particular {@link LiteralKind}
      *
-     * @param literalKind {@code LiteralKind} that should be implicited to {@code theQual}
+     * @param literalKind {@code LiteralKind} that should be defaulted to {@code theQual}
      * @param theQual the {@code AnnotationMirror} that should be applied to the {@code literalKind}
      */
     public void addLiteralKind(LiteralKind literalKind, AnnotationMirror theQual) {
@@ -157,7 +157,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Added an implicit rule for a particular {@link com.sun.source.tree.Tree.Kind}
+     * Added a rule for a particular {@link com.sun.source.tree.Tree.Kind}
      *
      * @param treeKind {@code Tree.Kind} that should be implicited to {@code theQual}
      * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeKind}
@@ -176,7 +176,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Added an implicit rule for all String literals that match the given pattern.
+     * Added a rule for all String literals that match the given pattern.
      *
      * @param pattern pattern to match Strings against
      * @param theQual {@code AnnotationMirror} to apply to Strings that match the pattern

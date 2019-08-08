@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -16,6 +17,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -165,6 +167,14 @@ public class StubGenerator {
         List<TypeElement> innerClass = new ArrayList<>();
 
         indent();
+
+        List<? extends AnnotationMirror> teannos = typeElement.getAnnotationMirrors();
+        if (teannos != null && !teannos.isEmpty()) {
+            for (AnnotationMirror am : teannos) {
+                out.println(am);
+            }
+        }
+
         if (typeElement.getKind() == ElementKind.INTERFACE) {
             out.print("interface");
         } else if (typeElement.getKind() == ElementKind.CLASS) {
@@ -197,7 +207,11 @@ public class StubGenerator {
         if (!typeElement.getInterfaces().isEmpty()) {
             final boolean isInterface = typeElement.getKind() == ElementKind.INTERFACE;
             out.print(isInterface ? " extends " : " implements ");
-            out.print(formatType(formatList(typeElement.getInterfaces())));
+            List<String> ls = new ArrayList<>();
+            for (TypeMirror itf : typeElement.getInterfaces()) {
+                ls.add(formatType(itf));
+            }
+            out.print(formatList(ls));
         }
 
         out.println(" {");
@@ -252,6 +266,14 @@ public class StubGenerator {
         }
 
         indent();
+
+        List<? extends AnnotationMirror> veannos = field.getAnnotationMirrors();
+        if (veannos != null && !veannos.isEmpty()) {
+            for (AnnotationMirror am : veannos) {
+                out.println(am);
+            }
+        }
+
         // if protected, indicate that, but not public
         if (field.getModifiers().contains(Modifier.PROTECTED)) {
             out.print("protected ");
@@ -277,6 +299,14 @@ public class StubGenerator {
      */
     private void printMethodDecl(ExecutableElement method) {
         indent();
+
+        List<? extends AnnotationMirror> eeannos = method.getAnnotationMirrors();
+        if (eeannos != null && !eeannos.isEmpty()) {
+            for (AnnotationMirror am : eeannos) {
+                out.println(am);
+            }
+        }
+
         // if protected, indicate that, but not public
         if (method.getModifiers().contains(Modifier.PROTECTED)) {
             out.print("protected ");
@@ -318,7 +348,11 @@ public class StubGenerator {
 
         if (!method.getThrownTypes().isEmpty()) {
             out.print(" throws ");
-            out.print(formatType(method.getThrownTypes()));
+            List<String> ltt = new ArrayList<>();
+            for (TypeMirror tt : method.getThrownTypes()) {
+                ltt.add(formatType(tt));
+            }
+            out.print(formatList(ltt));
         }
         out.println(';');
     }
@@ -353,7 +387,7 @@ public class StubGenerator {
     }
 
     /** Outputs the simple name of the type. */
-    private String formatType(Object typeRep) {
+    private String formatType(TypeMirror typeRep) {
         StringTokenizer tokenizer = new StringTokenizer(typeRep.toString(), "()<>[], ", true);
         StringBuilder sb = new StringBuilder();
 

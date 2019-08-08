@@ -1942,7 +1942,7 @@ public class GregorianCalendar extends Calendar {
             (internalGet(ZONE_OFFSET) + internalGet(DST_OFFSET));
     }
 
-    public @PolySameLen Object clone()
+    public @PolySameLen Object clone(@PolySameLen GregorianCalendar this)
     {
         GregorianCalendar other = (GregorianCalendar) super.clone();
 

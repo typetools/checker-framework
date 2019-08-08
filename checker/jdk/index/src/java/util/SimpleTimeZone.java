@@ -867,7 +867,7 @@ public class SimpleTimeZone extends TimeZone {
      * Returns a clone of this <code>SimpleTimeZone</code> instance.
      * @return a clone of this instance.
      */
-    public @PolySameLen Object clone()
+    public @PolySameLen Object clone(@PolySameLen SimpleTimeZone this)
     {
         return super.clone();
     }

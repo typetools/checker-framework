@@ -296,7 +296,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
      *   <li>an explicit annotation on the new class expression ({@code new @HERE MyClass()}), or
      *   <li>an explicit annotation on the declaration of the class ({@code @HERE class MyClass
      *       {}}), or
-     *   <li>an explicit or implicit annotation on the declaration of the constructor ({@code @HERE
+     *   <li>an explicit or default annotation on the declaration of the constructor ({@code @HERE
      *       public MyClass() {}}).
      * </ul>
      *
@@ -306,7 +306,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
      */
     @Override
     public AnnotatedTypeMirror visitNewClass(NewClassTree node, AnnotatedTypeFactory f) {
-        // constructorFromUse return type has implicits
+        // constructorFromUse return type has default annotations
         // so use fromNewClass which does diamond inference and only
         // contains explicit annotations.
         AnnotatedDeclaredType type = f.fromNewClass(node);

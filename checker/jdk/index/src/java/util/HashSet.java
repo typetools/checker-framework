@@ -248,7 +248,7 @@ public class HashSet<E>
      *
      * @return a shallow copy of this set
      */
-    public @PolySameLen Object clone() {
+    public @PolySameLen Object clone(@PolySameLen HashSet this) {
         try {
             HashSet<E> newSet = (HashSet<E>) super.clone();
             newSet.map = (HashMap<E, Object>) map.clone();

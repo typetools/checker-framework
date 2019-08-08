@@ -276,7 +276,7 @@ public class Date
     /**
      * Return a copy of this object.
      */
-    public @PolySameLen Object clone() {
+    public @PolySameLen Object clone(@PolySameLen Date this) {
         Date d = null;
         try {
             d = (Date)super.clone();

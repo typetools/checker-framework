@@ -2487,7 +2487,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      *
      * @return a copy of this object.
      */
-    public @PolySameLen Object clone() {
+    public @PolySameLen Object clone(@PolySameLen Calendar this) {
         try {
             Calendar other = (Calendar) super.clone();
 
