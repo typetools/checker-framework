@@ -2259,4 +2259,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         return getMinLenValue(lengthAnno);
     }
+
+    @Override
+    public AnnotatedTypeMirror getDummyAssignedTo(ExpressionTree expressionTree) {
+        TypeMirror type = TreeUtils.typeOf(expressionTree);
+        if (type.getKind() != TypeKind.VOID) {
+            AnnotatedTypeMirror atm = type(expressionTree);
+            addDefaultAnnotations(atm);
+            return atm;
+        }
+        return null;
+    }
 }
