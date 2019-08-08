@@ -17,10 +17,8 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
-import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -104,35 +102,40 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
                         && type.hasAnnotation(SIGNED)) {
                     type.replaceAnnotation(SIGNEDNESS_GLB);
-                } else if (valueATM.hasExplicitAnnotation(IntRange.class)
-                        || valueATM.hasExplicitAnnotation(IntVal.class)) {
+                } else {
                     Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
 
-                    if (treeRange != null) {
-                        switch (javaType.getKind()) {
-                            case BYTE:
-                            case CHAR:
-                                if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
-                                    type.replaceAnnotation(SIGNEDNESS_GLB);
-                                }
-                                break;
-                            case SHORT:
-                                if (treeRange.isWithin(0, Short.MAX_VALUE)) {
-                                    type.replaceAnnotation(SIGNEDNESS_GLB);
-                                }
-                                break;
-                            case INT:
-                                if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
-                                    type.replaceAnnotation(SIGNEDNESS_GLB);
-                                }
-                                break;
-                            case LONG:
-                                if (treeRange.isWithin(0, Long.MAX_VALUE)) {
-                                    type.replaceAnnotation(SIGNEDNESS_GLB);
-                                }
-                                break;
-                            default:
-                                // Nothing
+                    if (tree.getKind() != Tree.Kind.PLUS_ASSIGNMENT
+                            || tree.getKind() != Tree.Kind.MULTIPLY_ASSIGNMENT
+                            || tree.getKind() != Tree.Kind.DIVIDE_ASSIGNMENT
+                            || tree.getKind() != Tree.Kind.MINUS_ASSIGNMENT) {
+
+                        if (treeRange != null) {
+                            switch (javaType.getKind()) {
+                                case BYTE:
+                                case CHAR:
+                                    if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
+                                        type.replaceAnnotation(SIGNEDNESS_GLB);
+                                    }
+                                    break;
+                                case SHORT:
+                                    if (treeRange.isWithin(0, Short.MAX_VALUE)) {
+                                        type.replaceAnnotation(SIGNEDNESS_GLB);
+                                    }
+                                    break;
+                                case INT:
+                                    if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
+                                        type.replaceAnnotation(SIGNEDNESS_GLB);
+                                    }
+                                    break;
+                                case LONG:
+                                    if (treeRange.isWithin(0, Long.MAX_VALUE)) {
+                                        type.replaceAnnotation(SIGNEDNESS_GLB);
+                                    }
+                                    break;
+                                default:
+                                    // Nothing
+                            }
                         }
                     }
                 }
