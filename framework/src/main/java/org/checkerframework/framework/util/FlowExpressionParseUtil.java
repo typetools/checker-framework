@@ -505,6 +505,7 @@ public class FlowExpressionParseUtil {
             return new ClassName(result);
         }
 
+        /** @param expr an array creation expression, with dimensions and/or initializers. */
         @Override
         public Receiver visit(ArrayCreationExpr expr, FlowExpressionContext context) {
             List<Receiver> dimensions = new ArrayList<>();
