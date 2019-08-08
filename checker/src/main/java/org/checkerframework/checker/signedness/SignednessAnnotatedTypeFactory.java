@@ -115,12 +115,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         ExpressionTree expr = t.getExpression();
                         AnnotatedTypeMirror varType = getAnnotatedType(var);
                         AnnotatedTypeMirror exprType = getAnnotatedType(expr);
-                        AnnotatedTypeMirror lht = getAnnotatedType(var);
                         if (!(varType.hasAnnotation(Unsigned.class)
                                         && exprType.hasAnnotation(Signed.class))
                                 && !(varType.hasAnnotation(Signed.class)
                                         && exprType.hasAnnotation(Unsigned.class)))
-                            type.replaceAnnotations(lht.getAnnotations());
+                            type.replaceAnnotations(varType.getAnnotations());
                     } else {
                         if (treeRange != null) {
                             switch (javaType.getKind()) {
