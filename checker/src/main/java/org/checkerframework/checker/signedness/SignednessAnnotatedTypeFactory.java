@@ -122,7 +122,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                         && exprType.hasAnnotation(Unsigned.class)))
                             type.replaceAnnotations(lht.getAnnotations());
                     } else {
-
                         if (treeRange != null) {
                             switch (javaType.getKind()) {
                                 case BYTE:
