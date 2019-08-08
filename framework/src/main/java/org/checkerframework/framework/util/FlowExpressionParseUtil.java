@@ -525,9 +525,11 @@ public class FlowExpressionParseUtil {
             }
             TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType(), context);
             if (arrayType == null) {
-                // TODO: issue error
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                expr.getElementType().asString(), "type not parsable"));
             }
-            for (Receiver ignored : dimensions) {
+            for (int i = 0; i < dimensions.size(); i++) {
                 arrayType = TypesUtils.createArrayType(arrayType, env.getTypeUtils());
             }
             return new ArrayCreation(arrayType, dimensions, initializers);
@@ -551,25 +553,24 @@ public class FlowExpressionParseUtil {
             } else if (type.isPrimitiveType()) {
                 switch (type.asPrimitiveType().getType()) {
                     case BOOLEAN:
-                        return TypesUtils.typeFromClass(
-                                boolean.class, types, env.getElementUtils());
+                        return types.getPrimitiveType(TypeKind.BOOLEAN);
                     case BYTE:
-                        return TypesUtils.typeFromClass(byte.class, types, env.getElementUtils());
+                        return types.getPrimitiveType(TypeKind.BYTE);
                     case SHORT:
-                        return TypesUtils.typeFromClass(short.class, types, env.getElementUtils());
+                        return types.getPrimitiveType(TypeKind.SHORT);
                     case INT:
-                        return TypesUtils.typeFromClass(int.class, types, env.getElementUtils());
+                        return types.getPrimitiveType(TypeKind.INT);
                     case CHAR:
-                        return TypesUtils.typeFromClass(char.class, types, env.getElementUtils());
+                        return types.getPrimitiveType(TypeKind.CHAR);
                     case FLOAT:
-                        return TypesUtils.typeFromClass(float.class, types, env.getElementUtils());
+                        return types.getPrimitiveType(TypeKind.FLOAT);
                     case LONG:
-                        return TypesUtils.typeFromClass(long.class, types, env.getElementUtils());
+                        return types.getPrimitiveType(TypeKind.LONG);
                     case DOUBLE:
-                        return TypesUtils.typeFromClass(double.class, types, env.getElementUtils());
+                        return types.getPrimitiveType(TypeKind.DOUBLE);
                 }
             } else if (type.isVoidType()) {
-                return TypesUtils.typeFromClass(void.class, types, env.getElementUtils());
+                return types.getNoType(TypeKind.VOID);
             }
             return null;
         }
