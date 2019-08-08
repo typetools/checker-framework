@@ -19,6 +19,7 @@ import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericVisitorWithDefaults;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -31,7 +32,6 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
@@ -50,6 +50,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayCreation;
@@ -495,59 +496,17 @@ public class FlowExpressionParseUtil {
          */
         @Override
         public Receiver visit(ClassExpr expr, FlowExpressionContext context) {
-            if (expr.getType().isClassOrInterfaceType()) {
-                return StaticJavaParser.parseExpression(expr.getTypeAsString())
-                        .accept(this, context);
-            } else if (expr.getType().isPrimitiveType()) {
-                switch (expr.getType().asPrimitiveType().getType()) {
-                    case BOOLEAN:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(
-                                        boolean.class, types, env.getElementUtils()));
-                    case BYTE:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(byte.class, types, env.getElementUtils()));
-                    case SHORT:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(
-                                        short.class, types, env.getElementUtils()));
-                    case INT:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(int.class, types, env.getElementUtils()));
-                    case CHAR:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(char.class, types, env.getElementUtils()));
-                    case FLOAT:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(
-                                        float.class, types, env.getElementUtils()));
-                    case LONG:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(long.class, types, env.getElementUtils()));
-                    case DOUBLE:
-                        return new ClassName(
-                                TypesUtils.typeFromClass(
-                                        double.class, types, env.getElementUtils()));
-                }
-            } else if (expr.getType().isVoidType()) {
-                return new ClassName(
-                        TypesUtils.typeFromClass(void.class, types, env.getElementUtils()));
+            TypeMirror result = convertTypeToTypeMirror(expr.getType(), context);
+            if (result == null) {
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                expr.toString(), "is an unparsable class literal"));
             }
-
-            throw new ParseRuntimeException(
-                    constructParserException(expr.toString(), "is an unparsable class literal"));
+            return new ClassName(result);
         }
 
         @Override
         public Receiver visit(ArrayCreationExpr expr, FlowExpressionContext context) {
-
-            // Parse the type as a class literal
-            Receiver receiver =
-                    visit(
-                            StaticJavaParser.parseExpression(expr.getElementType() + ".class")
-                                    .asClassExpr(),
-                            context);
-
             List<Receiver> dimensions = new ArrayList<>();
             for (ArrayCreationLevel dimension : expr.getLevels()) {
                 if (dimension.getDimension().isPresent()) {
@@ -563,8 +522,55 @@ public class FlowExpressionParseUtil {
                     initializers.add(initializer.accept(this, context));
                 }
             }
+            TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType(), context);
+            if (arrayType == null) {
+                // TODO: issue error
+            }
+            for (Receiver ignored : dimensions) {
+                arrayType = TypesUtils.createArrayType(arrayType, env.getTypeUtils());
+            }
+            return new ArrayCreation(arrayType, dimensions, initializers);
+        }
 
-            return new ArrayCreation(receiver.getType(), dimensions, initializers);
+        /**
+         * Converts the JavaParser type to a TypeMirror.
+         *
+         * <p>Might return null if convert the kind of type is not handled.
+         *
+         * @param type JavaParser type
+         * @param context FlowExpressionContext
+         * @return TypeMirror corresponding to {@code type} or null if {@code type} isn't handled
+         */
+        private @Nullable TypeMirror convertTypeToTypeMirror(
+                Type type, FlowExpressionContext context) {
+            if (type.isClassOrInterfaceType()) {
+                return StaticJavaParser.parseExpression(type.asString())
+                        .accept(this, context)
+                        .getType();
+            } else if (type.isPrimitiveType()) {
+                switch (type.asPrimitiveType().getType()) {
+                    case BOOLEAN:
+                        return TypesUtils.typeFromClass(
+                                boolean.class, types, env.getElementUtils());
+                    case BYTE:
+                        return TypesUtils.typeFromClass(byte.class, types, env.getElementUtils());
+                    case SHORT:
+                        return TypesUtils.typeFromClass(short.class, types, env.getElementUtils());
+                    case INT:
+                        return TypesUtils.typeFromClass(int.class, types, env.getElementUtils());
+                    case CHAR:
+                        return TypesUtils.typeFromClass(char.class, types, env.getElementUtils());
+                    case FLOAT:
+                        return TypesUtils.typeFromClass(float.class, types, env.getElementUtils());
+                    case LONG:
+                        return TypesUtils.typeFromClass(long.class, types, env.getElementUtils());
+                    case DOUBLE:
+                        return TypesUtils.typeFromClass(double.class, types, env.getElementUtils());
+                }
+            } else if (type.isVoidType()) {
+                return TypesUtils.typeFromClass(void.class, types, env.getElementUtils());
+            }
+            return null;
         }
 
         /**
@@ -945,13 +951,13 @@ public class FlowExpressionParseUtil {
             Symbol sym = ((ClassType) type).tsym.owner;
 
             if (sym == null) {
-                return Type.noType;
+                return com.sun.tools.javac.code.Type.noType;
             }
 
             ClassSymbol cs = sym.enclClass();
 
             if (cs == null) {
-                return Type.noType;
+                return com.sun.tools.javac.code.Type.noType;
             }
 
             return cs.asType();
