@@ -3,7 +3,7 @@ import org.checkerframework.checker.tainting.qual.PolyTainted;
 public class PolyReceivers {
 
     static class MyClass {
-        public void start(@PolyTainted PolyReceivers.MyClass this) {}
+        public void start(@PolyTainted MyClass this) {}
     }
 
     PolyReceivers(int i, Runnable... runnables) {}
