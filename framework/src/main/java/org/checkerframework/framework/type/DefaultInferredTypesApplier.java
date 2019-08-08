@@ -85,11 +85,9 @@ public class DefaultInferredTypesApplier {
             if (primary == null) {
                 Set<AnnotationMirror> lowerbounds =
                         AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, type);
-                AnnotationMirror lowerbound = hierarchy.findAnnotationInHierarchy(lowerbounds, top);
-                if (omitSubtypingCheck || hierarchy.isSubtype(inferred, lowerbound)) {
-                    type.replaceAnnotation(inferred);
-                }
-            } else if ((omitSubtypingCheck || hierarchy.isSubtype(inferred, primary))) {
+                primary = hierarchy.findAnnotationInHierarchy(lowerbounds, top);
+            }
+            if ((omitSubtypingCheck || hierarchy.isSubtype(inferred, primary))) {
                 type.replaceAnnotation(inferred);
                 if (type.getKind() == TypeKind.INTERSECTION) {
                     for (AnnotatedTypeMirror superType :
