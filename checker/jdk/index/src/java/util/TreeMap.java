@@ -618,7 +618,7 @@ public class TreeMap<K,V>
      *
      * @return a shallow copy of this map
      */
-    public @PolySameLen Object clone(@PolySameLen TreeMap this) {
+    public @PolySameLen Object clone(@PolySameLen TreeMap<K,V> this) {
         TreeMap<K,V> clone = null;
         try {
             clone = (TreeMap<K,V>) super.clone();

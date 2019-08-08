@@ -665,7 +665,7 @@ public class Vector<E>
      *
      * @return  a clone of this vector
      */
-    public synchronized @PolySameLen Object clone(@PolySameLen Vector this) {
+    public synchronized @PolySameLen Object clone(@PolySameLen Vector<E> this) {
         try {
             @SuppressWarnings("unchecked")
                 Vector<E> v = (Vector<E>) super.clone();

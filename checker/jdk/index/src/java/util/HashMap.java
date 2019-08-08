@@ -668,7 +668,7 @@ public class HashMap<K,V>
      *
      * @return a shallow copy of this map
      */
-    public @PolySameLen Object clone(@PolySameLen HashMap this) {
+    public @PolySameLen Object clone(@PolySameLen HashMap<K,V> this) {
         HashMap<K,V> result = null;
         try {
             result = (HashMap<K,V>)super.clone();
