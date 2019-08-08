@@ -6,7 +6,7 @@ package org.checkerframework.framework.qual;
  * <p>These correspond to the constants in {@link javax.lang.model.type.TypeKind}. However, that
  * enum is not available on Android and a warning is produced. So this enum is used instead.
  *
- * @checker_framework.manual #creating-type-introduction Declaratively specifying implicit
+ * @checker_framework.manual #creating-type-introduction Declaratively specifying default
  *     annotations
  */
 public enum TypeKind {
