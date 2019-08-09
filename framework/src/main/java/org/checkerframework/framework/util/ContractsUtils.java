@@ -428,7 +428,7 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns a collection of postcondition annotations which can consist of
+     * Returns a collection of postcondition annotations that can consist of
      * {@code @EnsuresNonNull},{@code @EnsuresKeyFor},{@code @EnsuresLTLengthOf},
      * {@code @EnsuresLockHeld} or any other postcondition annotation developed in the future.
      *
@@ -534,7 +534,7 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns a collection of conditional postcondition annotations which can consist of
+     * Returns a collection of conditional postcondition annotations that can consist of
      * {@code @EnsuresNonNullIf},{@code @EnsuresKeyForIf},{@code @EnsuresLTLengthOfIf},
      * {@code @EnsuresLockHeldIf}, {@code @EnsuresMinLenIf} or any other conditional postcondition
      * annotation developed in the future.
