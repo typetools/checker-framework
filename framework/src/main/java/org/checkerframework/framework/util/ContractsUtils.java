@@ -569,7 +569,6 @@ public class ContractsUtils {
                 for (AnnotationValue a : elementvalue) {
                     if (a instanceof AnnotationMirror)
                         annotations.add((AnnotationMirror) a.getValue());
-                    else throw new RuntimeException("Not Valid");
                 }
                 for (AnnotationMirror a : annotations) {
                     AnnotationMirror postcondAnno =
@@ -594,7 +593,6 @@ public class ContractsUtils {
                 List<String> expressions = new ArrayList<>(elementvalue.size());
                 for (AnnotationValue a : elementvalue) {
                     if (a instanceof Attribute.Constant) expressions.add((String) a.getValue());
-                    else throw new RuntimeException("Not Valid");
                 }
                 AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
                 if (postcondAnno != null) {
