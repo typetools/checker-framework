@@ -106,7 +106,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     type.replaceAnnotation(SIGNEDNESS_GLB);
                 } else {
                     Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
-
+                    // @SignednessGlb do not gets applied to these compound assignments whenever
+                    // there variable is initialised with a positive value.
+                    // Therefore they are applied manually.
                     if (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
                             || tree.getKind() == Tree.Kind.MULTIPLY_ASSIGNMENT
                             || tree.getKind() == Tree.Kind.DIVIDE_ASSIGNMENT
@@ -119,7 +121,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         if (!(varType.hasAnnotation(Unsigned.class)
                                         && exprType.hasAnnotation(Signed.class))
                                 && !(varType.hasAnnotation(Signed.class)
-                                        && exprType.hasAnnotation(Unsigned.class)))
+                                        && exprType.hasAnnotation(Unsigned.class))
+                                && !varType.hasExplicitAnnotation(SignednessGlb.class))
                             type.replaceAnnotations(varType.getAnnotations());
                     } else {
                         if (treeRange != null) {
