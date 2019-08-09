@@ -372,7 +372,13 @@ public class ContractsUtils {
         return getAnnotationMirrorOfQualifier(metaAnno, argumentAnno, argumentMap);
     }
 
-    /** Returns the set of preconditions according to the given {@link RequiresQualifier}. */
+    /**
+     * Returns the preconditions expressed by the given annotation.
+     *
+     * @param requiresAnnotation a {@link RequiresQualifier}, or null
+     * @return the preconditions expressed by the given annotation, or the empty set if the argument
+     *     is null
+     */
     private Set<Precondition> getPrecondition(AnnotationMirror requiresAnnotation) {
         if (requiresAnnotation == null) {
             return Collections.emptySet();
@@ -431,7 +437,13 @@ public class ContractsUtils {
         return result;
     }
 
-    /** Returns the set of postconditions according to the given {@link EnsuresQualifier}. */
+    /**
+     * Returns the postconditions expressed by the given annotation.
+     *
+     * @param ensuresAnnotation an {@link EnsuresQualifier}, or null
+     * @return the postconditions expostssed by the given annotation, or the empty set if the
+     *     argument is null
+     */
     private Set<Postcondition> getPostcondition(AnnotationMirror ensuresAnnotation) {
         if (ensuresAnnotation == null) {
             return Collections.emptySet();
@@ -450,10 +462,7 @@ public class ContractsUtils {
         return result;
     }
 
-    /**
-     * Returns a set of triples {@code (expr, (result, annotation))} of conditional postconditions
-     * on the method {@code methodElement}.
-     */
+    /** Returns the conditional postconditions on the method {@code methodElement}. */
     public Set<ConditionalPostcondition> getConditionalPostconditions(
             ExecutableElement methodElement) {
         Set<ConditionalPostcondition> result = new LinkedHashSet<>();
@@ -463,22 +472,21 @@ public class ContractsUtils {
         result.addAll(getConditionalPostcondition(ensuresQualifierIf));
 
         // Check for multiple contracts.
-        AnnotationMirror ensuresAnnotationsIf =
+        AnnotationMirror ensuresQualifiersIf =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifiersIf.class);
-        if (ensuresAnnotationsIf != null) {
+        if (ensuresQualifiersIf != null) {
             List<AnnotationMirror> annotations =
                     AnnotationUtils.getElementValueArray(
-                            ensuresAnnotationsIf, "value", AnnotationMirror.class, false);
+                            ensuresQualifiersIf, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : annotations) {
                 result.addAll(getConditionalPostcondition(a));
             }
         }
 
-        // Check type-system specific annotations.
-        Class<ConditionalPostconditionAnnotation> metaAnnotation =
-                ConditionalPostconditionAnnotation.class;
+        // Check type-system-specific annotations.
         List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
-                factory.getDeclAnnotationWithMetaAnnotation(methodElement, metaAnnotation);
+                factory.getDeclAnnotationWithMetaAnnotation(
+                        methodElement, ConditionalPostconditionAnnotation.class);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
