@@ -3996,8 +3996,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Creates an annotated type mirror that type argument inference should pretend the {@code
-     * expression} is assigned to. This implementation returns null, but subclass may override this
-     * method to return a type.
+     * expression} is assigned to. This implementation returns null, but subclasses may override
+     * this method to return a type.
      *
      * <p>This biases the inference algorithm toward the annotations for type variables in invariant
      * positions.
