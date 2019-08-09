@@ -13,13 +13,13 @@ import java.lang.annotation.Target;
  * <ul>
  *   <li>E must have one of the following:
  *       <ul>
- *         <li>an element {@code expression} that is an array of {@code String}s, analogous to the
- *             element {@code expression} in {@link EnsuresQualifierIf}, or
+ *         <li>an element {@code expression} that is an array of {@code String}s, analogous to
+ *             {@link EnsuresQualifierIf#expression()}, or
  *         <li>an element {@code value} that is an array of conditional postcondition annotations,
- *             analogous to the the element {@code value} in {@link EnsuresQualifiersIf}.
+ *             analogous to {@link EnsuresQualifiersIf#value()}.
  *       </ul>
- *   <li>E must have an element {@code result} with the same meaning as the element {@code result}
- *       in {@link EnsuresQualifierIf}.
+ *   <li>E must have an element {@code result} with the same meaning as {@link
+ *       EnsuresQualifierIf#result()}.
  * </ul>
  *
  * <p>The established postcondition P has type specified by the {@code qualifier} field of this
