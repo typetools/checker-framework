@@ -3999,8 +3999,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * expression} is assigned to. This implementation returns null, but subclass may override this
      * method to return a type.
      *
-     * <p>This biases the inference algorithm toward default annotations for type variables in
-     * invariant positions.
+     * <p>This biases the inference algorithm toward the annotations for type variables in invariant
+     * positions.
      *
      * @param expressionTree an expression which has no assignment context and for which type
      *     arguments need to be inferred
