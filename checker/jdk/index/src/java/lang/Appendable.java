@@ -105,7 +105,7 @@ public interface Appendable {
      * @throws  IOException
      *          If an I/O error occurs
      */
-    Appendable append(CharSequence csq, @IndexOrHigh("#1") int start, @IndexOrHigh("#1") int end) throws IOException;
+    Appendable append(CharSequence csq, @IndexOrHigh("#1") @LessThan("#3 + 1") int start, @IndexOrHigh("#1") int end) throws IOException;
 
     /**
      * Appends the specified character to this <tt>Appendable</tt>.
