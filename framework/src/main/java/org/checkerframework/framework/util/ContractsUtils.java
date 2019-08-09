@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import com.sun.tools.javac.code.Attribute;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -427,41 +428,39 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns postcondition annotations.
+     * Returns a collection of
+     * {@code @EnsuresNonNull},{@code @EnsuresKeyFor},{@code @EnsuresLTLengthOf},
+     * {@code @EnsuresLockHeld} postcondition annotations.
      *
-     * @param anno the type qualifier that {@code methodElement} should have
-     * @param metaAnno postCondition meta-annotation
+     * @param anno wrapper annotation if multiple annotations are present, otherwise single
+     *     annotation
+     * @param metaAnno postcondition meta-annotation
      */
     private Set<Postcondition> getPostConditionAnnotations(
             AnnotationMirror anno, AnnotationMirror metaAnno) {
 
-        Class<String> stringType = String.class;
-        Class<AnnotationMirror> annotationmirrorType = AnnotationMirror.class;
-
         @SuppressWarnings("unchecked")
-        List<AnnotationValue> la =
+        List<AnnotationValue> elementvalue =
                 AnnotationUtils.getElementValue(anno, "value", List.class, false);
 
         Set<Postcondition> result = new LinkedHashSet<>();
-        List<AnnotationMirror> annotations = new ArrayList<>(la.size());
-        List<String> expressions = new ArrayList<>(la.size());
-        for (AnnotationValue a : la) {
+        List<AnnotationMirror> annotations = new ArrayList<>();
+        List<String> expressions = new ArrayList<>();
+        for (AnnotationValue a : elementvalue) {
             if (a instanceof AnnotationMirror) {
-                annotations.add(annotationmirrorType.cast(a.getValue()));
-            } else if (a.getClass()
-                    .getName()
-                    .equals("com.sun.tools.javac.code.Attribute$Constant")) {
-                expressions.add(stringType.cast(a.getValue()));
+                annotations.add((AnnotationMirror) a.getValue());
+            } else if (a instanceof Attribute.Constant) {
+                expressions.add((String) a.getValue());
             }
         }
 
         for (AnnotationMirror a : annotations) {
-            List<String> expression =
-                    AnnotationUtils.getElementValueArray(a, "value", String.class, false);
             AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
             if (postcondAnno == null) {
                 continue;
             }
+            List<String> expression =
+                    AnnotationUtils.getElementValueArray(a, "value", String.class, false);
             for (String expr : expression) {
                 result.add(new Postcondition(expr, postcondAnno, a));
             }
@@ -472,7 +471,6 @@ public class ContractsUtils {
                 result.add(new Postcondition(expr, postcondAnno, anno));
             }
         }
-
         return result;
     }
 
@@ -535,16 +533,17 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns conditional postcondition annotations.
+     * Returns a collection of
+     * {@code @EnsuresNonNullIf},{@code @EnsuresKeyForIf},{@code @EnsuresLTLengthOfIf},
+     * {@code @EnsuresLockHeldIf}, {@code @EnsuresMinLenIf} conditional postcondition annotations.
      *
-     * @param anno the type qualifier that {@code methodElement} should have
+     * @param anno wrapper annotation if multiple annotations are present, otherwise single
+     *     annotation
      * @param metaAnno conditional postcondition meta-annotation
      */
     private Set<ConditionalPostcondition> getConditionalPostConditionAnnotations(
             AnnotationMirror anno, AnnotationMirror metaAnno) {
 
-        Class<String> stringType = String.class;
-        Class<AnnotationMirror> annotationmirrorType = AnnotationMirror.class;
         Set<ConditionalPostcondition> result = new LinkedHashSet<>();
 
         Map<? extends ExecutableElement, ? extends AnnotationValue> valmap;
@@ -553,18 +552,15 @@ public class ContractsUtils {
             // Check for multiple contracts
             if (elem.getSimpleName().contentEquals("value")) {
                 @SuppressWarnings("unchecked")
-                List<AnnotationValue> la =
+                List<AnnotationValue> elementvalue =
                         AnnotationUtils.getElementValue(anno, "value", List.class, false);
 
-                List<AnnotationMirror> annotations = new ArrayList<>(la.size());
-                for (AnnotationValue a : la) {
+                List<AnnotationMirror> annotations = new ArrayList<>(elementvalue.size());
+                for (AnnotationValue a : elementvalue) {
                     if (a instanceof AnnotationMirror)
-                        annotations.add(annotationmirrorType.cast(a.getValue()));
+                        annotations.add((AnnotationMirror) a.getValue());
                 }
                 for (AnnotationMirror a : annotations) {
-                    List<String> expressions =
-                            AnnotationUtils.getElementValueArray(
-                                    a, "expression", String.class, false);
                     AnnotationMirror postcondAnno =
                             getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
                     if (postcondAnno == null) {
@@ -572,6 +568,9 @@ public class ContractsUtils {
                     }
                     boolean annoResult =
                             AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
+                    List<String> expressions =
+                            AnnotationUtils.getElementValueArray(
+                                    a, "expression", String.class, false);
                     for (String expr : expressions) {
                         result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
                     }
@@ -579,14 +578,12 @@ public class ContractsUtils {
             } else {
                 // Check for a single contract
                 @SuppressWarnings("unchecked")
-                List<AnnotationValue> la =
+                List<AnnotationValue> elementvalue =
                         AnnotationUtils.getElementValue(anno, "expression", List.class, false);
-                List<String> expressions = new ArrayList<>(la.size());
-                for (AnnotationValue a : la) {
-                    if (a.getClass()
-                            .getName()
-                            .equals("com.sun.tools.javac.code.Attribute$Constant")) {
-                        expressions.add(stringType.cast(a.getValue()));
+                List<String> expressions = new ArrayList<>(elementvalue.size());
+                for (AnnotationValue a : elementvalue) {
+                    if (a instanceof Attribute.Constant) {
+                        expressions.add((String) a.getValue());
                     }
                 }
                 AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
