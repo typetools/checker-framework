@@ -373,7 +373,7 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns the preconditions experessed by the given annotation.
+     * Returns the preconditions expressed by the given annotation.
      *
      * @param requiresAnnotation a {@link RequiresQualifier}, or null
      * @return the preconditions expressed by the given annotation, or the empty set if the argument
@@ -438,7 +438,7 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns the postconditions experessed by the given annotation.
+     * Returns the postconditions expressed by the given annotation.
      *
      * @param ensuresAnnotation an {@link EnsuresQualifier}, or null
      * @return the postconditions expostssed by the given annotation, or the empty set if the
