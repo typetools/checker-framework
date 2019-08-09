@@ -428,13 +428,14 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns a collection of
+     * Returns a collection of postcondition annotations which can consist of
      * {@code @EnsuresNonNull},{@code @EnsuresKeyFor},{@code @EnsuresLTLengthOf},
-     * {@code @EnsuresLockHeld} postcondition annotations.
+     * {@code @EnsuresLockHeld} or any other postcondition annotation developed in the future.
      *
      * @param anno wrapper annotation if multiple annotations are present, otherwise single
      *     annotation
-     * @param metaAnno postcondition meta-annotation
+     * @param metaAnno postcondition meta-annotation that indicates that an annotation is a
+     *     postcondition annotation
      */
     private Set<Postcondition> getPostConditionAnnotations(
             AnnotationMirror anno, AnnotationMirror metaAnno) {
@@ -533,13 +534,15 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns a collection of
+     * Returns a collection of conditional postcondition annotations which can consist of
      * {@code @EnsuresNonNullIf},{@code @EnsuresKeyForIf},{@code @EnsuresLTLengthOfIf},
-     * {@code @EnsuresLockHeldIf}, {@code @EnsuresMinLenIf} conditional postcondition annotations.
+     * {@code @EnsuresLockHeldIf}, {@code @EnsuresMinLenIf} or any other conditional postcondition
+     * annotation developed in the future.
      *
      * @param anno wrapper annotation if multiple annotations are present, otherwise single
      *     annotation
-     * @param metaAnno conditional postcondition meta-annotation
+     * @param @param metaAnno conditional postcondition meta-annotation that indicates that an
+     *     annotation is a conditional postcondition annotation
      */
     private Set<ConditionalPostcondition> getConditionalPostConditionAnnotations(
             AnnotationMirror anno, AnnotationMirror metaAnno) {
