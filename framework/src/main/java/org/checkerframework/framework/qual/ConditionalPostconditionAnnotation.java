@@ -8,15 +8,19 @@ import java.lang.annotation.Target;
 
 /**
  * A meta-annotation that indicates that an annotation E is a conditional postcondition annotation,
- * i.e., E is a type-specialized version of {@link EnsuresQualifierIf}. The {@code qualifier}
- * element is analogous to that of {@link EnsuresQualifierIf}.
+ * i.e., E is a type-specialized version of {@link EnsuresQualifierIf}.
  *
- * <p>The annotation E that is meta-annotated as {@link ConditionalPostconditionAnnotation} must
- * have an element called {@code expression} that is an array of {@code String}s of the same format
- * and with the same meaning as the value {@code expression} in {@link EnsuresQualifierIf} or it
- * must have a list of conditional postcondition annotations in an array{@code value} and with the
- * same meaning as the {@code value} in {@link EnsuresQualifiersIf}. E must also have an element
- * {@code result} with the same meaning as the element {@code result} in {@link EnsuresQualifierIf}.
+ * <ul>
+ *   <li>E must have one of the following:
+ *       <ul>
+ *         <li>an element {@code expression} that is an array of {@code String}s, analogous to the
+ *             element {@code expression} in {@link EnsuresQualifierIf}, or
+ *         <li>an element {@code value} that is an array of conditional postcondition annotations,
+ *             analogous to the the element {@code value} in {@link EnsuresQualifiersIf}.
+ *       </ul>
+ *   <li>E must have an element {@code result} with the same meaning as the element {@code result}
+ *       in {@link EnsuresQualifierIf}.
+ * </ul>
  *
  * <p>The established postcondition P has type specified by the {@code qualifier} field of this
  * annotation. If the annotation E has elements annotated by {@link QualifierArgument}, their values
@@ -57,6 +61,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ConditionalPostconditionAnnotation {
-    /** The qualifier that will be established as a postcondition. */
+    /**
+     * The qualifier that will be established as a postcondition.
+     *
+     * <p>This element is analogous to {@link EnsuresQualifierIf#qualifier()}.
+     */
     Class<? extends Annotation> qualifier();
 }
