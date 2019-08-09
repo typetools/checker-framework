@@ -239,12 +239,12 @@ public class ContractsUtils {
     /** Returns the set of preconditions on the element {@code element}. */
     public Set<Precondition> getPreconditions(Element element) {
         Set<Precondition> result = new LinkedHashSet<>();
-        // Check for a single contract.
+        // Check for a single contract annotation.
         AnnotationMirror requiresAnnotation =
                 factory.getDeclAnnotation(element, RequiresQualifier.class);
         result.addAll(getPrecondition(requiresAnnotation));
 
-        // Check for multiple contracts.
+        // Check for a wrapper around contract annotations.
         AnnotationMirror requiresAnnotations =
                 factory.getDeclAnnotation(element, RequiresQualifiers.class);
         if (requiresAnnotations != null) {
@@ -256,10 +256,9 @@ public class ContractsUtils {
             }
         }
 
-        // Check type-system specific annotations.
-        Class<PreconditionAnnotation> metaAnnotation = PreconditionAnnotation.class;
+        // Check for type-system specific annotations.
         List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
-                factory.getDeclAnnotationWithMetaAnnotation(element, metaAnnotation);
+                factory.getDeclAnnotationWithMetaAnnotation(element, PreconditionAnnotation.class);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
@@ -402,12 +401,12 @@ public class ContractsUtils {
     /** Returns the set of postconditions on the method {@code methodElement}. */
     public Set<Postcondition> getPostconditions(ExecutableElement methodElement) {
         Set<Postcondition> result = new LinkedHashSet<>();
-        // Check for a single contract.
+        // Check for a single contract annotation.
         AnnotationMirror ensuresAnnotation =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifier.class);
         result.addAll(getPostcondition(ensuresAnnotation));
 
-        // Check for multiple contracts.
+        // Check for a wrapper around contract annotations.
         AnnotationMirror ensuresAnnotations =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifiers.class);
         if (ensuresAnnotations != null) {
@@ -419,10 +418,10 @@ public class ContractsUtils {
             }
         }
 
-        // Check type-system specific annotations.
-        Class<PostconditionAnnotation> metaAnnotation = PostconditionAnnotation.class;
+        // Check for type-system specific annotations.
         List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
-                factory.getDeclAnnotationWithMetaAnnotation(methodElement, metaAnnotation);
+                factory.getDeclAnnotationWithMetaAnnotation(
+                        methodElement, PostconditionAnnotation.class);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
@@ -510,12 +509,12 @@ public class ContractsUtils {
     public Set<ConditionalPostcondition> getConditionalPostconditions(
             ExecutableElement methodElement) {
         Set<ConditionalPostcondition> result = new LinkedHashSet<>();
-        // Check for a single contract.
+        // Check for a single contract annotation.
         AnnotationMirror ensuresQualifierIf =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifierIf.class);
         result.addAll(getConditionalPostcondition(ensuresQualifierIf));
 
-        // Check for multiple contracts.
+        // Check for a wrapper around contract annotations.
         AnnotationMirror ensuresQualifiersIf =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifiersIf.class);
         if (ensuresQualifiersIf != null) {
@@ -527,7 +526,7 @@ public class ContractsUtils {
             }
         }
 
-        // Check type-system-specific annotations.
+        // Check for type-system-specific annotations.
         List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
                 factory.getDeclAnnotationWithMetaAnnotation(
                         methodElement, ConditionalPostconditionAnnotation.class);
