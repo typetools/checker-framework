@@ -1,24 +1,52 @@
-import org.checkerframework.checker.signedness.qual.*;
-
 class Issue2482 {
 
-    void m1(String s, int a) {
+    void regularAssignment(byte[] b, int c) {
+        int a = b.length;
+        a = a + c;
+    }
 
+    void compoundAssignment(byte[] b, int c) {
+        int a = b.length;
+        a += c;
+    }
+
+    void stringLenAdd(String s, int a) {
         int len = s.length();
-
         len += a;
+    }
+
+    void stringLenSub(String s, int a) {
+        int len = s.length();
         len -= a;
+    }
+
+    void stringLenDiv(String s, int a) {
+        int len = s.length();
         len /= a;
+    }
+
+    void stringLenMul(String s, int a) {
+        int len = s.length();
         len *= a;
     }
 
-    void m2(byte[] b, int a) {
-
+    void arrayLenAdd(byte[] b, int a) {
         int len = b.length;
-
         len += a;
+    }
+
+    void arrayLenSub(byte[] b, int a) {
+        int len = b.length;
         len -= a;
+    }
+
+    void arrayLenDiv(byte[] b, int a) {
+        int len = b.length;
         len /= a;
+    }
+
+    void arrayLenMul(byte[] b, int a) {
+        int len = b.length;
         len *= a;
     }
 
