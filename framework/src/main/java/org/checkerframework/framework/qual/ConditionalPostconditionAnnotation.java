@@ -8,9 +8,8 @@ import java.lang.annotation.Target;
 
 /**
  * A meta-annotation that indicates that an annotation E is a conditional postcondition annotation,
- * i.e., E is a type-specialized version of {@link EnsuresQualifierIf}. The value {@code qualifier}
- * that is necessary for a conditional postcondition specified with {@link EnsuresQualifierIf} is
- * specified here with the value {@code qualifier}.
+ * i.e., E is a type-specialized version of {@link EnsuresQualifierIf}. The {@code qualifier}
+ * element is analogous to that of {@link EnsuresQualifierIf}.
  *
  * <p>The annotation E that is meta-annotated as {@link ConditionalPostconditionAnnotation} must
  * have an element called {@code expression} that is an array of {@code String}s of the same format
