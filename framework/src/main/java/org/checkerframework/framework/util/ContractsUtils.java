@@ -446,10 +446,12 @@ public class ContractsUtils {
             AnnotationMirror anno, AnnotationMirror metaAnno) {
 
         Set<Postcondition> result = new LinkedHashSet<>();
+        // the value of the annotation with the given name
         @SuppressWarnings("unchecked")
         List<AnnotationValue> annoValue =
                 AnnotationUtils.getElementValue(anno, "value", List.class, false);
         if (annoValue.get(0) instanceof AnnotationMirror) {
+            // Check for multiple contracts
             List<AnnotationMirror> annotations = new ArrayList<>();
             for (AnnotationValue a : annoValue) {
                 annotations.add((AnnotationMirror) a.getValue());
@@ -466,6 +468,7 @@ public class ContractsUtils {
                 }
             }
         } else if (annoValue.get(0) instanceof Attribute.Constant) {
+            // Check for a single contract
             List<String> expressions = new ArrayList<>();
             for (AnnotationValue a : annoValue) {
                 expressions.add((String) a.getValue());
@@ -559,7 +562,7 @@ public class ContractsUtils {
         Iterator<? extends ExecutableElement> iterator = annovalue.keySet().iterator();
         ExecutableElement elem = iterator.next();
         if (elem.getSimpleName().contentEquals("value")) {
-            // Check for a single contract
+            // Check for multiple contracts
             // the value of the annotation with the given name
             @SuppressWarnings("unchecked")
             List<AnnotationValue> annoValue =
