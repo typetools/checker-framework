@@ -552,10 +552,12 @@ public class ContractsUtils {
             AnnotationMirror anno, AnnotationMirror metaAnno) {
 
         Set<ConditionalPostcondition> result = new LinkedHashSet<>();
-        Map<? extends ExecutableElement, ? extends AnnotationValue> valmap;
-        valmap = anno.getElementValues();
-        for (ExecutableElement elem : valmap.keySet()) {
+        // the value of the annotation
+        Map<? extends ExecutableElement, ? extends AnnotationValue> annovalue;
+        annovalue = anno.getElementValues();
+        for (ExecutableElement elem : annovalue.keySet()) {
             // Check for multiple contracts
+            // the value of the annotation with the given name
             if (elem.getSimpleName().contentEquals("value")) {
                 @SuppressWarnings("unchecked")
                 List<AnnotationValue> annoValue =
@@ -583,6 +585,7 @@ public class ContractsUtils {
                 }
             } else if (elem.getSimpleName().contentEquals("expression")) {
                 // Check for a single contract
+                // the value of the annotation with the given name
                 @SuppressWarnings("unchecked")
                 List<AnnotationValue> annoValue =
                         AnnotationUtils.getElementValue(anno, "expression", List.class, false);
