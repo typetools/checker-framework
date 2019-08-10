@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Attribute;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -555,52 +556,47 @@ public class ContractsUtils {
         // the value of the annotation
         Map<? extends ExecutableElement, ? extends AnnotationValue> annovalue;
         annovalue = anno.getElementValues();
-        for (ExecutableElement elem : annovalue.keySet()) {
-            // Check for multiple contracts
+        Iterator<? extends ExecutableElement> iterator = annovalue.keySet().iterator();
+        ExecutableElement elem = iterator.next();
+        if (elem.getSimpleName().contentEquals("value")) {
+            // Check for a single contract
             // the value of the annotation with the given name
-            if (elem.getSimpleName().contentEquals("value")) {
-                @SuppressWarnings("unchecked")
-                List<AnnotationValue> annoValue =
-                        AnnotationUtils.getElementValue(anno, "value", List.class, false);
-
-                List<AnnotationMirror> annotations = new ArrayList<>(annoValue.size());
-                for (AnnotationValue a : annoValue) {
-                    if (a instanceof AnnotationMirror)
-                        annotations.add((AnnotationMirror) a.getValue());
+            @SuppressWarnings("unchecked")
+            List<AnnotationValue> annoValue =
+                    AnnotationUtils.getElementValue(anno, "value", List.class, false);
+            List<AnnotationMirror> annotations = new ArrayList<>(annoValue.size());
+            for (AnnotationValue a : annoValue) {
+                if (a instanceof AnnotationMirror) annotations.add((AnnotationMirror) a.getValue());
+            }
+            for (AnnotationMirror a : annotations) {
+                AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
+                if (postcondAnno == null) {
+                    continue;
                 }
-                for (AnnotationMirror a : annotations) {
-                    AnnotationMirror postcondAnno =
-                            getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
-                    if (postcondAnno == null) {
-                        continue;
-                    }
-                    boolean annoResult =
-                            AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
-                    List<String> expressions =
-                            AnnotationUtils.getElementValueArray(
-                                    a, "expression", String.class, false);
-                    for (String expr : expressions) {
-                        result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
-                    }
+                boolean annoResult =
+                        AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
+                List<String> expressions =
+                        AnnotationUtils.getElementValueArray(a, "expression", String.class, false);
+                for (String expr : expressions) {
+                    result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
                 }
-            } else if (elem.getSimpleName().contentEquals("expression")) {
-                // Check for a single contract
-                // the value of the annotation with the given name
-                @SuppressWarnings("unchecked")
-                List<AnnotationValue> annoValue =
-                        AnnotationUtils.getElementValue(anno, "expression", List.class, false);
-                List<String> expressions = new ArrayList<>(annoValue.size());
-                for (AnnotationValue a : annoValue) {
-                    if (a instanceof Attribute.Constant) expressions.add((String) a.getValue());
-                }
-                AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
-                if (postcondAnno != null) {
-                    boolean annoResult =
-                            AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
-                    for (String expr : expressions) {
-                        result.add(
-                                new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
-                    }
+            }
+        } else {
+            // Check for a single contract
+            // the value of the annotation with the given name
+            @SuppressWarnings("unchecked")
+            List<AnnotationValue> annoValue =
+                    AnnotationUtils.getElementValue(anno, "expression", List.class, false);
+            List<String> expressions = new ArrayList<>(annoValue.size());
+            for (AnnotationValue a : annoValue) {
+                if (a instanceof Attribute.Constant) expressions.add((String) a.getValue());
+            }
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
+            if (postcondAnno != null) {
+                boolean annoResult =
+                        AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
+                for (String expr : expressions) {
+                    result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
                 }
             }
         }
