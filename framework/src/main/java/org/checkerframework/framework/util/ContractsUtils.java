@@ -376,11 +376,11 @@ public class ContractsUtils {
         if (requiresAnnotation == null) {
             return Collections.emptySet();
         }
-        Set<Precondition> result = new LinkedHashSet<>();
         AnnotationMirror precondAnno = getAnnotationMirrorOfContractAnnotation(requiresAnnotation);
         if (precondAnno == null) {
-            return result;
+            return Collections.emptySet();
         }
+        Set<Precondition> result = new LinkedHashSet<>();
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         requiresAnnotation, "expression", String.class, false);
@@ -441,11 +441,11 @@ public class ContractsUtils {
         if (ensuresAnnotation == null) {
             return Collections.emptySet();
         }
-        Set<Postcondition> result = new LinkedHashSet<>();
         AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(ensuresAnnotation);
         if (postcondAnno == null) {
-            return result;
+            return Collections.emptySet();
         }
+        Set<Postcondition> result = new LinkedHashSet<>();
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         ensuresAnnotation, "expression", String.class, false);
@@ -507,11 +507,11 @@ public class ContractsUtils {
         if (ensuresQualifierIf == null) {
             return Collections.emptySet();
         }
-        Set<ConditionalPostcondition> result = new LinkedHashSet<>();
         AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(ensuresQualifierIf);
         if (postcondAnno == null) {
-            return result;
+            return Collections.emptySet();
         }
+        Set<ConditionalPostcondition> result = new LinkedHashSet<>();
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         ensuresQualifierIf, "expression", String.class, false);
