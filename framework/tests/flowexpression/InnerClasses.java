@@ -27,8 +27,8 @@ public class InnerClasses {
 
     class TestUses {
         void method(InnerClass innerClass, InnerClass2 innerClass2) {
-            // :: error: (expression.unparsable.type.invalid) :: error:
-            // (assignment.type.incompatible)
+            @SuppressWarnings("assignment.type.incompatible") // Issue 152
+            // :: error: (expression.unparsable.type.invalid)
             @FlowExp("innerClass.outerInstanceField") Object o = innerClass.o;
             @FlowExp("InnerClasses.outerStaticField") Object o2 = innerClass.o2;
 
