@@ -263,7 +263,7 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            AnnotationMirror precondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
+            AnnotationMirror precondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
             if (precondAnno == null) {
                 continue;
             }
@@ -279,11 +279,11 @@ public class ContractsUtils {
     /**
      * Returns the annotation mirror as specified by the "qualifier" element in {@code
      * qualifierAnno}. If {@code argumentAnno} is specified, then arguments are copied from {@code
-     * argumentAnno} to the returned annotation, renamed according to {@code argumentMap}.
+     * argumentAnno} to the returned annotation, renamed according to {@code argumentRenaming}.
      *
      * <p>This is a helper method intended to be called from {@link
-     * getAnnotationMirrorOfContractAnnotation} and {@link getAnnotationMirrorOfMetaAnnotation}. Use
-     * one of those methods if possible.
+     * getAnnotationMirrorOfContractAnnotation} and {@link getAnnotationMirrorOfContractAnnotation}.
+     * Use one of those methods if possible.
      *
      * @param qualifierAnno annotation specifying the qualifier class
      * @param argumentAnno annotation containing the argument values, or {@code null}
@@ -342,8 +342,8 @@ public class ContractsUtils {
      *     qualifier argument names
      * @see QualifierArgument
      */
-    private Map<String, String> makeArgumentMap(Element contractAnnoElement) {
-        HashMap<String, String> argumentMap = new HashMap<>();
+    private Map<String, String> makeArgumentRenaming(Element contractAnnoElement) {
+        HashMap<String, String> argumentRenaming = new HashMap<>();
         for (ExecutableElement meth :
                 ElementFilter.methodsIn(contractAnnoElement.getEnclosedElements())) {
             AnnotationMirror argumentAnnotation =
@@ -356,22 +356,22 @@ public class ContractsUtils {
                 if (targetName == null || targetName.isEmpty()) {
                     targetName = sourceName;
                 }
-                argumentMap.put(sourceName, targetName);
+                argumentRenaming.put(sourceName, targetName);
             }
         }
-        return argumentMap;
+        return argumentRenaming;
     }
 
     /**
      * Returns the annotation mirror as specified by the "qualifier" element in {@code metaAnno},
      * with arguments taken from {@code argumentAnno}.
      */
-    private AnnotationMirror getAnnotationMirrorOfMetaAnnotation(
+    private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
             AnnotationMirror metaAnno, AnnotationMirror argumentAnno) {
 
-        Map<String, String> argumentMap =
-                makeArgumentMap(argumentAnno.getAnnotationType().asElement());
-        return getAnnotationMirrorOfQualifier(metaAnno, argumentAnno, argumentMap);
+        Map<String, String> argumentRenaming =
+                makeArgumentRenaming(argumentAnno.getAnnotationType().asElement());
+        return getAnnotationMirrorOfQualifier(metaAnno, argumentAnno, argumentRenaming);
     }
 
     /**
@@ -457,7 +457,8 @@ public class ContractsUtils {
                 annotations.add((AnnotationMirror) a.getValue());
             }
             for (AnnotationMirror a : annotations) {
-                AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
+                AnnotationMirror postcondAnno =
+                        getAnnotationMirrorOfContractAnnotation(metaAnno, a);
                 if (postcondAnno == null) {
                     continue;
                 }
@@ -473,7 +474,7 @@ public class ContractsUtils {
             for (AnnotationValue a : annoValue) {
                 expressions.add((String) a.getValue());
             }
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
             if (postcondAnno != null) {
                 for (String expr : expressions) {
                     result.add(new Postcondition(expr, postcondAnno, anno));
@@ -572,7 +573,8 @@ public class ContractsUtils {
                 if (a instanceof AnnotationMirror) annotations.add((AnnotationMirror) a.getValue());
             }
             for (AnnotationMirror a : annotations) {
-                AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, a);
+                AnnotationMirror postcondAnno =
+                        getAnnotationMirrorOfContractAnnotation(metaAnno, a);
                 if (postcondAnno == null) {
                     continue;
                 }
@@ -594,7 +596,7 @@ public class ContractsUtils {
             for (AnnotationValue a : annoValue) {
                 if (a instanceof Attribute.Constant) expressions.add((String) a.getValue());
             }
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
             if (postcondAnno != null) {
                 boolean annoResult =
                         AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
