@@ -1182,14 +1182,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             boolean allLiterals = true;
             StringBuilder stringVal = new StringBuilder();
             for (ExpressionTree e : initializers) {
-                if (e.getKind() == Tree.Kind.INT_LITERAL) {
-                    char charVal = (char) ((Integer) ((LiteralTree) e).getValue()).intValue();
-                    stringVal.append(charVal);
-                } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
-                    char charVal = (((Character) ((LiteralTree) e).getValue()));
+                Range range = getRange(getAnnotatedType(e).getAnnotationInHierarchy(UNKNOWNVAL));
+                if (range != null && range.from == range.to) {
+                    char charVal = (char) range.from;
                     stringVal.append(charVal);
                 } else {
                     allLiterals = false;
+                    break;
                 }
             }
             if (allLiterals) {
