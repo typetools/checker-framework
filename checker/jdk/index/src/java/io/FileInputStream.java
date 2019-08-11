@@ -228,7 +228,7 @@ class FileInputStream extends InputStream
      * <code>b.length - off</code>
      * @exception  IOException  if an I/O error occurs.
      */
-    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         return readBytes(b, off, len);
     }
 
@@ -254,7 +254,7 @@ class FileInputStream extends InputStream
      * @exception  IOException  if n is negative, if the stream does not
      *             support seek, or if an I/O error occurs.
      */
-    public native long skip(long n) throws IOException;
+    public native @NonNegative long skip(long n) throws IOException;
 
     /**
      * Returns an estimate of the number of remaining bytes that can be read (or

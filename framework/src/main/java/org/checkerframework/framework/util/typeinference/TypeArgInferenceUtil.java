@@ -253,7 +253,7 @@ public class TypeArgInferenceUtil {
      * expression, isArgument is called recursively on the true and false expressions.
      */
     private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
-        argumentTree = TreeUtils.skipParens(argumentTree);
+        argumentTree = TreeUtils.withoutParens(argumentTree);
         if (argumentTree == path.getLeaf()) {
             return true;
         } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
@@ -394,7 +394,7 @@ public class TypeArgInferenceUtil {
                 return false;
             }
             Boolean result = false;
-            Boolean first = true;
+            boolean first = true;
             for (AnnotatedTypeMirror type : types) {
                 result = (first ? scan(type, typeVars) : scanAndReduce(type, typeVars, result));
                 first = false;

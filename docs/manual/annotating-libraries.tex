@@ -106,9 +106,13 @@ third-party library.
 
 \subsectionAndLabel{Don't change the code}{library-tips-dont-change-the-code}
 
-When you annotate a library, you should only add annotations and, when
-necessary, documentation of those annotations in a Java comment (\<//>
-or \</*...*/>).
+If you annotate a library that you maintain, you can refactor it to improve
+its design.
+
+When you annotate a library that you do not maintain, you should only add
+annotations and, when necessary, documentation of those annotations.  You
+can place the documentation in a Java comment (\<//> or \</*...*/>) or in a
+\refqualclass{framework/qual}{CFComment} annotation.
 
 Do not change the library's code, which will change its behavior and make
 the annotated version inconsistent with the unannotated version.
@@ -366,15 +370,19 @@ option.
 Build the annotated JDK\@.  There are two ways:
 \begin{itemize}
 \item
+  Pass a flag.
   Run \<./gradlew buildJdk -PuseLocalJdk>
   % Is any more advice needed here, such as supplying -PuseLocalJdk to
   % other commands?
 \item
-  \begin{enumerate}
-  \item set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>
-  \item run \<./gradlew buildJdk>
-  \end{enumerate}
+  Make a setting in the buildfile.
+  Set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>, then
+  run \<./gradlew buildJdk>
 \end{itemize}
+
+(First, be sure you have followed the instructions for building the Checker
+Framework from source (Section~\ref{build-source})
+including running \<./gradlew cloneAndBuildDependencies>.)
 
 You may receive a compilation error because your files use a part of the
 JDK that is not in the annotated JDK\@.  If the missing part is relatively

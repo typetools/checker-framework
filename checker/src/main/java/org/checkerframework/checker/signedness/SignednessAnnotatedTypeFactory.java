@@ -2,7 +2,6 @@ package org.checkerframework.checker.signedness;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
@@ -10,8 +9,9 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexUtil;
-import org.checkerframework.checker.signedness.qual.Constant;
 import org.checkerframework.checker.signedness.qual.Signed;
+import org.checkerframework.checker.signedness.qual.SignedPositive;
+import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -32,8 +32,9 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 /** @checker_framework.manual #signedness-checker Signedness Checker */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** The @Constant annotation. */
-    private final AnnotationMirror CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
+    /** The @SignednessGlb annotation. */
+    private final AnnotationMirror SIGNEDNESS_GLB =
+            AnnotationBuilder.fromClass(elements, SignednessGlb.class);
     /** The @Signed annotation. */
     private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
     /** The @UnknownSignedness annotation. */
@@ -47,46 +48,97 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
             AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
-    // These are commented out until issues with making boxed implicitly signed
-    // are worked out. (https://github.com/typetools/checker-framework/issues/797)
-    /*
-    private final String JAVA_LANG_BYTE = "java.lang.Byte";
-    private final String JAVA_LANG_SHORT = "java.lang.Short";
-    private final String JAVA_LANG_INTEGER = "java.lang.Integer";
-    private final String JAVA_LANG_LONG = "java.lang.Long";
-    */
+    ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
 
     /** Create a SignednessAnnotatedTypeFactory. */
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+
+        addAliasedAnnotation(SignedPositive.class, SIGNEDNESS_GLB);
 
         postInit();
     }
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll();
+        Set<Class<? extends Annotation>> result = getBundledTypeQualifiersWithoutPolyAll();
+        result.remove(SignedPositive.class); // this method should not return aliases
+        return result;
     }
 
-    /** {@inheritDoc} */
     @Override
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-        // When it is possible to default types based on their TypeKinds,
-        // this method will no longer be needed.
-        // Currently, it is adding the LOCAL_VARIABLE default for
-        // bytes, shorts, ints, and longs so that the implicit for
-        // those types is not applied when they are local variables.
-        // Only the local variable default is applied first because
-        // it is the only refinable location (other than fields) that could
-        // have a primitive type.
-
+        // Prevent @ImplicitFor from applying to local variables of type byte, short, int, and long,
+        // but adding the top type to them, which permits flow-sensitive type refinement.
+        // (When it is possible to default types based on their TypeKinds,
+        // this whole method will no longer be needed.)
+        addSignednessGlbAnnotation(tree, type);
         addUnknownSignednessToSomeLocals(tree, type);
+
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
     }
 
     /**
-     * If the tree is a local variable and the type is a byte, short, int or long, then add the
+     * Refines an integer expression to @SignednessGlb if its value is within the signed positive
+     * range (i.e. its MSB is zero).
+     *
+     * @param tree an AST node, whose type may be refined
+     * @param type the type of the tree
+     */
+    private void addSignednessGlbAnnotation(Tree tree, AnnotatedTypeMirror type) {
+        TypeMirror javaType = type.getUnderlyingType();
+        TypeKind javaTypeKind = javaType.getKind();
+        if (tree.getKind() != Tree.Kind.VARIABLE) {
+            if (javaTypeKind == TypeKind.BYTE
+                    || javaTypeKind == TypeKind.CHAR
+                    || javaTypeKind == TypeKind.SHORT
+                    || javaTypeKind == TypeKind.INT
+                    || javaTypeKind == TypeKind.LONG) {
+                AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
+                // These annotations are trusted rather than checked.  Maybe have an option to
+                // disable using them?
+                if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
+                                || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
+                        && type.hasAnnotation(SIGNED)) {
+                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                } else {
+                    Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
+
+                    if (treeRange != null) {
+                        switch (javaType.getKind()) {
+                            case BYTE:
+                            case CHAR:
+                                if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case SHORT:
+                                if (treeRange.isWithin(0, Short.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case INT:
+                                if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case LONG:
+                                if (treeRange.isWithin(0, Long.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            default:
+                                // Nothing
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * If the tree is a local variable and the type is byte, short, int, or long, then add the
      * UnknownSignedness annotation so that dataflow can refine it.
      */
     private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
@@ -95,9 +147,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             case SHORT:
             case INT:
             case LONG:
-            case FLOAT:
-            case DOUBLE:
-            case CHAR:
                 QualifierDefaults defaults = new QualifierDefaults(elements, this);
                 defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
                 defaults.annotate(tree, type);
@@ -105,23 +154,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             default:
                 // Nothing for other cases.
         }
-
-        // This code is commented out until boxed primitives can be made implicitly signed.
-        // (https://github.com/typetools/checker-framework/issues/797)
-
-        /*switch (TypesUtils.getQualifiedName(type.getUnderlyingType()).toString()) {
-        case JAVA_LANG_BYTE:
-        case JAVA_LANG_SHORT:
-        case JAVA_LANG_INTEGER:
-        case JAVA_LANG_LONG:
-            QualifierDefaults defaults = new QualifierDefaults(elements, this);
-            defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
-            defaults.annotate(tree, type);
-        }*/
-
     }
 
-    /** {@inheritDoc} */
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
@@ -134,7 +168,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * left operand, and that the types of identifiers are refined based on the results of the Value
      * Checker.
      */
-    // TODO: Refine the type of expressions using the Value Checker as well.
     private class SignednessTreeAnnotator extends TreeAnnotator {
 
         public SignednessTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
@@ -145,7 +178,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Change the type of booleans to {@code @UnknownSignedness} so that the {@link
          * PropagationTreeAnnotator} does not change the type of them.
          */
-        private void annotateBoolean(AnnotatedTypeMirror type) {
+        private void annotateBooleanAsUnknownSignedness(AnnotatedTypeMirror type) {
             switch (type.getKind()) {
                 case BOOLEAN:
                     type.addAnnotation(UNKNOWN_SIGNEDNESS);
@@ -167,71 +200,13 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 default:
                     // Do nothing
             }
-            annotateBoolean(type);
+            annotateBooleanAsUnknownSignedness(type);
             return null;
         }
 
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
-            annotateBoolean(type);
-            return null;
-        }
-
-        // Refines the type of an integer primitive to @Constant if it is within the signed positive
-        // range (i.e. its MSB is zero). Note that boxed primitives are not handled because they are
-        // not yet handled by the Signedness Checker (Issue #797).
-        @Override
-        public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
-            TypeMirror javaType = type.getUnderlyingType();
-            TypeKind javaTypeKind = javaType.getKind();
-
-            if (javaTypeKind == TypeKind.BYTE
-                    || javaTypeKind == TypeKind.CHAR
-                    || javaTypeKind == TypeKind.SHORT
-                    || javaTypeKind == TypeKind.INT
-                    || javaTypeKind == TypeKind.LONG) {
-                ValueAnnotatedTypeFactory valueFact =
-                        getTypeFactoryOfSubchecker(ValueChecker.class);
-                AnnotatedTypeMirror valueATM = valueFact.getAnnotatedType(tree);
-                // These annotations are trusted rather than checked.  Maybe have an option to
-                // disable using them?
-                if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
-                                || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
-                        && type.hasAnnotation(SIGNED)) {
-                    type.replaceAnnotation(CONSTANT);
-                } else {
-                    Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFact);
-
-                    if (treeRange != null) {
-                        switch (javaType.getKind()) {
-                            case BYTE:
-                            case CHAR:
-                                if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
-                                    type.replaceAnnotation(CONSTANT);
-                                }
-                                break;
-                            case SHORT:
-                                if (treeRange.isWithin(0, Short.MAX_VALUE)) {
-                                    type.replaceAnnotation(CONSTANT);
-                                }
-                                break;
-                            case INT:
-                                if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
-                                    type.replaceAnnotation(CONSTANT);
-                                }
-                                break;
-                            case LONG:
-                                if (treeRange.isWithin(0, Long.MAX_VALUE)) {
-                                    type.replaceAnnotation(CONSTANT);
-                                }
-                                break;
-                            default:
-                                // Nothing
-                        }
-                    }
-                }
-            }
-
+            annotateBooleanAsUnknownSignedness(type);
             return null;
         }
     }

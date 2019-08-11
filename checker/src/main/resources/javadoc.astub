@@ -1,0 +1,127 @@
+// This file, javadoc.astub, models the JavaDoc classes in the JDK's
+// com.sun.javadoc package, which are not exposed by ct.sym and therefore
+// cannot be part of an annotated JDK.
+// It is annotated for the Value and Nullness checkers.
+
+import org.checkerframework.common.value.qual.MinLen;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+
+package com.sun.javadoc;
+
+public interface ClassDoc extends ProgramElementDoc, Type {
+    @Pure boolean isAbstract();
+    @Pure boolean isSerializable();
+    @Pure boolean isExternalizable();
+    MethodDoc[] serializationMethods();
+    FieldDoc[] serializableFields();
+    boolean definesSerializableFields();
+    ClassDoc superclass();
+    Type superclassType();
+    boolean subclassOf(ClassDoc cd);
+    ClassDoc[] interfaces();
+    Type[] interfaceTypes();
+    TypeVariable[] typeParameters();
+    ParamTag[] typeParamTags();
+    FieldDoc [] fields();
+    FieldDoc[] fields(boolean filter);
+    FieldDoc[] enumConstants();
+    MethodDoc[] methods();
+    MethodDoc[] methods(boolean filter);
+    ConstructorDoc[] constructors();
+    ConstructorDoc[] constructors(boolean filter);
+    ClassDoc[] innerClasses();
+    ClassDoc[] innerClasses(boolean filter);
+    ClassDoc findClass(String className);
+    @Deprecated ClassDoc[] importedClasses();
+    @Deprecated PackageDoc[] importedPackages();
+}
+
+public interface Doc extends java.lang.Comparable<java.lang.Object> {
+    public abstract java.lang.String commentText();
+    public abstract com.sun.javadoc.Tag [] tags();
+    public abstract com.sun.javadoc.Tag [] tags(java.lang.String a1);
+    public abstract com.sun.javadoc.SeeTag [] seeTags();
+    public abstract com.sun.javadoc.Tag [] inlineTags();
+    public abstract com.sun.javadoc.Tag [] firstSentenceTags();
+    public abstract java.lang.String getRawCommentText();
+    public abstract void setRawCommentText(java.lang.String a1);
+    public abstract java.lang.String name();
+    @Pure public abstract int compareTo(java.lang.Object a1);
+    @Pure public abstract boolean isField();
+    @Pure public abstract boolean isEnumConstant();
+    @Pure public abstract boolean isConstructor();
+    @Pure public abstract boolean isMethod();
+    @Pure public abstract boolean isAnnotationTypeElement();
+    @Pure public abstract boolean isInterface();
+    @Pure public abstract boolean isException();
+    @Pure public abstract boolean isError();
+    @Pure public abstract boolean isEnum();
+    @Pure public abstract boolean isAnnotationType();
+    @Pure public abstract boolean isOrdinaryClass();
+    @Pure public abstract boolean isClass();
+    @Pure public abstract boolean isIncluded();
+    public abstract com.sun.javadoc. @Nullable SourcePosition position();
+}
+
+public interface FieldDoc extends MemberDoc {
+    public abstract com.sun.javadoc.Type type();
+    @Pure public abstract boolean isTransient();
+    @Pure public abstract boolean isVolatile();
+    public abstract com.sun.javadoc.SerialFieldTag[] serialFieldTags();
+    public abstract @Nullable Object constantValue();
+    public abstract java.lang. @Nullable String constantValueExpression();
+}
+
+public interface MemberDoc extends ProgramElementDoc {
+    @Pure public abstract boolean isSynthetic();
+}
+
+public interface ProgramElementDoc extends Doc {
+    public abstract com.sun.javadoc. @Nullable ClassDoc containingClass();
+    public abstract com.sun.javadoc.PackageDoc containingPackage();
+    public abstract java.lang.String qualifiedName();
+    public abstract int modifierSpecifier();
+    public abstract java.lang.String modifiers();
+    public abstract com.sun.javadoc.AnnotationDesc[] annotations();
+    @Pure public abstract boolean isPublic();
+    @Pure public abstract boolean isProtected();
+    @Pure public abstract boolean isPrivate();
+    @Pure public abstract boolean isPackagePrivate();
+    @Pure public abstract boolean isStatic();
+    @Pure public abstract boolean isFinal();
+}
+
+public interface ExecutableMemberDoc extends MemberDoc {
+    ClassDoc[] thrownExceptions();
+    Type[] thrownExceptionTypes();
+    @Pure boolean isNative();
+    @Pure boolean isSynchronized();
+    @Pure public boolean isVarArgs();
+    Parameter[] parameters();
+    @Pure Type receiverType();
+    ThrowsTag[] throwsTags();
+    ParamTag[] paramTags();
+    ParamTag[] typeParamTags();
+    String signature();
+    String flatSignature();
+    TypeVariable[] typeParameters();
+}
+
+public interface RootDoc extends Doc, DocErrorReporter {
+    String [] @MinLen(1) [] options();
+    PackageDoc[] specifiedPackages();
+    ClassDoc[] specifiedClasses();
+    ClassDoc @MinLen(1) [] classes();
+    PackageDoc packageNamed(String name);
+    ClassDoc classNamed(String qualifiedName);
+}
+
+public interface SourcePosition {
+    @SideEffectFree File file();
+    @Pure int line();
+    @Pure int column();
+    @SideEffectFree String toString();
+}

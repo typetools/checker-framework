@@ -160,8 +160,8 @@ Framework:
   the type system and the subtyping relationships among qualified types
   (for instance, \<@NonNull Object> is a subtype of \<@Nullable
   Object>).  This is also where you specify the default annotation that
-  applies whenever the programmer wrote no annotation and no implicit
-  annotation applies.
+  applies whenever the programmer wrote no annotation and no other defaulting
+  rule applies.
 
 \item{\ref{creating-compiler-interface}}
   \textbf{Interface to the compiler.}  The compiler interface indicates
@@ -188,12 +188,8 @@ Framework:
 \end{itemize}
 
 \item{\ref{creating-type-introduction}}
-  \textbf{Type introduction rules.}  For some types and
-  expressions, a qualifier should be treated as implicitly present even if a
-  programmer did not explicitly write it.  For example, in the Nullness
-  type system every literal
-  other than \<null> has a \refqualclass{checker/nullness/qual}{NonNull} type.
-  Examples of literals include \code{"some string"} and \<java.util.Date.class>.
+  \textbf{Type introduction rules.}  You specify the type of some expressions where
+the rules differ from the built in framework rules
 
 \item{\ref{creating-dataflow}}
   \textbf{Dataflow rules.}  These optional rules enhance flow-sensitive
@@ -206,18 +202,12 @@ Framework:
 \sectionAndLabel{Compiling and using a custom checker}{creating-compiling}
 
 You can place your checker's source files wherever you like.
-\begin{itemize}
-\item
-  Forking the Checker Framework repository and putting your files in
-  parallel to existing checker implementations is a particularly convenient
-  choice.  You must be able to compile the Checker Framework
-  (Section~\ref{build-source}).
-\item
-  \begin{sloppypar}
-  If you put your checker elsewhere, then when you compile your checker,
-  the classpath must include \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>.
-  \end{sloppypar}
-\end{itemize}
+One choice is to write your checker in a fork of the Checker Framework
+repository \url{https://github.com/typetools/checker-framework}.
+Another choice is to write it in a stand-alone repository.  Here is a
+template for a stand-alone repository:
+\url{https://github.com/typetools/templatefora-checker}; at that URL,
+click the ``Use this template'' button.
 
 % You may also wish to consult Section~\ref{creating-testing-framework} for
 % information on testing a checker and
@@ -444,7 +434,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 /**
@@ -456,7 +445,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({UnknownSign.class})
-@ImplicitFor(literals = LiteralKind.NULL)
 public @interface NonNegative {}
 \end{Verbatim}
 
@@ -497,8 +485,6 @@ is declared in the \<qual> package as a type qualifier.
 
 Your type system should include a top qualifier and a bottom qualifier
 (Section~\ref{creating-bottom-and-top-qualifier}).
-In most cases, the bottom qualifier should be meta-annotated with
-\<@ImplicitFor(literals=LiteralKind.NULL)>.
 
 You should also define a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
@@ -624,13 +610,13 @@ generic \code{List}.
 (In the technical jargon, the generic arguments are ``invariant'' or ``novariant''.)
 
 
-\subsectionAndLabel{Defining a default annotation}{creating-typesystem-defaults}
+\subsectionAndLabel{Defining the default annotation}{creating-typesystem-defaults}
 
-A type system applies a default qualifier where the user has not written a
-qualifier (and no implicit qualifier is applicable), as explained in
+A type system applies the default qualifier where the user has not written a
+qualifier (and no other default qualifier is applicable), as explained in
 Section~\ref{defaults}.
 
-The type system designer may specify a default annotation declaratively,
+The type system designer must specify the default annotation. The designer can specify the default annotation declaratively,
 using the \refqualclass{framework/qual}{DefaultQualifierInHierarchy}
 meta-annotation.
 Note that the default will apply to any source code that the checker reads,
@@ -654,10 +640,9 @@ qualifier file.  For instance, \code{int value() default 0;} would make
 \code{value} default to zero. Alternatively, the procedural method
 described above can be used.
 
-Implicit annotations are distinct from default annotations.
-Section~\ref{creating-type-introduction} describes how to implement
-implicit annotations.
-
+The default qualifier applies to most, but not all, unannotated types, Section~\ref{climb-to-top}
+other defaulting rules are automatically added to every checker. Also, Section~\ref{defaults}
+describes other meta-annotations used to specify default annotations.
 
 \subsectionAndLabel{Relevant Java types}{creating-relevant-java-types}
 
@@ -713,12 +698,12 @@ Your type hierarchy must have a bottom qualifier
 --- a qualifier that is a (direct or indirect) subtype of every other
 qualifier.
 
-Your type system must give \<null> the bottom type.
+\<null> is the bottom type. Because the only value with type \<Void> is
+\<null>, uses of the type \<Void> are also bottom.
 (The only exception
 is if the type system has special treatment for \<null> values, as the
-Nullness Checker does.)
-A way to do this is to meta-annotate your bottom type with
-\<@ImplicitFor(literals=LiteralKind.NULL)>.
+Nullness Checker does. In that case, add the meta-annotation \<@QualifierForLiterals(LiteralKind.NULL)>
+to the correct qualifier.)
 This legal code
 will not type-check unless \<null> has the bottom type:
 \begin{Verbatim}
@@ -883,7 +868,8 @@ The \<messages.properties> file only need to mention the new messages that
 the checker defines.
 It is also allowed to override messages defined in superclasses, but this
 is rarely needed.
-For more details about message keys, see Section~\refwithpageparen{compiler-message-keys}.
+Section~\refwithpageparen{compiler-message-keys} discusses best practices
+when using a message key in a \<@SuppressWarnings> annotation.
 \end{sloppypar}
 
 \subsectionAndLabel{Indicating supported annotations}{creating-indicating-supported-annotations}
@@ -1150,83 +1136,35 @@ rule for method invocation, where your rule checks the name of the method
 being called and then treats the method in a special way.
 
 
-\sectionAndLabel{Type factory: Implicit annotations (type introduction rules)}{creating-type-introduction}
+\sectionAndLabel{Type factory: Type introduction rules}{creating-type-introduction}
 
-For some types and expressions, a qualifier should be treated as present
-even if a programmer did not explicitly write it.  For example, every
-literal (other than \<null>) has a \refqualclass{checker/nullness/qual}{NonNull} type.
-Section~\ref{effective-qualifier} explains the meaning of implicit
-qualifiers, such as that they cannot be overridden.
+The annotated type of expressions and types are defined via type introduction rules in the
+type factory.  For most expressions and types, these rules are the same regardless of the type system.
+For example, the type of a method invocation expression is the return type of the invoked method
+viewpoint-adapted for the call site.  The framework implements these rules so that all type systems
+automatically use them.  For other expressions, such as string literals, their (annotated) types depend
+on the type system, so the framework provides way to specify what qualifiers should apply to these expressions.
 
-The implicit annotations may be specified declaratively
-(Section~\ref{creating-declarative-type-introduction}) and/or procedurally
-(Section~\ref{creating-procedurally-specifying-implicit-annotations}).
-It is easiest to specify them declaratively, when the declarative method is
-sufficiently expressive.
+Defaulting rules are type introduction rules for computing the annotated type for an unannotated type;
+these rules are explained in Section~\ref{creating-typesystem-defaults}. The meta-annotation \refqualclass{framework/qual}{QualifierForLiterals} can be written on an annotation
+declaration to specifiy that that annotation should be applied to the type of literals listed in the
+meta-annotation.
 
-Default annotations are distinct from implicit annotations.
-Section~\ref{creating-typesystem-defaults} describes how to specify
-default annotations.
+\subsectionAndLabel{Procedurally specifying type introduction rules}{creating-procedurally-specifying-implicit-annotations}
 
-
-\subsectionAndLabel{Declaratively specifying implicit annotations}{creating-declarative-type-introduction}
-
-The \refqualclass{framework/qual}{ImplicitFor} meta-annotation indicates
-implicit annotations.
-When written on a qualifier, \refclass{framework/qual}{ImplicitFor}
-specifies the trees (AST nodes) and types for which the framework should
-automatically add that qualifier.
-
-In short, the types and trees can be
-specified via any combination of four fields in \refclass{framework/qual}{ImplicitFor}.
-
-For example, consider these (partial) definitions of the
-\refqualclass{checker/nullness/qual}{Nullable} and
-\refqualclass{checker/nullness/qual}{NonNull}
-type qualifiers:
-
-\begin{Verbatim}
-  @SubtypeOf({})
-  @ImplicitFor(literals = { LiteralKind.NULL },
-               typeNames = { java.lang.Void.class })
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface Nullable {}
-
-  @SubtypeOf( { Nullable.class } )
-  @ImplicitFor(literals = { LiteralKind.STRING },
-               types = { TypeKind.PACKAGE, TypeKind.INT, TypeKind.BOOLEAN,
-                         TypeKind.CHAR, TypeKind.DOUBLE, TypeKind.FLOAT,
-                         TypeKind.LONG, TypeKind.SHORT, TypeKind.BYTE })
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface NonNull {}
-\end{Verbatim}
-
-For more details, see the Javadoc for the \refclass{framework/qual}{ImplicitFor}
-annotation, and the Javadoc for the javac classes that are linked from
-it.  You only need to understand a small amount about the javac AST, such
-as the
-\href{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{Tree.Kind}}
-and
-\refModelclass{type}{TypeKind}
-enums.  All the information you need is in the Javadoc, and
-Section~\ref{creating-javac-tips} can help you get started.
-
-
-\subsectionAndLabel{Procedurally specifying implicit annotations}{creating-procedurally-specifying-implicit-annotations}
-
-If the \<@ImplicitFor> annotation is not sufficiently expressive, then you
-can write code to set implicit annotations.  To do so, create a subclass of
+If the meta-annotations are not sufficiently expressive, then you
+can write your own type introduction rules.  To do so, create a subclass of
 \refclass{framework/type}{AnnotatedTypeFactory} and override its
 two \<addComputedTypeAnnotations> methods.
 
 \<AnnotatedTypeFactory>, when given a program
 expression, returns the expression's type.  This should include not only
 the qualifiers that the programmer explicitly wrote in the source code, but
-also default and implicit annotations, and type
+also default annotations and type
 refinement (see Section~\ref{effective-qualifier} for explanations of these
 concepts).
 
-To add implicit annotations, you should override
+To add type introduction rules, you should override
 \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)}
 (or
 \refmethodanchortext{framework/type}{GenericAnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-boolean-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)}
@@ -1235,9 +1173,9 @@ and
 \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Element,AnnotatedTypeMirror)}.
 The methods operate on \refclass{framework/type}{AnnotatedTypeMirror},
 which is the Checker Framework's representation of an annotated type.
-The methods can make arbitrary changes to the annotations on a type, but
-try to limit their work to implicit annotations; often some existing
-simpler mechanism in the Checker Framework will serve other purposes.
+The methods can make arbitrary changes to the annotations on a type.
+
+%TODO: document tree and type annotators here, which should be used instead of override addComputedTypeAnnotations if possible.
 
 
 \sectionAndLabel{Dataflow: enhancing flow-sensitive type refinement}{creating-dataflow}

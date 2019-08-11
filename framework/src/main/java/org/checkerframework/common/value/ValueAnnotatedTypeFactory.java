@@ -1,5 +1,6 @@
 package org.checkerframework.common.value;
 
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -60,8 +61,8 @@ import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.StructuralEqualityComparer;
 import org.checkerframework.framework.type.TypeHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
@@ -978,7 +979,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 };
         return new ListTreeAnnotator(
-                new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this), arrayCreation);
+                new ValueTreeAnnotator(this),
+                new LiteralTreeAnnotator(this).addStandardLiteralQualifiers(),
+                arrayCreation);
     }
 
     /**
@@ -1179,14 +1182,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             boolean allLiterals = true;
             StringBuilder stringVal = new StringBuilder();
             for (ExpressionTree e : initializers) {
-                if (e.getKind() == Tree.Kind.INT_LITERAL) {
-                    char charVal = (char) ((Integer) ((LiteralTree) e).getValue()).intValue();
-                    stringVal.append(charVal);
-                } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
-                    char charVal = (((Character) ((LiteralTree) e).getValue()));
+                Range range = getRange(getAnnotatedType(e).getAnnotationInHierarchy(UNKNOWNVAL));
+                if (range != null && range.from == range.to) {
+                    char charVal = (char) range.from;
                     stringVal.append(charVal);
                 } else {
                     allLiterals = false;
+                    break;
                 }
             }
             if (allLiterals) {
@@ -1298,8 +1300,40 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return getDeclAnnotation(method, StaticallyExecutable.class) != null;
         }
 
+        /**
+         * @return The Range of the Math.min or Math.max method, or null if the argument is none of
+         *     these methods or their arguments are not annotated in ValueChecker hierarchy.
+         */
+        private Range getRangeForMathMinMax(MethodInvocationTree tree) {
+            if (getMethodIdentifier().isMathMin(tree, processingEnv)) {
+                AnnotatedTypeMirror arg1 = getAnnotatedType(tree.getArguments().get(0));
+                AnnotatedTypeMirror arg2 = getAnnotatedType(tree.getArguments().get(1));
+                Range rangeArg1 = getRange(arg1.getAnnotationInHierarchy(UNKNOWNVAL));
+                Range rangeArg2 = getRange(arg2.getAnnotationInHierarchy(UNKNOWNVAL));
+                if (rangeArg1 != null && rangeArg2 != null) {
+                    return rangeArg1.min(rangeArg2);
+                }
+            } else if (getMethodIdentifier().isMathMax(tree, processingEnv)) {
+                AnnotatedTypeMirror arg1 = getAnnotatedType(tree.getArguments().get(0));
+                AnnotatedTypeMirror arg2 = getAnnotatedType(tree.getArguments().get(1));
+                Range rangeArg1 = getRange(arg1.getAnnotationInHierarchy(UNKNOWNVAL));
+                Range rangeArg2 = getRange(arg2.getAnnotationInHierarchy(UNKNOWNVAL));
+                if (rangeArg1 != null && rangeArg2 != null) {
+                    return rangeArg1.max(rangeArg2);
+                }
+            }
+            return null;
+        }
+
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+            if (type.hasAnnotation(UNKNOWNVAL)) {
+                Range range = getRangeForMathMinMax(tree);
+                if (range != null) {
+                    type.replaceAnnotation(createIntRangeAnnotation(range));
+                }
+            }
+
             if (!methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))
                     || !handledByValueChecker(type)) {
                 return null;
@@ -1447,6 +1481,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || tm.toString().equals("char[]"); // Why?
             */
             return COVERED_CLASS_STRINGS.contains(tm.toString());
+        }
+
+        @Override
+        public Void visitConditionalExpression(
+                ConditionalExpressionTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+            // Work around for https://github.com/typetools/checker-framework/issues/602.
+            annotatedTypeMirror.replaceAnnotation(UNKNOWNVAL);
+            return null;
         }
     }
 

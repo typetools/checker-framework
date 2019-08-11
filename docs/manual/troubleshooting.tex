@@ -259,6 +259,20 @@ error: SourceChecker.typeProcess: unexpected Throwable (OutOfMemoryError) while 
 then either give the JVM more memory when running the Checker Framework, or
 split your files and methods into smaller ones, or both.
 
+\item
+\ahref{https://errorprone.info/}{Error Prone} uses the Checker Framework's
+dataflow analysis library.
+Unfortunately, Error Prone uses an old version of the library, so you
+cannot use both Error Prone and the current Checker Framework (because each
+one depends on a different version of the dataflow library).
+
+You can use an older version of the Checker Framework (the one that Error
+Prone is built on), or you can use a switch that causes your build to use either
+Error Prone or the Checker Framework, but not both.
+The
+\ahreforurl{https://github.com/kelloggm/checkerframework-gradle-plugin\#incompatibility-with-error-prone}{Gradle
+  plugin documentation} shows how to do the latter for Gradle.
+
 \end{itemize}
 
 
@@ -463,9 +477,7 @@ Object> only if that value is of the bottom type, since the bottom type is
 the only one that is a subtype of every subtype of \<T extends @MyQualifier
 Object>.  The value \<null> satisfies this for the Java type system, and it
 must be made to satisfy it for the pluggable type system as well.  The
-typical way to address this is to write the meta-annotation
-\<@ImplicitFor(literals={LiteralKind.NULL})> on the definition of the
-bottom type qualifier.
+typical way to address this is to call \<addStandardLiteralQualifiers> on the \<LiteralTreeAnnotator>.
 
 \item
 An error such as
@@ -752,7 +764,6 @@ sudo apt-get -qqy install ant cpp git gradle junit4 libcurl3-gnutls \
  dia hevea latexmk librsvg2-bin maven python-pip \
  texlive-font-utils texlive-fonts-recommended \
  texlive-latex-base texlive-latex-extra texlive-latex-recommended
-
 \end{Verbatim}
 
 % Building Checker Framework from source on Mac OS

@@ -564,8 +564,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             throw new BugInCF("Error in obtaining reflective method.", e);
         }
         try {
-            Symbol symbol = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
-            return symbol;
+            return (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
         } catch (SecurityException
                 | IllegalAccessException
                 | IllegalArgumentException

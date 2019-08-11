@@ -58,6 +58,7 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -1219,13 +1220,11 @@ public class ValueTransfer extends CFTransfer {
         for (Node internal : splitAssignments(node)) {
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
             CFValue currentValueFromStore;
-            try {
+            if (CFAbstractStore.canInsertReceiver(rec)) {
                 currentValueFromStore = store.getValue(rec);
-            } catch (Throwable t) {
-                // The receiver `rec` isn't stored in the store; e.g., it's FlowExpressions.Unknown.
-                // store.insertValue() ignores such nodes.
-                // (TODO: Is it OK to skip the calls to refineArary... and refineString...?)
-                continue;
+            } else {
+                // Don't just `continue;` which would skip the calls to refine{Array,String}...
+                currentValueFromStore = null;
             }
             AnnotationMirror currentAnno =
                     (currentValueFromStore == null

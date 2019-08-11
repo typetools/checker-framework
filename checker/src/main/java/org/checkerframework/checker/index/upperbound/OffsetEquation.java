@@ -6,14 +6,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -245,8 +249,10 @@ public class OffsetEquation {
     /**
      * Evaluates an offset term. If the term is an integer constant, returns its value. Otherwise,
      * returns null.
+     *
+     * @param factory AnnotatedTypeFactory used to access elements annotations. It can be null.
      */
-    private Integer evalConstantTerm(Receiver termReceiver) {
+    private Integer evalConstantTerm(Receiver termReceiver, BaseAnnotatedTypeFactory factory) {
         if (termReceiver instanceof FlowExpressions.ValueLiteral) {
             // Integer literal
             Object value = ((FlowExpressions.ValueLiteral) termReceiver).getValue();
@@ -266,6 +272,15 @@ public class OffsetEquation {
                     }
                 }
             }
+        } else if (factory != null && termReceiver instanceof FlowExpressions.LocalVariable) {
+            Element element = ((FlowExpressions.LocalVariable) termReceiver).getElement();
+            Long exactValue =
+                    IndexUtil.getExactValue(
+                            element, factory.getTypeFactoryOfSubchecker(ValueChecker.class));
+
+            if (exactValue != null) {
+                return exactValue.intValue();
+            }
         }
 
         return null;
@@ -275,20 +290,23 @@ public class OffsetEquation {
      * Standardizes and viewpoint-adapts string terms in the list based on the supplied context.
      * Terms that evaluate to a integer constant are removed from the list, and the constants are
      * added to or subtracted from the intValue field.
+     *
+     * @param factory AnnotatedTypeFactory used for annotation accessing. It can be null.
      */
     private void standardizeAndViewpointAdaptExpressions(
             List<String> terms,
             boolean subtract,
             FlowExpressionContext context,
             TreePath scope,
-            boolean useLocalScope)
+            boolean useLocalScope,
+            AnnotatedTypeFactory factory)
             throws FlowExpressionParseException {
         // Standardize all terms and remove constants
         int length = terms.size(), j = 0;
         for (int i = 0; i < length; ++i) {
             String term = terms.get(i);
             Receiver receiver = FlowExpressionParseUtil.parse(term, context, scope, useLocalScope);
-            Integer termConstant = evalConstantTerm(receiver);
+            Integer termConstant = evalConstantTerm(receiver, (BaseAnnotatedTypeFactory) factory);
             if (termConstant == null) {
                 terms.set(j, receiver.toString());
                 ++j;
@@ -308,6 +326,29 @@ public class OffsetEquation {
      * @param context FlowExpressionContext
      * @param scope local scope
      * @param useLocalScope whether or not local scope is used
+     * @param factory AnnotatedTypeFactory used for annotation accessing. It can be null.
+     * @throws FlowExpressionParseException if any term isn't able to be parsed this exception is
+     *     thrown. If this happens, no string terms are changed.
+     */
+    public void standardizeAndViewpointAdaptExpressions(
+            FlowExpressionContext context,
+            TreePath scope,
+            boolean useLocalScope,
+            AnnotatedTypeFactory factory)
+            throws FlowExpressionParseException {
+
+        standardizeAndViewpointAdaptExpressions(
+                addedTerms, false, context, scope, useLocalScope, factory);
+        standardizeAndViewpointAdaptExpressions(
+                subtractedTerms, true, context, scope, useLocalScope, factory);
+    }
+
+    /**
+     * Standardizes and viewpoint-adapts the string terms based us the supplied context.
+     *
+     * @param context FlowExpressionContext
+     * @param scope local scope
+     * @param useLocalScope whether or not local scope is used
      * @throws FlowExpressionParseException if any term isn't able to be parsed this exception is
      *     thrown. If this happens, no string terms are changed.
      */
@@ -315,9 +356,7 @@ public class OffsetEquation {
             FlowExpressionContext context, TreePath scope, boolean useLocalScope)
             throws FlowExpressionParseException {
 
-        standardizeAndViewpointAdaptExpressions(addedTerms, false, context, scope, useLocalScope);
-        standardizeAndViewpointAdaptExpressions(
-                subtractedTerms, true, context, scope, useLocalScope);
+        standardizeAndViewpointAdaptExpressions(context, scope, useLocalScope, null);
     }
 
     /**
@@ -389,7 +428,7 @@ public class OffsetEquation {
      * is zero.
      *
      * @param expressionEquation a Java expression made up of sums and differences
-     * @return an offset equation created form expressionEquation
+     * @return an offset equation created from expressionEquation
      */
     public static OffsetEquation createOffsetFromJavaExpression(String expressionEquation) {
         expressionEquation = expressionEquation.trim();

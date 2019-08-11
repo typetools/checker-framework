@@ -10,6 +10,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -32,10 +33,8 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.NonRaw;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.qual.PolyAll;
@@ -47,11 +46,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
@@ -177,8 +176,8 @@ public class NullnessAnnotatedTypeFactory
                     "org.springframework.lang.Nullable");
 
     /** Creates NullnessAnnotatedTypeFactory. */
-    public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
-        super(checker, useFbc);
+    public NullnessAnnotatedTypeFactory(BaseTypeChecker checker) {
+        super(checker);
 
         Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
         tempNullnessAnnos.add(NonNull.class);
@@ -213,36 +212,17 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        // NullnessATF is used by both NullnessChecker and NullnessRawnessChecker, load the correct
-        // set of qualifiers here
-        AbstractNullnessChecker ckr = (AbstractNullnessChecker) checker;
-        // if useFbc is true, then it is the NullnessChecker
-        if (ckr.useFbc) {
-            return new LinkedHashSet<>(
-                    Arrays.asList(
-                            Nullable.class,
-                            MonotonicNonNull.class,
-                            NonNull.class,
-                            UnderInitialization.class,
-                            Initialized.class,
-                            UnknownInitialization.class,
-                            FBCBottom.class,
-                            PolyNull.class,
-                            PolyAll.class));
-        }
-        // otherwise, it is the NullnessRawnessChecker
-        else {
-            return new LinkedHashSet<>(
-                    Arrays.asList(
-                            Nullable.class,
-                            MonotonicNonNull.class,
-                            NonNull.class,
-                            NonRaw.class,
-                            Raw.class,
-                            // PolyRaw.class, //TODO: support PolyRaw in the future
-                            PolyNull.class,
-                            PolyAll.class));
-        }
+        return new LinkedHashSet<>(
+                Arrays.asList(
+                        Nullable.class,
+                        MonotonicNonNull.class,
+                        NonNull.class,
+                        UnderInitialization.class,
+                        Initialized.class,
+                        UnknownInitialization.class,
+                        FBCBottom.class,
+                        PolyNull.class,
+                        PolyAll.class));
     }
 
     /**
@@ -348,13 +328,13 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        ImplicitsTypeAnnotator implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
-        implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
-        implicitsTypeAnnotator.addTypeClass(
+        DefaultForTypeAnnotator defaultForTypeAnnotator = new DefaultForTypeAnnotator(this);
+        defaultForTypeAnnotator.addAtmClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
+        defaultForTypeAnnotator.addAtmClass(
                 AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
         return new ListTypeAnnotator(
                 new PropagationTypeAnnotator(this),
-                implicitsTypeAnnotator,
+                defaultForTypeAnnotator,
                 new NullnessTypeAnnotator(this),
                 new CommitmentTypeAnnotator(this));
     }
@@ -363,14 +343,10 @@ public class NullnessAnnotatedTypeFactory
     protected TreeAnnotator createTreeAnnotator() {
         // Don't call super.createTreeAnnotator because the default tree annotators are incorrect
         // for the Nullness Checker.
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, NONNULL);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, NONNULL);
-
         return new ListTreeAnnotator(
                 // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
                 new NullnessPropagationTreeAnnotator(this),
-                implicitsTreeAnnotator,
+                new LiteralTreeAnnotator(this),
                 new NullnessTreeAnnotator(this),
                 new CommitmentTreeAnnotator(this));
     }
@@ -396,6 +372,20 @@ public class NullnessAnnotatedTypeFactory
         @Override
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
             return null;
+        }
+
+        @Override
+        public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
+            if (type.getKind().isPrimitive()) {
+                AnnotationMirror NONNULL = ((NullnessAnnotatedTypeFactory) atypeFactory).NONNULL;
+                // If a @Nullable expression is cast to a primitive, then an unboxing.of.nullable
+                // error is issued.  Treat the cast as if it were annotated as @NonNull to avoid an
+                // type.invalid.annotations.on.use error.
+                if (!type.isAnnotatedInHierarchy(NONNULL)) {
+                    type.addAnnotation(NONNULL);
+                }
+            }
+            return super.visitTypeCast(node, type);
         }
     }
 
@@ -474,12 +464,17 @@ public class NullnessAnnotatedTypeFactory
 
         @Override
         public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+            // The result of newly allocated structures is always non-null.
+            if (!type.isAnnotatedInHierarchy(NONNULL)) {
+                type.replaceAnnotation(NONNULL);
+            }
+
             // The most precise element type for `new Object[] {null}` is @FBCBottom, but
             // the most useful element type is @Initialized (which is also accurate).
             AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
             AnnotatedTypeMirror componentType = arrayType.getComponentType();
             if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
-                componentType.replaceAnnotation(COMMITTED);
+                componentType.replaceAnnotation(INITIALIZED);
             }
             return null;
         }

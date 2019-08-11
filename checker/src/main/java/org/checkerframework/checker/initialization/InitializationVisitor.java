@@ -47,8 +47,7 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * The visitor for the freedom-before-commitment type-system. The freedom-before-commitment
  * type-system and this class are abstract and need to be combined with another type-system whose
- * safe initialization should be tracked. For an example, see the {@link NullnessChecker}. Also
- * supports rawness as a type-system for tracking initialization, though FBC is preferred.
+ * safe initialization should be tracked. For an example, see the {@link NullnessChecker}.
  */
 public class InitializationVisitor<
                 Factory extends InitializationAnnotatedTypeFactory<Value, Store, ?, ?>,
@@ -64,15 +63,15 @@ public class InitializationVisitor<
     private static final @CompilerMessageKey String COMMITMENT_FIELDS_UNINITIALIZED =
             "initialization.fields.uninitialized";
     private static final @CompilerMessageKey String COMMITMENT_STATIC_FIELDS_UNINITIALIZED =
-            // TODO: change to "initialization.static.fields.uninitialized";
-            "initialization.fields.uninitialized";
+            "initialization.static.fields.uninitialized";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
             "initialization.invalid.field.type";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
             "initialization.invalid.constructor.return.type";
-    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED =
-            "initialization.invalid.field.write.unknown";
-    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED =
+    private static final @CompilerMessageKey String
+            COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION =
+                    "initialization.invalid.field.write.unknown";
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED =
             "initialization.invalid.field.write.initialized";
 
     public InitializationVisitor(BaseTypeChecker checker) {
@@ -126,16 +125,17 @@ public class InitializationVisitor<
             // UnknownInitialization annotation
             Set<AnnotationMirror> fieldAnnotations =
                     atypeFactory.getAnnotatedType(TreeUtils.elementFromUse(lhs)).getAnnotations();
-            if (!AnnotationUtils.containsSameByName(fieldAnnotations, atypeFactory.UNCLASSIFIED)) {
+            if (!AnnotationUtils.containsSameByName(
+                    fieldAnnotations, atypeFactory.UNKNOWN_INITIALIZATION)) {
                 if (!ElementUtils.isStatic(el)
                         && !(atypeFactory.isCommitted(yType)
                                 || atypeFactory.isFree(xType)
                                 || atypeFactory.isFbcBottom(yType))) {
                     @CompilerMessageKey String err;
                     if (atypeFactory.isCommitted(xType)) {
-                        err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
+                        err = COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED;
                     } else {
-                        err = COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED;
+                        err = COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION;
                     }
                     checker.report(Result.failure(err, varTree), varTree);
                     return; // prevent issuing another errow about subtyping

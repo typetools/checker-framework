@@ -93,8 +93,20 @@ public final class TreeUtils {
      *
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to super
+     * @deprecated use {@link #isSuperConstructorCall(MethodInvocationTree)}
      */
+    @Deprecated // use isSuperConstructorCall
     public static boolean isSuperCall(MethodInvocationTree tree) {
+        return isNamedMethodCall("super", tree);
+    }
+
+    /**
+     * Checks if the method invocation is a call to super.
+     *
+     * @param tree a tree defining a method invocation
+     * @return true iff tree describes a call to super
+     */
+    public static boolean isSuperConstructorCall(MethodInvocationTree tree) {
         return isNamedMethodCall("super", tree);
     }
 
@@ -103,8 +115,20 @@ public final class TreeUtils {
      *
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to this
+     * @deprecated use {@link #isThisConstructorCall(MethodInvocationTree)}
      */
+    @Deprecated // use isThisConstructorCall
     public static boolean isThisCall(MethodInvocationTree tree) {
+        return isNamedMethodCall("this", tree);
+    }
+
+    /**
+     * Checks if the method invocation is a call to "this".
+     *
+     * @param tree a tree defining a method invocation
+     * @return true iff tree describes a call to this
+     */
+    public static boolean isThisConstructorCall(MethodInvocationTree tree) {
         return isNamedMethodCall("this", tree);
     }
 
@@ -140,7 +164,7 @@ public final class TreeUtils {
      * @return {@code true} iff the member is a member of {@code this} instance
      */
     public static boolean isSelfAccess(final ExpressionTree tree) {
-        ExpressionTree tr = TreeUtils.skipParens(tree);
+        ExpressionTree tr = TreeUtils.withoutParens(tree);
         // If method invocation check the method select
         if (tr.getKind() == Tree.Kind.ARRAY_ACCESS) {
             return false;
@@ -149,11 +173,11 @@ public final class TreeUtils {
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             tr = ((MethodInvocationTree) tree).getMethodSelect();
         }
-        tr = TreeUtils.skipParens(tr);
+        tr = TreeUtils.withoutParens(tr);
         if (tr.getKind() == Tree.Kind.TYPE_CAST) {
             tr = ((TypeCastTree) tr).getExpression();
         }
-        tr = TreeUtils.skipParens(tr);
+        tr = TreeUtils.withoutParens(tr);
 
         if (tr.getKind() == Tree.Kind.IDENTIFIER) {
             return true;
@@ -329,18 +353,50 @@ public final class TreeUtils {
     }
 
     /**
-     * If the given tree is a parenthesized tree, it returns the enclosed non-parenthesized tree.
-     * Otherwise, it returns the same tree.
+     * If the given tree is a parenthesized tree, return the enclosed non-parenthesized tree.
+     * Otherwise, return the same tree.
      *
      * @param tree an expression tree
      * @return the outermost non-parenthesized tree enclosed by the given tree
      */
-    public static ExpressionTree skipParens(final ExpressionTree tree) {
+    public static ExpressionTree withoutParens(final ExpressionTree tree) {
         ExpressionTree t = tree;
         while (t.getKind() == Tree.Kind.PARENTHESIZED) {
             t = ((ParenthesizedTree) t).getExpression();
         }
         return t;
+    }
+
+    /**
+     * If the given tree is a parenthesized tree, it returns the enclosed non-parenthesized tree.
+     * Otherwise, it returns the same tree.
+     *
+     * @param tree an expression tree
+     * @return the outermost non-parenthesized tree enclosed by the given tree
+     * @deprecated use {@link #withoutParens}
+     */
+    @Deprecated // use withoutParens
+    public static ExpressionTree skipParens(final ExpressionTree tree) {
+        return withoutParens(tree);
+    }
+
+    /**
+     * Gets the first enclosing tree in path, that is not a parenthesis.
+     *
+     * @param path the path defining the tree node
+     * @return a pair of a non-parenthesis tree that contains the argument, and its child that is
+     *     the argument or is a parenthesized version of it
+     */
+    public static Pair<Tree, Tree> enclosingNonParen(final TreePath path) {
+        TreePath parentPath = path.getParentPath();
+        Tree enclosing = parentPath.getLeaf();
+        Tree enclosingChild = path.getLeaf();
+        while (enclosing.getKind() == Kind.PARENTHESIZED) {
+            parentPath = parentPath.getParentPath();
+            enclosingChild = enclosing;
+            enclosing = parentPath.getLeaf();
+        }
+        return Pair.of(enclosing, enclosingChild);
     }
 
     /**
@@ -428,7 +484,7 @@ public final class TreeUtils {
         }
 
         if (isExpressionTree(tree)) {
-            tree = skipParens((ExpressionTree) tree);
+            tree = withoutParens((ExpressionTree) tree);
         }
 
         switch (tree.getKind()) {
@@ -585,7 +641,7 @@ public final class TreeUtils {
      * @return whether the tree refers to an identifier, member select, or method invocation
      */
     public static final boolean isUseOfElement(ExpressionTree node) {
-        node = TreeUtils.skipParens(node);
+        node = TreeUtils.withoutParens(node);
         switch (node.getKind()) {
             case IDENTIFIER:
             case MEMBER_SELECT:
@@ -707,7 +763,7 @@ public final class TreeUtils {
      * </ol>
      */
     public static boolean isCompileTimeString(ExpressionTree node) {
-        ExpressionTree tree = TreeUtils.skipParens(node);
+        ExpressionTree tree = TreeUtils.withoutParens(node);
         if (tree instanceof LiteralTree) {
             return true;
         }
@@ -726,7 +782,7 @@ public final class TreeUtils {
 
     /** Returns the receiver tree of a field access or a method invocation. */
     public static ExpressionTree getReceiverTree(ExpressionTree expression) {
-        ExpressionTree receiver = TreeUtils.skipParens(expression);
+        ExpressionTree receiver = TreeUtils.withoutParens(expression);
 
         if (!(receiver.getKind() == Tree.Kind.METHOD_INVOCATION
                 || receiver.getKind() == Tree.Kind.MEMBER_SELECT
@@ -754,7 +810,7 @@ public final class TreeUtils {
             // It's a field access on implicit this or a local variable/parameter.
             return null;
         } else if (receiver.getKind() == Tree.Kind.ARRAY_ACCESS) {
-            return TreeUtils.skipParens(((ArrayAccessTree) receiver).getExpression());
+            return TreeUtils.withoutParens(((ArrayAccessTree) receiver).getExpression());
         } else if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
             receiver = ((MemberSelectTree) receiver).getExpression();
             // Avoid int.class
@@ -764,7 +820,7 @@ public final class TreeUtils {
         }
 
         // Receiver is now really just the receiver tree.
-        return TreeUtils.skipParens(receiver);
+        return TreeUtils.withoutParens(receiver);
     }
 
     // TODO: What about anonymous classes?
@@ -876,6 +932,9 @@ public final class TreeUtils {
             String typeName, String methodName, int params, ProcessingEnvironment env) {
         List<ExecutableElement> methods = new ArrayList<>(1);
         TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
+        if (typeElt == null) {
+            throw new UserError("Configuration problem! Could not load type: " + typeName);
+        }
         for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
             if (exec.getSimpleName().contentEquals(methodName)
                     && exec.getParameters().size() == params) {
@@ -1251,6 +1310,18 @@ public final class TreeUtils {
         return Collections.emptyList();
     }
 
+    /** @return true if the tree is the declaration or use of a local variable */
+    public static boolean isLocalVariable(Tree tree) {
+        if (tree.getKind() == Kind.VARIABLE) {
+            return elementFromDeclaration((VariableTree) tree).getKind()
+                    == ElementKind.LOCAL_VARIABLE;
+        } else if (tree.getKind() == Kind.IDENTIFIER) {
+            return elementFromUse((ExpressionTree) tree).getKind() == ElementKind.LOCAL_VARIABLE;
+        }
+        return false;
+    }
+
+    /** @return the type as a TypeMirror of {@code tree} */
     public static TypeMirror typeOf(Tree tree) {
         return ((JCTree) tree).type;
     }

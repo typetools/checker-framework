@@ -324,7 +324,7 @@ the following additional rules.
 \subsectionAndLabel{Primitive types, boxed primitive types, and Strings}{lock-type-checking-rules-primitives}
 
 Primitive types, boxed primitive types (such as \<java.lang.Integer>), and type \<java.lang.String>
-are implicitly annotated with \<@GuardedBy(\{\})>.
+are annotated with \<@GuardedBy(\{\})>.
 It is an error for the programmer to annotate any of these types with an annotation from
 the \<@GuardedBy> type hierarchy, including \<@GuardedBy(\{\})>.
 
@@ -992,4 +992,4 @@ These features are supported by
 %  LocalWords:  EnsuresLockHeldIf LockingFree ReleasesNoLocks str lock1
 %  LocalWords:  MayReleaseLocks GuardedByName lock2 jls JLS LockHeld intra
 %  LocalWords:  LockPossiblyHeld explicitLock isHeldByCurrentThread JCIP's
-%  LocalWords:  holdsLock monitorLock cleanroom
+%  LocalWords:  holdsLock monitorLock cleanroom AconcurrentSemantics
