@@ -116,7 +116,7 @@ public class ContractsUtils {
             Contract contract = (Contract) o;
 
             return Objects.equals(expression, contract.expression)
-                    && Objects.equals(contract.annotation)
+                    && Objects.equals(annotation, contract.annotation)
                     && kind == contract.kind;
         }
 
