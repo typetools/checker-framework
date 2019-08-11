@@ -252,7 +252,7 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            AnnotationMirror precondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
+            AnnotationMirror precondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
             if (precondAnno == null) {
                 continue;
             }
@@ -271,8 +271,8 @@ public class ContractsUtils {
      * argumentAnno} to the returned annotation, renamed according to {@code argumentRenaming}.
      *
      * <p>This is a helper method intended to be called from {@link
-     * getAnnotationMirrorOfContractAnnotation} and {@link getAnnotationMirrorOfMetaAnnotation}. Use
-     * one of those methods if possible.
+     * getAnnotationMirrorOfContractAnnotation} and {@link getAnnotationMirrorOfContractAnnotation}.
+     * Use one of those methods if possible.
      *
      * @param contractAnno a contract annotation, which has a {@code qualifier} element
      * @param argumentAnno annotation containing the argument values, or {@code null}
@@ -354,15 +354,15 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns the annotation mirror as specified by the "qualifier" element in {@code metaAnno},
-     * with arguments taken from {@code argumentAnno}.
+     * Returns the annotation mirror as specified by the "qualifier" element in {@code
+     * contractAnno}, with arguments taken from {@code argumentAnno}.
      */
-    private AnnotationMirror getAnnotationMirrorOfMetaAnnotation(
-            AnnotationMirror metaAnno, AnnotationMirror argumentAnno) {
+    private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
+            AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
 
         Map<String, String> argumentMap =
                 makeArgumentMap(argumentAnno.getAnnotationType().asElement());
-        return getAnnotationMirrorOfQualifier(metaAnno, argumentAnno, argumentMap);
+        return getAnnotationMirrorOfQualifier(contractAnno, argumentAnno, argumentMap);
     }
 
     /**
@@ -417,7 +417,7 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
             if (postcondAnno == null) {
                 continue;
             }
@@ -483,7 +483,7 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
             if (postcondAnno == null) {
                 continue;
             }
