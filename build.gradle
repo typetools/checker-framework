@@ -509,7 +509,7 @@ subprojects {
                                 '-samevm',
                                 // Required for checker/jtreg/nullness/PersistUtil.java and other tests
                                 "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}:" +
-                                        "${tasks.shadowJar.archiveFile}:${sourceSets.test.output.asPath}",
+                                        "${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
                                 "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                         ]
                         if (project.name.is('checker')) {
