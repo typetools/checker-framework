@@ -3996,16 +3996,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates an annotated type mirror that type argument inference should pretend the {@code
-     * expression} is assigned to. This implementation returns null, but subclasses may override
-     * this method to return a type.
+     * Returns {@code null} or an annotated type mirror that type argument inference should assume
+     * {@code expressionTree} is assigned to.
      *
-     * <p>This biases the inference algorithm toward the annotations for type variables in invariant
-     * positions.
+     * <p>If {@code null} is returned, inference proceeds normally.
+     *
+     * <p>If a type is returned, then inference assumes that {@code expressionTree} was asigned to
+     * it. This biases the inference algorithm toward the annotations in the returned type. In
+     * particular, if the annotations on type variables in invariant positions are a super type of
+     * the annotations inferred, the super type annotations are chosen.
+     *
+     * <p>This implementation returns null, but subclasses may override this method to return a
+     * type.
      *
      * @param expressionTree an expression which has no assignment context and for which type
      *     arguments need to be inferred
-     * @return null or an annotated type mirror that inferrence should pretend {@code
+     * @return {@code null} or an annotated type mirror that inferrence should pretend {@code
      *     expressionTree} is assigned to
      */
     public @Nullable AnnotatedTypeMirror getDummyAssignedTo(ExpressionTree expressionTree) {
