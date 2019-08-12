@@ -11,6 +11,11 @@ plugins {
     id "net.ltgt.errorprone-base" version "0.0.13"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '3.1.1' apply false
+
+    // To update version numbers of dependencies in this file, run: ./gradlew useLatestVersions
+    // (Not necessary if using dependabot to update dependencies.)
+    id 'se.patrikerdes.use-latest-versions' version '0.2.12'
+    id 'com.github.ben-manes.versions' version '0.21.0'
 }
 apply plugin: "de.undercouch.download"
 
@@ -129,7 +134,6 @@ allprojects {
                     '-Werror',
                     // To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
                     "-Xlint:-options",
-//                    "-Xlint:unchecked",
                     "-Xlint",
             ]
             options.encoding = 'UTF-8'
