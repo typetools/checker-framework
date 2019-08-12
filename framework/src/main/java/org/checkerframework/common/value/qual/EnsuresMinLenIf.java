@@ -1,6 +1,7 @@
 package org.checkerframework.common.value.qual;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -22,6 +23,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @InheritedAnnotation
+@Repeatable(EnsuresMinLenIf.List.class)
 public @interface EnsuresMinLenIf {
     /**
      * Java expression(s) that are a sequence with the given minimum length after the method returns
@@ -37,4 +39,19 @@ public @interface EnsuresMinLenIf {
     /** The minimum number of elements in the sequence. */
     @QualifierArgument("value")
     int targetValue() default 0;
+
+    /**
+     * A wrapper annotation that makes the {@link EnsuresMinLenIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresMinLenIf} annotation at the same location.
+     */
+    @ConditionalPostconditionAnnotation(qualifier = MinLen.class)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @InheritedAnnotation
+    public @interface List {
+        /** The repeatable annotations. */
+        EnsuresMinLenIf[] value();
+    }
 }

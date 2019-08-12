@@ -10,9 +10,12 @@ import java.lang.annotation.Target;
  * A meta-annotation that indicates that an annotation E is a postcondition annotation, i.e., E is a
  * type-specialized version of {@link EnsuresQualifier}.
  *
- * <p>The annotation E that is meta-annotated as {@link PostconditionAnnotation} must have an
- * element called {@code value} that is an array of {@code String}s of the same format and with the
- * same meaning as the value {@code expression} in {@link EnsuresQualifier}.
+ * <p>E must have an element {@code value} that is one of the following:
+ *
+ * <ul>
+ *   <li>an array of {@code String}s, analogous to {@link EnsuresQualifier#expression()}, or
+ *   <li>an array of postcondition annotations, analogous to {@link EnsuresQualifiers#value()}.
+ * </ul>
  *
  * <p>The established postcondition P has type specified by the {@code qualifier} field of this
  * annotation. If the annotation E has elements annotated by {@link QualifierArgument}, their values

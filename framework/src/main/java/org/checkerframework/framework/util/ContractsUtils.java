@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import com.sun.tools.javac.code.Attribute;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -26,6 +28,7 @@ import org.checkerframework.framework.qual.RequiresQualifiers;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -328,17 +331,64 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
-            if (postcondAnno == null) {
-                continue;
-            }
-            List<String> expressions =
-                    AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-            for (String expr : expressions) {
-                result.add(new Postcondition(expr, postcondAnno, anno));
-            }
+
+            result.addAll(getPostConditionAnnotations(anno, metaAnno));
         }
+
         return result;
+    }
+
+    /**
+     * Add multiple postcondition annotations or a single postcondition annotation present on the
+     * method in a set and returns them.
+     *
+     * @param anno wrapper annotation of multiple postcondition annotations, or a single post
+     *     condition annotation on the method
+     * @param metaAnno used to return the annotation mirror as specified by the element in this
+     *     meta-annotation
+     */
+    private Set<Postcondition> getPostConditionAnnotations(
+            AnnotationMirror anno, AnnotationMirror metaAnno) {
+
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> annoValue =
+                AnnotationUtils.getElementValue(anno, "value", List.class, false);
+        if (annoValue.get(0) instanceof AnnotationMirror) {
+            // Check for multiple contracts
+            Set<Postcondition> result = new LinkedHashSet<>();
+            for (AnnotationValue av : annoValue) {
+                AnnotationMirror am = (AnnotationMirror) av.getValue();
+                AnnotationMirror postcondAnno =
+                        getAnnotationMirrorOfContractAnnotation(metaAnno, am);
+                if (postcondAnno == null) {
+                    continue;
+                }
+                List<String> expression =
+                        AnnotationUtils.getElementValueArray(am, "value", String.class, false);
+                for (String expr : expression) {
+                    result.add(new Postcondition(expr, postcondAnno, am));
+                }
+            }
+            return result;
+        } else if (annoValue.get(0) instanceof Attribute.Constant) {
+            // Check for a single contract
+            Set<Postcondition> result = new LinkedHashSet<>();
+            List<String> expressions = new ArrayList<>();
+            for (AnnotationValue a : annoValue) {
+                expressions.add((String) a.getValue());
+            }
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
+            if (postcondAnno != null) {
+                for (String expr : expressions) {
+                    result.add(new Postcondition(expr, postcondAnno, anno));
+                }
+            }
+            return result;
+        } else {
+            throw new BugInCF(
+                    "Unexpected value %s [%s] in %s",
+                    annoValue.get(0), annoValue.get(0).getClass(), anno);
+        }
     }
 
     /**
@@ -394,19 +444,85 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
-            if (postcondAnno == null) {
-                continue;
-            }
-            List<String> expressions =
-                    AnnotationUtils.getElementValueArray(anno, "expression", String.class, false);
-            boolean annoResult =
-                    AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
-            for (String expr : expressions) {
-                result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
+
+            result.addAll(getConditionalPostConditionAnnotations(anno, metaAnno));
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns true if the given AnnotationMirror has an element named {@code value}.
+     *
+     * @param anno the AnnotationMirror whose fields to search
+     * @return true if {@code anno} has an element named {@code value}
+     */
+    private boolean hasValueElement(AnnotationMirror anno) {
+        for (ExecutableElement elem : anno.getElementValues().keySet()) {
+            if (elem.getSimpleName().contentEquals("value")) {
+                return true;
             }
         }
-        return result;
+        return false;
+    }
+
+    /**
+     * Add multiple conditional postcondition annotations or a single conditional postcondition
+     * annotation present on the method in a set and returns them.
+     *
+     * @param anno wrapper annotation of multiple conditional postcondition annotations, or a single
+     *     conditional postcondition annotation on the method
+     * @param metaAnno used to return the annotation mirror as specified by the element in this
+     *     meta-annotation
+     */
+    private Set<ConditionalPostcondition> getConditionalPostConditionAnnotations(
+            AnnotationMirror anno, AnnotationMirror metaAnno) {
+
+        if (hasValueElement(anno)) {
+            // Check for multiple contracts
+            @SuppressWarnings("unchecked")
+            List<AnnotationValue> annoValue =
+                    AnnotationUtils.getElementValue(anno, "value", List.class, false);
+            List<AnnotationMirror> annotations = new ArrayList<>(annoValue.size());
+            for (AnnotationValue a : annoValue) {
+                if (a instanceof AnnotationMirror) annotations.add((AnnotationMirror) a.getValue());
+            }
+            Set<ConditionalPostcondition> result = new LinkedHashSet<>();
+            for (AnnotationMirror a : annotations) {
+                AnnotationMirror postcondAnno =
+                        getAnnotationMirrorOfContractAnnotation(metaAnno, a);
+                if (postcondAnno == null) {
+                    continue;
+                }
+                boolean annoResult =
+                        AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
+                List<String> expressions =
+                        AnnotationUtils.getElementValueArray(a, "expression", String.class, false);
+                for (String expr : expressions) {
+                    result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
+                }
+            }
+            return result;
+        } else {
+            // Check for a single contract
+            @SuppressWarnings("unchecked")
+            List<AnnotationValue> annoValue =
+                    AnnotationUtils.getElementValue(anno, "expression", List.class, false);
+            List<String> expressions = new ArrayList<>(annoValue.size());
+            for (AnnotationValue a : annoValue) {
+                if (a instanceof Attribute.Constant) expressions.add((String) a.getValue());
+            }
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
+            Set<ConditionalPostcondition> result = new LinkedHashSet<>();
+            if (postcondAnno != null) {
+                boolean annoResult =
+                        AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
+                for (String expr : expressions) {
+                    result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
+                }
+            }
+            return result;
+        }
     }
 
     /**
@@ -506,8 +622,8 @@ public class ContractsUtils {
      *     qualifier argument names
      * @see QualifierArgument
      */
-    private Map<String, String> makeArgumentMap(Element contractAnnoElement) {
-        HashMap<String, String> argumentMap = new HashMap<>();
+    private Map<String, String> makeArgumentRenaming(Element contractAnnoElement) {
+        HashMap<String, String> argumentRenaming = new HashMap<>();
         for (ExecutableElement meth :
                 ElementFilter.methodsIn(contractAnnoElement.getEnclosedElements())) {
             AnnotationMirror argumentAnnotation =
@@ -520,10 +636,10 @@ public class ContractsUtils {
                 if (targetName == null || targetName.isEmpty()) {
                     targetName = sourceName;
                 }
-                argumentMap.put(sourceName, targetName);
+                argumentRenaming.put(sourceName, targetName);
             }
         }
-        return argumentMap;
+        return argumentRenaming;
     }
 
     /**
@@ -533,8 +649,8 @@ public class ContractsUtils {
     private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
             AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
 
-        Map<String, String> argumentMap =
-                makeArgumentMap(argumentAnno.getAnnotationType().asElement());
-        return getAnnotationMirrorOfQualifier(contractAnno, argumentAnno, argumentMap);
+        Map<String, String> argumentRenaming =
+                makeArgumentRenaming(argumentAnno.getAnnotationType().asElement());
+        return getAnnotationMirrorOfQualifier(contractAnno, argumentAnno, argumentRenaming);
     }
 }

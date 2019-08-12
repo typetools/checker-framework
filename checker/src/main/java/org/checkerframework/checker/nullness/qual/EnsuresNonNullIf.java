@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -67,6 +68,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
 @InheritedAnnotation
+@Repeatable(EnsuresNonNullIf.List.class)
 public @interface EnsuresNonNullIf {
     /**
      * Java expression(s) that are non-null after the method returns the given result.
@@ -77,4 +79,20 @@ public @interface EnsuresNonNullIf {
 
     /** The return value of the method that needs to hold for the postcondition to hold. */
     boolean result();
+
+    /**
+     * * A wrapper annotation that makes the {@link EnsuresNonNullIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresNonNullIf} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
+    @InheritedAnnotation
+    @interface List {
+        /** The repeatable annotations. */
+        EnsuresNonNullIf[] value();
+    }
 }

@@ -10,11 +10,17 @@ import java.lang.annotation.Target;
  * A meta-annotation that indicates that an annotation E is a conditional postcondition annotation,
  * i.e., E is a type-specialized version of {@link EnsuresQualifierIf}.
  *
- * <p>The annotation E that is meta-annotated as {@link ConditionalPostconditionAnnotation} must
- * have an element called {@code expression} that is an array of {@code String}s of the same format
- * and with the same meaning as the value {@code expression} in {@link EnsuresQualifierIf}. E must
- * also have an element {@code result} with the same meaning as the element {@code result} in {@link
- * EnsuresQualifierIf}.
+ * <ul>
+ *   <li>E must have one of the following:
+ *       <ul>
+ *         <li>an element {@code expression} that is an array of {@code String}s, analogous to
+ *             {@link EnsuresQualifierIf#expression()}, or
+ *         <li>an element {@code value} that is an array of conditional postcondition annotations,
+ *             analogous to {@link EnsuresQualifiersIf#value()}.
+ *       </ul>
+ *   <li>E must have an element {@code result} with the same meaning as {@link
+ *       EnsuresQualifierIf#result()}.
+ * </ul>
  *
  * <p>The established postcondition P has type specified by the {@code qualifier} field of this
  * annotation. If the annotation E has elements annotated by {@link QualifierArgument}, their values
