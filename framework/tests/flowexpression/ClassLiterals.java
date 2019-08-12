@@ -24,12 +24,9 @@ public class ClassLiterals {
 
     @FlowExp("int.class") String s1;
 
-    // :: error: (expression.unparsable.type.invalid)
     @FlowExp("int[].class") String s2;
 
-    // :: error: (expression.unparsable.type.invalid)
     @FlowExp("String[].class") String s3;
 
-    // :: error: (expression.unparsable.type.invalid)
     @FlowExp("java.lang.String[].class") String s4;
 }

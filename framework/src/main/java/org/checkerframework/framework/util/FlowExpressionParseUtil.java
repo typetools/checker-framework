@@ -571,6 +571,9 @@ public class FlowExpressionParseUtil {
                 }
             } else if (type.isVoidType()) {
                 return types.getNoType(TypeKind.VOID);
+            } else if (type.isArrayType()) {
+                return types.getArrayType(
+                        convertTypeToTypeMirror(type.asArrayType().getComponentType(), context));
             }
             return null;
         }
