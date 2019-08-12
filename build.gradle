@@ -455,16 +455,16 @@ subprojects {
         // Create a sourcesJar task for each subproject
         tasks.create(name: 'sourcesJar', type: Jar) {
             description 'Creates sources jar.'
-            classifier = 'source'
-            baseName = jar.baseName
+            archiveClassifier = 'source'
+            archiveBaseName = jar.archiveBaseName
             from sourceSets.main.java
         }
 
         // Create a javadocJar task for each subproject
         tasks.create(name: 'javadocJar', type: Jar, dependsOn: 'javadoc') {
             description 'Creates javadoc jar.'
-            classifier = 'javadoc'
-            baseName = jar.baseName
+            archiveClassifier = 'javadoc'
+            archiveBaseName = jar.archiveBaseName
             from tasks.javadoc.destinationDir
         }
 
@@ -472,9 +472,9 @@ subprojects {
         tasks.withType(Jar) {
             includeEmptyDirs = false
             manifest {
-                attributes("Implementation-Version": "${version}")
+                attributes("Implementation-Version": "${archiveVersion}")
                 attributes("Implementation-URL": "https://checkerframework.org")
-		if (archiveName != "checker-source.jar") {
+		if (archiveFileName != "checker-source.jar") {
                     attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
                 }
             }
@@ -509,7 +509,7 @@ subprojects {
                                 '-samevm',
                                 // Required for checker/jtreg/nullness/PersistUtil.java and other tests
                                 "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}:" +
-                                        "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
+                                        "${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
                                 "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                         ]
                         if (project.name.is('checker')) {
