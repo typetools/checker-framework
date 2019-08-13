@@ -180,10 +180,14 @@ class GZIPOutputStream extends DeflaterOutputStream {
     /*
      * Writes GZIP member header.
      */
+    @SuppressWarnings("unchecked") /*
+    #1: cast from "@IntVal(35615) int" to "@IntVal(31) byte" will not produce any runtime error
+    #2: cast from "@IntVal(139) int" to "@IntVal(-117) byte" will not produce any runtime error
+    */
     private void writeHeader() throws IOException {
         out.write(new byte[] {
-                      (byte) GZIP_MAGIC,        // Magic number (short)
-                      (byte)(GZIP_MAGIC >> 8),  // Magic number (short)
+                      (byte) GZIP_MAGIC,        // Magic number (short) #1
+                      (byte)(GZIP_MAGIC >> 8),  // Magic number (short) #2
                       Deflater.DEFLATED,        // Compression method (CM)
                       0,                        // Flags (FLG)
                       0,                        // Modification time MTIME (int)

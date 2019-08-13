@@ -3349,8 +3349,9 @@ public class Collections {
      * @return an immutable list containing only the specified object.
      * @since 1.3
      */
+    @SuppressWarnings("return.type.incompatible") // #1: returns an immutable list containing only the specified object o, hence @MinLen(1)
     public static <T> @MinLen(1) List<T> singletonList(T o) {
-        return new SingletonList<>(o);
+        return new SingletonList<>(o); // #1
     }
 
     /**

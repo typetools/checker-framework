@@ -221,6 +221,7 @@ public class HashMap<K,V>
      * Constructs an empty <tt>HashMap</tt> with the default initial capacity
      * (16) and the default load factor (0.75).
      */
+    @SuppressWarnings("unchecked") // cast from "@DoubleVal(12.0) float" to "@IntVal(12) int" will not produce any runtime error
     public HashMap() {
         this.loadFactor = DEFAULT_LOAD_FACTOR;
         threshold = (int)(DEFAULT_INITIAL_CAPACITY * DEFAULT_LOAD_FACTOR);
