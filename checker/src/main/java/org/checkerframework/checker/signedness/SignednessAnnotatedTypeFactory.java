@@ -2,7 +2,6 @@ package org.checkerframework.checker.signedness;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
@@ -14,7 +13,6 @@ import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
-import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -75,10 +73,31 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // but adding the top type to them, which permits flow-sensitive type refinement.
         // (When it is possible to default types based on their TypeKinds,
         // this whole method will no longer be needed.)
-        addSignednessGlbAnnotation(tree, type);
         addUnknownSignednessToSomeLocals(tree, type);
 
+        if (!computingAnnotatedTypeMirrorOfLHS) {
+            addSignednessGlbAnnotation(tree, type);
+        }
+
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
+    }
+
+    /**
+     * True when the AnnotatedTypeMirror currently being computed is the left hand side of an
+     * assignment or pseudo-assignment
+     *
+     * @see #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)
+     * @see #getAnnotatedTypeLhs(Tree)
+     */
+    private boolean computingAnnotatedTypeMirrorOfLHS = false;
+
+    @Override
+    public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
+        boolean oldComputingAnnotatedTypeMirrorOfLHS = computingAnnotatedTypeMirrorOfLHS;
+        computingAnnotatedTypeMirrorOfLHS = true;
+        AnnotatedTypeMirror result = super.getAnnotatedTypeLhs(lhsTree);
+        computingAnnotatedTypeMirrorOfLHS = oldComputingAnnotatedTypeMirrorOfLHS;
+        return result;
     }
 
     /**
@@ -106,51 +125,32 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     type.replaceAnnotation(SIGNEDNESS_GLB);
                 } else {
                     Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
-                    // @SignednessGlb do not gets applied to these compound assignments whenever
-                    // there variable is initialised with a positive value.
-                    // Therefore they are applied manually.
-                    if (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
-                            || tree.getKind() == Tree.Kind.MULTIPLY_ASSIGNMENT
-                            || tree.getKind() == Tree.Kind.DIVIDE_ASSIGNMENT
-                            || tree.getKind() == Tree.Kind.MINUS_ASSIGNMENT) {
-                        CompoundAssignmentTree t = (CompoundAssignmentTree) tree;
-                        ExpressionTree var = t.getVariable();
-                        ExpressionTree expr = t.getExpression();
-                        AnnotatedTypeMirror varType = getAnnotatedType(var);
-                        AnnotatedTypeMirror exprType = getAnnotatedType(expr);
-                        if (!(varType.hasAnnotation(Unsigned.class)
-                                        && exprType.hasAnnotation(Signed.class))
-                                && !(varType.hasAnnotation(Signed.class)
-                                        && exprType.hasAnnotation(Unsigned.class))
-                                && !varType.hasExplicitAnnotation(SignednessGlb.class))
-                            type.replaceAnnotations(varType.getAnnotations());
-                    } else {
-                        if (treeRange != null) {
-                            switch (javaType.getKind()) {
-                                case BYTE:
-                                case CHAR:
-                                    if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
-                                    break;
-                                case SHORT:
-                                    if (treeRange.isWithin(0, Short.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
-                                    break;
-                                case INT:
-                                    if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
-                                    break;
-                                case LONG:
-                                    if (treeRange.isWithin(0, Long.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
-                                    break;
-                                default:
-                                    // Nothing
-                            }
+
+                    if (treeRange != null) {
+                        switch (javaType.getKind()) {
+                            case BYTE:
+                            case CHAR:
+                                if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case SHORT:
+                                if (treeRange.isWithin(0, Short.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case INT:
+                                if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case LONG:
+                                if (treeRange.isWithin(0, Long.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            default:
+                                // Nothing
                         }
                     }
                 }
