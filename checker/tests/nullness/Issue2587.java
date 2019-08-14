@@ -2,11 +2,12 @@ import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 
+@SuppressWarnings("assignment.type.incompatible")
 public abstract class Issue2587 {
     public enum EnumType {
-        // :: error: (expression.unparsable.type.invalid) :: error: (assignment.type.incompatible)
+        // :: error: (expression.unparsable.type.invalid)
         @KeyFor("myMap") MY_KEY,
-        // :: error: (assignment.type.incompatible)
+
         @KeyFor("enumMap") ENUM_KEY;
         private static final Map<String, Integer> enumMap = new HashMap<>();
 
@@ -17,14 +18,13 @@ public abstract class Issue2587 {
     }
 
     public static class Inner {
-        // :: error: (expression.unparsable.type.invalid) :: error: (assignment.type.incompatible)
+        // :: error: (expression.unparsable.type.invalid)
         @KeyFor("myMap") String MY_KEY = "";
 
         public static class Inner2 {
-            // :: error: (expression.unparsable.type.invalid) :: error:
-            // (assignment.type.incompatible)
+            // :: error: (expression.unparsable.type.invalid)
             @KeyFor("myMap") String MY_KEY2 = "";
-            // :: error: (assignment.type.incompatible)
+
             @KeyFor("innerMap") String MY_KEY3 = "";
         }
 
