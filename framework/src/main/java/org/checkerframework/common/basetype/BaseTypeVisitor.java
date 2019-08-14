@@ -1601,7 +1601,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     "lambda.param.type.incompatible");
         }
 
-        // TODO: Post conditions?
+        // TODO: Postconditions?
         // https://github.com/typetools/checker-framework/issues/801
 
         return super.visitLambdaExpression(node, p);
@@ -2713,15 +2713,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
-        if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv)
-                && !atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
-            checker.report(
-                    Result.failure(
-                            "method.invocation.invalid",
-                            TreeUtils.elementFromUse(node),
-                            treeReceiver.toString(),
-                            methodReceiver.toString()),
-                    node);
+        if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv)) {
+            commonAssignmentCheckStartDiagnostic(methodReceiver, treeReceiver, node);
+            boolean success =
+                    atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver);
+            commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, node);
+            if (!success) {
+                checker.report(
+                        Result.failure(
+                                "method.invocation.invalid",
+                                TreeUtils.elementFromUse(node),
+                                treeReceiver.toString(),
+                                methodReceiver.toString()),
+                        node);
+            }
         }
     }
 
@@ -3219,7 +3224,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         private void checkPreAndPostConditions() {
             String msgKey = methodReference ? "methodref" : "override";
             if (methodReference) {
-                // TODO: Support post conditions and method references.
+                // TODO: Support postconditions and method references.
                 // The parse context always expects instance methods, but method references can be
                 // static.
                 return;

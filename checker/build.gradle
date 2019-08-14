@@ -171,8 +171,8 @@ task printPlumeUtilJarPath {
 
 task allSourcesJar(type: Jar) {
     description 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
-    destinationDir = file("${projectDir}/dist")
-    archiveName = "checker-source.jar"
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "checker-source.jar"
     from (sourceSets.main.java, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 }
@@ -180,16 +180,16 @@ task allSourcesJar(type: Jar) {
 task allJavadocJar(type: Jar) {
     description 'Creates javadoc jar include Javadoc for all of the framework'
     dependsOn rootProject.tasks.allJavadoc
-    destinationDir = file("${projectDir}/dist")
-    archiveName = "checker-javadoc.jar"
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "checker-javadoc.jar"
     from rootProject.tasks.allJavadoc.destinationDir
 }
 
 
 shadowJar {
     description 'Creates the "fat" checker.jar in dist/.'
-    destinationDir = file("${projectDir}/dist")
-    archiveName = "checker.jar"
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "checker.jar"
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }

@@ -15,4 +15,4 @@ dependencies {
     }
 }
 
-jar.baseName = 'framework-test'
+jar.archiveBaseName = 'framework-test'
