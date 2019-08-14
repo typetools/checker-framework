@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 
-@SuppressWarnings("assignment.type.incompatible")
+@SuppressWarnings("assignment.type.incompatible") // These warnings are not relevant
 public abstract class Issue2587 {
     public enum EnumType {
         // :: error: (expression.unparsable.type.invalid)
