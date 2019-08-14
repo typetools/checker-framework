@@ -77,7 +77,7 @@ public class ElementAnnotationApplier {
         new TypeVarAnnotator().visit(type, typeFactory);
     }
 
-    /** Same as apply except that annatation aren't copied from type parameter declarations. */
+    /** Same as apply except that annotations aren't copied from type parameter declarations. */
     private static void applyInternal(
             final AnnotatedTypeMirror type,
             final Element element,
