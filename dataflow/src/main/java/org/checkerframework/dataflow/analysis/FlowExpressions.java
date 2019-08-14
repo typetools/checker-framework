@@ -1193,19 +1193,19 @@ public class FlowExpressions {
             sb.append("new " + type);
             if (!dimensions.isEmpty()) {
                 boolean needComma = false;
-                sb.append(" (");
                 for (Receiver dim : dimensions) {
+                    sb.append("[");
                     if (needComma) {
                         sb.append(", ");
                     }
-                    sb.append(dim);
+                    sb.append(dim == null ? "" : dim);
                     needComma = true;
+                    sb.append("]");
                 }
-                sb.append(")");
             }
             if (!initializers.isEmpty()) {
                 boolean needComma = false;
-                sb.append(" = {");
+                sb.append(" {");
                 for (Receiver init : initializers) {
                     if (needComma) {
                         sb.append(", ");

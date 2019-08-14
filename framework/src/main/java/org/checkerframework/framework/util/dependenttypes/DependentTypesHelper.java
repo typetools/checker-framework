@@ -28,6 +28,7 @@ import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -195,9 +196,37 @@ public class DependentTypesHelper {
             receiver = FlowExpressions.internalReprOf(factory, receiverTree);
         }
 
-        List<FlowExpressions.Receiver> argReceivers = new ArrayList<>(args.size());
-        for (ExpressionTree argTree : args) {
-            argReceivers.add(FlowExpressions.internalReprOf(factory, argTree));
+        List<FlowExpressions.Receiver> argReceivers = new ArrayList<>();
+        boolean varargs = false;
+        if (tree instanceof MethodInvocationTree) {
+            ExecutableElement methodCalled =
+                    ((ExecutableElement)
+                            TreeUtils.elementFromUse(
+                                    ((MethodInvocationTree) tree).getMethodSelect()));
+            if (methodCalled.isVarArgs()) {
+                varargs = true;
+                for (int i = 0; i < methodCalled.getParameters().size() - 1; i++) {
+                    argReceivers.add(FlowExpressions.internalReprOf(factory, args.get(i)));
+                }
+                List<Receiver> initializers = new ArrayList<>();
+                for (int i = methodCalled.getParameters().size() - 1; i < args.size(); i++) {
+                    initializers.add(FlowExpressions.internalReprOf(factory, args.get(i)));
+                }
+                TypeMirror tm =
+                        ElementUtils.getType(
+                                methodCalled
+                                        .getParameters()
+                                        .get(methodCalled.getParameters().size() - 1));
+                argReceivers.add(
+                        new FlowExpressions.ArrayCreation(
+                                tm, Collections.emptyList(), initializers));
+            }
+        }
+
+        if (!varargs) {
+            for (ExpressionTree argTree : args) {
+                argReceivers.add(FlowExpressions.internalReprOf(factory, argTree));
+            }
         }
 
         TreePath currentPath = factory.getPath(tree);
