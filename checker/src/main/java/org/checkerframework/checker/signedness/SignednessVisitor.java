@@ -343,7 +343,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 break;
 
             case UNSIGNED_RIGHT_SHIFT:
-                if (hasSignedAnnotation(rightOpType)
+                if (hasSignedAnnotation(leftOpType)
                         && !isMaskedShiftEitherSignedness(node)
                         && !isCastedShiftEitherSignedness(node)) {
                     checker.report(Result.failure("shift.unsigned", kind), leftOp);
