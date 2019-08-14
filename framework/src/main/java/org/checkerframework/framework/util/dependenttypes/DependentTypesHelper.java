@@ -199,10 +199,9 @@ public class DependentTypesHelper {
         List<FlowExpressions.Receiver> argReceivers = new ArrayList<>();
         boolean varargs = false;
         if (tree instanceof MethodInvocationTree) {
+            ExpressionTree methodElement = ((MethodInvocationTree) tree).getMethodSelect();
             ExecutableElement methodCalled =
-                    ((ExecutableElement)
-                            TreeUtils.elementFromUse(
-                                    ((MethodInvocationTree) tree).getMethodSelect()));
+                    (ExecutableElement) TreeUtils.elementFromUse(methodElement);
             if (methodCalled.isVarArgs()) {
                 varargs = true;
                 for (int i = 0; i < methodCalled.getParameters().size() - 1; i++) {
@@ -212,11 +211,9 @@ public class DependentTypesHelper {
                 for (int i = methodCalled.getParameters().size() - 1; i < args.size(); i++) {
                     initializers.add(FlowExpressions.internalReprOf(factory, args.get(i)));
                 }
-                TypeMirror tm =
-                        ElementUtils.getType(
-                                methodCalled
-                                        .getParameters()
-                                        .get(methodCalled.getParameters().size() - 1));
+                Element varargsElement =
+                        methodCalled.getParameters().get(methodCalled.getParameters().size() - 1);
+                TypeMirror tm = ElementUtils.getType(varargsElement);
                 argReceivers.add(
                         new FlowExpressions.ArrayCreation(
                                 tm, Collections.emptyList(), initializers));
