@@ -73,10 +73,31 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // but adding the top type to them, which permits flow-sensitive type refinement.
         // (When it is possible to default types based on their TypeKinds,
         // this whole method will no longer be needed.)
-        addSignednessGlbAnnotation(tree, type);
         addUnknownSignednessToSomeLocals(tree, type);
 
+        if (!computingAnnotatedTypeMirrorOfLHS) {
+            addSignednessGlbAnnotation(tree, type);
+        }
+
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
+    }
+
+    /**
+     * True when the AnnotatedTypeMirror currently being computed is the left hand side of an
+     * assignment or pseudo-assignment
+     *
+     * @see #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)
+     * @see #getAnnotatedTypeLhs(Tree)
+     */
+    private boolean computingAnnotatedTypeMirrorOfLHS = false;
+
+    @Override
+    public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
+        boolean oldComputingAnnotatedTypeMirrorOfLHS = computingAnnotatedTypeMirrorOfLHS;
+        computingAnnotatedTypeMirrorOfLHS = true;
+        AnnotatedTypeMirror result = super.getAnnotatedTypeLhs(lhsTree);
+        computingAnnotatedTypeMirrorOfLHS = oldComputingAnnotatedTypeMirrorOfLHS;
+        return result;
     }
 
     /**
