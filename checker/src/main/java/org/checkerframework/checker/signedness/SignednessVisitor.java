@@ -278,6 +278,28 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     }
 
     /**
+     * Determines if an annotated type is annotated as {@link Unsigned} or {@link PolySigned}
+     *
+     * @param type the annotated type to be checked
+     * @return true if the annotated type is annotated as {@link Unsigned} or {@link PolySigned}
+     */
+    private boolean hasUnsignedAnnotation(AnnotatedTypeMirror type) {
+        if (type.hasAnnotation(Unsigned.class) || type.hasAnnotation(PolySigned.class)) return true;
+        else return false;
+    }
+
+    /**
+     * Determines if an annotated type is annotated as {@link Signed} or {@link PolySigned}
+     *
+     * @param type the annotated type to be checked
+     * @return true if the annotated type is annotated as {@link Signed} or {@link PolySigned}
+     */
+    private boolean hasSignedAnnotation(AnnotatedTypeMirror type) {
+        if (type.hasAnnotation(Signed.class) || type.hasAnnotation(PolySigned.class)) return true;
+        else return false;
+    }
+
+    /**
      * Enforces the following rules on binary operations involving Unsigned and Signed types:
      *
      * <ul>
@@ -305,18 +327,15 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         switch (kind) {
             case DIVIDE:
             case REMAINDER:
-                if (leftOpType.hasAnnotation(Unsigned.class)
-                        || leftOpType.hasAnnotation(PolySigned.class)) {
+                if (hasUnsignedAnnotation(leftOpType)) {
                     checker.report(Result.failure("operation.unsignedlhs", kind), leftOp);
-                } else if (rightOpType.hasAnnotation(Unsigned.class)
-                        || rightOpType.hasAnnotation(PolySigned.class)) {
+                } else if (hasUnsignedAnnotation(rightOpType)) {
                     checker.report(Result.failure("operation.unsignedrhs", kind), rightOp);
                 }
                 break;
 
             case RIGHT_SHIFT:
-                if ((leftOpType.hasAnnotation(Unsigned.class)
-                                || leftOpType.hasAnnotation(PolySigned.class))
+                if (hasUnsignedAnnotation(leftOpType)
                         && !isMaskedShiftEitherSignedness(node)
                         && !isCastedShiftEitherSignedness(node)) {
                     checker.report(Result.failure("shift.signed", kind), leftOp);
@@ -324,8 +343,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 break;
 
             case UNSIGNED_RIGHT_SHIFT:
-                if ((leftOpType.hasAnnotation(Signed.class)
-                                || leftOpType.hasAnnotation(PolySigned.class))
+                if (hasSignedAnnotation(rightOpType)
                         && !isMaskedShiftEitherSignedness(node)
                         && !isCastedShiftEitherSignedness(node)) {
                     checker.report(Result.failure("shift.unsigned", kind), leftOp);
@@ -339,11 +357,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
             case GREATER_THAN_EQUAL:
             case LESS_THAN:
             case LESS_THAN_EQUAL:
-                if (leftOpType.hasAnnotation(Unsigned.class)
-                        || leftOpType.hasAnnotation(PolySigned.class)) {
+                if (hasUnsignedAnnotation(leftOpType)) {
                     checker.report(Result.failure("comparison.unsignedlhs"), leftOp);
-                } else if (rightOpType.hasAnnotation(Unsigned.class)
-                        || rightOpType.hasAnnotation(PolySigned.class)) {
+                } else if (hasUnsignedAnnotation(rightOpType)) {
                     checker.report(Result.failure("comparison.unsignedrhs"), rightOp);
                 }
                 break;
@@ -408,15 +424,13 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         switch (kind) {
             case DIVIDE_ASSIGNMENT:
             case REMAINDER_ASSIGNMENT:
-                if (varType.hasAnnotation(Unsigned.class)
-                        || varType.hasAnnotation(PolySigned.class)) {
+                if (hasUnsignedAnnotation(varType)) {
                     checker.report(
                             Result.failure(
                                     "compound.assignment.unsigned.variable",
                                     kindWithoutAssignment(kind)),
                             var);
-                } else if (exprType.hasAnnotation(Unsigned.class)
-                        || exprType.hasAnnotation(PolySigned.class)) {
+                } else if (hasUnsignedAnnotation(exprType)) {
                     checker.report(
                             Result.failure(
                                     "compound.assignment.unsigned.expression",
@@ -426,8 +440,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 break;
 
             case RIGHT_SHIFT_ASSIGNMENT:
-                if (varType.hasAnnotation(Unsigned.class)
-                        || varType.hasAnnotation(PolySigned.class)) {
+                if (hasUnsignedAnnotation(varType)) {
                     checker.report(
                             Result.failure(
                                     "compound.assignment.shift.signed",
@@ -438,8 +451,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 break;
 
             case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
-                if (varType.hasAnnotation(Signed.class)
-                        || varType.hasAnnotation(PolySigned.class)) {
+                if (hasSignedAnnotation(varType)) {
                     checker.report(
                             Result.failure(
                                     "compound.assignment.shift.unsigned",
