@@ -8,8 +8,6 @@ Renamed wrapper annotations (which users should not write):
  * `@EnsuresQualifiers` => `@EnsuresQualifier.List`
  * `@RequiresQualifiers` => `@RequiresQualifier`.List
 
-
-
 ---------------------------------------------------------------------------
 
 Version 2.10.0, August 1, 2019
