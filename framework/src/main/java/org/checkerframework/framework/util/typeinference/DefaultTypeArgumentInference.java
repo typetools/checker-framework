@@ -118,7 +118,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
         final TreePath pathToExpression = typeFactory.getPath(expressionTree);
         assert pathToExpression != null;
-        final AnnotatedTypeMirror assignedTo =
+        AnnotatedTypeMirror assignedTo =
                 TypeArgInferenceUtil.assignedTo(typeFactory, pathToExpression);
 
         SourceChecker checker = typeFactory.getContext().getChecker();
@@ -148,7 +148,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
             return inferredArgs;
         }
-
+        if (assignedTo == null) {
+            assignedTo = typeFactory.getDummyAssignedTo(expressionTree);
+        }
         Map<TypeVariable, AnnotatedTypeMirror> inferredArgs;
         try {
             inferredArgs =

@@ -53,8 +53,3 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-downstream.sh
     displayName: test-downstream.sh
-
-trigger:
-  batch: true
-
-## The only downstream job is daikon-typecheck
