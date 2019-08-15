@@ -1,3 +1,17 @@
+Version ?.?.?, ??? ?, 2019
+
+Postcondition annotations such as @EnsuresNonNull and @EnsuresNonNullIf are repeatable.
+
+Renamed wrapper annotations (which users should not write):
+ * `@DefaultQualifiers` => `@DefaultQualifier.List`
+ * `@EnsuresQualifiersIf` => `@EnsuresQualifierIf.List`
+ * `@EnsuresQualifiers` => `@EnsuresQualifier.List`
+ * `@RequiresQualifiers` => `@RequiresQualifier`.List
+
+
+
+---------------------------------------------------------------------------
+
 Version 2.10.0, August 1, 2019
 
 Removed the NullnessRawnessChecker.  Use the NullnessChecker instead.

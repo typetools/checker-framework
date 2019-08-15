@@ -18,8 +18,6 @@ import javax.lang.model.util.ElementFilter;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
-import org.checkerframework.framework.qual.EnsuresQualifiers;
-import org.checkerframework.framework.qual.EnsuresQualifiersIf;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.QualifierArgument;
@@ -314,7 +312,7 @@ public class ContractsUtils {
 
         // Check for a wrapper around contract annotations.
         AnnotationMirror ensuresQualifiers =
-                factory.getDeclAnnotation(methodElement, EnsuresQualifiers.class);
+                factory.getDeclAnnotation(methodElement, EnsuresQualifier.List.class);
         if (ensuresQualifiers != null) {
             List<AnnotationMirror> ensuresQualifiersList =
                     AnnotationUtils.getElementValueArray(
@@ -427,7 +425,7 @@ public class ContractsUtils {
 
         // Check for a wrapper around contract annotations.
         AnnotationMirror ensuresQualifiersIf =
-                factory.getDeclAnnotation(methodElement, EnsuresQualifiersIf.class);
+                factory.getDeclAnnotation(methodElement, EnsuresQualifierIf.List.class);
         if (ensuresQualifiersIf != null) {
             List<AnnotationMirror> annotations =
                     AnnotationUtils.getElementValueArray(

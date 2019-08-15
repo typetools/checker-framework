@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  *         <li>an element {@code expression} that is an array of {@code String}s, analogous to
  *             {@link EnsuresQualifierIf#expression()}, or
  *         <li>an element {@code value} that is an array of conditional postcondition annotations,
- *             analogous to {@link EnsuresQualifiersIf#value()}.
+ *             analogous to {@link EnsuresQualifierIf.List#value()}.
  *       </ul>
  *   <li>E must have an element {@code result} with the same meaning as {@link
  *       EnsuresQualifierIf#result()}.

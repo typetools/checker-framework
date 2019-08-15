@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  *
  * <ul>
  *   <li>an array of {@code String}s, analogous to {@link EnsuresQualifier#expression()}, or
- *   <li>an array of postcondition annotations, analogous to {@link EnsuresQualifiers#value()}.
+ *   <li>an array of postcondition annotations, analogous to {@link EnsuresQualifier.List#value()}.
  * </ul>
  *
  * <p>The established postcondition P has type specified by the {@code qualifier} field of this
