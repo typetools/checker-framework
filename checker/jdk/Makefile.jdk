@@ -13,6 +13,8 @@ JAVADOCLIB ?= $(LANGTOOLSDIST)/../build/classes
 JAVAC ?= $(LANGTOOLSDIST)/bin/javac -Xlint
 JAVAP ?= $(LANGTOOLSDIST)/bin/javap
 
+RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
+
 ANNOTATION_TOOLS ?= ../../../../annotation-tools
 AFU_SCRIPTS ?= $(ANNOTATION_TOOLS)/annotation-file-utilities/scripts
 
