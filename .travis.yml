@@ -20,7 +20,7 @@ env:
   matrix:
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
-    - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
+    - BUILDJDK=downloadjdk JDKVER=jdk8-plus GROUP=misc
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=checker-framework-inference
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=plume-lib
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
@@ -28,7 +28,7 @@ env:
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
 before_script:
-- timeout 5m docker pull mdernst/$OS-for-cf-$JDKVER || true
+- timeout 5m docker pull mdernst/cf-$OS-$JDKVER || true
 
 # Using travis_wait here seems to cause the job to terminate after 1 minute
 # with no error (!).
@@ -52,7 +52,7 @@ script:
 - echo "TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG}"
 - echo "TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}"
 - >-
-  docker run -v $HOME/.gradle:/root/.gradle -v $HOME/.m2:/root/.m2 mdernst/$OS-for-cf-$JDKVER /bin/bash -c "true &&
+  docker run -v $HOME/.gradle:/root/.gradle -v $HOME/.m2:/root/.m2 mdernst/cf-$OS-$JDKVER /bin/bash -c "true &&
      if [ $TRAVIS_EVENT_TYPE = pull_request ] ; then
        git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO || git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO
        cd $THIS_REPO
