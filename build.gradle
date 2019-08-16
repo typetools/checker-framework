@@ -507,7 +507,7 @@ subprojects {
         tasks.withType(Jar) {
             includeEmptyDirs = false
             manifest {
-                attributes("Implementation-Version": "${archiveVersion}")
+                attributes("Implementation-Version": "${version}")
                 attributes("Implementation-URL": "https://checkerframework.org")
 		if (archiveFileName != "checker-source.jar") {
                     attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
