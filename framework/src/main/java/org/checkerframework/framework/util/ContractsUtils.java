@@ -352,10 +352,10 @@ public class ContractsUtils {
         List<AnnotationValue> annoValue =
                 AnnotationUtils.getElementValue(anno, "value", List.class, false);
         // If the list "annoValue" contains an elem
-        if (annoValue.contains(AnnotationMirror)) {
+        if (annoValue.get(0) instanceof AnnotationMirror) {
             // Check for multiple contracts
             return getMultiplePostconditionAnnotations(anno, metaAnno, annoValue);
-        } else if (annoValue.contains(Attribute.Constant)) {
+        } else if (annoValue.get(0) instanceof Attribute.Constant) {
             // Check for a single contract
             return getSinglePostConditionAnnotation(anno, metaAnno, annoValue);
         } else {
