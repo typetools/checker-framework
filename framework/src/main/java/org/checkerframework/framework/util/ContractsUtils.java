@@ -354,7 +354,7 @@ public class ContractsUtils {
         // If the list "annoValue" contains an elem
         if (annoValue.get(0) instanceof AnnotationMirror) {
             // Check for multiple contracts
-            return getMultiplePostconditionAnnotations(anno, metaAnno, annoValue);
+            return getMultiplePostconditionAnnotations(metaAnno, annoValue);
         } else if (annoValue.get(0) instanceof Attribute.Constant) {
             // Check for a single contract
             return getSinglePostConditionAnnotation(anno, metaAnno, annoValue);
