@@ -348,14 +348,14 @@ public class ContractsUtils {
      */
     private Set<Postcondition> getPostConditionAnnotations(
             AnnotationMirror anno, AnnotationMirror metaAnno) {
-        Set<Postcondition> result = new LinkedHashSet<>();
         @SuppressWarnings("unchecked")
         List<AnnotationValue> annoValue =
                 AnnotationUtils.getElementValue(anno, "value", List.class, false);
-        if (annoValue.get(0) instanceof AnnotationMirror) {
+        // If the list "annoValue" contains an elem
+        if (annoValue.contains(AnnotationMirror)) {
             // Check for multiple contracts
             return getMultiplePostconditionAnnotations(anno, metaAnno, annoValue);
-        } else if (annoValue.get(0) instanceof Attribute.Constant) {
+        } else if (annoValue.contains(Attribute.Constant)) {
             // Check for a single contract
             return getSinglePostConditionAnnotation(anno, metaAnno, annoValue);
         } else {
@@ -368,14 +368,13 @@ public class ContractsUtils {
     /**
      * Add multiple postcondition annotations in a set and returns them.
      *
-     * @param anno wrapper annotation of multiple postcondition annotations
      * @param metaAnno used to return the annotation mirror as specified by the element in this
      *     meta-annotation
      * @param annoValue the value of wrapper annotation containing multiple postcondition
      *     annotations
      */
     private Set<Postcondition> getMultiplePostconditionAnnotations(
-            AnnotationMirror anno, AnnotationMirror metaAnno, List<AnnotationValue> annoValue) {
+            AnnotationMirror metaAnno, List<AnnotationValue> annoValue) {
         Set<Postcondition> result = new LinkedHashSet<>();
         for (AnnotationValue av : annoValue) {
             AnnotationMirror am = (AnnotationMirror) av.getValue();
@@ -502,8 +501,6 @@ public class ContractsUtils {
      */
     private Set<ConditionalPostcondition> getConditionalPostConditionAnnotations(
             AnnotationMirror anno, AnnotationMirror metaAnno) {
-
-        Set<Postcondition> result = new LinkedHashSet<>();
         if (hasValueElement(anno)) {
             // Check for multiple contracts
             return getMultipleConditionalPostConditionAnnotations(anno, metaAnno);
