@@ -51,7 +51,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     // @NonLeaked and @LeakedToResult are type qualifiers because of a checker
     // framework limitation (Issue 383). Once the stub parser gets updated to read
-    // non-type-qualifers annotations on stub files, this annotation won't be a
+    // non-type-qualifiers annotations on stub files, this annotation won't be a
     // type qualifier anymore.
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {

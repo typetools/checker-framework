@@ -44,6 +44,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -311,7 +312,19 @@ public class FlowExpressionParseUtil {
             }
 
             if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
-                return getReceiverField(s, context, originalReceiver, fieldElem);
+                FieldAccess fieldAccess =
+                        (FieldAccess) getReceiverField(s, context, originalReceiver, fieldElem);
+                TypeElement scopeClassElement =
+                        TypesUtils.getTypeElement(fieldAccess.getReceiver().getType());
+                if (!originalReceiver
+                        && !ElementUtils.isStatic(fieldElem)
+                        && ElementUtils.isStatic(scopeClassElement)) {
+                    throw new ParseRuntimeException(
+                            constructParserException(
+                                    s,
+                                    "a non-static field can't be referenced from a static inner class or enum"));
+                }
+                return fieldAccess;
             }
 
             // Class name
