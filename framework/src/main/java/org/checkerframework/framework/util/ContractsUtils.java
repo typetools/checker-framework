@@ -349,23 +349,21 @@ public class ContractsUtils {
      */
     private Set<Postcondition> getPostConditionAnnotations(
             AnnotationMirror anno, AnnotationMirror metaAnno) {
-
         Set<Postcondition> result = new LinkedHashSet<>();
         @SuppressWarnings("unchecked")
         List<AnnotationValue> annoValue =
                 AnnotationUtils.getElementValue(anno, "value", List.class, false);
         if (annoValue.get(0) instanceof AnnotationMirror) {
             // Check for multiple contracts
-            result.addAll(getMultiplePostconditionAnnotations(annoValue, metaAnno));
+            return getMultiplePostconditionAnnotations(anno, metaAnno, annoValue);
         } else if (annoValue.get(0) instanceof Attribute.Constant) {
             // Check for a single contract
-            result.addAll(getSinglePostConditionAnnotation(annoValue, metaAnno));
+            return getSinglePostConditionAnnotation(anno, metaAnno, annoValue);
         } else {
             throw new BugInCF(
                     "Unexpected value %s [%s] in %s",
                     annoValue.get(0), annoValue.get(0).getClass(), anno);
         }
-        return result;
     }
 
     /**
@@ -379,13 +377,13 @@ public class ContractsUtils {
      */
     private Set<Postcondition> getMultiplePostconditionAnnotations(
             AnnotationMirror anno, AnnotationMirror metaAnno, List<AnnotationValue> annoValue) {
+        Set<Postcondition> result = new LinkedHashSet<>();
         for (AnnotationValue av : annoValue) {
             AnnotationMirror am = (AnnotationMirror) av.getValue();
             AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, am);
             if (postcondAnno == null) {
                 continue;
             }
-            Set<Postcondition> result = new LinkedHashSet<>();
             List<String> expression =
                     AnnotationUtils.getElementValueArray(am, "value", String.class, false);
             for (String expr : expression) {
@@ -499,7 +497,7 @@ public class ContractsUtils {
      * annotation in a set and returns them.
      *
      * @param anno wrapper annotation of multiple conditional postcondition annotations, or a single
-     *     conditional postcondition annotation on the method
+     *     conditional postcondition annotation
      * @param metaAnno used to return the annotation mirror as specified by the element in this
      *     meta-annotation
      */
@@ -509,12 +507,11 @@ public class ContractsUtils {
         Set<Postcondition> result = new LinkedHashSet<>();
         if (hasValueElement(anno)) {
             // Check for multiple contracts
-            result.addAll(getMultipleConditionalPostConditionAnnotations(anno, metaAnno));
+            return getMultipleConditionalPostConditionAnnotations(anno, metaAnno);
         } else {
             // Check for a single contract
-            result.addAll(getSingleConditionalPostConditionAnnotation(anno, metaAnno));
+            return getSingleConditionalPostConditionAnnotation(anno, metaAnno);
         }
-        return result;
     }
 
     /**
@@ -546,6 +543,7 @@ public class ContractsUtils {
                 result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
             }
         }
+        return result;
     }
 
     /**
@@ -573,6 +571,7 @@ public class ContractsUtils {
                 result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
             }
         }
+        return result;
     }
 
     /**
