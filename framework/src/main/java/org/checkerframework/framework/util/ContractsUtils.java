@@ -339,8 +339,7 @@ public class ContractsUtils {
     }
 
     /**
-     * Add multiple postcondition annotations or a single postcondition annotation in a set and
-     * returns them.
+     * Returns multiple postcondition annotations or a single postcondition annotation in a set.
      *
      * @param anno wrapper annotation of multiple postcondition annotations, or a single post
      *     condition annotation
@@ -493,8 +492,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Add multiple conditional postcondition annotations or a single conditional postcondition
-     * annotation in a set and returns them.
+     * Returns conditional postcondition annotations or a single conditional postcondition
+     * annotation.
      *
      * @param anno wrapper annotation of multiple conditional postcondition annotations, or a single
      *     conditional postcondition annotation
