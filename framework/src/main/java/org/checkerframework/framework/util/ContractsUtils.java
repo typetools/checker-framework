@@ -339,56 +339,84 @@ public class ContractsUtils {
     }
 
     /**
-     * Add multiple postcondition annotations or a single postcondition annotation present on the
-     * method in a set and returns them.
+     * Add multiple postcondition annotations or a single postcondition annotation in a set and
+     * returns them.
      *
      * @param anno wrapper annotation of multiple postcondition annotations, or a single post
-     *     condition annotation on the method
+     *     condition annotation
      * @param metaAnno used to return the annotation mirror as specified by the element in this
      *     meta-annotation
      */
     private Set<Postcondition> getPostConditionAnnotations(
             AnnotationMirror anno, AnnotationMirror metaAnno) {
 
+        Set<Postcondition> result = new LinkedHashSet<>();
         @SuppressWarnings("unchecked")
         List<AnnotationValue> annoValue =
                 AnnotationUtils.getElementValue(anno, "value", List.class, false);
         if (annoValue.get(0) instanceof AnnotationMirror) {
             // Check for multiple contracts
-            Set<Postcondition> result = new LinkedHashSet<>();
-            for (AnnotationValue av : annoValue) {
-                AnnotationMirror am = (AnnotationMirror) av.getValue();
-                AnnotationMirror postcondAnno =
-                        getAnnotationMirrorOfContractAnnotation(metaAnno, am);
-                if (postcondAnno == null) {
-                    continue;
-                }
-                List<String> expression =
-                        AnnotationUtils.getElementValueArray(am, "value", String.class, false);
-                for (String expr : expression) {
-                    result.add(new Postcondition(expr, postcondAnno, am));
-                }
-            }
-            return result;
+            result.addAll(getMultiplePostconditionAnnotations(annoValue, metaAnno));
         } else if (annoValue.get(0) instanceof Attribute.Constant) {
             // Check for a single contract
-            Set<Postcondition> result = new LinkedHashSet<>();
-            List<String> expressions = new ArrayList<>();
-            for (AnnotationValue a : annoValue) {
-                expressions.add((String) a.getValue());
-            }
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
-            if (postcondAnno != null) {
-                for (String expr : expressions) {
-                    result.add(new Postcondition(expr, postcondAnno, anno));
-                }
-            }
-            return result;
+            result.addAll(getSinglePostConditionAnnotation(annoValue, metaAnno));
         } else {
             throw new BugInCF(
                     "Unexpected value %s [%s] in %s",
                     annoValue.get(0), annoValue.get(0).getClass(), anno);
         }
+        return result;
+    }
+
+    /**
+     * Add multiple postcondition annotations in a set and returns them.
+     *
+     * @param anno wrapper annotation of multiple postcondition annotations
+     * @param metaAnno used to return the annotation mirror as specified by the element in this
+     *     meta-annotation
+     * @param annoValue the value of wrapper annotation containing multiple postcondition
+     *     annotations
+     */
+    private Set<Postcondition> getMultiplePostconditionAnnotations(
+            AnnotationMirror anno, AnnotationMirror metaAnno, List<AnnotationValue> annoValue) {
+        for (AnnotationValue av : annoValue) {
+            AnnotationMirror am = (AnnotationMirror) av.getValue();
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, am);
+            if (postcondAnno == null) {
+                continue;
+            }
+            Set<Postcondition> result = new LinkedHashSet<>();
+            List<String> expression =
+                    AnnotationUtils.getElementValueArray(am, "value", String.class, false);
+            for (String expr : expression) {
+                result.add(new Postcondition(expr, postcondAnno, am));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Add a single postcondition annotation in a set and returns them.
+     *
+     * @param anno wrapper annotation of a single post condition annotation
+     * @param metaAnno used to return the annotation mirror as specified by the element in this
+     *     meta-annotation
+     * @param annoValue the value of postcondition annotation
+     */
+    private Set<Postcondition> getSinglePostConditionAnnotation(
+            AnnotationMirror anno, AnnotationMirror metaAnno, List<AnnotationValue> annoValue) {
+        List<String> expressions = new ArrayList<>();
+        for (AnnotationValue a : annoValue) {
+            expressions.add((String) a.getValue());
+        }
+        Set<Postcondition> result = new LinkedHashSet<>();
+        AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
+        if (postcondAnno != null) {
+            for (String expr : expressions) {
+                result.add(new Postcondition(expr, postcondAnno, anno));
+            }
+        }
+        return result;
     }
 
     /**
@@ -468,7 +496,7 @@ public class ContractsUtils {
 
     /**
      * Add multiple conditional postcondition annotations or a single conditional postcondition
-     * annotation present on the method in a set and returns them.
+     * annotation in a set and returns them.
      *
      * @param anno wrapper annotation of multiple conditional postcondition annotations, or a single
      *     conditional postcondition annotation on the method
@@ -478,50 +506,72 @@ public class ContractsUtils {
     private Set<ConditionalPostcondition> getConditionalPostConditionAnnotations(
             AnnotationMirror anno, AnnotationMirror metaAnno) {
 
+        Set<Postcondition> result = new LinkedHashSet<>();
         if (hasValueElement(anno)) {
             // Check for multiple contracts
-            @SuppressWarnings("unchecked")
-            List<AnnotationValue> annoValue =
-                    AnnotationUtils.getElementValue(anno, "value", List.class, false);
-            List<AnnotationMirror> annotations = new ArrayList<>(annoValue.size());
-            for (AnnotationValue a : annoValue) {
-                if (a instanceof AnnotationMirror) annotations.add((AnnotationMirror) a.getValue());
-            }
-            Set<ConditionalPostcondition> result = new LinkedHashSet<>();
-            for (AnnotationMirror a : annotations) {
-                AnnotationMirror postcondAnno =
-                        getAnnotationMirrorOfContractAnnotation(metaAnno, a);
-                if (postcondAnno == null) {
-                    continue;
-                }
-                boolean annoResult =
-                        AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
-                List<String> expressions =
-                        AnnotationUtils.getElementValueArray(a, "expression", String.class, false);
-                for (String expr : expressions) {
-                    result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
-                }
-            }
-            return result;
+            result.addAll(getMultipleConditionalPostConditionAnnotations(anno, metaAnno));
         } else {
             // Check for a single contract
-            @SuppressWarnings("unchecked")
-            List<AnnotationValue> annoValue =
-                    AnnotationUtils.getElementValue(anno, "expression", List.class, false);
-            List<String> expressions = new ArrayList<>(annoValue.size());
-            for (AnnotationValue a : annoValue) {
-                if (a instanceof Attribute.Constant) expressions.add((String) a.getValue());
+            result.addAll(getSingleConditionalPostConditionAnnotation(anno, metaAnno));
+        }
+        return result;
+    }
+
+    /**
+     * Add multiple conditional postcondition annotations in a set and returns them.
+     *
+     * @param anno wrapper annotation of multiple conditional postcondition annotations
+     * @param metaAnno used to return the annotation mirror as specified by the element in this
+     *     meta-annotation
+     */
+    private Set<ConditionalPostcondition> getMultipleConditionalPostConditionAnnotations(
+            AnnotationMirror anno, AnnotationMirror metaAnno) {
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> annoValue =
+                AnnotationUtils.getElementValue(anno, "value", List.class, false);
+        List<AnnotationMirror> annotations = new ArrayList<>(annoValue.size());
+        for (AnnotationValue a : annoValue) {
+            if (a instanceof AnnotationMirror) annotations.add((AnnotationMirror) a.getValue());
+        }
+        Set<ConditionalPostcondition> result = new LinkedHashSet<>();
+        for (AnnotationMirror a : annotations) {
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, a);
+            if (postcondAnno == null) {
+                continue;
             }
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
-            Set<ConditionalPostcondition> result = new LinkedHashSet<>();
-            if (postcondAnno != null) {
-                boolean annoResult =
-                        AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
-                for (String expr : expressions) {
-                    result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
-                }
+            boolean annoResult = AnnotationUtils.getElementValue(a, "result", Boolean.class, false);
+            List<String> expressions =
+                    AnnotationUtils.getElementValueArray(a, "expression", String.class, false);
+            for (String expr : expressions) {
+                result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, a));
             }
-            return result;
+        }
+    }
+
+    /**
+     * Add single conditional postcondition annotation in a set and returns them.
+     *
+     * @param anno wrapper annotation of multiple conditional postcondition annotations
+     * @param metaAnno used to return the annotation mirror as specified by the element in this
+     *     meta-annotation
+     */
+    private Set<ConditionalPostcondition> getSingleConditionalPostConditionAnnotation(
+            AnnotationMirror anno, AnnotationMirror metaAnno) {
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> annoValue =
+                AnnotationUtils.getElementValue(anno, "expression", List.class, false);
+        List<String> expressions = new ArrayList<>(annoValue.size());
+        for (AnnotationValue a : annoValue) {
+            if (a instanceof Attribute.Constant) expressions.add((String) a.getValue());
+        }
+        AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
+        Set<ConditionalPostcondition> result = new LinkedHashSet<>();
+        if (postcondAnno != null) {
+            boolean annoResult =
+                    AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
+            for (String expr : expressions) {
+                result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
+            }
         }
     }
 
