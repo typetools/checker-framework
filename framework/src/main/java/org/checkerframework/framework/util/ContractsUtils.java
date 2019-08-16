@@ -351,7 +351,9 @@ public class ContractsUtils {
         @SuppressWarnings("unchecked")
         List<AnnotationValue> annoValue =
                 AnnotationUtils.getElementValue(anno, "value", List.class, false);
-        // If the list "annoValue" contains an elem
+        // The whole list i.e. annoValue will contain instance of AnnotationMirror or of
+        // Attribute.Constant, therefore we can determine the annotaion by checking the first
+        // element
         if (annoValue.get(0) instanceof AnnotationMirror) {
             // Check for multiple contracts
             return getMultiplePostconditionAnnotations(metaAnno, annoValue);
