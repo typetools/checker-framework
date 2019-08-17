@@ -509,6 +509,7 @@ public class ContractsUtils {
             // Check for multiple contracts
             return getMultipleConditionalPostConditionAnnotations(anno, metaAnno);
         } else {
+            // If has any other element, named other than "value"
             // Check for a single contract
             return getSingleConditionalPostConditionAnnotation(anno, metaAnno);
         }
