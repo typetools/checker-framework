@@ -105,7 +105,7 @@ public abstract class Writer implements Appendable, Closeable, Flushable {
      * @throws  IOException
      *          If an I/O error occurs
      */
-    public void write(@NonNegative int c) throws IOException {
+    public void write(int c) throws IOException {
         synchronized (lock) {
             if (writeBuffer == null){
                 writeBuffer = new char[writeBufferSize];
@@ -143,7 +143,7 @@ public abstract class Writer implements Appendable, Closeable, Flushable {
      * @throws  IOException
      *          If an I/O error occurs
      */
-    abstract public void write(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException;
+    abstract public void write(char cbuf[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException;
 
     /**
      * Writes a string.
@@ -178,7 +178,7 @@ public abstract class Writer implements Appendable, Closeable, Flushable {
      * @throws  IOException
      *          If an I/O error occurs
      */
-    public void write(String str, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(String str, @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         synchronized (lock) {
             char cbuf[];
             if (len <= writeBufferSize) {

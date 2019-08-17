@@ -229,7 +229,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         if (exprName.contains("+")) {
             return null;
         }
-        AnnotationDef def = new AnnotationDef(exprName);
+        AnnotationDef def =
+                new AnnotationDef(exprName, "ToIndexFileConverter.extractAnnotation(" + expr + ")");
         def.setFieldTypes(Collections.emptyMap());
         return new Annotation(def, Collections.emptyMap());
     }

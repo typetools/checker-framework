@@ -96,7 +96,7 @@ android {
 \begin{Verbatim}
 configurations {
     checkerFrameworkAnnotatedJDK {
-        description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+        description = 'a copy of JDK classes with Checker Framework type qualifiers inserted'
     }
 }
 
@@ -109,7 +109,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.8.0'
+    ext.checkerFrameworkVersion = '2.10.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
@@ -262,13 +262,13 @@ Here is an example Buck \<BUILD> file:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-2.8.0.jar',
+    binary_jar = 'checker-2.10.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-2.8.0.jar',
+    binary_jar = 'checker-qual-2.10.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -352,102 +352,65 @@ Look under the menu headings Java $\rightarrow$ Compiler $\rightarrow$ Errors/Wa
 
 \sectionAndLabel{Gradle}{gradle}
 
-This section describes how to run a checker
-on a project that uses the \href{https://gradle.org/}{Gradle} build system.
-
-\begin{enumerate}
-\item
-  Copy the file
-  \href{https://raw.githubusercontent.com/typetools/checker-framework/master/docs/manual/checkerframework.gradle}{\<checkerframework.gradle>}
-  to your project.
-
-\item
-  Customize the file, such as setting which type-checkers are run.
-
-\item
-  In your main buildfile, add the lines
-\begin{Verbatim}
-// Checker Framework pluggable type-checking
-apply from: "checkerframework.gradle"
-\end{Verbatim}
-
-\end{enumerate}
-
-
-\textbf{Note}: Gradle 3.4 has a bug where it does not run annotation processors,
-even if the \<-processor> flag is passed.
-% The gradle maintainers claim at
-% https://github.com/gradle/gradle/issues/1471#issuecomment-283001380 that
-% gradle is right and javac is wrong, because the file
-% META-INF/services/javax.annotation.processing.Processor must be present.
-% In fact, the javac documentation they link to is clear that -processor
-% overrides the need for that file; the gradle maintainers misread it.
-To work around this, install a later version of gradle.  Or, run
-\<gradle wrapper --gradle-version 4.5> (or any version 3.5 or later) and
-then always use \<./gradlew> where you would have used \<gradle>.
-
-
+To run a checker
+on a project that uses the \href{https://gradle.org/}{Gradle} build system,
+use the
+\ahreforurl{https://github.com/kelloggm/checkerframework-gradle-plugin}{Checker
+  Framework Gradle plugin}.  Its documentation explains how to use it.
 
 
 \sectionAndLabel{IntelliJ IDEA}{intellij}
 
-% The following method has been tested with IntelliJ IDEA 15.0.3.
+% The following method has been tested with IntelliJ IDEA 2019.1.1.
 
 This section tells you how to make IntelliJ IDEA automatically run a
-checker on every compile.  If you want to run the checker from a terminal
-within IntelliJ IDEA, follow the command-line instructions in
-Section~\ref{javac-installation}.
+checker on every compile for Java projects and/or modules.
 
-To run a checker within IntelliJ IDEA:
+If your project uses a build tool such as Gradle, these instructions will
+not work.  Follow the instructions for that build tool instead (they are in
+a different section of this chapter).  To compile your project, run the
+build tool (possibly from within Gradle, possibly not).
+
+To run a checker within IntelliJ IDEA on every compile:
 
 \begin{enumerate}
 
+\item Change the project SDK to 1.8, as explained at
+  \url{https://www.jetbrains.com/help/idea/sdk.html#change-project-sdk}.
+
+\item Change the language level for your project to 8, as explained at
+\url{https://www.jetbrains.com/help/idea/project-page.html}.
+
+\item Add the annotated JDK library to the bootclasspath.
+On the Java compiler settings page, see \url{https://www.jetbrains.com/help/idea/java-compiler.html},
+in the ``Additional command line parameters'': section, add:\\
+  \code{-Xbootclasspath/p:"<path to checker framework>/checker/dist/jdk8.jar"}
+
+\item Configure an annotation profile.
+\begin{enumerate}
 \item
-  Set the language level for your project to 8.  To do so, go to the
-  ``Project Structure'' menu via (File>Project Structure) or
-  (Ctrl-Alt-Shift-S), and set the ``Project language level'' field in the
-  ``Project'' sub-menu to 8.
-
-  Note: under MacOS, the menu is ``Preferences'' rather than ``Project Structure''.
-
+Create an
+\ahref{https://www.jetbrains.com/help/idea/configuring-annotation-processing.html#create\_profile}{annotation profile}.
 \item
-  Add the Checker Framework libraries.  In this same ``Project Structure''
-  menu, navigate to the ``Libraries'' sub-menu.  Click on the green ``+'' that
-  appears in this menu, select ``Java'' in the resulting pop-down menu,
-  select \<\$CHECKERFRAMEWORK/checker/dist/checker.jar> in the resulting menu,
-  and click ``OK''.
-
+\ahref{https://www.jetbrains.com/help/idea/configuring-annotation-processing.html#associate}{Associate}
+any desired modules with that profile.
 \item
-  Add the annotated JDK library using the following method.
-  Go to the ``Settings'' menu via (File>Settings) or (Ctrl-Alt-S) and
-  navigate to the ``Java Compiler'' sub-menu via (Build, Execution,
-  Deployment>Compiler>Java Compiler).  Add the following to the field
-  ``Additional command line parameters'': \\
-  \<-Xbootclasspath/p:"\$CHECKERFRAMEWORK/checker/dist/jdk8.jar">
+Configure that profile:
+\begin{enumerate}
+\item  Add checker.jar to the processor path.  (It's located in
+  \<checker-framework/checker/dist/>.)
+\item  Add checkers to be run during compilation by writing the
+  fully-qualified name of the checker in the ``Processor FQ Name''
+  section.
+\end{enumerate}
+\end{enumerate}
 
-\item
-  Create an annotation profile and specify which checkers to run.
-  Directly under the ``Java Compiler'' sub-menu is the ``Annotation
-  Processors'' sub-menu. Navigate here and click on the green ``+'' to create
-  a new Annotation Processor profile.  Give this profile a unique name of your
-  choosing that does not contain special characters or spaces.
-  Select the modules you would like to
-  use checkers with from under the ``Default'' profile and move them to your
-  new profile via the button directly right of the ``-'' button.
-
-  Now select your new profile and check the ``Enable annotation processing''
-  option. Select the ``Processor path'' radio button and enter
-  \<\$CHECKERFRAMEWORK/checker/dist/checker.jar> into the field to the right
-  of it. To add a checker to be run during compilation, click on the green
-  ``+'' in the ``Processor FQ Name'' section and write that checker's
-  fully-qualified name in
-  the resulting text field, and press the ``ENTER'' key.
-  % Without the ENTER key, the setting won't be saved.
-  (The fully-qualified name is usually an instantiation of
-  \<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>,
-  replacing \emph{CHECKER} by the checker you
-  want to run; an example would be
-  \<org.checkerframework.checker.nullness.NullnessChecker>.)
+\item Add \<checker-qual.jar>, located in
+\<checker-framework/checker/dist/checker-qual.jar>,  as a dependency to all
+modules you wish to type check. (They should all have been associated with
+the annotation profile above.)
+Instructions appear at
+\url{https://www.jetbrains.com/help/idea/creating-and-managing-projects.html}.
 
 \end{enumerate}
 
@@ -473,14 +436,14 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-2.8.0/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-2.10.0/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.8.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.10.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -504,7 +467,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.8.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.10.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -523,11 +486,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.8.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.10.0
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.8.0\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.10.0\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -658,7 +621,7 @@ instructions below.
 
 See the directory \code{docs/examples/MavenExample/} for examples of the use of
 Maven build files that run a checker.  These examples can be used to verify that
-Maven is correctly downloading the Checker Framework from
+Maven is correctly downloading the Checker Framework from the
 \href{https://search.maven.org/search?q=org.checkerframework}{Maven
   Central Repository} and executing it.
 
@@ -1015,7 +978,7 @@ explains the two different varieties of type inference.
 \begin{enumerate}
 \item
   Type inference during type-checking (Section~\ref{type-refinement}):
-  During type-checking, if certain variables have no type qualifier, the
+  During type-checking, if certain variables have no programmer-written type qualifier, the
   type-checker determines whether there is some type qualifier that would
   permit the program to type-check.  If so, the type-checker uses that type
   qualifier, but never tells the programmer what it was.  Each time the

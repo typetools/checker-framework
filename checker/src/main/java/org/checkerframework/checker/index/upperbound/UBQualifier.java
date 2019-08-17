@@ -35,26 +35,45 @@ import org.checkerframework.javacutil.Pair;
  */
 public abstract class UBQualifier {
 
+    /**
+     * Create a UBQualifier from the given annotation.
+     *
+     * @param am the annotation to turn into a UBQualifier
+     * @return a UBQualifier that represents the same information as the given annotation
+     */
     public static UBQualifier createUBQualifier(AnnotationMirror am) {
+        return createUBQualifier(am, null);
+    }
+
+    /**
+     * Create a UBQualifier from the given annotation, with an extra offset
+     *
+     * @param am the annotation to turn into a UBQualifier
+     * @param offset the extra offset; may be null
+     * @return a UBQualifier that represents the same information as the given annotation (plus an
+     *     optional offset)
+     */
+    public static UBQualifier createUBQualifier(AnnotationMirror am, String offset) {
         if (AnnotationUtils.areSameByClass(am, UpperBoundUnknown.class)) {
             return UpperBoundUnknownQualifier.UNKNOWN;
         } else if (AnnotationUtils.areSameByClass(am, UpperBoundBottom.class)) {
             return UpperBoundBottomQualifier.BOTTOM;
         } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)
                 || AnnotationUtils.areSameByClass(am, SubstringIndexFor.class)) {
-            return parseLTLengthOf(am);
+            return parseLTLengthOf(am, offset);
         } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
-            return parseLTEqLengthOf(am);
+            return parseLTEqLengthOf(am, offset);
         } else if (AnnotationUtils.areSameByClass(am, LTOMLengthOf.class)) {
-            return parseLTOMLengthOf(am);
+            return parseLTOMLengthOf(am, offset);
         } else if (AnnotationUtils.areSameByClass(am, PolyUpperBound.class)) {
+            // TODO:  Ignores offset.  Should we check that offset is not set?
             return PolyQualifier.POLY;
         }
         assert false;
         return UpperBoundUnknownQualifier.UNKNOWN;
     }
 
-    private static UBQualifier parseLTLengthOf(AnnotationMirror am) {
+    private static UBQualifier parseLTLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
                 AnnotationUtils.getElementValueArray(am, "value", String.class, true);
         List<String> offset =
@@ -62,21 +81,21 @@ public abstract class UBQualifier {
         if (offset.isEmpty()) {
             offset = Collections.nCopies(sequences.size(), "");
         }
-        return createUBQualifier(sequences, offset);
+        return createUBQualifier(sequences, offset, extraOffset);
     }
 
-    private static UBQualifier parseLTEqLengthOf(AnnotationMirror am) {
+    private static UBQualifier parseLTEqLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
                 AnnotationUtils.getElementValueArray(am, "value", String.class, true);
         List<String> offset = Collections.nCopies(sequences.size(), "-1");
-        return createUBQualifier(sequences, offset);
+        return createUBQualifier(sequences, offset, extraOffset);
     }
 
-    private static UBQualifier parseLTOMLengthOf(AnnotationMirror am) {
+    private static UBQualifier parseLTOMLengthOf(AnnotationMirror am, String extraOffset) {
         List<String> sequences =
                 AnnotationUtils.getElementValueArray(am, "value", String.class, true);
         List<String> offset = Collections.nCopies(sequences.size(), "1");
-        return createUBQualifier(sequences, offset);
+        return createUBQualifier(sequences, offset, extraOffset);
     }
 
     public static UBQualifier createUBQualifier(String sequence, String offset) {
@@ -98,11 +117,38 @@ public abstract class UBQualifier {
      * @return an {@link UBQualifier} for the sequences with the given offsets
      */
     public static UBQualifier createUBQualifier(List<String> sequences, List<String> offsets) {
+        return createUBQualifier(sequences, offsets, null);
+    }
+
+    /**
+     * Creates an {@link UBQualifier} from the given sequences and offsets, with the given
+     * additional offset. The list of sequences may not be empty. If the offsets list is empty, then
+     * an offset of 0 is used for each sequence. If the offsets list is not empty, then it must be
+     * the same size as sequence.
+     *
+     * @param sequences non-empty list of sequences
+     * @param offsets list of offset, if empty, an offset of 0 is used
+     * @param extraOffset offset to add to each element of offsets; may be null
+     * @return an {@link UBQualifier} for the sequences with the given offsets
+     */
+    public static UBQualifier createUBQualifier(
+            List<String> sequences, List<String> offsets, String extraOffset) {
         assert !sequences.isEmpty();
+
+        OffsetEquation extraEq;
+        if (extraOffset == null) {
+            extraEq = OffsetEquation.ZERO;
+        } else {
+            extraEq = OffsetEquation.createOffsetFromJavaExpression(extraOffset);
+            if (extraEq.hasError()) {
+                return UpperBoundUnknownQualifier.UNKNOWN;
+            }
+        }
+
         Map<String, Set<OffsetEquation>> map = new HashMap<>();
         if (offsets.isEmpty()) {
             for (String sequence : sequences) {
-                map.put(sequence, Collections.singleton(OffsetEquation.ZERO));
+                map.put(sequence, Collections.singleton(extraEq));
             }
         } else {
             assert sequences.size() == offsets.size();
@@ -118,6 +164,7 @@ public abstract class UBQualifier {
                 if (eq.hasError()) {
                     return UpperBoundUnknownQualifier.UNKNOWN;
                 }
+                eq = eq.copyAdd('+', extraEq);
                 set.add(eq);
             }
         }
@@ -229,7 +276,9 @@ public abstract class UBQualifier {
         return false;
     }
 
+    /** The less-than-length-of qualifier (@LTLengthOf). */
     public static class LessThanLengthOf extends UBQualifier {
+        /** Maps from sequence name to offset. */
         private final Map<String, Set<OffsetEquation>> map;
 
         private LessThanLengthOf(Map<String, Set<OffsetEquation>> map) {

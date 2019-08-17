@@ -8,6 +8,7 @@ class Class<T> implements Serializable, GenericDeclaration, Type, AnnotatedEleme
     @ClassGetName String getName();
     @ClassGetName String name;
     @ClassGetName String getName0();
+    @DotSeparatedIdentifiers String getPackageName();
     @ClassGetSimpleName String getSimpleName();
     @FullyQualifiedName String getCanonicalName();
 }
@@ -44,8 +45,8 @@ class ClassLoader {
 }
 
 class Package implements AnnotatedElement {
-    @FullyQualifiedName String getName();
-    Package(@FullyQualifiedName String name, String spectitle, String specversion, String specvendor, String impltitle, String implversion, String implvendor, URL sealbase, ClassLoader loader);
+    Package(@DotSeparatedIdentifiers String name, String spectitle, String specversion, String specvendor, String impltitle, String implversion, String implvendor, URL sealbase, ClassLoader loader);
+    @DotSeparatedIdentifiers String getName();
 }
 
 class StackTraceElement {

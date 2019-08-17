@@ -234,6 +234,28 @@ too busy to do so, you should recognize that and move on.
 </p>
 
 
+<h2 id="travis-failure">What to do if a Travis build fails</h2>
+
+<p>
+Sometimes, your Travis pull request may fail even though your local build passed.
+This is usually because Travis performed more tests than you ran locally.
+</p>
+
+<p>
+First, examine the error logs, which contain diagnostic output from the
+failing command.  You can determine which command was run from the logs, or
+from the <code>.travis.yml</code> file.  (It might itself call some other
+file, such as <code>.travis-build.sh</code>.)
+</p>
+
+<p>
+When there are multiple Travis jobs in a single Travis build, each job runs
+different commands, or they run the same command with different arguments.
+You can determine those commands from the <code>.travis.yml</code> file and
+run them locally.
+</p>
+
+
 <h2 id="Documenting_refactoring_ideas">Documenting refactoring ideas</h2>
 
 <p>
@@ -262,15 +284,17 @@ lower-quality than it actually is.
 <p>
 Annotated libraries should be based on a released version of the upstream
 library, not an arbitrary commit in the upstream library's version control
-system.
+system.  The library's version number is the same as the upstream version
+number.
 </p>
 
 <p>
 When making a new version of an annotated library, between upstream
 releases, add ".0.1" to the end of the version number.  For example, if we
-already uploaded version 6.2 to Maven Central, the next version would be
-6.2.0.1.  This accommodates the possibility that the upstream maintainers
-release 6.2.1.
+already uploaded version 6.2 to Maven Central, the next version we upload
+would be 6.2.0.1.  This accommodates the possibility that the upstream
+maintainers release 6.2.1.  Our further releases increment the last number,
+for example to 6.2.0.2.
 </p>
 
 
@@ -285,7 +309,7 @@ See a separate document about the
 </body>
 </html>
 
-<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects
+<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre
  -->
 <!--  LocalWords:  subproject personalblog changelog
  -->

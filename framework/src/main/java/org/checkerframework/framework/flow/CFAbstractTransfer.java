@@ -779,7 +779,7 @@ public abstract class CFAbstractTransfer<
     /**
      * Takes a node, and either returns the node itself again (as a singleton list), or if the node
      * is an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively
-     * to the rhs).
+     * to the rhs -- that is, the rhs may not appear in the result, but rather its lhs and rhs may).
      */
     protected List<Node> splitAssignments(Node node) {
         if (node instanceof AssignmentNode) {
@@ -965,7 +965,7 @@ public abstract class CFAbstractTransfer<
      * a @SuppressWarning, then this method returns false.
      */
     private boolean shouldPerformWholeProgramInference(Tree tree) {
-        return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(tree, null));
+        return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(tree, ""));
     }
 
     /**
@@ -979,7 +979,7 @@ public abstract class CFAbstractTransfer<
             return false;
         }
         Element elt = TreeUtils.elementFromTree(lhsTree);
-        return !analysis.checker.shouldSuppressWarnings(elt, null);
+        return !analysis.checker.shouldSuppressWarnings(elt, "");
     }
 
     /**
@@ -988,7 +988,7 @@ public abstract class CFAbstractTransfer<
      */
     private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
         return shouldPerformWholeProgramInference(tree)
-                && !analysis.checker.shouldSuppressWarnings(elt, null);
+                && !analysis.checker.shouldSuppressWarnings(elt, "");
     }
 
     /**
@@ -1045,14 +1045,18 @@ public abstract class CFAbstractTransfer<
                 FlowExpressions.Receiver r =
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, localScope, false);
+                // "insertOrRefine" is called so that the postcondition information is added to any
+                // existing information rather than replacing it.  If the called method is not
+                // side-effect-free, then the values that might have been changed by the method call
+                // are removed from the store before this method is called.
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDTION) {
                     if (((ConditionalPostcondition) p).annoResult) {
-                        thenStore.insertValue(r, anno);
+                        thenStore.insertOrRefine(r, anno);
                     } else {
-                        elseStore.insertValue(r, anno);
+                        elseStore.insertOrRefine(r, anno);
                     }
                 } else {
-                    thenStore.insertValue(r, anno);
+                    thenStore.insertOrRefine(r, anno);
                 }
             } catch (FlowExpressionParseException e) {
                 Result result;

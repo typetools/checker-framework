@@ -81,12 +81,19 @@ The Checker Framework comes with checkers for specific types of errors:
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
+  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
+  expressions have aliases (see \chapterpageref{aliasing-checker})
+\item
+  \ahrefloc{purity-checker}{Purity Checker} to identify whether
+  methods have side effects (see \chapterpageref{purity-checker})
+\item
   \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
   whether an expression's value can be known at compile time
   (see \chapterpageref{constant-value-checker})
 \item
-  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
-  expressions have aliases (see \chapterpageref{aliasing-checker})
+  \ahrefloc{reflection-resolution}{Reflection Checker} to determine
+  whether an expression's value (of type \<Method> or \<Class>) can be known at compile time
+  (see \chapterpageref{reflection-resolution})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
@@ -181,18 +188,24 @@ synonyms.
 
 \sectionAndLabel{Installation}{installation}
 
-\begin{sloppypar}
 This section describes how to install the Checker Framework.
+\begin{itemize}
+\item
 If you use a build system that automatically downloads dependencies,
-such as Gradle or Maven, you do not need to perform any installation.
+such as Gradle or Maven, \textbf{no installation is necessary}; just see
+\chapterpageref{external-tools}.
+\item
 If you wish to try the Checker Framework without installing it, use the
 \href{http://eisop.uwaterloo.ca/live/}{Checker Framework Live Demo} webpage.
-\end{sloppypar}
-
-The Checker Framework release contains everything that you need, both to
-run checkers and to write your own checkers.  As an alternative, you can
-build the latest development version from source
+\item
+This section describes how to install the Checker Framework from its
+distribution.  The Checker Framework release contains everything that you
+need, both to run checkers and to write your own checkers.
+\item
+Alternately, you can build the latest development version from source
 (Section~\refwithpage{build-source}).
+\end{itemize}
+
 
 % Not "\url" because it looks bad in the printed manual.
 \textbf{Requirement:}
@@ -210,7 +223,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.8.0.zip}
+  \url{https://checkerframework.org/checker-framework-2.10.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -537,14 +550,16 @@ then update your buildfile to use the \<org.checkerframework.annotatedlib>
 group.  For example, in \<build.gradle>, change
 
 \begin{Verbatim}
-  api group: 'org.apache.bcel', name: 'bcel', version: '6.2'
+  api group: 'org.apache.bcel', name: 'bcel', version: '6.3.1'
+  api group: 'commons-io', name: 'commans-io', version: '2.6'
 \end{Verbatim}
 
 \noindent
 to
 
 \begin{Verbatim}
-  api group: 'org.checkerframework.annotatedlib', name: 'bcel', version: '6.2.0.2'
+  api group: 'org.checkerframework.annotatedlib', name: 'bcel', version: '6.3.1'
+  api group: 'org.checkerframework.annotatedlib', name: 'commons-io', version: '2.6.0.1'
 \end{Verbatim}
 
 \noindent
@@ -573,7 +588,8 @@ classpath; you don't have to do anything special for it.
 For the Javadoc classes in the JDK's \<com.sun.javadoc> package,
 % are not exposed by ct.sym and therefore cannot be part of an
 % annotated JDK
-use the stub file \<checker/resources/javadoc.astub>.
+use the stub file \<checker/resources/javadoc.astub> by using \<-Astubs=checker.jar/javadoc.astub>.
+% Note: that this syntax only works for checker.jar.
 \end{itemize}
 
 
@@ -689,7 +705,7 @@ Type-checking modes:  enable/disable functionality
 \item \<-AresolveReflection>
   Determine the target of reflective calls, and perform more precise
   type-checking based no that information; see
-  Section~\ref{reflection-resolution}.  \<-AresolveReflection=debug> causes
+  Chapter~\ref{reflection-resolution}.  \<-AresolveReflection=debug> causes
   debugging information to be output.
 \item \<-Ainfer>
   Output suggested annotations for method signatures and fields.
@@ -699,12 +715,15 @@ Type-checking modes:  enable/disable functionality
 \item \<-AshowSuppressWarningKeys>
   With each warning, show all possible keys to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
-  Issue a warning if a \<@SuppressWarnings> did not suppress a warning issued by
-  the checker.  These warnings are only issued if the \<@SuppressWarnings>
-  contains a key that would suppress any warning from this checker.
+  Issue a warning if a \<@SuppressWarnings> did not suppress a warning
+  issued by the checker.  This may issue false positive warnings about
+  \<@SuppressWarnings> keys without a \<\emph{checkername}:> prefix
+  (Section~\ref{suppresswarnings-annotation-syntax}).  You can use the
+  \<-ArequirePrefixInWarningSuppressions> command-line argument to ensure
+  your \<@SuppressWarnings> always use a \<\emph{checkername}:> prefix.
 \item \<-ArequirePrefixInWarningSuppressions>
   Require that the key in a warning suppression annotation begin with a checker
-  warning supression key.  Otherwise, the suppress warning annotation does not
+  warning suppression key.  Otherwise, the suppress warning annotation does not
   suppress any warnings.  For example, if this command-line option is
   supplied, then \<@SuppressWarnings("assignment.type.incompatible")> has no effect, but
   \<@SuppressWarnings("nullness:assignment.type.incompatible")> does.
@@ -1106,8 +1125,9 @@ Do not write unnecessary annotations.
   annotations for local variables (see Section~\ref{type-refinement}).
   Usually, you only need to annotate fields and method signatures.  You
   should add annotations inside method bodies only if the checker is unable
-  to infer the correct annotation (usually on type arguments, rather than
-  on local variables).
+  to infer the correct annotation (usually on type arguments or array
+  element types, rather than
+  on top-level types).
   % or if
   % you need to suppress a warning (see Chapter~\ref{suppressing-warnings}).
 
@@ -1163,7 +1183,8 @@ program does not crash due to a null value.  In a method like this:
 \noindent
 the program crashes if \<null> is passed.  Therefore, the type of \<arg>
 should be \<@NonNull Object> (which you can write as just \<Object> due to
-defaulting).  The Nullness Checker will warn whenever a client passes a
+defaulting).  The Nullness Checker (\chapterpageref{nullness-checker})
+will warn whenever a client passes a
 value that might cause m to crash.  If you wrote the type of the formal
 parameter as \<@Nullable Object>, the Nullness Checker would permit clients
 to make calls that lead to a crash.
@@ -1221,6 +1242,15 @@ don't necessarily throw an exception.
 % possible for null to flow there at run time.  However, since that is an
 % erroneous case, the annotation would be counterproductive rather than
 % useful.)
+
+Another example is the Optional Checker (\chapterpageref{optional-checker})
+and the \<orElseThrow> method.
+The goal of the Optional Checker is to ensure that the program does not
+crash due to use of a non-present Optional value.  Therefore, the receiver
+of \ahref{https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Optional.html#orElseThrow()}{\<orElseThrow>} is annotated as
+\ahref{https://checkerframework.org/api/org/checkerframework/checker/optional/qual/Present.html}{\<@Present>},
+and the optional Checker issues a warning if the client calls
+\<orElseThrow> on a \<@MaybePresent> value.
 
 
 \subsectionAndLabel{Subclasses must respect superclass annotations}{annotations-are-a-contract}
@@ -1438,14 +1468,14 @@ same methodology in different words.
 
 
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc
-% LocalWords:  SuppressWarnings un skipUses java plugins plugin TODO cp
+% LocalWords:  SuppressWarnings un skipUses java plugins plugin TODO cp io
 % LocalWords:  nonnull langtools sourcepath classpath OpenJDK pre jsr lst
 % LocalWords:  Djsr qual Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
 % LocalWords:  Nullness unselect checkbox unsetting PolyNull typedefs arg
 % LocalWords:  bashrc IDE xml buildfile PolymorphicQualifier enum API elts INF
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
-% LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter
+% LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter bcel csv
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
@@ -1471,5 +1501,6 @@ same methodology in different words.
 %%  LocalWords:  AstubWarnIfOverwritesBytecode AprintVerboseGenerics
 %%  LocalWords:  AatfDoNotCache AatfCacheSize IntRange AwarnIfNotFound
 %%  LocalWords:  AwarnUnneededSuppressions AshowInferenceSteps BHCJEIBB
-%%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses processOptions
-%%  LocalWords:  EnsuresNonNull EnsuresNonNullIf
+%%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses processOptions getopt
+%%  LocalWords:  EnsuresNonNull EnsuresNonNullIf checkername orElseThrow
+%%  LocalWords:  ArequirePrefixInWarningSuppressions MaybePresent

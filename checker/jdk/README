@@ -1,12 +1,19 @@
-This directory contains annotated versions of the JDK.
-
-(For non-JDK libraries, you can find annotated source code in forks in
-https://github.com/typetools/ .  Compiled versions appear in the Central
-Repository:
-https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.checkerframework.annotatedlib%22
-.  See section "Using annotated libraries" in the Checker Framework Manual
-for information on using the compiled libraries in the Central Repository.)
+This directory contains sourec code for annotated versions of the JDK.
 
 The jdk.jar and jdk8.jar files in this directory are built from here, then
 copied to ../dist/ .  The Checker Framework always uses a jdk*.jar file
 from checker/dist/, never from here.
+
+If you make a change within this directory, see
+https://github.com/typetools/annotated-libraries
+
+Each subdirectory of this directory contains annotations for one type
+system, in a complete copy of JDK 8 source files.  If you wish to create a
+new directory (JDK annotations for a new type system), see
+https://checkerframework.org/manual/#annotating-jdk .
+
+For *non-JDK* libraries, you can find compiled versions in the Central Library:
+  https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.checkerframework.annotatedlib%22
+See section "Using annotated libraries" in the Checker Framework Manual
+for information about using the compiled libraries in the Central Repository:
+  https://checkerframework.org/manual/#annotated-libraries-using

@@ -58,11 +58,20 @@ These are the qualifiers in the signedness type system:
     set, then the bits should be interpreted as a negative value.
     This is the default annotation.
 
-\item[\refqualclass{checker/signedness/qual}{Constant}]
-    indicates that a value is a compile-time constant and could be
-    interpreted as unsigned or signed.
-    This annotation is used internally, and should not
-    be written by the programmer.
+\item[\refqualclass{checker/signedness/qual}{SignedPositive}]
+    indicates that a value is known at compile time to be in the positive
+    signed range, so it has the same interpretation as signed or unsigned
+    and may be used with either interpretation.  Programmers should usually
+    write \refqualclass{checker/signedness/qual}{Signed} or
+    \refqualclass{checker/signedness/qual}{Unsigned} instead.
+
+\item[\refqualclass{checker/signedness/qual}{SignednessGlb}]
+    indicates that a value may be interpreted as unsigned or signed.  It
+    covers the same cases as
+    \refqualclass{checker/signedness/qual}{SignedPositive}, plus manifest literals, to
+    prevent the programmer from having to annotate them all explicitly.
+    This annotation should almost never be written by the
+    programmer.
 
  \item[\refqualclass{checker/signedness/qual}{PolySigned}]
    indicates qualifier polymorphism.
@@ -93,7 +102,7 @@ Signedness Checker treats it in one of the following ways:
 
     \item
     All \code{byte}, \code{short}, \code{int}, and \code{long} literals default
-    to \refqualclass{checker/signedness/qual}{Constant}.
+    to \refqualclass{checker/signedness/qual}{SignednessGlb}.
     \item
     All \code{byte}, \code{short}, \code{int}, and \code{long} variables default
     to \refqualclass{checker/signedness/qual}{Signed}.

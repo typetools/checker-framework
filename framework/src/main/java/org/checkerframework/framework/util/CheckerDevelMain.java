@@ -55,7 +55,7 @@ public class CheckerDevelMain extends CheckerMain {
 
         assert (runtimeCp != null)
                 : RUNTIME_CP_PROP
-                        + " must specify a path entry to prepend to the Java classpath when running Javac"; // TODO: Fix the assert messages
+                        + " must specify a path entry to prepend to the Java classpath when running javac"; // TODO: Fix the assert messages
         assert (compileBcp != null)
                 : COMPILE_BCP_PROP
                         + " must specify a path entry to prepend to the compiler bootclasspath";

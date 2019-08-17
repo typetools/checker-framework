@@ -1,8 +1,10 @@
+import java.util.zip.ZipFile
+
 ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = '0c4216cb3bdc76fdb43f4005fe78179cdf73fbb9'
+    jdkShaHash = '91fd565e932597a8036a2d747f463956f0045d3e'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -11,7 +13,7 @@ sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-            srcDirs = ['src/main/java']
+            srcDirs += ['src/main/java']
             exclude '**/*.java'
         }
     }
@@ -136,6 +138,23 @@ task updateJdk() {
     }
 }
 
+task printJdkJarManifest(type: Copy) {
+    description 'Outputs the manifest file for checker/dist/jdk8.jar'
+    outputs.upToDateWhen { false }
+
+    from(zipTree('dist/jdk8.jar')) {
+        include "META-INF/MANIFEST.MF"
+    }
+
+    String tmpDir = "${buildDir}/tmpJDKManifest"
+    into tmpDir
+    doLast {
+        println(new File(tmpDir, 'META-INF/MANIFEST.MF').text)
+        delete tmpDir
+    }
+
+}
+
 task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
     description 'Builds or downloads jars required by CheckerMain and puts them in checker/dist.'
     dependsOn project(':checker-qual').tasks.jar
@@ -150,14 +169,34 @@ task printPlumeUtilJarPath {
     doFirst { println project.configurations.compile.find { it.name.startsWith("plume-util") } }
 }
 
+task allSourcesJar(type: Jar) {
+    description 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "checker-source.jar"
+    from (sourceSets.main.java, project(':framework').sourceSets.main.allJava,
+            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
+}
+
+task allJavadocJar(type: Jar) {
+    description 'Creates javadoc jar include Javadoc for all of the framework'
+    dependsOn rootProject.tasks.allJavadoc
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "checker-javadoc.jar"
+    from rootProject.tasks.allJavadoc.destinationDir
+}
+
+
 shadowJar {
     description 'Creates the "fat" checker.jar in dist/.'
-    destinationDir = file("${projectDir}/dist")
-    archiveName = "checker.jar"
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "checker.jar"
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
 artifacts {
+    // Don't add this here or else the Javadoc is built during the assemble task.
+    // archives allJavadocJar
+    archives allSourcesJar
     archives shadowJar
 }
 

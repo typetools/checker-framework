@@ -695,7 +695,7 @@ public class ObjectOutputStream
      * @param   len the number of bytes that are written
      * @throws  IOException If an I/O error has occurred.
      */
-    public void write(byte[] buf, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(byte[] buf, @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         if (buf == null) {
             throw new NullPointerException();
         }
@@ -1795,7 +1795,7 @@ public class ObjectOutputStream
             write(b, 0, b.length, false);
         }
 
-        public void write(byte[] b, int off, int len) throws IOException {
+        public void write(byte[] b, @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
             write(b, off, len, false);
         }
 
@@ -1815,7 +1815,7 @@ public class ObjectOutputStream
          * them to underlying stream (to avoid exposing a reference to the
          * original byte array).
          */
-        void write(byte[] b, int off, int len, boolean copy)
+        void write(byte[] b, @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len, boolean copy)
             throws IOException
         {
             if (!(copy || blkmode)) {           // write directly

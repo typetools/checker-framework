@@ -133,6 +133,12 @@ we wanted
 to focus on distributing checkers that are currently being maintained.
 
 
+\sectionAndLabel{Nullness Rawness Checker}{initialization-rawness-checker}
+
+The Nullness Rawness Checker is a nullness checker that uses a different type system for initialization.
+It was distributed with the Checker Framework through release 2.9.0 (dated 3 July 2019). If you wish
+to use them, install \href{https://checkerframework.org/releases/2.9.0/}{Checker Framework version 2.9.0}.
+
 \sectionAndLabel{Read Checker for CERT FIO08-J}{read-checker}
 
 CERT
@@ -190,6 +196,15 @@ Web Services' Key Management System only request 256-bit (or longer) data
 keys.  This checker can be used to help enforce a compliance requirement
 (such as from SOC or PCI-DSS) that customer data is always encrypted with
 256-bit keys.
+
+The KMS compliance checker is available in Maven Central.  To use it in
+\<build.gradle>, add the following dependency:
+
+\begin{Verbatim}
+compile group: 'software.amazon.checkerframework', name: 'aws-kms-compliance-checker', version: '1.0.2'
+\end{Verbatim}
+
+\ahref{https://mvnrepository.com/artifact/software.amazon.checkerframework/aws-kms-compliance-checker/1.0.2}{Other build systems} are similar.
 
 
 \sectionAndLabel{AWS crypto policy compliance checker}{crypto-policy-compliance-checker}

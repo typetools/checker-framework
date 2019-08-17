@@ -160,7 +160,7 @@ public class LineNumberReader extends BufferedReader {
      * @throws  IOException
      *          If an I/O error occurs
      */
-    public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         synchronized (lock) {
             int n = super.read(cbuf, off, len);
 
@@ -225,7 +225,7 @@ public class LineNumberReader extends BufferedReader {
      * @throws  IllegalArgumentException
      *          If <tt>n</tt> is negative
      */
-    public long skip(long n) throws IOException {
+    public @NonNegative long skip(@NonNegative long n) throws IOException {
         if (n < 0)
             throw new IllegalArgumentException("skip() value is negative");
         int nn = (int) Math.min(n, maxSkipBufferSize);
