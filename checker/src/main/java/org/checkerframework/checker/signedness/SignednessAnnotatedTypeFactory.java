@@ -48,6 +48,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
             AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
+    private final String JAVA_LANG_BYTE = "java.lang.Byte";
+    private final String JAVA_LANG_SHORT = "java.lang.Short";
+    private final String JAVA_LANG_INTEGER = "java.lang.Integer";
+    private final String JAVA_LANG_LONG = "java.lang.Long";
+
     ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
 
     /** Create a SignednessAnnotatedTypeFactory. */
@@ -163,17 +168,27 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * UnknownSignedness annotation so that dataflow can refine it.
      */
     private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
+        TypeUseLocation tul[] = {TypeUseLocation.FIELD, TypeUseLocation.LOCAL_VARIABLE};
         switch (type.getKind()) {
             case BYTE:
             case SHORT:
             case INT:
             case LONG:
                 QualifierDefaults defaults = new QualifierDefaults(elements, this);
-                defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
+                defaults.addCheckedCodeDefaults(UNKNOWN_SIGNEDNESS, tul);
                 defaults.annotate(tree, type);
                 break;
             default:
                 // Nothing for other cases.
+        }
+        switch (type.getUnderlyingType().toString()) {
+            case JAVA_LANG_BYTE:
+            case JAVA_LANG_SHORT:
+            case JAVA_LANG_INTEGER:
+            case JAVA_LANG_LONG:
+                QualifierDefaults defaults = new QualifierDefaults(elements, this);
+                defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
+                defaults.annotate(tree, type);
         }
     }
 
