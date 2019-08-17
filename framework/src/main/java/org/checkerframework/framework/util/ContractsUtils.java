@@ -339,7 +339,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns multiple postcondition annotations or a single postcondition annotation in a set.
+     * Returns the postconditions expressed by the multiple postcondition annotations or a single
+     * postcondition annotation.
      *
      * @param anno wrapper annotation of multiple postcondition annotations, or a single post
      *     condition annotation
@@ -356,7 +357,7 @@ public class ContractsUtils {
         // element
         if (annoValue.get(0) instanceof AnnotationMirror) {
             // Check for multiple contracts
-            return getMultiplePostconditionAnnotations(metaAnno, annoValue);
+            return getMultiplePostConditionAnnotations(metaAnno, annoValue);
         } else if (annoValue.get(0) instanceof Attribute.Constant) {
             // The value of an annotation element of type String is Attribute.Constant
             // Check for a single contract
@@ -369,14 +370,14 @@ public class ContractsUtils {
     }
 
     /**
-     * Add multiple postcondition annotations in a set and returns them.
+     * Returns the postconditions expressed by the multiple postcondition annotations.
      *
      * @param metaAnno used to return the annotation mirror as specified by the element in this
      *     meta-annotation
      * @param annoValue the value of wrapper annotation containing multiple postcondition
      *     annotations
      */
-    private Set<Postcondition> getMultiplePostconditionAnnotations(
+    private Set<Postcondition> getMultiplePostConditionAnnotations(
             AnnotationMirror metaAnno, List<AnnotationValue> annoValue) {
         Set<Postcondition> result = new LinkedHashSet<>();
         for (AnnotationValue av : annoValue) {
@@ -395,7 +396,7 @@ public class ContractsUtils {
     }
 
     /**
-     * Add a single postcondition annotation in a set and returns them.
+     * Returns the postconditions expressed by the single postcondition annotation.
      *
      * @param anno single post condition annotation
      * @param metaAnno used to return the annotation mirror as specified by the element in this
@@ -494,8 +495,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns conditional postcondition annotations or a single conditional postcondition
-     * annotation.
+     * Returns the conditional postconditions that are expressed by the multiple conditional
+     * postcondition annotations or a single conditional postcondition annotation.
      *
      * @param anno wrapper annotation of multiple conditional postcondition annotations, or a single
      *     conditional postcondition annotation
@@ -514,7 +515,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Add multiple conditional postcondition annotations in a set and returns them.
+     * Returns the conditional postconditions that are expressed by the multiple conditional
+     * postcondition annotations.
      *
      * @param anno wrapper annotation of multiple conditional postcondition annotations
      * @param metaAnno used to return the annotation mirror as specified by the element in this
@@ -546,7 +548,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Add single conditional postcondition annotation in a set and returns them.
+     * Returns the conditional postconditions that are expressed by a single conditional
+     * postcondition annotation.
      *
      * @param anno single conditional postcondition annotation
      * @param metaAnno used to return the annotation mirror as specified by the element in this
