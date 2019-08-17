@@ -45,8 +45,8 @@ compileJava.dependsOn(checkDependencies)
 
 shadowJar {
     description 'Creates the "fat" framework.jar in dist'
-    destinationDir = file("${projectDir}/dist")
-    archiveName = "framework.jar"
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "framework.jar"
     manifest {
         attributes('Automatic-Module-Name': "org.checkerframework.framework")
     }

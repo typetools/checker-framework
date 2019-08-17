@@ -2713,15 +2713,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
-        if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv)
-                && !atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
-            checker.report(
-                    Result.failure(
-                            "method.invocation.invalid",
-                            TreeUtils.elementFromUse(node),
-                            treeReceiver.toString(),
-                            methodReceiver.toString()),
-                    node);
+        if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv)) {
+            commonAssignmentCheckStartDiagnostic(methodReceiver, treeReceiver, node);
+            boolean success =
+                    atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver);
+            commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, node);
+            if (!success) {
+                checker.report(
+                        Result.failure(
+                                "method.invocation.invalid",
+                                TreeUtils.elementFromUse(node),
+                                treeReceiver.toString(),
+                                methodReceiver.toString()),
+                        node);
+            }
         }
     }
 

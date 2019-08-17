@@ -440,24 +440,26 @@ public class ContractsUtils {
 
     /**
      * Returns the annotation mirror as specified by the "qualifier" element in {@code
-     * qualifierAnno}. If {@code argumentAnno} is specified, then arguments are copied from {@code
+     * contractAnno}. If {@code argumentAnno} is specified, then arguments are copied from {@code
      * argumentAnno} to the returned annotation, renamed according to {@code argumentRenaming}.
      *
      * <p>This is a helper method intended to be called from {@link
-     * getAnnotationMirrorOfContractAnnotation} and {@link getAnnotationMirrorOfMetaAnnotation}. Use
-     * one of those methods if possible.
+     * getAnnotationMirrorOfContractAnnotation} and {@link getAnnotationMirrorOfContractAnnotation}.
+     * Use one of those methods if possible.
      *
-     * @param qualifierAnno annotation specifying the qualifier class
+     * @param contractAnno a contract annotation, which has a {@code qualifier} element
      * @param argumentAnno annotation containing the argument values, or {@code null}
      * @param argumentRenaming renaming of argument names, which maps from names in {@code
      *     argumentAnno} to names used in the returned annotation, or {@code null}
+     * @return a qualifier whose type is that of {@code contract.qualifier}, or an alias for it, or
+     *     null if it is not a supported qualifier of the type system
      */
     private AnnotationMirror getAnnotationMirrorOfQualifier(
-            AnnotationMirror qualifierAnno,
+            AnnotationMirror contractAnno,
             AnnotationMirror argumentAnno,
             Map<String, String> argumentRenaming) {
 
-        Name c = AnnotationUtils.getElementValueClassName(qualifierAnno, "qualifier", false);
+        Name c = AnnotationUtils.getElementValueClassName(contractAnno, "qualifier", false);
 
         AnnotationMirror anno;
         if (argumentAnno == null || argumentRenaming.isEmpty()) {
@@ -525,14 +527,14 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns the annotation mirror as specified by the "qualifier" element in {@code metaAnno},
-     * with arguments taken from {@code argumentAnno}.
+     * Returns the annotation mirror as specified by the "qualifier" element in {@code
+     * contractAnno}, with arguments taken from {@code argumentAnno}.
      */
-    private AnnotationMirror getAnnotationMirrorOfMetaAnnotation(
-            AnnotationMirror metaAnno, AnnotationMirror argumentAnno) {
+    private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
+            AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
 
         Map<String, String> argumentRenaming =
                 makeArgumentMap(argumentAnno.getAnnotationType().asElement());
-        return getAnnotationMirrorOfQualifier(metaAnno, argumentAnno, argumentRenaming);
+        return getAnnotationMirrorOfQualifier(contractAnno, argumentAnno, argumentRenaming);
     }
 }

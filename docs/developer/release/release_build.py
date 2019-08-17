@@ -174,8 +174,8 @@ def build_annotation_tools_release(version, afu_interm_dir):
     execute(ant_cmd)
 
     # Deploy to intermediate site
-    ant_cmd = "ant %s -buildfile %s -e web-no-checks -Dafu.version=%s -Ddeploy-dir=%s" % (ant_debug, build, version, afu_interm_dir)
-    execute(ant_cmd)
+    gradle_cmd = "./gradlew releaseBuild -Pafu.version=%s -Pdeploy-dir=%s" % (, version, afu_interm_dir)
+    execute(gradle_cmd, True, False, ANNO_FILE_UTILITIES)
 
     update_project_dev_website("annotation-file-utilities", version)
 
