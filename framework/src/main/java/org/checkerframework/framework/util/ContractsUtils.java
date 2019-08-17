@@ -351,13 +351,14 @@ public class ContractsUtils {
         @SuppressWarnings("unchecked")
         List<AnnotationValue> annoValue =
                 AnnotationUtils.getElementValue(anno, "value", List.class, false);
-        // The whole list i.e. annoValue will contain instance of AnnotationMirror or of
+        // All elements of list "annoValue" will contain either instance of AnnotationMirror or of
         // Attribute.Constant, therefore we can determine the annotaion by checking the first
         // element
         if (annoValue.get(0) instanceof AnnotationMirror) {
             // Check for multiple contracts
             return getMultiplePostconditionAnnotations(metaAnno, annoValue);
         } else if (annoValue.get(0) instanceof Attribute.Constant) {
+            // The value of an annotation element of type String is Attribute.Constant
             // Check for a single contract
             return getSinglePostConditionAnnotation(anno, metaAnno, annoValue);
         } else {
@@ -396,7 +397,7 @@ public class ContractsUtils {
     /**
      * Add a single postcondition annotation in a set and returns them.
      *
-     * @param anno wrapper annotation of a single post condition annotation
+     * @param anno single post condition annotation
      * @param metaAnno used to return the annotation mirror as specified by the element in this
      *     meta-annotation
      * @param annoValue the value of postcondition annotation
@@ -547,7 +548,7 @@ public class ContractsUtils {
     /**
      * Add single conditional postcondition annotation in a set and returns them.
      *
-     * @param anno wrapper annotation of multiple conditional postcondition annotations
+     * @param anno single conditional postcondition annotation
      * @param metaAnno used to return the annotation mirror as specified by the element in this
      *     meta-annotation
      */
@@ -558,6 +559,7 @@ public class ContractsUtils {
                 AnnotationUtils.getElementValue(anno, "expression", List.class, false);
         List<String> expressions = new ArrayList<>(annoValue.size());
         for (AnnotationValue a : annoValue) {
+            // The value of an annotation element of type String is Attribute.Constant
             if (a instanceof Attribute.Constant) expressions.add((String) a.getValue());
         }
         AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
