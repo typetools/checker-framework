@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
@@ -27,6 +28,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** @checker_framework.manual #signedness-checker Signedness Checker */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -49,11 +51,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final String BYTE = "byte";
     private final String SHORT = "short";
+    private final String CHAR = "short";
     private final String INT = "int";
     private final String LONG = "long";
-    private final String CHAR = "char";
     private final String JAVA_LANG_BYTE = "java.lang.Byte";
     private final String JAVA_LANG_SHORT = "java.lang.Short";
+    private final String JAVA_LANG_CHAR = "java.lang.Character";
     private final String JAVA_LANG_INTEGER = "java.lang.Integer";
     private final String JAVA_LANG_LONG = "java.lang.Long";
 
@@ -86,6 +89,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (!computingAnnotatedTypeMirrorOfLHS) {
             addSignednessGlbAnnotation(tree, type);
+            addSignednessGlbAnnotationtoBoxed(tree, type);
         }
 
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
@@ -118,71 +122,102 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private void addSignednessGlbAnnotation(Tree tree, AnnotatedTypeMirror type) {
         TypeMirror javaType = type.getUnderlyingType();
+        TypeKind javaTypeKind = javaType.getKind();
         if (tree.getKind() != Tree.Kind.VARIABLE) {
-            switch (javaType.toString()) {
-                case BYTE:
-                case SHORT:
-                case INT:
-                case LONG:
-                case JAVA_LANG_BYTE:
-                case JAVA_LANG_SHORT:
-                case JAVA_LANG_INTEGER:
-                case JAVA_LANG_LONG:
-                    AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
-                    if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
-                                    || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
-                            && type.hasAnnotation(SIGNED)) {
-                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                    } else {
-                        Range treeRange =
-                                ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
+            if (javaTypeKind == TypeKind.BYTE
+                    || javaTypeKind == TypeKind.CHAR
+                    || javaTypeKind == TypeKind.SHORT
+                    || javaTypeKind == TypeKind.INT
+                    || javaTypeKind == TypeKind.LONG
+                    || javaTypeKind == TypeKind.INT) {
+                AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
+                if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
+                                || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
+                        && type.hasAnnotation(SIGNED)) {
+                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                } else {
+                    Range treeRange = ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
 
-                        if (treeRange != null) {
-                            switch (javaType.toString()) {
-                                case BYTE:
-                                case CHAR:
-                                case JAVA_LANG_BYTE:
-                                    if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
-                                    break;
-                                case SHORT:
-                                case JAVA_LANG_SHORT:
-                                    if (treeRange.isWithin(0, Short.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
-                                    break;
-                                case INT:
-                                case JAVA_LANG_INTEGER:
-                                    if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
-                                    break;
-                                case LONG:
-                                case JAVA_LANG_LONG:
-                                    if (treeRange.isWithin(0, Long.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
-                                    break;
-                                default:
-                                    // Nothing
-                            }
+                    if (treeRange != null) {
+                        switch (javaTypeKind) {
+                            case BYTE:
+                            case CHAR:
+                                if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case SHORT:
+                                if (treeRange.isWithin(0, Short.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case INT:
+                                if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case LONG:
+                                if (treeRange.isWithin(0, Long.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            default:
+                                // Nothing
                         }
                     }
-                    break;
-                default:
-                    // Nothing
+                }
+            }
+        }
+    }
+
+    /**
+     * Refines an integer expression to @SignednessGlb if its value is within the signed positive
+     * range (i.e. its MSB is zero).
+     *
+     * @param tree an AST node, whose type may be refined
+     * @param type the type of the tree
+     */
+    private void addSignednessGlbAnnotationtoBoxed(Tree tree, AnnotatedTypeMirror type) {
+        TypeMirror javaType = type.getUnderlyingType();
+        TypeKind javaTypeKind = javaType.getKind();
+        AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
+        Range treeRange = ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
+        if (tree.getKind() != Tree.Kind.VARIABLE) {
+            if (treeRange != null) {
+                if (javaTypeKind == TypeKind.DECLARED) {
+                    if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_BYTE)
+                            || TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_CHAR)) {
+                        if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
+                            type.replaceAnnotation(SIGNEDNESS_GLB);
+                        }
+                    }
+                    if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_SHORT)) {
+                        if (treeRange.isWithin(0, Short.MAX_VALUE)) {
+                            type.replaceAnnotation(SIGNEDNESS_GLB);
+                        }
+                    }
+                    if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_INTEGER)) {
+                        if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
+                            type.replaceAnnotation(SIGNEDNESS_GLB);
+                        }
+                    }
+                    if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_LONG)) {
+                        if (treeRange.isWithin(0, Long.MAX_VALUE)) {
+                            type.replaceAnnotation(SIGNEDNESS_GLB);
+                        }
+                    }
+                }
             }
         }
     }
 
     /**
      * If the tree is a local variable and the type is byte, short, int, or long, or boxed types
-     * such as Byte, Short, Integer or Long then add the UnknownSignedness annotation so that
-     * dataflow can refine it.
+     * such as Byte, Short, Integer, Long then add the UnknownSignedness annotation so that dataflow
+     * can refine it.
      */
     private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
-        switch (type.getUnderlyingType().toString()) {
+        switch (type.toString()) {
             case BYTE:
             case SHORT:
             case INT:
