@@ -137,23 +137,22 @@ public class DefaultsSignedness {
         // :: error: (assignment.type.incompatible)
         conChar = testChar;
 
-        /*
         // Test boxed bytes
         @Signed Byte sinBoxedByte;
         @SignednessGlb Byte conBoxedByte;
 
         sinBoxedByte = testBoxedByte;
 
-        //// :: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         conBoxedByte = testBoxedByte;
 
-        // Test boxed shorts
+        // Test boxed Shorts
         @Signed Short sinBoxedShort;
         @SignednessGlb Short conBoxedShort;
 
         sinBoxedShort = testBoxedShort;
 
-        //// :: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         conBoxedShort = testBoxedShort;
 
         // Test boxed Integers
@@ -162,7 +161,7 @@ public class DefaultsSignedness {
 
         sinBoxedInteger = testBoxedInteger;
 
-        //// :: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         conBoxedInteger = testBoxedInteger;
 
         // Test boxed Longs
@@ -171,9 +170,8 @@ public class DefaultsSignedness {
 
         sinBoxedLong = testBoxedLong;
 
-        //// :: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         conBoxedLong = testBoxedLong;
-        */
     }
 
     public void SignednessBottom() {

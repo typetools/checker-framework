@@ -4,6 +4,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -23,6 +24,9 @@ import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -49,11 +53,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
             AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
-    private final String BYTE = "byte";
-    private final String SHORT = "short";
-    private final String CHAR = "short";
-    private final String INT = "int";
-    private final String LONG = "long";
     private final String JAVA_LANG_BYTE = "java.lang.Byte";
     private final String JAVA_LANG_SHORT = "java.lang.Short";
     private final String JAVA_LANG_CHAR = "java.lang.Character";
@@ -86,10 +85,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // (When it is possible to default types based on their TypeKinds,
         // this whole method will no longer be needed.)
         addUnknownSignednessToSomeLocals(tree, type);
+        addUnknownSignednessToSomeLocalsOfBoxedTypes(tree, type);
 
         if (!computingAnnotatedTypeMirrorOfLHS) {
             addSignednessGlbAnnotation(tree, type);
-            addSignednessGlbAnnotationtoBoxed(tree, type);
+            addSignednessGlbAnnotationtoBoxedTypes(tree, type);
         }
 
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
@@ -171,39 +171,54 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Refines an integer expression to @SignednessGlb if its value is within the signed positive
-     * range (i.e. its MSB is zero).
+     * Refines a boxed primitive expression to @SignednessGlb if its value is within the signed
+     * positive range (i.e. its MSB is zero).
      *
      * @param tree an AST node, whose type may be refined
      * @param type the type of the tree
      */
-    private void addSignednessGlbAnnotationtoBoxed(Tree tree, AnnotatedTypeMirror type) {
+    private void addSignednessGlbAnnotationtoBoxedTypes(Tree tree, AnnotatedTypeMirror type) {
         TypeMirror javaType = type.getUnderlyingType();
         TypeKind javaTypeKind = javaType.getKind();
-        AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
-        Range treeRange = ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
         if (tree.getKind() != Tree.Kind.VARIABLE) {
-            if (treeRange != null) {
-                if (javaTypeKind == TypeKind.DECLARED) {
-                    if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_BYTE)
-                            || TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_CHAR)) {
-                        if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
-                            type.replaceAnnotation(SIGNEDNESS_GLB);
-                        }
-                    }
-                    if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_SHORT)) {
-                        if (treeRange.isWithin(0, Short.MAX_VALUE)) {
-                            type.replaceAnnotation(SIGNEDNESS_GLB);
-                        }
-                    }
-                    if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_INTEGER)) {
-                        if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
-                            type.replaceAnnotation(SIGNEDNESS_GLB);
-                        }
-                    }
-                    if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_LONG)) {
-                        if (treeRange.isWithin(0, Long.MAX_VALUE)) {
-                            type.replaceAnnotation(SIGNEDNESS_GLB);
+            if (javaTypeKind == TypeKind.DECLARED) {
+                if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_BYTE)
+                        || TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_CHAR)
+                        || TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_SHORT)
+                        || TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_INTEGER)
+                        || TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_LONG)) {
+                    AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
+                    if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
+                                    || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
+                            && type.hasAnnotation(SIGNED)) {
+                        type.replaceAnnotation(SIGNEDNESS_GLB);
+                    } else {
+                        Range treeRange =
+                                ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
+                        if (treeRange != null) {
+                            if (javaTypeKind == TypeKind.DECLARED) {
+                                if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_BYTE)
+                                        || TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_CHAR)) {
+                                    if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
+                                        type.replaceAnnotation(SIGNEDNESS_GLB);
+                                    }
+                                }
+                                if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_SHORT)) {
+                                    if (treeRange.isWithin(0, Short.MAX_VALUE)) {
+                                        type.replaceAnnotation(SIGNEDNESS_GLB);
+                                    }
+                                }
+                                if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_INTEGER)) {
+                                    if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
+                                        type.replaceAnnotation(SIGNEDNESS_GLB);
+                                    }
+                                }
+                                if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_LONG)) {
+                                    if (treeRange.isWithin(0, Long.MAX_VALUE)) {
+                                        type.replaceAnnotation(SIGNEDNESS_GLB);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -212,20 +227,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * If the tree is a local variable and the type is byte, short, int, or long, or boxed types
-     * such as Byte, Short, Integer, Long then add the UnknownSignedness annotation so that dataflow
-     * can refine it.
+     * If the tree is a local variable and the type is byte, short, int, or long then add the
+     * UnknownSignedness annotation so that dataflow can refine it.
      */
     private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
-        switch (type.toString()) {
+        switch (type.getKind()) {
             case BYTE:
             case SHORT:
             case INT:
             case LONG:
-            case JAVA_LANG_BYTE:
-            case JAVA_LANG_SHORT:
-            case JAVA_LANG_INTEGER:
-            case JAVA_LANG_LONG:
                 QualifierDefaults defaults = new QualifierDefaults(elements, this);
                 defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
                 defaults.annotate(tree, type);
@@ -233,6 +243,38 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             default:
                 // Nothing for other cases.
         }
+    }
+
+    /**
+     * If the tree is a local variable, explicit lower bounds, explicit upper bounds, implicit lower
+     * bounds or implicit upper bounds and boxed types such as Byte, Short, Integer or Long are
+     * present then add the UnknownSignedness annotation so that dataflow can refine it.
+     */
+    private void addUnknownSignednessToSomeLocalsOfBoxedTypes(Tree tree, AnnotatedTypeMirror type) {
+        TypeMirror javaType = type.getUnderlyingType();
+        TypeKind javaTypeKind = javaType.getKind();
+        if (javaTypeKind == TypeKind.DECLARED) {
+            if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_BYTE)
+                    || TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_SHORT)
+                    || TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_INTEGER)
+                    || TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_LONG)) {
+                QualifierDefaults defaults = new QualifierDefaults(elements, this);
+                defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
+                defaults.annotate(tree, type);
+            }
+        }
+    }
+
+    @Override
+    public void adaptGetClassReturnTypeToReceiver(
+            final AnnotatedExecutableType getClassType, final AnnotatedTypeMirror receiverType) {
+
+        super.adaptGetClassReturnTypeToReceiver(getClassType, receiverType);
+        final AnnotatedDeclaredType returnAdt =
+                (AnnotatedDeclaredType) getClassType.getReturnType();
+        final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
+        final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
+        classWildcardArg.getExtendsBoundField().replaceAnnotation(SIGNED);
     }
 
     @Override
