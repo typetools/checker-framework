@@ -196,13 +196,11 @@ public class DependentTypesHelper {
             receiver = FlowExpressions.internalReprOf(factory, receiverTree);
         }
 
-        List<FlowExpressions.Receiver> argReceivers = new ArrayList<>();
+        List<Receiver> argReceivers = new ArrayList<>();
         boolean varargs = false;
-        if (tree instanceof MethodInvocationTree) {
-            ExpressionTree methodElement = ((MethodInvocationTree) tree).getMethodSelect();
-            ExecutableElement methodCalled =
-                    (ExecutableElement) TreeUtils.elementFromUse(methodElement);
-            if (methodCalled.isVarArgs()) {
+        if (tree.getKind() == Kind.METHOD_INVOCATION) {
+            ExecutableElement methodCalled = TreeUtils.elementFromUse((MethodInvocationTree) tree);
+            if (methodCalled != null && methodCalled.isVarArgs()) {
                 varargs = true;
                 for (int i = 0; i < methodCalled.getParameters().size() - 1; i++) {
                     argReceivers.add(FlowExpressions.internalReprOf(factory, args.get(i)));
@@ -214,9 +212,14 @@ public class DependentTypesHelper {
                 Element varargsElement =
                         methodCalled.getParameters().get(methodCalled.getParameters().size() - 1);
                 TypeMirror tm = ElementUtils.getType(varargsElement);
-                argReceivers.add(
-                        new FlowExpressions.ArrayCreation(
-                                tm, Collections.emptyList(), initializers));
+                if (initializers.size() == 1 && initializers.get(0).getType().equals(tm)) {
+                    // an array was passed
+                    argReceivers.add(initializers.get(0));
+                } else {
+                    argReceivers.add(
+                            new FlowExpressions.ArrayCreation(
+                                    tm, Collections.emptyList(), initializers));
+                }
             }
         }
 

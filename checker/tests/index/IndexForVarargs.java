@@ -24,5 +24,10 @@ public class IndexForVarargs {
 
         // :: error: (argument.type.incompatible)
         method(2, stringArg3);
+
+        get(1, stringArg1);
+
+        // :: error: (argument.type.incompatible)
+        get(3, stringArg2);
     }
 }
