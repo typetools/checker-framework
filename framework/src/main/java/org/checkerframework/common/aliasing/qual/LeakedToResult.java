@@ -21,7 +21,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 
 // This is a type qualifier because of a checker framework limitation (Issue 383), but its
-// hierarchy is ignored. Once the stub parser gets updated to read non-type-qualifers
+// hierarchy is ignored. Once the stub parser gets updated to read non-type-qualifiers
 // annotations on stub files, this annotation won't be a type qualifier anymore.
 
 @Documented

@@ -1203,8 +1203,10 @@ The set of permitted expressions is a subset of all Java expressions:
 \item
   an array access.  For example:  \<this.myArray[i]>, \<vals[\#1]>.
 
-\item literals: string, integer, char, long, float, double, null literals.
-  Class literals with class or interface type.
+\item
+  an array creation. For example: \<new int[10]>, \<new String[] {"a", "b"}>.
+
+\item literals: string, integer, char, long, float, double, null, class literals.
 
 \item a method invocation on any expression.
   This even works for overloaded methods and methods with type parameters.
@@ -1247,7 +1249,6 @@ The following Java expressions may not currently be written:
 % The Checker Framework is best at reasoning about Java expressions that
 % are variable references, but these expressions are not.
 \begin{itemize}
-\item Class literals with primitive type (int.class) or with array type (String[].class).
 \item String concatenation expressions.
 \item Mathematical operators (plus, minus, division, ...).
 \item Comparisons (equality, less than, etc.).
