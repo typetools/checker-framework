@@ -1,6 +1,7 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.common.purity;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 
 /**
  * Perform purity checking only.
@@ -9,7 +10,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  *     flow-sensitive analysis
  */
 public class PurityChecker extends BaseTypeChecker {
-    // There is no implementation here.
-    // It uses functionality from BaseTypeChecker, which itself calls
-    // dataflow's purity implementation.
+
+    @Override
+    protected BaseTypeVisitor<?> createSourceVisitor() {
+        return new PurityVisitor(this);
+    }
 }

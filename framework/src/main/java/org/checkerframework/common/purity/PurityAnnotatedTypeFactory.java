@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.common.purity;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
