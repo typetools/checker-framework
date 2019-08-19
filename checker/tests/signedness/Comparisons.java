@@ -5,6 +5,7 @@ public class Comparisons {
     public void ComparisonTest(
             @Unsigned int unsigned,
             @PolySigned int polysigned,
+            @PolySigned Integer boxPolysigned,
             @Unsigned Integer boxUnsigned,
             @UnknownSignedness int unknown,
             @UnknownSignedness Integer boxUnknown) {
@@ -13,6 +14,7 @@ public class Comparisons {
 
         // :: error: (comparison.unsignedlhs)
         testRes = unsigned < unknown;
+
         // :: error: (comparison.unsignedlhs)
         testRes = boxUnsigned < boxUnknown;
 
@@ -20,21 +22,23 @@ public class Comparisons {
         testRes = polysigned < unknown;
 
         // :: error: (comparison.unsignedlhs)
-        testRes = polysigned < unknown;
+        testRes = boxPolysigned < boxUnknown;
 
         // :: error: (comparison.unsignedrhs)
-        testRes = boxUnknown < unsigned;
+        testRes = unknown < unsigned;
+
         // :: error: (comparison.unsignedrhs)
-        testRes = unknown < boxUnsigned;
+        testRes = boxUnknown < boxUnsigned;
 
         // :: error: (comparison.unsignedrhs)
         testRes = unknown < polysigned;
 
         // :: error: (comparison.unsignedrhs)
-        testRes = unknown < polysigned;
+        testRes = boxUnknown < boxPolysigned;
 
         // :: error: (comparison.unsignedlhs)
         testRes = unsigned <= unknown;
+
         // :: error: (comparison.unsignedlhs)
         testRes = boxUnsigned <= boxUnknown;
 
@@ -42,10 +46,11 @@ public class Comparisons {
         testRes = polysigned <= unknown;
 
         // :: error: (comparison.unsignedlhs)
-        testRes = polysigned <= unknown;
+        testRes = boxPolysigned <= boxUnknown;
 
         // :: error: (comparison.unsignedrhs)
         testRes = unknown <= unsigned;
+
         // :: error: (comparison.unsignedrhs)
         testRes = boxUnknown <= boxUnsigned;
 
@@ -53,10 +58,11 @@ public class Comparisons {
         testRes = unknown <= polysigned;
 
         // :: error: (comparison.unsignedrhs)
-        testRes = unknown <= polysigned;
+        testRes = boxUnknown <= boxPolysigned;
 
         // :: error: (comparison.unsignedlhs)
         testRes = unsigned > unknown;
+
         // :: error: (comparison.unsignedlhs)
         testRes = boxUnsigned > boxUnknown;
 
@@ -64,10 +70,11 @@ public class Comparisons {
         testRes = polysigned > unknown;
 
         // :: error: (comparison.unsignedlhs)
-        testRes = polysigned > unknown;
+        testRes = boxPolysigned > boxUnknown;
 
         // :: error: (comparison.unsignedrhs)
         testRes = unknown > unsigned;
+
         // :: error: (comparison.unsignedrhs)
         testRes = boxUnknown > boxUnsigned;
 
@@ -75,21 +82,31 @@ public class Comparisons {
         testRes = unknown > polysigned;
 
         // :: error: (comparison.unsignedrhs)
-        testRes = unknown > polysigned;
+        testRes = boxUnknown > boxPolysigned;
 
         // :: error: (comparison.unsignedlhs)
         testRes = unsigned >= unknown;
+
         // :: error: (comparison.unsignedlhs)
         testRes = boxUnsigned >= boxUnknown;
 
         // :: error: (comparison.unsignedrhs)
         testRes = unknown >= unsigned;
 
+        // :: error: (comparison.unsignedrhs)
+        testRes = boxUnknown >= boxUnsigned;
+
         // :: error: (comparison.unsignedlhs)
         testRes = polysigned >= unknown;
 
+        // :: error: (comparison.unsignedlhs)
+        testRes = boxPolysigned >= boxUnknown;
+
         // :: error: (comparison.unsignedrhs)
-        testRes = unknown >= polysigned;
+        testRes = boxUnknown >= boxPolysigned;
+
+        // :: error: (comparison.unsignedrhs)
+        testRes = boxUnknown >= boxPolysigned;
     }
 
     public void EqualsTest(

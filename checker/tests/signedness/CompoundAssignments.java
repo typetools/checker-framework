@@ -6,6 +6,7 @@ public class CompoundAssignments {
             @Unsigned int unsigned,
             @Unsigned Integer boxUnsigned,
             @PolySigned int polysigned,
+            @PolySigned Integer boxPolysigned,
             @UnknownSignedness int unknown,
             @UnknownSignedness Integer boxUnknown,
             @SignednessGlb int constant,
@@ -22,7 +23,7 @@ public class CompoundAssignments {
 
         // :: error: (compound.assignment.unsigned.variable)
         // :: error: (compound.assignment.type.incompatible)
-        unsigned /= unknown;
+        boxUnsigned /= boxUnknown;
 
         // :: error: (compound.assignment.unsigned.variable)
         unsigned /= constant;
@@ -34,7 +35,14 @@ public class CompoundAssignments {
         constant /= unsigned;
 
         // :: error: (compound.assignment.unsigned.expression)
+        // :: error: (compound.assignment.type.incompatible)
+        boxConstant /= boxUnsigned;
+
+        // :: error: (compound.assignment.unsigned.expression)
         unknown /= polysigned;
+
+        // :: error: (compound.assignment.unsigned.expression)
+        boxUnknown /= boxPolysigned;
 
         // :: error: (compound.assignment.unsigned.variable)
         // :: error: (compound.assignment.type.incompatible)
@@ -42,18 +50,37 @@ public class CompoundAssignments {
 
         // :: error: (compound.assignment.unsigned.variable)
         // :: error: (compound.assignment.type.incompatible)
+        boxPolysigned /= boxUnknown;
+
+        // :: error: (compound.assignment.unsigned.variable)
+        // :: error: (compound.assignment.type.incompatible)
         polysigned /= constant;
+
+        // :: error: (compound.assignment.unsigned.variable)
+        // :: error: (compound.assignment.type.incompatible)
+        boxPolysigned /= boxConstant;
 
         // :: error: (compound.assignment.unsigned.expression)
         // :: error: (compound.assignment.type.incompatible)
         constant /= polysigned;
+
+        // :: error: (compound.assignment.unsigned.expression)
+        // :: error: (compound.assignment.type.incompatible)
+        boxConstant /= boxPolysigned;
 
         // :: error: (compound.assignment.unsigned.expression)
         // :: error: (compound.assignment.type.incompatible)
         constant /= unsigned;
 
         // :: error: (compound.assignment.unsigned.expression)
+        // :: error: (compound.assignment.type.incompatible)
+        boxConstant /= boxUnsigned;
+
+        // :: error: (compound.assignment.unsigned.expression)
         unknown /= polysigned;
+
+        // :: error: (compound.assignment.unsigned.expression)
+        boxUnknown /= boxPolysigned;
 
         // :: error: (compound.assignment.unsigned.variable)
         // :: error: (compound.assignment.type.incompatible)
@@ -61,14 +88,27 @@ public class CompoundAssignments {
 
         // :: error: (compound.assignment.unsigned.variable)
         // :: error: (compound.assignment.type.incompatible)
+        boxPolysigned /= boxUnknown;
+
+        // :: error: (compound.assignment.unsigned.variable)
+        // :: error: (compound.assignment.type.incompatible)
         polysigned /= constant;
+
+        // :: error: (compound.assignment.unsigned.variable)
+        // :: error: (compound.assignment.type.incompatible)
+        boxPolysigned /= boxConstant;
 
         // :: error: (compound.assignment.unsigned.expression)
         // :: error: (compound.assignment.type.incompatible)
         constant /= polysigned;
 
         // :: error: (compound.assignment.unsigned.expression)
+        // :: error: (compound.assignment.type.incompatible)
+        boxConstant /= boxPolysigned;
+
+        // :: error: (compound.assignment.unsigned.expression)
         unknown %= unsigned;
+
         // :: error: (compound.assignment.unsigned.expression)
         boxUnknown %= boxUnsigned;
 
@@ -76,38 +116,75 @@ public class CompoundAssignments {
         // :: error: (compound.assignment.type.incompatible)
         unsigned %= unknown;
 
+        // :: error: (compound.assignment.unsigned.variable)
+        // :: error: (compound.assignment.type.incompatible)
+        boxUnsigned %= boxUnknown;
+
         // :: error: (compound.assignment.unsigned.expression)
         unknown %= polysigned;
+
+        // :: error: (compound.assignment.unsigned.expression)
+        boxUnknown %= boxPolysigned;
 
         // :: error: (compound.assignment.unsigned.variable)
         // :: error: (compound.assignment.type.incompatible)
         polysigned %= unknown;
+
+        // :: error: (compound.assignment.unsigned.variable)
+        // :: error: (compound.assignment.type.incompatible)
+        boxPolysigned %= boxUnknown;
 
         // :: error: (compound.assignment.unsigned.variable)
         // :: error: (compound.assignment.type.incompatible)
         unsigned %= unknown;
 
+        // :: error: (compound.assignment.unsigned.variable)
+        // :: error: (compound.assignment.type.incompatible)
+        boxUnsigned %= boxUnknown;
+
         // :: error: (compound.assignment.unsigned.expression)
         unknown %= polysigned;
+
+        // :: error: (compound.assignment.unsigned.expression)
+        boxUnknown %= boxPolysigned;
 
         // :: error: (compound.assignment.unsigned.variable)
         // :: error: (compound.assignment.type.incompatible)
         polysigned %= unknown;
 
         // :: error: (compound.assignment.unsigned.variable)
+        // :: error: (compound.assignment.type.incompatible)
+        boxPolysigned %= boxUnknown;
+
+        // :: error: (compound.assignment.unsigned.variable)
         unsigned %= constant;
+
+        // :: error: (compound.assignment.unsigned.variable)
+        boxUnsigned %= boxConstant;
 
         // :: error: (compound.assignment.unsigned.expression)
         // :: error: (compound.assignment.type.incompatible)
         constant %= unsigned;
 
+        // :: error: (compound.assignment.unsigned.expression)
+        // :: error: (compound.assignment.type.incompatible)
+        boxConstant %= boxUnsigned;
+
         // :: error: (compound.assignment.unsigned.variable)
         // :: error: (compound.assignment.type.incompatible)
         polysigned %= constant;
 
+        // :: error: (compound.assignment.unsigned.variable)
+        // :: error: (compound.assignment.type.incompatible)
+        boxPolysigned %= boxConstant;
+
         // :: error: (compound.assignment.unsigned.expression)
         // :: error: (compound.assignment.type.incompatible)
         constant %= polysigned;
+
+        // :: error: (compound.assignment.unsigned.expression)
+        // :: error: (compound.assignment.type.incompatible)
+        boxConstant %= boxPolysigned;
     }
 
     public void SignedRightShiftTest(
