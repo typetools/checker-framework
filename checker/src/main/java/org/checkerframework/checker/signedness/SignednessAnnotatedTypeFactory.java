@@ -265,6 +265,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Make the wildcard always {@link SignednessGlb}, regardless of the declared type. */
     @Override
     public void adaptGetClassReturnTypeToReceiver(
             final AnnotatedExecutableType getClassType, final AnnotatedTypeMirror receiverType) {
@@ -274,7 +275,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 (AnnotatedDeclaredType) getClassType.getReturnType();
         final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
         final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
-        classWildcardArg.getExtendsBoundField().replaceAnnotation(SIGNED);
+        classWildcardArg.getExtendsBoundField().replaceAnnotation(SIGNEDNESS_GLB);
     }
 
     @Override
