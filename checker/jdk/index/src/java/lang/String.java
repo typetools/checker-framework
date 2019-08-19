@@ -635,7 +635,9 @@ public final class String
      *
      * @since 1.6
      */
-    @SuppressWarnings("contracts.conditional.postcondition.not.satisfied") // values.length != 0 => this is @MinLen(1 as values.length is @LengthOf("this")
+    @SuppressWarnings("contracts.conditional.postcondition.not.satisfied") /* values.length != 0 => this is @MinLen(1) as values.length is @LengthOf("this"),
+    postcondition not satisfied as deemed by the index checker is EnsuresMinLenIf at the return statement.
+    */
     public boolean isEmpty() {
         return value.length == 0;
     }
