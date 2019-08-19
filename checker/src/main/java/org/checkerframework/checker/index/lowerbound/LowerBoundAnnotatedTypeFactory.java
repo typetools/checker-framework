@@ -1,7 +1,5 @@
 package org.checkerframework.checker.index.lowerbound;
 
-import static org.checkerframework.checker.index.IndexUtil.getPossibleValues;
-
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -15,7 +13,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.inequality.LessThanAnnotatedTypeFactory;
 import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
@@ -37,6 +34,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
@@ -203,7 +201,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Returns the type in the lower bound hierarchy that a Value Checker type corresponds to. */
     private AnnotationMirror getLowerBoundAnnotationFromValueType(AnnotatedTypeMirror valueType) {
-        Range possibleValues = getPossibleValues(valueType, getValueAnnotatedTypeFactory());
+        Range possibleValues =
+                ValueCheckerUtils.getPossibleValues(valueType, getValueAnnotatedTypeFactory());
         // possibleValues is null if the Value Checker does not have any estimate.
         if (possibleValues == null) {
             // possibleValues is null if there is no IntVal annotation on the type - such as
@@ -377,7 +376,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
         if (TreeUtils.isArrayLengthAccess(tree)) {
-            return IndexUtil.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
+            return ValueCheckerUtils.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
         }
         return null;
     }
@@ -388,7 +387,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     Integer getMinLenFromMethodInvocationTree(MethodInvocationTree tree) {
         if (imf.isLengthOfMethodInvocation(tree)) {
-            return IndexUtil.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
+            return ValueCheckerUtils.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
         }
         return null;
     }
