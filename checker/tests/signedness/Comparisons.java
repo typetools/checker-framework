@@ -19,10 +19,16 @@ public class Comparisons {
         // :: error: (comparison.unsignedlhs)
         testRes = polysigned < unknown;
 
+        // :: error: (comparison.unsignedlhs)
+        testRes = polysigned < unknown;
+
         // :: error: (comparison.unsignedrhs)
         testRes = boxUnknown < unsigned;
         // :: error: (comparison.unsignedrhs)
         testRes = unknown < boxUnsigned;
+
+        // :: error: (comparison.unsignedrhs)
+        testRes = unknown < polysigned;
 
         // :: error: (comparison.unsignedrhs)
         testRes = unknown < polysigned;
@@ -35,10 +41,16 @@ public class Comparisons {
         // :: error: (comparison.unsignedlhs)
         testRes = polysigned <= unknown;
 
+        // :: error: (comparison.unsignedlhs)
+        testRes = polysigned <= unknown;
+
         // :: error: (comparison.unsignedrhs)
         testRes = unknown <= unsigned;
         // :: error: (comparison.unsignedrhs)
         testRes = boxUnknown <= boxUnsigned;
+
+        // :: error: (comparison.unsignedrhs)
+        testRes = unknown <= polysigned;
 
         // :: error: (comparison.unsignedrhs)
         testRes = unknown <= polysigned;
@@ -51,10 +63,16 @@ public class Comparisons {
         // :: error: (comparison.unsignedlhs)
         testRes = polysigned > unknown;
 
+        // :: error: (comparison.unsignedlhs)
+        testRes = polysigned > unknown;
+
         // :: error: (comparison.unsignedrhs)
         testRes = unknown > unsigned;
         // :: error: (comparison.unsignedrhs)
         testRes = boxUnknown > boxUnsigned;
+
+        // :: error: (comparison.unsignedrhs)
+        testRes = unknown > polysigned;
 
         // :: error: (comparison.unsignedrhs)
         testRes = unknown > polysigned;
