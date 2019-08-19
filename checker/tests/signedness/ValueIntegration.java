@@ -284,15 +284,15 @@ public class ValueIntegration {
     }
 
     public void IntValRules(
-            @IntVal({0, 2147483647}) Integer c,
-            @IntVal({2147483648L, 4294967295L}) Integer upure,
-            @IntVal({0, 2147483648L}) Integer umixed,
-            @IntVal({-2147483648, -1}) Integer spure,
-            @IntVal({-1, 2147483647}) Integer smixed,
-            @IntVal({-2147483648, 0, 2147483648L}) Integer bmixed) {
-        @Signed Integer stest;
-        @SignednessGlb Integer gtest;
-        @SignedPositive Integer ptest;
+            @IntVal({0, 2147483647}) int c,
+            @IntVal({2147483648L, 4294967295L}) int upure,
+            @IntVal({0, 2147483648L}) int umixed,
+            @IntVal({-2147483648, -1}) int spure,
+            @IntVal({-1, 2147483647}) int smixed,
+            @IntVal({-2147483648, 0, 2147483648L}) int bmixed) {
+        @Signed int stest;
+        @SignednessGlb int gtest;
+        @SignedPositive int ptest;
 
         stest = c;
         gtest = c;
