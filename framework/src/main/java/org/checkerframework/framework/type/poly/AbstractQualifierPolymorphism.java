@@ -202,6 +202,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                 return;
             }
         }
+        AnnotationMirrorMap<AnnotationMirrorSet> instantiationMapping;
 
         List<AnnotatedTypeMirror> parameters = memberReference.getParameterTypes();
         List<AnnotatedTypeMirror> args = functionalInterface.getParameterTypes();
@@ -213,14 +214,25 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             newParameters.add(memberReference.getReceiverType());
             newParameters.addAll(parameters);
             parameters = newParameters;
+            instantiationMapping = new AnnotationMirrorMap<>();
+        } else {
+            if (memberReference.getReceiverType() != null
+                    && functionalInterface.getReceiverType() != null) {
+                instantiationMapping =
+                        mapQualifierToPoly(
+                                functionalInterface.getReceiverType(),
+                                memberReference.getReceiverType());
+            } else {
+                instantiationMapping = new AnnotationMirrorMap<>();
+            }
         }
         // Deal with varargs
         if (memberReference.isVarArgs() && !functionalInterface.isVarArgs()) {
             parameters = AnnotatedTypes.expandVarArgsFromTypes(memberReference, args);
         }
 
-        AnnotationMirrorMap<AnnotationMirrorSet> instantiationMapping =
-                collector.visit(args, parameters);
+        instantiationMapping =
+                collector.reduce(instantiationMapping, collector.visit(args, parameters));
 
         if (instantiationMapping != null && !instantiationMapping.isEmpty()) {
             replacer.visit(memberReference, instantiationMapping);
@@ -229,6 +241,32 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             completer.visit(memberReference);
         }
         reset();
+    }
+
+    /**
+     * If the primary annotation of {@code actualType} is a polymorphic qualifier, then it is mapped
+     * to the primary annotation of {@code type} and the map is returned. Otherwise, an empty map is
+     * returned.
+     */
+    private AnnotationMirrorMap<AnnotationMirrorSet> mapQualifierToPoly(
+            AnnotatedTypeMirror type, AnnotatedTypeMirror actualType) {
+        AnnotationMirrorMap<AnnotationMirrorSet> result = new AnnotationMirrorMap<>();
+
+        for (Map.Entry<AnnotationMirror, AnnotationMirror> kv : polyQuals.entrySet()) {
+            AnnotationMirror top = kv.getValue();
+            AnnotationMirror poly = kv.getKey();
+
+            if (top == null && actualType.hasAnnotation(POLYALL)) {
+                // PolyAll qualifier
+                result.put(poly, new AnnotationMirrorSet(type.getAnnotations()));
+            } else if (actualType.hasAnnotation(poly)) {
+                AnnotationMirror typeQual = type.getAnnotationInHierarchy(top);
+                if (typeQual != null) {
+                    result.put(poly, AnnotationMirrorSet.singleElementSet(typeQual));
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -420,32 +458,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(atypeFactory, type, polyType);
 
             return visit(asSuper, polyType, null);
-        }
-
-        /**
-         * If the primary annotation of {@code actualType} is a polymorphic qualifier, then it is
-         * mapped to the primary annotation of {@code type} and the map is returned. Otherwise, an
-         * empty map is returned.
-         */
-        private AnnotationMirrorMap<AnnotationMirrorSet> mapQualifierToPoly(
-                AnnotatedTypeMirror type, AnnotatedTypeMirror actualType) {
-            AnnotationMirrorMap<AnnotationMirrorSet> result = new AnnotationMirrorMap<>();
-
-            for (Map.Entry<AnnotationMirror, AnnotationMirror> kv : polyQuals.entrySet()) {
-                AnnotationMirror top = kv.getValue();
-                AnnotationMirror poly = kv.getKey();
-
-                if (top == null && actualType.hasAnnotation(POLYALL)) {
-                    // PolyAll qualifier
-                    result.put(poly, new AnnotationMirrorSet(type.getAnnotations()));
-                } else if (actualType.hasAnnotation(poly)) {
-                    AnnotationMirror typeQual = type.getAnnotationInHierarchy(top);
-                    if (typeQual != null) {
-                        result.put(poly, AnnotationMirrorSet.singleElementSet(typeQual));
-                    }
-                }
-            }
-            return result;
         }
 
         @Override

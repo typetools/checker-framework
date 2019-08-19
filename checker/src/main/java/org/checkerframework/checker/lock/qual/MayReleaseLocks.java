@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 /**
  * The method, or one of the methods it calls, might release locks that were held prior to the
  * method being called. You can write this when you are certain the method releases locks, or when
- * you don’t know whether the method releases locks.
+ * you don't know whether the method releases locks.
  *
  * @see ReleasesNoLocks
  * @see LockingFree

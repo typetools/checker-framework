@@ -506,8 +506,8 @@ public class ContractsUtils {
      *     qualifier argument names
      * @see QualifierArgument
      */
-    private Map<String, String> makeArgumentMap(Element contractAnnoElement) {
-        HashMap<String, String> argumentMap = new HashMap<>();
+    private Map<String, String> makeArgumentRenaming(Element contractAnnoElement) {
+        HashMap<String, String> argumentRenaming = new HashMap<>();
         for (ExecutableElement meth :
                 ElementFilter.methodsIn(contractAnnoElement.getEnclosedElements())) {
             AnnotationMirror argumentAnnotation =
@@ -520,10 +520,10 @@ public class ContractsUtils {
                 if (targetName == null || targetName.isEmpty()) {
                     targetName = sourceName;
                 }
-                argumentMap.put(sourceName, targetName);
+                argumentRenaming.put(sourceName, targetName);
             }
         }
-        return argumentMap;
+        return argumentRenaming;
     }
 
     /**
@@ -533,8 +533,8 @@ public class ContractsUtils {
     private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
             AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
 
-        Map<String, String> argumentMap =
-                makeArgumentMap(argumentAnno.getAnnotationType().asElement());
-        return getAnnotationMirrorOfQualifier(contractAnno, argumentAnno, argumentMap);
+        Map<String, String> argumentRenaming =
+                makeArgumentRenaming(argumentAnno.getAnnotationType().asElement());
+        return getAnnotationMirrorOfQualifier(contractAnno, argumentAnno, argumentRenaming);
     }
 }
