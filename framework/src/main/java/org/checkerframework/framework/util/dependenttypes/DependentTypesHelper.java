@@ -212,7 +212,8 @@ public class DependentTypesHelper {
                 Element varargsElement =
                         methodCalled.getParameters().get(methodCalled.getParameters().size() - 1);
                 TypeMirror tm = ElementUtils.getType(varargsElement);
-                if (initializers.size() == 1 && initializers.get(0).getType().equals(tm)) {
+                if (initializers.size() == 1
+                        && initializers.get(0).getType().toString().equals(tm.toString())) {
                     // an array was passed
                     argReceivers.add(initializers.get(0));
                 } else {
