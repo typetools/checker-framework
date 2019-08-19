@@ -128,8 +128,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || javaTypeKind == TypeKind.CHAR
                     || javaTypeKind == TypeKind.SHORT
                     || javaTypeKind == TypeKind.INT
-                    || javaTypeKind == TypeKind.LONG
-                    || javaTypeKind == TypeKind.INT) {
+                    || javaTypeKind == TypeKind.LONG) {
                 AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
                 // These annotations are trusted rather than checked.  Maybe have an option to
                 // disable using them?
@@ -248,8 +247,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * If the tree is a local variable, explicit lower bounds, explicit upper bounds, implicit lower
-     * bounds or implicit upper bounds and boxed types such as Byte, Short, Integer or Long are
+     * If the tree is a local variable and boxed types such as Byte, Short, Integer or Long are
      * present then add the UnknownSignedness annotation so that dataflow can refine it.
      */
     private void addUnknownSignednessToSomeLocalsOfBoxedTypes(Tree tree, AnnotatedTypeMirror type) {
