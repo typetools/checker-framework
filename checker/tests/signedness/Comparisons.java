@@ -103,7 +103,7 @@ public class Comparisons {
         testRes = boxPolysigned >= boxUnknown;
 
         // :: error: (comparison.unsignedrhs)
-        testRes = boxUnknown >= boxPolysigned;
+        testRes = unknown >= polysigned;
 
         // :: error: (comparison.unsignedrhs)
         testRes = boxUnknown >= boxPolysigned;
