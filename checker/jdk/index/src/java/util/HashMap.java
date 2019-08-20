@@ -221,13 +221,10 @@ public class HashMap<K,V>
      * Constructs an empty <tt>HashMap</tt> with the default initial capacity
      * (16) and the default load factor (0.75).
      */
-    @SuppressWarnings("cast.unsafe") /*
-    #1: cast from "@DoubleVal(12.0) float" to "@IntVal(12) int" will not produce any runtime error
-    issue reported https://github.com/typetools/checker-framework/issues/2731
-    */
+    @SuppressWarnings("cast.unsafe") // https://github.com/typetools/checker-framework/issues/2731
     public HashMap() {
         this.loadFactor = DEFAULT_LOAD_FACTOR;
-        threshold = (int)(DEFAULT_INITIAL_CAPACITY * DEFAULT_LOAD_FACTOR); // #1
+        threshold = (int)(DEFAULT_INITIAL_CAPACITY * DEFAULT_LOAD_FACTOR);
         table = new Entry[DEFAULT_INITIAL_CAPACITY];
         init();
     }
