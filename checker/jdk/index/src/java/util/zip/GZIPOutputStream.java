@@ -183,6 +183,7 @@ class GZIPOutputStream extends DeflaterOutputStream {
     @SuppressWarnings("cast.unsafe") /*
     #1: cast from "@IntVal(35615) int" to "@IntVal(31) byte" will not produce any runtime error
     #2: cast from "@IntVal(139) int" to "@IntVal(-117) byte" will not produce any runtime error
+    issue reported - https://github.com/typetools/checker-framework/issues/2731
     */
     private void writeHeader() throws IOException {
         out.write(new byte[] {
