@@ -27,12 +27,6 @@ else
    ltBinDir="$LT_BIN"
 fi
 
-if [ -z "$LT_JDK" ] || [ "$LT_JDK" = "" ]; then
-   ltJdkDir="${mydir}"/../../../jsr308-langtools/cfmake/javac-jdk.jar:${binaryDir}/javac-jdk.jar
-else
-   ltJdkDir="$LT_JDK"
-fi
-
 jdkPaths="${mydir}"/../jdk/annotated
 
 cfDir="${mydir}"/../..
@@ -70,7 +64,6 @@ eval "java" \
      "-DCheckerDevelMain.pp=${buildDirs} " \
      "-DCheckerDevelMain.compile.bcp=${jdkPaths} " \
      "-DCheckerDevelMain.runtime.cp=${ltBinDir} " \
-     "-DCheckerDevelMain.runtime.bcp=${ltJdkDir} " \
      "-DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDirs} " \
      "org.checkerframework.framework.util.CheckerDevelMain" \

@@ -145,10 +145,6 @@ public class CheckerMain {
         return new ArrayList<>(Arrays.asList(javacJar.getAbsolutePath()));
     }
 
-    protected List<String> createRuntimeBootclasspath(final List<String> argsList) {
-        return new ArrayList<>(Arrays.asList(javacJar.getAbsolutePath()));
-    }
-
     protected List<String> createCompilationBootclasspath(final List<String> argsList) {
         final List<String> extractedBcp = extractBootClassPath(argsList);
         extractedBcp.add(0, jdkJar.getAbsolutePath());
