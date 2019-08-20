@@ -21,6 +21,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
@@ -1116,11 +1117,23 @@ public class FlowExpressions {
 
     public static class ArrayCreation extends Receiver {
 
-        protected final List<Receiver> dimensions;
+        /**
+         * List of dimensions expressions. {code null} means that there is no dimension expression.
+         */
+        protected final List<@Nullable Receiver> dimensions;
+        /** List of initializers. */
         protected final List<Receiver> initializers;
 
+        /**
+         * Creates an ArrayCreation object.
+         *
+         * @param type array type
+         * @param dimensions list of dimension expressions; {code null} means that there is no
+         *     dimension expression
+         * @param initializers list of initializer expressions
+         */
         public ArrayCreation(
-                TypeMirror type, List<Receiver> dimensions, List<Receiver> initializers) {
+                TypeMirror type, List<@Nullable Receiver> dimensions, List<Receiver> initializers) {
             super(type);
             this.dimensions = dimensions;
             this.initializers = initializers;
@@ -1137,7 +1150,7 @@ public class FlowExpressions {
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
             for (Receiver n : dimensions) {
-                if (n.getClass().equals(clazz)) {
+                if (n != null && n.getClass().equals(clazz)) {
                     return true;
                 }
             }
@@ -1193,15 +1206,15 @@ public class FlowExpressions {
             sb.append("new " + type);
             if (!dimensions.isEmpty()) {
                 boolean needComma = false;
-                sb.append(" (");
+                sb.append(" [");
                 for (Receiver dim : dimensions) {
                     if (needComma) {
                         sb.append(", ");
                     }
-                    sb.append(dim);
+                    sb.append(dim == null ? "" : dim);
                     needComma = true;
                 }
-                sb.append(")");
+                sb.append("]");
             }
             if (!initializers.isEmpty()) {
                 boolean needComma = false;
