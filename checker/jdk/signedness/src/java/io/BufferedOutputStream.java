@@ -92,7 +92,7 @@ class BufferedOutputStream extends FilterOutputStream {
      * @param      b   the byte to be written.
      * @exception  IOException  if an I/O error occurs.
      */
-    public synchronized void write(int b) throws IOException {
+    public synchronized void write(@PolySigned int b) throws IOException {
         if (count >= buf.length) {
             flushBuffer();
         }
