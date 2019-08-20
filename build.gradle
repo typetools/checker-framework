@@ -125,8 +125,9 @@ allprojects {
         // Add standard javac options
         tasks.withType(JavaCompile) {
             dependsOn(':installGitHooks')
+            sourceCompatibility = 8
             if (isJava8) {
-                sourceCompatibility = 8
+                //  option --add-exports not allowed with target 1.8
                 targetCompatibility = 8
             }
             options.failOnError = true
