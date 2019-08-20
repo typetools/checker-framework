@@ -133,7 +133,7 @@ public class ByteArrayOutputStream extends OutputStream {
      *
      * @param   b   the byte to be written.
      */
-    public synchronized void write(int b) {
+    public synchronized void write(@PolySigned int b) {
         ensureCapacity(count + 1);
         buf[count] = (byte) b;
         count += 1;
