@@ -40,6 +40,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
     // Cannot be final because lub re-assigns; add a new constructor to do this cleanly?
     private Set<String> keyForMaps;
 
+    /** Create an instance. */
     public KeyForValue(
             CFAbstractAnalysis<KeyForValue, ?, ?> analysis,
             Set<AnnotationMirror> annotations,
