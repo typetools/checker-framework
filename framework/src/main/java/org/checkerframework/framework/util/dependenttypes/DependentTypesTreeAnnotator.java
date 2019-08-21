@@ -62,7 +62,7 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror annotatedTypeMirror) {
         Element ele = TreeUtils.elementFromUse(node);
-        if (ele.getKind() == ElementKind.FIELD) {
+        if (ele.getKind() == ElementKind.FIELD || ele.getKind() == ElementKind.ENUM_CONSTANT) {
             helper.standardizeVariable(node, annotatedTypeMirror, ele);
         }
         return super.visitIdentifier(node, annotatedTypeMirror);

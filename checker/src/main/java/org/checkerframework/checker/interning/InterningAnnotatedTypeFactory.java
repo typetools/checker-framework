@@ -3,24 +3,32 @@ package org.checkerframework.checker.interning;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.interning.qual.InternMethod;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.interning.qual.UnknownInterned;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultQualifierForUseTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -40,13 +48,16 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * This factory extends {@link BaseAnnotatedTypeFactory} and inherits its functionality, including:
  * flow-sensitive qualifier inference, qualifier polymorphism (of {@link PolyInterned}), implicit
- * annotations via {@link ImplicitFor} on {@link Interned} (to handle cases 1, 2, 4), and
- * user-specified defaults via {@link DefaultQualifier}. Case 5 is handled by the stub library.
+ * annotations via {@link org.checkerframework.framework.qual.DefaultFor} on {@link Interned} (to
+ * handle cases 1, 2, 4), and user-specified defaults via {@link DefaultQualifier}. Case 5 is
+ * handled by the stub library.
  */
 public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+    /** The {@link UnknownInterned} annotation. */
+    final AnnotationMirror TOP = AnnotationBuilder.fromClass(elements, UnknownInterned.class);
     /** The {@link Interned} annotation. */
-    final AnnotationMirror INTERNED, TOP;
+    final AnnotationMirror INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
 
     /**
      * Creates a new {@link InterningAnnotatedTypeFactory} that operates on a particular AST.
@@ -55,13 +66,57 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
-        this.TOP = AnnotationBuilder.fromClass(elements, UnknownInterned.class);
 
         // If you update the following, also update ../../../../../docs/manual/interning-checker.tex
         addAliasedAnnotation("com.sun.istack.internal.Interned", INTERNED);
 
         this.postInit();
+    }
+
+    @Override
+    protected DefaultQualifierForUseTypeAnnotator createDefaultForUseTypeAnnotator() {
+        return new InterningDefaultQualifierForUseTypeAnnotator(this);
+    }
+
+    /**
+     * Does not add defaults for type uses on constructor results. Constructor results should be
+     * {@code @UnknownInterned} by default.
+     */
+    static class InterningDefaultQualifierForUseTypeAnnotator
+            extends DefaultQualifierForUseTypeAnnotator {
+
+        public InterningDefaultQualifierForUseTypeAnnotator(AnnotatedTypeFactory typeFactory) {
+            super(typeFactory);
+        }
+
+        @Override
+        public Void visitExecutable(AnnotatedExecutableType type, Void p) {
+            MethodSymbol methodElt = (MethodSymbol) type.getElement();
+
+            if (methodElt == null || methodElt.getKind() != ElementKind.CONSTRUCTOR) {
+                // Annotate method returns, not constructors.
+                scan(type.getReturnType(), p);
+            }
+            if (type.getReceiverType() != null
+                    // Intern method may be called on UnknownInterned object, so its receiver should
+                    // not be annotated as @Interned.
+                    && typeFactory.getDeclAnnotation(methodElt, InternMethod.class) == null) {
+                scanAndReduce(type.getReceiverType(), p, null);
+            }
+            scanAndReduce(type.getParameterTypes(), p, null);
+            scanAndReduce(type.getThrownTypes(), p, null);
+            scanAndReduce(type.getTypeVariables(), p, null);
+            return null;
+        }
+    }
+
+    @Override
+    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror typeMirror) {
+        if (typeMirror.getKind() == TypeKind.DECLARED
+                && ((DeclaredType) typeMirror).asElement().getKind() == ElementKind.ENUM) {
+            return AnnotationMirrorSet.singleElementSet(INTERNED);
+        }
+        return super.getTypeDeclarationBounds(typeMirror);
     }
 
     @Override
@@ -123,7 +178,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Adds @Interned to enum types and any use of a class that is declared to be @Interned. */
+    /** Adds @Interned to enum types. */
     private class InterningTypeAnnotator extends TypeAnnotator {
 
         InterningTypeAnnotator(InterningAnnotatedTypeFactory atypeFactory) {
@@ -132,23 +187,12 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitDeclared(AnnotatedDeclaredType t, Void p) {
-
             // case 3: Enum types, and the Enum class itself, are interned
             Element elt = t.getUnderlyingType().asElement();
             assert elt != null;
             if (elt.getKind() == ElementKind.ENUM) {
                 t.replaceAnnotation(INTERNED);
-
-                // TODO: CODE REVIEW:  I am not sure this makes sense.  An element for a declared
-                // type doesn't always have to be a class declaration.  AND I would assume if the
-                // class declaration has @Interned then the type would already receive an @Interned
-                // from the framework without this case (I think from InheritFromClass) IF this is
-                // true, perhaps remove item 6 I added to the class comment.
-            } else if (typeFactory.fromElement(elt).hasAnnotation(INTERNED)) {
-                // If the class/interface has an @Interned annotation, use it.
-                t.replaceAnnotation(INTERNED);
             }
-
             return super.visitDeclared(t, p);
         }
     }

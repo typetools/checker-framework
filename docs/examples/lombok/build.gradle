@@ -18,12 +18,12 @@ dependencies {
 
 configurations {
   checkerFrameworkAnnotatedJDK {
-    description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+    description = 'a copy of JDK classes with Checker Framework type qualifiers inserted'
   }
 }
 
 dependencies {
-  ext.checkerFrameworkVersion = '2.8.0'
+  ext.checkerFrameworkVersion = '2.10.0'
   checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
   annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
   implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"

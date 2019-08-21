@@ -69,7 +69,7 @@ The following repositories will be cloned or updated from their origins:
     clone_from_scratch_or_update(LIVE_CHECKLINK, CHECKLINK, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_PLUME_BIB, PLUME_BIB, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_STUBPARSER, STUBPARSER, clone_from_scratch, False)
-    clone_from_scratch_or_update(LIVE_ANNO_REPO, ANNO_TOOLS, clone_from_scratch, False)
+    # clone_from_scratch_or_update(LIVE_ANNO_REPO, ANNO_TOOLS, clone_from_scratch, False)
 
 def get_afu_date(building_afu):
     """If the AFU is being built, return the current date, otherwise return the
@@ -174,8 +174,8 @@ def build_annotation_tools_release(version, afu_interm_dir):
     execute(ant_cmd)
 
     # Deploy to intermediate site
-    ant_cmd = "ant %s -buildfile %s -e web-no-checks -Dafu.version=%s -Ddeploy-dir=%s" % (ant_debug, build, version, afu_interm_dir)
-    execute(ant_cmd)
+    gradle_cmd = "./gradlew releaseBuild -Pafu.version=%s -Pdeploy-dir=%s" % (, version, afu_interm_dir)
+    execute(gradle_cmd, True, False, ANNO_FILE_UTILITIES)
 
     update_project_dev_website("annotation-file-utilities", version)
 

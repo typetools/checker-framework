@@ -67,14 +67,14 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Transfers annotations to the variableTree if the right side is a call to
-     * java.util.Map.KeySet.
+     * Transfers annotations on type arguments from the initializer to the variableTree, if the
+     * initializer is a call to java.util.Map.keySet.
      */
     @Override
     public Void visitVariable(VariableTree variableTree, AnnotatedTypeMirror type) {
         super.visitVariable(variableTree, type);
 
-        // This should only happen on map.keySet();
+        // This should only happen on Map.keySet();
         if (type.getKind() == TypeKind.DECLARED) {
             final ExpressionTree initializer = variableTree.getInitializer();
 
@@ -83,7 +83,8 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
                 final AnnotatedTypeMirror initializerType =
                         atypeFactory.getAnnotatedType(initializer);
 
-                // array types and boxed primitives etc don't require propagation
+                // Propagate just for declared (class) types, not for array types, boxed primitives,
+                // etc.
                 if (variableType.getKind() == TypeKind.DECLARED) {
                     keyForPropagator.propagate(
                             (AnnotatedDeclaredType) initializerType,

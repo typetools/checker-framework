@@ -50,6 +50,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -71,6 +72,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -100,15 +102,21 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    public final AnnotationMirror UNKNOWN, BOTTOM, POLY;
+    /** The @{@link UpperBoundUnknown} annotation. */
+    public final AnnotationMirror UNKNOWN =
+            AnnotationBuilder.fromClass(elements, UpperBoundUnknown.class);
+    /** The @{@link UpperBoundBottom} annotation. */
+    public final AnnotationMirror BOTTOM =
+            AnnotationBuilder.fromClass(elements, UpperBoundBottom.class);
+    /** The @{@link PolyUpperBound} annotation. */
+    public final AnnotationMirror POLY =
+            AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
     private final IndexMethodIdentifier imf;
 
+    /** Create a new UpperBoundAnnotatedTypeFactory. */
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN = AnnotationBuilder.fromClass(elements, UpperBoundUnknown.class);
-        BOTTOM = AnnotationBuilder.fromClass(elements, UpperBoundBottom.class);
-        POLY = AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
         addAliasedAnnotation(IndexFor.class, LTLengthOf.class, true);
         addAliasedAnnotation(IndexOrLow.class, LTLengthOf.class, true);
@@ -282,6 +290,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return imf.isMathMin(methodTree);
     }
 
+    /**
+     * Returns true if the tree is for {@code Random.nextInt(int)}.
+     *
+     * @param methodTree a tree to check
+     * @return true iff the tree is for {@code Random.nextInt(int)}
+     */
     public boolean isRandomNextInt(Tree methodTree) {
         return imf.isRandomNextInt(methodTree, processingEnv);
     }
@@ -399,8 +413,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * This exists for Math.min and Random.nextInt, which must be special-cased. These are cases
-         * 1 and 2.
+         * This exists for Math.min and Random.nextInt, which must be special-cased.
          *
          * <ul>
          *   <li>Math.min has unusual semantics that combines annotations for the UBC.
@@ -474,7 +487,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.containsSameByClass(
                     searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
                 AnnotationMirror nif = searchIndexType.getAnnotation(NegativeIndexFor.class);
-                List<String> arrays = IndexUtil.getValueOfAnnotationWithStringArgument(nif);
+                List<String> arrays = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(nif);
                 List<String> negativeOnes = Collections.nCopies(arrays.size(), "-1");
                 UBQualifier qual = UBQualifier.createUBQualifier(arrays, negativeOnes);
                 typeDst.addAnnotation(convertUBQualifierToAnnotation(qual));
@@ -541,7 +554,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // For non-negative numbers, right shift is equivalent to division by a power of two
                 // The range of the shift amount is limited to 0..30 to avoid overflows and int/long
                 // differences
-                Long shiftAmount = IndexUtil.getExactValue(right, getValueAnnotatedTypeFactory());
+                Long shiftAmount =
+                        ValueCheckerUtils.getExactValue(right, getValueAnnotatedTypeFactory());
                 if (shiftAmount != null && shiftAmount >= 0 && shiftAmount < Integer.SIZE - 1) {
                     int divisor = 1 << shiftAmount;
                     // Support average by shift just like for division
@@ -628,7 +642,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ExpressionTree divisorTree,
                 AnnotatedTypeMirror resultType) {
 
-            Long divisor = IndexUtil.getExactValue(divisorTree, getValueAnnotatedTypeFactory());
+            Long divisor =
+                    ValueCheckerUtils.getExactValue(divisorTree, getValueAnnotatedTypeFactory());
             if (divisor == null) {
                 resultType.addAnnotation(UNKNOWN);
                 return;
@@ -664,7 +679,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * length of some sequence, then (a + b) / divisor is less than the length of that sequence.
          */
         private UBQualifier plusTreeDivideByVal(int divisor, ExpressionTree numeratorTree) {
-            numeratorTree = TreeUtils.skipParens(numeratorTree);
+            numeratorTree = TreeUtils.withoutParens(numeratorTree);
             if (divisor < 2 || numeratorTree.getKind() != Kind.PLUS) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
@@ -774,13 +789,20 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Tree tree, TreePath treePath, List<String> lessThanExpressions) {
         UBQualifier ubQualifier = null;
         for (String expression : lessThanExpressions) {
-            FlowExpressions.Receiver receiver;
+            Pair<FlowExpressions.Receiver, String> receiverAndOffset;
             try {
-                receiver = getReceiverFromJavaExpressionString(expression, treePath);
+                receiverAndOffset =
+                        getReceiverAndOffsetFromJavaExpressionString(expression, treePath);
             } catch (FlowExpressionParseException e) {
-                receiver = null;
+                receiverAndOffset = null;
             }
-            if (receiver == null || !CFAbstractStore.canInsertReceiver(receiver)) {
+            if (receiverAndOffset == null) {
+                continue;
+            }
+            FlowExpressions.Receiver receiver = receiverAndOffset.first;
+            String offset = receiverAndOffset.second;
+
+            if (!CFAbstractStore.canInsertReceiver(receiver)) {
                 continue;
             }
             CFStore store = getStoreBefore(tree);
@@ -789,7 +811,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 UBQualifier newUBQ =
                         UBQualifier.createUBQualifier(
                                 qualHierarchy.findAnnotationInHierarchy(
-                                        value.getAnnotations(), UNKNOWN));
+                                        value.getAnnotations(), UNKNOWN),
+                                AnnotatedTypeFactory.negateConstant(offset));
                 if (ubQualifier == null) {
                     ubQualifier = newUBQ;
                 } else {

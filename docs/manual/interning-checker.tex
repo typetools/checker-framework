@@ -90,6 +90,8 @@ command-line option to javac.  For examples, see Section~\ref{interning-example}
 
 \sectionAndLabel{Interning annotations}{interning-annotations}
 
+\subsectionAndLabel{Interning qualifiers}{interning-qualifiers}
+
 These qualifiers are part of the Interning type system:
 
 \begin{description}
@@ -110,6 +112,12 @@ These qualifiers are part of the Interning type system:
   indicates qualifier polymorphism (see
   Section~\ref{qualifier-polymorphism}).
 
+\end{description}
+
+\subsectionAndLabel{Interning method and class annotations}{interning-declaration-annotations}
+
+\begin{description}
+
 \item[\refqualclass{checker/interning/qual}{UsesObjectEquals}]
   is a class annotation (not a type annotation) that indicates that this class's
   \<equals> method is the same as that of \<Object>.  In other words,
@@ -118,8 +126,10 @@ These qualifiers are part of the Interning type system:
   for such a class, \<==> and \<equals> are equivalent, and so the
   Interning Checker does not issue errors or warnings for either one.
 
+\item[\refqualclass{checker/interning/qual}{InternMethod}]
+  is a method declaration annotation that indicates that this method returns an interned object and maybe be invoked
+  on an uninterned object. See Section~\ref{interning-intern-methods} for more details.
 \end{description}
-
 
 \sectionAndLabel{Annotating your code with \code{@Interned}}{interning-annotating}
 
@@ -148,39 +158,93 @@ object:
 The Interning Checker ensures that only interned
 values can be assigned to \code{s2}.
 
-To specify that \emph{all} objects of a given type are interned, annotate the
-class declaration:
+\sectionAndLabel{Interned classes}{interning-interned-classes}
+
+An interned annotation on a class declaration indicates that all objects of a
+type are interned \textit{except for newly created objects}. That means that
+all uses of such types are \<@Interned> by default and the type \<@UnknownInterned
+MyClass> is an invalid type.
+
+An exception is \textit{constructor results}. Constructor results and \<this> within the
+body of the constructor are \<@UnknownInterned> by default. Although \<@UnknownInterned InternClass>
+is not a legal type, no ``type.invalid'' error is issued at constructor declarations.
+Instead, an ``interned.object.creation''
+error is issued at the invocation of the constructor. The user should inspect
+this location and suppress the warning if the newly created object is interned.
+
+For example:
 
 \begin{Verbatim}
-  public @Interned class MyInternedClass { ... }
+@Interned class InternedClass {
+  @UnknownInterned InternedClass() {
+  // error, "this" is @UnknownInterned.
+  @Interned InternedClass that = this;
+  }
+
+  @SuppressWarnings("intern") // Only creation of an InternedClass object.
+  static final InternedClass ONE = new InternedClass();
+}
 \end{Verbatim}
 
-This makes every use of \code{MyInternedClass}, in a
-declaration or elsewhere, implicitly \<@Interned>.
+\subsectionAndLabel{The intern() methods}{interning-intern-methods}
+Some interned classes use an \<intern()> method to look up the interned version of
+the object. These methods must be annotated with the declaration annotation
+\<@InternMethod>. This allows the checker to verify that a newly created object
+is immediately interned and therefore not issue an interned object creation
+error.
+
+\begin{Verbatim}
+new InternedClass().intern() // no error
+\end{Verbatim}
+
+Because an \<intern> method is expected to be called on uninterned objects, the
+type of \<this> in \<intern> is implicitly \<@UnknownInterned>. This will cause an
+error if \<this> is used someplace where an interned object is expected.  Some
+of these warnings will be false positives that should be suppressed by the
+user.
+
+\begin{Verbatim}
+@InternMethod
+public InternedClass intern() {
+  // Type of "this" inside an @InternMethod is @UnknownInterned
+  @Interned InternedClass that = this; // error
+
+  if (!pool.contains(this)) {
+    @SuppressWarning("interning:assignment.type.incompatible")
+    @Interned InternedClass internedThis = this;
+    pool.add(internedThis);
+  }
+  return pool.get(this);
+}
+\end{Verbatim}
+
+Some interned classes do not use an intern method to ensure that every object
+of that class is interned.  For these classes, the user will have to manually
+inspect every constructor invocation and suppress the ``interned.object.creation''
+error.
+
+If every invocation of a constructor is guaranteed to be interned, then the
+user should annotate the constructor result with \<@Interned> and suppress a
+warning at the constructor.
+
+\begin{Verbatim}
+@Interned class AnotherInternedClass {
+  // manually verified that all constructor invocations used such that all
+  // new objects are interned
+  @SuppressWarnings("super.invocation.invalid")
+  @Interned AnotherInternedClass() {}
+}
+\end{Verbatim}
 
 
-\subsectionAndLabel{Implicit qualifiers}{interning-implicit-qualifiers}
+\subsectionAndLabel{Default qualifiers and qualifiers for literals}{interning-implicit-qualifiers}
 
 The Interning Checker
-adds implicit qualifiers, reducing the number of annotations that must
+adds qualifiers to unannotated types, reducing the number of annotations that must
 appear in your code (see Section~\ref{effective-qualifier}).
-For example, String literals and the \<null> literal are always considered interned, and
-object creation expressions (using \code{new}) are never considered
-\refqualclass{checker/interning/qual}{Interned} unless they are annotated as such, as in
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-@Interned Double internedDoubleZero = new @Interned Double(0); // canonical representation for Double zero
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-For a complete description of all implicit interning qualifiers, see the
+For a complete description of all defaulting rules for interning qualifiers, see the
 Javadoc for \refclass{checker/interning}{InterningAnnotatedTypeFactory}.
-
 
 \subsectionAndLabel{InternedDistinct: values not equals() to any other value}{interning-distinct}
 
@@ -383,3 +447,4 @@ $\Rightarrow$
 % LocalWords:  PolyInterned Alint dotequals quals InterningAnnotatedTypeFactory
 % LocalWords:  javac InterningVisitor JLS Acheckclass UsesObjectEquals
 %  LocalWords:  consing valueOf superclasses s2 cleanroom canonicalization
+%%  LocalWords:  InternedDistinct UnknownInterned myValue MyType

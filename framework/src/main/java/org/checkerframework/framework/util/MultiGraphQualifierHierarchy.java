@@ -91,7 +91,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 return;
             }
 
-            Name pqtopclass = QualifierPolymorphism.getPolymorphicQualifierTop(qual);
+            Name pqtopclass = QualifierPolymorphism.getPolymorphicQualifierElement(qual);
             if (pqtopclass != null) {
                 AnnotationMirror pqtop =
                         AnnotationBuilder.fromName(atypeFactory.getElementUtils(), pqtopclass);
@@ -501,7 +501,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         if (a == null) {
             throw new BugInCF(
                     "MultiGraphQualifierHierarchy found an unqualified type.  Please ensure that "
-                            + "your implicit rules cover all cases and/or "
+                            + "your defaulting rules cover all cases and/or "
                             + "use a @DefaultQualifierInHierarchy annotation.");
         } else {
             // System.out.println("MultiGraphQH: " + this);

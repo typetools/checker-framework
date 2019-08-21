@@ -88,4 +88,30 @@ Figure~\ref{fig-optional-hierarchy}.
 \label{fig-optional-hierarchy}
 \end{figure}
 
-%  LocalWords:  isPresent
+
+\sectionAndLabel{What the Optional Checker guarantees}{optional-guarantees}
+
+The Optional Checker guarantees that your code will not throw an exception
+due to use of an absent \<Optional> where a present \<Optional> is needed.
+More specifically, the Optional Checker will issue a warning if you call
+\ahref{https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html#get--}{\<get>}
+or
+\ahref{https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html#orElseThrow-java.util.function.Supplier-}{\<orElseThrow>}
+on a \<@MaybePresent Optional> receiver, because each of these methods
+throws an exception if the receiver is an absent
+\<Optional>.
+
+The Optional Checker does not check nullness properties, such as requiring
+that the argument to
+\ahref{https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html#of-T-}{\<of>}
+is non-null or guaranteeing that the result of
+\ahref{https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html#get--}{\<get>}
+is non-null.  To obtain such a guarantee, run both the Optional Checker and
+the Nullness Checker (\chapterpageref{nullness-checker}).
+
+As with any checker, the guarantee is subject to certain limitations (see
+Section~\ref{checker-guarantees}).
+
+
+%  LocalWords:  isPresent NoSuchElementException MaybePresent PolyPresent
+%%  LocalWords:  orElseThrow

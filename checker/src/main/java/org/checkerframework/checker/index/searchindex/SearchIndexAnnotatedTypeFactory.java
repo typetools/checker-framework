@@ -9,7 +9,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.SearchIndexBottom;
 import org.checkerframework.checker.index.qual.SearchIndexFor;
@@ -18,6 +17,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -29,12 +29,17 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    public final AnnotationMirror UNKNOWN, BOTTOM;
+    /** The @{@link SearchIndexUnknown} annotation. */
+    public final AnnotationMirror UNKNOWN =
+            AnnotationBuilder.fromClass(elements, SearchIndexUnknown.class);
+    /** The @{@link SearchIndexBottom} annotation. */
+    public final AnnotationMirror BOTTOM =
+            AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
 
+    /** Create a new SearchIndexAnnotatedTypeFactory. */
     public SearchIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN = AnnotationBuilder.fromClass(elements, SearchIndexUnknown.class);
-        BOTTOM = AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
+
         this.postInit();
     }
 
@@ -94,8 +99,8 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             // Each annotation is either NegativeIndexFor or SearchIndexFor.
             Set<String> combinedArrays =
-                    new HashSet<>(IndexUtil.getValueOfAnnotationWithStringArgument(a1));
-            combinedArrays.addAll(IndexUtil.getValueOfAnnotationWithStringArgument(a2));
+                    new HashSet<>(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1));
+            combinedArrays.addAll(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2));
 
             if (AnnotationUtils.areSameByClass(a1, NegativeIndexFor.class)
                     || AnnotationUtils.areSameByClass(a2, NegativeIndexFor.class)) {
@@ -129,8 +134,10 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // annotation that includes only their overlapping values.
 
             // Each annotation is either NegativeIndexFor or SearchIndexFor.
-            List<String> arrayIntersection = IndexUtil.getValueOfAnnotationWithStringArgument(a1);
-            arrayIntersection.retainAll(IndexUtil.getValueOfAnnotationWithStringArgument(a2));
+            List<String> arrayIntersection =
+                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1);
+            arrayIntersection.retainAll(
+                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2));
 
             if (arrayIntersection.isEmpty()) {
                 return UNKNOWN;
@@ -162,8 +169,10 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             // Each annotation is either NegativeIndexFor or SearchIndexFor.
-            List<String> superArrays = IndexUtil.getValueOfAnnotationWithStringArgument(superAnno);
-            List<String> subArrays = IndexUtil.getValueOfAnnotationWithStringArgument(subAnno);
+            List<String> superArrays =
+                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(superAnno);
+            List<String> subArrays =
+                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(subAnno);
 
             // Subtyping requires:
             //  * subtype is NegativeIndexFor or supertype is SearchIndexFor

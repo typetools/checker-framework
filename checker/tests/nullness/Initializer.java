@@ -49,19 +49,19 @@ class Initializer {
     }
 
     @EnsuresQualifier(expression = "a", qualifier = NonNull.class)
-    public void setField(@UnknownInitialization @Raw Initializer this) {
+    public void setField(@UnknownInitialization Initializer this) {
         a = "";
     }
 
     @EnsuresQualifierIf(result = true, expression = "a", qualifier = NonNull.class)
-    public boolean setFieldMaybe(@UnknownInitialization @Raw Initializer this) {
+    public boolean setFieldMaybe(@UnknownInitialization Initializer this) {
         a = "";
         return true;
     }
 
     String f = "";
 
-    void t1(@UnknownInitialization @Raw Initializer this) {
+    void t1(@UnknownInitialization Initializer this) {
         // :: error: (dereference.of.nullable)
         this.f.toString();
     }
@@ -73,15 +73,14 @@ class SubInitializer extends Initializer {
 
     String f = "";
 
-    void subt1(
-            @UnknownInitialization(Initializer.class) @Raw(Initializer.class) SubInitializer this) {
+    void subt1(@UnknownInitialization(Initializer.class) SubInitializer this) {
         fieldF.toString();
         super.f.toString();
         // :: error: (dereference.of.nullable)
         this.f.toString();
     }
 
-    void subt2(@UnknownInitialization @Raw SubInitializer this) {
+    void subt2(@UnknownInitialization SubInitializer this) {
         // :: error: (dereference.of.nullable)
         fieldF.toString();
         // :: error: (dereference.of.nullable)

@@ -1,3 +1,79 @@
+Version 2.10.0, August 1, 2019
+
+Removed the NullnessRawnessChecker.  Use the NullnessChecker instead.
+
+Closed issues:
+435, 939, 1430, 1687, 1771, 1902, 2173, 2345, 2470, 2534, 2606, 2613, 2619,
+2633, 2638.
+
+---------------------------------------------------------------------------
+
+Version 2.9.0, July 3, 2019
+
+Renamed the Signedness Checker's @Constant annotation to @SignednessGlb.
+Introduced an alias, @SignedPositive, for use by programmers.
+
+Annotated the first argument of Opt.get and Opt.orElseThrow as @NonNull.
+
+Removed meta-annotation @ImplicitFor:
+ * Use the new meta-annotation @QualifierForLiteral to replace
+   @ImplicitFor(literals, stringpatterns).
+ * Use the meta-annotation @DefaultFor to replace @ImplicitFor(typeKinds,
+   types).
+ * Use the new meta-annotation @UpperBoundFor to specify a qualifier upper
+   bound for certain types.
+ * You can completely remove @ImplicitFor(typeNames =
+   Void.class, literals = LiteralKind.NULL) on bottom qualifiers.
+   @DefaultFor(types = Void.class) and @QualifierForLiterals(literals =
+   LiteralKind.NULL) are added to the bottom qualifier by default.
+
+Add @DefaultQualifierOnUse and @NoDefaultQualifierOnUse type declaration annotations
+
+New/changed error message keys:
+ * initialization.static.fields.uninitialized for uninitialized static fields
+ * unary.increment.type.incompatible and unary.decrement.type.incompatible
+   replace some occurrences of compound.assignment.type.incompatible
+
+Implementation details:
+ * Renamed QualifierPolymorphism#annotate methods to resolve
+ * Renamed ImplicitsTreeAnnotator to LiteralTreeAnnotator
+ * Renamed ImplicitsTypeAnnotator to DefaultForTypeAnnotator
+ * Removed TypeUseLocation.TYPE_DECLARATION
+ * Removed InheritedFromClassAnnotator, replace with DefaultQualifierForUseTypeAnnotator
+ * Rename TreeUtils.isSuperCall and TreeUtils.isThisCall to
+ isSuperConstructorCall and isThisConstructorCall
+
+Closed issues:
+2247, 2391, 2409, 2434, 2451, 2457, 2468, 2484, 2485, 2493, 2505, 2536, 2537,
+2540, 2541, 2564, 2565, 2585.
+
+---------------------------------------------------------------------------
+
+Version 2.8.2, June 3, 2019
+
+The Signature Checker supports a new type, @FqBinaryName.
+
+Added a template for a repository that you can use to write a custom checker.
+
+Linked to the Checker Framework Gradle plugin, which makes it easy to run
+a checker on a project that is built using the Gradle build tool.
+
+Implementation detail: deprecated TreeUtils.skipParens in favor of
+TreeUtils.withoutParens which has the same specification.
+
+Closed issues:
+2291, 2406, 2469, 2477, 2479, 2480, 2494, 2499.
+
+---------------------------------------------------------------------------
+
+Version 2.8.1, May 1, 2019
+
+Moved text about the Purity Checker into its own chapter in the manual.
+
+Closed issues:
+660, 2030, 2223, 2240, 2244, 2375, 2407, 2410, 2415, 2420, 2421, 2446, 2447,
+2460, 2462.
+
 ---------------------------------------------------------------------------
 
 Version 2.8.0, April 3, 2019
@@ -23,7 +99,7 @@ Clarified the semantics of annotations on class and constructor declarations.
 See Section 25.5 "Annotations on classes and constructors" in the manual.
 
 Interface changes:
- * Added proctected methods to BaseTypeVisitor so that checkers can change the
+ * Added protected methods to BaseTypeVisitor so that checkers can change the
    checks for annotations on classes, constructor declarations, and constructor
    invocations.
  * Removed BaseTypeVisitor#checkAssignability and BaseTypeVisitor#isAssignable

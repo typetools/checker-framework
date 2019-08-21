@@ -19,14 +19,14 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public interface QualifierPolymorphism {
 
-    /** @return true if {@code qual} is {@code @PolyAlly} */
+    /** @return true if {@code qual} is {@code @PolyAll} */
     static boolean isPolyAll(AnnotationMirror qual) {
         return AnnotationUtils.areSameByClass(qual, PolyAll.class);
     }
 
     /**
      * @return the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
-     *     otherwise return null.
+     *     otherwise return null
      */
     static AnnotationMirror getPolymorphicQualifier(AnnotationMirror qual) {
         if (qual == null) {
@@ -41,15 +41,53 @@ public interface QualifierPolymorphism {
         return null;
     }
 
-    /** @return true if {@code qual} has the {@link PolymorphicQualifier} meta-annotation. */
+    /**
+     * @return true if {@code qual} has the {@link PolymorphicQualifier} meta-annotation
+     * @deprecated use {@link #hasPolymorphicQualifier}
+     */
+    @Deprecated // use hasPolymorphicQualifier()
     static boolean isPolymorphicQualified(AnnotationMirror qual) {
         return getPolymorphicQualifier(qual) != null;
     }
 
+    /** @return true if {@code qual} has the {@link PolymorphicQualifier} meta-annotation. */
+    static boolean hasPolymorphicQualifier(AnnotationMirror qual) {
+        return getPolymorphicQualifier(qual) != null;
+    }
+
     /**
-     * If {@code qual} is a polymorphic qualifier, then the class specified by the {@link
+     * If {@code qual} is a polymorphic qualifier, return the class specified by the {@link
      * PolymorphicQualifier} meta-annotation on the polymorphic qualifier is returned. Otherwise,
-     * null is returned.
+     * return null.
+     *
+     * <p>This value identifies the qualifier hierarchy to which this polymorphic qualifier belongs.
+     * By convention, it is the top qualifier of the hierarchy. Use of {@code
+     * PolymorphicQualifier.class} is discouraged, because it can lead to ambiguity if used for
+     * multiple type systems.
+     *
+     * @param qual an annotation
+     * @return the class specified by the {@link PolymorphicQualifier} meta-annotation on {@code
+     *     qual}, if {@code qual} is a polymorphic qualifier; otherwise, null.
+     * @see org.checkerframework.framework.qual.PolymorphicQualifier#value()
+     * @deprecated use {@link QualifierPolymorphism#getPolymorphicQualifierElement}
+     */
+    @Deprecated // use getPolymorphicQualifierElement()
+    static Name getPolymorphicQualifierTop(AnnotationMirror qual) {
+        AnnotationMirror poly = getPolymorphicQualifier(qual);
+
+        // System.out.println("poly: " + poly + " pq: " +
+        //     PolymorphicQualifier.class.getCanonicalName());
+        if (poly == null) {
+            return null;
+        }
+        Name ret = AnnotationUtils.getElementValueClassName(poly, "value", true);
+        return ret;
+    }
+
+    /**
+     * If {@code qual} is a polymorphic qualifier, return the class specified by the {@link
+     * PolymorphicQualifier} meta-annotation on the polymorphic qualifier is returned. Otherwise,
+     * return null.
      *
      * <p>This value identifies the qualifier hierarchy to which this polymorphic qualifier belongs.
      * By convention, it is the top qualifier of the hierarchy. Use of {@code
@@ -61,7 +99,7 @@ public interface QualifierPolymorphism {
      *     qual}, if {@code qual} is a polymorphic qualifier; otherwise, null.
      * @see org.checkerframework.framework.qual.PolymorphicQualifier#value()
      */
-    static Name getPolymorphicQualifierTop(AnnotationMirror qual) {
+    static Name getPolymorphicQualifierElement(AnnotationMirror qual) {
         AnnotationMirror poly = getPolymorphicQualifier(qual);
 
         // System.out.println("poly: " + poly + " pq: " +
@@ -79,7 +117,7 @@ public interface QualifierPolymorphism {
      * @param tree the tree associated with the type
      * @param type the type to annotate; is side-effected by this method
      */
-    void annotate(MethodInvocationTree tree, AnnotatedExecutableType type);
+    void resolve(MethodInvocationTree tree, AnnotatedExecutableType type);
 
     /**
      * Resolves polymorphism annotations for the given type.
@@ -87,7 +125,7 @@ public interface QualifierPolymorphism {
      * @param tree the tree associated with the type
      * @param type the type to annotate; is side-effected by this method
      */
-    void annotate(NewClassTree tree, AnnotatedExecutableType type);
+    void resolve(NewClassTree tree, AnnotatedExecutableType type);
 
     /**
      * Resolves polymorphism annotations for the given type.
@@ -95,6 +133,6 @@ public interface QualifierPolymorphism {
      * @param functionalInterface the function type of {@code memberReference}
      * @param memberReference the type of a member reference; is side-effected by this method
      */
-    void annotate(
+    void resolve(
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference);
 }

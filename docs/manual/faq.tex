@@ -539,7 +539,7 @@ executed.
 
 If you supply the \<-AconcurrentSemantics> command-line option, then the
 Checker Framework assumes that any field can be changed at any time.  This
-limits the amount of flow-sensitive type qualifier refinement
+limits the amount of type refinement
 (Section~\ref{type-refinement}) that the Checker Framework can do.
 
 
@@ -603,11 +603,11 @@ See Section~\ref{running} for more details.
 Sometimes, a Checker Framework warning message will mention a type you have
 not written in your program.  This is typically because a default has been
 applied where you did not write a type; see Section~\ref{defaults}.  In
-other cases, this is because flow-sensitive type refinement has given an
+other cases, this is because type refinement has given an
 expression a more specific type than you wrote or than was defaulted; see
 Section~\ref{type-refinement}.
 Note that an invocation of an impure method may cause the loss of all
-information that was determined via flow-sensitive type refinement; see
+information that was determined via type refinement; see
 Section~\ref{type-refinement-purity}.
 
 
@@ -743,9 +743,9 @@ class MyClass {
 
   void method m() {
     String local = "%d";
-    String.format(local, 5);    // Format String Checker verifies that call is safe
-    String.format(field, 5);    // Format String Checker warns that call might not be safe
-    String.format(method(), 5); // Format String Checker warns that call might not be safe
+    String.format(local, 5);    // Format String Checker verifies the call is safe
+    String.format(field, 5);    // Format String Checker warns the call might not be safe
+    String.format(method(), 5); // Format String Checker warns the call might not be safe
   }
 }
 \end{Verbatim}
@@ -781,8 +781,8 @@ There are several reasons for this design choice.
   compatible with all values that are returned by any overriding
   implementation.  In general, examining all implementations is impossible,
   because clients may override the method.  When possible, it is
-  inconvenient to provide all that source code, and it would slow the
-  type-checker down.
+  inconvenient to provide all that source code, and it would slow down the
+  type-checker.
 
   A related issue is that determining which values can be returned by a
   method $m$ requires analyzing $m$'s body, which requires analyzing
@@ -793,8 +793,8 @@ There are several reasons for this design choice.
   Type-checking is modular --- it works on one procedure at a time,
   examining that procedure and the specifications (not implementations) of
   methods that it calls.  Therefore, type-checking is fast and can work on
-  partial programs.  It is undesirable to change type-checking into a
-  whole-program analysis.
+  partial programs.  The Checker Framework performs modular type-checking,
+  not a whole-program analysis.
 
 \item[Order of compilation]
   When the compiler is called on class \<Client> and class \<Library>, the
@@ -844,7 +844,7 @@ Code that checks one variable and then uses a different variable is
 confusing and is often considered poor style.
 
 The Nullness Checker is able to verify the correctness of a small variant
-of the program, thanks to flow-sensitive type refinement
+of the program, thanks to type refinement
 (Section~\ref{type-refinement}):
 
 \begin{Verbatim}
@@ -969,7 +969,7 @@ There is also a separate FAQ for the type annotations syntax
 The \emph{receiver} of a method is the \<this> formal parameter, sometimes
 also called the ``current object''.  Within the method declaration, \<this>
 is used to refer to the receiver formal parameter.  At a method call, the
-receiver actual argument is written before the method name.
+receiver actual argument is written before a period and the method name.
 
 The method \<compareTo> takes \emph{two} formal parameters.  At a call site
 like \<x.compareTo(y)>, the two arguments are \<x> and \<y>.  It is
@@ -1014,6 +1014,10 @@ outer class.  The receiver is distinct from the object being constructed.
 In a method of a top-level class, the receiver is named \<this>.  In a
 constructor of an inner class, the receiver is named \<Outer.this> and the
 result is named \<this>.
+
+A method in an anonymous class has a receiver, but it is not possible to
+write the receiver in the formal parameter list because there is no name
+for the type of \<this>.
 
 
 \subsectionAndLabel{What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?}{faq-annotation-after-type}
@@ -1082,7 +1086,7 @@ applies to the element type. The annotation documents that the method takes an a
 
 \subsectionAndLabel{What is the meaning of a type qualifier at a class declaration?}{faq-type-qualifier-on-class-declaration}
 
-See Section~\ref{annotations-on-classes-and-constructors}.
+See Section~\ref{upper-bound-for-use}.
 
 
 \subsectionAndLabel{How are type qualifiers written on upper and lower bounds?}{faq-type-qualifier-on-bounds}
@@ -1128,9 +1132,8 @@ to require that the receiver has a certain property is to use a type
 annotation on the receiver of the method.  (Slightly more formally, the
 property being checked is compatibility between the annotation on the type
 of the formal parameter receiver and the annotation on the type of the
-actual receiver.)  If you do not know what ``receiver'' means, see the next
-question.
-
+actual receiver.)  If you do not know what ``receiver'' means, see
+Section~\ref{faq-receiver}.
 
 Another example of a type-and-declaration annotation that represents poor
 design is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As discussed
@@ -1385,7 +1388,7 @@ in special cases.
 
 A type system implementer can declaratively specify the type qualifier
 hierarchy (Section~\ref{creating-declarative-hierarchy}) and the type introduction rules
-(Section~\ref{creating-declarative-type-introduction}).  However, the Checker
+(Section~\ref{creating-type-introduction}).  However, the Checker
 Framework uses a procedural syntax for specifying type-checking
 rules (Section~\ref{creating-extending-visitor}).
 A declarative syntax might be more concise, more readable, and more
@@ -1757,4 +1760,4 @@ third-party tools.  The Checker Framework is one such tool.
 %%  LocalWords:  NoSuchElementException binarySearch subclasses faq awarns
 %%  LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
 %%  LocalWords:  IllegalFormatException typequals typedef runtime nullaway
-%%  LocalWords:  covariance InheritedAnnotation
+%%  LocalWords:  covariance InheritedAnnotation someMethod jml jsr

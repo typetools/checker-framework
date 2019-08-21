@@ -246,6 +246,33 @@ implementation cannot handle.  For instance, if the directory name contains
 FileNotFoundException and prints out the directory name with ``\<+>''
 replaced by blanks.
 
+\item
+The Checker Framework sometimes runs out of memory when processing very
+large Java files, or files with very large methods.
+
+If you get an error such as
+\begin{Verbatim}
+error: SourceChecker.typeProcess: unexpected Throwable (OutOfMemoryError) while processing ...; message: GC overhead limit exceeded
+\end{Verbatim}
+
+\noindent
+then either give the JVM more memory when running the Checker Framework, or
+split your files and methods into smaller ones, or both.
+
+\item
+\ahref{https://errorprone.info/}{Error Prone} uses the Checker Framework's
+dataflow analysis library.
+Unfortunately, Error Prone uses an old version of the library, so you
+cannot use both Error Prone and the current Checker Framework (because each
+one depends on a different version of the dataflow library).
+
+You can use an older version of the Checker Framework (the one that Error
+Prone is built on), or you can use a switch that causes your build to use either
+Error Prone or the Checker Framework, but not both.
+The
+\ahreforurl{https://github.com/kelloggm/checkerframework-gradle-plugin\#incompatibility-with-error-prone}{Gradle
+  plugin documentation} shows how to do the latter for Gradle.
+
 \end{itemize}
 
 
@@ -450,9 +477,7 @@ Object> only if that value is of the bottom type, since the bottom type is
 the only one that is a subtype of every subtype of \<T extends @MyQualifier
 Object>.  The value \<null> satisfies this for the Java type system, and it
 must be made to satisfy it for the pluggable type system as well.  The
-typical way to address this is to write the meta-annotation
-\<@ImplicitFor(literals={LiteralKind.NULL})> on the definition of the
-bottom type qualifier.
+typical way to address this is to call \<addStandardLiteralQualifiers> on the \<LiteralTreeAnnotator>.
 
 \item
 An error such as
@@ -731,7 +756,7 @@ Follow the instructions for your operating system.
 \item[Ubuntu]
   Run the following commands:
 
-% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdkany
+% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk8-plus
 \begin{Verbatim}
 sudo apt-get -qqy update
 sudo apt-get -qqy install ant cpp git gradle junit4 libcurl3-gnutls \
@@ -739,7 +764,6 @@ sudo apt-get -qqy install ant cpp git gradle junit4 libcurl3-gnutls \
  dia hevea latexmk librsvg2-bin maven python-pip \
  texlive-font-utils texlive-fonts-recommended \
  texlive-latex-base texlive-latex-extra texlive-latex-recommended
-
 \end{Verbatim}
 
 % Building Checker Framework from source on Mac OS
@@ -762,7 +786,7 @@ mkdir -p $HOME/Library/texmf/tex/latex
 cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
 \end{Verbatim}
 
-Note: If copy permission denied, try \<sudo>.
+Note: If copy permission is denied, try \<sudo>.
 
 Also set the \<JAVA\_HOME> environment variable in your \<.bashrc> file;
 for example,
@@ -828,7 +852,7 @@ the Checker Framework anyway.)
 \end{smaller}
 %END LATEX
 
-\item[Mac OSX 10.5 or later]
+\item[Mac OS X 10.5 or later]
   Add one of the following two commands in your \code{.bash\_profile} or
   \code{.profile} file according to the version of your JDK.
 \begin{Verbatim}
@@ -937,7 +961,7 @@ Run \code{make} in the \code{docs/manual} directory to build both the PDF and HT
 \subsectionAndLabel{Code style, IDE configuration, pull requests, etc.}{building-developer-manual}
 
 Please see the
-\href{../developer/developer-manual.html}{Checker Framework Developer Manual}.
+\href{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{Checker Framework Developer Manual}.
 
 
 \subsectionAndLabel{Enable Travis continuous integration builds}{building-travis}
@@ -980,8 +1004,8 @@ Install Docker on your local computer, then perform commands like the
 following to get a shell within Docker:
 
 \begin{Verbatim}
-docker pull mdernst/ubuntu-for-cf-jdk8
-docker run -it mdernst/ubuntu-for-cf-jdk8 /bin/bash
+docker pull mdernst/cf-ubuntu-jdk8
+docker run -it mdernst/cf-ubuntu-jdk8 /bin/bash
 \end{Verbatim}
 
 Then, you can run arbitrary commands, including those that appear in the
@@ -1193,4 +1217,4 @@ For details, see file
 %%  LocalWords:  Barros Athaydes Ren Oblak Heule Steph Trask Stalnaker
 %%  LocalWords:  toolset's typechecking LiteralKind reifiable plaintext
 %%  LocalWords:  astub homebrew hevea cloneAndBuildDependencies allTests
-%%  LocalWords:  compileJava travis typedefs LPAR Tunable OIGJ
+%%  LocalWords:  compileJava travis typedefs LPAR Tunable OIGJ sudo

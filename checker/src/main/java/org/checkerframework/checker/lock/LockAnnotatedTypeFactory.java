@@ -29,6 +29,7 @@ import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -80,30 +81,37 @@ public class LockAnnotatedTypeFactory
     /** dependent type annotation error message for when the expression is not effectively final. */
     public static final String NOT_EFFECTIVELY_FINAL = "lock expression is not effectively final";
 
-    /** Annotation constants. */
-    protected final AnnotationMirror LOCKHELD,
-            LOCKPOSSIBLYHELD,
-            SIDEEFFECTFREE,
-            GUARDEDBYUNKNOWN,
-            GUARDEDBY,
-            GUARDEDBYBOTTOM,
-            GUARDSATISFIED;
+    /** The @{@link LockHeld} annotation. */
+    protected final AnnotationMirror LOCKHELD =
+            AnnotationBuilder.fromClass(elements, LockHeld.class);
+    /** The @{@link LockPossiblyHeld} annotation. */
+    protected final AnnotationMirror LOCKPOSSIBLYHELD =
+            AnnotationBuilder.fromClass(elements, LockPossiblyHeld.class);
+    /** The @{@link SideEffectFree} annotation. */
+    protected final AnnotationMirror SIDEEFFECTFREE =
+            AnnotationBuilder.fromClass(elements, SideEffectFree.class);
+    /** The @{@link GuardedByUnknown} annotation. */
+    protected final AnnotationMirror GUARDEDBYUNKNOWN =
+            AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
+    /** The @{@link GuardedByBottom} annotation. */
+    protected final AnnotationMirror GUARDEDBY =
+            createGuardedByAnnotationMirror(new ArrayList<String>());
+    /** The @{@link GuardedByBottom} annotation. */
+    protected final AnnotationMirror GUARDEDBYBOTTOM =
+            AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
+    /** The @{@link GuardSatisfied} annotation. */
+    protected final AnnotationMirror GUARDSATISFIED =
+            AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
+    /** The net.jcip.annotations.GuardedBy annotation, or null if not on the classpath. */
     protected final Class<? extends Annotation> jcipGuardedBy;
 
+    /** The javax.annotation.concurrent.GuardedBy annotation, or null if not on the classpath. */
     protected final Class<? extends Annotation> javaxGuardedBy;
 
-    @SuppressWarnings("unchecked") // cast to generic type
+    /** Create a new LockAnnotatedTypeFactory. */
     public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
-
-        LOCKHELD = AnnotationBuilder.fromClass(elements, LockHeld.class);
-        LOCKPOSSIBLYHELD = AnnotationBuilder.fromClass(elements, LockPossiblyHeld.class);
-        SIDEEFFECTFREE = AnnotationBuilder.fromClass(elements, SideEffectFree.class);
-        GUARDEDBYUNKNOWN = AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
-        GUARDEDBY = createGuardedByAnnotationMirror(new ArrayList<String>());
-        GUARDEDBYBOTTOM = AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
-        GUARDSATISFIED = AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
         // This alias is only true for the Lock Checker. All other checkers must
         // ignore the @LockingFree annotation.
@@ -115,28 +123,27 @@ public class LockAnnotatedTypeFactory
         // so there is additional handling of this annotation in the Lock Checker.
         addAliasedDeclAnnotation(ReleasesNoLocks.class, SideEffectFree.class, SIDEEFFECTFREE);
 
-        Class<? extends Annotation> testLoad;
-        try {
-            testLoad =
-                    (Class<? extends Annotation>) Class.forName("net.jcip.annotations.GuardedBy");
+        jcipGuardedBy = classForNameOrNull("net.jcip.annotations.GuardedBy");
 
-        } catch (Exception e) {
-            // Ignore exceptions from Class.forName
-            testLoad = null;
-        }
-        jcipGuardedBy = testLoad;
-
-        try {
-            testLoad =
-                    (Class<? extends Annotation>)
-                            Class.forName("javax.annotation.concurrent.GuardedBy");
-        } catch (Exception e) {
-            // Ignore exceptions from Class.forName
-            testLoad = null;
-        }
-        javaxGuardedBy = testLoad;
+        javaxGuardedBy = classForNameOrNull("javax.annotation.concurrent.GuardedBy");
 
         postInit();
+    }
+
+    /**
+     * Returns the value of Class.forName, or null if Class.forName would throw an exception.
+     *
+     * @param an annotation's fully-qualified name
+     * @return an annotation class or null
+     */
+    @SuppressWarnings("unchecked") // cast to generic type
+    private Class<? extends Annotation> classForNameOrNull(
+            @FullyQualifiedName String annotationClassName) {
+        try {
+            return (Class<? extends Annotation>) Class.forName(annotationClassName);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
@@ -545,8 +552,9 @@ public class LockAnnotatedTypeFactory
     }
 
     /**
-     * Returns the index on the GuardSatisfied annotation in the given AnnotatedTypeMirror. Assumes
-     * atm is non-null and contains a GuardSatisfied annotation.
+     * Returns the index (that is, the {@code value} element) on the {@code @GuardSatisfied}
+     * annotation in the given AnnotatedTypeMirror. Assumes atm is non-null and contains a
+     * {@code @GuardSatisfied} annotation.
      *
      * @param atm AnnotatedTypeMirror containing a GuardSatisfied annotation
      * @return the index on the GuardSatisfied annotation
@@ -557,8 +565,8 @@ public class LockAnnotatedTypeFactory
     }
 
     /**
-     * Returns the index on the given GuardSatisfied annotation. Assumes am is non-null and is a
-     * GuardSatisfied annotation.
+     * Returns the index (that is, the {@code value} element) on the given {@code @GuardSatisfied}
+     * annotation. Assumes am is non-null and is a GuardSatisfied annotation.
      *
      * @param am AnnotationMirror for a GuardSatisfied annotation
      * @return the index on the GuardSatisfied annotation

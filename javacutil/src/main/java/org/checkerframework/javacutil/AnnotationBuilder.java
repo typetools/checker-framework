@@ -30,6 +30,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
@@ -120,10 +121,15 @@ public class AnnotationBuilder {
     /**
      * Creates an {@link AnnotationMirror} given by a particular annotation class. getElementValues
      * on the result returns an empty map. This may be in conflict with the annotation's definition,
-     * which might contain elements (annotation fields).
+     * which might contain elements (annotation fields). Use an AnnotationBuilder for annotations
+     * that contain elements.
      *
-     * <p>Most clients should use {@link #fromName}, using a Name created by the compiler. This is
-     * provided as a convenience to create an AnnotationMirror from scratch in a checker's code.
+     * <p>This method raises an user error if the annotation corresponding to the class could not be
+     * loaded.
+     *
+     * <p>Clients can use {@link #fromName} and check the result for null manually, if the error
+     * from this method is not desired. This method is provided as a convenience to create an
+     * AnnotationMirror from scratch in a checker's code.
      *
      * @param elements the element utilities to use
      * @param aClass the annotation class
@@ -131,19 +137,30 @@ public class AnnotationBuilder {
      */
     public static AnnotationMirror fromClass(
             Elements elements, Class<? extends Annotation> aClass) {
-        return fromName(elements, aClass.getCanonicalName());
+        AnnotationMirror res = fromName(elements, aClass.getCanonicalName());
+        if (res == null) {
+            throw new UserError(
+                    "AnnotationBuilder: error: fromClass can't load Class %s%n"
+                            + "ensure the class is on the compilation classpath",
+                    aClass.getCanonicalName());
+        }
+        return res;
     }
 
     /**
      * Creates an {@link AnnotationMirror} given by a particular fully-qualified name.
      * getElementValues on the result returns an empty map. This may be in conflict with the
-     * annotation's definition, which might contain elements (annotation fields).
+     * annotation's definition, which might contain elements (annotation fields). Use an
+     * AnnotationBuilder for annotations that contain elements.
+     *
+     * <p>This method returns null if the annotation corresponding to the name could not be loaded.
      *
      * @param elements the element utilities to use
      * @param name the name of the annotation to create
-     * @return an {@link AnnotationMirror} of type {@code} name
+     * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't
+     *     be loaded
      */
-    public static AnnotationMirror fromName(Elements elements, CharSequence name) {
+    public static @Nullable AnnotationMirror fromName(Elements elements, CharSequence name) {
         AnnotationMirror res = annotationsFromNames.get(name);
         if (res != null) {
             return res;

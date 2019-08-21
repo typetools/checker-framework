@@ -12,12 +12,14 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 
 /** Apply annotations to the use of a type parameter declaration. */
@@ -170,9 +172,13 @@ public class TypeVarUseApplier {
 
     private boolean isBaseComponent(
             final AnnotatedArrayType arrayType, final Attribute.TypeCompound anno) {
-        return ElementAnnotationUtil.getTypeAtLocation(arrayType, anno.getPosition().location)
-                .getClass()
-                .equals(AnnotatedTypeVariable.class);
+        try {
+            return ElementAnnotationUtil.getTypeAtLocation(arrayType, anno.getPosition().location)
+                            .getKind()
+                    == TypeKind.TYPEVAR;
+        } catch (UnexpectedAnnotationLocationException ex) {
+            return false;
+        }
     }
 
     /**

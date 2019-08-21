@@ -121,7 +121,7 @@ class ByteArrayInputStream extends InputStream {
      * @param   offset   the offset in the buffer of the first byte to read.
      * @param   length   the maximum number of bytes to read from the buffer.
      */
-    public ByteArrayInputStream(byte buf[], @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length) {
+    public ByteArrayInputStream(byte buf[], @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int length) {
         this.buf = buf;
         this.pos = offset;
         this.count = Math.min(offset + length, buf.length);
@@ -174,7 +174,7 @@ class ByteArrayInputStream extends InputStream {
      * <code>len</code> is negative, or <code>len</code> is greater than
      * <code>b.length - off</code>
      */
-    public synchronized @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) {
+    public synchronized @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) {
         if (b == null) {
             throw new NullPointerException();
         } else if (off < 0 || len < 0 || len > b.length - off) {
@@ -209,7 +209,7 @@ class ByteArrayInputStream extends InputStream {
      * @param   n   the number of bytes to be skipped.
      * @return  the actual number of bytes skipped.
      */
-    public synchronized long skip(long n) {
+    public synchronized @NonNegative long skip(long n) {
         long k = count - pos;
         if (n < k) {
             k = n < 0 ? 0 : n;

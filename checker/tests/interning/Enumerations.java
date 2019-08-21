@@ -23,4 +23,8 @@ public class Enumerations {
         StudentYear m = StudentYear.SOPHOMORE;
         return s == m;
     }
+
+    StudentYear cast(Object o) {
+        return (StudentYear) o;
+    }
 }
