@@ -66,14 +66,6 @@ Closed issues:
 
 ---------------------------------------------------------------------------
 
-Version 3.0.0-b1, May 1, 2019
-
-First release of artifacts suitable for Java 9--12.
-There is no checker artifact, because no replacement for the
-annotated JDK mechanism exists yet.
-
----------------------------------------------------------------------------
-
 Version 2.8.1, May 1, 2019
 
 Moved text about the Purity Checker into its own chapter in the manual.
