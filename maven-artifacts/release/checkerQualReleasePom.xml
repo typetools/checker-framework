@@ -13,7 +13,7 @@
         org.checkerframework:checker
     </description>
 
-    <groupId>io.github.eisop</groupId>
+    <groupId>org.checkerframework</groupId>
     <artifactId>checker-qual</artifactId>
 
     <licenses>
@@ -26,11 +26,11 @@
 
     <!-- The comments in the version number are used to do a text substitution. Don't remove them.
          See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->3.0.0-b2<!-- /checker-framework-version --></version>
+    <version><!-- checker-framework-version -->2.10.0<!-- /checker-framework-version --></version>
 
     <scm>
-        <url>https://github.com/eisop/checker-framework.git</url>
-        <connection>https://github.com/eisop/checker-framework.git</connection>
+        <url>https://github.com/typetools/checker-framework.git</url>
+        <connection>https://github.com/typetools/checker-framework.git</connection>
     </scm>
 
     <developers>
