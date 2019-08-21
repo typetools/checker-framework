@@ -1115,6 +1115,7 @@ public class FlowExpressions {
         }
     }
 
+    /** FlowExpression for array creations. {@code new String[]()}. */
     public static class ArrayCreation extends Receiver {
 
         /**
@@ -1218,7 +1219,7 @@ public class FlowExpressions {
             }
             if (!initializers.isEmpty()) {
                 boolean needComma = false;
-                sb.append(" = {");
+                sb.append(" {");
                 for (Receiver init : initializers) {
                     if (needComma) {
                         sb.append(", ");
