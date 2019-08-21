@@ -75,7 +75,7 @@ class FilterOutputStream extends OutputStream {
      * @param      b   the <code>byte</code>.
      * @exception  IOException  if an I/O error occurs.
      */
-    public void write(int b) throws IOException {
+    public void write(@PolySigned int b) throws IOException {
         out.write(b);
     }
 
