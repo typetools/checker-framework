@@ -81,6 +81,13 @@ public class TypeAnnotationUtils {
         return isSameTAPositionExceptTreePos(p1, p2) && p1.pos == p2.pos;
     }
 
+    /**
+     * Compare two TypeAnnotationPositions for equality, ignoring the source tree position.
+     *
+     * @param p1 the first position
+     * @param p2 the second position
+     * @return true, iff the two positions are equal except for the source tree position
+     */
     public static boolean isSameTAPositionExceptTreePos(
             TypeAnnotationPosition p1, TypeAnnotationPosition p2) {
         return p1.type == p2.type
@@ -281,58 +288,138 @@ public class TypeAnnotationUtils {
         }
     }
 
+    /**
+     * Create an unknown TypeAnnotationPosition.
+     *
+     * @return an unkown TypeAnnotationPosition
+     */
     public static TypeAnnotationPosition unknownTAPosition() {
         return TypeAnnotationPosition.unknown;
     }
 
+    /**
+     * Create a method return TypeAnnotationPosition.
+     *
+     * @param pos the source tree position
+     * @return a method return TypeAnnotationPosition
+     */
     public static TypeAnnotationPosition methodReturnTAPosition(final int pos) {
         return TypeAnnotationPosition.methodReturn(pos);
     }
 
+    /**
+     * Create a method receiver TypeAnnotationPosition.
+     *
+     * @param pos the source tree position
+     * @return a method receiver TypeAnnotationPosition
+     */
     public static TypeAnnotationPosition methodReceiverTAPosition(final int pos) {
         return TypeAnnotationPosition.methodReceiver(pos);
     }
 
+    /**
+     * Create a method parameter TypeAnnotationPosition.
+     *
+     * @param pidx the parameter index
+     * @param pos the source tree position
+     * @return a method parameter TypeAnnotationPosition
+     */
     public static TypeAnnotationPosition methodParameterTAPosition(final int pidx, final int pos) {
         return TypeAnnotationPosition.methodParameter(pidx, pos);
     }
 
+    /**
+     * Create a method throws TypeAnnotationPosition.
+     *
+     * @param tidx the throws index
+     * @param pos the source tree position
+     * @return a method throws TypeAnnotationPosition
+     */
     public static TypeAnnotationPosition methodThrowsTAPosition(final int tidx, final int pos) {
         return TypeAnnotationPosition.methodThrows(
                 TypeAnnotationPosition.emptyPath, null, tidx, pos);
     }
 
+    /**
+     * Create a field TypeAnnotationPosition.
+     *
+     * @param pos the source tree position
+     * @return a field TypeAnnotationPosition
+     */
     public static TypeAnnotationPosition fieldTAPosition(final int pos) {
         return TypeAnnotationPosition.field(pos);
     }
 
+    /**
+     * Create a class extends TypeAnnotationPosition.
+     *
+     * @param implidx the class extends index
+     * @param pos the source tree position
+     * @return a class extends TypeAnnotationPosition
+     */
     public static TypeAnnotationPosition classExtendsTAPosition(final int implidx, final int pos) {
         return TypeAnnotationPosition.classExtends(implidx, pos);
     }
 
+    /**
+     * Create a type parameter TypeAnnotationPosition.
+     *
+     * @param tpidx the type parameter index
+     * @param pos the source tree position
+     * @return a type parameter TypeAnnotationPosition
+     */
     public static TypeAnnotationPosition typeParameterTAPosition(final int tpidx, final int pos) {
         return TypeAnnotationPosition.typeParameter(
                 TypeAnnotationPosition.emptyPath, null, tpidx, pos);
     }
 
+    /**
+     * Create a method type parameter TypeAnnotationPosition.
+     *
+     * @param tpidx the method type parameter index
+     * @param pos the source tree position
+     * @return a method type parameter TypeAnnotationPosition
+     */
     public static TypeAnnotationPosition methodTypeParameterTAPosition(
             final int tpidx, final int pos) {
         return TypeAnnotationPosition.methodTypeParameter(
                 TypeAnnotationPosition.emptyPath, null, tpidx, pos);
     }
 
+    /**
+     * Create a type parameter bound TypeAnnotationPosition.
+     *
+     * @param tpidx the type parameter index
+     * @param bndidx the bound index
+     * @param pos the source tree position
+     * @return a method parameter TypeAnnotationPosition
+     */
     public static TypeAnnotationPosition typeParameterBoundTAPosition(
             final int tpidx, final int bndidx, final int pos) {
         return TypeAnnotationPosition.typeParameterBound(
                 TypeAnnotationPosition.emptyPath, null, tpidx, bndidx, pos);
     }
 
+    /**
+     * Create a method type parameter bound TypeAnnotationPosition.
+     *
+     * @param tpidx the type parameter index
+     * @param bndidx the bound index
+     * @param pos the source tree position
+     * @return a method parameter TypeAnnotationPosition
+     */
     public static TypeAnnotationPosition methodTypeParameterBoundTAPosition(
             final int tpidx, final int bndidx, final int pos) {
         return TypeAnnotationPosition.methodTypeParameterBound(
                 TypeAnnotationPosition.emptyPath, null, tpidx, bndidx, pos);
     }
 
+    /**
+     * Copy a TypeAnnotationPosition.
+     *
+     * @param tapos the input TypeAnnotationPosition
+     * @return a copied TypeAnnotationPosition
+     */
     public static TypeAnnotationPosition copyTAPosition(final TypeAnnotationPosition tapos) {
         TypeAnnotationPosition res;
         switch (tapos.type) {
@@ -455,6 +542,12 @@ public class TypeAnnotationUtils {
         return res;
     }
 
+    /**
+     * Remove type annotations from the given type.
+     *
+     * @param in the input type
+     * @return the same underlying type, but without type annotations.
+     */
     public static Type unannotatedType(final TypeMirror in) {
         final Type impl = (Type) in;
         if (impl.isPrimitive()) {
