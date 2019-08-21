@@ -7,7 +7,7 @@ export SHELLOPTS
 
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
   || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-eval `/tmp/plume-scripts/ci-info eisop`
+eval `/tmp/plume-scripts/ci-info typetools`
 
 export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
@@ -36,7 +36,7 @@ BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH} cf-master`
 if [ $BRANCH = "master" ] ; then
   # ${CI_ORGANIZATION} has a fork of Guava, but no branch that corresponds to the pull-requested branch.
   # Use upstream instead.
-  REPO=https://github.com/eisop/guava.git
+  REPO=https://github.com/typetools/guava.git
   BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH} cf-master`
   if [ $BRANCH = "master" ] ; then
     BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} cf-master master`
