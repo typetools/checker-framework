@@ -39,12 +39,14 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -197,34 +199,44 @@ public class DependentTypesHelper {
         }
 
         List<Receiver> argReceivers = new ArrayList<>();
-        boolean varargs = false;
+        boolean isVarargs = false;
         if (tree.getKind() == Kind.METHOD_INVOCATION) {
             ExecutableElement methodCalled = TreeUtils.elementFromUse((MethodInvocationTree) tree);
             if (methodCalled != null && methodCalled.isVarArgs()) {
-                varargs = true;
+                isVarargs = true;
                 for (int i = 0; i < methodCalled.getParameters().size() - 1; i++) {
                     argReceivers.add(FlowExpressions.internalReprOf(factory, args.get(i)));
                 }
-                List<Receiver> initializers = new ArrayList<>();
+                List<Receiver> varargArgs = new ArrayList<>();
                 for (int i = methodCalled.getParameters().size() - 1; i < args.size(); i++) {
-                    initializers.add(FlowExpressions.internalReprOf(factory, args.get(i)));
+                    varargArgs.add(FlowExpressions.internalReprOf(factory, args.get(i)));
                 }
                 Element varargsElement =
                         methodCalled.getParameters().get(methodCalled.getParameters().size() - 1);
                 TypeMirror tm = ElementUtils.getType(varargsElement);
-                if (initializers.size() == 1
-                        && initializers.get(0).getType().toString().equals(tm.toString())) {
-                    // an array was passed
-                    argReceivers.add(initializers.get(0));
-                } else {
+                boolean passedArray = false;
+                if (methodCalled.getParameters().size() == args.size()) {
+                    AnnotatedTypeMirror lastArg =
+                            factory.getAnnotatedType(args.get(args.size() - 1));
+                    List<AnnotatedTypeMirror> argTypes = typeFromUse.getParameterTypes();
+                    AnnotatedArrayType varargsArg =
+                            (AnnotatedArrayType) argTypes.get(argTypes.size() - 1);
+                    if (lastArg.getKind() == TypeKind.ARRAY
+                            && AnnotatedTypes.getArrayDepth(varargsArg)
+                                    == AnnotatedTypes.getArrayDepth((AnnotatedArrayType) lastArg)) {
+                        argReceivers.add(varargArgs.get(0));
+                        passedArray = true;
+                    }
+                }
+                if (!passedArray) {
                     argReceivers.add(
                             new FlowExpressions.ArrayCreation(
-                                    tm, Collections.emptyList(), initializers));
+                                    tm, Collections.emptyList(), varargArgs));
                 }
             }
         }
 
-        if (!varargs) {
+        if (!isVarargs) {
             for (ExpressionTree argTree : args) {
                 argReceivers.add(FlowExpressions.internalReprOf(factory, argTree));
             }
