@@ -287,7 +287,7 @@ class FileOutputStream extends OutputStream
      * @param      b   the byte to be written.
      * @exception  IOException  if an I/O error occurs.
      */
-    public void write(int b) throws IOException {
+    public void write(@PolySigned int b) throws IOException {
         write(b, append);
     }
 

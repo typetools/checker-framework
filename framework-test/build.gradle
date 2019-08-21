@@ -11,4 +11,4 @@ dependencies {
     tagletCompile configurations.toolsJar
 }
 
-jar.baseName = 'framework-test'
+jar.archiveBaseName = 'framework-test'

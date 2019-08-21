@@ -11,11 +11,6 @@ plugins {
     id "net.ltgt.errorprone-base" version "0.0.13"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '3.1.1' apply false
-
-    // To update version numbers of dependencies in this file, run: ./gradlew useLatestVersions
-    // (Not necessary if using dependabot to update dependencies.)
-    id 'se.patrikerdes.use-latest-versions' version '0.2.12'
-    id 'com.github.ben-manes.versions' version '0.21.0'
 }
 apply plugin: "de.undercouch.download"
 
@@ -460,16 +455,16 @@ subprojects {
         // Create a sourcesJar task for each subproject
         tasks.create(name: 'sourcesJar', type: Jar) {
             description 'Creates sources jar.'
-            classifier = 'source'
-            baseName = jar.baseName
+            archiveClassifier = 'source'
+            archiveBaseName = jar.archiveBaseName
             from sourceSets.main.java
         }
 
         // Create a javadocJar task for each subproject
         tasks.create(name: 'javadocJar', type: Jar, dependsOn: 'javadoc') {
             description 'Creates javadoc jar.'
-            classifier = 'javadoc'
-            baseName = jar.baseName
+            archiveClassifier = 'javadoc'
+            archiveBaseName = jar.archiveBaseName
             from tasks.javadoc.destinationDir
         }
 
@@ -479,7 +474,7 @@ subprojects {
             manifest {
                 attributes("Implementation-Version": "${version}")
                 attributes("Implementation-URL": "https://checkerframework.org")
-		if (archiveName != "checker-source.jar") {
+		if (archiveFileName != "checker-source.jar") {
                     attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
                 }
             }
@@ -514,7 +509,7 @@ subprojects {
                                 '-samevm',
                                 // Required for checker/jtreg/nullness/PersistUtil.java and other tests
                                 "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}:" +
-                                        "${tasks.shadowJar.archivePath}:${sourceSets.test.output.asPath}",
+                                        "${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
                                 "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                         ]
                         if (project.name.is('checker')) {

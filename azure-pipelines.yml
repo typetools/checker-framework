@@ -2,7 +2,7 @@ jobs:
 - job: all_tests_jdk8
   pool:
     vmImage: 'ubuntu-16.04'
-  container: mdernst/ubuntu-for-cf-jdk8:latest
+  container: mdernst/cf-ubuntu-jdk8:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -11,7 +11,7 @@ jobs:
 - job: jdk_jar_jdk8
   pool:
     vmImage: 'ubuntu-16.04'
-  container: mdernst/ubuntu-for-cf-jdk8:latest
+  container: mdernst/cf-ubuntu-jdk8:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -20,7 +20,7 @@ jobs:
 - job: misc_jdk8
   pool:
     vmImage: 'ubuntu-16.04'
-  container: mdernst/ubuntu-for-cf-jdkany:latest
+  container: mdernst/cf-ubuntu-jdk8-plus:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -29,7 +29,7 @@ jobs:
 - job: cf_inference_jdk8
   pool:
     vmImage: 'ubuntu-16.04'
-  container: mdernst/ubuntu-for-cf-jdk8:latest
+  container: mdernst/cf-ubuntu-jdk8:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -38,7 +38,7 @@ jobs:
 - job: plume_lib_jdk8
   pool:
     vmImage: 'ubuntu-16.04'
-  container: mdernst/ubuntu-for-cf-jdk8:latest
+  container: mdernst/cf-ubuntu-jdk8:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -47,14 +47,9 @@ jobs:
 - job: downstream_jdk8
   pool:
     vmImage: 'ubuntu-16.04'
-  container: mdernst/ubuntu-for-cf-jdk8:latest
+  container: mdernst/cf-ubuntu-jdk8:latest
   steps:
   - checkout: self
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-downstream.sh
     displayName: test-downstream.sh
-
-trigger:
-  batch: true
-
-## The only downstream job is daikon-typecheck

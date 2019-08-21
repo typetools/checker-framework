@@ -31,6 +31,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -192,30 +193,36 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V otherVal = e.getValue();
 
                 // case 3:
-                List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
-                        atypeFactory.getAnnotationWithMetaAnnotation(
-                                fieldAccess.getField(), MonotonicQualifier.class);
-                V newOtherVal = null;
-                for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
-                    AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
-                    Name annotation =
-                            AnnotationUtils.getElementValueClassName(
-                                    monotonicAnnotation, "value", false);
-                    AnnotationMirror target =
-                            AnnotationBuilder.fromName(atypeFactory.getElementUtils(), annotation);
-                    // Make sure the 'target' annotation is present.
-                    if (AnnotationUtils.containsSame(otherVal.getAnnotations(), target)) {
-                        newOtherVal =
-                                analysis.createSingleAnnotationValue(
-                                                target, otherVal.getUnderlyingType())
-                                        .mostSpecific(newOtherVal, null);
+                if (!((GenericAnnotatedTypeFactory) atypeFactory)
+                        .getSupportedMonotonicTypeQualifiers()
+                        .isEmpty()) {
+                    List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
+                            atypeFactory.getAnnotationWithMetaAnnotation(
+                                    fieldAccess.getField(), MonotonicQualifier.class);
+                    V newOtherVal = null;
+                    for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation :
+                            fieldAnnotations) {
+                        AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
+                        Name annotation =
+                                AnnotationUtils.getElementValueClassName(
+                                        monotonicAnnotation, "value", false);
+                        AnnotationMirror target =
+                                AnnotationBuilder.fromName(
+                                        atypeFactory.getElementUtils(), annotation);
+                        // Make sure the 'target' annotation is present.
+                        if (AnnotationUtils.containsSame(otherVal.getAnnotations(), target)) {
+                            newOtherVal =
+                                    analysis.createSingleAnnotationValue(
+                                                    target, otherVal.getUnderlyingType())
+                                            .mostSpecific(newOtherVal, null);
+                        }
                     }
-                }
-                if (newOtherVal != null) {
-                    // keep information for all hierarchies where we had a
-                    // monotone annotation.
-                    newFieldValues.put(fieldAccess, newOtherVal);
-                    continue;
+                    if (newOtherVal != null) {
+                        // keep information for all hierarchies where we had a
+                        // monotone annotation.
+                        newFieldValues.put(fieldAccess, newOtherVal);
+                        continue;
+                    }
                 }
 
                 // case 2:
@@ -399,6 +406,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *     true.
      */
     protected boolean isMonotonicUpdate(FieldAccess fieldAcc, V value) {
+        if (analysis.atypeFactory.getSupportedMonotonicTypeQualifiers().isEmpty()) {
+            return false;
+        }
         boolean isMonotonic = false;
         // TODO: This check for !sequentialSemantics is an optimization that breaks the contract of
         // the method, since the method name and documentation say nothing about sequential
