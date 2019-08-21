@@ -92,7 +92,7 @@ SONATYPE_DROPPING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-
 USER = pwd.getpwuid(os.geteuid())[0]
 
 # Per-user directory for the temporary files created by the release process
-TMP_DIR = "/tmp/" + USER + "/jsr308-release"
+TMP_DIR = "/scratch/" + USER + "/jsr308-release"
 
 # Location this and other release scripts are contained in
 SCRIPTS_DIR = TMP_DIR + "/checker-framework/docs/developer/release"
@@ -113,8 +113,8 @@ INTERM_CHECKER_REPO = os.path.join(INTERM_REPO_ROOT, "checker-framework")
 INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 
 # The central repositories for Checker Framework related projects
-LIVE_ANNO_REPO = "git@github.com:eisop/annotation-tools.git"
-LIVE_CHECKER_REPO = "git@github.com:eisop/checker-framework.git"
+LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
+LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
 LIVE_PLUME_SCRIPTS = "https://github.com/plume-lib/plume-scripts"
 LIVE_CHECKLINK = "https://github.com/plume-lib/checklink"
 LIVE_PLUME_BIB = "https://github.com/mernst/plume-bib"
@@ -161,16 +161,6 @@ DATAFLOW_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+".jar")
 DATAFLOW_SOURCE_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-source.jar")
 DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-javadoc.jar")
 
-FRAMEWORK_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework", "build", "libs")
-FRAMEWORK_BINARY = os.path.join(FRAMEWORK_DIST_DIR, "framework-"+CF_VERSION+".jar")
-FRAMEWORK_SOURCE_JAR = os.path.join(FRAMEWORK_DIST_DIR, "framework-"+CF_VERSION+"-source.jar")
-FRAMEWORK_JAVADOC_JAR = os.path.join(FRAMEWORK_DIST_DIR, "framework-"+CF_VERSION+"-javadoc.jar")
-
-FRAMEWORKALL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework", "dist")
-FRAMEWORKALL_BINARY = os.path.join(FRAMEWORKALL_DIST_DIR, "framework.jar")
-FRAMEWORKALL_SOURCE_JAR = os.path.join(FRAMEWORKALL_DIST_DIR, "framework-source.jar")
-FRAMEWORKALL_JAVADOC_JAR = os.path.join(FRAMEWORKALL_DIST_DIR, "framework-javadoc.jar")
-
 FRAMEWORKTEST_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework-test", "build", "libs")
 FRAMEWORKTEST_BINARY = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+".jar")
 FRAMEWORKTEST_SOURCE_JAR = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+"-source.jar")
@@ -209,8 +199,6 @@ CHECKER_QUAL_ANDROID_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualA
 JDK8_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml')
 JAVACUTIL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml')
 DATAFLOW_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowReleasePom.xml')
-FRAMEWORK_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'frameworkReleasePom.xml')
-FRAMEWORKALL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'frameworkAllReleasePom.xml')
 FRAMEWORKTEST_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'frameworktestReleasePom.xml')
 
 BUILD_REPOS = (CHECKER_FRAMEWORK, ANNO_TOOLS)
