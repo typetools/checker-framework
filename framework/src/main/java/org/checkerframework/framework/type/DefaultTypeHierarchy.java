@@ -1,7 +1,6 @@
 package org.checkerframework.framework.type;
 
 import java.util.List;
-import java.util.Optional;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -351,9 +350,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             throw new BugInCF(
                     "Expected a wildcard or captured type variable, but found " + outside);
         }
-        Optional<Boolean> previousResult = typeargVisitHistory.result(inside, outside, currentTop);
-        if (previousResult.isPresent()) {
-            return previousResult.get();
+        Boolean previousResult = typeargVisitHistory.result(inside, outside, currentTop);
+        if (previousResult != null) {
+            return previousResult;
         }
 
         typeargVisitHistory.add(inside, outside, currentTop, true);

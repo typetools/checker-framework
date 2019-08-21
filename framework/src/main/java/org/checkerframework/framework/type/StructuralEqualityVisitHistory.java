@@ -1,7 +1,7 @@
 package org.checkerframework.framework.type;
 
-import java.util.Optional;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** Stores the result of {@link StructuralEqualityComparer} for type arguments. */
 public class StructuralEqualityVisitHistory {
@@ -40,18 +40,18 @@ public class StructuralEqualityVisitHistory {
     }
 
     /**
-     * Return whether or not the two types are structural equal for the given hierarchy or an empty
-     * Optional if no result exists for the types.
+     * Return whether or not the two types are structural equal for the given hierarchy or {@code
+     * null} if no result exists for the types.
      */
-    public Optional<Boolean> result(
+    public @Nullable Boolean result(
             final AnnotatedTypeMirror type1,
             final AnnotatedTypeMirror type2,
             AnnotationMirror hierarchy) {
         if (falseHistory.contains(type1, type2, hierarchy)) {
-            return Optional.of(false);
+            return false;
         } else if (trueHistory.contains(type1, type2, hierarchy)) {
-            return Optional.of(true);
+            return true;
         }
-        return Optional.empty();
+        return null;
     }
 }
