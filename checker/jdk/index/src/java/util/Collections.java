@@ -3349,22 +3349,25 @@ public class Collections {
      * @return an immutable list containing only the specified object.
      * @since 1.3
      */
-    //@SuppressWarnings("return.type.incompatible") // #1: returns a list containing only the specified object o, hence @MinLen(1)
-    public static <T> @MinLen(1) List<T> singletonList(T o) {
-        return new SingletonList<>(o); // #1
+    public static <T> @ArrayLen(1) List<T> singletonList(T o) {
+        return new SingletonList<>(o);
     }
 
     /**
      * @serial include
      */
-    private static @MinLen(1) class SingletonList<E>
+    private static @ArrayLen(1) class SingletonList<E>
         extends AbstractList<E>
         implements RandomAccess, Serializable {
 
         private static final long serialVersionUID = 3093736618740652951L;
 
         private final E element;
-
+        @SuppressWarnings({"inconsistent.constructor.type", "super.invocation.invalid"}) /*
+        element = obj ensures that SingleTonList is @ArrayLen(1), the checker cannot statically verify @ArrayLen(1) here
+        Regarding super.invocation.invalid, this constructor has an object in the argument whlile super class AbstractList's constructor AbstractList() doesn't have any argument.
+        So, this constructor isn't related to the super class' constructor.
+        */
         SingletonList(E obj)                {element = obj;}
 
         public Iterator<E> iterator() {
