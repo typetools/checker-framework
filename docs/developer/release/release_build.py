@@ -174,7 +174,7 @@ def build_annotation_tools_release(version, afu_interm_dir):
     execute(ant_cmd)
 
     # Deploy to intermediate site
-    gradle_cmd = "./gradlew releaseBuild -Pafu.version=%s -Pdeploy-dir=%s" % (, version, afu_interm_dir)
+    gradle_cmd = "./gradlew releaseBuild -Pafu.version=%s -Pdeploy-dir=%s" % (version, afu_interm_dir)
     execute(gradle_cmd, True, False, ANNO_FILE_UTILITIES)
 
     update_project_dev_website("annotation-file-utilities", version)
@@ -203,7 +203,7 @@ def build_checker_framework_release(version, old_cf_version, afu_version, afu_re
     execute("mvn package -Dmaven.test.skip=true", True, False, STUBPARSER)
 
     # build annotation-tools
-    execute("ant -e compile", True, False, ANNO_TOOLS)
+    execute("./gradlew assemble -Prelease-true", True, False, ANNO_TOOLS)
 
     # update versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
