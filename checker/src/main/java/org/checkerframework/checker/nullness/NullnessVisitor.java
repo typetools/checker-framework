@@ -48,7 +48,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -96,12 +95,7 @@ public class NullnessVisitor
         this.collectionSize =
                 TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
         this.collectionToArray =
-                // TODO: see why special-casing is necessary
-                PluginUtil.getJreVersion() == 8
-                        ? TreeUtils.getMethod(
-                                java.util.Collection.class.getName(), "toArray", 1, env)
-                        : TreeUtils.getMethod(
-                                java.util.Collection.class.getName(), "toArray", env, "T[]");
+                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", env, "T[]");
     }
 
     @Override
