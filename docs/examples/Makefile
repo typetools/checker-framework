@@ -10,7 +10,6 @@ compile:
 	cd subtyping-extension && $(MAKE)
 	cd units-extension && $(MAKE)
 	cd MavenExample && $(MAKE)
-	cd MavenExample-framework-all && $(MAKE)
 	cd lombok && $(MAKE)
 
 # TODO: type check the different files with the right checker;
