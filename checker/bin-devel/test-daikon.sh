@@ -21,4 +21,6 @@ REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} codespecs daikon`
 BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
 (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
 
-(cd ../daikon && make -C java typecheck)
+cd ../daikon
+make compile
+make -C java typecheck
