@@ -203,7 +203,7 @@ def build_checker_framework_release(version, old_cf_version, afu_version, afu_re
     execute("mvn package -Dmaven.test.skip=true", True, False, STUBPARSER)
 
     # build annotation-tools
-    execute("./gradlew assemble -Prelease-true", True, False, ANNO_TOOLS)
+    execute("./gradlew assemble -Prelease=true", True, False, ANNO_FILE_UTILITIES)
 
     # update versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
