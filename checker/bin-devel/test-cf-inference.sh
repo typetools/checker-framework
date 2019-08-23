@@ -26,5 +26,4 @@ BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
 
 export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
 export PATH=$AFU/scripts:$PATH
-(cd ../checker-framework-inference && ./.travis-build-without-test.sh)
-(cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all --no-daemon)
+(cd ../checker-framework-inference && ./.travis-build.sh)
