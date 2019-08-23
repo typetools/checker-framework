@@ -34,6 +34,6 @@ import org.checkerframework.framework.qual.TypeKind;
             java.lang.Short.class,
             java.lang.Integer.class,
             java.lang.Character.class,
-            java.lang.Long.class,
+            java.lang.Long.class
         })
 public @interface Signed {}

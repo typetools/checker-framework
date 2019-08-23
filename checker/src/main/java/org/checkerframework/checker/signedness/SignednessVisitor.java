@@ -1,5 +1,6 @@
 package org.checkerframework.checker.signedness;
 
+import com.sun.source.tree.*;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;

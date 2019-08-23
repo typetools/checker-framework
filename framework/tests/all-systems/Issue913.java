@@ -3,6 +3,9 @@
 
 class Issue913 {
     void test(Ordering<Object> o) {
+        // Object whose signedness is unknown is assigned to a MultiMap which consists of Signed
+        // Long
+        @SuppressWarnings("signedness")
         Multimap<Long> newMap = create(o);
     }
 

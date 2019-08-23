@@ -1,11 +1,13 @@
 package org.checkerframework.checker.signedness;
 
+import com.sun.source.tree.*;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.*;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -58,6 +60,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final String JAVA_LANG_CHAR = "java.lang.Character";
     private final String JAVA_LANG_INTEGER = "java.lang.Integer";
     private final String JAVA_LANG_LONG = "java.lang.Long";
+    private final String JAVA_LANG_NUMBER = "java.lang.Number";
+    private final String JAVA_LANG_OBJECT = "java.lang.Object";
+    private final String JAVA_LANG_COMPARABLE = "java.lang.Comparable";
 
     ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
 
