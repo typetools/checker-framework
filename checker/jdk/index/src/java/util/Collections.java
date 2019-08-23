@@ -3363,6 +3363,7 @@ public class Collections {
         private static final long serialVersionUID = 3093736618740652951L;
 
         private final E element;
+
         @SuppressWarnings({"inconsistent.constructor.type", // element = obj ensures that SingleTonList is @ArrayLen(1), the checker cannot statically verify @ArrayLen(1) here
         "super.invocation.invalid" // this constructor has an object in the argument whlile super class AbstractList's constructor AbstractList() doesn't have any argument. So, this constructor isn't related to the super class' constructor.
         })
