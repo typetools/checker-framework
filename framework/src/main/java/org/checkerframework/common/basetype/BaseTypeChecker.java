@@ -174,7 +174,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
         }
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers = new LinkedHashSet<>();
-        if (hasOption("checkPurityAnnotations")) {
+        if (processingEnv.getOptions().containsKey("checkPurityAnnotations")) {
             checkers.add(PurityChecker.class);
         }
         return checkers;
