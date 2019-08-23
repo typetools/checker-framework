@@ -197,27 +197,25 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         Range treeRange =
                                 ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
                         if (treeRange != null) {
-                            if (javaTypeKind == TypeKind.DECLARED) {
-                                if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_BYTE)
-                                        || TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_CHAR)) {
-                                    if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
+                            if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_BYTE)
+                                    || TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_CHAR)) {
+                                if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
                                 }
-                                if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_SHORT)) {
-                                    if (treeRange.isWithin(0, Short.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
+                            }
+                            if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_SHORT)) {
+                                if (treeRange.isWithin(0, Short.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
                                 }
-                                if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_INTEGER)) {
-                                    if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
+                            }
+                            if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_INTEGER)) {
+                                if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
                                 }
-                                if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_LONG)) {
-                                    if (treeRange.isWithin(0, Long.MAX_VALUE)) {
-                                        type.replaceAnnotation(SIGNEDNESS_GLB);
-                                    }
+                            }
+                            if (TypesUtils.isDeclaredOfName(javaType, JAVA_LANG_LONG)) {
+                                if (treeRange.isWithin(0, Long.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
                                 }
                             }
                         }
