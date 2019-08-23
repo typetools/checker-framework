@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2012, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -24,8 +24,6 @@
  */
 
 package java.util;
-import org.checkerframework.checker.index.qual.*;
-import org.checkerframework.common.value.qual.IntRange;
 
 import java.nio.file.Path;
 import java.nio.file.Files;
@@ -39,6 +37,8 @@ import java.text.*;
 import java.util.Locale;
 
 import sun.misc.LRUCache;
+
+import org.checkerframework.checker.signedness.qual.PolySigned;
 
 /**
  * A simple text scanner which can parse primitive types and strings using
@@ -153,7 +153,8 @@ import sun.misc.LRUCache;
  * <p> An instance of this class is capable of scanning numbers in the standard
  * formats as well as in the formats of the scanner's locale. A scanner's
  * <a name="initial-locale">initial locale </a>is the value returned by the {@link
- * java.util.Locale#getDefault} method; it may be changed via the {@link
+ * java.util.Locale#getDefault(Locale.Category)
+ * Locale.getDefault(Locale.Category.FORMAT)} method; it may be changed via the {@link
  * #useLocale} method. The {@link #reset} method will reset the value of the
  * scanner's locale to the initial locale regardless of whether it was
  * previously changed.
@@ -398,10 +399,10 @@ public final class Scanner implements Iterator<String>, Closeable {
     private boolean closed = false;
 
     // The current radix used by this scanner
-    private @Positive int radix = 10;
+    private int radix = 10;
 
     // The default radix for this scanner
-    private @IntRange(from = 2, to = 36) int defaultRadix = 10;
+    private int defaultRadix = 10;
 
     // The locale used by this scanner
     private Locale locale = null;
@@ -570,9 +571,8 @@ public final class Scanner implements Iterator<String>, Closeable {
      * Constructs a <code>Scanner</code> that returns values scanned
      * from the specified source delimited by the specified pattern.
      *
-     * @param  source A character source implementing the Readable interface
+     * @param source A character source implementing the Readable interface
      * @param pattern A delimiting pattern
-     * @return A scanner with the specified source and pattern
      */
     private Scanner(Readable source, Pattern pattern) {
         assert source != null : "source should not be null";
@@ -1272,7 +1272,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      *
      * @return the default radix of this scanner
      */
-    public @Positive int radix() {
+    public int radix() {
         return this.defaultRadix;
     }
 
@@ -1294,7 +1294,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @return this scanner
      * @throws IllegalArgumentException if radix is out of range
      */
-    public Scanner useRadix(@IntRange(from = 2, to = 36) int radix) {
+    public Scanner useRadix(int radix) {
         if ((radix < Character.MIN_RADIX) || (radix > Character.MAX_RADIX))
             throw new IllegalArgumentException("radix:"+radix);
 
@@ -1308,7 +1308,7 @@ public final class Scanner implements Iterator<String>, Closeable {
 
     // The next operation should occur in the specified radix but
     // the default is left untouched.
-    private void setRadix(@Positive int radix) {
+    private void setRadix(int radix) {
         if (this.radix != radix) {
             // Force rebuilding and recompilation of radix dependent patterns
             integerPattern = null;
@@ -1677,7 +1677,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws IllegalStateException if this scanner is closed
      * @throws IllegalArgumentException if horizon is negative
      */
-    public String findWithinHorizon(String pattern, @NonNegative int horizon) {
+    public String findWithinHorizon(String pattern, int horizon) {
         return findWithinHorizon(patternCache.forName(pattern), horizon);
     }
 
@@ -1711,7 +1711,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws IllegalStateException if this scanner is closed
      * @throws IllegalArgumentException if horizon is negative
      */
-    public String findWithinHorizon(Pattern pattern, @NonNegative int horizon) {
+    public String findWithinHorizon(Pattern pattern, int horizon) {
         ensureOpen();
         if (pattern == null)
             throw new NullPointerException();
@@ -1850,7 +1850,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      *         byte value
      * @throws IllegalStateException if this scanner is closed
      */
-    public boolean hasNextByte(@Positive int radix) {
+    public boolean hasNextByte(int radix) {
         setRadix(radix);
         boolean result = hasNext(integerPattern());
         if (result) { // Cache it
@@ -1881,7 +1881,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws NoSuchElementException if input is exhausted
      * @throws IllegalStateException if this scanner is closed
      */
-    public byte nextByte() {
+    public @PolySigned byte nextByte() {
          return nextByte(defaultRadix);
     }
 
@@ -1911,7 +1911,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws NoSuchElementException if input is exhausted
      * @throws IllegalStateException if this scanner is closed
      */
-    public byte nextByte(@Positive int radix) {
+    public @PolySigned byte nextByte(int radix) {
         // Check cached result
         if ((typeCache != null) && (typeCache instanceof Byte)
             && this.radix == radix) {
@@ -1956,7 +1956,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      *         short value in the specified radix
      * @throws IllegalStateException if this scanner is closed
      */
-    public boolean hasNextShort(@Positive int radix) {
+    public boolean hasNextShort(int radix) {
         setRadix(radix);
         boolean result = hasNext(integerPattern());
         if (result) { // Cache it
@@ -1987,7 +1987,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws NoSuchElementException if input is exhausted
      * @throws IllegalStateException if this scanner is closed
      */
-    public short nextShort() {
+    public @PolySigned short nextShort() {
         return nextShort(defaultRadix);
     }
 
@@ -2017,7 +2017,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws NoSuchElementException if input is exhausted
      * @throws IllegalStateException if this scanner is closed
      */
-    public short nextShort(@Positive int radix) {
+    public @PolySigned short nextShort(int radix) {
         // Check cached result
         if ((typeCache != null) && (typeCache instanceof Short)
             && this.radix == radix) {
@@ -2062,7 +2062,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      *         int value
      * @throws IllegalStateException if this scanner is closed
      */
-    public boolean hasNextInt(@Positive int radix) {
+    public boolean hasNextInt(int radix) {
         setRadix(radix);
         boolean result = hasNext(integerPattern());
         if (result) { // Cache it
@@ -2117,7 +2117,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws NoSuchElementException if input is exhausted
      * @throws IllegalStateException if this scanner is closed
      */
-    public int nextInt() {
+    public @PolySigned int nextInt() {
         return nextInt(defaultRadix);
     }
 
@@ -2147,7 +2147,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws NoSuchElementException if input is exhausted
      * @throws IllegalStateException if this scanner is closed
      */
-    public int nextInt(@Positive int radix) {
+    public @PolySigned int nextInt(int radix) {
         // Check cached result
         if ((typeCache != null) && (typeCache instanceof Integer)
             && this.radix == radix) {
@@ -2192,7 +2192,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      *         long value
      * @throws IllegalStateException if this scanner is closed
      */
-    public boolean hasNextLong(@Positive int radix) {
+    public boolean hasNextLong(int radix) {
         setRadix(radix);
         boolean result = hasNext(integerPattern());
         if (result) { // Cache it
@@ -2223,7 +2223,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws NoSuchElementException if input is exhausted
      * @throws IllegalStateException if this scanner is closed
      */
-    public long nextLong() {
+    public @PolySigned long nextLong() {
         return nextLong(defaultRadix);
     }
 
@@ -2253,7 +2253,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws NoSuchElementException if input is exhausted
      * @throws IllegalStateException if this scanner is closed
      */
-    public long nextLong(@Positive int radix) {
+    public @PolySigned long nextLong(int radix) {
         // Check cached result
         if ((typeCache != null) && (typeCache instanceof Long)
             && this.radix == radix) {
@@ -2489,7 +2489,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      *         <code>BigInteger</code>
      * @throws IllegalStateException if this scanner is closed
      */
-    public boolean hasNextBigInteger(@IntRange(from = 2, to = 36) int radix) {
+    public boolean hasNextBigInteger(int radix) {
         setRadix(radix);
         boolean result = hasNext(integerPattern());
         if (result) { // Cache it
@@ -2546,7 +2546,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws NoSuchElementException if the input is exhausted
      * @throws IllegalStateException if this scanner is closed
      */
-    public BigInteger nextBigInteger(@IntRange(from = 2, to = 36) int radix) {
+    public BigInteger nextBigInteger(int radix) {
         // Check cached result
         if ((typeCache != null) && (typeCache instanceof BigInteger)
             && this.radix == radix) {
@@ -2644,7 +2644,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      *
      * <blockquote><pre>
      *   scanner.useDelimiter("\\p{javaWhitespace}+")
-     *          .useLocale(Locale.getDefault())
+     *          .useLocale(Locale.getDefault(Locale.Category.FORMAT))
      *          .useRadix(10);
      * </pre></blockquote>
      *

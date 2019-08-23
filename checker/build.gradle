@@ -4,7 +4,7 @@ ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = '91fd565e932597a8036a2d747f463956f0045d3e'
+    jdkShaHash = 'e73861d446fda62cbabacad73106541f151bd9bb'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -194,9 +194,9 @@ shadowJar {
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
 artifacts {
-    // Don't add this here or else the Javadoc is built during the assemble task.
+    // Don't add this here or else the Javadoc and the sources jar is built during the assemble task.
     // archives allJavadocJar
-    archives allSourcesJar
+    // archives allSourcesJar
     archives shadowJar
 }
 
