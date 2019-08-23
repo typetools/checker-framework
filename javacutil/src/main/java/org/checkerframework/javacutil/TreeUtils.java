@@ -958,7 +958,7 @@ public final class TreeUtils {
                 List<? extends VariableElement> params = exec.getParameters();
                 for (int i = 0; i < paramTypes.length; i++) {
                     VariableElement ve = params.get(i);
-                    TypeMirror tm = ve.asType();
+                    TypeMirror tm = TypeAnnotationUtils.unannotatedType(ve.asType());
                     if (!tm.toString().equals(paramTypes[i])) {
                         typesMatch = false;
                         break;
@@ -975,7 +975,8 @@ public final class TreeUtils {
                         + "."
                         + methodName
                         + "("
-                        + Arrays.toString(paramTypes));
+                        + Arrays.toString(paramTypes)
+                        + ")");
     }
 
     /**
