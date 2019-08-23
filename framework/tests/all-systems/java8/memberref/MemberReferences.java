@@ -175,8 +175,7 @@ class TopLevelWithArg<T> {
 
 class ArrayType {
     void context() {
-        // TODO: Signedness Checker does not default boxed primitives correctly.
-        // See Issue #797: https://github.com/typetools/checker-framework/issues/797
+
         FunctionMR<Integer, String[]> string = String[]::new;
         FunctionMR<String[], String[]> clone = String[]::clone;
         FunctionMR<String[], String> toString = String[]::toString;
