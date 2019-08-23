@@ -49,7 +49,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
                             atypeFactory,
                             checker.hasOption("assumeSideEffectFree"));
             if (!r.isPure(kinds)) {
-                reportPurityErrors(r, node, kinds);
+                reportPurityErrors(r, kinds);
             }
 
             // Issue a warning if the method is pure, but not annotated
@@ -70,7 +70,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
                         checker.report(
                                 Result.warning("purity.more.deterministic", node.getName()), node);
                     } else {
-                        assert false : "BaseTypeVisitor reached undesirable state";
+                        assert false : "PurityVisitor reached undesirable state";
                     }
                 }
             }
@@ -80,9 +80,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
 
     /** Reports errors found during purity checking. */
     protected void reportPurityErrors(
-            PurityChecker.PurityResult result,
-            MethodTree node,
-            Collection<Pure.Kind> expectedTypes) {
+            PurityChecker.PurityResult result, Collection<Pure.Kind> expectedTypes) {
         assert !result.isPure(expectedTypes);
         Collection<Pure.Kind> t = EnumSet.copyOf(expectedTypes);
         t.removeAll(result.getTypes());
