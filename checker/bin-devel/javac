@@ -60,7 +60,7 @@ eval "java" \
      "-DCheckerDevelMain.pp=${buildDirs} " \
      "-DCheckerDevelMain.compile.bcp=${jdkPaths} " \
      "-DCheckerDevelMain.runtime.cp=${javacJar} " \
-     "-DCheckerDevelMain.binary=${binaryDir}" \
+     "-DCheckerDevelMain.binary=${binaryDir} " \
      "-classpath ${buildDirs} " \
      "org.checkerframework.framework.util.CheckerDevelMain" \
      ${args}
