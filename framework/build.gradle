@@ -154,19 +154,12 @@ task wholeProgramInferenceTests(dependsOn: 'shadowJar', group: 'Verification') {
 task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for the annotation class loader'
     dependsOn(compileTestJava)
+    // TODO: this dependency on checker is a bit ugly.
     dependsOn project(':checker-qual').tasks.jar
+    dependsOn project(':checker').tasks.assemble
     doLast {
-        copy {
-            from file(project(':checker-qual').tasks.getByName("jar").archivePath)
-            into "${projectDir}/dist"
-            rename { String fileName ->
-                fileName.replace(fileName, "checker-qual.jar")
-            }
-        }
-
         exec {
             executable 'make'
-            environment JAVAC: 'javac', STUBPARSERJAR: "${stubparserJar}"
             args = ['-C', "tests/annotationclassloader/", "all"]
         }
     }
