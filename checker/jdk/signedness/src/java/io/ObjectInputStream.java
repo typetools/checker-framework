@@ -44,6 +44,7 @@ import static java.io.ObjectStreamClass.processQueue;
 import sun.reflect.misc.ReflectUtil;
 
 import org.checkerframework.checker.signedness.qual.PolySigned;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 /**
  * An ObjectInputStream deserializes primitive data and objects previously
  * written using an ObjectOutputStream.
@@ -925,7 +926,7 @@ public class ObjectInputStream
      * @throws  EOFException If end of file is reached.
      * @throws  IOException If other I/O error has occurred.
      */
-    public int readUnsignedByte()  throws IOException {
+    public @Unsigned int readUnsignedByte()  throws IOException {
         return bin.readUnsignedByte();
     }
 
@@ -958,7 +959,7 @@ public class ObjectInputStream
      * @throws  EOFException If end of file is reached.
      * @throws  IOException If other I/O error has occurred.
      */
-    public int readUnsignedShort() throws IOException {
+    public @Unsigned int readUnsignedShort() throws IOException {
         return bin.readUnsignedShort();
     }
 
@@ -2772,7 +2773,7 @@ public class ObjectInputStream
             return (byte) v;
         }
 
-        public int readUnsignedByte() throws IOException {
+        public @Unsigned int readUnsignedByte() throws IOException {
             int v = read();
             if (v < 0) {
                 throw new EOFException();
@@ -2804,7 +2805,7 @@ public class ObjectInputStream
             return v;
         }
 
-        public int readUnsignedShort() throws IOException {
+        public @Unsigned int readUnsignedShort() throws IOException {
             if (!blkmode) {
                 pos = 0;
                 in.readFully(buf, 0, 2);
