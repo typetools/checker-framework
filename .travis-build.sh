@@ -62,6 +62,9 @@ echo "In checker-framework/.travis-build.sh GROUP=$GROUP"
 ### TESTS OF THIS REPOSITORY
 
 if [[ "${GROUP}" == "framework-tests" || "${GROUP}" == "all" ]]; then
+  # These are tests that should pass without an annotated jdk. They are also run by all-tests.
+  # Once we have an annotataed jdk for 11 to test, this set of tests can be removed.
+  # TODO: These aren't being run by Azure.
   ./gradlew framework:test framework:jtreg --console=plain --warning-mode=all -s --no-daemon
 fi
 

@@ -106,9 +106,7 @@ jobs:
             fi
 
             if [[ "${SLUGOWNER}" == "typetools" ]]; then
-              sh trigger-travis.sh typetests daikon-typecheck $TRAVIS_ACCESS_TOKEN
               sh trigger-travis.sh typetests guava-typecheck $TRAVIS_ACCESS_TOKEN
-              sh trigger-travis.sh typetests plume-lib-typecheck $TRAVIS_ACCESS_TOKEN
             fi
           fi
 

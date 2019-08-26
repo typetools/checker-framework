@@ -322,7 +322,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public ListIterator<E> listIterator(@IndexOrHigh("this") final int index) {
+    public ListIterator<E> listIterator(final @IndexOrHigh("this") int index) {
         rangeCheckForAdd(index);
 
         return new ListItr(index);

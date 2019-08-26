@@ -45,21 +45,21 @@ compileJava.dependsOn(checkDependencies)
 
 task allSourcesJar(type: Jar) {
     description 'Creates a sources jar that includes sources for all Checker Framework classes in framework.jar'
-    destinationDir = file("${projectDir}/dist")
-    archiveName = "framework-source.jar"
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "framework-source.jar"
     from (project(':framework').sourceSets.main.java,
-          project(':dataflow').sourceSets.main.allJava,
-          project(':javacutil').sourceSets.main.allJava)
+            project(':dataflow').sourceSets.main.allJava,
+            project(':javacutil').sourceSets.main.allJava)
 }
 
 task allJavadocJar(type: Jar) {
     description 'Creates javadoc jar include Javadoc for all of the framework'
     dependsOn rootProject.tasks.allJavadoc
-    destinationDir = file("${projectDir}/dist")
-    archiveName = "framework-javadoc.jar"
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "framework-javadoc.jar"
     from (project(':framework').tasks.javadoc.destinationDir,
-          project(':dataflow').tasks.javadoc.destinationDir,
-          project(':javacutil').tasks.javadoc.destinationDir)
+            project(':dataflow').tasks.javadoc.destinationDir,
+            project(':javacutil').tasks.javadoc.destinationDir)
 }
 
 shadowJar {
