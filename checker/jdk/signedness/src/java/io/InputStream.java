@@ -26,6 +26,7 @@
 package java.io;
 
 import org.checkerframework.checker.signedness.qual.PolySigned;
+import org.checkerframework.checker.index.qual.GTENegativeOne;
 /**
  * This abstract class is the superclass of all classes representing
  * an input stream of bytes.
@@ -98,7 +99,7 @@ public abstract class InputStream implements Closeable {
      * @exception  NullPointerException  if <code>b</code> is <code>null</code>.
      * @see        java.io.InputStream#read(byte[], int, int)
      */
-    public int read(@PolySigned byte b[]) throws IOException {
+    public @GTENegativeOne int read(@PolySigned byte b[]) throws IOException {
         return read(b, 0, b.length);
     }
 
@@ -159,7 +160,7 @@ public abstract class InputStream implements Closeable {
      * <code>b.length - off</code>
      * @see        java.io.InputStream#read()
      */
-    public int read(@PolySigned byte b[], int off, int len) throws IOException {
+    public @GTENegativeOne int read(@PolySigned byte b[], int off, int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if (off < 0 || len < 0 || len > b.length - off) {
