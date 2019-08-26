@@ -1,5 +1,6 @@
 package org.checkerframework.common.purity;
 
+import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 
@@ -14,5 +15,10 @@ public class PurityChecker extends BaseTypeChecker {
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
         return new PurityVisitor(this);
+    }
+
+    @Override
+    protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+        return new LinkedHashSet<>();
     }
 }
