@@ -202,7 +202,7 @@ public class DependentTypesHelper {
         boolean isVarargs = false;
         if (tree.getKind() == Kind.METHOD_INVOCATION) {
             ExecutableElement methodCalled = TreeUtils.elementFromUse((MethodInvocationTree) tree);
-            if (methodCalled != null && methodCalled.isVarArgs()) {
+            if (isVarArgsMethodInvocation(methodCalled, typeFromUse, args)) {
                 isVarargs = true;
                 for (int i = 0; i < methodCalled.getParameters().size() - 1; i++) {
                     argReceivers.add(FlowExpressions.internalReprOf(factory, args.get(i)));
@@ -214,25 +214,8 @@ public class DependentTypesHelper {
                 Element varargsElement =
                         methodCalled.getParameters().get(methodCalled.getParameters().size() - 1);
                 TypeMirror tm = ElementUtils.getType(varargsElement);
-                boolean passedArray = false;
-                if (methodCalled.getParameters().size() == args.size()) {
-                    AnnotatedTypeMirror lastArg =
-                            factory.getAnnotatedType(args.get(args.size() - 1));
-                    List<AnnotatedTypeMirror> argTypes = typeFromUse.getParameterTypes();
-                    AnnotatedArrayType varargsArg =
-                            (AnnotatedArrayType) argTypes.get(argTypes.size() - 1);
-                    if (lastArg.getKind() == TypeKind.ARRAY
-                            && AnnotatedTypes.getArrayDepth(varargsArg)
-                                    == AnnotatedTypes.getArrayDepth((AnnotatedArrayType) lastArg)) {
-                        argReceivers.add(varargArgs.get(0));
-                        passedArray = true;
-                    }
-                }
-                if (!passedArray) {
-                    argReceivers.add(
-                            new FlowExpressions.ArrayCreation(
-                                    tm, Collections.emptyList(), varargArgs));
-                }
+                argReceivers.add(
+                        new FlowExpressions.ArrayCreation(tm, Collections.emptyList(), varargArgs));
             }
         }
 
@@ -263,6 +246,29 @@ public class DependentTypesHelper {
 
         standardizeDoNotUseLocals(context, currentPath, viewpointAdaptedType);
         new ViewpointAdaptedCopier().visit(viewpointAdaptedType, typeFromUse);
+    }
+
+    /**
+     * @return true if methodCalled is varargs method invocation and its varargs arguments are not
+     *     passed in an array, false otherwise
+     */
+    private boolean isVarArgsMethodInvocation(
+            ExecutableElement methodCalled,
+            AnnotatedExecutableType typeFromUse,
+            List<? extends ExpressionTree> args) {
+        if (methodCalled != null && methodCalled.isVarArgs()) {
+            if (methodCalled.getParameters().size() == args.size()) {
+                AnnotatedTypeMirror lastArg = factory.getAnnotatedType(args.get(args.size() - 1));
+                List<AnnotatedTypeMirror> argTypes = typeFromUse.getParameterTypes();
+                AnnotatedArrayType varargsArg =
+                        (AnnotatedArrayType) argTypes.get(argTypes.size() - 1);
+                return lastArg.getKind() != TypeKind.ARRAY
+                        || AnnotatedTypes.getArrayDepth(varargsArg)
+                                != AnnotatedTypes.getArrayDepth((AnnotatedArrayType) lastArg);
+            }
+            return true;
+        }
+        return false;
     }
 
     public void standardizeNewClassTree(NewClassTree tree, AnnotatedDeclaredType type) {
