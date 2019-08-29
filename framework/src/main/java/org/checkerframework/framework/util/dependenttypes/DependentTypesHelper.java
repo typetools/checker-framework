@@ -271,6 +271,12 @@ public class DependentTypesHelper {
         return false;
     }
 
+    /**
+     * Standardizes new class declarations in Java expressions.
+     *
+     * @param tree the new class declaration
+     * @param type the type representing the class
+     */
     public void standardizeNewClassTree(NewClassTree tree, AnnotatedDeclaredType type) {
         if (!hasDependentType(type)) {
             return;
@@ -292,6 +298,12 @@ public class DependentTypesHelper {
         standardizeUseLocals(context, path, type);
     }
 
+    /**
+     * Standardizes a method return in a Java expression.
+     *
+     * @param m the method to be standardized
+     * @param atm the method return type
+     */
     public void standardizeReturnType(MethodTree m, AnnotatedTypeMirror atm) {
         if (atm.getKind() == TypeKind.NONE) {
             return;
