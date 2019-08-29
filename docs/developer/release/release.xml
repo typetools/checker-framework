@@ -43,7 +43,7 @@
         <property name="maven.artifacts"      value="${checker}/../maven-artifacts" />
         <property name="checker.binary.poms"  value="${maven.artifacts}/poms" />
         <property name="checker.release.poms" value="${maven.artifacts}/release/" />
-        <property name="release.version.regexp" value="\d\.\d\.\d+(?:\.\d)" />
+        <property name="release.version.regexp" value="\d\.\d+\.\d+(?:\.\d)" />
 
         <!-- for afu.date.0 and afu.date.1 -->
         <loadproperties srcFile="${afu.properties}"/>
