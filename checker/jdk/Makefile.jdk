@@ -7,12 +7,6 @@
 CHECKERFRAMEWORK ?= ../../..
 CHECKER_JAVAC ?= $(CHECKERFRAMEWORK)/checker/bin-devel/javac
 
-LANGTOOLS ?= ../../../../jsr308-langtools
-LANGTOOLSDIST ?= $(LANGTOOLS)/dist
-JAVADOCLIB ?= $(LANGTOOLSDIST)/../build/classes
-JAVAC ?= $(LANGTOOLSDIST)/bin/javac -Xlint
-JAVAP ?= $(LANGTOOLSDIST)/bin/javap
-
 ANNOTATION_TOOLS ?= ../../../../annotation-tools
 AFU_SCRIPTS ?= $(ANNOTATION_TOOLS)/annotation-file-utilities/scripts
 
@@ -43,7 +37,7 @@ classes: $(SOURCES)
 	@$(CHECKER_JAVAC) -J-Xmx2500M -XDignore.symbol.file -d build -processor $(JDKDIR) -Awarns -AsuppressWarnings=$(JDKDIR) -Afilenames -Xmaxwarns 5000 $?
 
 build/%.expected: build/%.class
-	@$(JAVAP) -cp $(JAVADOCLIB) $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
+	@$(JAVAP) -cp $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
 
 build/%.actual: build/%.class
 	@$(JAVAP) -Xbootclasspath/p:build $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@

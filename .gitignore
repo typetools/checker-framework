@@ -125,10 +125,6 @@ docs/tutorial/sourcefiles.zip
 # release tmps
 tmp
 
-jsr308-langtools
-jsr308-langtools.basic
-langtools-ta
-
 # Maven files
 target/
 *.ipr
