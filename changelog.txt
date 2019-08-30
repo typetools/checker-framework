@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------
 
-Version 2.11.0, August 29, 2019
+Version 2.11.0, August 30, 2019
 
 The Checker Framework now uses the Java 9 javac API. The manual describes
 how to satisfy this dependency, in a way that works on a Java 8 JVM.
