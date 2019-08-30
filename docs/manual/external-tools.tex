@@ -744,6 +744,45 @@ section, or add it if it is not present.
 \end{alltt}
 
 
+\item If you are using Java 8, use the javac from Error Prone.
+
+\begin{alltt}
+  <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
+  <profiles>
+    <profile>
+      <id>jdk8</id>
+      <activation>
+        <jdk>1.8</jdk>
+      </activation>
+      <properties>
+        <javac.version>9+181-r4173-1</javac.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.google.errorprone</groupId>
+          <artifactId>javac</artifactId>
+          <version>9+181-r4173-1</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <fork>true</fork>
+              <compilerArgs combine.children="append">
+                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${javac.version}/javac-${javac.version}.jar</arg>
+              </compilerArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+\end{alltt}
+
+
 \item Direct the Maven compiler plugin to use the desired checkers.
 Change the reference to the \code{maven-compiler-plugin} within the \code{<plugins>}
 section, or add it if it is not present.
@@ -754,8 +793,9 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
 \begin{alltt}
   <plugin>
     <artifactId>maven-compiler-plugin</artifactId>
-    <version>3.6.1</version>
+    <version>3.8.0</version>
     <configuration>
+      <fork>true</fork>
       <source>1.8</source>
       <target>1.8</target>
       <compilerArguments>
@@ -773,7 +813,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <!-- Add all the checkers you want to enable here -->
         <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
       </annotationProcessors>
-      <compilerArgs>
+      <compilerArgs combine.children="append">
         <!-- location of the annotated JDK, which comes from a Maven dependency -->
         <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
         <!-- -Awarns turns type-checking warnings into errors. -->
@@ -785,9 +825,6 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
 \end{mysmall}
 
 Now, building with Maven will run the checkers during compilation.
-
-Notice that using this approach, no external setup is necessary,
-so your Maven build should be reproducible on any server.
 
 If you want to allow Maven to compile your code without running the
 checkers, you may want to move the declarations above to within a Maven
