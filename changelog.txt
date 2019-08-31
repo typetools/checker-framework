@@ -1,3 +1,13 @@
+---------------------------------------------------------------------------
+
+Version 2.11.0, August 30, 2019
+
+The Checker Framework now uses the Java 9 javac API. The manual describes
+how to satisfy this dependency, in a way that works on a Java 8 JVM.
+Running the Checker Framework on a Java 9 JVM is not yet supported.
+
+---------------------------------------------------------------------------
+
 Version 2.10.1, August 22, 2019
 
 Closed issues:
@@ -5,6 +15,7 @@ Closed issues:
 2725, 2729.
 
 ---------------------------------------------------------------------------
+
 Version 2.10.0, August 1, 2019
 
 Removed the NullnessRawnessChecker.  Use the NullnessChecker instead.
