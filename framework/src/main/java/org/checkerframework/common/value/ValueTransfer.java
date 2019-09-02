@@ -26,36 +26,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.BitwiseAndNode;
-import org.checkerframework.dataflow.cfg.node.BitwiseComplementNode;
-import org.checkerframework.dataflow.cfg.node.BitwiseOrNode;
-import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
-import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
-import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
-import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.FloatingDivisionNode;
-import org.checkerframework.dataflow.cfg.node.FloatingRemainderNode;
-import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
-import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.IntegerDivisionNode;
-import org.checkerframework.dataflow.cfg.node.IntegerRemainderNode;
-import org.checkerframework.dataflow.cfg.node.LeftShiftNode;
-import org.checkerframework.dataflow.cfg.node.LessThanNode;
-import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
-import org.checkerframework.dataflow.cfg.node.NumericalMinusNode;
-import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
-import org.checkerframework.dataflow.cfg.node.NumericalPlusNode;
-import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
-import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
-import org.checkerframework.dataflow.cfg.node.StringConversionNode;
-import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
+import org.checkerframework.dataflow.cfg.node.*;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -63,9 +34,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.*;
 
 /** The transfer class for the Value Checker. */
 public class ValueTransfer extends CFTransfer {
@@ -538,6 +507,22 @@ public class ValueTransfer extends CFTransfer {
         return leftLengths.plus(rightLengths).intersect(Range.INT_EVERYTHING);
     }
 
+    /**
+     * This method is only used to check for nullable nodes in string concatenations.
+     *
+     * @return true if the node can't be null or false otherwise.
+     */
+    private boolean isNotNullable(Node node) {
+        if (node instanceof StringLiteralNode) {
+            return true;
+        } else if (node instanceof StringConversionNode) {
+            if (((StringConversionNode) node).getOperand().getType().getKind().isPrimitive()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Creates an annotation for a result of string concatenation. */
     private AnnotationMirror createAnnotationForStringConcatenation(
             Node leftOperand, Node rightOperand, TransferInput<CFValue, CFStore> p) {
@@ -550,8 +535,12 @@ public class ValueTransfer extends CFTransfer {
             // Both operands have known string values, compute set of results
             List<String> concatValues = new ArrayList<>();
 
-            leftValues.add("null");
-            rightValues.add("null");
+            if (!isNotNullable(leftOperand)) {
+                leftValues.add("null");
+            }
+            if (!isNotNullable(rightOperand)) {
+                rightValues.add("null");
+            }
 
             for (String left : leftValues) {
                 for (String right : rightValues) {

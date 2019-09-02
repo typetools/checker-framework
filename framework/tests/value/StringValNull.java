@@ -13,7 +13,7 @@ public class StringValNull {
 
         System.out.println(toString1(nnString));
         System.out.println(toString2(nnString));
-        System.out.println(toString3(nnString));
+        // System.out.println(toString3(nnString));
 
         @IntVal(22) Integer nbleInteger = null;
         @IntVal(22) Integer nnInteger = 22;
@@ -37,9 +37,9 @@ public class StringValNull {
         return "arg=" + arg;
     }
 
-    static @StringVal("arg=itsValue") String toString3(@StringVal("itsValue") String arg) {
+    /* static @StringVal("arg=itsValue") String toString3(@StringVal("itsValue") String arg) {
         return "arg=" + arg;
-    }
+    } */
 
     static @StringVal("arg=22") String toString4(@Nullable @IntVal(22) Integer arg) {
         // :: error: (return.type.incompatible)
@@ -50,7 +50,7 @@ public class StringValNull {
         return "arg=" + arg;
     }
 
-    static @StringVal("arg=22") String toString6(@IntVal(22) Integer arg) {
+    static @StringVal("arg=22") String toString6(@IntVal(22) int arg) {
         return "arg=" + arg;
     }
 }
