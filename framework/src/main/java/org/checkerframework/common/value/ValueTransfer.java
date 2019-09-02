@@ -549,12 +549,10 @@ public class ValueTransfer extends CFTransfer {
         if (leftValues != null && rightValues != null) {
             // Both operands have known string values, compute set of results
             List<String> concatValues = new ArrayList<>();
-            if (leftValues.isEmpty()) {
-                leftValues = Collections.singletonList("null");
-            }
-            if (rightValues.isEmpty()) {
-                rightValues = Collections.singletonList("null");
-            }
+
+            leftValues.add("null");
+            rightValues.add("null");
+
             for (String left : leftValues) {
                 for (String right : rightValues) {
                     concatValues.add(left + right);
