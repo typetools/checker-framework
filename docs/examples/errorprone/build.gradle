@@ -32,5 +32,8 @@ checkerFramework {
 }
 
 compileJava {
+    // A checker will only run if Error Prone does not issue any warnings.  So
+    // convert the expected error to a warning to test that both Error Prone
+    // and the Nullness Checker run.
     options.errorprone.warn('CollectionIncompatibleType')
 }
