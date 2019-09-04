@@ -30,3 +30,7 @@ checkerFramework {
         'org.checkerframework.checker.nullness.NullnessChecker',
     ]
 }
+
+compileJava {
+    options.errorprone.warn('CollectionIncompatibleType')
+}
