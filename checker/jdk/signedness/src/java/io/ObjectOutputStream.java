@@ -677,7 +677,7 @@ public class ObjectOutputStream
      * @param   val the byte to be written to the stream
      * @throws  IOException If an I/O error has occurred.
      */
-    public void write(int val) throws IOException {
+    public void write(@PolySigned int val) throws IOException {
         bout.write(val);
     }
 

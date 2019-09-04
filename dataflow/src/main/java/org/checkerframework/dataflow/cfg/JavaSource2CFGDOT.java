@@ -235,7 +235,7 @@ public class JavaSource2CFGDOT {
                                 @Override
                                 public void write(int b) throws IOException {}
                             }));
-            javac.compile(List.of(l), List.of(clas), List.of(typeProcessor));
+            javac.compile(List.of(l), List.of(clas), List.of(typeProcessor), List.nil());
         } catch (Throwable e) {
             // ok
         } finally {
