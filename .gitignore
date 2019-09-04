@@ -81,6 +81,8 @@ docs/examples/MavenExample/Out.txt
 docs/examples/errorprone/.gradle/
 docs/examples/errorprone/Out.txt
 docs/examples/lombok/Out.txt
+docs/examples/lombok/.gradle/
+docs/examples/lombok/lombok.config
 docs/manual/manual.html-e
 
 # dataflow manual
