@@ -417,7 +417,12 @@ public class AnnotationClassLoader {
      */
     private final @Nullable URLClassLoader getClassLoader() {
         ClassLoader result = InternalUtils.getClassLoaderForClass(checker.getClass());
-        return (@Nullable URLClassLoader) result;
+        if (result instanceof URLClassLoader) {
+            return (@Nullable URLClassLoader) result;
+        } else {
+            // Java 9+ use an internal classloader that doesn't support getting URLs. Ignore.
+            return null;
+        }
     }
 
     /** Debug Use: Displays all classpaths examined by the class loader. */
@@ -691,17 +696,13 @@ public class AnnotationClassLoader {
             final String fullyQualifiedClassName, boolean issueError) {
 
         // load the class
-        if (classLoader == null) {
-            throw new UserError(
-                    checker.getClass().getSimpleName()
-                            + ": no classloaders are available for use to load annotation class "
-                            + fullyQualifiedClassName
-                            + ".");
-        }
-
         Class<?> cls = null;
         try {
-            cls = Class.forName(fullyQualifiedClassName, true, classLoader);
+            if (classLoader != null) {
+                cls = Class.forName(fullyQualifiedClassName, true, classLoader);
+            } else {
+                cls = Class.forName(fullyQualifiedClassName);
+            }
         } catch (ClassNotFoundException e) {
             throw new UserError(
                     checker.getClass().getSimpleName()

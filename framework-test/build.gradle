@@ -1,3 +1,5 @@
+import org.gradle.internal.jvm.Jvm
+
 sourceSets {
     taglet
 }
@@ -8,7 +10,9 @@ dependencies {
     compile  group: 'junit', name: 'junit', version: '4.12'
     compile project(':javacutil')
 
-    tagletCompile configurations.toolsJar
+    if (Jvm.current().toolsJar) {
+        tagletCompile files(Jvm.current().toolsJar)
+    }
 }
 
-jar.baseName = 'framework-test'
+jar.archiveBaseName = 'framework-test'

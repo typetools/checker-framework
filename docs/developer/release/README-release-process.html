@@ -102,11 +102,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <a href="#pre_release_checklist">Pre-release Checklist</a>.
   </li>
   <li>
-    <b>Update dependencies</b>, preferably a few days before the release to let any problems be discovered.
-    Run in a branch, then make a pull request to ensure that everything works:
-    <code>./gradlew useLatestVersions</code>
-  </li>
-  <li>
     <b>Update stubparser.</b> If there has been
     a <a href="https://github.com/javaparser/javaparser/releases">JavaParser
     release</a> since the last Checker Framework
@@ -124,7 +119,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <b>Update the list of contributors</b> by running
 	<code>make contributors.tex</code>
 	in <code>checker-framework/docs/manual/</code>.  Double-check the edits
-	with <code>git diff</code>; update file <code>contributors.sed</code> if
+	with <code>git diff</code>; update the <code>plume-scripts/git-authors.sed</code> script if
 	any customizations are necessary.
       </li>
       <li>
@@ -692,7 +687,7 @@ git config --global user.email you@example.com</pre>
 </body>
 </html>
 
-<!--  LocalWords:  JSR langtools serif px pre CCC JDK AFS PAG mkdir cd svn co
+<!--  LocalWords:  serif px pre CCC JDK AFS PAG mkdir cd svn co
  -->
 <!--  LocalWords:  xml ver dev yyyyMMDD URL url diff hg buildfile
  -->
