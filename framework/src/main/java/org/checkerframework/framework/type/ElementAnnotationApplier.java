@@ -78,25 +78,31 @@ public class ElementAnnotationApplier {
         try {
             applyInternal(type, element, typeFactory);
         } catch (UnexpectedAnnotationLocationException e) {
-            Element report = element;
-            if (element.getEnclosingElement().getKind() == ElementKind.METHOD) {
-                report = element.getEnclosingElement();
-            }
-            // There's a bug in Java 8 compiler that creates bad bytecode such that an
-            // annotation on a lambda parameter is applied to a method parameter. (This bug has
-            // been fixed in Java 9.) If this happens, then the location could refer to a
-            // location, such as a type argument, that doesn't exist. Since Java 8 bytecode
-            // might be on the classpath, catch this exception and ignore the type.
-            // TODO: Issue an error if this annotation is from Java 9+ bytecode.
-            if (!typeFactory.checker.hasOption("ignoreInvalidAnnotationLocations")) {
-                typeFactory.checker.report(
-                        Result.warning(
-                                "invalid.annotation.location", ElementUtils.getVerboseName(report)),
-                        element);
-            }
+            reportInvalidLocation(element, typeFactory);
         }
         // Also copy annotations from type parameters to their uses.
         new TypeVarAnnotator().visit(type, typeFactory);
+    }
+
+    /** Issues an "invalid.annotation.location.bytecode warning. */
+    private static void reportInvalidLocation(Element element, AnnotatedTypeFactory typeFactory) {
+        Element report = element;
+        if (element.getEnclosingElement().getKind() == ElementKind.METHOD) {
+            report = element.getEnclosingElement();
+        }
+        // There's a bug in Java 8 compiler that creates bad bytecode such that an
+        // annotation on a lambda parameter is applied to a method parameter. (This bug has
+        // been fixed in Java 9.) If this happens, then the location could refer to a
+        // location, such as a type argument, that doesn't exist. Since Java 8 bytecode
+        // might be on the classpath, catch this exception and ignore the type.
+        // TODO: Issue an error if this annotation is from Java 9+ bytecode.
+        if (!typeFactory.checker.hasOption("ignoreInvalidAnnotationLocations")) {
+            typeFactory.checker.report(
+                    Result.warning(
+                            "invalid.annotation.location.bytecode",
+                            ElementUtils.getVerboseName(report)),
+                    element);
+        }
     }
 
     /** Same as apply except that annotations aren't copied from type parameter declarations. */
@@ -164,7 +170,9 @@ public class ElementAnnotationApplier {
         try {
             SuperTypeApplier.annotateSupers(supertypes, subtypeElement);
         } catch (UnexpectedAnnotationLocationException e) {
-            throw new BugInCF(e.getMessage());
+            if (!supertypes.isEmpty()) {
+                reportInvalidLocation(subtypeElement, supertypes.get(0).atypeFactory);
+            }
         }
     }
 
@@ -218,7 +226,7 @@ public class ElementAnnotationApplier {
                 try {
                     ElementAnnotationApplier.applyInternal(type, tpelt, factory);
                 } catch (UnexpectedAnnotationLocationException e) {
-                    // Error was already reported.
+                    // Error was already reported by #apply.
                 }
             }
             return super.visitTypeVariable(type, factory);
