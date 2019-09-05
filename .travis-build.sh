@@ -65,7 +65,7 @@ if [[ "${GROUP}" == "framework-tests" || "${GROUP}" == "all" ]]; then
   # These are tests that should pass without an annotated jdk. They are also run by all-tests.
   # Once we have an annotataed jdk for 11 to test, this set of tests can be removed.
   # TODO: These aren't being run by Azure.
-  # TODO: also run the jtreg tests.
+  # TODO: jtreg tests currently fail.
   # ./gradlew framework:test framework:jtreg --console=plain --warning-mode=all -s --no-daemon
   ./gradlew framework:test --console=plain --warning-mode=all -s --no-daemon
 fi
