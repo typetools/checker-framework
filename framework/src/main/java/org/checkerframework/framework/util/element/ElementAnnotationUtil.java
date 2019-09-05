@@ -290,19 +290,8 @@ public class ElementAnnotationUtil {
         final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
                 new IdentityHashMap<>();
         for (final TypeCompound anno : annos) {
-            AnnotatedTypeMirror target;
-            try {
-                target = getTypeAtLocation(type, anno.position.location, anno, false);
-            } catch (UnexpectedAnnotationLocationException ex) {
-                // There's a bug in Java 8 compiler that creates bad bytecode such that an
-                // annotation on a lambda parameter is applied to a method parameter. (This bug has
-                // been fixed in Java 9.) If this happens, then the location could refer to a
-                // location, such as a type argument, that doesn't exist. Since Java 8 bytecode
-                // might be on the classpath, catch this exception and ignore the type.
-                // TODO: Issue an error if this annotation is from Java 9+ bytecode.
-                continue;
-            }
-            target = getTypeAtLocation(type, anno.position.location);
+            AnnotatedTypeMirror target =
+                    getTypeAtLocation(type, anno.position.location, anno, false);
             if (target.getKind() == TypeKind.WILDCARD) {
                 addWildcardToBoundMap((AnnotatedWildcardType) target, anno, wildcardToAnnos);
             } else {
