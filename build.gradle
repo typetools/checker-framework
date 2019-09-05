@@ -544,6 +544,8 @@ subprojects {
                                 "-keywords:!ignore",
                                 "-samevm",
                                 "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+                                // Required for checker/jtreg/nullness/PersistUtil.java and other tests
+                                "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
                         ]
                         if (isJava8) {
                             // Use Error Prone javac and source/target 8
