@@ -522,41 +522,38 @@ public class PluginUtil {
     }
 
     /**
-     * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever), or the
-     * whole version number if it is an integer.
+     * Extract the major version number from java.version. Two possible formats are considered. Up
+     * to Java 8, from a version string like `1.8.whatever`, this method extracts 8. Since Java 9,
+     * from a version string like `11.0.1`, this method extracts 11.
      *
-     * @return the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever), or the
-     *     whole version number if it is an integer
+     * @return The major version number from java.version
      */
-    public static double getJreVersion() {
+    public static int getJreVersion() {
         final String jreVersionStr = System.getProperty("java.version");
 
-        // 1.8.0
-        final Pattern versionPattern = Pattern.compile("^(\\d+\\.\\d+)\\..*$");
-        final Matcher versionMatcher = versionPattern.matcher(jreVersionStr);
+        final Pattern oldVersionPattern = Pattern.compile("^1\\.(\\d+)\\..*$");
+        final Matcher oldVersionMatcher = oldVersionPattern.matcher(jreVersionStr);
+        if (oldVersionMatcher.matches()) {
+            return Integer.parseInt(oldVersionMatcher.group(1));
+        }
+
+        // See http://openjdk.java.net/jeps/223
+        // We only care about the major version number.
+        final Pattern newVersionPattern = Pattern.compile("^(\\d+).*$");
+        final Matcher newVersionMatcher = newVersionPattern.matcher(jreVersionStr);
+        if (newVersionMatcher.matches()) {
+            return Integer.parseInt(newVersionMatcher.group(1));
+        }
 
         // For Early Access version of the JDK
         final Pattern eaVersionPattern = Pattern.compile("^(\\d+)-ea$");
         final Matcher eaVersionMatcher = eaVersionPattern.matcher(jreVersionStr);
-
-        // JDK 11 has java.version as just "11", not like "1.8.0"
-        try {
-            return Integer.parseInt(jreVersionStr);
-        } catch (NumberFormatException e) {
-            // Nothing to do; fall through to parse other types of version numbers
+        if (eaVersionMatcher.matches()) {
+            return Integer.parseInt(eaVersionMatcher.group(1));
         }
 
-        final double version;
-        if (versionMatcher.matches()) {
-            version = Double.parseDouble(versionMatcher.group(1));
-        } else if (eaVersionMatcher.matches()) {
-            version = Double.parseDouble("1." + eaVersionMatcher.group(1));
-        } else {
-            throw new RuntimeException(
-                    "Could not determine version from property java.version=" + jreVersionStr);
-        }
-
-        return version;
+        throw new RuntimeException(
+                "Could not determine version from property java.version=" + jreVersionStr);
     }
 
     /**
@@ -566,16 +563,13 @@ public class PluginUtil {
      * @return "jdk<em>X</em>" where X is the version of Java that is being run (e.g. 8, 9, ...)
      */
     public static String getJdkJarPrefix() {
-        final double jreVersion = getJreVersion();
+        final int jreVersion = getJreVersion();
         final String prefix;
-        if (jreVersion == 1.7) {
-            prefix = "jdk7";
-        } else if (jreVersion == 1.8) {
-            prefix = "jdk8";
-        } else if (jreVersion == 1.9) {
-            prefix = "jdk9";
-        } else {
+
+        if (jreVersion < 8) {
             throw new AssertionError("Unsupported JRE version: " + jreVersion);
+        } else {
+            prefix = "jdk" + jreVersion;
         }
 
         return prefix;

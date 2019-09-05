@@ -375,11 +375,39 @@ public class CheckerMain {
     }
 
     /** Invoke the compiler with all relevant jars on its classpath and/or bootclasspath. */
+    // TODO: unify with PluginUtil.getCmd
     public List<String> getExecArguments() {
         List<String> args = new ArrayList<>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 7);
 
-        final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
+        // TODO: do we need java.exe on Windows?
+        final String java =
+                "java"; // PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
         args.add(java);
+
+        if (PluginUtil.getJreVersion() == 8) {
+            args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, runtimeClasspath));
+        } else {
+            args.addAll(
+                    Arrays.asList(
+                            "--add-opens",
+                            "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                            "--add-opens",
+                            "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+                            "--add-opens",
+                            "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                            "--add-opens",
+                            "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+                            "--add-opens",
+                            "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                            "--add-opens",
+                            "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+                            "--add-opens",
+                            "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                            "--add-opens",
+                            "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                            "--add-opens",
+                            "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"));
+        }
 
         args.add("-classpath");
         args.add(String.join(File.pathSeparator, runtimeClasspath));
@@ -391,16 +419,6 @@ public class CheckerMain {
 
         addMainToArgs(args);
 
-        // No classes on the compilation bootclasspath will be loaded
-        // during compilation, but the classes are read by the compiler
-        // without loading them.  The compiler assumes that any class on
-        // this bootclasspath will be on the bootclasspath of the JVM used
-        // to later run the classfiles that Javac produces.  Our
-        // jdk8.jar classes don't have bodies, so they won't be used at
-        // run time, but other, real definitions of those classes will be
-        // on the classpath at run time.
-        args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, compilationBootclasspath));
-
         if (!argsListHasClassPath(argListFiles)) {
             args.add("-classpath");
             args.add(quote(concatenatePaths(cpOpts)));
@@ -408,6 +426,27 @@ public class CheckerMain {
         if (!argsListHasProcessorPath(argListFiles)) {
             args.add("-processorpath");
             args.add(quote(concatenatePaths(ppOpts)));
+        }
+
+        if (PluginUtil.getJreVersion() == 8) {
+            // No classes on the compilation bootclasspath will be loaded
+            // during compilation, but the classes are read by the compiler
+            // without loading them.  The compiler assumes that any class on
+            // this bootclasspath will be on the bootclasspath of the JVM used
+            // to later run the classfiles that Javac produces.  Our
+            // jdk8.jar classes don't have bodies, so they won't be used at
+            // run time, but other, real definitions of those classes will be
+            // on the classpath at run time.
+            args.add(
+                    "-Xbootclasspath/p:"
+                            + String.join(File.pathSeparator, compilationBootclasspath));
+
+            // We currently provide a Java 8 JDK and want to be runnable
+            // on a Java 8 JVM. So set source/target to 8.
+            args.add("-source");
+            args.add("8");
+            args.add("-target");
+            args.add("8");
         }
 
         args.addAll(toolOpts);

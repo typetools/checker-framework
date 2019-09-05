@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.Element;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
@@ -275,7 +275,7 @@ public class OffsetEquation {
         } else if (factory != null && termReceiver instanceof FlowExpressions.LocalVariable) {
             Element element = ((FlowExpressions.LocalVariable) termReceiver).getElement();
             Long exactValue =
-                    IndexUtil.getExactValue(
+                    ValueCheckerUtils.getExactValue(
                             element, factory.getTypeFactoryOfSubchecker(ValueChecker.class));
 
             if (exactValue != null) {
@@ -510,7 +510,7 @@ public class OffsetEquation {
             Node node, ValueAnnotatedTypeFactory factory, char op) {
         assert op == '+' || op == '-';
         if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
-            Long i = IndexUtil.getExactValue(node.getTree(), factory);
+            Long i = ValueCheckerUtils.getExactValue(node.getTree(), factory);
             if (i != null) {
                 if (op == '-') {
                     i = -i;

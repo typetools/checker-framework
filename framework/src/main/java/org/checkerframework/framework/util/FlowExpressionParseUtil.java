@@ -1,5 +1,26 @@
 package org.checkerframework.framework.util;
 
+import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.ArrayCreationLevel;
+import com.github.javaparser.ast.expr.ArrayAccessExpr;
+import com.github.javaparser.ast.expr.ArrayCreationExpr;
+import com.github.javaparser.ast.expr.CharLiteralExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
+import com.github.javaparser.ast.expr.DoubleLiteralExpr;
+import com.github.javaparser.ast.expr.EnclosedExpr;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.IntegerLiteralExpr;
+import com.github.javaparser.ast.expr.LongLiteralExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.SuperExpr;
+import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.visitor.GenericVisitorWithDefaults;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -11,8 +32,6 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.PackageSymbol;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
@@ -30,11 +49,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayCreation;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
@@ -52,7 +72,6 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -60,55 +79,24 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
 
 /**
  * A collection of helper methods to parse a string that represents a restricted Java expression.
- * Such expressions can be found in annotations (e.g., to specify a pre- or postcondition).
+ *
+ * @checker_framework.manual #java-expressions-as-arguments Writing Java expressions as annotation
+ *     arguments
+ * @checker_framework.manual #dependent-types Annotations whose argument is a Java expression
+ *     (dependent type annotations)
  */
 public class FlowExpressionParseUtil {
 
-    /**
-     * Regular expression for an identifier. Permits '$' in the name, though that character never
-     * appears in Java source code.
-     */
-    protected static final String IDENTIFIER_REGEX = "[a-zA-Z_$][a-zA-Z_$0-9]*";
     /** Regular expression for a formal parameter use. */
     protected static final String PARAMETER_REGEX = "#([1-9][0-9]*)";
-
-    /** Regular expression for a string literal. */
-    // Regex can be found at, for example, http://stackoverflow.com/a/481587/173852
-    protected static final String STRING_REGEX = "\"(?:[^\"\\\\]|\\\\.)*\"";
 
     /** Unanchored; can be used to find all formal parameter uses. */
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
-    /** Returns a Pattern, anchored at the beginning and end, for the regex. */
-    private static Pattern anchored(String regex) {
-        return Pattern.compile("^" + regex + "$");
-    }
+    /** Parsable replacement for parameter references. */
+    private static final String PARMETER_REPLACEMENT = "_param_";
 
-    // Each of the below patterns is anchored with ^...$.
-    /** Matches a parameter. */
-    protected static final Pattern PARAMETER_PATTERN = anchored(PARAMETER_REGEX);
-    /** Matches an identifier. */
-    protected static final Pattern IDENTIFIER_PATTERN = anchored(IDENTIFIER_REGEX);
-    /** Matches a string starting with an identifier. */
-    protected static final Pattern STARTS_WITH_IDENTIFIER_PATTERN =
-            anchored("(" + IDENTIFIER_REGEX + ").*");
-    /** Matches integer literals. */
-    protected static final Pattern INT_PATTERN = anchored("[-+]?[0-9]+");
-    /** Matches long literals. */
-    protected static final Pattern LONG_PATTERN = anchored("[-+]?[0-9]+[Ll]");
-    /** Matches (some) floating-point and double literals. */
-    protected static final Pattern FLOAT_PATTERN = anchored("[+-]?([0-9]+[.][0-9]*|[.][0-9]+)");
-
-    /** Matches string literals. */
-    protected static final Pattern STRING_PATTERN = anchored(STRING_REGEX);
-    /** Matches an expression contained in matching start and end parentheses. */
-    protected static final Pattern PARENTHESES_PATTERN = anchored("\\((.*)\\)");
-    /** Matches an expression that starts with a string. */
-    protected static final Pattern STARTS_WITH_STRING_PATTERN =
-            anchored("(" + STRING_REGEX + ").*");
-    /** Matches member select on a string, such as {@code "hello".length}. */
-    protected static final Pattern STRING_SELECT_PATTERN =
-            anchored("(" + STRING_REGEX + ")" + "\\.(.*)");
+    private static final int PARAMETER_REPLACEMENT_LENGTH = PARMETER_REPLACEMENT.length();
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
@@ -119,14 +107,29 @@ public class FlowExpressionParseUtil {
      * @param localScope path to local scope to use
      * @param useLocalScope whether {@code localScope} should be used to resolve identifiers
      */
-    public static FlowExpressions.Receiver parse(
+    public static Receiver parse(
             String expression,
             FlowExpressionContext context,
             TreePath localScope,
             boolean useLocalScope)
             throws FlowExpressionParseException {
         context = context.copyAndSetUseLocalScope(useLocalScope);
-        FlowExpressions.Receiver result = parseHelper(expression, context, localScope);
+        ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
+        Expression expr;
+        try {
+            expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
+        } catch (ParseProblemException e) {
+            throw constructParserException(expression, "is an invalid expression");
+        }
+
+        Receiver result;
+        try {
+            result = expr.accept(new ExpressionToReceiverVisitor(localScope, env), context);
+        } catch (ParseRuntimeException e) {
+            // The visitors can't throw exceptions because they need to override the methods in the
+            // superclass.
+            throw e.getCheckedException();
+        }
         if (result instanceof ClassName && !expression.endsWith("class")) {
             throw constructParserException(
                     expression, "a class name cannot terminate a flow expression string");
@@ -134,920 +137,516 @@ public class FlowExpressionParseUtil {
         return result;
     }
 
-    private static FlowExpressions.Receiver parseHelper(
-            String expression, FlowExpressionContext context, TreePath path)
-            throws FlowExpressionParseException {
-        expression = expression.trim();
+    /**
+     * Replaces every occurrence of "#(number)" with "PARAMETER_REPLACEMENT(number)" where number is
+     * an index of a parameter.
+     */
+    private static String replaceParameterSyntax(String expression) {
+        String updatedExpression = expression;
 
-        ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
-        Types types = env.getTypeUtils();
+        for (Integer integer : parameterIndices(expression)) {
+            updatedExpression =
+                    updatedExpression.replaceAll("#" + integer, PARMETER_REPLACEMENT + integer);
+        }
 
-        if (isNullLiteral(expression, context)) {
-            return parseNullLiteral(types);
-        } else if (isIntLiteral(expression, context)) {
-            return parseIntLiteral(expression, types);
-        } else if (isLongLiteral(expression, context)) {
-            return parseLongLiteral(expression, types);
-        } else if (isFloatLiteral(expression, context)) {
-            throw constructParserException(
-                    expression,
-                    String.format("floating-point values '%s' cannot be parsed", expression));
-        } else if (isStringLiteral(expression, context)) {
-            return parseStringLiteral(expression, types, env.getElementUtils());
-        } else if (isThisLiteral(expression, context)) {
-            return parseThis(context);
-        } else if (isSuperLiteral(expression, context)) {
-            return parseSuper(expression, types, context);
-        } else if (isIdentifier(expression)) {
-            return parseIdentifier(expression, env, path, context);
-        } else if (isParameter(expression, context)) {
-            return parseParameter(expression, context);
-        } else if (isArray(expression)) {
-            return parseArray(expression, context, path);
-        } else if (isMethodCall(expression)) {
-            return parseMethodCall(expression, context, path, env);
-        } else if (isMemberSelect(expression)) {
-            return parseMemberSelect(expression, env, context, path);
-        } else if (isParentheses(expression, context)) {
-            return parseParentheses(expression, context, path);
-        } else {
-            String message;
-            if (expression.equals("#0")) {
-                message =
-                        "one should use \"this\" for the receiver or \"#1\" for the first formal parameter";
-            } else {
-                message = String.format("is an unrecognized expression");
-            }
+        return updatedExpression;
+    }
+
+    /**
+     * A visitor class that converts a JavaParser {@link Expression} to a {@link
+     * FlowExpressionContext#receiver}.
+     */
+    private static class ExpressionToReceiverVisitor
+            extends GenericVisitorWithDefaults<Receiver, FlowExpressionContext> {
+
+        private final TreePath path;
+        private final ProcessingEnvironment env;
+        private final Types types;
+
+        ExpressionToReceiverVisitor(TreePath path, ProcessingEnvironment env) {
+            this.path = path;
+            this.env = env;
+            this.types = env.getTypeUtils();
+        }
+
+        /** If the expression is not supported, throw a {@link ParseRuntimeException} by default. */
+        @Override
+        public Receiver defaultAction(
+                com.github.javaparser.ast.Node n, FlowExpressionContext context) {
+            String message = "is not a supported expression";
             if (context.parsingMember) {
                 message += " in a context with parsingMember=true";
             }
-            throw constructParserException(expression, message);
-        }
-    }
-
-    private static boolean isMemberSelect(String s) {
-        return parseMemberSelect(s) != null;
-    }
-
-    /**
-     * Matches a field access. First of returned pair is object and second is field.
-     *
-     * @param s expression string
-     * @return pair of object and field
-     */
-    private static Pair<String, String> parseMemberSelect(String s) {
-        Pair<Pair<String, String>, String> method = parseMethodCall(s);
-        if (method != null && method.second.startsWith(".")) {
-            return Pair.of(
-                    method.first.first + "(" + method.first.second + ")",
-                    method.second.substring(1));
+            throw new ParseRuntimeException(constructParserException(n.toString(), message));
         }
 
-        Pair<Pair<String, String>, String> array = parseArray(s);
-        if (array != null && array.second.startsWith(".")) {
-            return Pair.of(
-                    array.first.first + "[" + array.first.second + "]", array.second.substring(1));
+        @Override
+        public Receiver visit(NullLiteralExpr expr, FlowExpressionContext context) {
+            return new ValueLiteral(types.getNullType(), (Object) null);
         }
 
-        Matcher m = STRING_SELECT_PATTERN.matcher(s);
-        if (m.matches()) {
-            return Pair.of(m.group(1), m.group(2));
+        @Override
+        public Receiver visit(IntegerLiteralExpr expr, FlowExpressionContext context) {
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), expr.asInt());
         }
 
-        int nextRParenPos = matchingCloseParen(s, 0, '(', ')');
-        if (nextRParenPos != -1) {
-            if (nextRParenPos + 1 < s.length() && s.charAt(nextRParenPos + 1) == '.') {
-                String receiver = s.substring(0, nextRParenPos + 1);
-                String remaining = s.substring(nextRParenPos + 2);
-                return Pair.of(receiver, remaining);
-            } else {
-                return null;
+        @Override
+        public Receiver visit(LongLiteralExpr expr, FlowExpressionContext context) {
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), expr.asLong());
+        }
+
+        @Override
+        public Receiver visit(CharLiteralExpr expr, FlowExpressionContext context) {
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.CHAR), expr.asChar());
+        }
+
+        @Override
+        public Receiver visit(DoubleLiteralExpr expr, FlowExpressionContext context) {
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.DOUBLE), expr.asDouble());
+        }
+
+        @Override
+        public Receiver visit(StringLiteralExpr expr, FlowExpressionContext context) {
+            TypeMirror stringTM =
+                    TypesUtils.typeFromClass(String.class, types, env.getElementUtils());
+            return new ValueLiteral(stringTM, expr.asString());
+        }
+
+        /** @return The receiver, {@link FlowExpressionContext#receiver}, of the context. */
+        @Override
+        public Receiver visit(ThisExpr n, FlowExpressionContext context) {
+            if (context.receiver != null && !context.receiver.containsUnknown()) {
+                // "this" is the receiver of the context
+                return context.receiver;
             }
-        }
-
-        int i = s.indexOf(".");
-        if (i == -1) {
-            return null;
-        }
-
-        String receiver = s.substring(0, i);
-        String remaining = s.substring(i + 1);
-
-        return Pair.of(receiver, remaining);
-    }
-
-    private static Receiver parseMemberSelect(
-            String s, ProcessingEnvironment env, FlowExpressionContext context, TreePath path)
-            throws FlowExpressionParseException {
-        Pair<String, String> select = parseMemberSelect(s);
-        assert select != null : "isMemberSelect must be called first";
-
-        Receiver receiver;
-        String memberSelected;
-
-        Resolver resolver = new Resolver(env);
-
-        // Attempt to match a package and class name first.
-        Pair<ClassName, String> classAndRemainingString =
-                matchPackageAndClassNameWithinExpression(s, resolver, path);
-        if (classAndRemainingString != null) {
-            receiver = classAndRemainingString.first;
-            memberSelected = classAndRemainingString.second;
-            if (memberSelected == null) {
-                throw constructParserException(
-                        s, "a class cannot terminate a flow expression string");
-            }
-        } else {
-            String receiverString = select.first;
-            memberSelected = select.second;
-            receiver = parseHelper(receiverString, context, path);
-        }
-
-        if (memberSelected.equals("class")) {
-            if (receiver instanceof FlowExpressions.ClassName && !context.parsingMember) {
-                return receiver;
-            } else {
-                throw constructParserException(s, "class is not a legal identifier");
-            }
-        }
-
-        // Parse the rest, with a new receiver.
-        FlowExpressionContext newContext = context.copyChangeToParsingMemberOfReceiver(receiver);
-        return parseHelper(memberSelected, newContext, path);
-    }
-
-    // ########
-
-    private static boolean isNullLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        return s.equals("null");
-    }
-
-    private static Receiver parseNullLiteral(Types types) {
-        return new ValueLiteral(types.getNullType(), (Object) null);
-    }
-
-    private static boolean isIntLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        Matcher intMatcher = INT_PATTERN.matcher(s);
-        return intMatcher.matches();
-    }
-
-    private static Receiver parseIntLiteral(String s, Types types) {
-        int val = Integer.parseInt(s);
-        return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), val);
-    }
-
-    private static boolean isLongLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        Matcher longMatcher = LONG_PATTERN.matcher(s);
-        return longMatcher.matches();
-    }
-
-    private static Receiver parseLongLiteral(String s, Types types) {
-        // Remove L or l at the end of a long literal
-        s = s.substring(0, s.length() - 1);
-        long val = Long.parseLong(s);
-        return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), val);
-    }
-
-    private static boolean isFloatLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        Matcher floatMatcher = FLOAT_PATTERN.matcher(s);
-        return floatMatcher.matches();
-    }
-
-    /** Return true iff s is a string literal. */
-    private static boolean isStringLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        Matcher stringMatcher = STRING_PATTERN.matcher(s);
-        return stringMatcher.matches();
-    }
-
-    private static Receiver parseStringLiteral(String s, Types types, Elements elements) {
-        TypeElement stringTypeElem = elements.getTypeElement("java.lang.String");
-        return new ValueLiteral(
-                types.getDeclaredType(stringTypeElem), s.substring(1, s.length() - 1));
-    }
-
-    private static boolean isThisLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            // TODO: this is probably wrong because you could have an inner class receiver
-            // Outer.this
-            return false;
-        }
-        // Do not allow "#0" because it's ambiguous:  a reader might assume that #0 is the first
-        // formal parameter.
-        return s.equals("this");
-    }
-
-    private static Receiver parseThis(FlowExpressionContext context) {
-        if (!(context.receiver == null || context.receiver.containsUnknown())) {
-            // "this" is the receiver of the context
-            return context.receiver;
-        } else {
             return new ThisReference(context.receiver == null ? null : context.receiver.getType());
         }
-    }
 
-    private static boolean isSuperLiteral(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        return s.equals("super");
-    }
-
-    private static Receiver parseSuper(String s, Types types, FlowExpressionContext context)
-            throws FlowExpressionParseException {
-        // super literal
-        List<? extends TypeMirror> superTypes = types.directSupertypes(context.receiver.getType());
-        // find class supertype
-        TypeMirror superType = null;
-        for (TypeMirror t : superTypes) {
-            // ignore interface types
-            if (!(t instanceof ClassType)) {
-                continue;
-            }
-            ClassType tt = (ClassType) t;
-            if (!tt.isInterface()) {
-                superType = t;
-                break;
-            }
-        }
-        if (superType == null) {
-            throw constructParserException(s, "super class not found");
-        }
-        return new ThisReference(superType);
-    }
-
-    private static boolean isIdentifier(String s) {
-        return IDENTIFIER_PATTERN.matcher(s).matches();
-    }
-
-    private static Receiver parseIdentifier(
-            String s, ProcessingEnvironment env, TreePath path, FlowExpressionContext context)
-            throws FlowExpressionParseException {
-        Resolver resolver = new Resolver(env);
-        if (!context.parsingMember && context.useLocalScope) {
-            // Attempt to match a local variable within the scope of the
-            // given path before attempting to match a field.
-            VariableElement varElem = resolver.findLocalVariableOrParameterOrField(s, path);
-            if (varElem != null) {
-                if (varElem.getKind() == ElementKind.FIELD) {
-                    boolean isOriginalReceiver = context.receiver instanceof ThisReference;
-                    return getReceiverField(s, context, isOriginalReceiver, varElem);
-                } else {
-                    return new LocalVariable(varElem);
+        /** @return The receiver of the superclass of the context. */
+        @Override
+        public Receiver visit(SuperExpr n, FlowExpressionContext context) {
+            // super literal
+            List<? extends TypeMirror> superTypes =
+                    types.directSupertypes(context.receiver.getType());
+            // find class supertype
+            for (TypeMirror t : superTypes) {
+                // ignore interface types
+                if (!(t instanceof ClassType)) {
+                    continue;
+                }
+                ClassType tt = (ClassType) t;
+                if (!tt.isInterface()) {
+                    return new ThisReference(t);
                 }
             }
+
+            throw new ParseRuntimeException(
+                    constructParserException("super", "super class not found"));
         }
 
-        // field access
-        TypeMirror receiverType = context.receiver.getType();
-        boolean originalReceiver = true;
-        VariableElement fieldElem = null;
-
-        if (receiverType.getKind() == TypeKind.ARRAY && s.equals("length")) {
-            fieldElem = resolver.findField(s, receiverType, path);
+        /** @param expr an expression in parentheses. */
+        @Override
+        public Receiver visit(EnclosedExpr expr, FlowExpressionContext context) {
+            return expr.getInner().accept(this, context);
         }
 
-        // Search for field in each enclosing class.
-        while (receiverType.getKind() == TypeKind.DECLARED) {
-            fieldElem = resolver.findField(s, receiverType, path);
-            if (fieldElem != null) {
-                break;
+        /** @return The receiver of an array access. */
+        @Override
+        public Receiver visit(ArrayAccessExpr expr, FlowExpressionContext context) {
+            Receiver array = expr.getName().accept(this, context);
+            FlowExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
+            Receiver index = expr.getIndex().accept(this, contextForIndex);
+
+            TypeMirror arrayType = array.getType();
+            if (arrayType.getKind() != TypeKind.ARRAY) {
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                expr.toString(),
+                                String.format("array not an array: %s : %s", array, arrayType)));
             }
-            receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
-            originalReceiver = false;
+
+            TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
+            return new ArrayAccess(componentType, array, index);
         }
 
-        if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
-            return getReceiverField(s, context, originalReceiver, fieldElem);
-        }
-
-        // Class name
-        Element classElem = resolver.findClass(s, path);
-        TypeMirror classType = ElementUtils.getType(classElem);
-        if (classType != null) {
-            return new ClassName(classType);
-        }
-
-        MethodTree enclMethod = TreeUtils.enclosingMethod(path);
-        if (enclMethod != null) {
-            List<? extends VariableTree> params = enclMethod.getParameters();
-            for (int i = 0; i < params.size(); i++) {
-                if (params.get(i).getName().contentEquals(s)) {
-                    throw constructParserException(
-                            s,
-                            String.format(DependentTypesError.FORMAL_PARAM_NAME_STRING, i + 1, s));
-                }
-            }
-        }
-
-        throw constructParserException(s, "identifier not found");
-    }
-
-    private static Receiver getReceiverField(
-            String s,
-            FlowExpressionContext context,
-            boolean originalReceiver,
-            VariableElement fieldElem)
-            throws FlowExpressionParseException {
-        TypeMirror receiverType = context.receiver.getType();
-
-        TypeMirror fieldType = ElementUtils.getType(fieldElem);
-        if (ElementUtils.isStatic(fieldElem)) {
-            Element classElem = fieldElem.getEnclosingElement();
-            Receiver staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
-            return new FieldAccess(staticClassReceiver, fieldType, fieldElem);
-        }
-        Receiver locationOfField;
-        if (originalReceiver) {
-            locationOfField = context.receiver;
-        } else {
-            locationOfField =
-                    FlowExpressions.internalReprOf(
-                            context.checkerContext.getAnnotationProvider(),
-                            new ImplicitThisLiteralNode(receiverType));
-        }
-        if (locationOfField instanceof ClassName) {
-            throw constructParserException(
-                    s, "a non-static field cannot have a class name as a receiver.");
-        }
-        return new FieldAccess(locationOfField, fieldType, fieldElem);
-    }
-
-    private static boolean isParameter(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
-        Matcher parameterMatcher = PARAMETER_PATTERN.matcher(s);
-        return parameterMatcher.matches();
-    }
-
-    private static Receiver parseParameter(String s, FlowExpressionContext context)
-            throws FlowExpressionParseException {
-        Matcher parameterMatcher = PARAMETER_PATTERN.matcher(s);
-        if (!parameterMatcher.matches()) {
-            return null;
-        }
-        if (context.arguments == null) {
-            throw constructParserException(s, "no parameter found");
-        }
-        int idx = -1;
-        try {
-            idx = Integer.parseInt(parameterMatcher.group(1));
-        } catch (NumberFormatException e) {
-            // cannot occur by the way the pattern is defined (matches only numbers)
-            assert false;
-        }
-        if (idx > context.arguments.size()) {
-            throw new FlowExpressionParseException(
-                    "flowexpr.parse.index.too.big", Integer.toString(idx));
-        }
-        return context.arguments.get(idx - 1);
-    }
-
-    /**
-     * Parse a method call. First of returned pair is a pair of method name and arguments. Second of
-     * returned pair is a remaining string.
-     *
-     * @param s expression string
-     * @return pair of (pair of method name and arguments) and remaining
-     */
-    private static Pair<Pair<String, String>, String> parseMethodCall(String s) {
-        // Parse Identifier
-        Matcher m = STARTS_WITH_IDENTIFIER_PATTERN.matcher(s);
-        if (!m.matches()) {
-            return null;
-        }
-        String ident = m.group(1);
-        int i = ident.length();
-
-        int rparenPos = matchingCloseParen(s, i, '(', ')');
-        if (rparenPos == -1) {
-            return null;
-        }
-
-        String arguments = s.substring(i + 1, rparenPos);
-        String remaining = s.substring(rparenPos + 1);
-        return Pair.of(Pair.of(ident, arguments), remaining);
-    }
-
-    private static boolean isMethodCall(String s) {
-        Pair<Pair<String, String>, String> result = parseMethodCall(s);
-        return result != null && result.second.isEmpty();
-    }
-
-    private static Receiver parseMethodCall(
-            String s, FlowExpressionContext context, TreePath path, ProcessingEnvironment env)
-            throws FlowExpressionParseException {
-        Pair<Pair<String, String>, String> method = parseMethodCall(s);
-        if (method == null) {
-            return null;
-        }
-
-        String methodName = method.first.first;
-
-        // parse parameter list
-        String parameterList = method.first.second;
-        List<Receiver> parameters =
-                ParameterListParser.parseParameterList(
-                        parameterList, true, context.copyAndUseOuterReceiver(), path);
-
-        // get types for parameters
-        List<TypeMirror> parameterTypes = new ArrayList<>();
-        for (Receiver p : parameters) {
-            parameterTypes.add(p.getType());
-        }
-        ExecutableElement methodElement = null;
-        try {
-            Element element = null;
-
-            // try to find the correct method
+        /** @param expr a unique identifier with no dots in its name. */
+        @Override
+        public Receiver visit(NameExpr expr, FlowExpressionContext context) {
+            String s = expr.getNameAsString();
             Resolver resolver = new Resolver(env);
-            TypeMirror receiverType = context.receiver.getType();
-
-            if (receiverType.getKind() == TypeKind.ARRAY) {
-                element = resolver.findMethod(methodName, receiverType, path, parameterTypes);
+            if (!context.parsingMember && s.startsWith(PARMETER_REPLACEMENT)) {
+                // A parameter is a local variable, but it can be referenced outside of local scope
+                // using the special #NN syntax.
+                return getParameterReceiver(s, context);
+            } else if (!context.parsingMember && context.useLocalScope) {
+                // Attempt to match a local variable within the scope of the
+                // given path before attempting to match a field.
+                VariableElement varElem = resolver.findLocalVariableOrParameterOrField(s, path);
+                if (varElem != null) {
+                    if (varElem.getKind() == ElementKind.FIELD) {
+                        boolean isOriginalReceiver = context.receiver instanceof ThisReference;
+                        return getReceiverField(s, context, isOriginalReceiver, varElem);
+                    } else {
+                        return new LocalVariable(varElem);
+                    }
+                }
             }
 
-            // Search for method in each enclosing class.
+            // field access
+            TypeMirror receiverType = context.receiver.getType();
+            boolean originalReceiver = true;
+            VariableElement fieldElem = null;
+
+            if (receiverType.getKind() == TypeKind.ARRAY && s.equals("length")) {
+                fieldElem = resolver.findField(s, receiverType, path);
+            }
+
+            // Search for field in each enclosing class.
             while (receiverType.getKind() == TypeKind.DECLARED) {
-                element = resolver.findMethod(methodName, receiverType, path, parameterTypes);
-                if (element.getKind() == ElementKind.METHOD) {
+                fieldElem = resolver.findField(s, receiverType, path);
+                if (fieldElem != null) {
                     break;
                 }
                 receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+                originalReceiver = false;
             }
 
-            if (element == null) {
-                throw constructParserException(s, "element==null");
-            }
-            if (element.getKind() != ElementKind.METHOD) {
-                throw constructParserException(s, "element.getKind()==" + element.getKind());
+            if (fieldElem != null && fieldElem.getKind() == ElementKind.FIELD) {
+                FieldAccess fieldAccess =
+                        (FieldAccess) getReceiverField(s, context, originalReceiver, fieldElem);
+                TypeElement scopeClassElement =
+                        TypesUtils.getTypeElement(fieldAccess.getReceiver().getType());
+                if (!originalReceiver
+                        && !ElementUtils.isStatic(fieldElem)
+                        && ElementUtils.isStatic(scopeClassElement)) {
+                    throw new ParseRuntimeException(
+                            constructParserException(
+                                    s,
+                                    "a non-static field can't be referenced from a static inner class or enum"));
+                }
+                return fieldAccess;
             }
 
-            methodElement = (ExecutableElement) element;
+            // Class name
+            Element classElem = resolver.findClass(s, path);
+            TypeMirror classType = ElementUtils.getType(classElem);
+            if (classType != null) {
+                return new ClassName(classType);
+            }
 
-            for (int i = 0; i < parameters.size(); i++) {
-                VariableElement formal = methodElement.getParameters().get(i);
-                TypeMirror formalType = formal.asType();
-                Receiver actual = parameters.get(i);
-                TypeMirror actualType = actual.getType();
-                // boxing necessary
-                if (TypesUtils.isBoxedPrimitive(formalType) && TypesUtils.isPrimitive(actualType)) {
-                    MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, formalType);
-                    List<Receiver> p = new ArrayList<>();
-                    p.add(actual);
-                    Receiver boxedParam =
-                            new MethodCall(formalType, valueOfMethod, new ClassName(formalType), p);
-                    parameters.set(i, boxedParam);
+            MethodTree enclMethod = TreeUtils.enclosingMethod(path);
+            if (enclMethod != null) {
+                List<? extends VariableTree> params = enclMethod.getParameters();
+                for (int i = 0; i < params.size(); i++) {
+                    if (params.get(i).getName().contentEquals(s)) {
+                        throw new ParseRuntimeException(
+                                constructParserException(
+                                        s,
+                                        String.format(
+                                                DependentTypesError.FORMAL_PARAM_NAME_STRING,
+                                                i + 1,
+                                                s)));
+                    }
                 }
             }
-        } catch (Throwable t) {
-            if (t.getMessage() == null) {
-                throw new Error("no detail message in " + t.getClass(), t);
-            }
-            throw constructParserException(s, t.getMessage());
-        }
-        assert methodElement != null;
-        // TODO: reinstate this test, but issue a warning that the user
-        // can override, rather than halting parsing which the user cannot override.
-        /*if (!PurityUtils.isDeterministic(context.checkerContext.getAnnotationProvider(),
-                methodElement)) {
-            throw new FlowExpressionParseException(Result.failure(
-                    "flowexpr.method.not.deterministic",
-                    methodElement.getSimpleName()));
-        }*/
-        if (ElementUtils.isStatic(methodElement)) {
-            Element classElem = methodElement.getEnclosingElement();
-            Receiver staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
-            return new MethodCall(
-                    ElementUtils.getType(methodElement),
-                    methodElement,
-                    staticClassReceiver,
-                    parameters);
-        } else {
-            if (context.receiver instanceof ClassName) {
-                throw constructParserException(
-                        s, "a non-static method call cannot have a class name as a receiver");
-            }
-            TypeMirror methodType =
-                    TypesUtils.substituteMethodReturnType(
-                            methodElement, context.receiver.getType(), env);
-            return new MethodCall(methodType, methodElement, context.receiver, parameters);
-        }
-    }
 
-    /**
-     * Parse a array access. First of returned pair is a pair of an array to be accessed and an
-     * index. Second of returned pair is a remaining string.
-     *
-     * @param s expression string
-     * @return pair of (pair of an array to be accessed and an index) and remaining. Returns null if
-     *     parsing fails.
-     */
-    private static Pair<Pair<String, String>, String> parseArray(String s) {
-        int i = 0;
-        while (i < s.length() && s.charAt(i) != '[') {
-            i++;
+            throw new ParseRuntimeException(constructParserException(s, "identifier not found"));
         }
 
-        if (i >= s.length()) {
-            return null;
-        }
+        /** @param expr a method call with or without a receiver expressions. */
+        @Override
+        public Receiver visit(MethodCallExpr expr, FlowExpressionContext context) {
+            String s = expr.toString();
+            Resolver resolver = new Resolver(env);
 
-        while (true) {
-            int nextRBracketPos = matchingCloseParen(s, i, '[', ']');
-            if (nextRBracketPos == -1) {
-                return null;
+            // methods with scope (receiver expression) need to change the parsing context so that
+            // identifiers are resolved with respect to the receiver.
+            if (expr.getScope().isPresent()) {
+                Receiver receiver = expr.getScope().get().accept(this, context);
+                context = context.copyChangeToParsingMemberOfReceiver(receiver);
+                expr = expr.removeScope();
             }
 
-            int nextLBracketPos = nextRBracketPos + 1;
-            if (nextLBracketPos < s.length() && s.charAt(nextLBracketPos) == '[') {
-                i = nextLBracketPos;
-                continue;
+            String methodName = expr.getNameAsString();
+
+            // parse arguments list
+            List<Receiver> arguments = new ArrayList<>();
+
+            for (Expression argument : expr.getArguments()) {
+                arguments.add(argument.accept(this, context.copyAndUseOuterReceiver()));
             }
 
-            return Pair.of(
-                    Pair.of(s.substring(0, i), s.substring(i + 1, nextRBracketPos)),
-                    s.substring(nextLBracketPos));
-        }
-    }
-
-    /**
-     * Find occurrence of {@code close} that matches the occurrence of {@code open} at {@code
-     * openPos}. Handles nested occurrences of "{@code open} ... {@code close}".
-     *
-     * @return matching occurrence of {@code close}, or -1 if not found
-     */
-    private static int matchingCloseParen(String s, int openPos, char open, char close) {
-        // expect `open` at `openPos` in `s`
-        if (s.length() <= openPos || s.charAt(openPos) != open) {
-            return -1;
-        }
-
-        int i = openPos + 1;
-        int depth = 1;
-        while (i < s.length()) {
-            char ch = s.charAt(i++);
-            if (ch == '"') {
-                i--;
-                Matcher m = STARTS_WITH_STRING_PATTERN.matcher(s.substring(i));
-                if (!m.matches()) {
-                    break;
-                }
-                i += m.group(1).length();
-            } else if (ch == open) {
-                depth++;
-            } else if (ch == close) {
-                depth--;
-                if (depth == 0) {
-                    return i - 1;
-                }
+            // get types for arguments
+            List<TypeMirror> argumentTypes = new ArrayList<>();
+            for (Receiver p : arguments) {
+                argumentTypes.add(p.getType());
             }
-        }
-        return -1;
-    }
-
-    private static boolean isArray(String s) {
-        Pair<Pair<String, String>, String> result = parseArray(s);
-        return result != null && result.second.isEmpty();
-    }
-
-    private static Receiver parseArray(String s, FlowExpressionContext context, TreePath path)
-            throws FlowExpressionParseException {
-        Pair<Pair<String, String>, String> array = parseArray(s);
-        if (array == null) {
-            return null;
-        }
-
-        String receiverStr = array.first.first;
-        String indexStr = array.first.second;
-        Receiver receiver = parseHelper(receiverStr, context, path);
-        FlowExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
-        Receiver index = parseHelper(indexStr, contextForIndex, path);
-        TypeMirror receiverType = receiver.getType();
-        if (!(receiverType instanceof ArrayType)) {
-            throw constructParserException(
-                    s, String.format("receiver not an array: %s : %s", receiver, receiverType));
-        }
-        TypeMirror componentType = ((ArrayType) receiverType).getComponentType();
-        ArrayAccess result = new ArrayAccess(componentType, receiver, index);
-        return result;
-    }
-
-    // TODO: This incorrectly returns true for "(a)+(b)" where the inital and final parens do not
-    // match.
-    private static boolean isParentheses(
-            String s, @SuppressWarnings("UnusedVariable") FlowExpressionContext contex) {
-        return s.length() > 2 && s.charAt(0) == '(' && s.charAt(s.length() - 1) == ')';
-    }
-
-    private static Receiver parseParentheses(String s, FlowExpressionContext context, TreePath path)
-            throws FlowExpressionParseException {
-        if (!isParentheses(s, context)) {
-            return null;
-        }
-        // TODO: this is the wrong thing for an expression like "(a)+(b)".
-        String expressionString = s.substring(1, s.length() - 1);
-        // Do not modify the value of recursiveCall, since a parenthesis match is essentially
-        // a match to a no-op and should not semantically affect the parsing.
-        return parseHelper(expressionString, context, path);
-    }
-
-    /**
-     * Matches a substring of {@code expression} to a package and class name (starting from the
-     * beginning of the string).
-     *
-     * @param expression the expression string that may start with a package and class name
-     * @param resolver the {@code Resolver} for the current processing environment
-     * @param path the tree path to the local scope
-     * @return {@code null} if the expression string did not start with a package name; otherwise a
-     *     {@code Pair} containing the {@code ClassName} for the matched class, and the remaining
-     *     substring of the expression (possibly null) after the package and class name.
-     * @throws FlowExpressionParseException if the entire expression string matches a package name
-     *     (but no class name), or if a package name was matched but the class could not be found
-     *     within the package (e.g., {@code "myExistingPackage.myNonExistentClass"}).
-     */
-    private static Pair<ClassName, String> matchPackageAndClassNameWithinExpression(
-            String expression, Resolver resolver, TreePath path)
-            throws FlowExpressionParseException {
-        Pair<PackageSymbol, String> packageSymbolAndRemainingString =
-                matchPackageNameWithinExpression(expression, resolver, path);
-
-        if (packageSymbolAndRemainingString == null) {
-            return null;
-        }
-
-        PackageSymbol packageSymbol = packageSymbolAndRemainingString.first;
-        String packageRemainingString = packageSymbolAndRemainingString.second;
-
-        Pair<String, String> select = parseMemberSelect(packageRemainingString);
-        String classNameString;
-        String remainingString;
-        if (select != null) {
-            classNameString = select.first;
-            remainingString = select.second;
-        } else {
-            classNameString = packageRemainingString;
-            remainingString = null;
-        }
-        ClassSymbol classSymbol;
-        try {
-            classSymbol = resolver.findClassInPackage(classNameString, packageSymbol, path);
-        } catch (Throwable t) {
-            if (t.getMessage() == null) {
-                throw new Error("no detail message in " + t.getClass(), t);
-            }
-            throw constructParserException(
-                    expression,
-                    t.getMessage()
-                            + " while looking up class "
-                            + classNameString
-                            + " in package "
-                            + packageSymbol);
-        }
-        if (classSymbol == null) {
-            throw constructParserException(
-                    expression,
-                    "classSymbol==null when looking up class "
-                            + classNameString
-                            + " in package "
-                            + packageSymbol);
-        }
-        TypeMirror classType = ElementUtils.getType(classSymbol);
-        if (classType == null) {
-            throw constructParserException(
-                    expression, "classType==null when looking for class symbol " + classSymbol);
-        }
-        return Pair.of(new ClassName(classType), remainingString);
-    }
-
-    /**
-     * Greedily matches the longest substring of {@code expression} to a package (starting from the
-     * beginning of the string).
-     *
-     * @param expression the expression string that may start with a package name
-     * @param resolver the {@code Resolver} for the current processing environment
-     * @param path the tree path to the local scope
-     * @return {@code null} if the expression string did not start with a package name; otherwise a
-     *     {@code Pair} containing the {@code PackageSymbol} for the matched package, and the
-     *     remaining substring of the expression (always non-null) after the package name
-     * @throws FlowExpressionParseException if the entire expression string matches a package name
-     */
-    private static Pair<PackageSymbol, String> matchPackageNameWithinExpression(
-            String expression, Resolver resolver, TreePath path)
-            throws FlowExpressionParseException {
-        Pair<String, String> select = parseMemberSelect(expression);
-
-        // To proceed past this point, at the minimum the expression must be composed of
-        // packageName.className .  Do not remove the call to matches(), otherwise the dotMatcher
-        // groups will not be filled in.
-        if (select == null) {
-            return null;
-        }
-
-        String packageName = select.first;
-        String remainingString = select.second;
-        String remainingStringIfPackageMatched = remainingString;
-
-        PackageSymbol result = null; // the result of this method call
-
-        while (true) {
-            // At this point, packageName is one component longer than result, and that extra
-            // component appears in remainingString but not in remainingStringIfPackageMatched.  In
-            // other words, result and remainingStringIfPackageMatched are consistent, and
-            // packageName and remainingString are consistent.  Try to set result to account for the
-            // extra component in packageName.
-            PackageSymbol longerResult;
+            ExecutableElement methodElement;
             try {
-                longerResult = resolver.findPackage(packageName, path);
+                Element element = null;
+
+                // try to find the correct method
+                TypeMirror receiverType = context.receiver.getType();
+
+                if (receiverType.getKind() == TypeKind.ARRAY) {
+                    element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
+                }
+
+                // Search for method in each enclosing class.
+                while (receiverType.getKind() == TypeKind.DECLARED) {
+                    element = resolver.findMethod(methodName, receiverType, path, argumentTypes);
+                    if (element.getKind() == ElementKind.METHOD) {
+                        break;
+                    }
+                    receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+                }
+
+                if (element == null) {
+                    throw constructParserException(s, "element==null");
+                }
+                if (element.getKind() != ElementKind.METHOD) {
+                    throw constructParserException(s, "element.getKind()==" + element.getKind());
+                }
+
+                methodElement = (ExecutableElement) element;
+
+                // Add valueOf around any arguments that require boxing.
+                for (int i = 0; i < arguments.size(); i++) {
+                    VariableElement parameter = methodElement.getParameters().get(i);
+                    TypeMirror parameterType = parameter.asType();
+                    Receiver argument = arguments.get(i);
+                    TypeMirror argumentType = argument.getType();
+                    // boxing necessary
+                    if (TypesUtils.isBoxedPrimitive(parameterType)
+                            && TypesUtils.isPrimitive(argumentType)) {
+                        MethodSymbol valueOfMethod =
+                                TreeBuilder.getValueOfMethod(env, parameterType);
+                        List<Receiver> p = new ArrayList<>();
+                        p.add(argument);
+                        Receiver boxedParam =
+                                new MethodCall(
+                                        parameterType,
+                                        valueOfMethod,
+                                        new ClassName(parameterType),
+                                        p);
+                        arguments.set(i, boxedParam);
+                    }
+                }
             } catch (Throwable t) {
                 if (t.getMessage() == null) {
                     throw new Error("no detail message in " + t.getClass(), t);
                 }
-                throw constructParserException(
-                        expression, t.getMessage() + " while looking up package " + packageName);
+                throw new ParseRuntimeException(constructParserException(s, t.getMessage()));
             }
-            if (longerResult == null) {
-                break;
-            }
-            result = longerResult;
-            remainingString = remainingStringIfPackageMatched;
-            select = parseMemberSelect(remainingString);
-            if (select != null) {
-                packageName += "." + select.first;
-                remainingStringIfPackageMatched = select.second;
+
+            // TODO: reinstate this test, but issue a warning that the user
+            // can override, rather than halting parsing which the user cannot override.
+            /*if (!PurityUtils.isDeterministic(context.checkerContext.getAnnotationProvider(),
+                    methodElement)) {
+                throw new FlowExpressionParseException(Result.failure(
+                        "flowexpr.method.not.deterministic",
+                        methodElement.getSimpleName()));
+            }*/
+            if (ElementUtils.isStatic(methodElement)) {
+                Element classElem = methodElement.getEnclosingElement();
+                Receiver staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
+                return new MethodCall(
+                        ElementUtils.getType(methodElement),
+                        methodElement,
+                        staticClassReceiver,
+                        arguments);
             } else {
-                // There are no dots in remainingString, so we are done.
-                // Fail if the whole string represents a package, otherwise return.
-                PackageSymbol wholeExpressionAsPackage;
-                try {
-                    wholeExpressionAsPackage = resolver.findPackage(expression, path);
-                } catch (Throwable t) {
-                    if (t.getMessage() == null) {
-                        throw new Error("no detail message in " + t.getClass(), t);
-                    }
-                    throw constructParserException(
-                            expression, t.getMessage() + " while looking up package " + expression);
+                if (context.receiver instanceof ClassName) {
+                    throw new ParseRuntimeException(
+                            constructParserException(
+                                    s,
+                                    "a non-static method call cannot have a class name as a receiver"));
                 }
-                if (wholeExpressionAsPackage != null) {
-                    // The entire expression matches a package name.
-                    throw constructParserException(
-                            expression, "a flow expression string cannot be just a package name");
-                }
-                break;
+                TypeMirror methodType =
+                        TypesUtils.substituteMethodReturnType(
+                                methodElement, context.receiver.getType(), env);
+                return new MethodCall(methodType, methodElement, context.receiver, arguments);
             }
         }
 
-        if (result == null) {
+        /**
+         * @param expr a field access, a fully qualified class name, or class name qualified with
+         *     another class name (e.g. {@code OuterClass.InnerClass})
+         */
+        @Override
+        public Receiver visit(FieldAccessExpr expr, FlowExpressionContext context) {
+            Resolver resolver = new Resolver(env);
+
+            Symbol.PackageSymbol packageSymbol =
+                    resolver.findPackage(expr.getScope().toString(), path);
+            if (packageSymbol != null) {
+                ClassSymbol classSymbol =
+                        resolver.findClassInPackage(expr.getNameAsString(), packageSymbol, path);
+                if (classSymbol != null) {
+                    return new ClassName(classSymbol.asType());
+                }
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                expr.toString(),
+                                "could not find class "
+                                        + expr.getNameAsString()
+                                        + " inside "
+                                        + expr.getScope().toString()));
+            }
+
+            Receiver receiver = expr.getScope().accept(this, context);
+
+            // Parse the rest, with a new receiver.
+            FlowExpressionContext newContext =
+                    context.copyChangeToParsingMemberOfReceiver(receiver);
+            return visit(expr.getNameAsExpression(), newContext);
+        }
+
+        /**
+         * @param expr a Class Literal
+         * @return a NameExpr to be handled by NameExpr visitor or a FieldAccessExpr to be handled
+         *     by FieldAccess visitor
+         */
+        @Override
+        public Receiver visit(ClassExpr expr, FlowExpressionContext context) {
+            TypeMirror result = convertTypeToTypeMirror(expr.getType(), context);
+            if (result == null) {
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                expr.toString(), "is an unparsable class literal"));
+            }
+            return new ClassName(result);
+        }
+
+        /** @param expr an array creation expression, with dimensions and/or initializers. */
+        @Override
+        public Receiver visit(ArrayCreationExpr expr, FlowExpressionContext context) {
+            List<Receiver> dimensions = new ArrayList<>();
+            for (ArrayCreationLevel dimension : expr.getLevels()) {
+                if (dimension.getDimension().isPresent()) {
+                    dimensions.add(dimension.getDimension().get().accept(this, context));
+                } else {
+                    dimensions.add(null);
+                }
+            }
+
+            List<Receiver> initializers = new ArrayList<>();
+            if (expr.getInitializer().isPresent()) {
+                for (Expression initializer : expr.getInitializer().get().getValues()) {
+                    initializers.add(initializer.accept(this, context));
+                }
+            }
+            TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType(), context);
+            if (arrayType == null) {
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                expr.getElementType().asString(), "type not parsable"));
+            }
+            for (int i = 0; i < dimensions.size(); i++) {
+                arrayType = TypesUtils.createArrayType(arrayType, env.getTypeUtils());
+            }
+            return new ArrayCreation(arrayType, dimensions, initializers);
+        }
+
+        /**
+         * Converts the JavaParser type to a TypeMirror.
+         *
+         * <p>Might return null if convert the kind of type is not handled.
+         *
+         * @param type JavaParser type
+         * @param context FlowExpressionContext
+         * @return TypeMirror corresponding to {@code type} or null if {@code type} isn't handled
+         */
+        private @Nullable TypeMirror convertTypeToTypeMirror(
+                Type type, FlowExpressionContext context) {
+            if (type.isClassOrInterfaceType()) {
+                return StaticJavaParser.parseExpression(type.asString())
+                        .accept(this, context)
+                        .getType();
+            } else if (type.isPrimitiveType()) {
+                switch (type.asPrimitiveType().getType()) {
+                    case BOOLEAN:
+                        return types.getPrimitiveType(TypeKind.BOOLEAN);
+                    case BYTE:
+                        return types.getPrimitiveType(TypeKind.BYTE);
+                    case SHORT:
+                        return types.getPrimitiveType(TypeKind.SHORT);
+                    case INT:
+                        return types.getPrimitiveType(TypeKind.INT);
+                    case CHAR:
+                        return types.getPrimitiveType(TypeKind.CHAR);
+                    case FLOAT:
+                        return types.getPrimitiveType(TypeKind.FLOAT);
+                    case LONG:
+                        return types.getPrimitiveType(TypeKind.LONG);
+                    case DOUBLE:
+                        return types.getPrimitiveType(TypeKind.DOUBLE);
+                }
+            } else if (type.isVoidType()) {
+                return types.getNoType(TypeKind.VOID);
+            } else if (type.isArrayType()) {
+                return types.getArrayType(
+                        convertTypeToTypeMirror(type.asArrayType().getComponentType(), context));
+            }
             return null;
         }
 
-        // an exception would have been thrown above if the entire expression is a package name
-        assert remainingString != null;
-
-        return Pair.of(result, remainingString);
-    }
-
-    /**
-     * A very simple parser for parameter lists, i.e. strings of the form {@code a, b, c} for some
-     * expressions {@code a}, {@code b} and {@code c}.
-     */
-    private static class ParameterListParser {
-
         /**
-         * Parse a parameter list and return the parameters as a list (or throw a {@link
-         * FlowExpressionParseException}).
+         * @param s a String representing an identifier (name expression, no dots in it)
+         * @return the receiver of the passed String name
          */
-        private static List<Receiver> parseParameterList(
-                String parameterString,
-                boolean allowEmptyList,
+        private static Receiver getReceiverField(
+                String s,
                 FlowExpressionContext context,
-                TreePath path)
-                throws FlowExpressionParseException {
-            ArrayList<Receiver> result = new ArrayList<>();
-            // the index of the character in 'parameterString' that the parser
-            // is currently looking at
-            int idx = 0;
-            // how deeply are method calls nested at this point? callLevel is 0
-            // in the beginning, and increases with every method call by 1. For
-            // instance it would be 2 at the end of the following string:
-            // "get(get(1,2,"
-            int callLevel = 0;
-            // is the parser currently in a string literal?
-            boolean inString = false;
-            while (true) {
-                // end of string reached
-                if (idx == parameterString.length()) {
-                    // finish current param
-                    if (inString) {
-                        throw constructParserException(parameterString, "unterminated string");
-                    } else if (callLevel > 0) {
-                        throw constructParserException(
-                                parameterString,
-                                "unterminated method invocation, callLevel==" + callLevel);
-                    } else {
-                        finishParam(parameterString, allowEmptyList, context, path, result, idx);
-                        return result;
-                    }
-                }
+                boolean originalReceiver,
+                VariableElement fieldElem) {
+            TypeMirror receiverType = context.receiver.getType();
 
-                // get next character
-                char next = parameterString.charAt(idx);
-                idx++;
-
-                // case split on character
-                switch (next) {
-                    case ',':
-                        if (inString) {
-                            // stay in same state and consume the character
-                        } else {
-                            if (callLevel == 0) {
-                                // parse first parameter
-                                finishParam(
-                                        parameterString,
-                                        allowEmptyList,
-                                        context,
-                                        path,
-                                        result,
-                                        idx - 1);
-                                // parse remaining parameters
-                                List<Receiver> rest =
-                                        parseParameterList(
-                                                parameterString.substring(idx),
-                                                false,
-                                                context,
-                                                path);
-                                result.addAll(rest);
-                                return result;
-                            } else {
-                                // not the outermost method call, defer parsing of
-                                // this parameter list to recursive call.
-                            }
-                        }
-                        break;
-                    case '"':
-                        // start or finish string
-                        inString = !inString;
-                        break;
-                    case '(':
-                        if (inString) {
-                            // stay in same state and consume the character
-                        } else {
-                            callLevel++;
-                        }
-                        break;
-                    case ')':
-                        if (inString) {
-                            // stay in same state and consume the character
-                        } else {
-                            if (callLevel == 0) {
-                                throw constructParserException(parameterString, "callLevel==0");
-                            } else {
-                                callLevel--;
-                            }
-                        }
-                        break;
-                    case '\\':
-                        idx++;
-                        break;
-                    default:
-                        // stay in same state and consume the character
-                        break;
-                }
+            TypeMirror fieldType = ElementUtils.getType(fieldElem);
+            if (ElementUtils.isStatic(fieldElem)) {
+                Element classElem = fieldElem.getEnclosingElement();
+                Receiver staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
+                return new FieldAccess(staticClassReceiver, fieldType, fieldElem);
             }
+            Receiver locationOfField;
+            if (originalReceiver) {
+                locationOfField = context.receiver;
+            } else {
+                locationOfField =
+                        FlowExpressions.internalReprOf(
+                                context.checkerContext.getAnnotationProvider(),
+                                new ImplicitThisLiteralNode(receiverType));
+            }
+            if (locationOfField instanceof ClassName) {
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                s, "a non-static field cannot have a class name as a receiver."));
+            }
+            return new FieldAccess(locationOfField, fieldType, fieldElem);
         }
 
-        private static void finishParam(
-                String parameterString,
-                boolean allowEmptyList,
-                FlowExpressionContext context,
-                TreePath path,
-                ArrayList<Receiver> result,
-                int idx)
-                throws FlowExpressionParseException {
-            if (idx == 0) {
-                if (allowEmptyList) {
-                    return;
-                } else {
-                    throw constructParserException(parameterString, "empty parameter list; idx==0");
-                }
-            } else {
-                result.add(parseHelper(parameterString.substring(0, idx), context, path));
+        /**
+         * @param s A String that starts with PARAMETER_REPLACEMENT
+         * @return The receiver of the parameter passed
+         */
+        private static Receiver getParameterReceiver(String s, FlowExpressionContext context) {
+            if (context.arguments == null) {
+                throw new ParseRuntimeException(constructParserException(s, "no parameter found"));
             }
+            int idx = Integer.parseInt(s.substring(PARAMETER_REPLACEMENT_LENGTH));
+
+            if (idx == 0) {
+                throw new ParseRuntimeException(
+                        constructParserException(
+                                s,
+                                "one should use \"this\" for the receiver or \"#1\" for the first formal parameter"));
+            }
+            if (idx > context.arguments.size()) {
+                throw new ParseRuntimeException(
+                        new FlowExpressionParseException(
+                                "flowexpr.parse.index.too.big", Integer.toString(idx)));
+            }
+            return context.arguments.get(idx - 1);
         }
     }
 
@@ -1307,7 +906,6 @@ public class FlowExpressionParseUtil {
 
             FlowExpressionContext flowExprContext =
                     new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
-
             return flowExprContext;
         }
 
@@ -1371,13 +969,13 @@ public class FlowExpressionParseUtil {
             Symbol sym = ((ClassType) type).tsym.owner;
 
             if (sym == null) {
-                return Type.noType;
+                return com.sun.tools.javac.code.Type.noType;
             }
 
             ClassSymbol cs = sym.enclClass();
 
             if (cs == null) {
-                return Type.noType;
+                return com.sun.tools.javac.code.Type.noType;
             }
 
             return cs.asType();
@@ -1397,11 +995,9 @@ public class FlowExpressionParseUtil {
             return new LocalVariable(elt);
         }
         Receiver receiverF = FlowExpressions.internalReprOfImplicitReceiver(elt);
-        FlowExpressionParseUtil.FlowExpressionContext context =
-                new FlowExpressionParseUtil.FlowExpressionContext(
-                        receiverF, null, provider.getContext());
-        return FlowExpressionParseUtil.parse(
-                tree.getName().toString(), context, provider.getPath(tree), false);
+        FlowExpressionContext context =
+                new FlowExpressionContext(receiverF, null, provider.getContext());
+        return parse(tree.getName().toString(), context, provider.getPath(tree), false);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1459,5 +1055,22 @@ public class FlowExpressionParseUtil {
                 (Throwable) null,
                 "flowexpr.parse.error",
                 "Invalid '" + expr + "' because " + explanation);
+    }
+
+    /**
+     * The Runtime equivalent of {@link FlowExpressionParseException}. This class is needed to wrap
+     * this exception into an unchecked exception.
+     */
+    private static class ParseRuntimeException extends RuntimeException {
+        private static final long serialVersionUID = 2L;
+        private final FlowExpressionParseException exception;
+
+        private ParseRuntimeException(FlowExpressionParseException exception) {
+            this.exception = exception;
+        }
+
+        private FlowExpressionParseException getCheckedException() {
+            return exception;
+        }
     }
 }

@@ -1182,14 +1182,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             boolean allLiterals = true;
             StringBuilder stringVal = new StringBuilder();
             for (ExpressionTree e : initializers) {
-                if (e.getKind() == Tree.Kind.INT_LITERAL) {
-                    char charVal = (char) ((Integer) ((LiteralTree) e).getValue()).intValue();
-                    stringVal.append(charVal);
-                } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
-                    char charVal = (((Character) ((LiteralTree) e).getValue()));
+                Range range = getRange(getAnnotatedType(e).getAnnotationInHierarchy(UNKNOWNVAL));
+                if (range != null && range.from == range.to) {
+                    char charVal = (char) range.from;
                     stringVal.append(charVal);
                 } else {
                     allLiterals = false;
+                    break;
                 }
             }
             if (allLiterals) {
@@ -2258,5 +2257,20 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         return getMinLenValue(lengthAnno);
+    }
+
+    /**
+     * Returns the annotation type mirror for the type of {@code expressionTree} with default
+     * annotations applied.
+     */
+    @Override
+    public AnnotatedTypeMirror getDummyAssignedTo(ExpressionTree expressionTree) {
+        TypeMirror type = TreeUtils.typeOf(expressionTree);
+        if (type.getKind() != TypeKind.VOID) {
+            AnnotatedTypeMirror atm = type(expressionTree);
+            addDefaultAnnotations(atm);
+            return atm;
+        }
+        return null;
     }
 }
