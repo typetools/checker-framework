@@ -3,12 +3,16 @@ package org.checkerframework.framework.type;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-/** Stores the result of {@link StructuralEqualityComparer} for type arguments. */
+/**
+ * Stores the result of {@link StructuralEqualityComparer} for type arguments.
+ *
+ * <p>This is simalar to {@link SubtypeVisitHistory}, but both true and false results are stored.
+ */
 public class StructuralEqualityVisitHistory {
 
-    /** Types in this history are structural equal. */
+    /** Types in this history are structurally equal. */
     private final SubtypeVisitHistory trueHistory;
-    /** Types in this history are not structural equal. */
+    /** Types in this history are not structurally equal. */
     private final SubtypeVisitHistory falseHistory;
 
     /** Creates an empty StructuralEqualityVisitHistory. */
@@ -40,7 +44,7 @@ public class StructuralEqualityVisitHistory {
     }
 
     /**
-     * Return whether or not the two types are structural equal for the given hierarchy or {@code
+     * Return whether or not the two types are structurally equal for the given hierarchy or {@code
      * null} if no result exists for the types.
      */
     public @Nullable Boolean result(
