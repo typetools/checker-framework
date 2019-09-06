@@ -110,8 +110,7 @@ allprojects {
             }
         }
 
-	/// TODO: This should be enabled selectively, but not everywhere yet because it would require
-	/// exhaustive @param Javadoc tags throughout.  (Fails on Travis, cannot reproduce locally.)
+	/// TODO: One day we can enable this.  For now, CI jobs require Javadoc on changed lines.
 	// // Turn Javadoc warnings into errors.
 	// tasks.withType(Javadoc) {
 	//     options.addStringOption('Xwerror', '-quiet')
@@ -730,7 +729,7 @@ task releaseBuild(type: GradleBuild) {
     description 'Build everything required for a release'
     startParameter = new StartParameter()
     startParameter.setProjectProperties(release: true)
-    // This downloads rather than builds the jdk8.jar because that's what is used in all the Travis tests.
+    // This downloads rather than builds the jdk8.jar because that's what is used in the CI tests.
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', 'checker:allJavadocJar']
 }
 

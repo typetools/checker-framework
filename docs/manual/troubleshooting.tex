@@ -977,22 +977,11 @@ Follow the
 \ahref{https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline}{Azure
   Pipelines getting started directions}.
 
-To save time, by default the Travis jobs download a pre-built version of
+To save time, by default the CI jobs download a pre-built version of
 the JDK rather than building the JDK from the sources in the Checker
 Framework repository.  This means that if you make a change to the
-annotated JDK, your tests will fail.  Here is how to deal with this issue:
-\begin{enumerate}
-\item
-In your pull request, edit file \<.travis.yml> so that it rebuilds
-the JDK (some jobs might time out).
-\item Verify that all tests pass.
-\item A Checker Framework developer needs to update the pre-built JDK from
-  your branch.
-\item
-  Undo your edits to file \<.travis.yml>.
-\item Verify that all tests pass.
-\item A Checker Framework developer will review your code and merge your branch.
-\end{enumerate}
+annotated JDK, your tests will fail.
+[TODO: Explain how to deal with this issue:]
 
 
 \subsubsectionAndLabel{Debugging continuous integration builds}{building-ci-debug}
@@ -1209,4 +1198,4 @@ For details, see file
 %%  LocalWords:  Barros Athaydes Ren Oblak Heule Steph Trask Stalnaker
 %%  LocalWords:  toolset's typechecking LiteralKind reifiable plaintext
 %%  LocalWords:  astub homebrew hevea cloneAndBuildDependencies allTests
-%%  LocalWords:  compileJava travis typedefs LPAR Tunable OIGJ sudo
+%%  LocalWords:  compileJava typedefs LPAR Tunable OIGJ sudo
