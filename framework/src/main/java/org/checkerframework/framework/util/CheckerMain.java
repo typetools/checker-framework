@@ -126,7 +126,11 @@ public class CheckerMain {
     }
 
     protected void assertValidState() {
-        assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
+        if (PluginUtil.getJreVersion() == 8) {
+            assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
+        } else {
+            assertFilesExist(Arrays.asList(checkerJar, checkerQualJar));
+        }
     }
 
     public void addToClasspath(List<String> cpOpts) {
@@ -147,7 +151,9 @@ public class CheckerMain {
 
     protected List<String> createCompilationBootclasspath(final List<String> argsList) {
         final List<String> extractedBcp = extractBootClassPath(argsList);
-        extractedBcp.add(0, jdkJar.getAbsolutePath());
+        if (PluginUtil.getJreVersion() == 8) {
+            extractedBcp.add(0, jdkJar.getAbsolutePath());
+        }
 
         return extractedBcp;
     }
