@@ -1269,7 +1269,7 @@ public class StubParser {
         final int wantedMethodParams =
                 (methodDecl.getParameters() == null) ? 0 : methodDecl.getParameters().size();
         final String wantedMethodString = StubUtil.toString(methodDecl);
-        for (ExecutableElement method : ElementUtils.getAllMethodsIn(typeElt, elements)) {
+        for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
             // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                     && wantedMethodName.contentEquals(method.getSimpleName().toString())
