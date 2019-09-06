@@ -7,6 +7,7 @@ class UnannoPrimitives {
     // TODO:: error: (type.invalid)
     @NonNull int g;
 
+    @SuppressWarnings("deprecation") // new Integer
     void local() {
         // test whether an arbitrary declaration annotation gets confused
         @SuppressWarnings("tata")

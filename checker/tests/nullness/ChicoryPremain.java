@@ -1,6 +1,7 @@
 package daikon.chicory;
 
 public class ChicoryPremain {
+    @SuppressWarnings("deprecation")
     public static void premain(ClassLoader loader) {
         Object transformer = null;
         try {

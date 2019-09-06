@@ -61,6 +61,7 @@ class Explosion {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static int foo() {
         final int v;
         int x;
