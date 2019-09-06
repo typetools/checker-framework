@@ -24,7 +24,7 @@ if [ -z ${PACKAGES+x} ]; then
   echo "Bad group argument '${GROUPARG}'"
   exit 1
 fi
-echo "PACKAGES=$PACKAGES"
+echo "PACKAGES=${PACKAGES}"
 
 
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
@@ -46,9 +46,9 @@ fi
 # This also builds annotation-tools and jsr308-langtools
 (cd $CHECKERFRAMEWORK && ./checker/bin-devel/build.sh downloadjdk)
 
-echo "PACKAGES=$PACKAGES"
+echo "PACKAGES=${PACKAGES}"
 for PACKAGE in "${PACKAGES[@]}"; do
-  echo "PACKAGE=$PACKAGE"
+  echo "PACKAGE=${PACKAGE}"
   (cd /tmp && rm -rf ${PACKAGE} && git clone --depth 1 https://github.com/plume-lib/${PACKAGE}.git)
   echo "About to call ./gradlew --console=plain -PcfLocal assemble"
   (cd /tmp/${PACKAGE} && CHECKERFRAMEWORK=$CHECKERFRAMEWORK ./gradlew --console=plain -PcfLocal assemble)
