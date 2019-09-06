@@ -541,19 +541,28 @@ subprojects {
                                 "-verbose:summary",
                                 "-javacoptions:-g",
                                 "-keywords:!ignore",
-                                '-samevm',
+                                "-samevm",
+                                "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+                                // Required for checker/jtreg/nullness/PersistUtil.java and other tests
+                                "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
                         ]
                         if (isJava8) {
+                            // Use Error Prone javac and source/target 8
                             args += [
-                                // Required for checker/jtreg/nullness/PersistUtil.java and other tests
-                                "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}:" +
-                                        "${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+                                "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                                 "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                                 "-javacoptions:-source 8",
                                 "-javacoptions:-target 8"
                                 ]
                         }
-                        if (project.name.is('checker')) {
+                        if (project.name.is('framework')) {
+                            // Do not check for the annotated JDK
+                            args += [
+                                    "-javacoptions:-Anocheckjdk"
+                            ]
+                        }
+                        if (isJava8 && project.name.is('checker')) {
+                            // TODO: enable annotated JDK on Java 9+
                             args += [
                                     "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar",
                             ]
