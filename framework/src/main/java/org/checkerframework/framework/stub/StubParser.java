@@ -679,8 +679,7 @@ public class StubParser {
         processParameters(decl, elt, declAnnos, methodType);
 
         // Receiver
-        if (decl.getReceiverParameter().isPresent()
-                && !decl.getReceiverParameter().get().getAnnotations().isEmpty()) {
+        if (decl.getReceiverParameter().isPresent()) {
             if (methodType.getReceiverType() == null) {
                 if (decl.isConstructorDeclaration()) {
                     stubWarn(
@@ -698,6 +697,10 @@ public class StubParser {
             } else {
                 annotate(
                         methodType.getReceiverType(),
+                        decl.getReceiverParameter().get().getAnnotations());
+                annotate(
+                        methodType.getReceiverType(),
+                        decl.getReceiverParameter().get().getType(),
                         decl.getReceiverParameter().get().getAnnotations());
             }
         }
