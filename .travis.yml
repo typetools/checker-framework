@@ -18,6 +18,8 @@ env:
     - THIS_REPO=checker-framework
     - OS=ubuntu
   matrix:
+    # "framework-tests" are a subset of all-tests that do not require an annotated jdk 11.
+    - BUILDJDK=downloadjdk JDKVER=jdk11 GROUP=framework-tests
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
     - BUILDJDK=downloadjdk JDKVER=jdk8-plus GROUP=misc
@@ -105,9 +107,7 @@ jobs:
             fi
 
             if [[ "${SLUGOWNER}" == "typetools" ]]; then
-              sh trigger-travis.sh typetests daikon-typecheck $TRAVIS_ACCESS_TOKEN
               sh trigger-travis.sh typetests guava-typecheck $TRAVIS_ACCESS_TOKEN
-              sh trigger-travis.sh typetests plume-lib-typecheck $TRAVIS_ACCESS_TOKEN
             fi
           fi
 

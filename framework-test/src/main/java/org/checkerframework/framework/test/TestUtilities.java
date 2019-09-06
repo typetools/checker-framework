@@ -32,7 +32,7 @@ public class TestUtilities {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         OutputStream err = new ByteArrayOutputStream();
         compiler.run(null, null, err, "-version");
-        IS_AT_LEAST_9_JVM = PluginUtil.getJreVersion() >= 1.9d;
+        IS_AT_LEAST_9_JVM = PluginUtil.getJreVersion() >= 9;
     }
 
     public static List<File> findNestedJavaTestFiles(String... dirNames) {

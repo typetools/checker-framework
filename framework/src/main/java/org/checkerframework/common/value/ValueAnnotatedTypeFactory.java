@@ -2258,4 +2258,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         return getMinLenValue(lengthAnno);
     }
+
+    /**
+     * Returns the annotation type mirror for the type of {@code expressionTree} with default
+     * annotations applied.
+     */
+    @Override
+    public AnnotatedTypeMirror getDummyAssignedTo(ExpressionTree expressionTree) {
+        TypeMirror type = TreeUtils.typeOf(expressionTree);
+        if (type.getKind() != TypeKind.VOID) {
+            AnnotatedTypeMirror atm = type(expressionTree);
+            addDefaultAnnotations(atm);
+            return atm;
+        }
+        return null;
+    }
 }
