@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -66,6 +67,8 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The transfer class for the Value Checker. */
@@ -551,8 +554,14 @@ public class ValueTransfer extends CFTransfer {
             if (((StringConversionNode) node).getOperand().getType().getKind().isPrimitive()) {
                 return true;
             }
+        } else if (node instanceof StringConcatenateNode) {
+            StringConcatenateNode concatenation = (StringConcatenateNode) node;
+            return isNotNullable(concatenation.getLeftOperand())
+                    && isNotNullable(concatenation.getRightOperand());
         }
-        return false;
+
+        Element element = TreeUtils.elementFromTree(node.getTree());
+        return element != null && ElementUtils.isEffectivelyFinal(element);
     }
 
     /** Creates an annotation for a result of string concatenation. */
