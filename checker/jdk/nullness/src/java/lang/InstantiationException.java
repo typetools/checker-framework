@@ -46,7 +46,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @since   JDK1.0
  */
 public
-class InstantiationException extends Exception {
+class InstantiationException extends ReflectiveOperationException {
     private static final long serialVersionUID = -8441929162975509110L;
 
     /**
