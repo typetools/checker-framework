@@ -26,17 +26,13 @@ export JAVA_HOME
 
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
     || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-eval `/tmp/plume-scripts/ci-info typetools`
 
 
 ## Build annotation-tools (Annotation File Utilities)
 if [ -d ../annotation-tools ] ; then
     git -C ../annotation-tools pull -q || true
 else
-    [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
-    REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetools annotation-tools`
-    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
-    (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
+    /tmp/plume-scripts/git-clone-related typetools annotation-tools
 fi
 
 echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
@@ -48,10 +44,7 @@ echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 if [ -d ../stubparser ] ; then
     git -C ../stubparser pull
 else
-    [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
-    REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetools stubparser`
-    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
-    (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
+    /tmp/plume-scripts/git-clone-related typetools stubparser
 fi
 
 echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
