@@ -29,11 +29,7 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
 
 
 ## Build annotation-tools (Annotation File Utilities)
-if [ -d ../annotation-tools ] ; then
-    git -C ../annotation-tools pull -q || true
-else
-    /tmp/plume-scripts/git-clone-related typetools annotation-tools
-fi
+/tmp/plume-scripts/git-clone-related typetools annotation-tools
 
 echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 (cd ../annotation-tools/ && ./.travis-build-without-test.sh)
@@ -41,11 +37,7 @@ echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 
 
 ## Build stubparser
-if [ -d ../stubparser ] ; then
-    git -C ../stubparser pull
-else
-    /tmp/plume-scripts/git-clone-related typetools stubparser
-fi
+/tmp/plume-scripts/git-clone-related typetools stubparser
 
 echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 (cd ../stubparser/ && ./.travis-build-without-test.sh)
