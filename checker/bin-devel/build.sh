@@ -1,7 +1,6 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-echo Entering $0
+echo Entering `readlink -f "$0"`
 
 # Fail the whole script if any command fails
 set -e
@@ -27,13 +26,18 @@ export JAVA_HOME
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
     || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 
+AFU=`readlink -m ${AFU:-../annotation-tools/annotation-file-utilities}`
+AT=`readlink -m ${AFU}/..`
 
 ## Build annotation-tools (Annotation File Utilities)
-/tmp/plume-scripts/git-clone-related typetools annotation-tools
+/tmp/plume-scripts/git-clone-related typetools annotation-tools ${AT}
+if [ ! -d ../annotation-tools ] ; then
+  ln -s ${AT} ../annotation-tools
+fi
 
-echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
-(cd ../annotation-tools/ && ./.travis-build-without-test.sh)
-echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
+echo "Running:  (cd ${AT} && ./.travis-build-without-test.sh)"
+(cd ${AT} && ./.travis-build-without-test.sh)
+echo "... done: (cd ${AT} && ./.travis-build-without-test.sh)"
 
 
 ## Build stubparser
@@ -55,4 +59,4 @@ else
   ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
 fi
 
-echo Exiting $0
+echo Exiting `readlink -f "$0"`

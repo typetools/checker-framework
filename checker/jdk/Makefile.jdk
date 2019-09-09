@@ -72,7 +72,7 @@ annotated/%.class: build/%.jaif
 annotated: $(ANNOTATED)
 
 showvars:
-	pwd
+	echo PWD=${PWD}
 	@echo BUILD_CLASSES: ${BUILD_CLASSES}
 	@echo JAIFS: ${JAIFS}
 	@echo ANNOTATED: ${ANNOTATED}
