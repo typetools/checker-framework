@@ -70,6 +70,30 @@ task copyJarsOtherThanJdk8ToDist(dependsOn: shadowJar, group: 'Build') {
     }
 }
 
+task zipJdk11(type: Zip) {
+    String jdkDir = 'jdk/src'
+    from ("../../${jdkDir}")
+
+        FileTree tree = fileTree(dir: "../../jdk/src")
+        SortedSet<String> includes = new TreeSet<>();
+        tree.visit {
+            if (!it.file.isDirectory()) {
+                it.file.eachLine { line ->
+                    if (line.matches("@AnnotatedFor.*nullness.*")) {
+                        includes.add(it.file.absolutePath)
+                    }
+                }
+            }
+        }
+        includeEmptyDirs false
+    int jdkDirStringSize = jdkDir.size()
+        for(String i: includes) {
+            int index = i.indexOf(jdkDir)
+           include i.substring(index + jdkDirStringSize+1)
+            println i.substring(index + jdkDirStringSize+1)
+        }
+}
+
 task forceBuildJdk(group: 'Build') {
     description 'Builds jdk.jar even if no file in the JDK has changed. ' +
             'Use to update jdk.jar if defaulting has changed in a checker.'
