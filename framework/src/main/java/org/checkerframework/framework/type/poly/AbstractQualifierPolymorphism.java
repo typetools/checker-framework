@@ -439,6 +439,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
             if (type.getKind() == TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) type;
+                if (wildcardType.getExtendsBound().getKind() == TypeKind.WILDCARD) {
+                    wildcardType = (AnnotatedWildcardType) wildcardType.getExtendsBound();
+                }
                 if (wildcardType.isUninferredTypeArgument()) {
                     return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
                 }

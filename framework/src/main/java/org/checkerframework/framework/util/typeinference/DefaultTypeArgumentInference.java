@@ -182,8 +182,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (showInferenceSteps) {
             checker.message(Kind.NOTE, "  results: %s\n", inferredArgs);
         }
-
-        return inferredArgs;
+        try {
+            return TypeArgInferenceUtil.correctResults(
+                    inferredArgs, expressionTree, methodType.getUnderlyingType(), typeFactory);
+        } catch (Throwable ex) {
+            // Ignore any exceptions
+            return inferredArgs;
+        }
     }
 
     /**
