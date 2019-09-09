@@ -1,7 +1,6 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-echo Entering $0
+echo Entering `readlink -f "$0"`
 
 # Fail the whole script if any command fails
 set -e
@@ -60,4 +59,4 @@ else
   ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
 fi
 
-echo Exiting $0
+echo Exiting `readlink -f "$0"`

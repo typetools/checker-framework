@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Entering $0, GROUP=$1"
+echo Entering `readlink -f "$0"`, GROUP=$1
 
 # Optional argument $1 is one of:
 #   all, framework-tests, all-tests, jdk.jar, misc, checker-framework-inference, plume-lib, downstream
@@ -94,4 +94,4 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   $SCRIPTDIR/test-downstream.sh
 fi
 
-echo "Exiting $0, GROUP=$1"
+echo Exiting `readlink -f "$0"`, GROUP=$1
