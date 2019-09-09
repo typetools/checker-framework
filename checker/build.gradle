@@ -70,28 +70,40 @@ task copyJarsOtherThanJdk8ToDist(dependsOn: shadowJar, group: 'Build') {
     }
 }
 
-task zipJdk11(type: Zip) {
-    String jdkDir = 'jdk/src'
-    from ("../../${jdkDir}")
+task zipJdk11() {
+    doLast {
+        String jdkDir = 'jdk/src/'
 
-        FileTree tree = fileTree(dir: "../../jdk/src")
-        SortedSet<String> includes = new TreeSet<>();
+        FileTree tree = fileTree(dir: "../../${jdkDir}")
+        String[] typeSystems = ['index','lock','nullness','optional' ,'signedness']
+        Map<String, SortedSet<String>> includeMap = new LinkedHashMap<>();
+        for(String typeSystem: typeSystems) {
+            includeMap.put(typeSystem, new TreeSet<>());
+        }
+
         tree.visit {
             if (!it.file.isDirectory()) {
                 it.file.eachLine { line ->
-                    if (line.matches("@AnnotatedFor.*nullness.*")) {
-                        includes.add(it.file.absolutePath)
+                    for(String typeSystem: typeSystems) {
+                        if (line.matches("@AnnotatedFor.*"+typeSystem+".*")) {
+                            includeMap.get(typeSystem).add(it.file.absolutePath)
+                        }
                     }
                 }
             }
         }
-        includeEmptyDirs false
-    int jdkDirStringSize = jdkDir.size()
-        for(String i: includes) {
-            int index = i.indexOf(jdkDir)
-           include i.substring(index + jdkDirStringSize+1)
-            println i.substring(index + jdkDirStringSize+1)
+        int jdkDirStringSize = jdkDir.size()
+        for(String typeSystem: typeSystems) {
+            copy {
+                from("../../${jdkDir}")
+                into("${buildDir}/jdk11/${typeSystem}")
+                for(String filename:includeMap.get(typeSystem)){
+                    int index = filename.indexOf(jdkDir)
+                    include filename.substring(index + jdkDirStringSize)
+                }
+            }
         }
+    }
 }
 
 task forceBuildJdk(group: 'Build') {
