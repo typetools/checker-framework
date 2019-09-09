@@ -117,7 +117,7 @@ class PipedOutputStream extends OutputStream {
      *          {@link #connect(java.io.PipedInputStream) unconnected},
      *          closed, or if an I/O error occurs.
      */
-    public void write(int b)  throws IOException {
+    public void write(@PolySigned int b)  throws IOException {
         if (sink == null) {
             throw new IOException("Pipe not connected");
         }

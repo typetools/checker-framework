@@ -416,6 +416,9 @@ public class AnnotatedTypes {
                         member,
                         memberType);
             case WILDCARD:
+                if (((AnnotatedWildcardType) of).isUninferredTypeArgument()) {
+                    return substituteUninferredTypeArgs(atypeFactory, member, memberType);
+                }
                 return asMemberOf(
                         types,
                         atypeFactory,
@@ -516,6 +519,34 @@ public class AnnotatedTypes {
         for (int i = 0; i < ownerParams.size(); ++i) {
             mappings.put(ownerParams.get(i).getUnderlyingType(), baseParams.get(i));
         }
+    }
+
+    /** Substitutes uninferred type arguments for type variables in {@code memberType}. */
+    private static AnnotatedTypeMirror substituteUninferredTypeArgs(
+            AnnotatedTypeFactory atypeFactory, Element member, AnnotatedTypeMirror memberType) {
+        TypeElement enclosingClassOfMember = ElementUtils.enclosingClass(member);
+        final Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
+
+        while (enclosingClassOfMember != null) {
+            if (!enclosingClassOfMember.getTypeParameters().isEmpty()) {
+                AnnotatedDeclaredType enclosingType =
+                        atypeFactory.getAnnotatedType(enclosingClassOfMember);
+                for (final AnnotatedTypeMirror type : enclosingType.getTypeArguments()) {
+                    AnnotatedTypeVariable typeParameter = (AnnotatedTypeVariable) type;
+                    mappings.put(
+                            typeParameter.getUnderlyingType(),
+                            atypeFactory.getUninferredWildcardType(typeParameter));
+                }
+            }
+            enclosingClassOfMember =
+                    ElementUtils.enclosingClass(enclosingClassOfMember.getEnclosingElement());
+        }
+
+        if (!mappings.isEmpty()) {
+            return atypeFactory.getTypeVarSubstitutor().substitute(mappings, memberType);
+        }
+
+        return memberType;
     }
 
     /**
