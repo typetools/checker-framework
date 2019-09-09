@@ -27,16 +27,21 @@ export JAVA_HOME
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
     || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 
+AFU=`readlink -f ${AFU:-../annotation-tools}`
+AT=`readlink -f ${AFU}/..`
 
 ## Build annotation-tools (Annotation File Utilities)
-/tmp/plume-scripts/git-clone-related typetools annotation-tools
+/tmp/plume-scripts/git-clone-related typetools annotation-tools ${AT}
+if [ ! -d ../annotation-tools] ; then
+  ln -s ${AT} ../annotation-tools
+fi
 
-echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
-(cd ../annotation-tools/ && ./.travis-build-without-test.sh)
-echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
+echo "Running:  (cd ${AT} && ./.travis-build-without-test.sh)"
+(cd ${AT} && ./.travis-build-without-test.sh)
+echo "... done: (cd ${AT} && ./.travis-build-without-test.sh)"
 echo "AFU=${AFU}"
-readlink -f ../annotation-tools/
-ls -l ../annotation-tools/annotation-file-utilities
+readlink -f ${AT}
+ls -l ${AT}/annotation-file-utilities
 
 
 ## Build stubparser
