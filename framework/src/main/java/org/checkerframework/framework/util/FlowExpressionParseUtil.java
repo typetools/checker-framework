@@ -36,7 +36,9 @@ import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -949,6 +951,35 @@ public class FlowExpressionParseUtil {
                     checkerContext,
                     parsingMember,
                     useLocalScope);
+        }
+
+        /**
+         * Format this object verbosely, with each line indented by 4 spaces but without a trailing
+         * newline.
+         *
+         * @return a verbose printed representation of this
+         */
+        public String debugToString() {
+            return debugToString(4);
+        }
+
+        /**
+         * Format this object verbosely, with each line indented by the given number of spaces but
+         * without a trailing newline.
+         *
+         * @return a verbose printed representation of this
+         */
+        public String debugToString(int indent) {
+            String indentString = String.join("", Collections.nCopies(indent, " "));
+            StringJoiner sj = new StringJoiner(indentString, indentString, "");
+            sj.add(String.format("receiver=%s%n", receiver.debugToString()));
+            sj.add(String.format("arguments=%s%n", arguments));
+            sj.add(String.format("outerReceiver=%s%n", outerReceiver.debugToString()));
+            sj.add(String.format("checkerContext=%s%n", "..."));
+            // sj.add(String.format("checkerContext=%s%n", checkerContext));
+            sj.add(String.format("parsingMember=%s%n", parsingMember));
+            sj.add(String.format("useLocalScope=%s", useLocalScope));
+            return sj.toString();
         }
     }
 
