@@ -6,13 +6,21 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 /**
  * Stores the result of {@link StructuralEqualityComparer} for type arguments.
  *
- * <p>This is simalar to {@link SubtypeVisitHistory}, but both true and false results are stored.
+ * <p>This is similar to {@link SubtypeVisitHistory}, but both true and false results are stored.
  */
 public class StructuralEqualityVisitHistory {
 
-    /** Types in this history are structurally equal. */
+    /**
+     * Types in this history are structurally equal. (Use {@link SubtypeVisitHistory} because it
+     * implements a {@code Map<Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>,
+     * Set<AnnotationMirror>>})
+     */
     private final SubtypeVisitHistory trueHistory;
-    /** Types in this history are not structurally equal. */
+    /**
+     * Types in this history are not structurally equal. (Use {@link SubtypeVisitHistory} because it
+     * implements a {@code Map<Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>,
+     * Set<AnnotationMirror>>})
+     */
     private final SubtypeVisitHistory falseHistory;
 
     /** Creates an empty StructuralEqualityVisitHistory. */
