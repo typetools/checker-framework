@@ -32,7 +32,7 @@ AT=`readlink -f ${AFU}/..`
 
 ## Build annotation-tools (Annotation File Utilities)
 /tmp/plume-scripts/git-clone-related typetools annotation-tools ${AT}
-if [ ! -d ../annotation-tools] ; then
+if [ ! -d ../annotation-tools ] ; then
   ln -s ${AT} ../annotation-tools
 fi
 
