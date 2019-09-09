@@ -1,5 +1,6 @@
 package org.checkerframework.common.value;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -555,12 +556,11 @@ public class ValueTransfer extends CFTransfer {
                 return true;
             }
         } else if (node instanceof StringConcatenateNode) {
-            StringConcatenateNode concatenation = (StringConcatenateNode) node;
-            return isNotNullable(concatenation.getLeftOperand())
-                    && isNotNullable(concatenation.getRightOperand());
+            // no need to recurse because this method is called for every operand.
+            return true;
         }
 
-        Element element = TreeUtils.elementFromTree(node.getTree());
+        Element element = TreeUtils.elementFromUse((ExpressionTree) node.getTree());
         return element != null && ElementUtils.isEffectivelyFinal(element);
     }
 
