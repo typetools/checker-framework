@@ -34,6 +34,9 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
 echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 (cd ../annotation-tools/ && ./.travis-build-without-test.sh)
 echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
+echo "AFU=${AFU}"
+readlink -f ../annotation-tools/
+ls -l ../annotation-tools/annotation-file-utilities
 
 
 ## Build stubparser
