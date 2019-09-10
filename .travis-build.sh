@@ -45,7 +45,7 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
 /tmp/plume-scripts/ci-info typetools
 eval `/tmp/plume-scripts/ci-info typetools`
 
-export CHECKERFRAMEWORK="$(cd "${CHECKERFRAMEWORK:-.}" && pwd -P)"
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"

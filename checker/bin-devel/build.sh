@@ -20,7 +20,7 @@ fi
 
 export SHELLOPTS
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [ "$(uname)" == "Darwin" ] ; then
   export JAVA_HOME=${JAVA_HOME:-$(/usr/libexec/java_home)}
 else
   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(readlink -f $(which javac))))}
@@ -29,7 +29,7 @@ fi
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
     || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 
-AFU="$(cd "${AFU:-$(dirname $0)/..}" && pwd -P)"
+AFU="${AFU:-$(cd "$(dirname $0)/.." && pwd -P)}"
 AT=${AFU}/..
 
 ## Build annotation-tools (Annotation File Utilities)

@@ -32,7 +32,7 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
 eval `/tmp/plume-scripts/ci-info typetools`
 
 echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
-export CHECKERFRAMEWORK="$(cd "${CHECKERFRAMEWORK:-.}" && pwd -P)"
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 ## Build the Checker Framework
