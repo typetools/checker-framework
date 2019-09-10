@@ -27,10 +27,13 @@ else
 fi
 
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
-    || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 
 AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 AT=${AFU}/..
+echo "AFU = ${AFU}"
+echo "AT = ${AT}"
+ls -al ..
 
 ## Build annotation-tools (Annotation File Utilities)
 /tmp/plume-scripts/git-clone-related typetools annotation-tools ${AT}
