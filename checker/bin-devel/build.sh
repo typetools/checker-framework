@@ -33,12 +33,16 @@ AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 AT=${AFU}/..
 echo "AFU = ${AFU}"
 echo "AT = ${AT}"
+pwd
 ls -al ..
 
 ## Build annotation-tools (Annotation File Utilities)
 /tmp/plume-scripts/git-clone-related typetools annotation-tools ${AT}
 export AFU="$(cd "${AFU}" && pwd -P)"
 export AT="$(cd "${AT}" && pwd -P)"
+echo "AFU = ${AFU}"
+echo "AT = ${AT}"
+pwd
 if [ ! -d ../annotation-tools ] ; then
   ln -s ${AT} ../annotation-tools
 fi
