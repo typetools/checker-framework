@@ -265,7 +265,7 @@ Here is a good way to proceed.
   \<@NonNegative>, then you could write a test case such as:
 
 \begin{Verbatim}
-  void foo(@UnknownSign int us, @NonNegative int nn) {
+  void testHierarchy(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
     // :: error: assignment.type.incompatible
@@ -326,7 +326,7 @@ Here is a good way to proceed.
   possibly-negative value, then you would write a test case such as:
 
 \begin{Verbatim}
-  void foo(String[] myArray, @UnknownSign int us, @NonNegative int nn) {
+  void testArrayIndexing(String[] myArray, @UnknownSign int us, @NonNegative int nn) {
     myArray[us];  // expected error on this line
     myArray[nn];
   }
@@ -340,7 +340,7 @@ Here is a good way to proceed.
   integers and for array lengths, you would write a test case like the following:
 
 \begin{Verbatim}
-  void foo(String[] myArray) {
+  void testTypeIntroduction(String[] myArray) {
     @NonNegative nn1 = -1;  // expected error on this line
     @NonNegative nn2 = 0;
     @NonNegative nn3 = 1;
@@ -358,7 +358,7 @@ Here is a good way to proceed.
   test case such as:
 
 \begin{Verbatim}
-  void foo(@UnknownSign int us, @NonNegative int nn) {
+  void testDataflow(@UnknownSign int us, @NonNegative int nn) {
     @NonNegative nn2;
     nn2 = us;  // expected error on this line
     if (us > j) {
