@@ -32,7 +32,7 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
 eval `/tmp/plume-scripts/ci-info typetools`
 
 echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
-export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 ## Build the Checker Framework
@@ -40,7 +40,7 @@ if [ -d $CHECKERFRAMEWORK ] ; then
   # Fails if not currently on a branch
   git -C $CHECKERFRAMEWORK pull || true
 else
-  JSR308=`readlink -m $CHECKERFRAMEWORK/..`
+  JSR308="$(cd "$CHECKERFRAMEWORK/.." && pwd -P)"
   (cd $JSR308 && git clone https://github.com/typetools/checker-framework.git) || (cd $JSR308 && git clone https://github.com/typetools/checker-framework.git)
 fi
 # This also builds annotation-tools and jsr308-langtools
