@@ -30,7 +30,6 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
   || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 
 # This does not work:
-#   AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 #   AT=${AFU}/..
 # because `git clone REPO ../annotation-tools/annotation-file-utilities/..`
 # fails with
@@ -44,19 +43,8 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
 AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 AT=$(dirname "${AFU}")
 
-
-echo "AFU = ${AFU}"
-echo "AT = ${AT}"
-pwd
-ls -al ..
-
 ## Build annotation-tools (Annotation File Utilities)
 /tmp/plume-scripts/git-clone-related typetools annotation-tools ${AT}
-export AFU="$(cd "${AFU}" && pwd -P)"
-export AT="$(cd "${AT}" && pwd -P)"
-echo "AFU = ${AFU}"
-echo "AT = ${AT}"
-pwd
 if [ ! -d ../annotation-tools ] ; then
   ln -s ${AT} ../annotation-tools
 fi
