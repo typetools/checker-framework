@@ -3050,6 +3050,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         typesFromStubFiles,
                         declAnnosFromStubFiles);
             }
+            parseJdk11("nullness");
         }
 
         // Stub files specified via stubs compiler option, stubs system property,
@@ -3148,6 +3149,42 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.typesFromStubFiles = typesFromStubFiles;
         this.declAnnosFromStubFiles = declAnnosFromStubFiles;
+    }
+
+    private void parseJdk11(String typesystem) {
+        //        if(PluginUtil.getJreVersion() < 11) {
+        //            return;
+        //        }
+        //        URL jdk11URL = checker.getClass().getResource("/jdk11/"+typesystem);
+        //        if(jdk11URL == null) {
+        //            return;
+        //        }
+        //        URI jdk11URI;
+        //        try {
+        //           jdk11URI = jdk11URL.toURI();
+        //        } catch (URISyntaxException e) {
+        //            e.printStackTrace();
+        //            return;
+        //        }
+        //
+        //        try (FileSystem fileSystem = FileSystems.getFileSystem(jdk11URI)) {
+        //            Path resourcePath = fileSystem.getPath("/");
+        //            Files.walk(resourcePath).skip(1).forEach(path ->{
+        //                if(path.getFileName().endsWith(".java")) {
+        //                    try {
+        //                        StubParser.parse(path.getFileName().toString(), new
+        // FileInputStream(path.toFile()),  this,
+        //                                processingEnv,
+        //                                typesFromStubFiles,
+        //                                declAnnosFromStubFiles);
+        //                    } catch (FileNotFoundException e) {
+        //                        e.printStackTrace();
+        //                    }
+        //                }
+        //            });
+        //        } catch (IOException e) {
+        //            e.printStackTrace();
+        //        }
     }
 
     /**

@@ -13,8 +13,7 @@ sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-            srcDirs += ['src/main/java']
-            exclude '**/*.java'
+            srcDirs += ['src/main/java', "${buildDir}/jdk"]
         }
     }
     testannotations
@@ -32,6 +31,47 @@ dependencies {
 
     testannotationsCompile project(':checker-qual')
 }
+
+task copyJdk11Files() {
+    doLast {
+        // TODO: Add task to clone typetools/jdk
+        String jdkDir = 'jdk/src/'
+
+        FileTree tree = fileTree(dir: "../../${jdkDir}")
+        // TODO: No @AnnotatedFor("optional") exist, but there should be on on java.util.Optional
+//        String[] typeSystems = ['index','lock','nullness','optional' ,'signedness']
+        String[] typeSystems = ['index', 'lock', 'nullness', 'signedness']
+        Map<String, SortedSet<String>> includeMap = new LinkedHashMap<>();
+        for (String typeSystem : typeSystems) {
+            includeMap.put(typeSystem, new TreeSet<>());
+        }
+
+        tree.visit {
+            if (!it.file.isDirectory() && it.file.name.matches(".*\\.java")) {
+                it.file.eachLine { line ->
+                    for (String typeSystem : typeSystems) {
+                        if (line.matches("@AnnotatedFor.*" + typeSystem + ".*")) {
+                            includeMap.get(typeSystem).add(it.file.absolutePath)
+                        }
+                    }
+                }
+            }
+        }
+        int jdkDirStringSize = jdkDir.size()
+        for (String typeSystem : typeSystems) {
+            copy {
+                from("../../${jdkDir}")
+                into("${buildDir}/jdk/jdk11/${typeSystem}")
+                for (String filename : includeMap.get(typeSystem)) {
+                    int index = filename.indexOf(jdkDir)
+                    include filename.substring(index + jdkDirStringSize)
+                }
+            }
+        }
+    }
+}
+
+processResources.dependsOn(copyJdk11Files)
 
 jar {
     manifest {
@@ -65,44 +105,6 @@ task copyJarsOtherThanJdk8ToDist(dependsOn: shadowJar, group: 'Build') {
             into "${projectDir}/dist"
             rename { String fileName ->
                 fileName.replace(fileName, "javac.jar")
-            }
-        }
-    }
-}
-
-task zipJdk11() {
-    doLast {
-        String jdkDir = 'jdk/src/'
-
-        FileTree tree = fileTree(dir: "../../${jdkDir}")
-        // TODO: No @AnnotatedFor("optional") exist, but there should be on on java.util.Optional
-//        String[] typeSystems = ['index','lock','nullness','optional' ,'signedness']
-        String[] typeSystems = ['index', 'lock', 'nullness', 'signedness']
-        Map<String, SortedSet<String>> includeMap = new LinkedHashMap<>();
-        for (String typeSystem : typeSystems) {
-            includeMap.put(typeSystem, new TreeSet<>());
-        }
-
-        tree.visit {
-            if (!it.file.isDirectory() && it.file.name.matches(".*\\.java")) {
-                it.file.eachLine { line ->
-                    for (String typeSystem : typeSystems) {
-                        if (line.matches("@AnnotatedFor.*" + typeSystem + ".*")) {
-                            includeMap.get(typeSystem).add(it.file.absolutePath)
-                        }
-                    }
-                }
-            }
-        }
-        int jdkDirStringSize = jdkDir.size()
-        for (String typeSystem : typeSystems) {
-            copy {
-                from("../../${jdkDir}")
-                into("${buildDir}/jdk11/${typeSystem}")
-                for (String filename : includeMap.get(typeSystem)) {
-                    int index = filename.indexOf(jdkDir)
-                    include filename.substring(index + jdkDirStringSize)
-                }
             }
         }
     }

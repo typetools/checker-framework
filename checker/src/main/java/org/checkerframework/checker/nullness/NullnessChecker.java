@@ -7,7 +7,6 @@ import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
 /**
@@ -30,7 +29,6 @@ import org.checkerframework.framework.source.SupportedLintOptions;
     // See issue #986: https://github.com/typetools/checker-framework/issues/986
     "forbidnonnullarraycomponents"
 })
-@StubFiles("/Users/smillst/jsr308/checker-framework/checker/jdk/nullness/src")
 public class NullnessChecker extends InitializationChecker {
 
     /** Should we be strict about initialization of {@link MonotonicNonNull} variables. */
