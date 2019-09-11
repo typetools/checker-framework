@@ -15,10 +15,17 @@ please send us a link and a short description.
 
 
 % Note to maintainers:
-% Sections are added to this chapter in chronological order.
+% Sections are added to this chapter in reverse chronological order, at the top.
 
 
-***** START OF LIST *****
+\sectionAndLabel{Object Construction Checker}{object-construction-checker}
+
+The \href{https://github.com/kelloggm/object-construction-checker}{Object
+  Construction Checker} verifies that your code correctly uses the builder
+pattern, never omitting a required argument. The checker has built-in
+support for \href{https://projectlombok.org/}{Lombok} and
+\href{https://github.com/google/auto/blob/master/value/userguide/index.md}{AutoValue}. Programmers
+can extend it to other builders by writing method specifications.
 
 
 \sectionAndLabel{AWS crypto policy compliance checker}{crypto-policy-compliance-checker}
@@ -217,6 +224,14 @@ Checker Framework and of the javac compiler.
 
 
 \input{typestate-checker}
+
+
+%%% *****
+%%% DO NOT EDIT HERE!
+%%% New sections go at the top of the file, not the bottom.
+%%% *****
+
+
 
 % LocalWords:  SCJ EnerJ CheckLT unsanitized JavaUI CCS IGJ OIGJ FIO08
 %%  LocalWords:  jOOQ typesafe
