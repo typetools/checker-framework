@@ -676,7 +676,12 @@ public class FlowExpressionParseUtil {
      */
     public static class FlowExpressionContext {
         public final Receiver receiver;
+        /**
+         * In a context for a method declaration or lambda, the formals. In a context for a method
+         * invocation, the actuals. In a context for a class declaration, an empty list.
+         */
         public final List<Receiver> arguments;
+
         public final Receiver outerReceiver;
         public final BaseContext checkerContext;
         /**
