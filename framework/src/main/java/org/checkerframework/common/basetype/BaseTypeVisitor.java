@@ -32,7 +32,8 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Symbol.*;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -1020,7 +1021,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (atypeFactory.getDependentTypesHelper() != null) {
                 atypeFactory
                         .getDependentTypesHelper()
-                        .checkType(visitorState.getAssignmentContext().second, node);
+                        .checkType(atypeFactory.getAnnotatedTypeLhs(node), node);
             }
             // If there's no assignment in this variable declaration, skip it.
             if (node.getInitializer() != null) {
@@ -1600,7 +1601,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     "lambda.param.type.incompatible");
         }
 
-        // TODO: Post conditions?
+        // TODO: Postconditions?
         // https://github.com/typetools/checker-framework/issues/801
 
         return super.visitLambdaExpression(node, p);
@@ -2712,15 +2713,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
-        if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv)
-                && !atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
-            checker.report(
-                    Result.failure(
-                            "method.invocation.invalid",
-                            TreeUtils.elementFromUse(node),
-                            treeReceiver.toString(),
-                            methodReceiver.toString()),
-                    node);
+        if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv)) {
+            commonAssignmentCheckStartDiagnostic(methodReceiver, treeReceiver, node);
+            boolean success =
+                    atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver);
+            commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, node);
+            if (!success) {
+                checker.report(
+                        Result.failure(
+                                "method.invocation.invalid",
+                                TreeUtils.elementFromUse(node),
+                                treeReceiver.toString(),
+                                methodReceiver.toString()),
+                        node);
+            }
         }
     }
 
@@ -3218,7 +3224,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         private void checkPreAndPostConditions() {
             String msgKey = methodReference ? "methodref" : "override";
             if (methodReference) {
-                // TODO: Support post conditions and method references.
+                // TODO: Support postconditions and method references.
                 // The parse context always expects instance methods, but method references can be
                 // static.
                 return;
@@ -3956,6 +3962,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Check that the annotated JDK is being used.
     // **********************************************************************
 
+    /** True if method {@link checkForAnnotatedJdk} has been called. */
     private static boolean checkedJDK = false;
 
     // Not all subclasses call this -- only those that have an annotated JDK.
@@ -3972,49 +3979,46 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         List<? extends ExecutableElement> memberMethods =
                 ElementFilter.methodsIn(elements.getAllMembers(objectTE));
 
+        // Look for the @Nullness annotation in Object.equals(@Nullable Object).
+        // If it is found, the user is using the annotated JDK.
         for (ExecutableElement m : memberMethods) {
-            if (ElementUtils.isMethod(m, objectEquals, checker.getProcessingEnvironment())) {
-                // The Nullness JDK serves as a proxy for all annotated JDKs.
+            if (!ElementUtils.isMethod(m, objectEquals, checker.getProcessingEnvironment())) {
+                continue;
+            }
 
-                // Note that we cannot use the AnnotatedTypeMirrors from the
-                // Checker Framework, because those only return the annotations
-                // that are used by the current checker.
-                // That is, if this code is executed by something other than the
-                // Nullness Checker, we would not find the annotations.
-                // Therefore, we go to the Element and get all annotations on
-                // the parameter.
+            // We cannot use the AnnotatedTypeMirrors from the Checker Framework, because those only
+            // return the annotations that are used by the current checker.
 
-                // TODO: doing types.typeAnnotationOf(m.getParameters().get(0).asType(),
-                // Nullable.class) or types.typeAnnotationsOf(m.asType()) does not work any more. It
-                // should.
+            // That is, if this code is executed by something other than the Nullness Checker, we
+            // would not find the annotations.  Therefore, we go to the Element and get all
+            // annotations on the parameter.
 
-                boolean foundJDK = false;
-                for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
-                        ((com.sun.tools.javac.code.Symbol) m).getRawTypeAttributes()) {
-                    if (tc.position.type
-                                    == com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER
-                            && tc.position.parameter_index == 0
-                            &&
-                            // TODO: using .class would be nicer, but adds a circular dependency on
-                            // the "checker" project.
-                            // tc.type.toString().equals(org.checkerframework.checker.nullness.qual.Nullable.class.getName()) ) {
-                            tc.type
-                                    .toString()
-                                    .equals(
-                                            "org.checkerframework.checker.nullness.qual.Nullable")) {
-                        foundJDK = true;
-                    }
-                }
+            // TODO: doing types.typeAnnotationOf(m.getParameters().get(0).asType(),
+            // Nullable.class) or types.typeAnnotationsOf(m.asType()) does not work any more. It
+            // should.
 
-                if (!foundJDK) {
-                    String jdkJarName = PluginUtil.getJdkJarName();
-
-                    checker.message(
-                            Kind.WARNING,
-                            "You do not seem to be using the distributed annotated JDK.  To fix the problem, supply javac an argument like:  -Xbootclasspath/p:.../checker/dist/ .  Currently using: "
-                                    + jdkJarName);
+            for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
+                    ((com.sun.tools.javac.code.Symbol) m).getRawTypeAttributes()) {
+                if (tc.position.type == com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER
+                        && tc.position.parameter_index == 0
+                        &&
+                        // TODO: using .class would be nicer, but adds a circular dependency on
+                        // the "checker" project.
+                        // tc.type.toString().equals(org.checkerframework.checker.nullness.qual.Nullable.class.getName()) ) {
+                        tc.type
+                                .toString()
+                                .equals("org.checkerframework.checker.nullness.qual.Nullable")) {
+                    return;
                 }
             }
+
+            String jdkJarName = PluginUtil.getJdkJarName();
+            checker.message(
+                    Kind.WARNING,
+                    "You do not seem to be using the distributed annotated JDK. "
+                            + "To fix the problem, supply javac an argument like:  -Xbootclasspath/p:.../checker/dist/ . "
+                            + "Currently using: "
+                            + jdkJarName);
         }
     }
 }

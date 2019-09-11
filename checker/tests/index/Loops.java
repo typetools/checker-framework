@@ -3,12 +3,22 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 public final class Loops {
     public static boolean flag = false;
 
-    public void test1(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
+    public void test1a(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
         while (flag) {
             // :: error: (unary.increment.type.incompatible)
             offset++;
+        }
+    }
+
+    public void test1b(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
+        while (flag) {
             // :: error: (compound.assignment.type.incompatible)
             offset += 1;
+        }
+    }
+
+    public void test1c(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
+        while (flag) {
             // :: error: (compound.assignment.type.incompatible)
             offset2 += offset;
         }

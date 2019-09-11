@@ -171,7 +171,9 @@ public class ReflectiveEvaluator {
             Method method =
                     clzz.getMethod(
                             ele.getSimpleName().toString(), paramClzz.toArray(new Class<?>[0]));
-            if (!method.isAccessible()) {
+            @SuppressWarnings("deprecation") // TODO: find alternative
+            boolean acc = method.isAccessible();
+            if (!acc) {
                 method.setAccessible(true);
             }
             return method;

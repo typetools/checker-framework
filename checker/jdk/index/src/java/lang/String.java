@@ -635,6 +635,7 @@ public final class String
      *
      * @since 1.6
      */
+    @SuppressWarnings("contracts.conditional.postcondition.not.satisfied") // The postcondition is EnsuresMinLenIf.  It's true because: values.length != 0 => this is @MinLen(1), as values.length is @LengthOf("this").
     public boolean isEmpty() {
         return value.length == 0;
     }
@@ -2331,7 +2332,7 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
-    public String @MinLen(1) [] split(String regex, int limit) {
+    public String[] split(String regex, int limit) {
         /* fastpath if the regex is a
          (1)one-char String and this character is not one of the
             RegEx's meta characters ".$|()[{^?*+\\", or
@@ -2423,7 +2424,7 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
-    public String @MinLen(1) [] split(String regex) {
+    public String[] split(String regex) {
         return split(regex, 0);
     }
 

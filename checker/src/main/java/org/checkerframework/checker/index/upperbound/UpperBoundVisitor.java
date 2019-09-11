@@ -13,7 +13,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.Subsequence;
 import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.index.qual.LTLengthOf;
@@ -22,6 +21,7 @@ import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthO
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
@@ -163,9 +163,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
         UBQualifier qualifier = UBQualifier.createUBQualifier(indexType, atypeFactory.UNKNOWN);
         ValueAnnotatedTypeFactory valueFactory = atypeFactory.getValueAnnotatedTypeFactory();
-        Long valMax = IndexUtil.getMaxValue(indexTree, valueFactory);
+        Long valMax = ValueCheckerUtils.getMaxValue(indexTree, valueFactory);
 
-        if (IndexUtil.getExactValue(indexTree, valueFactory) != null) {
+        if (ValueCheckerUtils.getExactValue(indexTree, valueFactory) != null) {
             // Note that valMax is equal to the exact value in this case.
             checker.report(
                     Result.failure(
@@ -175,7 +175,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                             valMax + 1,
                             valMax + 1),
                     indexTree);
-        } else if (valMax != null && qualifier.isUnknown()) {
+        } else if (valMax != null && qualifier.isUnknown() && valMax != Integer.MAX_VALUE) {
 
             checker.report(
                     Result.failure(
@@ -371,8 +371,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      *  is less than the minimum possible length of arrTree, and returns true if so.
      */
     private boolean checkMinLen(ExpressionTree indexTree, ExpressionTree arrTree) {
-        int minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getValueAnnotatedTypeFactory());
-        Long valMax = IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
+        int minLen =
+                ValueCheckerUtils.getMinLen(arrTree, atypeFactory.getValueAnnotatedTypeFactory());
+        Long valMax =
+                ValueCheckerUtils.getMaxValue(
+                        indexTree, atypeFactory.getValueAnnotatedTypeFactory());
         return valMax != null && valMax < minLen;
     }
 
@@ -417,7 +420,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             varLtlQual = (LessThanLengthOf) newLHS;
         }
 
-        Long value = IndexUtil.getMaxValue(valueExp, atypeFactory.getValueAnnotatedTypeFactory());
+        Long value =
+                ValueCheckerUtils.getMaxValue(
+                        valueExp, atypeFactory.getValueAnnotatedTypeFactory());
 
         if (value == null && !expQual.isLessThanLengthQualifier()) {
             return false;
