@@ -5,7 +5,7 @@ set -o verbose
 set -o xtrace
 export SHELLOPTS
 
-export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"

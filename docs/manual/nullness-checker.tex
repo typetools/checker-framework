@@ -1391,16 +1391,16 @@ class A {
        // However, if this constructor is invoked as part of 'new B()', then
        // the fields of B are not yet initialized.
        // If we would type 'this' as @Initialized, then the following call is valid:
-       foo();
+       doSomething();
    }
-   void foo() {}
+   void doSomething() {}
 }
 
 class B extends A {
    @NonNull String b;
    @Override
-   void foo() {
-       // Dereferencing 'b' is ok, since 'this' is @Initialized and 'b' @NonNull.
+   void doSomething() {
+       // Dereferencing 'b' is ok, because 'this' is @Initialized and 'b' @NonNull.
        // However, when executing 'new B()', this line throws a null-pointer exception.
        b.toString();
    }
@@ -1814,7 +1814,7 @@ If your code calls an instance method from a constructor, you may see a
 message such as the following:
 
 \begin{Verbatim}
-Foo.java:123: error: call to initHelper() not allowed on the given receiver.
+MyFile.java:123: error: call to initHelper() not allowed on the given receiver.
     initHelper();
               ^
   found   : @UnderInitialization(com.google.Bar.class) @NonNull MyClass
