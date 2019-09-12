@@ -8,6 +8,8 @@ ext {
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
+
+    jdk11uHome = '../../jdk11u'
 }
 sourceSets {
     main {
@@ -32,41 +34,47 @@ dependencies {
     testannotationsCompile project(':checker-qual')
 }
 
-task copyJdk11Files() {
-    doLast {
-        // TODO: Add task to clone typetools/jdk
-        String jdkDir = 'jdk/src/'
-
-        FileTree tree = fileTree(dir: "../../${jdkDir}")
-        // TODO: No @AnnotatedFor("optional") exist, but there should be on on java.util.Optional
-//        String[] typeSystems = ['index','lock','nullness','optional' ,'signedness']
-//        String[] typeSystems = ['index', 'lock', 'nullness', 'signedness']
-        String[] typeSystems = ['nullness']
-        Map<String, SortedSet<String>> includeMap = new LinkedHashMap<>();
-        for (String typeSystem : typeSystems) {
-            includeMap.put(typeSystem, new TreeSet<>());
+task cloneTypetoolsJdk11u() {
+    description 'Obtain or update the jdk11u'
+    if (file(jdk11uHome).exists()) {
+        exec {
+            workingDir jdk11uHome
+            executable 'git'
+            args = ['pull', '-q']
+            ignoreExitValue = true
         }
+    } else {
+        exec {
+            workingDir "${jdk11uHome}/../"
+            executable 'git'
+            args = ['clone', '-q', 'https://github.com/typetools/jdk11u.git', 'jdk11u']
+        }
+    }
+}
+
+task copyJdk11Files(dependsOn: cloneTypetoolsJdk11u, group: 'Build') {
+    description "Copy annotated jdk 11 files to ${buildDir}/jdk/jdk11/"
+    doLast {
+
+        FileTree tree = fileTree(dir: jdk11uHome)
+        SortedSet<String> annotatedForFiles = new TreeSet<>();
 
         tree.visit {
             if (!it.file.isDirectory() && it.file.name.matches(".*\\.java")) {
                 it.file.eachLine { line ->
-                    for (String typeSystem : typeSystems) {
-                        if (line.contains("@AnnotatedFor")) {
-                            includeMap.get(typeSystem).add(it.file.absolutePath)
-                        }
+                    if (line.contains("@AnnotatedFor")) {
+                        annotatedForFiles.add(it.file.absolutePath)
                     }
                 }
             }
         }
-        int jdkDirStringSize = jdkDir.size()
-        for (String typeSystem : typeSystems) {
-            copy {
-                from("../../${jdkDir}")
-                into("${buildDir}/jdk/jdk11/${typeSystem}")
-                for (String filename : includeMap.get(typeSystem)) {
-                    int index = filename.indexOf(jdkDir)
-                    include filename.substring(index + jdkDirStringSize)
-                }
+        int jdkDirStringSize = jdk11uHome.size()
+        copy {
+            from(jdk11uHome)
+            into("${buildDir}/jdk/jdk11/")
+            for (String filename : annotatedForFiles) {
+                int index = filename.indexOf(jdk11uHome)
+                include filename.substring(index + jdkDirStringSize)
             }
         }
     }
