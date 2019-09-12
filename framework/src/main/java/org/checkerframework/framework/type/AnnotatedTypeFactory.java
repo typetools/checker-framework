@@ -34,10 +34,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -3164,55 +3162,49 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return;
         }
         URL resourceURL = checker.getClass().getResource("/jdk11");
-        if (resourceURL.getProtocol().contentEquals("jar")) {
-            JarURLConnection connection;
-            // create a connection to the jar file
-            try {
-                connection = (JarURLConnection) resourceURL.openConnection();
+        if (!resourceURL.getProtocol().contentEquals("jar")) {
+            return;
+        }
 
-                // disable caching / connection sharing of the low level URLConnection to the Jar
-                // file
-                connection.setDefaultUseCaches(false);
-                connection.setUseCaches(false);
+        JarURLConnection connection;
+        try {
+            connection = (JarURLConnection) resourceURL.openConnection();
 
-                // connect to the Jar file
-                connection.connect();
-            } catch (IOException e) {
-                throw new BugInCF(
-                        "AnnotationClassLoader: cannot open a connection to the Jar file "
-                                + resourceURL.getFile());
-            }
+            // disable caching / connection sharing of the low level URLConnection to the Jarfile
+            connection.setDefaultUseCaches(false);
+            connection.setUseCaches(false);
 
-            // open up that jar file and extract annotation class names
-            try (JarFile jarFile = connection.getJarFile()) {
-                Set<String> annos = new LinkedHashSet<>();
+            connection.connect();
+        } catch (IOException e) {
+            throw new BugInCF("cannot open a connection to the Jar file " + resourceURL.getFile());
+        }
 
-                // get an enumeration iterator for all the content entries in the jar
-                // file
-                Enumeration<JarEntry> jarEntries = jarFile.entries();
+        try (JarFile jarFile = connection.getJarFile()) {
+            jarFile.stream()
+                    .forEach(
+                            (JarEntry je) -> {
+                                // filter out directories and non-class files
+                                if (!je.isDirectory()
+                                        && je.getName().endsWith(".java")
+                                        && je.getName().startsWith("jdk11")) {
+                                    InputStream jdkStub;
+                                    try {
+                                        jdkStub = jarFile.getInputStream(je);
+                                    } catch (IOException e) {
+                                        throw new BugInCF("cannot open the jdk stub file " + je);
+                                    }
 
-                // enumerate through the entries
-                while (jarEntries.hasMoreElements()) {
-                    JarEntry je = jarEntries.nextElement();
-                    // filter out directories and non-class files
-                    if (je.isDirectory()
-                            || !je.getName().endsWith(".java")
-                            || !je.getName().startsWith("jdk11")) {
-                        continue;
-                    } else {
-                        StubParser.parse(
-                                je.getName(),
-                                jarFile.getInputStream(je),
-                                this,
-                                processingEnv,
-                                typesFromStubFiles,
-                                declAnnosFromStubFiles);
-                    }
-                }
-            } catch (IOException e) {
-                throw new BugInCF(
-                        "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
-            }
+                                    StubParser.parse(
+                                            je.getName(),
+                                            jdkStub,
+                                            this,
+                                            processingEnv,
+                                            typesFromStubFiles,
+                                            declAnnosFromStubFiles);
+                                }
+                            });
+        } catch (IOException e) {
+            throw new BugInCF("cannot open the Jar file " + resourceURL.getFile());
         }
     }
 
