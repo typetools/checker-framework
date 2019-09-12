@@ -522,8 +522,8 @@ un-annotated type variable in a stub file is used instead of
 annotations on a type variable in bytecode.
 This feature allows stub files to change the effective annotations in
 all possible situations.
-Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
-warning whenever a stub file overwrites bytecode annotations.
+Use the \<-AstubWarnIfOverridesBytecode> command-line option to get a
+warning whenever a stub file overrides bytecode annotations.
 
 A file being compiled takes precedence over a stub file.  If file \<A.java>
 is being compiled, then any stub for class \<A> is ignored.
@@ -698,9 +698,9 @@ Some command-line options make the stub parser issue more warnings:
   other classes from the same package are present.
   Useful if a package spans more than one jar.
 
-\item[\<-AstubWarnIfOverwritesBytecode>]
+\item[\<-AstubWarnIfOverridesBytecode>]
   Warn whenever some element of a
-  stub file overwrites annotations contained in bytecode.
+  stub file overrides annotations contained in bytecode.
 \end{description}
 
 Finally,
@@ -767,7 +767,7 @@ read whether the library's annotations are parsed.
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
 %%  LocalWords:  TypeSystem2 TypeSystem3 AuseDefaultsForUncheckedCode ln
 %  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org boolean
-%  LocalWords:  AstubWarnIfOverwritesBytecode Awarns AssumeAssertion
+%  LocalWords:  AstubWarnIfOverridesBytecode Awarns AssumeAssertion
 %%  LocalWords:  Makefile buildJdk PuseLocalJdk jdkShaHash AonlyDefs
 %%  LocalWords:  AuseDefaultsForUncheckedCodesource
 %%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses

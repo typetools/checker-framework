@@ -226,7 +226,7 @@ import org.checkerframework.javacutil.UserError;
     "stubWarnIfNotFoundIgnoresClasses",
     // Whether to print warnings about stub files that overwrite annotations
     // from bytecode.
-    "stubWarnIfOverwritesBytecode",
+    "stubWarnIfOverridesBytecode",
     // Already listed above, but worth noting again in this section:
     // "useDefaultsForUncheckedCode"
 

@@ -106,8 +106,8 @@ public class StubParser {
      */
     private final boolean warnIfNotFoundIgnoresClasses;
 
-    /** Whether to print warnings about stub files that overwrite annotations from bytecode. */
-    private final boolean warnIfStubOverwritesBytecode;
+    /** Whether to print warnings about stub files that override annotations from bytecode. */
+    private final boolean warnIfStubOverridesBytecode;
 
     /** Whether to print verbose debugging messages. */
     private final boolean debugStubParser;
@@ -190,7 +190,7 @@ public class StubParser {
         Map<String, String> options = processingEnv.getOptions();
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
         this.warnIfNotFoundIgnoresClasses = options.containsKey("stubWarnIfNotFoundIgnoresClasses");
-        this.warnIfStubOverwritesBytecode = options.containsKey("stubWarnIfOverwritesBytecode");
+        this.warnIfStubOverridesBytecode = options.containsKey("stubWarnIfOverridesBytecode");
         this.debugStubParser = options.containsKey("stubDebug");
 
         this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
@@ -1838,10 +1838,10 @@ public class StubParser {
 
     /**
      * Issues the given warning about overwriting bytecode, only if it has not been previously
-     * issued and the -AstubWarnIfOverwritesBytecode command-line argument was passed.
+     * issued and the -AstubWarnIfOverridesBytecode command-line argument was passed.
      */
     private void stubWarnOverwritesBytecode(String warning) {
-        if (warnings.add(warning) && (warnIfStubOverwritesBytecode || debugStubParser)) {
+        if (warnings.add(warning) && (warnIfStubOverridesBytecode || debugStubParser)) {
             processingEnv
                     .getMessager()
                     .printMessage(javax.tools.Diagnostic.Kind.WARNING, "StubParser: " + warning);

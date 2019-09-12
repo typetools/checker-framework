@@ -4,6 +4,8 @@ Version ??
 
 The manual links to the Object Construction Checker.
 
+Renamed -AstubWarnIfOverwritesBytecode to -AstubWarnIfOverridesBytecode.
+
 ---------------------------------------------------------------------------
 
 Version 2.11.0, August 30, 2019
