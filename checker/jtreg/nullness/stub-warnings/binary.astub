@@ -6,8 +6,8 @@ class Binary {
     @Nullable Object foo() { return null; }
     // warn: redundant
     Object bar(Object p) { return null; }
-    // TODO: warn: changes explicitly annotated parameter type
+    // TODO: https://github.com/typetools/checker-framework/issues/2759
     int baz(Object @Nullable [] p) { return 1; }
-    // TODO: don't warn: changes unannotated parameter type
+    // don't warn: changes unannotated parameter type
     int baz2(Object @Nullable [] p) { return 1; }
 }
