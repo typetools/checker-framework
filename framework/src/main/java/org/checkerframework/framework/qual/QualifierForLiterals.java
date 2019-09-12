@@ -15,15 +15,18 @@ public @interface QualifierForLiterals {
     /**
      * The kinds of literals whose types have this qualifier. For example, if {@code @MyAnno} is
      * meta-annotated with {@code @QualifierForLiterals(LiteralKind.STRING)}, then a literal {@code
-     * String} constant such as {@code "hello world"} has type {@code @MyAnno String}, but other
-     * occurrences of {@code String} in the source code are not affected. For String literals, also
-     * see the {@link #stringPatterns} annotation field.
+     * String} constant such as {@code "hello world"} has type {@code @MyAnno String}, but
+     * occurrences of {@code String} in the source code are not affected.
+     *
+     * <p>For String literals, also see the {@link #stringPatterns} annotation element/field.
      */
     LiteralKind[] value() default {};
 
     /**
-     * The type of strings that match these patterns have this qualifier. If multiple patterns
-     * match, then the string literal is given the greatest lower bound of all the matches.
+     * A string literal that matches any of these patterns has this qualifier.
+     *
+     * <p>If patterns for multiple qualifers match, then the string literal is given the greatest
+     * lower bound of all the matches.
      */
     String[] stringPatterns() default {};
 }

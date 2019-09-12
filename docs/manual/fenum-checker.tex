@@ -217,7 +217,7 @@ class FenumUser {
 
   void fenumArg(@Fenum("A") int p) {}
 
-  void foo() {
+  void fenumTest() {
     state1 = 4;                     // Direct use of value forbidden!
     state1 = TestStatic.BCONST1;    // Incompatible fenums forbidden!
     state1 = TestStatic.ACONST2;    // ok
