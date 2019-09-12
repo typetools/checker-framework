@@ -24,13 +24,18 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.net.JarURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,6 +48,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -3162,10 +3168,56 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return;
         }
         URL resourceURL = checker.getClass().getResource("/jdk11");
-        if (!resourceURL.getProtocol().contentEquals("jar")) {
-            return;
+        if (resourceURL.getProtocol().contentEquals("jar")) {
+            parseJdk11FromJar(resourceURL, typesFromStubFiles, declAnnosFromStubFiles);
+        } else if (resourceURL.getProtocol().contentEquals("file")) {
+            parseJdk11FromFile(resourceURL, typesFromStubFiles, declAnnosFromStubFiles);
+        } else {
+            new BugInCF("JDK not found");
         }
+    }
 
+    private void parseJdk11FromFile(
+            URL resourceURL,
+            Map<Element, AnnotatedTypeMirror> typesFromStubFiles,
+            Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles) {
+        Path root;
+        try {
+            root = Paths.get(resourceURL.toURI());
+        } catch (URISyntaxException e) {
+            throw new BugInCF("Can parse URL: %s", resourceURL.toString());
+        }
+        List<Path> paths;
+        try {
+            paths =
+                    Files.walk(root)
+                            .filter(p -> Files.isRegularFile(p) && p.endsWith(".java"))
+                            .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new BugInCF("File Not Found");
+        }
+        for (Path path : paths) {
+            InputStream jdkStub;
+            try {
+                jdkStub = new FileInputStream(path.toFile());
+            } catch (IOException e) {
+                throw new BugInCF("cannot open the jdk stub file " + path);
+            }
+            checker.message(Kind.NOTE, "Parsing: %s", path.toString());
+            StubParser.parse(
+                    path.toFile().getName(),
+                    jdkStub,
+                    this,
+                    processingEnv,
+                    typesFromStubFiles,
+                    declAnnosFromStubFiles);
+        }
+    }
+
+    private void parseJdk11FromJar(
+            URL resourceURL,
+            Map<Element, AnnotatedTypeMirror> typesFromStubFiles,
+            Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles) {
         JarURLConnection connection;
         try {
             connection = (JarURLConnection) resourceURL.openConnection();
@@ -3180,29 +3232,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         try (JarFile jarFile = connection.getJarFile()) {
-            jarFile.stream()
-                    .forEach(
-                            (JarEntry je) -> {
-                                // filter out directories and non-class files
-                                if (!je.isDirectory()
-                                        && je.getName().endsWith(".java")
-                                        && je.getName().startsWith("jdk11")) {
-                                    InputStream jdkStub;
-                                    try {
-                                        jdkStub = jarFile.getInputStream(je);
-                                    } catch (IOException e) {
-                                        throw new BugInCF("cannot open the jdk stub file " + je);
-                                    }
+            for (JarEntry je : jarFile.stream().collect(Collectors.toList())) {
+                // filter out directories and non-class files
+                if (!je.isDirectory()
+                        && je.getName().endsWith(".java")
+                        && je.getName().startsWith("jdk11")) {
+                    InputStream jdkStub;
+                    try {
+                        jdkStub = jarFile.getInputStream(je);
+                    } catch (IOException e) {
+                        throw new BugInCF("cannot open the jdk stub file " + je);
+                    }
 
-                                    StubParser.parse(
-                                            je.getName(),
-                                            jdkStub,
-                                            this,
-                                            processingEnv,
-                                            typesFromStubFiles,
-                                            declAnnosFromStubFiles);
-                                }
-                            });
+                    StubParser.parse(
+                            je.getName(),
+                            jdkStub,
+                            this,
+                            processingEnv,
+                            typesFromStubFiles,
+                            declAnnosFromStubFiles);
+                }
+            }
         } catch (IOException e) {
             throw new BugInCF("cannot open the Jar file " + resourceURL.getFile());
         }
