@@ -22,6 +22,7 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -106,11 +107,19 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     // Final note: all annotation comparisons are done via isPrimarySubtype, isBottom, and
     // isAnnoSubtype in order to ensure that we first get the annotations in the hierarchy of
     // currentTop before passing annotations to qualifierHierarchy.
+    /** The top annotation of the hierarchy currently being checked. */
     protected AnnotationMirror currentTop;
 
+    /** Stores the result of isSubtype, if that result is true. */
     protected final SubtypeVisitHistory visitHistory;
-    protected final SubtypeVisitHistory typeargVisitHistory;
 
+    /**
+     * Stores the result of isSubtype for type arguments. Prevents infinite recursion on types that
+     * refer to themselves. (Stores both true and false results.)
+     */
+    protected final StructuralEqualityVisitHistory typeargVisitHistory;
+
+    /** Creates a DefaultTypeHierarchy. */
     public DefaultTypeHierarchy(
             final BaseTypeChecker checker,
             final QualifierHierarchy qualifierHierarchy,
@@ -119,7 +128,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         this.checker = checker;
         this.qualifierHierarchy = qualifierHierarchy;
         this.visitHistory = new SubtypeVisitHistory();
-        this.typeargVisitHistory = new SubtypeVisitHistory();
+        this.typeargVisitHistory = new StructuralEqualityVisitHistory();
         this.equalityComparer = createEqualityComparer();
 
         this.ignoreRawTypes = ignoreRawTypes;
@@ -317,77 +326,74 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             boolean canBeCovariant) {
 
         if (ignoreUninferredTypeArgument(inside) || ignoreUninferredTypeArgument(outside)) {
+            typeargVisitHistory.add(inside, outside, currentTop, true);
             return true;
         }
 
-        if (outside.getKind() == TypeKind.WILDCARD) {
-            if (typeargVisitHistory.contains(inside, outside, currentTop)) {
-                return true;
-            }
-            typeargVisitHistory.add(inside, outside, currentTop, true);
-
-            final AnnotatedWildcardType outsideWc = (AnnotatedWildcardType) outside;
-
-            AnnotatedTypeMirror outsideWcUB = outsideWc.getExtendsBound();
-            if (inside.getKind() == TypeKind.WILDCARD) {
-                outsideWcUB =
-                        checker.getTypeFactory()
-                                .widenToUpperBound(outsideWcUB, (AnnotatedWildcardType) inside);
-            }
-            while (outsideWcUB.getKind() == TypeKind.WILDCARD) {
-                if (ignoreUninferredTypeArgument(outsideWcUB)) {
-                    return true;
-                }
-                outsideWcUB = ((AnnotatedWildcardType) outsideWcUB).getExtendsBound();
-            }
-
-            AnnotatedTypeMirror castedInside =
-                    AnnotatedTypes.castedAsSuper(inside.atypeFactory, inside, outsideWcUB);
-            if (!checkAndSubtype(castedInside, outsideWcUB)) {
-                return false;
-            }
-
-            AnnotatedTypeMirror lowerbound = outsideWc.getSuperBound();
-            if (lowerbound.getKind() == TypeKind.TYPEVAR) {
-                // TODO: determine correct check for (captured) type variables.
-                return true;
-            }
-            return canBeCovariant || checkAndSubtype(lowerbound, inside);
-        } else if (TypesUtils.isCaptured(outside.getUnderlyingType())) {
-            if (typeargVisitHistory.contains(inside, outside, currentTop)) {
-                return true;
-            }
-            typeargVisitHistory.add(inside, outside, currentTop, true);
-
-            final AnnotatedTypeVariable outsideCW = (AnnotatedTypeVariable) outside;
-
-            AnnotatedTypeMirror outsideWcUB = outsideCW.getUpperBound();
-            if (inside.getKind() == TypeKind.WILDCARD) {
-                outsideWcUB =
-                        checker.getTypeFactory()
-                                .widenToUpperBound(outsideWcUB, (AnnotatedWildcardType) inside);
-            }
-            while (outsideWcUB.getKind() == TypeKind.WILDCARD) {
-                if (ignoreUninferredTypeArgument(outsideWcUB)) {
-                    return true;
-                }
-                outsideWcUB = ((AnnotatedWildcardType) outsideWcUB).getExtendsBound();
-            }
-
-            AnnotatedTypeMirror castedInside =
-                    AnnotatedTypes.castedAsSuper(inside.atypeFactory, inside, outsideWcUB);
-            if (!checkAndSubtype(castedInside, outsideWcUB)) {
-                return false;
-            }
-
-            return canBeCovariant || checkAndSubtype(outsideCW.getLowerBound(), inside);
-
-        } else {
+        if (outside.getKind() != TypeKind.WILDCARD
+                && !TypesUtils.isCaptured(outside.getUnderlyingType())) {
             if (canBeCovariant) {
                 return isSubtype(inside, outside, currentTop);
             }
             return areEqualInHierarchy(inside, outside);
         }
+
+        AnnotatedTypeMirror outsideUpperBound;
+        AnnotatedTypeMirror outsideLowerBound;
+        if (outside.getKind() == TypeKind.WILDCARD) {
+            outsideUpperBound = ((AnnotatedWildcardType) outside).getExtendsBound();
+            outsideLowerBound = ((AnnotatedWildcardType) outside).getSuperBound();
+        } else if (TypesUtils.isCaptured(outside.getUnderlyingType())) {
+            outsideUpperBound = ((AnnotatedTypeVariable) outside).getUpperBound();
+            outsideLowerBound = ((AnnotatedTypeVariable) outside).getLowerBound();
+        } else {
+            throw new BugInCF(
+                    "Expected a wildcard or captured type variable, but found " + outside);
+        }
+        Boolean previousResult = typeargVisitHistory.result(inside, outside, currentTop);
+        if (previousResult != null) {
+            return previousResult;
+        }
+
+        typeargVisitHistory.add(inside, outside, currentTop, true);
+        boolean result =
+                isContainedWildcard(
+                        inside, outside, outsideUpperBound, outsideLowerBound, canBeCovariant);
+        typeargVisitHistory.add(inside, outside, currentTop, result);
+        return result;
+    }
+
+    private boolean isContainedWildcard(
+            AnnotatedTypeMirror inside,
+            AnnotatedTypeMirror outside,
+            AnnotatedTypeMirror outsideUpperBound,
+            AnnotatedTypeMirror outsideLowerBound,
+            boolean canBeCovariant) {
+
+        if (inside.getKind() == TypeKind.WILDCARD) {
+            outsideUpperBound =
+                    checker.getTypeFactory()
+                            .widenToUpperBound(outsideUpperBound, (AnnotatedWildcardType) inside);
+        }
+        while (outsideUpperBound.getKind() == TypeKind.WILDCARD) {
+            if (ignoreUninferredTypeArgument(outsideUpperBound)) {
+                return true;
+            }
+            outsideUpperBound = ((AnnotatedWildcardType) outsideUpperBound).getExtendsBound();
+        }
+
+        AnnotatedTypeMirror castedInside =
+                AnnotatedTypes.castedAsSuper(inside.atypeFactory, inside, outsideUpperBound);
+        if (!checkAndSubtype(castedInside, outsideUpperBound)) {
+            return false;
+        }
+
+        if (outside.getKind() == TypeKind.WILDCARD
+                && outsideLowerBound.getKind() == TypeKind.TYPEVAR) {
+            // tests/all-systems/Issue1991.java crashes without this.
+            return true;
+        }
+        return canBeCovariant || checkAndSubtype(outsideLowerBound, inside);
     }
 
     private boolean ignoreUninferredTypeArgument(AnnotatedTypeMirror type) {
