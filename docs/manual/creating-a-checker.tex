@@ -1657,7 +1657,7 @@ To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jd
 
 To supply an annotated JDK as a stub file, create a file \<jdk.astub> in
 the checker's main source directory.  It will be automatically used by the
-checker.
+checker, unless the user supplies the command-line option \<-Aignorejdkastub>.
 You can also supply \<.astub> files in that directory for other libraries.
 You should list those other libraries in a
 \refqualclass{framework/qual}{StubFiles} annotation on the checker's main
