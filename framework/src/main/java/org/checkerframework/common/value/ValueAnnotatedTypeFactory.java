@@ -2241,6 +2241,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (sequenceLiteralValue instanceof String) {
                 return ((String) sequenceLiteralValue).length();
             }
+        } else if (expressionObj instanceof FlowExpressions.ArrayCreation) {
+            FlowExpressions.ArrayCreation arrayCreation =
+                    (FlowExpressions.ArrayCreation) expressionObj;
+            // This is only expected to support array creations in varargs methods
+            return arrayCreation.getInitializers().size();
         }
 
         lengthAnno = getAnnotationFromReceiver(expressionObj, tree, ArrayLenRange.class);

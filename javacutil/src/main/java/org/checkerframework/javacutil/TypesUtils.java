@@ -66,9 +66,7 @@ public final class TypesUtils {
     }
 
     /**
-     * Checks if the type represents a java.lang.String declared type. TODO: it would be cleaner to
-     * use String.class.getCanonicalName(), but the two existing methods above don't do that, I
-     * guess for performance reasons.
+     * Checks if the type represents a java.lang.String declared type.
      *
      * @param type the type
      * @return true iff type represents java.lang.String
