@@ -40,7 +40,8 @@ task copyJdk11Files() {
         FileTree tree = fileTree(dir: "../../${jdkDir}")
         // TODO: No @AnnotatedFor("optional") exist, but there should be on on java.util.Optional
 //        String[] typeSystems = ['index','lock','nullness','optional' ,'signedness']
-        String[] typeSystems = ['index', 'lock', 'nullness', 'signedness']
+//        String[] typeSystems = ['index', 'lock', 'nullness', 'signedness']
+        String[] typeSystems = ['nullness']
         Map<String, SortedSet<String>> includeMap = new LinkedHashMap<>();
         for (String typeSystem : typeSystems) {
             includeMap.put(typeSystem, new TreeSet<>());
@@ -50,7 +51,7 @@ task copyJdk11Files() {
             if (!it.file.isDirectory() && it.file.name.matches(".*\\.java")) {
                 it.file.eachLine { line ->
                     for (String typeSystem : typeSystems) {
-                        if (line.matches("@AnnotatedFor.*" + typeSystem + ".*")) {
+                        if (line.contains("@AnnotatedFor")) {
                             includeMap.get(typeSystem).add(it.file.absolutePath)
                         }
                     }

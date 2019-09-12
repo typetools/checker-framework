@@ -29,15 +29,20 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -108,6 +113,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
@@ -3050,7 +3056,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         typesFromStubFiles,
                         declAnnosFromStubFiles);
             }
-            parseJdk11("nullness");
+            parseJdk11(typesFromStubFiles, declAnnosFromStubFiles);
         }
 
         // Stub files specified via stubs compiler option, stubs system property,
@@ -3151,40 +3157,63 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.declAnnosFromStubFiles = declAnnosFromStubFiles;
     }
 
-    private void parseJdk11(String typesystem) {
-        //        if(PluginUtil.getJreVersion() < 11) {
-        //            return;
-        //        }
-        //        URL jdk11URL = checker.getClass().getResource("/jdk11/"+typesystem);
-        //        if(jdk11URL == null) {
-        //            return;
-        //        }
-        //        URI jdk11URI;
-        //        try {
-        //           jdk11URI = jdk11URL.toURI();
-        //        } catch (URISyntaxException e) {
-        //            e.printStackTrace();
-        //            return;
-        //        }
-        //
-        //        try (FileSystem fileSystem = FileSystems.getFileSystem(jdk11URI)) {
-        //            Path resourcePath = fileSystem.getPath("/");
-        //            Files.walk(resourcePath).skip(1).forEach(path ->{
-        //                if(path.getFileName().endsWith(".java")) {
-        //                    try {
-        //                        StubParser.parse(path.getFileName().toString(), new
-        // FileInputStream(path.toFile()),  this,
-        //                                processingEnv,
-        //                                typesFromStubFiles,
-        //                                declAnnosFromStubFiles);
-        //                    } catch (FileNotFoundException e) {
-        //                        e.printStackTrace();
-        //                    }
-        //                }
-        //            });
-        //        } catch (IOException e) {
-        //            e.printStackTrace();
-        //        }
+    private void parseJdk11(
+            Map<Element, AnnotatedTypeMirror> typesFromStubFiles,
+            Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles) {
+        if (PluginUtil.getJreVersion() < 11) {
+            return;
+        }
+        URL resourceURL = checker.getClass().getResource("/jdk11");
+        if (resourceURL.getProtocol().contentEquals("jar")) {
+            JarURLConnection connection;
+            // create a connection to the jar file
+            try {
+                connection = (JarURLConnection) resourceURL.openConnection();
+
+                // disable caching / connection sharing of the low level URLConnection to the Jar
+                // file
+                connection.setDefaultUseCaches(false);
+                connection.setUseCaches(false);
+
+                // connect to the Jar file
+                connection.connect();
+            } catch (IOException e) {
+                throw new BugInCF(
+                        "AnnotationClassLoader: cannot open a connection to the Jar file "
+                                + resourceURL.getFile());
+            }
+
+            // open up that jar file and extract annotation class names
+            try (JarFile jarFile = connection.getJarFile()) {
+                Set<String> annos = new LinkedHashSet<>();
+
+                // get an enumeration iterator for all the content entries in the jar
+                // file
+                Enumeration<JarEntry> jarEntries = jarFile.entries();
+
+                // enumerate through the entries
+                while (jarEntries.hasMoreElements()) {
+                    JarEntry je = jarEntries.nextElement();
+                    // filter out directories and non-class files
+                    if (je.isDirectory()
+                            || !je.getName().endsWith(".java")
+                            || !je.getName().startsWith("jdk11")) {
+                        continue;
+                    } else {
+                        StubParser.parse(
+                                je.getName(),
+                                jarFile.getInputStream(je),
+                                this,
+                                processingEnv,
+                                typesFromStubFiles,
+                                declAnnosFromStubFiles);
+                    }
+                }
+            } catch (IOException e) {
+                throw new BugInCF(
+                        "AnnotationClassLoader: cannot open the Jar file " + resourceURL.getFile());
+            }
+        }
     }
 
     /**

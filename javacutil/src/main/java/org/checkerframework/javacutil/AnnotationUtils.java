@@ -447,6 +447,9 @@ public class AnnotationUtils {
             case TYPE_USE:
                 return EnumSet.noneOf(ElementKind.class);
             default:
+                if (elementType.name().contentEquals("MODULE")) {
+                    return EnumSet.noneOf(ElementKind.class);
+                }
                 throw new BugInCF("Unrecognized ElementType: " + elementType);
         }
     }
