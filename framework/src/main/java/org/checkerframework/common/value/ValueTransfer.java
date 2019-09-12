@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -561,7 +562,9 @@ public class ValueTransfer extends CFTransfer {
         }
 
         Element element = TreeUtils.elementFromUse((ExpressionTree) node.getTree());
-        return element != null && ElementUtils.isEffectivelyFinal(element);
+        return element != null
+                && ElementUtils.isEffectivelyFinal(element)
+                && element.getKind() != ElementKind.PARAMETER;
     }
 
     /** Creates an annotation for a result of string concatenation. */

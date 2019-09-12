@@ -49,8 +49,8 @@ class StringLenConcats {
     void tooManyStringValConcat(
             @StringVal({"a", "b", "c", "d"}) String a,
             @StringVal({"ee", "ff", "gg", "hh", "ii"}) String b) {
-        @ArrayLen(2) String aa = a + a;
-        @ArrayLen(3) String ab = a + b;
+        @ArrayLen({2, 5, 8}) String aa = a + a;
+        @ArrayLen({3, 5, 6, 8}) String ab = a + b;
     }
 
     void charConversions(
@@ -86,7 +86,7 @@ class StringLenConcats {
         @ArrayLenRange(from = 13, to = 26) String bPositive = b + positiveRange;
         @ArrayLenRange(from = 11, to = 31) String bUnknown = b + unknownInt;
 
-        @StringVal({"aaa123", "bbbbb123"}) String cConst = c + intConst;
+        @StringVal({"aaa123", "bbbbb123", "null123"}) String cConst = c + intConst;
         @ArrayLen({4, 5, 6, 7, 8, 9, 10, 11, 12}) String cRange = c + intRange;
         @ArrayLen({6, 7, 8, 9, 10, 11}) String cPositive = c + positiveRange;
     }
