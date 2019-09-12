@@ -3191,7 +3191,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         try {
             paths =
                     Files.walk(root)
-                            .filter(p -> Files.isRegularFile(p) && p.endsWith(".java"))
+                            .filter(
+                                    p ->
+                                            Files.isRegularFile(p)
+                                                    && p.toFile().getName().endsWith(".java"))
                             .collect(Collectors.toList());
         } catch (IOException e) {
             throw new BugInCF("File Not Found");
@@ -3203,7 +3206,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             } catch (IOException e) {
                 throw new BugInCF("cannot open the jdk stub file " + path);
             }
-            checker.message(Kind.NOTE, "Parsing: %s", path.toString());
             StubParser.parse(
                     path.toFile().getName(),
                     jdkStub,
