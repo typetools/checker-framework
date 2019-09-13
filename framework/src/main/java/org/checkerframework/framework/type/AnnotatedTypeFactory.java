@@ -3195,7 +3195,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             throw new BugInCF("File Not Found");
         }
         List<Path> paths =
-                walk.filter(p -> Files.isRegularFile(p) && p.toFile().getName().endsWith(".java"))
+                walk.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(".java"))
                         .collect(Collectors.toList());
         for (Path path : paths) {
             try (FileInputStream jdkStub = new FileInputStream(path.toFile()); ) {
