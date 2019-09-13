@@ -138,7 +138,7 @@ annotations, each from a different type system:
   \refqualclass{checker/index/qual}{LTEqLengthOf}.
 
   For example, the
-  \sunjavadoc{java.base/java/util/Arrays.html\#fill(java.lang.Object:A,int,int,java.lang.Object)}{Arrays.fill}
+  \sunjavadoc{java.base/java/util/Arrays.html\#fill(java.lang.Object%5B%5D,int,int,java.lang.Object)}{Arrays.fill}
    method is declared as
 
   \begin{mysmall}
@@ -512,7 +512,7 @@ When needed, you can specify which sequences have the same length using the foll
 \sectionAndLabel{Binary search indices}{index-searchindex}
 
 The JDK's
-\sunjavadoc{java.base/java/util/Arrays.html\#binarySearch(java.lang.Object:A,java.lang.Object)}{Arrays.binarySearch}
+\sunjavadoc{java.base/java/util/Arrays.html\#binarySearch(java.lang.Object%5B%5D,java.lang.Object)}{Arrays.binarySearch}
 method returns either where the value was found, or a negative value
 indicating where the value could be inserted.  The Search Index Checker
 represents this concept.
@@ -525,7 +525,7 @@ represents this concept.
 \end{center}
   \caption{The type hierarchy for the Index Checker's internal type system
   that captures information about the results of calls to
-  \sunjavadoc{java.base/java/util/Arrays.html\#binarySearch(java.lang.Object:A,java.lang.Object)}{Arrays.binarySearch}.}
+  \sunjavadoc{java.base/java/util/Arrays.html\#binarySearch(java.lang.Object%5B%5D,java.lang.Object)}{Arrays.binarySearch}.}
   \label{fig-index-searchindex}
 \end{figure}
 
@@ -534,7 +534,7 @@ The Search Index Checker's type hierarchy (Figure~\ref{fig-index-searchindex}) h
 \item[\refqualclasswithparams{checker/index/qual}{SearchIndexFor}{String[] names}]
   An expression with this type represents an integer that could have been
   produced by calling
-  \sunjavadoc{java.base/java/util/Arrays.html\#binarySearch(java.lang.Object:A,java.lang.Object)}{Arrays.binarySearch}:
+  \sunjavadoc{java.base/java/util/Arrays.html\#binarySearch(java.lang.Object%5B%5D,java.lang.Object)}{Arrays.binarySearch}:
   for each array \<a> specified in the annotation, the annotated integer is
   between \<-a.length-1> and \<a.length-1>, inclusive
 \item[\refqualclasswithparams{checker/index/qual}{NegativeIndexFor}{String[] names}]

@@ -1251,7 +1251,8 @@ Another example is the Optional Checker (\chapterpageref{optional-checker})
 and the \<orElseThrow> method.
 The goal of the Optional Checker is to ensure that the program does not
 crash due to use of a non-present Optional value.  Therefore, the receiver
-of \ahref{https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Optional.html#orElseThrow()}{\<orElseThrow>} is annotated as
+of
+\sunjavadoc{java.base/java/util/Optional.html#orElseThrow()}{orElseThrow} is annotated as
 \ahref{https://checkerframework.org/api/org/checkerframework/checker/optional/qual/Present.html}{\<@Present>},
 and the optional Checker issues a warning if the client calls
 \<orElseThrow> on a \<@MaybePresent> value.
