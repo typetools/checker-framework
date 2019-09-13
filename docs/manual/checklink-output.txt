@@ -1,5 +1,5 @@
 -*- mode: compilation; default-directory: "/scratch/mernst/clones/types/checker-framework-branch-update-urls/docs/manual/" -*-
-Compilation started at Fri Sep 13 13:47:06
+Compilation started at Fri Sep 13 14:19:21
 
 CHECKLINK=$HOME/bin/src/checklink make checklink-via-http
 (cd bib && git pull && make)
@@ -13,237 +13,6 @@ cp -pf *.svg ..
 make[1]: Leaving directory `/scratch/mernst/clones/types/checker-framework-branch-update-urls/docs/manual/figures'
 if ( grep -n '^\\\(chapter\|\(sub\)*section\|paragraph\){' *.tex ) ; then false ; else true ; fi
 latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
-Latexmk: Run number 1 of rule 'pdflatex'
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex)
- restricted \write18 enabled.
-entering extended mode
-Latexmk: Run number 1 of rule 'bibtex manual'
-For rule 'bibtex manual', running '&run_bibtex(  )' ...
-Latexmk: Run number 2 of rule 'pdflatex'
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex)
- restricted \write18 enabled.
-entering extended mode
-hevea -fix -exec xxdate.exe manual.tex
-Exclude comment 'comment'
-./introduction.tex:1419: Warning: Command not found: \allowbreak
-./introduction.tex:1424: Warning: Command not found: \allowbreak
-./nullness-checker.tex:198: Warning: \vspace with arg '-1.5\baselineskip'
-./nullness-checker.tex:1182: Warning: \vspace with arg '-1.5\baselineskip'
-./nullness-checker.tex:1256: Warning: minipage, output may be poor
-./nullness-checker.tex:1264: Warning: \cline changed into \hline
-./nullness-checker.tex:1268: Warning: \cline changed into \hline
-./nullness-checker.tex:1272: Warning: \cline changed into \hline
-./nullness-checker.tex:1276: Warning: \cline changed into \hline
-./map-key-checker.tex:27: Warning: Command not found: \allowbreak
-./map-key-checker.tex:47: Warning: Command not found: \allowbreak
-./map-key-checker.tex:53: Warning: Command not found: \allowbreak
-./map-key-checker.tex:60: Warning: \vspace with arg '-1.5\baselineskip'
-./optional-checker.tex:86: Warning: \vspace with arg '-1.5\baselineskip'
-./interning-checker.tex:137: Warning: \vspace with arg '-1.5\baselineskip'
-./lock-checker.tex:131: Warning: \vspace with arg '-1.5\baselineskip'
-./lock-checker.tex:922: Warning: Command not found: \etalchar
-./index-checker.tex:46: Warning: Command not found: \allowbreak
-./index-checker.tex:113: Warning: Command not found: \allowbreak
-./index-checker.tex:131: Warning: Command not found: \allowbreak
-./index-checker.tex:134: Warning: Command not found: \allowbreak
-./index-checker.tex:152: Warning: Command not found: \allowbreak
-./index-checker.tex:159: Warning: Command not found: \allowbreak
-./index-checker.tex:229: Warning: Command not found: \hfill
-./index-checker.tex:231: Warning: Command not found: \hfill
-./index-checker.tex:233: Warning: Command not found: \hfill
-./index-checker.tex:261: Warning: Command not found: \allowbreak
-./index-checker.tex:280: Warning: Command not found: \allowbreak
-./index-checker.tex:293: Warning: Command not found: \allowbreak
-./index-checker.tex:307: Warning: Command not found: \allowbreak
-./index-checker.tex:330: Warning: Command not found: \allowbreak
-./index-checker.tex:335: Warning: Command not found: \allowbreak
-./index-checker.tex:346: Warning: Command not found: \allowbreak
-./index-checker.tex:404: Warning: Command not found: \allowbreak
-./index-checker.tex:425: Warning: Command not found: \allowbreak
-./index-checker.tex:433: Warning: Command not found: \allowbreak
-./index-checker.tex:440: Warning: Command not found: \allowbreak
-./index-checker.tex:448: Warning: Command not found: \hfill
-./index-checker.tex:449: Warning: \vspace with arg '-1.5\baselineskip'
-./index-checker.tex:450: Warning: Command not found: \hfill
-./index-checker.tex:463: Warning: Command not found: \allowbreak
-./index-checker.tex:491: Warning: Command not found: \allowbreak
-./index-checker.tex:522: Warning: Command not found: \hfill
-./index-checker.tex:523: Warning: \vspace with arg '-1.5\baselineskip'
-./index-checker.tex:524: Warning: Command not found: \hfill
-./index-checker.tex:534: Warning: Command not found: \allowbreak
-./index-checker.tex:540: Warning: Command not found: \allowbreak
-./index-checker.tex:580: Warning: Command not found: \allowbreak
-./index-checker.tex:605: Warning: Command not found: \hfill
-./index-checker.tex:606: Warning: \vspace with arg '-1.5\baselineskip'
-./index-checker.tex:607: Warning: Command not found: \hfill
-./index-checker.tex:622: Warning: Command not found: \allowbreak
-./index-checker.tex:698: Warning: Command not found: \allowbreak
-./index-checker.tex:707: Warning: Command not found: \allowbreak
-./fenum-checker.tex:47: Warning: \vspace with arg '-1.5\baselineskip'
-./fenum-checker.tex:280: Warning: Command not found: \etalchar
-./regex-checker.tex:53: Warning: \vspace with arg '-1.5\baselineskip'
-./formatter-checker.tex:117: Warning: \vspace with arg '-1.5\baselineskip'
-./formatter-checker.tex:253: Warning: \vspace with arg '-1.5\baselineskip'
-./i18n-format-checker.tex:46: Warning: \vspace with arg '-1.5\baselineskip'
-./i18n-format-checker.tex:133: Warning: \vspace with arg '-1.5\baselineskip'
-./i18n-format-checker.tex:337: Warning: Command not found: \smaller
-./i18n-format-checker.tex:341: Warning: Command not found: \endsmaller
-./i18n-format-checker.tex:345: Warning: Command not found: \smaller
-./i18n-format-checker.tex:349: Warning: Command not found: \endsmaller
-./i18n-format-checker.tex:354: Warning: Command not found: \smaller
-./i18n-format-checker.tex:357: Warning: Command not found: \endsmaller
-./signature-checker.tex:23: Warning: \vspace with arg '-1.5\baselineskip'
-./signature-checker.tex:126: Warning: Command not found: \smaller
-./signature-checker.tex:126: Warning: Command not found: \smaller
-./signature-checker.tex:127: Warning: Command not found: \smaller
-./signature-checker.tex:127: Warning: Command not found: \smaller
-./signature-checker.tex:129: Warning: Command not found: \smaller
-./signature-checker.tex:129: Warning: Command not found: \smaller
-./signature-checker.tex:130: Warning: Command not found: \smaller
-./signature-checker.tex:130: Warning: Command not found: \smaller
-./signature-checker.tex:131: Warning: Command not found: \smaller
-./signature-checker.tex:131: Warning: Command not found: \smaller
-./signature-checker.tex:131: Warning: Command not found: \smaller
-./signature-checker.tex:133: Warning: Command not found: \smaller
-./signature-checker.tex:133: Warning: Command not found: \smaller
-./signature-checker.tex:135: Warning: Command not found: \smaller
-./signature-checker.tex:135: Warning: Command not found: \smaller
-./signature-checker.tex:136: Warning: Command not found: \smaller
-./signature-checker.tex:136: Warning: Command not found: \smaller
-./signature-checker.tex:137: Warning: Command not found: \smaller
-./signature-checker.tex:137: Warning: Command not found: \smaller
-./signature-checker.tex:137: Warning: Command not found: \smaller
-./signedness-checker.tex:38: Warning: \vspace with arg '-1.5\baselineskip'
-./aliasing-checker.tex:33: Warning: \vspace with arg '-1.5\baselineskip'
-./constant-value-checker.tex:109: Warning: \vspace with arg '-1.5\baselineskip'
-./reflection-checker.tex:175: Warning: \vspace with arg '-1.5\baselineskip'
-./reflection-checker.tex:230: Warning: \vspace with arg '-1.5\baselineskip'
-./subtyping-checker.tex:274: Warning: \vspace with arg '-1.5\baselineskip'
-./external-checkers.tex:68: Warning: Command not found: \etalchar
-./external-checkers.tex:116: Warning: Command not found: \etalchar
-./external-checkers.tex:117: Warning: Command not found: \etalchar
-./external-checkers.tex:155: Warning: Command not found: \etalchar
-./external-checkers.tex:193: Warning: Command not found: \etalchar
-./creating-a-checker.tex:99: Warning: \cline changed into \hline
-./creating-a-checker.tex:99: Warning: \cline changed into \hline
-./creating-a-checker.tex:118: Warning: Ignoring \centering or \ragged...
-./faq.tex:308: Warning: Command not found: \etalchar
-./faq.tex:311: Warning: Command not found: \etalchar
-./faq.tex:347: Warning: Command not found: \etalchar
-./faq.tex:1139: Warning: Command not found: \etalchar
-./faq.tex:1402: Warning: Command not found: \etalchar
-./faq.tex:1580: Warning: Command not found: \etalchar
-./troubleshooting.tex:549: Warning: Command not found: \smaller
-./troubleshooting.tex:553: Warning: Command not found: \endsmaller
-./troubleshooting.tex:558: Warning: Command not found: \smaller
-./troubleshooting.tex:563: Warning: Command not found: \endsmaller
-./troubleshooting.tex:568: Warning: Command not found: \smaller
-./troubleshooting.tex:572: Warning: Command not found: \endsmaller
-./troubleshooting.tex:1021: Warning: Command not found: \etalchar
-./troubleshooting.tex:1031: Warning: Command not found: \etalchar
-./troubleshooting.tex:1084: Warning: Command not found: \etalchar
-./troubleshooting.tex:1089: Warning: Command not found: \etalchar
-./troubleshooting.tex:1094: Warning: Command not found: \etalchar
-./troubleshooting.tex:1105: Warning: Command not found: \etalchar
-./troubleshooting.tex:1109: Warning: Command not found: \etalchar
-./troubleshooting.tex:1112: Warning: Command not found: \etalchar
-./troubleshooting.tex:1114: Warning: Command not found: \etalchar
-Fixpoint reached in 1 step(s)
-imagen manual
-RESOLUTION: 100
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=latex)
- restricted \write18 enabled.
-entering extended mode
-(./manual.image.tex
-LaTeX2e <2017/01/01> patch level 3
-Babel <3.9r> and hyphenation patterns for 83 language(s) loaded.
-(/usr/local/texlive/2016/texmf-dist/tex/latex/base/report.cls
-Document Class: report 2014/09/29 v1.4h Standard LaTeX document class
-(/usr/local/texlive/2016/texmf-dist/tex/latex/base/size10.clo))
-(/usr/local/texlive/2016/texmf-dist/tex/latex/base/fontenc.sty
-(/usr/local/texlive/2016/texmf-dist/tex/latex/base/t1enc.def))
-(/usr/local/texlive/2016/texmf-dist/tex/latex/pslatex/pslatex.sty)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/microtype/microtype.sty
-(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/keyval.sty)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/microtype/microtype-pdftex.def)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/microtype/microtype.cfg))
-(/usr/local/texlive/2016/texmf-dist/tex/latex/preprint/fullpage.sty)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/graphicx.sty
-(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/graphics.sty
-(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/trig.sty)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics-cfg/graphics.cfg)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics-def/dvips.def)))
-(/usr/local/texlive/2016/texmf-dist/tex/latex/hevea/hevea.sty
-(/usr/local/texlive/2016/texmf-dist/tex/latex/comment/comment.sty
-Excluding comment 'comment') Excluding comment 'rawhtml'
-Excluding comment 'htmlonly')
-(/usr/local/texlive/2016/texmf-dist/tex/latex/url/url.sty)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/color.sty
-(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics-cfg/color.cfg)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/dvipsnam.def))
-(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/hyperref.sty
-(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/hobsub-hyperref.sty
-(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/hobsub-generic.sty))
-(/usr/local/texlive/2016/texmf-dist/tex/generic/ifxetex/ifxetex.sty)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/auxhook.sty)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/kvoptions.sty)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/pd1enc.def)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/latexconfig/hyperref.cfg))
-
-Package hyperref Message: Driver (default): hdvips.
-
-(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/hdvips.def
-(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/pdfmark.def
-(/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/rerunfilecheck.sty)))
-(/usr/local/texlive/2016/texmf-dist/tex/latex/lkproof/proof.sty)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/relsize/relsize.sty)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/listings/listings.sty
-(/usr/local/texlive/2016/texmf-dist/tex/latex/listings/lstmisc.sty)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/listings/listings.cfg))
-(/usr/local/texlive/2016/texmf-dist/tex/latex/base/alltt.sty)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/fancyvrb/fancyvrb.sty
-Style option: `fancyvrb' v2.7a, with DG/SPQR fixes, and firstline=lastline fix
-<2008/02/07> (tvz))
-No file manual.image.aux.
-(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/omspzccm.fd)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/microtype/mt-ptm.cfg)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/nameref.sty
-(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/gettitlestring.sty))
-(./manual.image.out) (./manual.image.out)
-
-Package hyperref Warning: Rerun to get /PageLabels entry.
-
-(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/ot1ptmcm.fd)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/omlptmcm.fd)
-(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/omxpsycm.fd) [1]
-(./manual.image.aux) )
-Output written on manual.image.dvi (1 page, 3492 bytes).
-Transcript written on manual.image.log.
-This is dvips(k) 5.996 Copyright 2016 Radical Eye Software (www.radicaleye.com)
-' TeX output 2019.09.13:1347' ->
-</usr/local/texlive/2016/texmf-dist/dvips/base/texc.pro>
-</usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/base/8r.enc>
-</usr/local/texlive/2016/texmf-dist/dvips/base/texps.pro>
-</usr/local/texlive/2016/texmf-dist/dvips/base/special.pro>
-</usr/local/texlive/2016/texmf-dist/dvips/base/color.pro>.
-</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb>
-</usr/local/texlive/2016/texmf-dist/fonts/type1/urw/courier/ucrb8a.pfb>
-</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb>
-</usr/local/texlive/2016/texmf-dist/fonts/type1/urw/symbol/usyr.pfb>
-</usr/local/texlive/2016/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb>
-</usr/local/texlive/2016/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
-</usr/local/texlive/2016/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>[1]
-convert: Expected 8192 bytes; found 8059 bytes `-' @ warning/png.c/MagickPNGWarningHandler/1777.
-convert: Read Exception `-' @ error/png.c/MagickPNGErrorHandler/1751.
-convert: corrupt image `-' @ error/png.c/ReadPNGImage/3789.
-convert: no images defined `png:-' @ error/convert.c/ConvertImageCommand/3046.
-./add-favicon-to-manual
-\mv -f manual.html manual.html-with-htoc
-./hevea-retarget-crossrefs < manual.html-with-htoc > manual.html
-\rm -f manual.html-with-htoc
-sed -i -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
-sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
 rm -rf /homes/gws/mernst/public_html/tmp-cf-manual
 (cd .. && cp -prf manual /homes/gws/mernst/public_html/tmp-cf-manual)
 /homes/gws/mernst/bin/src/checklink/checklink -q -e `grep -v '^#' /homes/gws/mernst/bin/src/checklink/checklink-args.txt` https://homes.cs.washington.edu/~mernst/tmp-cf-manual/manual.html
@@ -253,1911 +22,1875 @@ Processing	https://homes.cs.washington.edu/~mernst/tmp-cf-manual/manual.html
 
 List of broken links and other issues:
 https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/StringVal.html
- Lines: 6070, 6079, 6341
+ Lines: 6073, 6082, 6344
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
 https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/GuardedBy.html
- Lines: 2875, 2884, 2910, 2920, 3467, 7907
+ Lines: 2876, 2885, 2911, 2921, 3468, 7910
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
 https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/RequiresNonNull.html
- Lines: 1371, 1673, 2280, 2356, 7898, 11686
+ Lines: 1372, 1674, 2281, 2357, 7901, 11689
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
 https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/RequiresQualifier.html
-  Line: 7895
+  Line: 7898
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
 https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/tainting/qual/PolyTainted.html
-  Line: 4236
+  Line: 4237
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
 https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SearchIndexUnknown.html
-  Line: 3860
+  Line: 3861
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
 https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/aliasing/qual/MaybeAliased.html
-  Line: 5826
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/regex/RegexUtil.html
- Lines: 4408, 4409, 4411, 4418, 4420, 4421, 4450, 4455, 9786
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-Fragments:
-	isRegex-java.lang.String-int- 	Line: 4418
-	regexException-java.lang.String-int-	Line: 4421
-	regexError-java.lang.String-int-	Line: 4420
-	asRegex-java.lang.String-     	Lines: 4450, 9786
-	regexError-java.lang.String-  	Line: 4409
-	isRegex-java.lang.String-     	Line: 4408
-	regexException-java.lang.String-	Line: 4411
-	asRegex-java.lang.String-int- 	Line: 4455
-
-https://docs.oracle.com/javase/11/docs/api/java.base/java/lang/annotation/Retention.html
-  Line: 11735
-  Code: 302 -> 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/type/treeannotator/TreeAnnotator.html
-  Line: 10209
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/optional/qual/Present.html
-  Line: 2589
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/ClassGetName.html
-  Line: 5159
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/regex/qual/Regex.html
- Lines: 1195, 4338
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/type/TypeHierarchy.html
- Lines: 9307, 9412, 9416, 9419, 9421
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/h.html
-  Line: 5540
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/dist/ManualTaglet.html
-  Line: 10120
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/qual/Pure.html
- Lines: 723, 768, 1670, 5993, 6021, 6202, 7812, 7868, 12195
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/compilermsgs/qual/CompilerMessageKey.html
-  Line: 5119
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SameLen.html
-  Line: 3809
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/min.html
-  Line: 5539
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/basetype/BaseTypeVisitor.html
- Lines: 9408, 9682, 9690, 9696, 9698, 9885, 10031, 10207
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/qual/I18nInvalidFormat.html
-  Line: 4838
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/SafeType.html
-  Line: 5330
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/PolyUIType.html
-  Line: 5359
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18n/I18nSubchecker.html
-  Line: 9642
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/EnsuresNonNullIf.html
- Lines: 1206, 1378, 1446, 1477, 2358, 7900
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/ClassVal.html
- Lines: 6339, 6348
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/C.html
-  Line: 5536
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/AnnotatedFor.html
- Lines: 745, 811, 8759, 8803, 8895, 8904
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/BinaryName.html
-  Line: 5176
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/tainting/qual/Untainted.html
-  Line: 4230
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/qual/Format.html
- Lines: 4496, 4502, 4615
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/PolyNull.html
- Lines: 1199, 1322, 1324, 7109
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/qual/I18nUnknownFormat.html
-  Line: 4840
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/UI.html
-  Line: 5377
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/s.html
-  Line: 5537
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/analysis/Store.html
- Lines: 9877, 9894, 9897, 9901, 9903, 9957
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Current.html
-  Line: 5510
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/I18nFormatUtil.html
- Lines: 4978, 4979, 4990
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-Fragments:
-	hasFormat-java.lang.String-org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory...-	Lines: 4978, 4979, 4990
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/mm2.html
-  Line: 5519
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/EnsuresQualifier.html
- Lines: 7896, 9817, 9821, 9833
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/StaticallyExecutable.html
- Lines: 6184, 6197
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/InternalForm.html
-  Line: 5179
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/EnsuresKeyForIf.html
- Lines: 2397, 7903
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/type/AnnotatedTypeMirror.html
- Lines: 9764, 10171
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/NonNull.html
- Lines: 516, 553, 899, 1082, 1191, 1247, 1249, 1262, 1268, 1271, 1273, 1314, 1334, 1534, 1604, 1611, 1897, 1924, 1945, 1985, 2176, 2274, 7452, 7688, 8401, 9185, 9372, 11733
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/UIPackage.html
-  Line: 5326
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/UIType.html
-  Line: 5322
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/PolyUpperBound.html
- Lines: 3590, 3672
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/MonotonicNonNull.html
- Lines: 1325, 1639, 1942, 2275, 7843, 11681
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/GuardSatisfied.html
-  Line: 2981
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/KeyFor.html
- Lines: 1398, 1403, 2381, 7901
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/BinaryNameInUnnamedPackage.html
-  Line: 5201
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/analysis/FlowExpressions.html
- Lines: 9557, 9559
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-Fragments:
-	internalReprOf-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-	Line: 9557
-	internalReprOf-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-	Line: 9559
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/qual/UsesObjectEquals.html
-  Line: 2689
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/cd.html
-  Line: 5527
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Area.html
-  Line: 5510
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/PolyLength.html
- Lines: 3592, 3597
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LowerBoundUnknown.html
-  Line: 3621
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18n/qual/LocalizableKey.html
-  Line: 5092
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/MethodValBottom.html
-  Line: 6401
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/util/AnnotatedTypes.html
-  Line: 10217
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/DefaultFor.html
-  Line: 7400
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/UnknownSignedness.html
- Lines: 5709, 5724
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/qual/I18nFormat.html
- Lines: 4804, 4815, 5016
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/mol.html
-  Line: 5533
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/mPERs2.html
-  Line: 5514
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/HasSubsequence.html
-  Line: 3709
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/SignednessUtil.html
-  Line: 5768
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/fenum/qual/Fenum.html
- Lines: 4041, 4082, 4123
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/PolySameLen.html
- Lines: 3594, 3816
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/IndexOrHigh.html
- Lines: 3568, 3581, 3857
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/AlwaysSafe.html
-  Line: 5375
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/BoolVal.html
-  Line: 6066
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/qual/ConversionCategory.html
- Lines: 4552, 4553, 4554, 4555, 4563, 4567, 4571, 4573, 4594, 4599, 4600
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-Fragments:
-	CHAR                          	Lines: 4555, 4599
-	NULL                          	Line: 4594
-	TIME                          	Lines: 4571, 4600
-	CHAR_AND_INT                  	Line: 4599
-	INT                           	Lines: 4552, 4563, 4599, 4600
-	INT_AND_TIME                  	Line: 4600
-	UNUSED                        	Line: 4573
-	FLOAT                         	Line: 4567
-	GENERAL                       	Line: 4554
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/QualifierForLiterals.html
- Lines: 6453, 9745
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/ArrayLen.html
- Lines: 3749, 3765, 6072, 6086, 6106, 6342
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/DefaultQualifierForUse.html
-  Line: 7395
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/km2.html
-  Line: 5521
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/StubFiles.html
-  Line: 9988
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://docs.oracle.com/en/java/javase/11/docs/api/java/sql/Time.html
-  Line: 4894
-  Code: 302 -> 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/qual/I18nFormatBottom.html
-  Line: 4842
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/util/AnnotationMirrorSet.html
-  Line: 10226
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/initialization/qual/NotOnlyInitialized.html
- Lines: 2178, 2182, 2191, 2196, 2208
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/PolySigned.html
-  Line: 5706
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Speed.html
-  Line: 5510
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/UnknownMethod.html
-  Line: 6398
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/JavaExpression.html
-  Line: 9545
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/InterningVisitor.html
-  Line: 2819
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/CFComment.html
-  Line: 8717
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/UnknownKeyFor.html
-  Line: 2383
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/IndexOrLow.html
-  Line: 3583
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LessThanBottom.html
-  Line: 3969
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/MethodVal.html
- Lines: 6340, 6384
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/FullyQualifiedName.html
- Lines: 5156, 5196
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/UIEffect.html
-  Line: 5295
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/tainting/qual/Tainted.html
-  Line: 4232
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/Unused.html
-  Line: 8018
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/qual/SideEffectFree.html
- Lines: 721, 766, 5989, 6022, 7806, 7813, 12196
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/MethodDescriptor.html
-  Line: 5227
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/ElementUtils.html
- Lines: 9257, 10216
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/PolyAll.html
- Lines: 7160, 9611, 9619
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/aliasing/qual/LeakedToResult.html
- Lines: 5840, 5873
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/qual/InternMethod.html
-  Line: 2695
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/util/GraphQualifierHierarchy.html
-  Line: 9403
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-Fragments:
-	isSubtype-java.util.Collection-java.util.Collection-	Line: 9403
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/SafeEffect.html
-  Line: 5292
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/radians.html
-  Line: 5515
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LessThan.html
-  Line: 3964
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/flow/CFValue.html
- Lines: 9957, 9958
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Luminance.html
-  Line: 5510
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/cfg/node/LeftShiftNode.html
-  Line: 9855
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/regex/qual/PolyRegex.html
-  Line: 4345
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/SignednessBottom.html
-  Line: 5712
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/initialization/qual/UnknownInitialization.html
- Lines: 1391, 1921, 2304
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/optional/qual/MaybePresent.html
-  Line: 2587
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/Positive.html
- Lines: 3605, 6168, 11493
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/FqBinaryName.html
-  Line: 5195
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SameLenBottom.html
-  Line: 3824
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/EnsuresLTLengthOf.html
-  Line: 3698
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/qual/I18nConversionCategory.html
- Lines: 4886, 4891, 4892, 4896
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-Fragments:
-	DATE                          	Line: 4892
-	UNUSED                        	Line: 4886
-	NUMBER                        	Line: 4896
-	GENERAL                       	Line: 4891
-
-https://docs.oracle.com/javase/11/docs/api/java.base/java/lang/SuppressWarnings.html
- Lines: 6489, 8082
-  Code: 302 -> 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/ReleasesNoLocks.html
-  Line: 3021
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LessThanUnknown.html
-  Line: 3967
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Mass.html
- Lines: 5503, 5510
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/MayReleaseLocks.html
-  Line: 3030
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/SubtypeOf.html
- Lines: 9350, 9369, 9375, 9378, 9397, 9398, 9400
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/mPERs.html
-  Line: 5531
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/qual/UnknownFormat.html
-  Line: 4538
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/LockingFree.html
-  Line: 3015
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/PolyUnit.html
- Lines: 5505, 5556, 5561
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/InterningAnnotatedTypeFactory.html
-  Line: 2772
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SearchIndexBottom.html
-  Line: 3858
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/source/SourceChecker.html
- Lines: 9564, 9585, 9598, 9688
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-Fragments:
-	report-org.checkerframework.framework.source.Result-java.lang.Object-	Lines: 9585, 9598, 9688
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/source/AggregateChecker.html
- Lines: 9566, 9622, 9632
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/EnsuresQualifierIf.html
- Lines: 7682, 7897, 9818, 9822, 9834
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/TypeAnnotationUtils.html
-  Line: 9259
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/NullnessVisitor.html
-  Line: 1268
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/PolyUIEffect.html
-  Line: 5360
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/aliasing/qual/Unique.html
   Line: 5829
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/Identifier.html
-  Line: 5195
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SubstringIndexFor.html
- Lines: 3878, 3905
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SubstringIndexUnknown.html
-  Line: 3915
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Prefix.html
-  Line: 5541
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/flow/CFAbstractTransfer.html
-  Line: 9871
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/analysis/TransferResult.html
- Lines: 9872, 9873, 9882, 9891, 9952, 9954, 9963
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/UnknownVal.html
-  Line: 6087
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/NonNegative.html
- Lines: 3565, 3571, 3611, 5673, 6169
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/TreeUtils.html
- Lines: 9258, 10216
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/KeyForBottom.html
-  Line: 2387
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/EnsuresLockHeldIf.html
- Lines: 3006, 3028, 7906
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Angle.html
-  Line: 5510
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/IntVal.html
- Lines: 6067, 6101, 6108
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/qual/Deterministic.html
- Lines: 722, 767, 5990, 6023, 7810, 7814, 7867
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/GuardedByUnknown.html
-  Line: 2939
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/basetype/BaseTypeChecker.html
- Lines: 9143, 9565, 9592, 9647, 9656
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/regex/RegexUtil.html
+ Lines: 4409, 4410, 4412, 4419, 4421, 4422, 4451, 4456, 9789
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 Fragments:
-	getTypeFactoryOfSubchecker-java.lang.Class-	Line: 9656
-	getImmediateSubcheckerClasses--	Line: 9647
+	isRegex-java.lang.String-int- 	Line: 4419
+	regexException-java.lang.String-int-	Line: 4422
+	regexError-java.lang.String-int-	Line: 4421
+	asRegex-java.lang.String-     	Lines: 4451, 9789
+	regexError-java.lang.String-  	Line: 4410
+	isRegex-java.lang.String-     	Line: 4409
+	regexException-java.lang.String-	Line: 4412
+	asRegex-java.lang.String-int- 	Line: 4456
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LowerBoundBottom.html
-  Line: 3624
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/type/treeannotator/TreeAnnotator.html
+  Line: 10212
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/util/typeinference/DefaultTypeArgumentInference.html
-  Line: 10034
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/m2.html
-  Line: 5520
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Time.html
-  Line: 5510
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/cfg/node/MethodInvocationNode.html
-  Line: 9846
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/qual/TerminatesExecution.html
-  Line: 7815
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/SignednessUtilExtra.html
-  Line: 5774
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LTLengthOf.html
- Lines: 3566, 3587, 3651, 3685, 3745
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/
-  Line: 11758
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/UpperBoundFor.html
-  Line: 7319
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/initialization/qual/UnderInitialization.html
- Lines: 1392, 1931, 1936, 1984, 1987, 2111, 2198, 2303
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SubstringIndexBottom.html
-  Line: 3913
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LTEqLengthOf.html
- Lines: 3572, 3666
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/NegativeIndexFor.html
-  Line: 3852
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/source/SupportedOptions.html
-  Line: 9672
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/kmPERh.html
-  Line: 5532
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/SignedPositive.html
- Lines: 5695, 5703
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/EnsuresNonNull.html
- Lines: 1202, 1377, 2003, 2278, 2308, 2357, 7681, 7899, 11682, 12197
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/qual/FormatMethod.html
- Lines: 4540, 4736
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/qual/InternedDistinct.html
- Lines: 2681, 2774, 2806
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://docs.oracle.com/javase/11/docs/api/java.base/java/lang/annotation/Target.html
-  Line: 9351
-  Code: 302 -> 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LTOMLengthOf.html
-  Line: 3675
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18n/LocalizableKeyChecker.html
-  Line: 9643
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/regex/RegexUtil.CheckedPatternSyntaxException.html
- Lines: 4428, 4433
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18n/I18nChecker.html
-  Line: 9640
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/FormatterTransfer.html
-  Line: 9908
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/Covariant.html
- Lines: 7058, 7065
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/GTENegativeOne.html
- Lines: 3586, 3613, 6170
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/util/AnnotationMirrorMap.html
-  Line: 10225
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/optional/qual/PolyPresent.html
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/optional/qual/Present.html
   Line: 2590
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/Nullable.html
- Lines: 1073, 1248, 1311, 1332, 1529, 1622, 1638, 1943, 2272, 7462, 9372, 9380
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/ClassGetName.html
+  Line: 5162
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Acceleration.html
-  Line: 5510
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/regex/qual/Regex.html
+ Lines: 1196, 4339
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/ClassValBottom.html
-  Line: 6364
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/type/TypeHierarchy.html
+ Lines: 9310, 9415, 9419, 9422, 9424
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/AnnotationBuilder.html
-  Line: 9255
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/h.html
+  Line: 5543
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/EnsuresMinLenIf.html
-  Line: 3790
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/dist/ManualTaglet.html
+  Line: 10123
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/PolymorphicQualifier.html
- Lines: 7108, 9391
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/qual/Pure.html
+ Lines: 723, 768, 1671, 5996, 6024, 6205, 7815, 7871, 12198
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/qual/UnknownInterned.html
-  Line: 2683
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/compilermsgs/qual/CompilerMessageKey.html
+  Line: 5122
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/source/SupportedLintOptions.html
- Lines: 9581, 9664
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SameLen.html
+  Line: 3810
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/PolyUI.html
-  Line: 5381
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/min.html
+  Line: 5542
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/degrees.html
-  Line: 5517
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/basetype/BaseTypeVisitor.html
+ Lines: 9411, 9685, 9693, 9699, 9701, 9888, 10034, 10210
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/NullnessAnnotatedTypeFactory.html
-  Line: 1429
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/qual/I18nInvalidFormat.html
+  Line: 4839
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/ClassBound.html
-  Line: 6354
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/SafeType.html
+  Line: 5333
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/Signed.html
- Lines: 5690, 5699, 5723
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/PolyUIType.html
+  Line: 5362
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/qual/I18nFormatFor.html
- Lines: 4807, 4823, 5005, 7904
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18n/I18nSubchecker.html
+  Line: 9645
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/analysis/FlowExpressions.Receiver.html
-  Line: 9556
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/EnsuresNonNullIf.html
+ Lines: 1207, 1379, 1447, 1478, 2359, 7903
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/MinLen.html
- Lines: 3757, 6074
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/ClassVal.html
+ Lines: 6342, 6351
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/PolyIndex.html
-  Line: 3587
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/C.html
+  Line: 5539
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/EnsuresKeyFor.html
- Lines: 2391, 7902
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/AnnotatedFor.html
+ Lines: 745, 811, 8762, 8806, 8898, 8907
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/UpperBoundBottom.html
-  Line: 3694
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/BinaryName.html
+  Line: 5179
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/IndexFor.html
- Lines: 3519, 3554
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/tainting/qual/Untainted.html
+  Line: 4231
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/NoDefaultQualifierForUse.html
-  Line: 7409
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/qual/Format.html
+ Lines: 4497, 4503, 4616
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/initialization/qual/Initialized.html
- Lines: 1390, 1918, 1991, 2185, 2299
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/PolyNull.html
+ Lines: 1200, 1323, 1325, 7112
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/EnsuresLockHeld.html
- Lines: 3000, 3027, 7905
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/qual/I18nUnknownFormat.html
+  Line: 4841
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/DefaultQualifierInHierarchy.html
-  Line: 9435
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/UI.html
+  Line: 5380
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/type/GenericAnnotatedTypeFactory.html
- Lines: 9442, 9549, 9760
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/s.html
+  Line: 5540
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/analysis/Store.html
+ Lines: 9880, 9897, 9900, 9904, 9906, 9960
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Current.html
+  Line: 5513
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/I18nFormatUtil.html
+ Lines: 4981, 4982, 4993
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 Fragments:
-	createDependentTypesHelper--  	Line: 9549
-	addCheckedCodeDefaults-org.checkerframework.framework.util.defaults.QualifierDefaults-	Line: 9442
-	addComputedTypeAnnotations-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-boolean-	Line: 9760
+	hasFormat-java.lang.String-org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory...-	Lines: 4981, 4982, 4993
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/SignednessGlb.html
- Lines: 5700, 5721
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/AnnotationUtils.html
- Lines: 9256, 10223
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/km.html
-  Line: 5526
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/flow/CFTransfer.html
- Lines: 9826, 9829, 9841
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/qual/PolyInterned.html
-  Line: 2685
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/A.html
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/mm2.html
   Line: 5522
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/IntRange.html
- Lines: 5675, 6068, 6084, 6096, 6102, 6107, 6244
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/EnsuresQualifier.html
+ Lines: 7899, 9820, 9824, 9836
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/PolyLowerBound.html
- Lines: 3589, 3617
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/StaticallyExecutable.html
+ Lines: 6187, 6200
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/FormatUtil.html
-  Line: 4743
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/InternalForm.html
+  Line: 5182
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/EnsuresKeyForIf.html
+ Lines: 2398, 7906
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/type/AnnotatedTypeMirror.html
+ Lines: 9767, 10174
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/NonNull.html
+ Lines: 516, 553, 899, 1082, 1192, 1248, 1250, 1263, 1269, 1272, 1274, 1315, 1335, 1535, 1605, 1612, 1898, 1925, 1946, 1986, 2177, 2275, 7455, 7691, 8404, 9188, 9375, 11736
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/UIPackage.html
+  Line: 5329
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/UIType.html
+  Line: 5325
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/PolyUpperBound.html
+ Lines: 3591, 3673
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/MonotonicNonNull.html
+ Lines: 1326, 1640, 1943, 2276, 7846, 11684
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/GuardSatisfied.html
+  Line: 2982
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/KeyFor.html
+ Lines: 1399, 1404, 2382, 7904
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/BinaryNameInUnnamedPackage.html
+  Line: 5204
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/analysis/FlowExpressions.html
+ Lines: 9560, 9562
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 Fragments:
-	asFormat-java.lang.String-org.checkerframework.checker.formatter.qual.ConversionCategory...-	Line: 4743
+	internalReprOf-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-	Line: 9560
+	internalReprOf-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-	Line: 9562
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/type/AnnotatedTypeFactory.html
- Lines: 7321, 9409, 9620, 9653, 9751, 9758, 9763, 9883, 9886, 9894
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-Fragments:
-	createSupportedTypeQualifiers--	Line: 9620
-	createQualifierHierarchy--    	Line: 9409
-	addComputedTypeAnnotations-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-	Line: 9763
-	getTypeDeclarationBounds-javax.lang.model.type.TypeMirror-	Line: 7321
-	createTypeHierarchy--         	Line: 9409
-	addComputedTypeAnnotations-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-	Line: 9758
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/EnsuresLTLengthOfIf.html
-  Line: 3703
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/qual/UsesObjectEquals.html
+  Line: 2690
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Temperature.html
-  Line: 5510
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/GuardedByBottom.html
-  Line: 2951
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/ArrayLenRange.html
- Lines: 3749, 3763, 3769, 3772, 6073, 6085, 6086, 6105, 6245
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/InheritedAnnotation.html
-  Line: 11836
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/LockTransfer.html
-  Line: 9907
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/RelevantJavaTypes.html
-  Line: 9459
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/FieldInvariant.html
-  Line: 7960
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/K.html
-  Line: 5534
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/cfg/node/EqualToNode.html
-  Line: 9854
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Length.html
- Lines: 5502, 5510
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/Holding.html
- Lines: 2998, 3466, 7908
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/kg.html
- Lines: 5504, 5528
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/IgnoreInWholeProgramInference.html
- Lines: 8592, 8595
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/AbstractTypeProcessor.html
- Lines: 10230, 10231
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/Unsigned.html
- Lines: 5686, 5700, 5718, 5772
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18n/qual/Localized.html
-  Line: 5090
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/type/QualifierHierarchy.html
- Lines: 9306, 9412, 9414, 9420
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/m.html
- Lines: 5504, 5523
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/aliasing/qual/NonLeaked.html
- Lines: 5835, 5872
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/cfg/node/VariableDeclarationNode.html
-  Line: 9856
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/mm.html
-  Line: 5525
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/ClassGetSimpleName.html
-  Line: 5187
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/qual/Interned.html
- Lines: 554, 901, 2679, 2707, 2802, 2804, 2806, 2807, 2837, 2844, 2847, 8925
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/Opt.html
-  Line: 1851
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/qual/InvalidFormat.html
-  Line: 4533
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/propkey/qual/PropertyKey.html
-  Line: 5040
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/DefaultQualifier.html
- Lines: 1436, 7418, 7420, 7424, 7444, 7504
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/DoubleVal.html
-  Line: 6069
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/cfg/node/Node.html
- Lines: 9782, 9839, 9842, 9852, 9856, 9875, 9884, 9910, 9912, 9915
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/UpperBoundUnknown.html
-  Line: 3690
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/TypesUtils.html
- Lines: 9260, 10215
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/regex/RegexTransfer.html
- Lines: 9830, 9847, 9889, 9918, 9935, 9955
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/FieldDescriptor.html
-  Line: 5169
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/basetype/BaseAnnotatedTypeFactory.html
-  Line: 9974
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LengthOf.html
-  Line: 3578
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/qual/FormatBottom.html
-  Line: 4536
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SameLenUnknown.html
-  Line: 3820
-  Code: 404 Not Found
- To do: The link is broken. Double-check that you have not made any typo,
-	or mistake in copy-pasting. If the link points to a resource that
-	no longer exists, you may want to remove or fix the link.
-
-https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/g.html
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/cd.html
   Line: 5530
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Area.html
+  Line: 5513
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/PolyLength.html
+ Lines: 3593, 3598
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LowerBoundUnknown.html
+  Line: 3622
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18n/qual/LocalizableKey.html
+  Line: 5095
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/MethodValBottom.html
+  Line: 6404
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/util/AnnotatedTypes.html
+  Line: 10220
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/DefaultFor.html
+  Line: 7403
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/UnknownSignedness.html
+ Lines: 5712, 5727
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/qual/I18nFormat.html
+ Lines: 4805, 4816, 5019
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/mol.html
+  Line: 5536
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/mPERs2.html
+  Line: 5517
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/HasSubsequence.html
+  Line: 3710
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/SignednessUtil.html
+  Line: 5771
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/fenum/qual/Fenum.html
+ Lines: 4042, 4083, 4124
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/PolySameLen.html
+ Lines: 3595, 3817
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/IndexOrHigh.html
+ Lines: 3569, 3582, 3858
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/AlwaysSafe.html
+  Line: 5378
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/BoolVal.html
+  Line: 6069
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/qual/ConversionCategory.html
+ Lines: 4553, 4554, 4555, 4556, 4564, 4568, 4572, 4574, 4595, 4600, 4601
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+Fragments:
+	CHAR                          	Lines: 4556, 4600
+	NULL                          	Line: 4595
+	TIME                          	Lines: 4572, 4601
+	CHAR_AND_INT                  	Line: 4600
+	INT                           	Lines: 4553, 4564, 4600, 4601
+	INT_AND_TIME                  	Line: 4601
+	UNUSED                        	Line: 4574
+	FLOAT                         	Line: 4568
+	GENERAL                       	Line: 4555
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/QualifierForLiterals.html
+ Lines: 6456, 9748
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/ArrayLen.html
+ Lines: 3750, 3766, 6075, 6089, 6109, 6345
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/DefaultQualifierForUse.html
+  Line: 7398
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/km2.html
+  Line: 5524
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/StubFiles.html
+  Line: 9991
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/qual/I18nFormatBottom.html
+  Line: 4843
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/util/AnnotationMirrorSet.html
+  Line: 10229
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/initialization/qual/NotOnlyInitialized.html
+ Lines: 2179, 2183, 2192, 2197, 2209
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/PolySigned.html
+  Line: 5709
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Speed.html
+  Line: 5513
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/UnknownMethod.html
+  Line: 6401
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/JavaExpression.html
+  Line: 9548
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/InterningVisitor.html
+  Line: 2820
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/CFComment.html
+  Line: 8720
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/UnknownKeyFor.html
+  Line: 2384
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/IndexOrLow.html
+  Line: 3584
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LessThanBottom.html
+  Line: 3970
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/MethodVal.html
+ Lines: 6343, 6387
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/FullyQualifiedName.html
+ Lines: 5159, 5199
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/UIEffect.html
+  Line: 5298
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/tainting/qual/Tainted.html
+  Line: 4233
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/Unused.html
+  Line: 8021
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/qual/SideEffectFree.html
+ Lines: 721, 766, 5992, 6025, 7809, 7816, 12199
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/MethodDescriptor.html
+  Line: 5230
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/ElementUtils.html
+ Lines: 9260, 10219
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/PolyAll.html
+ Lines: 7163, 9614, 9622
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/aliasing/qual/LeakedToResult.html
+ Lines: 5843, 5876
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/qual/InternMethod.html
+  Line: 2696
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/util/GraphQualifierHierarchy.html
+  Line: 9406
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+Fragments:
+	isSubtype-java.util.Collection-java.util.Collection-	Line: 9406
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/SafeEffect.html
+  Line: 5295
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/radians.html
+  Line: 5518
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LessThan.html
+  Line: 3965
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/flow/CFValue.html
+ Lines: 9960, 9961
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Luminance.html
+  Line: 5513
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/cfg/node/LeftShiftNode.html
+  Line: 9858
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/regex/qual/PolyRegex.html
+  Line: 4346
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/SignednessBottom.html
+  Line: 5715
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/initialization/qual/UnknownInitialization.html
+ Lines: 1392, 1922, 2305
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/optional/qual/MaybePresent.html
+  Line: 2588
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/Positive.html
+ Lines: 3606, 6171, 11496
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/FqBinaryName.html
+  Line: 5198
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SameLenBottom.html
+  Line: 3825
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/EnsuresLTLengthOf.html
+  Line: 3699
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/qual/I18nConversionCategory.html
+ Lines: 4887, 4892, 4893, 4899
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+Fragments:
+	DATE                          	Line: 4893
+	UNUSED                        	Line: 4887
+	NUMBER                        	Line: 4899
+	GENERAL                       	Line: 4892
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/ReleasesNoLocks.html
+  Line: 3022
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LessThanUnknown.html
+  Line: 3968
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Mass.html
+ Lines: 5506, 5513
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/MayReleaseLocks.html
+  Line: 3031
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/SubtypeOf.html
+ Lines: 9353, 9372, 9378, 9381, 9400, 9401, 9403
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/mPERs.html
+  Line: 5534
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/qual/UnknownFormat.html
+  Line: 4539
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/LockingFree.html
+  Line: 3016
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/PolyUnit.html
+ Lines: 5508, 5559, 5564
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/InterningAnnotatedTypeFactory.html
+  Line: 2773
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SearchIndexBottom.html
+  Line: 3859
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/source/SourceChecker.html
+ Lines: 9567, 9588, 9601, 9691
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+Fragments:
+	report-org.checkerframework.framework.source.Result-java.lang.Object-	Lines: 9588, 9601, 9691
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/source/AggregateChecker.html
+ Lines: 9569, 9625, 9635
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/EnsuresQualifierIf.html
+ Lines: 7685, 7900, 9821, 9825, 9837
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/TypeAnnotationUtils.html
+  Line: 9262
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/NullnessVisitor.html
+  Line: 1269
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/PolyUIEffect.html
+  Line: 5363
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/aliasing/qual/Unique.html
+  Line: 5832
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/Identifier.html
+  Line: 5198
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SubstringIndexFor.html
+ Lines: 3879, 3906
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SubstringIndexUnknown.html
+  Line: 3916
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Prefix.html
+  Line: 5544
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/flow/CFAbstractTransfer.html
+  Line: 9874
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/analysis/TransferResult.html
+ Lines: 9875, 9876, 9885, 9894, 9955, 9957, 9966
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/UnknownVal.html
+  Line: 6090
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/NonNegative.html
+ Lines: 3566, 3572, 3612, 5676, 6172
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/TreeUtils.html
+ Lines: 9261, 10219
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/KeyForBottom.html
+  Line: 2388
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/EnsuresLockHeldIf.html
+ Lines: 3007, 3029, 7909
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Angle.html
+  Line: 5513
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/IntVal.html
+ Lines: 6070, 6104, 6111
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/qual/Deterministic.html
+ Lines: 722, 767, 5993, 6026, 7813, 7817, 7870
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/GuardedByUnknown.html
+  Line: 2940
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/basetype/BaseTypeChecker.html
+ Lines: 9146, 9568, 9595, 9650, 9659
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+Fragments:
+	getTypeFactoryOfSubchecker-java.lang.Class-	Line: 9659
+	getImmediateSubcheckerClasses--	Line: 9650
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LowerBoundBottom.html
+  Line: 3625
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/util/typeinference/DefaultTypeArgumentInference.html
+  Line: 10037
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/m2.html
+  Line: 5523
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Time.html
+  Line: 5513
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/cfg/node/MethodInvocationNode.html
+  Line: 9849
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/qual/TerminatesExecution.html
+  Line: 7818
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/SignednessUtilExtra.html
+  Line: 5777
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LTLengthOf.html
+ Lines: 3567, 3588, 3652, 3686, 3746
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/
+  Line: 11761
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/UpperBoundFor.html
+  Line: 7322
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/initialization/qual/UnderInitialization.html
+ Lines: 1393, 1932, 1937, 1985, 1988, 2112, 2199, 2304
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SubstringIndexBottom.html
+  Line: 3914
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LTEqLengthOf.html
+ Lines: 3573, 3667
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/NegativeIndexFor.html
+  Line: 3853
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/source/SupportedOptions.html
+  Line: 9675
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/kmPERh.html
+  Line: 5535
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/SignedPositive.html
+ Lines: 5698, 5706
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/EnsuresNonNull.html
+ Lines: 1203, 1378, 2004, 2279, 2309, 2358, 7684, 7902, 11685, 12200
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/qual/FormatMethod.html
+ Lines: 4541, 4737
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/qual/InternedDistinct.html
+ Lines: 2682, 2775, 2807
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LTOMLengthOf.html
+  Line: 3676
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18n/LocalizableKeyChecker.html
+  Line: 9646
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/regex/RegexUtil.CheckedPatternSyntaxException.html
+ Lines: 4429, 4434
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18n/I18nChecker.html
+  Line: 9643
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/FormatterTransfer.html
+  Line: 9911
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/Covariant.html
+ Lines: 7061, 7068
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/GTENegativeOne.html
+ Lines: 3587, 3614, 6173
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/util/AnnotationMirrorMap.html
+  Line: 10228
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/optional/qual/PolyPresent.html
+  Line: 2591
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/Nullable.html
+ Lines: 1073, 1249, 1312, 1333, 1530, 1623, 1639, 1944, 2273, 7465, 9375, 9383
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Acceleration.html
+  Line: 5513
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/ClassValBottom.html
+  Line: 6367
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/AnnotationBuilder.html
+  Line: 9258
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/EnsuresMinLenIf.html
+  Line: 3791
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/PolymorphicQualifier.html
+ Lines: 7111, 9394
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/qual/UnknownInterned.html
+  Line: 2684
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/source/SupportedLintOptions.html
+ Lines: 9584, 9667
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/guieffect/qual/PolyUI.html
+  Line: 5384
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/degrees.html
+  Line: 5520
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/NullnessAnnotatedTypeFactory.html
+  Line: 1430
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/ClassBound.html
+  Line: 6357
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/Signed.html
+ Lines: 5693, 5702, 5726
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18nformatter/qual/I18nFormatFor.html
+ Lines: 4808, 4824, 5008, 7907
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/analysis/FlowExpressions.Receiver.html
+  Line: 9559
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/MinLen.html
+ Lines: 3758, 6077
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/PolyIndex.html
+  Line: 3588
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/qual/EnsuresKeyFor.html
+ Lines: 2392, 7905
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/UpperBoundBottom.html
+  Line: 3695
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/IndexFor.html
+ Lines: 3520, 3555
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/NoDefaultQualifierForUse.html
+  Line: 7412
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/initialization/qual/Initialized.html
+ Lines: 1391, 1919, 1992, 2186, 2300
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/EnsuresLockHeld.html
+ Lines: 3001, 3028, 7908
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/DefaultQualifierInHierarchy.html
+  Line: 9438
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/type/GenericAnnotatedTypeFactory.html
+ Lines: 9445, 9552, 9763
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+Fragments:
+	createDependentTypesHelper--  	Line: 9552
+	addCheckedCodeDefaults-org.checkerframework.framework.util.defaults.QualifierDefaults-	Line: 9445
+	addComputedTypeAnnotations-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-boolean-	Line: 9763
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/SignednessGlb.html
+ Lines: 5703, 5724
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/AnnotationUtils.html
+ Lines: 9259, 10226
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/km.html
+  Line: 5529
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/flow/CFTransfer.html
+ Lines: 9829, 9832, 9844
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/qual/PolyInterned.html
+  Line: 2686
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/A.html
+  Line: 5525
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/IntRange.html
+ Lines: 5678, 6071, 6087, 6099, 6105, 6110, 6247
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/PolyLowerBound.html
+ Lines: 3590, 3618
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/FormatUtil.html
+  Line: 4744
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+Fragments:
+	asFormat-java.lang.String-org.checkerframework.checker.formatter.qual.ConversionCategory...-	Line: 4744
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/type/AnnotatedTypeFactory.html
+ Lines: 7324, 9412, 9623, 9656, 9754, 9761, 9766, 9886, 9889, 9897
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+Fragments:
+	createSupportedTypeQualifiers--	Line: 9623
+	createQualifierHierarchy--    	Line: 9412
+	addComputedTypeAnnotations-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-	Line: 9766
+	getTypeDeclarationBounds-javax.lang.model.type.TypeMirror-	Line: 7324
+	createTypeHierarchy--         	Line: 9412
+	addComputedTypeAnnotations-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-	Line: 9761
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/EnsuresLTLengthOfIf.html
+  Line: 3704
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Temperature.html
+  Line: 5513
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/GuardedByBottom.html
+  Line: 2952
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/ArrayLenRange.html
+ Lines: 3750, 3764, 3770, 3773, 6076, 6088, 6089, 6108, 6248
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/InheritedAnnotation.html
+  Line: 11839
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/LockTransfer.html
+  Line: 9910
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/RelevantJavaTypes.html
+  Line: 9462
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/FieldInvariant.html
+  Line: 7963
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/K.html
+  Line: 5537
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/cfg/node/EqualToNode.html
+  Line: 9857
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Length.html
+ Lines: 5505, 5513
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/lock/qual/Holding.html
+ Lines: 2999, 3467, 7911
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/kg.html
+ Lines: 5507, 5531
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/IgnoreInWholeProgramInference.html
+ Lines: 8595, 8598
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/AbstractTypeProcessor.html
+ Lines: 10233, 10234
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signedness/qual/Unsigned.html
+ Lines: 5689, 5703, 5721, 5775
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/i18n/qual/Localized.html
+  Line: 5093
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/type/QualifierHierarchy.html
+ Lines: 9309, 9415, 9417, 9423
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/m.html
+ Lines: 5507, 5526
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/aliasing/qual/NonLeaked.html
+ Lines: 5838, 5875
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/cfg/node/VariableDeclarationNode.html
+  Line: 9859
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/mm.html
+  Line: 5528
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/ClassGetSimpleName.html
+  Line: 5190
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/interning/qual/Interned.html
+ Lines: 554, 901, 2680, 2708, 2803, 2805, 2807, 2808, 2838, 2845, 2848, 8928
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/Opt.html
+  Line: 1852
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/qual/InvalidFormat.html
+  Line: 4534
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/propkey/qual/PropertyKey.html
+  Line: 5043
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/framework/qual/DefaultQualifier.html
+ Lines: 1437, 7421, 7423, 7427, 7447, 7507
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/DoubleVal.html
+  Line: 6072
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/dataflow/cfg/node/Node.html
+ Lines: 9785, 9842, 9845, 9855, 9859, 9878, 9887, 9913, 9915, 9918
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/UpperBoundUnknown.html
+  Line: 3691
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/javacutil/TypesUtils.html
+ Lines: 9263, 10218
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/regex/RegexTransfer.html
+ Lines: 9833, 9850, 9892, 9921, 9938, 9958
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/signature/qual/FieldDescriptor.html
+  Line: 5172
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/basetype/BaseAnnotatedTypeFactory.html
+  Line: 9977
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/LengthOf.html
+  Line: 3579
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/formatter/qual/FormatBottom.html
+  Line: 4537
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SameLenUnknown.html
+  Line: 3821
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
+https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/g.html
+  Line: 5533
+  Code: 404 Not Found
+ To do: The link is broken. Double-check that you have not made any typo,
+	or mistake in copy-pasting. If the link points to a resource that
+	no longer exists, you may want to remove or fix the link.
+
 https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/units/qual/Substance.html
-  Line: 5510
+  Line: 5513
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
 https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/reflection/qual/UnknownClass.html
-  Line: 6361
+  Line: 6364
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
 https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/nullness/NullnessUtil.html
- Lines: 1573, 8259, 8268, 11337
+ Lines: 1574, 8262, 8271, 11340
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 Fragments:
-	castNonNull-T-                	Lines: 1573, 8259, 8268, 11337
+	castNonNull-T-                	Lines: 1574, 8262, 8271, 11340
 
 https://homes.cs.washington.edu/~mernst/api/org/checkerframework/checker/index/qual/SearchIndexFor.html
-  Line: 3846
+  Line: 3847
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
 
 https://homes.cs.washington.edu/~mernst/api/org/checkerframework/common/value/qual/PolyValue.html
- Lines: 3595, 6075
+ Lines: 3596, 6078
   Code: 404 Not Found
  To do: The link is broken. Double-check that you have not made any typo,
 	or mistake in copy-pasting. If the link points to a resource that
 	no longer exists, you may want to remove or fix the link.
-
-https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Class.html
- Lines: 1448, 5189
-  Code: 200 OK
- To do: Some of the links to this resource point to broken URI fragments
-	(such as index.html#fragment).
-The following fragments need to be fixed:
-	getSimpleName--               	Line: 5189
 
 https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html
   Line: 895
@@ -2168,28 +1901,18 @@ The following fragments need to be fixed:
 	BHCJEIBB                      	Line: 895
 
 https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Optional.html
- Lines: 388, 1824, 2550, 2604, 2606, 2611, 2613, 7749, 11941
+ Lines: 388, 1825, 2551, 2605, 2607, 7752, 11944
   Code: 200 OK
  To do: Some of the links to this resource point to broken URI fragments
 	(such as index.html#fragment).
 The following fragments need to be fixed:
-	orElseThrow-java.util.function.Supplier-	Line: 2606
-	of-T-                         	Line: 2611
-	get--                         	Lines: 2604, 2613
-
-https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Arrays.html
- Lines: 3573, 3830, 3841, 3849
-  Code: 200 OK
- To do: Some of the links to this resource point to broken URI fragments
-	(such as index.html#fragment).
-The following fragments need to be fixed:
-	binarySearch(java.lang.Object:A,java.lang.Object)	Lines: 3830, 3841, 3849
-	fill(java.lang.Object:A,int,int,java.lang.Object)	Line: 3573
+	orElseThrow-java.util.function.Supplier-	Line: 2607
+	get--                         	Line: 2605
 
 https://docs.oracle.com/javase/11/docs/jdk/api/javac/tree/
-  Line: 9685
+  Line: 9688
   Code: 302 -> 302 Moved Temporarily
  To do: This is a temporary redirect. Update the link if you believe it
 	makes sense, or leave it as is.
 
-Compilation finished at Fri Sep 13 13:47:59
+Compilation finished at Fri Sep 13 14:20:00
