@@ -504,9 +504,8 @@ public class AnnotationBuilder {
         throw new BugInCF("Couldn't find " + key + " element in " + annotationElt);
     }
 
-    // TODO: this method always returns true and no-one ever looks at the return
-    // value.
-    private boolean checkSubtype(TypeMirror expected, Object givenValue) {
+    /** @throws BugInCF if the type of {@code givenValue} is not the same as {@code expected} */
+    private void checkSubtype(TypeMirror expected, Object givenValue) {
         if (expected.getKind().isPrimitive()) {
             expected = types.boxedClass((PrimitiveType) expected).asType();
         }
@@ -514,7 +513,7 @@ public class AnnotationBuilder {
         if (expected.getKind() == TypeKind.DECLARED
                 && TypesUtils.isClass(expected)
                 && givenValue instanceof TypeMirror) {
-            return true;
+            return;
         }
 
         TypeMirror found;
@@ -545,7 +544,7 @@ public class AnnotationBuilder {
         }
 
         if (!isSubtype) {
-            if (types.isSameType(found, expected)) {
+            if (found.toString().equals(expected.toString())) {
                 throw new BugInCF(
                         "given value differs from expected, but same string representation; "
                                 + "this is likely a bootclasspath/classpath issue; "
@@ -560,8 +559,6 @@ public class AnnotationBuilder {
                                 + expected);
             }
         }
-
-        return true;
     }
 
     private AnnotationValue createValue(final Object obj) {

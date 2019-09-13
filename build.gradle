@@ -612,6 +612,7 @@ subprojects {
             if (isJava8) {
                 jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
             }
+            jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005'
 
             testLogging {
                 showStandardStreams = true
