@@ -20,11 +20,11 @@ Stuart Marks gave
 \item
   Never, ever, use \<null> for an \<Optional> variable or return value.
 \item
-  Never use \sunjavadoc{java.base/java/util/Optional.html\#get--}{Optional.get()} unless you can prove that the Optional is present.
+  Never use \sunjavadoc{java.base/java/util/Optional.html\#get()}{Optional.get()} unless you can prove that the Optional is present.
 \item
   Prefer alternative APIs over
-  \sunjavadoc{java.base/java/util/Optional.html\#isPresent--}{Optional.isPresent()}
-  and \sunjavadoc{java.base/java/util/Optional.html\#get--}{Optional.get()}.
+  \sunjavadoc{java.base/java/util/Optional.html\#isPresent()}{Optional.isPresent()}
+  and \sunjavadoc{java.base/java/util/Optional.html\#get()}{Optional.get()}.
 \item
   It's generally a bad idea to create an \<Optional> for the specific
   purpose of chaining methods from it to get a value.

@@ -451,7 +451,7 @@ public @interface NonNegative {}
 The \refqualclass{framework/qual}{SubtypeOf} meta-annotation
 indicates the parent in the type hierarchy.
 
-The \sunjavadocanno{java/lang/annotation/Target.html}{Target}
+The \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}
 meta-annotation indicates where the annotation
 may be written. All type qualifiers that users can write in source code should
 have the value \<ElementType.TYPE\_USE> and optionally with the additional value
@@ -460,7 +460,7 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 % (Terminological note:  a \emph{meta-annotation} is an annotation that
 % is written on an annotation definition, such as
 % \refqualclass{framework/qual}{SubtypeOf} and
-% \sunjavadocanno{java/lang/annotation/Target.html}{Target}.)
+% \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}.)
 
 The annotations should be placed within a directory called \<qual>, and
 \<qual> should be placed in the same directory as your checker's source file.
