@@ -812,12 +812,12 @@ public class StubParser {
 
     /** Adds a declAnnotation to every method in the stub file. */
     private void addDeclAnnotations(Map<String, Set<AnnotationMirror>> declAnnos, Element elt) {
-        Set<AnnotationMirror> annos = declAnnos.get(ElementUtils.getVerboseName(elt));
-        if (annos == null) {
-            annos = AnnotationUtils.createAnnotationSet();
-            putOrAddToMap(declAnnos, ElementUtils.getVerboseName(elt), annos);
-        }
-        annos.add(fromStubFile);
+        //        Set<AnnotationMirror> annos = declAnnos.get(ElementUtils.getVerboseName(elt));
+        //        if (annos == null) {
+        //            annos = AnnotationUtils.createAnnotationSet();
+        //            putOrAddToMap(declAnnos, ElementUtils.getVerboseName(elt), annos);
+        //        }
+        //        annos.add(fromStubFile);
     }
 
     /**
