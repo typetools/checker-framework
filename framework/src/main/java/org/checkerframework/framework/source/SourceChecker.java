@@ -227,6 +227,9 @@ import org.checkerframework.javacutil.UserError;
     // Whether to print warnings about stub files that overwrite annotations
     // from bytecode.
     "stubWarnIfOverwritesBytecode",
+    // Whether to print warnings about stub files that are redundant with the annotations from
+    // bytecode.
+    "stubWarnIfRedundantWithBytecode",
     // Already listed above, but worth noting again in this section:
     // "useDefaultsForUncheckedCode"
 

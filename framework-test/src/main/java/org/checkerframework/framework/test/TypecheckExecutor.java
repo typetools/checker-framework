@@ -65,6 +65,7 @@ public class TypecheckExecutor {
         nonJvmOptions.add("100000");
         nonJvmOptions.add("-Xmaxwarns");
         nonJvmOptions.add("100000");
+        nonJvmOptions.add("-Xlint:deprecation");
 
         nonJvmOptions.add("-Anocheckjdk");
 

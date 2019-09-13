@@ -125,11 +125,13 @@ public class CheckerMain {
         assertValidState();
     }
 
+    /** Assert that required jars exist. */
     protected void assertValidState() {
-        if (PluginUtil.getJreVersion() == 8) {
+        if (PluginUtil.getJreVersion() < 9) {
             assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
         } else {
-            assertFilesExist(Arrays.asList(checkerJar, checkerQualJar));
+            // TODO: once the jdk11 jars exist, check for them.
+            assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar));
         }
     }
 

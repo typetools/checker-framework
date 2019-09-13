@@ -3316,6 +3316,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Returns true if redundancy between a stub file and bytecode should be reported.
+     *
+     * <p>For most type systems the default behavior of returning true is correct. For subcheckers,
+     * redundancy in one of the type hierarchies can be ok. Such implementations should return
+     * false.
+     *
+     * @return whether to warn about redundancy between a stub file and bytecode
+     */
+    public boolean shouldWarnIfStubRedundantWithBytecode() {
+        return true;
+    }
+
+    /**
      * Returns the actual annotation mirror used to annotate this element, whose name equals the
      * passed annotation class (or is an alias for it). Returns null if none exists. May return the
      * canonical annotation that annotationName is an alias for.
