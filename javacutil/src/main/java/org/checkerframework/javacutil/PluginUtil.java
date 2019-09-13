@@ -34,11 +34,31 @@ public class PluginUtil {
     public static final String JAVAC_PATH_OPT = "-javacJar";
 
     /**
-     * Option name for specifying an alternative jdk.jar location. The accompanying value MUST be
-     * the path to the jar file (NOT the path to its encompassing directory)
+     * Option name for specifying an alternative location for the annotated JDK.
+     *
+     * <p>In case of Java 8, an alternative jdk.jar location. The accompanying value MUST be the
+     * path to the jar file (NOT the path to its encompassing directory).
+     *
+     * <p>In case of Java 9+, a directory containing annotated JDK modules. The supplied directory
+     * MUST contain a {@code Patch_Modules_argfile} file containing {@code --patch-module
+     * <jdkModule>=<annotatedModule>} directives, one per line.
      */
-    public static final String JDK_PATH_OPT = "-jdkJar";
+    public static final String JDK_PATH_OPT;
 
+    static {
+        if (PluginUtil.getJreVersion() == 8) {
+            JDK_PATH_OPT = "-jdkJar";
+        } else {
+            JDK_PATH_OPT = "-jdkModulesPath";
+        }
+    }
+
+    /**
+     * Convert a list of file names into a list of files.
+     *
+     * @param fileNames list of file names
+     * @return a list of files created from {@code fileNames}
+     */
     public static List<File> toFiles(final List<String> fileNames) {
         final List<File> files = new ArrayList<>(fileNames.size());
         for (final String fn : fileNames) {

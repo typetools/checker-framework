@@ -17,6 +17,7 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 
@@ -24,13 +25,21 @@ import org.checkerframework.javacutil.PluginUtil;
  * This class behaves similarly to javac. CheckerMain does the following:
  *
  * <ul>
- *   <li>add the {@code javac.jar} to the runtime classpath of the process that runs the Checker
+ *   <li>Add the {@code javac.jar} to the runtime classpath of the process that runs the Checker
  *       Framework.
- *   <li>add {@code jdk8.jar} to the compile time bootclasspath of the javac argument list passed to
- *       javac
- *   <li>parse and implement any special options used by the Checker Framework, e.g., using
- *       "shortnames" for annotation processors
- *   <li>pass all remaining command-line arguments to the real javac
+ *   <li>Use the annotated JDK.
+ *       <ul>
+ *         <li>If using Java 8: add {@code jdk8.jar} to the compile-time bootclasspath of the javac
+ *             argument list passed to javac.
+ *         <li>If using Java 9+: patch JDK modules using {@code --patch-module
+ *             <jdkModule>=<annotatedModule>} arguments present in {@code Patch_Modules_argfile}. By
+ *             default annotated modules are present in the {@code checker/dist/annotatedJDK/jdk*\/}
+ *             directory, but a user can specify different location of folder containing patched JDK
+ *             modules using {@code -jdkModulesPath} option.
+ *       </ul>
+ *   <li>Parse and implement any special options used by the Checker Framework, e.g., using
+ *       "shortnames" for annotation processors.
+ *   <li>Pass all remaining command-line arguments to the real javac.
  * </ul>
  *
  * To debug this class, use the {@code -AoutputArgsToFile=FILENAME} command-line argument or {@code
@@ -58,8 +67,14 @@ public class CheckerMain {
         System.exit(exitStatus);
     }
 
-    /** The path to the annotated jdk jar to use. */
-    protected final File jdkJar;
+    /** In case of Java 8, the path to the annotated jdk.jar. Otherwise {@code null}. */
+    protected final @Nullable File jdkJar;
+
+    /**
+     * In case of Java 9+, the path to a directory containing annotated-jdk modules. Otherwise
+     * {@code null}.
+     */
+    protected final @Nullable File jdkModulesPath;
 
     /** The path to the javacJar to use. */
     protected final File javacJar;
@@ -70,7 +85,11 @@ public class CheckerMain {
     /** The path to checker-qual.jar. */
     protected final File checkerQualJar;
 
-    private final List<String> compilationBootclasspath;
+    /**
+     * In case of Java 8, the compile time bootclasspath added by user via {@code -Xbootclasspath}.
+     * Otherwise {@code null}.
+     */
+    private final @Nullable List<String> compilationBootclasspath;
 
     private final List<String> runtimeClasspath;
 
@@ -110,11 +129,24 @@ public class CheckerMain {
         this.javacJar =
                 extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);
 
-        final String jdkJarName = PluginUtil.getJdkJarName();
-        this.jdkJar =
-                extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, jdkJarName), args);
+        if (PluginUtil.getJreVersion() > 8) {
+            final File annotatedJDKSearchPath = new File(searchPath, "annotatedJDK");
+            final int jreVersion = PluginUtil.getJreVersion();
+            final String jdkVersionFolderName = "jdk" + jreVersion;
+            final File jdkVersionModuleLocation =
+                    new File(annotatedJDKSearchPath, jdkVersionFolderName);
+            this.jdkModulesPath =
+                    extractFileArg(PluginUtil.JDK_PATH_OPT, jdkVersionModuleLocation, args);
+            this.jdkJar = null;
+            this.compilationBootclasspath = null;
+        } else {
+            final String jdkJarName = PluginUtil.getJdkJarName();
+            this.jdkJar =
+                    extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, jdkJarName), args);
+            this.jdkModulesPath = null;
+            this.compilationBootclasspath = createCompilationBootclasspath(args);
+        }
 
-        this.compilationBootclasspath = createCompilationBootclasspath(args);
         this.runtimeClasspath = createRuntimeClasspath(args);
         this.jvmOpts = extractJvmOpts(args);
 
@@ -125,13 +157,18 @@ public class CheckerMain {
         assertValidState();
     }
 
-    /** Assert that required jars exist. */
+    /**
+     * Assert that all files required to use Checker Framework exist and if they don't, throw a
+     * RuntimeException with a list of the files that do not exist.
+     */
     protected void assertValidState() {
         if (PluginUtil.getJreVersion() < 9) {
             assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
         } else {
-            // TODO: once the jdk11 jars exist, check for them.
             assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar));
+            // TODO: once the jdk11 jars exist, check for them by uncommenting the line below.
+            // assertFilesExist(Arrays.asList(javacJar, jdkModulesPath, checkerJar,
+            // checkerQualJar));
         }
     }
 
@@ -434,6 +471,38 @@ public class CheckerMain {
             args.add(quote(concatenatePaths(ppOpts)));
         }
 
+        if (PluginUtil.getJreVersion() > 8) {
+            // Get Patch_Module_argfile
+            final File patchModuleArgsFile = new File(jdkModulesPath, "Patch_Modules_argfile");
+
+            // Get currentJdkFolder
+            final String currentJdkFolder = jdkModulesPath.getPath();
+
+            /**
+             * While using Java9+, {@code jdkModulesPath} directory MUST contain a {@code
+             * Patch_Module_argfile} containing {@code --patch-module <jdkModule>=<annotatedModule>}
+             * directives, one per line. The string `${CURRENT_JDK_FOLDER}` will be replaced with
+             * path to jdkModulesPath directory. The directory must also contain the refrenced
+             * &lt;module&gt;.jar files.
+             */
+            List<String> argsInPatchModuleArgfile; // List of all arguments in Patch_Module_argfile
+            try {
+                argsInPatchModuleArgfile = PluginUtil.readFile(patchModuleArgsFile);
+            } catch (final IOException exc) {
+                throw new RuntimeException(
+                        "Could not open file: " + patchModuleArgsFile.getAbsolutePath(), exc);
+            }
+
+            // Adding "--patch-module" arguments to compiler arguments
+            for (final String argLine : argsInPatchModuleArgfile) {
+                String[] separateFlag = argLine.trim().split("\\s+");
+                args.add(separateFlag[0]);
+                String withoutEnvVariable =
+                        separateFlag[1].replace("${CURRENT_JDK_FOLDER}", currentJdkFolder);
+                args.add(withoutEnvVariable);
+            }
+        }
+
         if (PluginUtil.getJreVersion() == 8) {
             // No classes on the compilation bootclasspath will be loaded
             // during compilation, but the classes are read by the compiler
@@ -696,7 +765,7 @@ public class CheckerMain {
                 missingAbsoluteFilenames.add(missingFile.getAbsolutePath());
             }
             throw new RuntimeException(
-                    "The following files could not be located: "
+                    "The following files and/or directory could not be located: "
                             + String.join(", ", missingAbsoluteFilenames));
         }
     }
