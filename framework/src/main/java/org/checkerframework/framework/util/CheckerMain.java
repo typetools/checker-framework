@@ -165,10 +165,7 @@ public class CheckerMain {
         if (PluginUtil.getJreVersion() < 9) {
             assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
         } else {
-            assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar));
-            // TODO: once the jdk11 jars exist, check for them by uncommenting the line below.
-            // assertFilesExist(Arrays.asList(javacJar, jdkModulesPath, checkerJar,
-            // checkerQualJar));
+            assertFilesExist(Arrays.asList(javacJar, jdkModulesPath, checkerJar, checkerQualJar));
         }
     }
 
@@ -765,7 +762,7 @@ public class CheckerMain {
                 missingAbsoluteFilenames.add(missingFile.getAbsolutePath());
             }
             throw new RuntimeException(
-                    "The following files and/or directory could not be located: "
+                    "The following files and/or directories could not be located: "
                             + String.join(", ", missingAbsoluteFilenames));
         }
     }
