@@ -4013,10 +4013,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             String jdkJarName = PluginUtil.getJdkJarName();
+            String howToFix;
+            if (PluginUtil.getJreVersion() < 9) {
+                howToFix = "-Xbootclasspath/p:.../checker/dist/ . ";
+            } else {
+                // {@code --patch-module} has replaced {@code -Xbootclasspath} in Java 9+.
+                howToFix =
+                        "--patch-module <jdkModule>=<.../checker/dist/annotatedJDK/jdk{VERSION}/annotatedModule.jar>";
+            }
             checker.message(
                     Kind.WARNING,
                     "You do not seem to be using the distributed annotated JDK. "
-                            + "To fix the problem, supply javac an argument like:  -Xbootclasspath/p:.../checker/dist/ . "
+                            + "To fix the problem, supply javac an argument like:  "
+                            + howToFix
                             + "Currently using: "
                             + jdkJarName);
         }
