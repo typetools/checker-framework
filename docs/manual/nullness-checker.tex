@@ -266,7 +266,7 @@ This annotation is checked by a Map Key Checker
 (\chapterpageref{map-key-checker}) that the Nullness Checker
 invokes.  The \refqualclass{checker/nullness/qual}{KeyFor} annotation enables
 the Nullness Checker to treat calls to
-\sunjavadoc{java/util/Map.html\#get-java.lang.Object-}{\code{Map.get}}
+\sunjavadoc{java.base/java/util/Map.html\#get-java.lang.Object-}{\code{Map.get}}
 precisely rather than assuming it may always return null.  In particular,
 a call \<mymap.get(mykey)> returns a non-\<null> value if two conditions
 are satisfied:
@@ -369,11 +369,11 @@ The Nullness Checker supports a form of conditional nullness types, via the
 The annotation on a method declares that some expressions are non-null, if
 the method returns true (false, respectively).
 
-Consider \sunjavadoc{java/lang/Class.html}{java.lang.Class}.
+Consider \sunjavadoc{java.base/java/lang/Class.html}{java.lang.Class}.
 Method
-\sunjavadoc{java/lang/Class.html\#getComponentType--}{Class.getComponentType()}
+\sunjavadoc{java.base/java/lang/Class.html\#getComponentType--}{Class.getComponentType()}
 may return null, but it is specified to return a non-null value if
-\sunjavadoc{java/lang/Class.html\#isArray--}{Class.isArray()} is
+\sunjavadoc{java.base/java/lang/Class.html\#isArray--}{Class.isArray()} is
 true.
 You could declare this relationship in the following way (this particular
 example is already
@@ -401,9 +401,9 @@ uses such a pattern:
     }
 \end{Verbatim}
 
-Another example is \sunjavadoc{java/util/Queue.html\#peek--}{Queue.peek}
-and \sunjavadoc{java/util/Queue.html\#poll--}{Queue.poll}, which return
-non-null if \sunjavadoc{java/util/Collection.html\#isEmpty--}{isEmpty}
+Another example is \sunjavadoc{java.base/java/util/Queue.html\#peek--}{Queue.peek}
+and \sunjavadoc{java.base/java/util/Queue.html\#poll--}{Queue.poll}, which return
+non-null if \sunjavadoc{java.base/java/util/Collection.html\#isEmpty--}{isEmpty}
 returns false.
 
 The argument to \code{@EnsuresNonNullIf} is a Java expression, including method calls
@@ -472,10 +472,10 @@ The Nullness Checker does some special checks in certain circumstances, in
 order to soundly reduce the number of warnings that it produces.
 
 For example, a call to
-\sunjavadoc{java/lang/System.html\#getProperty-java.lang.String-}{System.getProperty(String)}
+\sunjavadoc{java.base/java/lang/System.html\#getProperty-java.lang.String-}{System.getProperty(String)}
 can return null in general, but it will not return null if the argument is
 one of the built-in-keys listed in the documentation of
-\sunjavadoc{java/lang/System.html\#getProperties--}{System.getProperties()}.
+\sunjavadoc{java.base/java/lang/System.html\#getProperties--}{System.getProperties()}.
 The Nullness Checker is aware of this fact, so you do not have to suppress
 a warning for a call like \<System.getProperty("line.separator")>.  The
 warning is still issued for code like this:
@@ -1059,7 +1059,7 @@ tool like the Checker Framework.)
 
 Many null pointer exceptions occur because the programmer forgets to check
 whether a reference is null before dereferencing it.  Java 8's
-\sunjavadoc{java/util/Optional.html}{\code{Optional<T>}}
+\sunjavadoc{java.base/java/util/Optional.html}{\code{Optional<T>}}
 class provides a partial solution:  a programmer must call the \<get> method to
 access the value, and the designers of \<Optional> hope that the syntactic
 occurrence of the \<get> method will remind programmers to first check that
