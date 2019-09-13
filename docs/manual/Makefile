@@ -103,6 +103,11 @@ clean:
 very_clean: clean
 	@\rm -f manual.html CFLogo.png
 
+# rm -rf ~/public_html/
+# cp -pf . ~/public_html/tmp-cf-manual
+CHECKLINK=$HOME/bin/src/checklink
+$CHECKLINK/checklink -q -e `grep -v '^#' $CHECKLINK/checklink-args.txt` https://homes.cs.washington.edu/~mernst/tmp678/cfbuu-manual/manual.html
+
 .PHONY: checklink
 checklink:
 	${CHECKLINK}/checklink -q -e `grep -v '^#' ${CHECKLINK}/checklink-args.txt` manual.html
