@@ -1,6 +1,5 @@
 package org.checkerframework.common.wholeprograminference;
 
-import com.sun.tools.javac.code.TypeAnnotationPosition;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -35,7 +34,7 @@ import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
 import scenelib.annotations.el.DefException;
-import scenelib.annotations.el.InnerTypeLocation;
+import scenelib.annotations.el.TypePathEntry;
 import scenelib.annotations.io.IndexFileParser;
 import scenelib.annotations.io.IndexFileWriter;
 
@@ -538,9 +537,8 @@ public class WholeProgramInferenceScenesHelper {
                     oldAAT.getComponentType(),
                     atf,
                     typeToUpdate.innerTypes.getVivify(
-                            new InnerTypeLocation(
-                                    TypeAnnotationPosition.getTypePathFromBinary(
-                                            Collections.nCopies(2 * idx, 0)))),
+                            TypePathEntry.getTypePathEntryListFromBinary(
+                                    Collections.nCopies(2 * idx, 0))),
                     idx + 1,
                     defLoc);
         }

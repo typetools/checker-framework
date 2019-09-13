@@ -35,7 +35,6 @@ import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.type.WildcardType;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
-import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -63,8 +62,8 @@ import scenelib.annotations.el.ATypeElement;
 import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.el.BoundLocation;
 import scenelib.annotations.el.DefException;
-import scenelib.annotations.el.InnerTypeLocation;
 import scenelib.annotations.el.LocalLocation;
+import scenelib.annotations.el.TypePathEntry;
 import scenelib.annotations.io.IndexFileParser;
 import scenelib.annotations.io.IndexFileWriter;
 
@@ -453,14 +452,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     /** Copies information from an AST type node's inner type nodes to an {@link ATypeElement}. */
     private static Void visitInnerTypes(Type type, final ATypeElement elem) {
         return type.accept(
-                new GenericVisitorAdapter<Void, InnerTypeLocation>() {
+                new GenericVisitorAdapter<Void, List<TypePathEntry>>() {
                     @Override
-                    public Void visit(ClassOrInterfaceType type, InnerTypeLocation loc) {
+                    public Void visit(ClassOrInterfaceType type, List<TypePathEntry> loc) {
                         if (type.getTypeArguments().isPresent()) {
                             List<Type> typeArgs = type.getTypeArguments().get();
                             for (int i = 0; i < typeArgs.size(); i++) {
                                 Type inner = typeArgs.get(i);
-                                InnerTypeLocation ext = extendedTypePath(loc, 3, i);
+                                List<TypePathEntry> ext = extendedTypePath(loc, 3, i);
                                 visitInnerType(inner, ext);
                             }
                         }
@@ -468,8 +467,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                     }
 
                     @Override
-                    public Void visit(ArrayType type, InnerTypeLocation loc) {
-                        InnerTypeLocation ext = loc;
+                    public Void visit(ArrayType type, List<TypePathEntry> loc) {
+                        List<TypePathEntry> ext = loc;
                         int n = type.getArrayLevel();
                         Type currentType = type;
                         for (int i = 0; i < n; i++) {
@@ -487,15 +486,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                     }
 
                     @Override
-                    public Void visit(WildcardType type, InnerTypeLocation loc) {
+                    public Void visit(WildcardType type, List<TypePathEntry> loc) {
                         ReferenceType lower = type.getExtendedType().orElse(null);
                         ReferenceType upper = type.getSuperType().orElse(null);
                         if (lower != null) {
-                            InnerTypeLocation ext = extendedTypePath(loc, 2, 0);
+                            List<TypePathEntry> ext = extendedTypePath(loc, 2, 0);
                             visitInnerType(lower, ext);
                         }
                         if (upper != null) {
-                            InnerTypeLocation ext = extendedTypePath(loc, 2, 0);
+                            List<TypePathEntry> ext = extendedTypePath(loc, 2, 0);
                             visitInnerType(upper, ext);
                         }
                         return null;
@@ -504,7 +503,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                     /**
                      * Copies information from an AST inner type node to an {@link ATypeElement}.
                      */
-                    private void visitInnerType(Type type, InnerTypeLocation loc) {
+                    private void visitInnerType(Type type, List<TypePathEntry> loc) {
                         ATypeElement typeElem = elem.innerTypes.getVivify(loc);
                         for (AnnotationExpr expr : type.getAnnotations()) {
                             Annotation anno = extractAnnotation(expr);
@@ -516,17 +515,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                     /**
                      * Extends type path by one element.
                      *
-                     * @see TypePathEntry#fromBinary(int, int)
+                     * @see TypePathEntry(int, int)
                      */
-                    private InnerTypeLocation extendedTypePath(
-                            InnerTypeLocation loc, int tag, int arg) {
-                        List<TypePathEntry> path = new ArrayList<>(loc.location.size() + 1);
-                        path.addAll(loc.location);
-                        path.add(TypePathEntry.fromBinary(tag, arg));
-                        return new InnerTypeLocation(path);
+                    private List<TypePathEntry> extendedTypePath(
+                            List<TypePathEntry> loc, int tag, int arg) {
+                        List<TypePathEntry> path = new ArrayList<>(loc.size() + 1);
+                        path.addAll(loc);
+                        path.add(new TypePathEntry(tag, arg));
+                        return path;
                     }
                 },
-                InnerTypeLocation.EMPTY_INNER_TYPE_LOCATION);
+                Collections.emptyList());
     }
 
     /**
