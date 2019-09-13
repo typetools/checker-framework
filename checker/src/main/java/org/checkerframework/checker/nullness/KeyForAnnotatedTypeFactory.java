@@ -316,4 +316,10 @@ public class KeyForAnnotatedTypeFactory
     boolean isMapPut(Node node) {
         return NodeUtils.isMethodInvocation(node, mapPut, getProcessingEnv());
     }
+
+    /** Returns false. Redundancy in the KeyFor hierarchy is not worth warning about. */
+    @Override
+    public boolean shouldWarnIfStubRedundantWithBytecode() {
+        return false;
+    }
 }

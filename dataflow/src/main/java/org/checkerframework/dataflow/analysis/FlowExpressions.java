@@ -471,6 +471,16 @@ public class FlowExpressions {
         public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
             return this.equals(other) || store.canAlias(this, other);
         }
+
+        /**
+         * Print this verbosely, for debugging.
+         *
+         * @return a verbose printed representation of this
+         */
+        public String debugToString() {
+            return String.format(
+                    "Receiver (%s) %s type=%s", getClass().getSimpleName(), toString(), type);
+        }
     }
 
     public static class FieldAccess extends Receiver {
@@ -1206,16 +1216,11 @@ public class FlowExpressions {
             StringBuilder sb = new StringBuilder();
             sb.append("new " + type);
             if (!dimensions.isEmpty()) {
-                boolean needComma = false;
-                sb.append(" [");
                 for (Receiver dim : dimensions) {
-                    if (needComma) {
-                        sb.append(", ");
-                    }
+                    sb.append("[");
                     sb.append(dim == null ? "" : dim);
-                    needComma = true;
+                    sb.append("]");
                 }
-                sb.append("]");
             }
             if (!initializers.isEmpty()) {
                 boolean needComma = false;
