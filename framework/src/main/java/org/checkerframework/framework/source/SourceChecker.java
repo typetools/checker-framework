@@ -1765,8 +1765,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Determines the value of the lint option with the given name. Just as <a
-     * href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a> uses
-     * "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
+     * href="https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html">javac</a>
+     * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
      * options are enabled with "-Alint=xxx" and disabled with "-Alint=-xxx".
      *
      * @throws IllegalArgumentException if the option name is not recognized via the {@link
@@ -1809,8 +1809,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Set the value of the lint option with the given name. Just as <a
-     * href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a> uses
-     * "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
+     * href="https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html">javac</a>
+     * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
      * options are enabled with "-Alint=xxx" and disabled with "-Alint=-xxx". This method can be
      * used by subclasses to enforce having certain lint options enabled/disabled.
      *
