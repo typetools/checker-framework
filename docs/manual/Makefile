@@ -104,6 +104,10 @@ very_clean: clean
 	@\rm -f manual.html CFLogo.png
 
 .PHONY: checklink
+checklink:
+	checklink-via-http
+
+.PHONY: checklink-via-file
 checklink-via-file:
 	${CHECKLINK}/checklink -q -e `grep -v '^#' ${CHECKLINK}/checklink-args.txt` manual.html
 
