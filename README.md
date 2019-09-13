@@ -1,4 +1,4 @@
-Please see the Checker Framework manual1
+Please see the Checker Framework manual
 ([HTML](https://checkerframework.org/manual/),
 [PDF](https://checkerframework.org/manual/checker-framework-manual.pdf)).
 
