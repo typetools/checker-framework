@@ -49,6 +49,7 @@ import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -3187,32 +3188,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } catch (URISyntaxException e) {
             throw new BugInCF("Can parse URL: %s", resourceURL.toString());
         }
-        List<Path> paths;
+        Stream<Path> walk;
         try {
-            paths =
-                    Files.walk(root)
-                            .filter(
-                                    p ->
-                                            Files.isRegularFile(p)
-                                                    && p.toFile().getName().endsWith(".java"))
-                            .collect(Collectors.toList());
+            walk = Files.walk(root);
         } catch (IOException e) {
             throw new BugInCF("File Not Found");
         }
+        List<Path> paths =
+                walk.filter(p -> Files.isRegularFile(p) && p.toFile().getName().endsWith(".java"))
+                        .collect(Collectors.toList());
         for (Path path : paths) {
-            InputStream jdkStub;
-            try {
-                jdkStub = new FileInputStream(path.toFile());
+            try (FileInputStream jdkStub = new FileInputStream(path.toFile()); ) {
+                StubParser.parse(
+                        path.toFile().getName(),
+                        jdkStub,
+                        this,
+                        processingEnv,
+                        typesFromStubFiles,
+                        declAnnosFromStubFiles);
             } catch (IOException e) {
                 throw new BugInCF("cannot open the jdk stub file " + path);
             }
-            StubParser.parse(
-                    path.toFile().getName(),
-                    jdkStub,
-                    this,
-                    processingEnv,
-                    typesFromStubFiles,
-                    declAnnosFromStubFiles);
         }
     }
 
