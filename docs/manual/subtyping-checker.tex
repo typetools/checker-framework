@@ -96,6 +96,8 @@ Define two annotations for the \code{Encrypted} and \code{PossiblyUnencrypted} q
 \begin{alltt}
 package \textit{myPackage}.qual;
 
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.SubtypeOf;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
@@ -107,6 +109,8 @@ import java.lang.annotation.Target;
 @Target(\{ElementType.TYPE_USE, ElementType.TYPE_PARAMETER\})
 public @interface Encrypted \{\}
 \end{alltt}
+
+~
 
 % alltt because it uses \textit
 \begin{alltt}

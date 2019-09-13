@@ -58,7 +58,7 @@ The process takes around 2 hours (including manual steps) when all goes accordin
 <!-- start toc.  do not edit; run html-update-toc instead -->
     <ul>
       <li><a href="#step_by_step">Step by Step</a></li>
-      <li><a href="#continuous-integration">Continuous integration (nightly) tests</a></li>
+      <li><a href="#continuous-integration">Continuous integration tests</a></li>
       <li><a href="#pre_release_checklist">Pre-release Checklist</a></li>
       <li><a href="#release_process_overview">Release Process Overview</a>
         <ul>
@@ -102,11 +102,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <a href="#pre_release_checklist">Pre-release Checklist</a>.
   </li>
   <li>
-    <b>Update dependencies</b>, preferably a few days before the release to let any problems be discovered.
-    Run in a branch, then make a pull request to ensure that everything works:
-    <code>./gradlew useLatestVersions</code>
-  </li>
-  <li>
     <b>Update stubparser.</b> If there has been
     a <a href="https://github.com/javaparser/javaparser/releases">JavaParser
     release</a> since the last Checker Framework
@@ -124,7 +119,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <b>Update the list of contributors</b> by running
 	<code>make contributors.tex</code>
 	in <code>checker-framework/docs/manual/</code>.  Double-check the edits
-	with <code>git diff</code>; update file <code>contributors.sed</code> if
+	with <code>git diff</code>; update the <code>plume-scripts/git-authors.sed</code> script if
 	any customizations are necessary.
       </li>
       <li>
@@ -192,7 +187,7 @@ TreeAnnotator
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
       There has been some work done in order to select only specific projects (AFU and Checker Framework)
       to be built but more work still needs to be done.  Just pass &quot;all&quot; for now.
-      See also <a href="#future_continuous_integration">Release in Continuous Integration (nightly tests)</a> for more information
+      See also <a href="#future_continuous_integration">Release in Continuous Integration</a> for more information
       on the option &quot;--auto&quot;, which you can omit in order to
       be asked more questions during the build.
   </li>
@@ -212,7 +207,7 @@ TreeAnnotator
   </li>
 </ol>
 
-  <h2 id="continuous-integration">Continuous integration (nightly) tests</h2>
+  <h2 id="continuous-integration">Continuous integration tests</h2>
 
   <p>
     The following continuous integration tests should all pass before you make changes that you need to test.  If not, notify the
@@ -220,17 +215,14 @@ TreeAnnotator
   </p>
 
 <ol>
-  <li id="travis">The following Travis builds should be passing (refresh this page to see the latest status):
+  <li>The following Continuous Integration builds should be passing (refresh this page to see the latest status):
   <ul>
-    <li>Annotation File Utilities: <img src="https://travis-ci.org/typetools/annotation-tools.svg?branch=master" alt="Travis typetools/annotation-tools status"/></li>
-    <li>Checker Framework: <img src="https://travis-ci.org/typetools/checker-framework.svg?branch=master" alt="Travis typetools/checker-framework status"/></li>
-    <li>checker-framework.demos: <img src="https://travis-ci.org/typetools/checker-framework.demos.svg?branch=master" alt="Travis typetools/checker-framework.demos status"/></li>
-    <li>checker-framework-inference: <img src="https://travis-ci.org/typetools/checker-framework-inference.svg?branch=master" alt="Travis typetools/checker-framework-inference status"/></li>
-    <li>Daikon: <img src="https://travis-ci.org/codespecs/daikon.svg?branch=master" alt="Travis codespecs/daikon status"/></li>
-    <li>daikon-typecheck: <img src="https://travis-ci.org/typetests/daikon-typecheck.svg?branch=master" alt="Travis typetests/daikon-typecheck status"/></li>
-    <li>guava-typecheck: <img src="https://travis-ci.org/typetests/guava-typecheck.svg?branch=master" alt="Travis typetests/guava-typecheck status"/></li>
-    <li>plume-lib-typecheck: <img src="https://travis-ci.org/typetests/plume-lib-typecheck.svg?branch=master" alt="Travis typetests/plume-lib-typecheck status"/></li>
-    <li>plume-lib-typecheck: <img src="https://travis-ci.org/typetests/plume-lib-typecheck.svg?branch=master" alt="Travis typetests/plume-lib-typecheck status"/></li>
+    <li>Annotation File Utilities: <a href="https://travis-ci.org/typetools/annotation-tools/branches"><img src="https://travis-ci.org/typetools/annotation-tools.svg?branch=master" alt="Travis typetools/annotation-tools status"/></a></li>
+    <li>Checker Framework: <a href="https://dev.azure.com/typetools/checker-framework/_build/latest?definitionId=2&branchName=master"><img src="https://dev.azure.com/typetools/checker-framework/_apis/build/status/typetools.checker-framework?branchName=master" alt="Azure Pipelines typetools/checker-framework status"/></a></li>
+    <li>checker-framework.demos: <a href="https://travis-ci.org/typetools/checker-framework.demos/branches"><img src="https://travis-ci.org/typetools/checker-framework.demos.svg?branch=master" alt="Travis typetools/checker-framework.demos status"/></a></li>
+    <li>checker-framework-inference: <a href="https://travis-ci.org/typetools/checker-framework-inference/branches"><img src="https://travis-ci.org/typetools/checker-framework-inference.svg?branch=master" alt="Travis typetools/checker-framework-inference status"/></a></li>
+    <li>Daikon: <a href="https://dev.azure.com/codespecs/daikon/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/codespecs/daikon/_apis/build/status/codespecs.daikon?branchName=master" alt="codespecs/daikon Azure Pipelines status"></a></li>
+    <li>guava-typecheck: <a href="https://travis-ci.org/typetests/guava-typecheck/branches"><img src="https://travis-ci.org/typetests/guava-typecheck.svg?branch=master" alt="Travis typetests/guava-typecheck status"/></a></li>
   </ul>
   </li>
   <li> Check that <a href="https://travis-ci.org/typetests/daikon-typecheck/builds">a daikon-typecheck Travis job</a> was triggered by the last commit of the Checker Framework before the code freeze.
@@ -628,8 +620,8 @@ git config --global user.email you@example.com</pre>
     <ul>
       <li>Run tutorial sanity check automatically via command line.</li>
     </ul>
-    <h3 id="future_continuous_integration">Release in Continuous Integration (nightly tests)</h3> <!-- omit from toc -->
-    If we could have Buffalo run the release_build script nightly, we could head off broken links and other
+    <h3 id="future_continuous_integration">Release in Continuous Integration</h3> <!-- omit from toc -->
+    If we could run the release_build script nightly, we could head off broken links and other
     release related errors.  There is an &quot;--auto&quot; option for this specific reason but a number of
     errors start happening when we run the script from Buffalo.
     <h4>Tasks:</h4> <!-- omit from toc -->
@@ -692,7 +684,7 @@ git config --global user.email you@example.com</pre>
 </body>
 </html>
 
-<!--  LocalWords:  JSR langtools serif px pre CCC JDK AFS PAG mkdir cd svn co
+<!--  LocalWords:  serif px pre CCC JDK AFS PAG mkdir cd svn co
  -->
 <!--  LocalWords:  xml ver dev yyyyMMDD URL url diff hg buildfile
  -->
