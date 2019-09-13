@@ -55,10 +55,8 @@ task cloneTypetoolsJdk11u() {
 task copyJdk11Files(dependsOn: cloneTypetoolsJdk11u, group: 'Build') {
     description "Copy annotated jdk 11 files to ${buildDir}/jdk/jdk11/"
     doLast {
-
         FileTree tree = fileTree(dir: jdk11uHome)
         SortedSet<String> annotatedForFiles = new TreeSet<>();
-
         tree.visit {
             if (!it.file.isDirectory() && it.file.name.matches(".*\\.java")) {
                 it.file.eachLine { line ->
@@ -68,12 +66,13 @@ task copyJdk11Files(dependsOn: cloneTypetoolsJdk11u, group: 'Build') {
                 }
             }
         }
-        int jdkDirStringSize = jdk11uHome.size()
+        String absoluteJdk11uHome = file(jdk11uHome).absolutePath
+        int jdkDirStringSize = absoluteJdk11uHome.size()
         copy {
             from(jdk11uHome)
             into("${buildDir}/jdk/jdk11/")
             for (String filename : annotatedForFiles) {
-                int index = filename.indexOf(jdk11uHome)
+                int index = filename.indexOf(absoluteJdk11uHome)
                 include filename.substring(index + jdkDirStringSize)
             }
         }
