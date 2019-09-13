@@ -524,6 +524,9 @@ This feature allows stub files to change the effective annotations in
 all possible situations.
 Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
 warning whenever a stub file overwrites bytecode annotations.
+Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get
+a warning whenever a stub file specification is redundant with
+bytecode annotations.
 
 A file being compiled takes precedence over a stub file.  If file \<A.java>
 is being compiled, then any stub for class \<A> is ignored.
