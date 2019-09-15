@@ -108,7 +108,7 @@ allprojects {
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
                 options.taglets 'org.checkerframework.taglet.ManualTaglet'
                 options.tagletPath(project(':framework-test').sourceSets.taglet.output.classesDirs.getFiles() as File[])
-                options.links = ['https://docs.oracle.com/javase/11/docs/api/', 'https://docs.oracle.com/javase/11/docs/jdk/api/javac/tree/']
+                options.links = ['https://docs.oracle.com/en/java/javase/11/docs/api/', 'https://docs.oracle.com/en/java/javase/11/docs/jdk/api/javac/tree/']
                 // This file is looked for by Javadoc.
                 file("${destinationDir}/resources/fonts/").mkdirs()
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")

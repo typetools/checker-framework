@@ -11,7 +11,7 @@ import java.util.List;
  * that enum is in the tools.jar which is not on the user's classpath by default. This enum is used
  * by meta-annotations, such as {@link QualifierForLiterals}, instead.
  */
-// https://docs.oracle.com/javase/11/docs/technotes/tools/findingclasses.html#bootclass
+// https://docs.oracle.com/javase/8/docs/technotes/tools/findingclasses.html#bootclass
 public enum LiteralKind {
     /** Corresponds to {@link com.sun.source.tree.Tree.Kind#NULL_LITERAL} trees. */
     NULL,
