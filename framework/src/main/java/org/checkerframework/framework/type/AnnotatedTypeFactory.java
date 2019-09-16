@@ -24,18 +24,12 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import java.net.JarURLConnection;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,12 +38,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -78,6 +68,7 @@ import org.checkerframework.common.reflection.ReflectionResolver;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.StubTypes;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromByteCode;
 import org.checkerframework.framework.qual.FromStubFile;
@@ -118,7 +109,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
@@ -1214,6 +1204,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // They only include qualifiers explicitly inserted by the user.
     // **********************************************************************
 
+    StubTypes stubTypes = new StubTypes(this);
     /**
      * Creates an AnnotatedTypeMirror for {@code elt} that includes: annotations explicitly written
      * on the element and annotations from stub files.
@@ -1241,8 +1232,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type = typesFromStubFiles.get(elt).deepCopy();
         } else if (decl == null
                 && (typesFromStubFiles == null || !typesFromStubFiles.containsKey(elt))) {
-            type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
-            ElementAnnotationApplier.apply(type, elt, this);
+            type = stubTypes.getAnnotatedTypeMirror(elt);
+            if (type == null) {
+                type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
+                ElementAnnotationApplier.apply(type, elt, this);
+            }
         } else if (decl instanceof ClassTree) {
             type = fromClass((ClassTree) decl);
         } else if (decl instanceof VariableTree) {
@@ -1262,7 +1256,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Caching is disabled if typesFromStubFiles == null, because calls to this
         // method before the stub files are fully read can return incorrect
         // results.
-        if (shouldCache && typesFromStubFiles != null) {
+        if (shouldCache && typesFromStubFiles != null && !stubTypes.isParsing()) {
             elementCache.put(elt, type.deepCopy());
         }
         return type;
@@ -1273,7 +1267,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * already annotated with @FromStubFile.
      */
     private void addFromByteCode(Element elt) {
-        if (declAnnosFromStubFiles == null) { // || trees.getTree(elt) != null) {
+        if (declAnnosFromStubFiles == null
+                || !stubTypes.isParsing()) { // || trees.getTree(elt) != null) {
             // Parsing stub files, don't add @FromByteCode
             return;
         }
@@ -3061,7 +3056,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         typesFromStubFiles,
                         declAnnosFromStubFiles);
             }
-            parseJdk11(typesFromStubFiles, declAnnosFromStubFiles);
+            stubTypes.prepJdkStubs();
         }
 
         // Stub files specified via stubs compiler option, stubs system property,
@@ -3160,100 +3155,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.typesFromStubFiles = typesFromStubFiles;
         this.declAnnosFromStubFiles = declAnnosFromStubFiles;
-    }
-
-    private void parseJdk11(
-            Map<Element, AnnotatedTypeMirror> typesFromStubFiles,
-            Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles) {
-        if (PluginUtil.getJreVersion() < 11) {
-            return;
-        }
-        URL resourceURL = checker.getClass().getResource("/jdk11");
-        if (resourceURL.getProtocol().contentEquals("jar")) {
-            parseJdk11FromJar(resourceURL, typesFromStubFiles, declAnnosFromStubFiles);
-        } else if (resourceURL.getProtocol().contentEquals("file")) {
-            parseJdk11FromFile(resourceURL, typesFromStubFiles, declAnnosFromStubFiles);
-        } else {
-            new BugInCF("JDK not found");
-        }
-    }
-
-    private void parseJdk11FromFile(
-            URL resourceURL,
-            Map<Element, AnnotatedTypeMirror> typesFromStubFiles,
-            Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles) {
-        Path root;
-        try {
-            root = Paths.get(resourceURL.toURI());
-        } catch (URISyntaxException e) {
-            throw new BugInCF("Can parse URL: %s", resourceURL.toString());
-        }
-        Stream<Path> walk;
-        try {
-            walk = Files.walk(root);
-        } catch (IOException e) {
-            throw new BugInCF("File Not Found");
-        }
-        List<Path> paths =
-                walk.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(".java"))
-                        .collect(Collectors.toList());
-        for (Path path : paths) {
-            try (FileInputStream jdkStub = new FileInputStream(path.toFile()); ) {
-                StubParser.parse(
-                        path.toFile().getName(),
-                        jdkStub,
-                        this,
-                        processingEnv,
-                        typesFromStubFiles,
-                        declAnnosFromStubFiles);
-            } catch (IOException e) {
-                throw new BugInCF("cannot open the jdk stub file " + path);
-            }
-        }
-    }
-
-    private void parseJdk11FromJar(
-            URL resourceURL,
-            Map<Element, AnnotatedTypeMirror> typesFromStubFiles,
-            Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles) {
-        JarURLConnection connection;
-        try {
-            connection = (JarURLConnection) resourceURL.openConnection();
-
-            // disable caching / connection sharing of the low level URLConnection to the Jarfile
-            connection.setDefaultUseCaches(false);
-            connection.setUseCaches(false);
-
-            connection.connect();
-        } catch (IOException e) {
-            throw new BugInCF("cannot open a connection to the Jar file " + resourceURL.getFile());
-        }
-
-        try (JarFile jarFile = connection.getJarFile()) {
-            for (JarEntry je : jarFile.stream().collect(Collectors.toList())) {
-                // filter out directories and non-class files
-                if (!je.isDirectory()
-                        && je.getName().endsWith(".java")
-                        && je.getName().startsWith("jdk11")) {
-                    InputStream jdkStub;
-                    try {
-                        jdkStub = jarFile.getInputStream(je);
-                    } catch (IOException e) {
-                        throw new BugInCF("cannot open the jdk stub file " + je);
-                    }
-
-                    StubParser.parse(
-                            je.getName(),
-                            jdkStub,
-                            this,
-                            processingEnv,
-                            typesFromStubFiles,
-                            declAnnosFromStubFiles);
-                }
-            }
-        } catch (IOException e) {
-            throw new BugInCF("cannot open the Jar file " + resourceURL.getFile());
-        }
     }
 
     /**
@@ -3401,7 +3302,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         // If declAnnosFromStubFiles == null, return the annotations in the element.
-        if (declAnnosFromStubFiles != null) {
+        if (declAnnosFromStubFiles != null && !stubTypes.isParsing()) {
             // Adding @FromByteCode annotation to declAnnosFromStubFiles entry with key
             // elt, if elt is from bytecode.
             addFromByteCode(elt);
@@ -3410,6 +3311,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             String eltName = ElementUtils.getVerboseName(elt);
             Set<AnnotationMirror> stubAnnos = declAnnosFromStubFiles.get(eltName);
             if (stubAnnos != null) {
+                results.addAll(stubAnnos);
+            } else {
+                stubAnnos = stubTypes.getDeclAnnotation(elt, eltName);
                 results.addAll(stubAnnos);
             }
 
