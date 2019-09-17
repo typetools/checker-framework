@@ -541,9 +541,9 @@ public class AnnotationBuilder {
         } else {
             found = elements.getTypeElement(givenValue.getClass().getCanonicalName()).asType();
             isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
-            if (!isSubtype) {
-                isSubtype = found.toString().equals(expected.toString());
-            }
+        }
+        if (!isSubtype) {
+            isSubtype = found.toString().equals(expected.toString());
         }
 
         if (!isSubtype) {

@@ -586,6 +586,9 @@ subprojects {
 
         // Configure JUnit tests
         tasks.withType(Test) {
+            if (javaVersion == JavaVersion.VERSION_11){
+                forkEvery(1)
+            }
             if (!isJava8) {
                 jvmArgs += [
                     "--add-opens", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",

@@ -154,6 +154,10 @@ public class StubTypes {
                 walk.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(".java"))
                         .collect(Collectors.toList());
         for (Path path : paths) {
+            if (path.getFileName().toString().equals("package-info.java")) {
+                readStub(path);
+                continue;
+            }
             Path relativePath = root.relativize(path);
             // 4: /src/<module>/share/classes
             Path savepath = relativePath.subpath(4, relativePath.getNameCount());
