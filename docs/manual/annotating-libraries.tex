@@ -331,15 +331,17 @@ need to follow the last two steps.
 
 \begin{enumerate}
 \item
-Get Java 8 source code (must be version 8)
+Get Typetools version of Java 11 source code
 \begin{enumerate}
-\item Download JDK8 from Oracle
-\item Open the downloaded tar (\<tar -xvzf>)
-\item Unzip the contained \<src.zip> (resulting in folders: \<com/>, \<java/>, \<javax/>, \<launcher/>, \<org/>)
+\item Fork and then clone \href{https://github.com/typetools/jdk}{typetools/jdk}
+\item Add annotations to the required classes of JDK.
+\item
+Don't forget to add \refqualclass{checker/framework/qual}{AnnotatedFor} to the classes
+you have annotated with the TypeSystem eg. Use \<@AnnotatedFor("nullness") if a class is annotated with nullness annotations.
 \end{enumerate}
 
 \item
-Set up the Checker Framework (replace \textit{mychecker} with the name of your checker)
+Set up the JDK build system (replace \textit{mychecker} with the name of your checker)
 \begin{enumerate}
 \item \<mkdir \$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/> \\
   \<cd \$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/> \\
@@ -367,17 +369,14 @@ warnings, because the JDK is built using the \<-Awarns> command-line
 option.
 
 \item
-Build the annotated JDK\@.  There are two ways:
+Build the annotated JDK\@. (make sure you are in JDK directory before proceeding)
 \begin{itemize}
 \item
-  Pass a flag.
-  Run \<./gradlew buildJdk -PuseLocalJdk>
-  % Is any more advice needed here, such as supplying -PuseLocalJdk to
-  % other commands?
+  Configure your environment by running: \<bash configure --disable-warnings-as-errors>
+  If any error occurs due to absence of any libraries please install and repeat until this command is executed successfully.
 \item
-  Make a setting in the buildfile.
-  Set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>, then
-  run \<./gradlew buildJdk>
+  run \<make images>, then
+  Set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>
 \end{itemize}
 
 (First, be sure you have followed the instructions for building the Checker
