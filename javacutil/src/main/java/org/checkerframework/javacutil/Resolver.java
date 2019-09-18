@@ -4,6 +4,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.code.Kinds;
+import com.sun.tools.javac.code.Kinds.KindSelector;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
@@ -58,7 +59,6 @@ public class Resolver {
                             List.class,
                             List.class,
                             boolean.class,
-                            boolean.class,
                             boolean.class);
             FIND_METHOD.setAccessible(true);
 
@@ -66,12 +66,17 @@ public class Resolver {
             FIND_VAR.setAccessible(true);
 
             FIND_IDENT =
-                    Resolve.class.getDeclaredMethod("findIdent", Env.class, Name.class, int.class);
+                    Resolve.class.getDeclaredMethod(
+                            "findIdent", Env.class, Name.class, KindSelector.class);
             FIND_IDENT.setAccessible(true);
 
             FIND_IDENT_IN_TYPE =
                     Resolve.class.getDeclaredMethod(
-                            "findIdentInType", Env.class, Type.class, Name.class, int.class);
+                            "findIdentInType",
+                            Env.class,
+                            Type.class,
+                            Name.class,
+                            KindSelector.class);
             FIND_IDENT_IN_TYPE.setAccessible(true);
 
             FIND_IDENT_IN_PACKAGE =
@@ -80,7 +85,7 @@ public class Resolver {
                             Env.class,
                             TypeSymbol.class,
                             Name.class,
-                            int.class);
+                            KindSelector.class);
             FIND_IDENT_IN_PACKAGE.setAccessible(true);
 
             FIND_TYPE = Resolve.class.getDeclaredMethod("findType", Env.class, Name.class);
@@ -153,7 +158,7 @@ public class Resolver {
             Env<AttrContext> env = getEnvForPath(path);
             Element res =
                     wrapInvocationOnResolveInstance(
-                            FIND_IDENT, env, names.fromString(name), Kinds.PCK);
+                            FIND_IDENT, env, names.fromString(name), Kinds.KindSelector.PCK);
             // findIdent will return a PackageSymbol even for a symbol that is not a package,
             // such as a.b.c.MyClass.myStaticField. "exists()" must be called on it to ensure
             // that it exists.
@@ -185,7 +190,12 @@ public class Resolver {
             Env<AttrContext> env = getEnvForPath(path);
             Element res =
                     wrapInvocationOnResolveInstance(
-                            FIND_IDENT_IN_TYPE, env, type, names.fromString(name), Kinds.VAR);
+                            FIND_IDENT_IN_TYPE,
+                            env,
+                            type,
+                            names.fromString(name),
+                            Kinds.KindSelector.VAR);
+
             if (res.getKind() == ElementKind.FIELD) {
                 return (VariableElement) res;
             } else if (res.getKind() == ElementKind.OTHER && ACCESSERROR.isInstance(res)) {
@@ -259,7 +269,11 @@ public class Resolver {
             Env<AttrContext> env = getEnvForPath(path);
             Element res =
                     wrapInvocationOnResolveInstance(
-                            FIND_IDENT_IN_PACKAGE, env, pck, names.fromString(name), Kinds.TYP);
+                            FIND_IDENT_IN_PACKAGE,
+                            env,
+                            pck,
+                            names.fromString(name),
+                            Kinds.KindSelector.TYP);
             if (res.getKind() == ElementKind.CLASS) {
                 return (ClassSymbol) res;
             } else {
@@ -299,7 +313,6 @@ public class Resolver {
             List<Type> typeargtypes = List.nil();
             boolean allowBoxing = true;
             boolean useVarargs = false;
-            boolean operator = true;
 
             try {
                 // For some reason we have to set our own method context, which is rather ugly.
@@ -316,8 +329,7 @@ public class Resolver {
                                 argtypes,
                                 typeargtypes,
                                 allowBoxing,
-                                useVarargs,
-                                operator);
+                                useVarargs);
                 setField(resolve, "currentResolutionContext", oldContext);
                 return result;
             } catch (Throwable t) {

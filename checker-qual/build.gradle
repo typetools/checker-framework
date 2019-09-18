@@ -50,5 +50,5 @@ compileJava {
 }
 
 clean {
-    delete file('generated-src/')
+    delete file('src/')
 }

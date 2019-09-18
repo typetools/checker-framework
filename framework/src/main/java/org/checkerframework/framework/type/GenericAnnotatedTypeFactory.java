@@ -786,6 +786,11 @@ public abstract class GenericAnnotatedTypeFactory<
         if (annotationMirror == null) {
             if (receiver instanceof LocalVariable) {
                 Element ele = ((LocalVariable) receiver).getElement();
+                // Because of
+                // https://github.com/eisop/checker-framework/issues/14
+                // and the workaround in
+                // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
+                // The annotationMirror may not contain all explicitly written annotations.
                 annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
             } else if (receiver instanceof FieldAccess) {
                 Element ele = ((FieldAccess) receiver).getField();
@@ -1353,6 +1358,9 @@ public abstract class GenericAnnotatedTypeFactory<
             case MEMBER_SELECT:
             case ARRAY_ACCESS:
                 res = getAnnotatedType(lhsTree);
+                break;
+            case PARENTHESIZED:
+                res = getAnnotatedTypeLhs(TreeUtils.withoutParens((ExpressionTree) lhsTree));
                 break;
             default:
                 if (TreeUtils.isTypeTree(lhsTree)) {

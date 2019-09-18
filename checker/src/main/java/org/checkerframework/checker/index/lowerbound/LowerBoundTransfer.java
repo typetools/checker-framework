@@ -1,6 +1,6 @@
 package org.checkerframework.checker.index.lowerbound;
 
-import static org.checkerframework.checker.index.IndexUtil.getExactValue;
+import static org.checkerframework.common.value.ValueCheckerUtils.getExactValue;
 
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;

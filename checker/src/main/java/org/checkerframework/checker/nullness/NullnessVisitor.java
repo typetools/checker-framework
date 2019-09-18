@@ -95,7 +95,7 @@ public class NullnessVisitor
         this.collectionSize =
                 TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
         this.collectionToArray =
-                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", 1, env);
+                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", env, "T[]");
     }
 
     @Override

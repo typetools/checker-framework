@@ -109,6 +109,11 @@ public class StubParser {
     /** Whether to print warnings about stub files that overwrite annotations from bytecode. */
     private final boolean warnIfStubOverwritesBytecode;
 
+    /**
+     * Whether to print warnings about stub files that are redundant with annotations from bytecode.
+     */
+    private final boolean warnIfStubRedundantWithBytecode;
+
     /** Whether to print verbose debugging messages. */
     private final boolean debugStubParser;
 
@@ -191,6 +196,9 @@ public class StubParser {
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
         this.warnIfNotFoundIgnoresClasses = options.containsKey("stubWarnIfNotFoundIgnoresClasses");
         this.warnIfStubOverwritesBytecode = options.containsKey("stubWarnIfOverwritesBytecode");
+        this.warnIfStubRedundantWithBytecode =
+                options.containsKey("stubWarnIfRedundantWithBytecode")
+                        && atypeFactory.shouldWarnIfStubRedundantWithBytecode();
         this.debugStubParser = options.containsKey("stubDebug");
 
         this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
@@ -650,7 +658,6 @@ public class StubParser {
 
     /** Adds type and declaration annotations from {@code decl}. */
     private void processCallableDeclaration(CallableDeclaration<?> decl, ExecutableElement elt) {
-
         // Declaration annotations
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         if (decl.isMethodDeclaration()) {
@@ -660,6 +667,14 @@ public class StubParser {
         addDeclAnnotations(declAnnos, elt);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
+        AnnotatedExecutableType origMethodType;
+
+        if (warnIfStubRedundantWithBytecode) {
+            origMethodType = methodType.deepCopy();
+        } else {
+            origMethodType = null;
+        }
+
         // Type Parameters
         annotateTypeParameters(
                 decl, elt, atypes, methodType.getTypeVariables(), decl.getTypeParameters());
@@ -700,6 +715,16 @@ public class StubParser {
                         methodType.getReceiverType(),
                         decl.getReceiverParameter().get().getAnnotations());
             }
+        }
+
+        if (warnIfStubRedundantWithBytecode
+                && methodType.toString().equals(origMethodType.toString())) {
+            stubWarn(
+                    String.format(
+                            "in file %s at line %s: redundant stub file specification for: %s",
+                            filename.substring(filename.lastIndexOf('/') + 1),
+                            decl.getBegin().get().line,
+                            ElementUtils.getVerboseName(elt)));
         }
 
         // Store the type.

@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
@@ -17,6 +16,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.util.Range;
@@ -73,10 +73,31 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // but adding the top type to them, which permits flow-sensitive type refinement.
         // (When it is possible to default types based on their TypeKinds,
         // this whole method will no longer be needed.)
-        addSignednessGlbAnnotation(tree, type);
         addUnknownSignednessToSomeLocals(tree, type);
 
+        if (!computingAnnotatedTypeMirrorOfLHS) {
+            addSignednessGlbAnnotation(tree, type);
+        }
+
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
+    }
+
+    /**
+     * True when the AnnotatedTypeMirror currently being computed is the left hand side of an
+     * assignment or pseudo-assignment
+     *
+     * @see #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)
+     * @see #getAnnotatedTypeLhs(Tree)
+     */
+    private boolean computingAnnotatedTypeMirrorOfLHS = false;
+
+    @Override
+    public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
+        boolean oldComputingAnnotatedTypeMirrorOfLHS = computingAnnotatedTypeMirrorOfLHS;
+        computingAnnotatedTypeMirrorOfLHS = true;
+        AnnotatedTypeMirror result = super.getAnnotatedTypeLhs(lhsTree);
+        computingAnnotatedTypeMirrorOfLHS = oldComputingAnnotatedTypeMirrorOfLHS;
+        return result;
     }
 
     /**
@@ -103,7 +124,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         && type.hasAnnotation(SIGNED)) {
                     type.replaceAnnotation(SIGNEDNESS_GLB);
                 } else {
-                    Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
+                    Range treeRange = ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
 
                     if (treeRange != null) {
                         switch (javaType.getKind()) {

@@ -106,10 +106,10 @@ pseudo-assignments are typically aliased.
 Here is an example for argument-passing:
 
 \begin{Verbatim}
-  void foo(Object o) { ... }
+  void mightDoAnything(Object o) { ... }
 
   @Unique Object u = ...;
-  foo(u);   // type-checking error, because foo may create an alias of the passed argument
+  mightDoAnything(u);  // type-checking error, because the callee may create an alias of the passed argument
 \end{Verbatim}
 
 Passing a non-aliased
@@ -165,7 +165,7 @@ A thrown exception can be captured by a catch block, which creates an
 alias of the thrown exception.
 
 \begin{Verbatim}
-void foo() {
+void aliasInCatchBlock() {
     @Unique Exception uex = new Exception();
     try {
         throw uex;    // (not.unique) type-checking error!
@@ -181,7 +181,7 @@ Array initializers assign the elements in the initializers to corresponding
 indexes in the array, therefore expressions in an array initializer are leaked.
 
 \begin{Verbatim}
-void foo() {
+void aliasInArrayInitializer() {
     @Unique Object o = new Object();
     Object[] ar = new Object[] { o };  // (not.unique) type-checking error!
     // The expressions o and ar[0] are now aliased.
@@ -204,7 +204,7 @@ consider the following code:
 \begin{Verbatim}
 class MyClass {
     @Unique Object field;
-    void foo() {
+    void makesAlias() {
         MyClass myClass2 = this;
         // this.field is now an alias of myClass2.field
     }
