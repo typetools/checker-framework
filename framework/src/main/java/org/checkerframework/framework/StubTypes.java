@@ -63,20 +63,43 @@ public class StubTypes {
         if (typesFromStubFiles.containsKey(e)) {
             return typesFromStubFiles.get(e).deepCopy();
         }
-        if (parseClass(e)) {
+        if (parseEnclosingClass(e)) {
             return null;
         }
         AnnotatedTypeMirror type = typesFromStubFiles.get(e);
         return type == null ? null : type.deepCopy();
     }
 
-    private boolean parseClass(Element e) {
-        String className = getOutterMostEnclosing(e);
+    public Set<AnnotationMirror> getDeclAnnotation(Element elt, String eltName) {
+        if (parsing) {
+            return Collections.emptySet();
+        }
+        if (declAnnosFromStubFiles.containsKey(eltName)) {
+            return declAnnosFromStubFiles.get(eltName);
+        }
+
+        if (parseEnclosingClass(elt)) {
+            return Collections.emptySet();
+        }
+        if (declAnnosFromStubFiles.containsKey(eltName)) {
+            return declAnnosFromStubFiles.get(eltName);
+        }
+        return Collections.emptySet();
+    }
+
+    /**
+     * Parses the outermost enclosing class of {@code e}.
+     *
+     * @return {@code true} is there exists a stub file for the outermost enclosing class of {@code
+     *     e}; otherwise, returns {@code false}
+     */
+    private boolean parseEnclosingClass(Element e) {
+        String className = getOuterMostEnclosingClass(e);
         if (className == null) {
             return true;
         }
         if (jdk11StubFiles.containsKey(className)) {
-            readStub(jdk11StubFiles.get(className));
+            parseStubFile(jdk11StubFiles.get(className));
         } else {
             return true;
         }
@@ -84,7 +107,11 @@ public class StubTypes {
         return false;
     }
 
-    private String getOutterMostEnclosing(Element e) {
+    /**
+     * @return the fully qualified name of the outermost enclosing class of {@code e} or {@code
+     *     null} if no such class exists for {@code e}.
+     */
+    private String getOuterMostEnclosingClass(Element e) {
         TypeElement enclosingClass = ElementUtils.enclosingClass(e);
         if (enclosingClass == null) {
             return null;
@@ -104,7 +131,7 @@ public class StubTypes {
         return className;
     }
 
-    private void readStub(Path path) {
+    private void parseStubFile(Path path) {
         parsing = true;
         try (FileInputStream jdkStub = new FileInputStream(path.toFile()); ) {
             StubParser.parse(
@@ -155,7 +182,7 @@ public class StubTypes {
                         .collect(Collectors.toList());
         for (Path path : paths) {
             if (path.getFileName().toString().equals("package-info.java")) {
-                readStub(path);
+                parseStubFile(path);
                 continue;
             }
             Path relativePath = root.relativize(path);
@@ -205,22 +232,5 @@ public class StubTypes {
         } catch (IOException e) {
             throw new BugInCF("cannot open the Jar file " + resourceURL.getFile());
         }
-    }
-
-    public Set<AnnotationMirror> getDeclAnnotation(Element elt, String eltName) {
-        if (parsing) {
-            return Collections.emptySet();
-        }
-        if (declAnnosFromStubFiles.containsKey(eltName)) {
-            return declAnnosFromStubFiles.get(eltName);
-        }
-
-        if (parseClass(elt)) {
-            return Collections.emptySet();
-        }
-        if (declAnnosFromStubFiles.containsKey(eltName)) {
-            return declAnnosFromStubFiles.get(eltName);
-        }
-        return Collections.emptySet();
     }
 }
