@@ -23,13 +23,9 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,7 +53,6 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -70,18 +65,13 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceSc
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.StubTypes;
 import org.checkerframework.framework.qual.FieldInvariant;
-import org.checkerframework.framework.qual.FromByteCode;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
-import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.stub.StubParser;
-import org.checkerframework.framework.stub.StubResource;
-import org.checkerframework.framework.stub.StubUtil;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -216,21 +206,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private final Set<Class<? extends Annotation>> supportedQuals;
 
-    /** Types read from stub files (but not those from the annotated JDK jar file). */
-    // Initially null, then assigned in postInit().  Caching is enabled as
-    // soon as this is non-null, so it should be first set to its final
-    // value, not initialized to an empty map that is incrementally filled.
-    private Map<Element, AnnotatedTypeMirror> typesFromStubFiles;
-
-    /**
-     * Declaration annotations read from stub files (but not those from the annotated JDK jar file).
-     * Map keys cannot be Element, because a different Element appears in the stub files than in the
-     * real files. So, map keys are the verbose element name, as returned by
-     * ElementUtils.getVerboseName.
-     */
-    // Not final, because it is assigned in postInit().
-    private Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles;
-
     /**
      * A cache used to store elements whose declaration annotations have already been stored by
      * calling the method {@link #getDeclAnnotations(Element)}.
@@ -326,12 +301,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
 
-    /** Annotation added to every method defined in a class file that is not in a stub file. */
-    private final AnnotationMirror fromByteCode;
-
-    /** Annotation added to every method defined in a stub file. */
-    private final AnnotationMirror fromStubFile;
-
     /**
      * Object that is used to resolve reflective method calls, if reflection resolution is turned
      * on.
@@ -423,9 +392,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.visitorState = new VisitorState();
 
         this.supportedQuals = new HashSet<>();
-
-        this.fromByteCode = AnnotationBuilder.fromClass(elements, FromByteCode.class);
-        this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
         this.cacheDeclAnnos = new HashMap<>();
 
@@ -1228,10 +1194,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // returned.
         Tree decl = declarationFromElement(elt);
 
-        if (decl == null && typesFromStubFiles != null && typesFromStubFiles.containsKey(elt)) {
-            type = typesFromStubFiles.get(elt).deepCopy();
-        } else if (decl == null
-                && (typesFromStubFiles == null || !typesFromStubFiles.containsKey(elt))) {
+        if (decl == null) {
             type = stubTypes.getAnnotatedTypeMirror(elt);
             if (type == null) {
                 type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
@@ -1253,42 +1216,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + elt);
         }
 
-        // Caching is disabled if typesFromStubFiles == null, because calls to this
-        // method before the stub files are fully read can return incorrect
-        // results.
-        if (shouldCache && typesFromStubFiles != null && !stubTypes.isParsing()) {
+        // Caching is disabled if stub files are being parsed, because calls to this
+        // method before the stub files are fully read can return incorrect results.
+        if (shouldCache && !stubTypes.isParsing()) {
             elementCache.put(elt, type.deepCopy());
         }
         return type;
-    }
-
-    /**
-     * Adds @FromByteCode to methods, constructors, and fields declared in class files that are not
-     * already annotated with @FromStubFile.
-     */
-    private void addFromByteCode(Element elt) {
-        if (declAnnosFromStubFiles == null
-                || !stubTypes.isParsing()) { // || trees.getTree(elt) != null) {
-            // Parsing stub files, don't add @FromByteCode
-            return;
-        }
-
-        if (elt.getKind() == ElementKind.CONSTRUCTOR
-                || elt.getKind() == ElementKind.METHOD
-                || elt.getKind() == ElementKind.FIELD) {
-            // Only add @FromByteCode to methods, constructors, and fields
-            if (ElementUtils.isElementFromByteCode(elt)) {
-                Set<AnnotationMirror> annos =
-                        declAnnosFromStubFiles.get(ElementUtils.getVerboseName(elt));
-                if (annos == null) {
-                    annos = AnnotationUtils.createAnnotationSet();
-                    declAnnosFromStubFiles.put(ElementUtils.getVerboseName(elt), annos);
-                }
-                if (!AnnotationUtils.containsSameByName(annos, fromStubFile)) {
-                    annos.add(fromByteCode);
-                }
-            }
-        }
     }
 
     /**
@@ -3036,125 +2969,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>Sets typesFromStubFiles and declAnnosFromStubFiles by side effect, just before returning.
      */
     protected void parseStubFiles() {
-        if (this.typesFromStubFiles != null || this.declAnnosFromStubFiles != null) {
-            throw new BugInCF("AnnotatedTypeFactory.parseStubFiles called more than once");
-        }
-
-        Map<Element, AnnotatedTypeMirror> typesFromStubFiles = new HashMap<>();
-        Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles = new HashMap<>();
-
-        // 1. jdk.astub
-        // Only look in .jar files, and parse it right away.
-        if (!checker.hasOption("ignorejdkastub")) {
-            InputStream in = checker.getClass().getResourceAsStream("jdk.astub");
-            if (in != null) {
-                StubParser.parse(
-                        checker.getClass().getResource("jdk.astub").toString(),
-                        in,
-                        this,
-                        processingEnv,
-                        typesFromStubFiles,
-                        declAnnosFromStubFiles);
-            }
-            stubTypes.prepJdkStubs();
-        }
-
-        // Stub files specified via stubs compiler option, stubs system property,
-        // stubs env. variable, or @StubFiles
-        List<String> allStubFiles = new ArrayList<>();
-
-        // 2. Stub files listed in @StubFiles annotation on the checker
-        StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
-        if (stubFilesAnnotation != null) {
-            Collections.addAll(allStubFiles, stubFilesAnnotation.value());
-        }
-
-        // 3. Stub files provided via stubs system property
-        String stubsProperty = System.getProperty("stubs");
-        if (stubsProperty != null) {
-            Collections.addAll(allStubFiles, stubsProperty.split(File.pathSeparator));
-        }
-
-        // 4. Stub files provided via stubs environment variable
-        String stubEnvVar = System.getenv("stubs");
-        if (stubEnvVar != null) {
-            Collections.addAll(allStubFiles, stubEnvVar.split(File.pathSeparator));
-        }
-
-        // 5. Stub files provided via stubs option
-        String stubsOption = checker.getOption("stubs");
-        if (stubsOption != null) {
-            Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
-        }
-
-        // Parse stub files.
-        for (String stubPath : allStubFiles) {
-            // Special case when running in jtreg.
-            String base = System.getProperty("test.src");
-            String stubPathFull = stubPath;
-            if (base != null) {
-                stubPathFull = base + "/" + stubPath;
-            }
-            List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
-            if (stubs.isEmpty()) {
-                // If the stub file has a prefix of "checker.jar/" then look for the file in the top
-                // level directory of the jar that contains the checker.
-                stubPath = stubPath.replace("checker.jar/", "/");
-                InputStream in = checker.getClass().getResourceAsStream(stubPath);
-                if (in == null) {
-                    // Didn't find the stubfile.
-                    URL topLevelResource = checker.getClass().getResource("/" + stubPath);
-                    if (topLevelResource != null) {
-                        checker.message(
-                                Kind.WARNING,
-                                stubPath
-                                        + " should be in the same directory as "
-                                        + checker.getClass().getSimpleName()
-                                        + ".class, but is at the top level of a jar file: "
-                                        + topLevelResource);
-                    } else {
-                        checker.message(
-                                Kind.WARNING,
-                                "Did not find stub file "
-                                        + stubPath
-                                        + " on classpath or within directory "
-                                        + new File(stubPath).getAbsolutePath()
-                                        + (stubPathFull.equals(stubPath)
-                                                ? ""
-                                                : (" or at " + stubPathFull)));
-                    }
-                } else {
-                    StubParser.parse(
-                            stubPath,
-                            in,
-                            this,
-                            processingEnv,
-                            typesFromStubFiles,
-                            declAnnosFromStubFiles);
-                }
-            }
-            for (StubResource resource : stubs) {
-                InputStream stubStream;
-                try {
-                    stubStream = resource.getInputStream();
-                } catch (IOException e) {
-                    checker.message(
-                            Kind.NOTE,
-                            "Could not read stub resource: " + resource.getDescription());
-                    continue;
-                }
-                StubParser.parse(
-                        resource.getDescription(),
-                        stubStream,
-                        this,
-                        processingEnv,
-                        typesFromStubFiles,
-                        declAnnosFromStubFiles);
-            }
-        }
-
-        this.typesFromStubFiles = typesFromStubFiles;
-        this.declAnnosFromStubFiles = declAnnosFromStubFiles;
+        stubTypes.parseStubFiles();
     }
 
     /**
@@ -3209,7 +3024,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (isFromStubFile(element)) {
             return false;
         }
-        return this.getDeclAnnotation(element, FromByteCode.class) != null;
+        return ElementUtils.isElementFromByteCode(element);
     }
 
     /**
@@ -3301,15 +3116,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        // If declAnnosFromStubFiles == null, return the annotations in the element.
-        if (declAnnosFromStubFiles != null && !stubTypes.isParsing()) {
-            // Adding @FromByteCode annotation to declAnnosFromStubFiles entry with key
-            // elt, if elt is from bytecode.
-            addFromByteCode(elt);
+        // If parsing stub files, return the annotations in the element.
+        if (!stubTypes.isParsing()) {
 
             // Retrieving annotations from stub files.
             String eltName = ElementUtils.getVerboseName(elt);
-            Set<AnnotationMirror> stubAnnos = declAnnosFromStubFiles.get(eltName);
+            Set<AnnotationMirror> stubAnnos = stubTypes.getDeclAnnotation(elt, eltName);
             if (stubAnnos != null) {
                 results.addAll(stubAnnos);
             } else {

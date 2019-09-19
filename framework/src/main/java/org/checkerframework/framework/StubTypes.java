@@ -10,6 +10,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -19,11 +20,17 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic.Kind;
+import org.checkerframework.framework.qual.StubFiles;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.StubParser;
+import org.checkerframework.framework.stub.StubResource;
+import org.checkerframework.framework.stub.StubUtil;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.BugInCF;
@@ -274,6 +281,140 @@ public class StubTypes {
             throw new BugInCF("cannot open the Jar file " + connection.getEntryName());
         } finally {
             parsing = false;
+        }
+    }
+
+    /**
+     * Parses the stub files in the following order:
+     *
+     * <ol>
+     *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option
+     *       is not supplied <br>
+     *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
+     *       the checker<br>
+     *   <li>Stub files provide via stubs system property <br>
+     *   <li>Stub files provide via stubs environment variable <br>
+     *   <li>Stub files provide via stubs compiler option
+     * </ol>
+     *
+     * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub
+     * file, the qualifier in the last stub file is applied.
+     *
+     * <p>Sets typesFromStubFiles and declAnnosFromStubFiles by side effect, just before returning.
+     */
+    public void parseStubFiles() {
+        // TODO: Error if this is called more than once?
+        SourceChecker checker = factory.getContext().getChecker();
+        ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+        // 1. jdk.astub
+        // Only look in .jar files, and parse it right away.
+        if (!checker.hasOption("ignorejdkastub")) {
+            InputStream in = checker.getClass().getResourceAsStream("jdk.astub");
+            if (in != null) {
+                StubParser.parse(
+                        checker.getClass().getResource("jdk.astub").toString(),
+                        in,
+                        factory,
+                        processingEnv,
+                        typesFromStubFiles,
+                        declAnnosFromStubFiles);
+            }
+            // TODO: document
+            prepJdkStubs();
+        }
+
+        // Stub files specified via stubs compiler option, stubs system property,
+        // stubs env. variable, or @StubFiles
+        List<String> allStubFiles = new ArrayList<>();
+
+        // 2. Stub files listed in @StubFiles annotation on the checker
+        StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
+        if (stubFilesAnnotation != null) {
+            Collections.addAll(allStubFiles, stubFilesAnnotation.value());
+        }
+
+        // 3. Stub files provided via stubs system property
+        String stubsProperty = System.getProperty("stubs");
+        if (stubsProperty != null) {
+            Collections.addAll(allStubFiles, stubsProperty.split(File.pathSeparator));
+        }
+
+        // 4. Stub files provided via stubs environment variable
+        String stubEnvVar = System.getenv("stubs");
+        if (stubEnvVar != null) {
+            Collections.addAll(allStubFiles, stubEnvVar.split(File.pathSeparator));
+        }
+
+        // 5. Stub files provided via stubs option
+        String stubsOption = checker.getOption("stubs");
+        if (stubsOption != null) {
+            Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
+        }
+
+        // Parse stub files.
+        for (String stubPath : allStubFiles) {
+            // Special case when running in jtreg.
+            String base = System.getProperty("test.src");
+            String stubPathFull = stubPath;
+            if (base != null) {
+                stubPathFull = base + "/" + stubPath;
+            }
+            List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
+            if (stubs.isEmpty()) {
+                // If the stub file has a prefix of "checker.jar/" then look for the file in the top
+                // level directory of the jar that contains the checker.
+                stubPath = stubPath.replace("checker.jar/", "/");
+                InputStream in = checker.getClass().getResourceAsStream(stubPath);
+                if (in == null) {
+                    // Didn't find the stubfile.
+                    URL topLevelResource = checker.getClass().getResource("/" + stubPath);
+                    if (topLevelResource != null) {
+                        checker.message(
+                                Kind.WARNING,
+                                stubPath
+                                        + " should be in the same directory as "
+                                        + checker.getClass().getSimpleName()
+                                        + ".class, but is at the top level of a jar file: "
+                                        + topLevelResource);
+                    } else {
+                        checker.message(
+                                Kind.WARNING,
+                                "Did not find stub file "
+                                        + stubPath
+                                        + " on classpath or within directory "
+                                        + new File(stubPath).getAbsolutePath()
+                                        + (stubPathFull.equals(stubPath)
+                                                ? ""
+                                                : (" or at " + stubPathFull)));
+                    }
+                } else {
+                    StubParser.parse(
+                            stubPath,
+                            in,
+                            factory,
+                            processingEnv,
+                            typesFromStubFiles,
+                            declAnnosFromStubFiles);
+                }
+            }
+            for (StubResource resource : stubs) {
+                InputStream stubStream;
+                try {
+                    stubStream = resource.getInputStream();
+                } catch (IOException e) {
+                    checker.message(
+                            Kind.NOTE,
+                            "Could not read stub resource: " + resource.getDescription());
+                    continue;
+                }
+                StubParser.parse(
+                        resource.getDescription(),
+                        stubStream,
+                        factory,
+                        processingEnv,
+                        typesFromStubFiles,
+                        declAnnosFromStubFiles);
+            }
         }
     }
 }
