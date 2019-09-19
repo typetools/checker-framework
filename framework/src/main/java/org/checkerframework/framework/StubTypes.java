@@ -100,10 +100,11 @@ public class StubTypes {
         }
         if (jdk11StubFiles.containsKey(className)) {
             parseStubFile(jdk11StubFiles.get(className));
-        } else {
-            return true;
+        } else if (jdk11StubFilesJar.containsKey(className)) {
+            parseJarEntry(jdk11StubFilesJar.get(className));
         }
         jdk11StubFiles.remove(className);
+        jdk11StubFilesJar.remove(className);
         return false;
     }
 
@@ -193,6 +194,8 @@ public class StubTypes {
         }
     }
 
+    Map<String, String> jdk11StubFilesJar = new HashMap<>();
+
     private void parseJdk11FromJar(URL resourceURL) {
         JarURLConnection connection;
         try {
@@ -213,24 +216,53 @@ public class StubTypes {
                 if (!je.isDirectory()
                         && je.getName().endsWith(".java")
                         && je.getName().startsWith("jdk11")) {
-                    InputStream jdkStub;
-                    try {
-                        jdkStub = jarFile.getInputStream(je);
-                    } catch (IOException e) {
-                        throw new BugInCF("cannot open the jdk stub file " + je);
-                    }
-
-                    StubParser.parse(
-                            je.getName(),
-                            jdkStub,
-                            factory,
-                            factory.getProcessingEnv(),
-                            typesFromStubFiles,
-                            declAnnosFromStubFiles);
+                    String jeNAme = je.getName();
+                    int index = je.getName().indexOf("/share/classes/");
+                    String shortName =
+                            jeNAme.substring(index + "/share/classes/".length())
+                                    .replace(".java", "")
+                                    .replace('/', '.');
+                    jdk11StubFilesJar.put(shortName, jeNAme);
                 }
             }
         } catch (IOException e) {
             throw new BugInCF("cannot open the Jar file " + resourceURL.getFile());
+        }
+    }
+
+    private void parseJarEntry(String jarEntryName) {
+        URL resourceURL = factory.getClass().getResource("/jdk11");
+        JarURLConnection connection;
+        try {
+            connection = (JarURLConnection) resourceURL.openConnection();
+
+            // disable caching / connection sharing of the low level URLConnection to the Jarfile
+            connection.setDefaultUseCaches(false);
+            connection.setUseCaches(false);
+
+            connection.connect();
+        } catch (IOException e) {
+            throw new BugInCF("cannot open a connection to the Jar file " + resourceURL.getFile());
+        }
+        parsing = true;
+        try (JarFile jarFile = connection.getJarFile()) {
+            InputStream jdkStub;
+            try {
+                jdkStub = jarFile.getInputStream(jarFile.getJarEntry(jarEntryName));
+            } catch (IOException e) {
+                throw new BugInCF("cannot open the jdk stub file " + jarEntryName);
+            }
+            StubParser.parse(
+                    jarEntryName,
+                    jdkStub,
+                    factory,
+                    factory.getProcessingEnv(),
+                    typesFromStubFiles,
+                    declAnnosFromStubFiles);
+        } catch (IOException e) {
+            throw new BugInCF("cannot open the Jar file " + connection.getEntryName());
+        } finally {
+            parsing = false;
         }
     }
 }

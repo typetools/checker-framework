@@ -403,7 +403,6 @@ public class StubParser {
         if (debugStubParser) {
             stubDebug(String.format("parsing stub file %s", filename));
         }
-
         stubUnit = StaticJavaParser.parseStubUnit(inputStream);
 
         // getAllStubAnnotations() also modifies importedConstants and importedTypes. This should
