@@ -106,6 +106,8 @@ public class StubTypes {
             if (path.getFileName().toString().equals("package-info.java")) {
                 parseStubFile(path);
                 continue;
+            } else {
+                parseStubFile(path);
             }
             Path relativePath = root.relativize(path);
             // 4: /src/<module>/share/classes
@@ -142,6 +144,7 @@ public class StubTypes {
                                     .replace(".java", "")
                                     .replace('/', '.');
                     jdk11StubFilesJar.put(shortName, jeNAme);
+                    parseJarEntry(jeNAme);
                 }
             }
         } catch (IOException e) {
@@ -279,6 +282,8 @@ public class StubTypes {
                     declAnnosFromStubFiles);
         } catch (IOException e) {
             throw new BugInCF("cannot open the Jar file " + connection.getEntryName());
+        } catch (BugInCF e) {
+            throw new BugInCF("Exception while parsing " + jarEntryName, e);
         } finally {
             parsing = false;
         }
