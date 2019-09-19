@@ -9,7 +9,7 @@ ext {
         jdkShaHash = 'local'
     }
 
-    jdk11uHome = '../../jdk11u'
+    jdkHome = '../../jdk'
 }
 sourceSets {
     main {
@@ -34,28 +34,28 @@ dependencies {
     testannotationsCompile project(':checker-qual')
 }
 
-task cloneTypetoolsJdk11u() {
-    description 'Obtain or update the jdk11u'
-    if (file(jdk11uHome).exists()) {
+task cloneTypetoolsJdk() {
+    description 'Obtain or update the jdk'
+    if (file(jdkHome).exists()) {
         exec {
-            workingDir jdk11uHome
+            workingDir jdkHome
             executable 'git'
             args = ['pull', '-q']
             ignoreExitValue = true
         }
     } else {
         exec {
-            workingDir "${jdk11uHome}/../"
+            workingDir "${jdkHome}/../"
             executable 'git'
-            args = ['clone', '-q', 'https://github.com/typetools/jdk11u.git', 'jdk11u']
+            args = ['clone', '-q', 'https://github.com/typetools/jdk.git', 'jdk']
         }
     }
 }
 
-task copyJdk11Files(dependsOn: cloneTypetoolsJdk11u, group: 'Build') {
+task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
     description "Copy annotated jdk 11 files to ${buildDir}/jdk/jdk11/"
     doLast {
-        FileTree tree = fileTree(dir: jdk11uHome)
+        FileTree tree = fileTree(dir: jdkHome)
         SortedSet<String> annotatedForFiles = new TreeSet<>();
         tree.visit {
             if (!it.file.isDirectory() && it.file.name.matches(".*\\.java")) {
@@ -66,13 +66,13 @@ task copyJdk11Files(dependsOn: cloneTypetoolsJdk11u, group: 'Build') {
                 }
             }
         }
-        String absoluteJdk11uHome = file(jdk11uHome).absolutePath
-        int jdkDirStringSize = absoluteJdk11uHome.size()
+        String absolutejdkHome = file(jdkHome).absolutePath
+        int jdkDirStringSize = absolutejdkHome.size()
         copy {
-            from(jdk11uHome)
+            from(jdkHome)
             into("${buildDir}/jdk/jdk11/")
             for (String filename : annotatedForFiles) {
-                int index = filename.indexOf(absoluteJdk11uHome)
+                int index = filename.indexOf(absolutejdkHome)
                 include filename.substring(index + jdkDirStringSize)
             }
         }
