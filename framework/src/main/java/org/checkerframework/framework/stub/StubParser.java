@@ -5,6 +5,7 @@ import com.github.javaparser.Problem;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
@@ -462,6 +463,9 @@ public class StubParser {
     /** @param outertypeName the name of the containing class, when processing a nested class */
     private void processTypeDecl(
             TypeDeclaration<?> typeDecl, String outertypeName, List<AnnotationExpr> packageAnnos) {
+        if (!typeDecl.getModifiers().contains(Modifier.publicModifier())) {
+            return;
+        }
         assert parseState != null;
         String innerName =
                 (outertypeName == null ? "" : outertypeName + ".") + typeDecl.getNameAsString();
@@ -1157,10 +1161,13 @@ public class StubParser {
             }
         } else if (member instanceof FieldDeclaration) {
             FieldDeclaration fieldDecl = (FieldDeclaration) member;
-            for (VariableDeclarator var : fieldDecl.getVariables()) {
-                Element varelt = findElement(typeElt, var);
-                if (varelt != null) {
-                    putNoOverride(result, varelt, fieldDecl);
+            if (fieldDecl.getModifiers().contains(Modifier.protectedModifier())
+                    || fieldDecl.getModifiers().contains(Modifier.publicModifier())) {
+                for (VariableDeclarator var : fieldDecl.getVariables()) {
+                    Element varelt = findElement(typeElt, var);
+                    if (varelt != null) {
+                        putNoOverride(result, varelt, fieldDecl);
+                    }
                 }
             }
         } else if (member instanceof EnumConstantDeclaration) {
@@ -1292,6 +1299,10 @@ public class StubParser {
      *     or null if method element is not found
      */
     private ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
+        if (!(methodDecl.getModifiers().contains(Modifier.protectedModifier())
+                || methodDecl.getModifiers().contains(Modifier.publicModifier()))) {
+            return null;
+        }
         final String wantedMethodName = methodDecl.getNameAsString();
         final int wantedMethodParams =
                 (methodDecl.getParameters() == null) ? 0 : methodDecl.getParameters().size();
@@ -1328,6 +1339,10 @@ public class StubParser {
      */
     private ExecutableElement findElement(
             TypeElement typeElt, ConstructorDeclaration constructorDecl) {
+        if (!(constructorDecl.getModifiers().contains(Modifier.protectedModifier())
+                || constructorDecl.getModifiers().contains(Modifier.publicModifier()))) {
+            return null;
+        }
         final int wantedMethodParams =
                 (constructorDecl.getParameters() == null)
                         ? 0
