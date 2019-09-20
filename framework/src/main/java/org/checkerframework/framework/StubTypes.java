@@ -106,8 +106,6 @@ public class StubTypes {
             if (path.getFileName().toString().equals("package-info.java")) {
                 parseStubFile(path);
                 continue;
-            } else {
-                parseStubFile(path);
             }
             Path relativePath = root.relativize(path);
             // 4: /src/<module>/share/classes
@@ -144,7 +142,9 @@ public class StubTypes {
                                     .replace(".java", "")
                                     .replace('/', '.');
                     jdk11StubFilesJar.put(shortName, jeNAme);
-                    parseJarEntry(jeNAme);
+                    if (shortName.endsWith("package-info.java")) {
+                        parseJarEntry(jeNAme);
+                    }
                 }
             }
         } catch (IOException e) {
@@ -162,12 +162,7 @@ public class StubTypes {
         if (parsing) {
             return null;
         }
-        if (typesFromStubFiles.containsKey(e)) {
-            return typesFromStubFiles.get(e).deepCopy();
-        }
-        if (parseEnclosingClass(e)) {
-            return null;
-        }
+        parseEnclosingClass(e);
         AnnotatedTypeMirror type = typesFromStubFiles.get(e);
         return type == null ? null : type.deepCopy();
     }
@@ -175,9 +170,6 @@ public class StubTypes {
     public Set<AnnotationMirror> getDeclAnnotation(Element elt, String eltName) {
         if (parsing) {
             return Collections.emptySet();
-        }
-        if (declAnnosFromStubFiles.containsKey(eltName)) {
-            return declAnnosFromStubFiles.get(eltName);
         }
 
         if (parseEnclosingClass(elt)) {
@@ -235,6 +227,7 @@ public class StubTypes {
     }
 
     private void parseStubFile(Path path) {
+        boolean oldParsing = parsing;
         parsing = true;
         try (FileInputStream jdkStub = new FileInputStream(path.toFile()); ) {
             StubParser.parseJdkFileAsStub(
@@ -247,7 +240,7 @@ public class StubTypes {
         } catch (IOException e) {
             throw new BugInCF("cannot open the jdk stub file " + path);
         } finally {
-            parsing = false;
+            parsing = oldParsing;
         }
     }
 
@@ -265,6 +258,7 @@ public class StubTypes {
         } catch (IOException e) {
             throw new BugInCF("cannot open a connection to the Jar file " + resourceURL.getFile());
         }
+        boolean oldParsing = parsing;
         parsing = true;
         try (JarFile jarFile = connection.getJarFile()) {
             InputStream jdkStub;
@@ -285,7 +279,7 @@ public class StubTypes {
         } catch (BugInCF e) {
             throw new BugInCF("Exception while parsing " + jarEntryName, e);
         } finally {
-            parsing = false;
+            parsing = oldParsing;
         }
     }
 
