@@ -1886,14 +1886,18 @@ public class StubParser {
      * Just like Map.put, but merges with any existing value for the given key, instead ef replacing
      * it.
      */
-    private static void putNew(
+    private void putNew(
             Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
         if (key == null) {
             throw new BugInCF("StubParser: key is null");
         }
         if (m.containsKey(key)) {
             AnnotatedTypeMirror value2 = m.get(key);
-            AnnotatedTypeMerger.merge(value, value2);
+            if (isJdkAsStub) {
+                AnnotatedTypeMerger.merge(value2, value);
+            } else {
+                AnnotatedTypeMerger.merge(value, value2);
+            }
             m.put(key, value2);
         } else {
             m.put(key, value);
@@ -1919,7 +1923,7 @@ public class StubParser {
      * and the -AstubWarnIfNotFound command-line argument was passed.
      */
     private void stubWarnNotFound(String warning) {
-        if (warnings.add(warning) && (warnIfNotFound || debugStubParser)) {
+        if (warnings.add(warning) && ((!isJdkAsStub && warnIfNotFound) || debugStubParser)) {
             processingEnv
                     .getMessager()
                     .printMessage(javax.tools.Diagnostic.Kind.WARNING, "StubParser: " + warning);
