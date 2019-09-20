@@ -311,7 +311,7 @@ public class StubParser {
 
                         stubWarnNotFound("Imported type not found: " + imported);
                     } else if (importType == null) {
-                        // Nested Field
+                        // static import of field or method.
 
                         Pair<String, String> typeParts = StubUtil.partitionQualifiedName(imported);
                         String type = typeParts.first;
@@ -324,8 +324,14 @@ public class StubParser {
                                                 fieldName));
 
                         if (enclType != null) {
-                            if (findFieldElement(enclType, fieldName) != null) {
-                                importedConstants.add(imported);
+                            // Don't use findFieldElement(enclType, fieldName), because we don't
+                            // want a warning, imported might be a method.
+                            for (VariableElement field :
+                                    ElementUtils.getAllFieldsIn(enclType, elements)) {
+                                // field.getSimpleName() is a CharSequence, not a String
+                                if (fieldName.equals(field.getSimpleName().toString())) {
+                                    importedConstants.add(imported);
+                                }
                             }
                         }
 
