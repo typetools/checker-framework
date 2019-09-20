@@ -618,7 +618,7 @@ subprojects {
 //            println classpath.asPath
 //            systemProperties += ["emit.test.debug": 'true']
 
-            jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005'
+//            jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005'
             jvmArgs '-XX:+HeapDumpOnOutOfMemoryError'
             jvmArgs '-XX:HeapDumpPath=/Users/smillst/tmp/dump/'
 
