@@ -308,6 +308,7 @@ public class StubTypes {
      * <p>Sets typesFromStubFiles and declAnnosFromStubFiles by side effect, just before returning.
      */
     public void parseStubFiles() {
+        parsing = true;
         // TODO: Error if this is called more than once?
         SourceChecker checker = factory.getContext().getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
@@ -421,5 +422,6 @@ public class StubTypes {
                         declAnnosFromStubFiles);
             }
         }
+        parsing = false;
     }
 }
