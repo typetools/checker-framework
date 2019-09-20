@@ -3389,7 +3389,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // If the Checker Framework implemented capture conversion, then in this case, then
             // the upper bound of the capture converted wildcard would be an intersection type.
             // See JLS 15.1.10
-            // (https://docs.oracle.com/javase/specs/jls/se10/html/jls-5.html#jls-5.1.10)
+            // (https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.10)
 
             // For example:
             // class MyClass<@A T extends @B Number> {}
