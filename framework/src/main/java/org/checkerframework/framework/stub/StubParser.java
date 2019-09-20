@@ -174,6 +174,7 @@ public class StubParser {
     /** The line separator. */
     private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
+    private final boolean isJdkAsStub;
     /**
      * Create a new StubParser object, which will parse and extract annotations from the given stub
      * file.
@@ -188,6 +189,24 @@ public class StubParser {
             ProcessingEnvironment processingEnv,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
+        this(filename, atypeFactory, processingEnv, atypes, declAnnos, false);
+    }
+
+    /**
+     * Create a new StubParser object, which will parse and extract annotations from the given stub
+     * file.
+     *
+     * @param filename name of stub file, used only for diagnostic messages
+     * @param atypeFactory AnnotatedtypeFactory to use
+     * @param processingEnv ProcessingEnviroment to use
+     */
+    public StubParser(
+            String filename,
+            AnnotatedTypeFactory atypeFactory,
+            ProcessingEnvironment processingEnv,
+            Map<Element, AnnotatedTypeMirror> atypes,
+            Map<String, Set<AnnotationMirror>> declAnnos,
+            boolean isJdkAsStub) {
         this.filename = filename;
         this.atypeFactory = atypeFactory;
         this.processingEnv = processingEnv;
@@ -206,6 +225,7 @@ public class StubParser {
 
         this.atypes = atypes;
         this.declAnnos = declAnnos;
+        this.isJdkAsStub = isJdkAsStub;
     }
 
     /**
@@ -377,7 +397,46 @@ public class StubParser {
             ProcessingEnvironment processingEnv,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
-        StubParser sp = new StubParser(filename, atypeFactory, processingEnv, atypes, declAnnos);
+        parse(filename, inputStream, atypeFactory, processingEnv, atypes, declAnnos, false);
+    }
+
+    /**
+     * The main entry point. Parse a stub file and side-effects the last two arguments.
+     *
+     * @param filename name of stub file, used only for diagnostic messages
+     * @param inputStream of stub file to parse
+     * @param atypeFactory AnnotatedtypeFactory to use
+     * @param processingEnv ProcessingEnviroment to use
+     */
+    public static void parseJdkFileAsStub(
+            String filename,
+            InputStream inputStream,
+            AnnotatedTypeFactory atypeFactory,
+            ProcessingEnvironment processingEnv,
+            Map<Element, AnnotatedTypeMirror> atypes,
+            Map<String, Set<AnnotationMirror>> declAnnos) {
+        parse(filename, inputStream, atypeFactory, processingEnv, atypes, declAnnos, true);
+    }
+
+    /**
+     * The main entry point. Parse a stub file and side-effects the last two arguments.
+     *
+     * @param filename name of stub file, used only for diagnostic messages
+     * @param inputStream of stub file to parse
+     * @param atypeFactory AnnotatedtypeFactory to use
+     * @param processingEnv ProcessingEnviroment to use
+     */
+    private static void parse(
+            String filename,
+            InputStream inputStream,
+            AnnotatedTypeFactory atypeFactory,
+            ProcessingEnvironment processingEnv,
+            Map<Element, AnnotatedTypeMirror> atypes,
+            Map<String, Set<AnnotationMirror>> declAnnos,
+            boolean isJdkAsStub) {
+        StubParser sp =
+                new StubParser(
+                        filename, atypeFactory, processingEnv, atypes, declAnnos, isJdkAsStub);
         try {
             sp.parseStubUnit(inputStream);
             sp.process();
@@ -463,7 +522,7 @@ public class StubParser {
     /** @param outertypeName the name of the containing class, when processing a nested class */
     private void processTypeDecl(
             TypeDeclaration<?> typeDecl, String outertypeName, List<AnnotationExpr> packageAnnos) {
-        if (!typeDecl.getModifiers().contains(Modifier.publicModifier())) {
+        if (isJdkAsStub && !typeDecl.getModifiers().contains(Modifier.publicModifier())) {
             return;
         }
         assert parseState != null;
@@ -815,12 +874,15 @@ public class StubParser {
 
     /** Adds a declAnnotation to every method in the stub file. */
     private void addDeclAnnotations(Map<String, Set<AnnotationMirror>> declAnnos, Element elt) {
-        //        Set<AnnotationMirror> annos = declAnnos.get(ElementUtils.getVerboseName(elt));
-        //        if (annos == null) {
-        //            annos = AnnotationUtils.createAnnotationSet();
-        //            putOrAddToMap(declAnnos, ElementUtils.getVerboseName(elt), annos);
-        //        }
-        //        annos.add(fromStubFile);
+        if (isJdkAsStub) {
+            return;
+        }
+        Set<AnnotationMirror> annos = declAnnos.get(ElementUtils.getVerboseName(elt));
+        if (annos == null) {
+            annos = AnnotationUtils.createAnnotationSet();
+            putOrAddToMap(declAnnos, ElementUtils.getVerboseName(elt), annos);
+        }
+        annos.add(fromStubFile);
     }
 
     /**
@@ -1161,7 +1223,8 @@ public class StubParser {
             }
         } else if (member instanceof FieldDeclaration) {
             FieldDeclaration fieldDecl = (FieldDeclaration) member;
-            if (fieldDecl.getModifiers().contains(Modifier.protectedModifier())
+            if (!isJdkAsStub
+                    || fieldDecl.getModifiers().contains(Modifier.protectedModifier())
                     || fieldDecl.getModifiers().contains(Modifier.publicModifier())) {
                 for (VariableDeclarator var : fieldDecl.getVariables()) {
                     Element varelt = findElement(typeElt, var);
@@ -1299,8 +1362,9 @@ public class StubParser {
      *     or null if method element is not found
      */
     private ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
-        if (!(methodDecl.getModifiers().contains(Modifier.protectedModifier())
-                || methodDecl.getModifiers().contains(Modifier.publicModifier()))) {
+        if (isJdkAsStub
+                && !(methodDecl.getModifiers().contains(Modifier.protectedModifier())
+                        || methodDecl.getModifiers().contains(Modifier.publicModifier()))) {
             return null;
         }
         final String wantedMethodName = methodDecl.getNameAsString();
@@ -1339,8 +1403,9 @@ public class StubParser {
      */
     private ExecutableElement findElement(
             TypeElement typeElt, ConstructorDeclaration constructorDecl) {
-        if (!(constructorDecl.getModifiers().contains(Modifier.protectedModifier())
-                || constructorDecl.getModifiers().contains(Modifier.publicModifier()))) {
+        if (isJdkAsStub
+                && !(constructorDecl.getModifiers().contains(Modifier.protectedModifier())
+                        || constructorDecl.getModifiers().contains(Modifier.publicModifier()))) {
             return null;
         }
         final int wantedMethodParams =
@@ -1898,7 +1963,7 @@ public class StubParser {
      */
     private void stubWarn(String warning, Object... args) {
         warning = String.format(warning, args);
-        if (warnings.add(warning) && debugStubParser) {
+        if (warnings.add(warning)) {
             processingEnv
                     .getMessager()
                     .printMessage(javax.tools.Diagnostic.Kind.WARNING, "StubParser: " + warning);

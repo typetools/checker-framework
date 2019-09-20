@@ -237,7 +237,7 @@ public class StubTypes {
     private void parseStubFile(Path path) {
         parsing = true;
         try (FileInputStream jdkStub = new FileInputStream(path.toFile()); ) {
-            StubParser.parse(
+            StubParser.parseJdkFileAsStub(
                     path.toFile().getName(),
                     jdkStub,
                     factory,
@@ -273,7 +273,7 @@ public class StubTypes {
             } catch (IOException e) {
                 throw new BugInCF("cannot open the jdk stub file " + jarEntryName);
             }
-            StubParser.parse(
+            StubParser.parseJdkFileAsStub(
                     jarEntryName,
                     jdkStub,
                     factory,
