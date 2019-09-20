@@ -1239,7 +1239,7 @@ public class StubParser {
                 putNoOverride(result, elt, member);
             }
         } else {
-            stubWarnNotFound(
+            stubDebug(
                     String.format(
                             "Ignoring element of type %s in %s", member.getClass(), typeDeclName));
         }
