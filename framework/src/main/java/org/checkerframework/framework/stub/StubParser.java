@@ -175,22 +175,6 @@ public class StubParser {
     private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
     private final boolean isJdkAsStub;
-    /**
-     * Create a new StubParser object, which will parse and extract annotations from the given stub
-     * file.
-     *
-     * @param filename name of stub file, used only for diagnostic messages
-     * @param atypeFactory AnnotatedtypeFactory to use
-     * @param processingEnv ProcessingEnviroment to use
-     */
-    public StubParser(
-            String filename,
-            AnnotatedTypeFactory atypeFactory,
-            ProcessingEnvironment processingEnv,
-            Map<Element, AnnotatedTypeMirror> atypes,
-            Map<String, Set<AnnotationMirror>> declAnnos) {
-        this(filename, atypeFactory, processingEnv, atypes, declAnnos, false);
-    }
 
     /**
      * Create a new StubParser object, which will parse and extract annotations from the given stub
