@@ -77,11 +77,19 @@ public class StubTypes {
             return;
         }
         URL resourceURL = factory.getClass().getResource("/jdk11");
-        if (resourceURL.getProtocol().contentEquals("jar")) {
+        if (resourceURL == null) {
+            if (factory.getContext().getChecker().hasOption("nocheckjdk")) {
+                return;
+            }
+            throw new BugInCF("JDK not found");
+        } else if (resourceURL.getProtocol().contentEquals("jar")) {
             prepJdk11FromJar(resourceURL);
         } else if (resourceURL.getProtocol().contentEquals("file")) {
             prepJdk11FromFile(resourceURL);
         } else {
+            if (factory.getContext().getChecker().hasOption("nocheckjdk")) {
+                return;
+            }
             throw new BugInCF("JDK not found");
         }
     }
