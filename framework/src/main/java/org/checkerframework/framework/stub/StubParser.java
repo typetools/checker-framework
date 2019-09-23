@@ -1356,7 +1356,8 @@ public class StubParser {
     private ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
         if (isJdkAsStub
                 && !(methodDecl.getModifiers().contains(Modifier.protectedModifier())
-                        || methodDecl.getModifiers().contains(Modifier.publicModifier()))) {
+                        || methodDecl.getModifiers().contains(Modifier.publicModifier())
+                        || typeElt.getKind() == ElementKind.INTERFACE)) {
             return null;
         }
         final String wantedMethodName = methodDecl.getNameAsString();
