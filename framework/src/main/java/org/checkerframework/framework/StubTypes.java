@@ -101,25 +101,25 @@ public class StubTypes {
         } catch (URISyntaxException e) {
             throw new BugInCF("Can parse URL: %s", resourceURL.toString());
         }
-        Stream<Path> walk;
-        try {
-            walk = Files.walk(root);
+
+        try (Stream<Path> walk = Files.walk(root)) {
+            List<Path> paths =
+                    walk.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(".java"))
+                            .collect(Collectors.toList());
+            for (Path path : paths) {
+                if (path.getFileName().toString().equals("package-info.java")) {
+                    parseStubFile(path);
+                    continue;
+                }
+                Path relativePath = root.relativize(path);
+                // 4: /src/<module>/share/classes
+                Path savepath = relativePath.subpath(4, relativePath.getNameCount());
+                String s =
+                        savepath.toString().replace(".java", "").replace(File.separatorChar, '.');
+                jdk11StubFiles.put(s, path);
+            }
         } catch (IOException e) {
             throw new BugInCF("File Not Found");
-        }
-        List<Path> paths =
-                walk.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(".java"))
-                        .collect(Collectors.toList());
-        for (Path path : paths) {
-            if (path.getFileName().toString().equals("package-info.java")) {
-                parseStubFile(path);
-                continue;
-            }
-            Path relativePath = root.relativize(path);
-            // 4: /src/<module>/share/classes
-            Path savepath = relativePath.subpath(4, relativePath.getNameCount());
-            String s = savepath.toString().replace(".java", "").replace(File.separatorChar, '.');
-            jdk11StubFiles.put(s, path);
         }
     }
 
