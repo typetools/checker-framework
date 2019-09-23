@@ -415,7 +415,6 @@ public class StubParser {
                             "No supported annotations found! This likely means stub file %s doesn't import them correctly.",
                             filename));
         }
-        findPackage("java.lang");
         allStubAnnotations.putAll(annosInPackage(findPackage("java.lang")));
     }
 
