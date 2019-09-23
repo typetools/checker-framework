@@ -7,7 +7,7 @@ import java.util.Formatter;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 
-@SuppressWarning("deprecation")
+@SuppressWarnings("deprecation")
 public class ConversionBasic {
     public static void main(String... p) {
         Formatter f = new Formatter();
