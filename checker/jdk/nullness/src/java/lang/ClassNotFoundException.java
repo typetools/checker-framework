@@ -53,7 +53,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @see     ClassLoader#loadClass(String, boolean)
  * @since   JDK1.0
  */
-public class ClassNotFoundException extends ReflectiveOperationException {
+public class ClassNotFoundException extends Exception {
     /**
      * use serialVersionUID from JDK 1.1.X for interoperability
      */

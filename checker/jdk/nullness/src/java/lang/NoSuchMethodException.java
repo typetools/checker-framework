@@ -35,7 +35,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @since      JDK1.0
  */
 public
-class NoSuchMethodException extends ReflectiveOperationException {
+class NoSuchMethodException extends Exception {
     private static final long serialVersionUID = 5034388446362600923L;
 
     /**

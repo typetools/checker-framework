@@ -59,7 +59,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @see     java.lang.reflect.Constructor#newInstance(Object[])
  * @since   JDK1.0
  */
-public class IllegalAccessException extends ReflectiveOperationException {
+public class IllegalAccessException extends Exception {
     private static final long serialVersionUID = 6616958222490762034L;
 
     /**

@@ -11,7 +11,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 @SuppressWarnings("rawtypes")
 public final
-    class Method extends Executable {
+    class Method extends AccessibleObject implements GenericDeclaration, Member {
     Method(Class declaringClass,
            String name,
            Class[] parameterTypes,

@@ -2,7 +2,6 @@ package java.util;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.checker.nullness.qual.KeyFor;
 
 public class Properties extends Hashtable<Object, Object> {
   private static final long serialVersionUID = 0;
@@ -23,6 +22,4 @@ public class Properties extends Hashtable<Object, Object> {
   public Set<String> stringPropertyNames() { throw new RuntimeException("skeleton method"); }
   public void list(java.io.PrintStream a1) { throw new RuntimeException("skeleton method"); }
   public void list(java.io.PrintWriter a1) { throw new RuntimeException("skeleton method"); }
-  public Set<@KeyFor("this") K> keySet() { throw new RuntimeException("skeleton method"); }
-  public Set<Map.Entry<@KeyFor("this") K,V>> entrySet() { throw new RuntimeException("skeleton method"); }
 }
