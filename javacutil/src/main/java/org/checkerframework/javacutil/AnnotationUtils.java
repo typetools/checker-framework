@@ -445,6 +445,7 @@ public class AnnotationUtils {
             case TYPE_PARAMETER:
                 return EnumSet.of(ElementKind.TYPE_PARAMETER);
             case TYPE_USE:
+            case MODULE:
                 return EnumSet.noneOf(ElementKind.class);
             default:
                 if (elementType.name().contentEquals("MODULE")) {
