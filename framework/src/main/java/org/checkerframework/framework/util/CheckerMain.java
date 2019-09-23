@@ -131,7 +131,7 @@ public class CheckerMain {
             assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
         } else {
             // TODO: once the jdk11 jars exist, check for them.
-            assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar));
+            assertFilesExist(Arrays.asList(checkerJar, checkerQualJar));
         }
     }
 

@@ -172,9 +172,8 @@ public class StubTypes {
             return Collections.emptySet();
         }
 
-        if (parseEnclosingClass(elt)) {
-            return Collections.emptySet();
-        }
+        parseEnclosingClass(elt);
+
         if (declAnnosFromStubFiles.containsKey(eltName)) {
             return declAnnosFromStubFiles.get(eltName);
         }
