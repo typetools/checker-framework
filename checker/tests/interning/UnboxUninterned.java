@@ -1,6 +1,7 @@
 import org.checkerframework.checker.interning.qual.*;
 
 public class UnboxUninterned {
+    @SuppressWarning("deprecation")
     void negation() {
         Boolean t = new Boolean(true);
         boolean b1 = !t.booleanValue();

@@ -1,5 +1,6 @@
 import org.checkerframework.checker.interning.qual.Interned;
 
+@SuppressWarnings("deprecation") // new Integer
 public class Creation {
     @Interned Foo[] a = new @Interned Foo[22]; // valid
 

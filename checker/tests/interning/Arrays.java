@@ -4,7 +4,7 @@ import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.PolyInterned;
 
 public class Arrays {
-
+    @SuppressWarning("deprecation")
     public static Integer[] arrayclone_simple(Integer[] a_old) {
         int len = a_old.length;
         Integer[] a_new = new Integer[len];

@@ -25,6 +25,7 @@ public @Interned class InternedClass {
     }
 
     // Overriding method
+    @SuppressWarning("deprecation")
     @org.checkerframework.dataflow.qual.Pure
     public String toString() {
         @Interned InternedClass c = this;
