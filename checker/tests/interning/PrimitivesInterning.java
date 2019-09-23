@@ -26,7 +26,7 @@ public class PrimitivesInterning {
             System.out.println("has open punctuation");
         }
 
-        @SuppressWarning("deprecation")
+        @SuppressWarnings("deprecation")
         Number n = new Integer(22);
         boolean is_double = (n instanceof Double); // valid
 
