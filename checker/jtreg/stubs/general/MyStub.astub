@@ -1,0 +1,6 @@
+package java.lang;
+
+@SuppressWarnings("something")
+class String {
+
+}

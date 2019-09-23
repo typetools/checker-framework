@@ -1,0 +1,4 @@
+- compiler.warn.proc.messager: StubParser: No supported annotations found! This likely means stub file /Users/smillst/jsr308/checker-framework/checker/jtreg/stubs/general/MyStub.astub doesn't import them correctly.
+- compiler.err.warnings.and.werror
+1 error
+1 warning
