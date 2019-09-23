@@ -55,15 +55,15 @@ task cloneTypetoolsJdk() {
 task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
     description "Copy annotated jdk 11 files to ${buildDir}/jdk/jdk11/"
     doLast {
-        FileTree tree = fileTree(dir: jdkHome)
+        FileTree tree = fileTree(dir: "${jdkHome}/src/")
         SortedSet<String> annotatedForFiles = new TreeSet<>();
         tree.visit {
             if (!it.file.isDirectory() && it.file.name.matches(".*\\.java")) {
-                it.file.eachLine { line ->
-                    if (line.contains("@AnnotatedFor")) {
-                        annotatedForFiles.add(it.file.absolutePath)
+                    it.file.eachLine { line ->
+                        if (line.contains("@AnnotatedFor") || line.contains("import org.checkerframework")) {
+                            annotatedForFiles.add(it.file.absolutePath)
+                        }
                     }
-                }
             }
         }
         String absolutejdkHome = file(jdkHome).absolutePath

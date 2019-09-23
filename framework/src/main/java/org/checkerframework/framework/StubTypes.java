@@ -142,7 +142,7 @@ public class StubTypes {
                                     .replace(".java", "")
                                     .replace('/', '.');
                     jdk11StubFilesJar.put(shortName, jeNAme);
-                    if (shortName.endsWith("package-info.java")) {
+                    if (jeNAme.endsWith("package-info.java")) {
                         parseJarEntry(jeNAme);
                     }
                 }
