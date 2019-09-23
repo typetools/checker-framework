@@ -10,9 +10,6 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
  * {@link TypeAnnotator} is an abstract AnnotatedTypeScanner to be used with {@link
  * ListTypeAnnotator}.
  *
- * <p>When implementing this class, each method should return {@code null} instead of calling super,
- * because the super implementation does nothing.
- *
  * @see org.checkerframework.framework.type.typeannotator.ListTypeAnnotator
  * @see org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator
  * @see DefaultForTypeAnnotator
@@ -26,7 +23,9 @@ public abstract class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
     }
 
     /**
-     * If this method adds annotations to the type of method parameters, then {@link
+     * {@inheritDoc}
+     *
+     * <p>If this method adds annotations to the type of method parameters, then {@link
      * org.checkerframework.framework.type.GenericAnnotatedTypeFactory#addComputedTypeAnnotations(Element,
      * AnnotatedTypeMirror)} should be overriden and the same annotations added to the type of
      * elements with kind {@link javax.lang.model.element.ElementKind#PARAMETER}.
