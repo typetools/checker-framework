@@ -1425,18 +1425,16 @@ public class StubParser {
      */
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, AnnotationMirror> allStubAnnotations) {
-        AnnotationMirror annoMirror;
+        String annoName = annotation.getNameAsString();
+        AnnotationMirror annoMirror = allStubAnnotations.get(annoName);
+        if (annoMirror == null) {
+            // Not a supported qualifier -> ignore
+            return null;
+        }
         if (annotation instanceof MarkerAnnotationExpr) {
-            String annoName = ((MarkerAnnotationExpr) annotation).getNameAsString();
-            annoMirror = allStubAnnotations.get(annoName);
+            return annoMirror;
         } else if (annotation instanceof NormalAnnotationExpr) {
             NormalAnnotationExpr nrmanno = (NormalAnnotationExpr) annotation;
-            String annoName = nrmanno.getNameAsString();
-            annoMirror = allStubAnnotations.get(annoName);
-            if (annoMirror == null) {
-                // Not a supported qualifier -> ignore
-                return null;
-            }
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
             List<MemberValuePair> pairs = nrmanno.getPairs();
             if (pairs != null) {
@@ -1455,12 +1453,6 @@ public class StubParser {
             return builder.build();
         } else if (annotation instanceof SingleMemberAnnotationExpr) {
             SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr) annotation;
-            String annoName = sglanno.getNameAsString();
-            annoMirror = allStubAnnotations.get(annoName);
-            if (annoMirror == null) {
-                // Not a supported qualifier -> ignore
-                return null;
-            }
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
             Expression valexpr = sglanno.getMemberValue();
             boolean success = handleExpr(builder, "value", valexpr);
@@ -1474,7 +1466,6 @@ public class StubParser {
         } else {
             throw new BugInCF("StubParser: unknown annotation type: " + annotation);
         }
-        return annoMirror;
     }
 
     /** Returns the value of {@code expr}, or null if some problem occurred getting the value. */
