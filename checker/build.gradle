@@ -60,7 +60,7 @@ task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
         tree.visit {
             if (!it.file.isDirectory() && it.file.name.matches(".*\\.java")) {
                     it.file.eachLine { line ->
-                        if (line.contains("@AnnotatedFor") || line.contains("import  org.checkerframework")) {
+                        if (line.contains("@AnnotatedFor") || line.contains("org.checkerframework")) {
                             annotatedForFiles.add(it.file.absolutePath)
                         }
                     }
