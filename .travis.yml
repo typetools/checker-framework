@@ -26,7 +26,9 @@ env:
     - BUILDJDK=downloadjdk JDKVER=jdk8-plus GROUP=misc
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=checker-framework-inference
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=plume-lib
+    - BUILDJDK=downloadjdk JDKVER=jdk11 GROUP=plume-lib
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
+    - BUILDJDK=downloadjdk JDKVER=jdk11 GROUP=downstream
 
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
