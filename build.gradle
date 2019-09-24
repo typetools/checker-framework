@@ -570,6 +570,9 @@ subprojects {
                                     "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
                                     "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
                                     "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+
+                                    "-javacoptions:--add-modules jdk.jdeps",
+                                    "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
                             ]
                         }
                         if (project.name.is('framework')) {
