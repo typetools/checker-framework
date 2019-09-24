@@ -554,11 +554,6 @@ subprojects {
                                 "-javacoptions:-source 8",
                                 "-javacoptions:-target 8"
                                 ]
-                            if (project.name.is('checker')) {
-                                args += [
-                                        "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar",
-                                ]
-                            }
                         } else {
                             args += [
                                     "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
