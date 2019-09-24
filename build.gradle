@@ -138,9 +138,7 @@ allprojects {
                     "-Xlint:-options",
                     "-Xlint",
             ]
-            if (isJava8) {
-                options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
-            } else {
+            if (!isJava8) {
                 options.compilerArgs += [
                     "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
                     "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
@@ -155,7 +153,9 @@ allprojects {
             }
             options.encoding = 'UTF-8'
             options.fork = true
-
+            if (isJava8) {
+                options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
+            }
             // Don't use error-prone by default
             options.errorprone.enabled = false
         }
@@ -600,20 +600,20 @@ subprojects {
 
         // Configure JUnit tests
         tasks.withType(Test) {
-            if (isJava8) {
-                jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
-            } else {
-                    forkEvery(1)
-                    jvmArgs += [
-                            "--add-opens", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-                            "--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                            "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                            "--add-opens", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-                            "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-                            "--add-opens", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-                            "--add-opens", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-                            "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                            "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+            if (javaVersion == JavaVersion.VERSION_11){
+                forkEvery(1)
+            }
+            if (!isJava8) {
+                jvmArgs += [
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                     ]
             }
 
@@ -626,7 +626,9 @@ subprojects {
                 systemProperties += ["emit.test.debug": 'true']
             }
 
-
+            if (isJava8) {
+                jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+            }
 //            println classpath.asPath
 //            systemProperties += ["emit.test.debug": 'true']
 
