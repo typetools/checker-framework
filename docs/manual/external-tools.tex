@@ -772,7 +772,7 @@ section, or add it if it is not present.
             <configuration>
               <fork>true</fork>
               <compilerArgs combine.children="append">
-                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${javac.version}/javac-${javac.version}.jar</arg>
+                <arg>-J-Xbootclasspath/p:$\{settings.localRepository\}/com/google/errorprone/javac/$\{javac.version\}/javac-$\{javac.version\}.jar</arg>
               </compilerArgs>
             </configuration>
           </plugin>
