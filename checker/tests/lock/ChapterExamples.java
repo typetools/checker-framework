@@ -19,6 +19,7 @@ import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+@SuppressWarnings("deprecation")
 class ChapterExamples {
     // This code crashed when there was a bug before issue 524 was fixed.
     // An attempt to take the LUB between 'val' in the store with type 'long'
