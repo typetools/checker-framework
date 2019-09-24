@@ -316,15 +316,19 @@ public class StubTypes {
         // 1. jdk.astub
         // Only look in .jar files, and parse it right away.
         if (!checker.hasOption("ignorejdkastub")) {
-            InputStream in = checker.getClass().getResourceAsStream("jdk.astub");
-            if (in != null) {
-                StubParser.parse(
-                        checker.getClass().getResource("jdk.astub").toString(),
-                        in,
-                        factory,
-                        processingEnv,
-                        typesFromStubFiles,
-                        declAnnosFromStubFiles);
+            // TODO: The Interning Checker jdk.astub isn't compatiable with Java 11
+            boolean skip = PluginUtil.getJreVersion() != 8;
+            if (!skip) {
+                InputStream in = checker.getClass().getResourceAsStream("jdk.astub");
+                if (in != null) {
+                    StubParser.parse(
+                            checker.getClass().getResource("jdk.astub").toString(),
+                            in,
+                            factory,
+                            processingEnv,
+                            typesFromStubFiles,
+                            declAnnosFromStubFiles);
+                }
             }
             // TODO: document
             prepJdkStubs();
