@@ -774,7 +774,8 @@ public class StubParser {
         }
 
         if (warnIfStubRedundantWithBytecode
-                && methodType.toString().equals(origMethodType.toString())) {
+                && methodType.toString().equals(origMethodType.toString())
+                && !isJdkAsStub) {
             stubWarn(
                     String.format(
                             "in file %s at line %s: redundant stub file specification for: %s",
