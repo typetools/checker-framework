@@ -19,7 +19,6 @@ env:
     - OS=ubuntu
   matrix:
     # "framework-tests" are a subset of all-tests that do not require an annotated jdk 11.
-    - BUILDJDK=downloadjdk JDKVER=jdk11 GROUP=framework-tests
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
     - BUILDJDK=downloadjdk JDKVER=jdk11 GROUP=all-tests
     - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
