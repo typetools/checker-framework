@@ -41,6 +41,6 @@ class GenericsBounds5 {
         addNull2(nnarg);
 
         // :: error: (type.argument.type.incompatible)
-        addNull3(nnarg, 4);
+        addNull3(nnarg, Integer.valueOf(4));
     }
 }

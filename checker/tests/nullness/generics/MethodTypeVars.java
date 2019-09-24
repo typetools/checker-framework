@@ -31,10 +31,9 @@ class B {
     // This is not valid Java syntax.
     // public void indexOf2(?[] a, @Nullable Object elt) {}
 
-    @SuppressWarnings("deprecation") // new Integer
     void call() {
         Integer[] arg = new Integer[] {1, 2, 3, 4};
-        indexOf1(arg, new Integer(5));
+        indexOf1(arg, Integer.valueOf(5));
         // indexOf2(arg, new Integer(5));
     }
 }

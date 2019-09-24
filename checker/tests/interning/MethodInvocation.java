@@ -40,14 +40,13 @@ public class MethodInvocation {
     void internedCharacterParameter(@Interned Character a) {}
 
     // See https://github.com/typetools/checker-framework/issues/84
-    @SuppressWarnings("deprecation")
     void internedCharacterParametersClient() {
         // TODO: autoboxing from char to Character // :: error: (argument.type.incompatible)
         internedCharacterParameter('\u00E4'); // lowercase a with umlaut
         // TODO: autoboxing from char to Character // :: error: (argument.type.incompatible)
         internedCharacterParameter('a');
         // :: error: (argument.type.incompatible)
-        internedCharacterParameter(new Character('a'));
+        internedCharacterParameter(Character.valueOf('a'));
         // :: error: (argument.type.incompatible)
         internedCharacterParameter(Character.valueOf('a'));
     }

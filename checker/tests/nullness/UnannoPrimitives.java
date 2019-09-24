@@ -7,13 +7,12 @@ class UnannoPrimitives {
     // TODO:: error: (type.invalid)
     @NonNull int g;
 
-    @SuppressWarnings("deprecation") // new Integer
     void local() {
         // test whether an arbitrary declaration annotation gets confused
         @SuppressWarnings("tata")
-        int h = new Integer(5);
+        int h = Integer.valueOf(5);
 
-        int i = new Integer(99) + 1900;
+        int i = Integer.valueOf(99) + 1900;
         int j = 7 + 1900;
 
         // :: error: (type.invalid.annotations.on.use)

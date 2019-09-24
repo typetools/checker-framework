@@ -7,7 +7,7 @@ public class ThreadLocalTest {
     class MyThreadLocalNN extends ThreadLocal<@NonNull Integer> {
         @Override
         protected Integer initialValue() {
-            return 0;
+            return Integer.valueOf(0);
         }
     }
 

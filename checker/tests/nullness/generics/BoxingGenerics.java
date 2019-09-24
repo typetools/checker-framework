@@ -9,10 +9,9 @@ class BoxingGenerics {
         public void bar(X<T> x) {}
     }
 
-    @SuppressWarnings("deprecation") // new Integer
     public void getText() {
         X<Integer> var = new X<>();
-        X.foo(new Integer(5)).bar(var);
+        X.foo(Integer.valueOf(5)).bar(var);
         X.foo(5).bar(var);
     }
 }
