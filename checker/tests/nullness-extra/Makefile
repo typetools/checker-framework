@@ -1,7 +1,7 @@
 # Tests that are currently passing
-PASSING_TESTS = Bug109 compat issue265 issue309 issue502 issue594 issue607 multiple-errors package-anno shorthand
-ifneq (,$(findstring 1.7,$(shell javac -version)))
-  PASSING_TESTS_JDK8 = issue559
+PASSING_TESTS = Bug109 compat issue265 issue594 issue607 multiple-errors package-anno shorthand
+ifeq (,$(findstring 1.8,$(shell javac -version)))
+  PASSING_TESTS_JDK8 = issue309 issue502
 else
   PASSING_TESTS_JDK8 =
 endif
