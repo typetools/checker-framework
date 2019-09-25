@@ -24,7 +24,7 @@ The Checker Framework comes with checkers for specific types of errors:
   keys in a map (see \chapterpageref{map-key-checker})
 \item
   \ahrefloc{optional-checker}{Optional Checker} for errors in using the
-  \sunjavadoc{java/util/Optional.html}{Optional} type (see
+  \sunjavadoc{java.base/java/util/Optional.html}{Optional} type (see
   \chapterpageref{optional-checker})
 \item
   \ahrefloc{interning-checker}{Interning Checker} for errors in equality
@@ -899,7 +899,7 @@ For example:
   javac -processor nullness,regex MyFile.java
 \end{alltt}
 
-This feature does not apply to Javac \href{https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html#BHCJEIBB}{@argfiles}.
+This feature does not apply to Javac \href{https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html#commandlineargfile}{@argfiles}.
 
 
 \sectionAndLabel{What the checker guarantees}{checker-guarantees}
@@ -1251,7 +1251,8 @@ Another example is the Optional Checker (\chapterpageref{optional-checker})
 and the \<orElseThrow> method.
 The goal of the Optional Checker is to ensure that the program does not
 crash due to use of a non-present Optional value.  Therefore, the receiver
-of \ahref{https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Optional.html#orElseThrow()}{\<orElseThrow>} is annotated as
+of
+\sunjavadoc{java.base/java/util/Optional.html\#orElseThrow()}{orElseThrow} is annotated as
 \ahref{https://checkerframework.org/api/org/checkerframework/checker/optional/qual/Present.html}{\<@Present>},
 and the optional Checker issues a warning if the client calls
 \<orElseThrow> on a \<@MaybePresent> value.

@@ -279,7 +279,7 @@ some unknown subtype of \<CharSequence>:
 For more details about wildcards, see the
 \href{https://docs.oracle.com/javase/tutorial/java/generics/wildcards.html}{Java
   tutorial on wildcards} or
-\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.5.1}{JLS
+\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1}{JLS
   \S 4.5.1}.
 
 You can write a type annotation on the bound of a wildcard:
@@ -311,7 +311,7 @@ For an unbounded wildcard (\code{<?>}, with neither
 bound specified), the annotation in front of a wildcard applies
 to both bounds.  The following three declarations are equivalent (except
 that you cannot write the bottom type \<void>; note that
-\sunjavadoc{java/lang/Void.html}{Void} does not denote the bottom type):
+\sunjavadoc{java.base/java/lang/Void.html}{Void} does not denote the bottom type):
 
 \begin{Verbatim}
   List<@NonNull ?> lnn;
@@ -553,7 +553,7 @@ polymorphic qualifier.
 \subsectionAndLabel{Examples of using polymorphic qualifiers}{qualifier-polymorphism-examples}
 
 As an example of the use of \<@PolyNull>, method
-\sunjavadoc{java/lang/Class.html\#cast-java.lang.Object-}{Class.cast}
+\sunjavadoc{java.base/java/lang/Class.html\#cast(java.lang.Object)}{Class.cast}
 returns null if and only if its argument is \<null>:
 
 \begin{Verbatim}
@@ -813,7 +813,7 @@ It is unusual, but permitted, to write just one polymorphic qualifier, on a retu
 This is just like it is unusual, but permitted, to write just one
 occurrence of a generic type parameter, on a return type.  An example of
 such a method is
-\sunjavadoc{java/util/Collections.html\#emptyList--}{Collections.emptyList()}.
+\sunjavadoc{java.base/java/util/Collections.html\#emptyList()}{Collections.emptyList()}.
 
 
 \subsubsectionAndLabel{Using a single polymorphic qualifier on an element type}{qualifier-polymorphism-element-types}
@@ -915,7 +915,7 @@ applied to \<Object> is not the top type.
 
 A related use of a single polymorphic qualifier is to override a generic
 type.  For example, the annotation on
-\sunjavadoc{java/lang/Comparable.html\#compareTo-T-}{Comparable.compareTo()}
+\sunjavadoc{java.base/java/lang/Comparable.html\#compareTo(T)}{Comparable.compareTo()}
 is:
 
 \begin{Verbatim}
