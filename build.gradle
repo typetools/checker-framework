@@ -140,18 +140,6 @@ allprojects {
             ]
             if (isJava8) {
                 options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
-            } else {
-                options.compilerArgs += [
-                    "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-                    "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                    "--add-exports", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                    "--add-exports", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-                    "--add-exports", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-                    "--add-exports", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-                    "--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-                    "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                    "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-                ]
             }
             options.encoding = 'UTF-8'
             options.fork = true
@@ -561,16 +549,6 @@ subprojects {
                             }
                         } else {
                             args += [
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-
                                     "-javacoptions:--add-modules jdk.jdeps",
                                     "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
                             ]
