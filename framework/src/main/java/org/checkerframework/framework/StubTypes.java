@@ -74,7 +74,7 @@ public class StubTypes {
         return parsing;
     }
 
-    public void prepJdkStubs() {
+    private void prepJdkStubs() {
         if (PluginUtil.getJreVersion() < 11) {
             return;
         }
@@ -205,15 +205,13 @@ public class StubTypes {
     }
 
     /**
-     * Parses the outermost enclosing class of {@code e}.
-     *
-     * @return {@code true} is there exists a stub file for the outermost enclosing class of {@code
-     *     e}; otherwise, returns {@code false}
+     * Parses the outermost enclosing class of {@code e} if there exists a stub file for it and it
+     * has not already been parsed.
      */
-    private boolean parseEnclosingClass(Element e) {
+    private void parseEnclosingClass(Element e) {
         String className = getOuterMostEnclosingClass(e);
         if (className == null) {
-            return true;
+            return;
         }
         if (jdk11StubFiles.containsKey(className)) {
             parseStubFile(jdk11StubFiles.get(className));
@@ -222,7 +220,6 @@ public class StubTypes {
         }
         jdk11StubFiles.remove(className);
         jdk11StubFilesJar.remove(className);
-        return false;
     }
 
     /**
@@ -245,8 +242,7 @@ public class StubTypes {
             }
             enclosingClass = t;
         }
-        String className = enclosingClass.getQualifiedName().toString();
-        return className;
+        return enclosingClass.getQualifiedName().toString();
     }
 
     /**
@@ -257,7 +253,7 @@ public class StubTypes {
     private void parseStubFile(Path path) {
         boolean oldParsing = parsing;
         parsing = true;
-        try (FileInputStream jdkStub = new FileInputStream(path.toFile()); ) {
+        try (FileInputStream jdkStub = new FileInputStream(path.toFile())) {
             StubParser.parseJdkFileAsStub(
                     path.toFile().getName(),
                     jdkStub,
