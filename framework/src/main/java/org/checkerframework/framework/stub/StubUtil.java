@@ -322,7 +322,7 @@ public class StubUtil {
      *     recurse on all files contained in it.
      * @param resources the list to add the found stub files to
      */
-    public static void addStubFilesToList(File stub, List<StubResource> resources) {
+    private static void addStubFilesToList(File stub, List<StubResource> resources) {
         if (isStub(stub)) {
             resources.add(new FileStubResource(stub));
         } else if (isJar(stub)) {
