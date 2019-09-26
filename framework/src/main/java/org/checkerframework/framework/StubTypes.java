@@ -37,7 +37,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.PluginUtil;
 
-/** Holds information about types */
+/** Holds information about types parsed from stub files. */
 public class StubTypes {
     /** Types read from stub files (but not those from the annotated JDK jar file). */
     private Map<Element, AnnotatedTypeMirror> typesFromStubFiles;
@@ -215,11 +215,11 @@ public class StubTypes {
         }
         if (jdk11StubFiles.containsKey(className)) {
             parseStubFile(jdk11StubFiles.get(className));
+            jdk11StubFiles.remove(className);
         } else if (jdk11StubFilesJar.containsKey(className)) {
             parseJarEntry(jdk11StubFilesJar.get(className));
+            jdk11StubFilesJar.remove(className);
         }
-        jdk11StubFiles.remove(className);
-        jdk11StubFilesJar.remove(className);
     }
 
     /**
