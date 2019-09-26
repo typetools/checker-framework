@@ -101,7 +101,7 @@ public class StubTypes {
         try {
             root = Paths.get(resourceURL.toURI());
         } catch (URISyntaxException e) {
-            throw new BugInCF("Can parse URL: %s", resourceURL.toString());
+            throw new BugInCF("Can parse URL: " + resourceURL.toString(), e);
         }
 
         try (Stream<Path> walk = Files.walk(root)) {
@@ -121,23 +121,12 @@ public class StubTypes {
                 jdk11StubFiles.put(s, path);
             }
         } catch (IOException e) {
-            throw new BugInCF("File Not Found");
+            throw new BugInCF("File Not Found", e);
         }
     }
 
     private void prepJdk11FromJar(URL resourceURL) {
-        JarURLConnection connection;
-        try {
-            connection = (JarURLConnection) resourceURL.openConnection();
-
-            // disable caching / connection sharing of the low level URLConnection to the Jarfile
-            connection.setDefaultUseCaches(false);
-            connection.setUseCaches(false);
-
-            connection.connect();
-        } catch (IOException e) {
-            throw new BugInCF("cannot open a connection to the Jar file " + resourceURL.getFile());
-        }
+        JarURLConnection connection = getJarURLConnection();
 
         try (JarFile jarFile = connection.getJarFile()) {
             for (JarEntry je : jarFile.stream().collect(Collectors.toList())) {
@@ -158,7 +147,7 @@ public class StubTypes {
                 }
             }
         } catch (IOException e) {
-            throw new BugInCF("cannot open the Jar file " + resourceURL.getFile());
+            throw new BugInCF("cannot open the Jar file " + resourceURL.getFile(), e);
         }
     }
 
@@ -262,7 +251,7 @@ public class StubTypes {
                     typesFromStubFiles,
                     declAnnosFromStubFiles);
         } catch (IOException e) {
-            throw new BugInCF("cannot open the jdk stub file " + path);
+            throw new BugInCF("cannot open the jdk stub file " + path, e);
         } finally {
             parsing = oldParsing;
         }
@@ -274,6 +263,33 @@ public class StubTypes {
      * @param jarEntryName name of the jar entry to parse
      */
     private void parseJarEntry(String jarEntryName) {
+        JarURLConnection connection = getJarURLConnection();
+        boolean oldParsing = parsing;
+        parsing = true;
+        try (JarFile jarFile = connection.getJarFile()) {
+            InputStream jdkStub;
+            try {
+                jdkStub = jarFile.getInputStream(jarFile.getJarEntry(jarEntryName));
+            } catch (IOException e) {
+                throw new BugInCF("cannot open the jdk stub file " + jarEntryName, e);
+            }
+            StubParser.parseJdkFileAsStub(
+                    jarEntryName,
+                    jdkStub,
+                    factory,
+                    factory.getProcessingEnv(),
+                    typesFromStubFiles,
+                    declAnnosFromStubFiles);
+        } catch (IOException e) {
+            throw new BugInCF("cannot open the Jar file " + connection.getEntryName(), e);
+        } catch (BugInCF e) {
+            throw new BugInCF("Exception while parsing " + jarEntryName, e);
+        } finally {
+            parsing = oldParsing;
+        }
+    }
+
+    private JarURLConnection getJarURLConnection() {
         URL resourceURL = factory.getClass().getResource("/jdk11");
         JarURLConnection connection;
         try {
@@ -285,31 +301,10 @@ public class StubTypes {
 
             connection.connect();
         } catch (IOException e) {
-            throw new BugInCF("cannot open a connection to the Jar file " + resourceURL.getFile());
+            throw new BugInCF(
+                    "cannot open a connection to the Jar file " + resourceURL.getFile(), e);
         }
-        boolean oldParsing = parsing;
-        parsing = true;
-        try (JarFile jarFile = connection.getJarFile()) {
-            InputStream jdkStub;
-            try {
-                jdkStub = jarFile.getInputStream(jarFile.getJarEntry(jarEntryName));
-            } catch (IOException e) {
-                throw new BugInCF("cannot open the jdk stub file " + jarEntryName);
-            }
-            StubParser.parseJdkFileAsStub(
-                    jarEntryName,
-                    jdkStub,
-                    factory,
-                    factory.getProcessingEnv(),
-                    typesFromStubFiles,
-                    declAnnosFromStubFiles);
-        } catch (IOException e) {
-            throw new BugInCF("cannot open the Jar file " + connection.getEntryName());
-        } catch (BugInCF e) {
-            throw new BugInCF("Exception while parsing " + jarEntryName, e);
-        } finally {
-            parsing = oldParsing;
-        }
+        return connection;
     }
 
     /**
