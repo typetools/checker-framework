@@ -92,7 +92,10 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * bottom qualifiers.
      */
     private Completer completer = new Completer();
-
+    /**
+     * Replaces all {@link PolyAll} annotations with in a type with the polymorphic annotations for
+     * hierarchies without another annotation.
+     */
     private final PolyAllReplacer polyAllReplacer;
 
     /**
@@ -558,6 +561,10 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         }
     }
 
+    /**
+     * Replaces all {@link PolyAll} annotations with in a type with the polymorphic annotations for
+     * hierarchies without another annotation.
+     */
     static class PolyAllReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
         QualifierHierarchy qualifierHierarchy;
 
