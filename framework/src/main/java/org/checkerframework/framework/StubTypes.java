@@ -37,6 +37,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.PluginUtil;
 
+/** Holds information about types */
 public class StubTypes {
     /** Types read from stub files (but not those from the annotated JDK jar file). */
     private Map<Element, AnnotatedTypeMirror> typesFromStubFiles;
@@ -68,6 +69,7 @@ public class StubTypes {
         this.parsing = false;
     }
 
+    /** @return true if stub files are currently being parsed; otherwise, false. */
     public boolean isParsing() {
         return parsing;
     }
@@ -161,6 +163,9 @@ public class StubTypes {
     }
 
     /**
+     * Returns the annotated type for {@code e} containing only annotations explicitly written in a
+     * stub file or {@code null} if {@code e} does not appear in a stub file.
+     *
      * @param e Element whose type is returned.
      * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written
      *     in the stubfile and in the element. {@code null} is returned if {@code element} does not
@@ -175,6 +180,17 @@ public class StubTypes {
         return type == null ? null : type.deepCopy();
     }
 
+    /**
+     * Returns the set of declaration annotations for {@code e} containing only annotations
+     * explicitly written in a stub file or the empty set if {@code e} does not appear in a stub
+     * file.
+     *
+     * @param elt element for which annotations are returned
+     * @param eltName name of the element
+     * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written
+     *     in the stubfile and in the element. {@code null} is returned if {@code element} does not
+     *     appear in a stub file.
+     */
     public Set<AnnotationMirror> getDeclAnnotation(Element elt, String eltName) {
         if (parsing) {
             return Collections.emptySet();
@@ -233,6 +249,11 @@ public class StubTypes {
         return className;
     }
 
+    /**
+     * Parses the stub file in {@code path}.
+     *
+     * @param path path to file to parse
+     */
     private void parseStubFile(Path path) {
         boolean oldParsing = parsing;
         parsing = true;
@@ -251,6 +272,11 @@ public class StubTypes {
         }
     }
 
+    /**
+     * Parses the stub file in the given jar entry.
+     *
+     * @param jarEntryName name of the jar entry to parse
+     */
     private void parseJarEntry(String jarEntryName) {
         URL resourceURL = factory.getClass().getResource("/jdk11");
         JarURLConnection connection;
@@ -296,6 +322,7 @@ public class StubTypes {
      * <ol>
      *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option
      *       is not supplied <br>
+     *   <li>All package-info.java in jdk11 <br>
      *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
      *       the checker<br>
      *   <li>Stub files provide via stubs system property <br>
@@ -338,7 +365,6 @@ public class StubTypes {
                         typesFromStubFiles,
                         declAnnosFromStubFiles);
             }
-            // TODO: document
             prepJdkStubs();
         }
 
