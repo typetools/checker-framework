@@ -214,7 +214,7 @@ public class ElementUtils {
                     return type.toString();
                 }
         }
-        throw new BugInCF("ElementUtils: unhandled type: " + type);
+        throw new BugInCF("ElementUtils: unhandled type kind: %s, type: %s", type.getKind(), type);
     }
 
     /**
