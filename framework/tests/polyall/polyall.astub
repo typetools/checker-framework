@@ -4,6 +4,8 @@ import polyall.quals.*;
 
 public final class Object {
     public Class<@H1S1 ? extends @H1S1 Object> getClass();
+    @SuppressWarnings("") // Used to cause crash.
+    public boolean equals(Object o);
 }
 
 class String {
