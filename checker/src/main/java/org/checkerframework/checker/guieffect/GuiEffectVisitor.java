@@ -515,8 +515,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                     } else {
                         ret =
                                 atypeFactory
-                                        .getFnInterfaceFromTree((LambdaExpressionTree) enclosing)
-                                        .second
+                                        .getFunctionTypeTree((LambdaExpressionTree) enclosing)
                                         .getReturnType();
                     }
 
