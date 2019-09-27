@@ -108,15 +108,14 @@ allprojects {
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
                 options.taglets 'org.checkerframework.taglet.ManualTaglet'
                 options.tagletPath(project(':framework-test').sourceSets.taglet.output.classesDirs.getFiles() as File[])
-                options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/']
+                options.links = ['https://docs.oracle.com/en/java/javase/11/docs/api/', 'https://docs.oracle.com/en/java/javase/11/docs/jdk/api/javac/tree/']
                 // This file is looked for by Javadoc.
                 file("${destinationDir}/resources/fonts/").mkdirs()
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
             }
         }
 
-	/// TODO: This should be enabled selectively, but not everywhere yet because it would require
-	/// exhaustive @param Javadoc tags throughout.  (Fails on Travis, cannot reproduce locally.)
+	/// TODO: One day we can enable this.  For now, CI jobs require Javadoc on changed lines.
 	// // Turn Javadoc warnings into errors.
 	// tasks.withType(Javadoc) {
 	//     options.addStringOption('Xwerror', '-quiet')
@@ -542,19 +541,28 @@ subprojects {
                                 "-verbose:summary",
                                 "-javacoptions:-g",
                                 "-keywords:!ignore",
-                                '-samevm',
+                                "-samevm",
+                                "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+                                // Required for checker/jtreg/nullness/PersistUtil.java and other tests
+                                "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
                         ]
                         if (isJava8) {
+                            // Use Error Prone javac and source/target 8
                             args += [
-                                // Required for checker/jtreg/nullness/PersistUtil.java and other tests
-                                "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}:" +
-                                        "${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+                                "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                                 "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
                                 "-javacoptions:-source 8",
                                 "-javacoptions:-target 8"
                                 ]
                         }
-                        if (project.name.is('checker')) {
+                        if (project.name.is('framework')) {
+                            // Do not check for the annotated JDK
+                            args += [
+                                    "-javacoptions:-Anocheckjdk"
+                            ]
+                        }
+                        if (isJava8 && project.name.is('checker')) {
+                            // TODO: enable annotated JDK on Java 9+
                             args += [
                                     "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar",
                             ]
@@ -795,7 +803,7 @@ task releaseBuild(type: GradleBuild) {
     description 'Build everything required for a release'
     startParameter = new StartParameter()
     startParameter.setProjectProperties(release: true)
-    // This downloads rather than builds the jdk8.jar because that's what is used in all the Travis tests.
+    // This downloads rather than builds the jdk8.jar because that's what is used in the CI tests.
     tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', 'framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar']
 }
 

@@ -109,6 +109,11 @@ public class StubParser {
     /** Whether to print warnings about stub files that overwrite annotations from bytecode. */
     private final boolean warnIfStubOverwritesBytecode;
 
+    /**
+     * Whether to print warnings about stub files that are redundant with annotations from bytecode.
+     */
+    private final boolean warnIfStubRedundantWithBytecode;
+
     /** Whether to print verbose debugging messages. */
     private final boolean debugStubParser;
 
@@ -191,6 +196,9 @@ public class StubParser {
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
         this.warnIfNotFoundIgnoresClasses = options.containsKey("stubWarnIfNotFoundIgnoresClasses");
         this.warnIfStubOverwritesBytecode = options.containsKey("stubWarnIfOverwritesBytecode");
+        this.warnIfStubRedundantWithBytecode =
+                options.containsKey("stubWarnIfRedundantWithBytecode")
+                        && atypeFactory.shouldWarnIfStubRedundantWithBytecode();
         this.debugStubParser = options.containsKey("stubDebug");
 
         this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
@@ -407,6 +415,7 @@ public class StubParser {
                             "No supported annotations found! This likely means stub file %s doesn't import them correctly.",
                             filename));
         }
+        allStubAnnotations.putAll(annosInPackage(findPackage("java.lang")));
     }
 
     /** Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. */
@@ -650,7 +659,6 @@ public class StubParser {
 
     /** Adds type and declaration annotations from {@code decl}. */
     private void processCallableDeclaration(CallableDeclaration<?> decl, ExecutableElement elt) {
-
         // Declaration annotations
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         if (decl.isMethodDeclaration()) {
@@ -660,6 +668,14 @@ public class StubParser {
         addDeclAnnotations(declAnnos, elt);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
+        AnnotatedExecutableType origMethodType;
+
+        if (warnIfStubRedundantWithBytecode) {
+            origMethodType = methodType.deepCopy();
+        } else {
+            origMethodType = null;
+        }
+
         // Type Parameters
         annotateTypeParameters(
                 decl, elt, atypes, methodType.getTypeVariables(), decl.getTypeParameters());
@@ -700,6 +716,16 @@ public class StubParser {
                         methodType.getReceiverType(),
                         decl.getReceiverParameter().get().getAnnotations());
             }
+        }
+
+        if (warnIfStubRedundantWithBytecode
+                && methodType.toString().equals(origMethodType.toString())) {
+            stubWarn(
+                    String.format(
+                            "in file %s at line %s: redundant stub file specification for: %s",
+                            filename.substring(filename.lastIndexOf('/') + 1),
+                            decl.getBegin().get().line,
+                            ElementUtils.getVerboseName(elt)));
         }
 
         // Store the type.
@@ -1398,18 +1424,16 @@ public class StubParser {
      */
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, AnnotationMirror> allStubAnnotations) {
-        AnnotationMirror annoMirror;
+        String annoName = annotation.getNameAsString();
+        AnnotationMirror annoMirror = allStubAnnotations.get(annoName);
+        if (annoMirror == null) {
+            // Not a supported qualifier -> ignore
+            return null;
+        }
         if (annotation instanceof MarkerAnnotationExpr) {
-            String annoName = ((MarkerAnnotationExpr) annotation).getNameAsString();
-            annoMirror = allStubAnnotations.get(annoName);
+            return annoMirror;
         } else if (annotation instanceof NormalAnnotationExpr) {
             NormalAnnotationExpr nrmanno = (NormalAnnotationExpr) annotation;
-            String annoName = nrmanno.getNameAsString();
-            annoMirror = allStubAnnotations.get(annoName);
-            if (annoMirror == null) {
-                // Not a supported qualifier -> ignore
-                return null;
-            }
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
             List<MemberValuePair> pairs = nrmanno.getPairs();
             if (pairs != null) {
@@ -1428,12 +1452,6 @@ public class StubParser {
             return builder.build();
         } else if (annotation instanceof SingleMemberAnnotationExpr) {
             SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr) annotation;
-            String annoName = sglanno.getNameAsString();
-            annoMirror = allStubAnnotations.get(annoName);
-            if (annoMirror == null) {
-                // Not a supported qualifier -> ignore
-                return null;
-            }
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
             Expression valexpr = sglanno.getMemberValue();
             boolean success = handleExpr(builder, "value", valexpr);
@@ -1447,7 +1465,6 @@ public class StubParser {
         } else {
             throw new BugInCF("StubParser: unknown annotation type: " + annotation);
         }
-        return annoMirror;
     }
 
     /** Returns the value of {@code expr}, or null if some problem occurred getting the value. */

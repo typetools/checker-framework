@@ -3017,7 +3017,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <ol>
      *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option
      *       is not supplied <br>
-     *   <li>Stub files listed in @Stubfiles annotation on the checker; must be in same directory as
+     *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
      *       the checker<br>
      *   <li>Stub files provide via stubs system property <br>
      *   <li>Stub files provide via stubs environment variable <br>
@@ -3053,10 +3053,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         // Stub files specified via stubs compiler option, stubs system property,
-        // stubs env. variable, or @Stubfiles
+        // stubs env. variable, or @StubFiles
         List<String> allStubFiles = new ArrayList<>();
 
-        // 2. Stub files listed in @Stubfiles annotation on the checker
+        // 2. Stub files listed in @StubFiles annotation on the checker
         StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
         if (stubFilesAnnotation != null) {
             Collections.addAll(allStubFiles, stubFilesAnnotation.value());
@@ -3203,6 +3203,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return false;
         }
         return this.getDeclAnnotation(element, FromByteCode.class) != null;
+    }
+
+    /**
+     * Returns true if redundancy between a stub file and bytecode should be reported.
+     *
+     * <p>For most type systems the default behavior of returning true is correct. For subcheckers,
+     * redundancy in one of the type hierarchies can be ok. Such implementations should return
+     * false.
+     *
+     * @return whether to warn about redundancy between a stub file and bytecode
+     */
+    public boolean shouldWarnIfStubRedundantWithBytecode() {
+        return true;
     }
 
     /**
@@ -3554,7 +3567,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // If the Checker Framework implemented capture conversion, then in this case, then
             // the upper bound of the capture converted wildcard would be an intersection type.
             // See JLS 15.1.10
-            // (https://docs.oracle.com/javase/specs/jls/se10/html/jls-5.html#jls-5.1.10)
+            // (https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.10)
 
             // For example:
             // class MyClass<@A T extends @B Number> {}

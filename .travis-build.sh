@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Entering $0, GROUP=$1"
+echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
 
 # Optional argument $1 is one of:
 #   all, framework-tests, all-tests, jdk.jar, misc, checker-framework-inference, plume-lib, downstream
@@ -45,7 +45,7 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
 /tmp/plume-scripts/ci-info eisop
 eval `/tmp/plume-scripts/ci-info eisop`
 
-export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -94,4 +94,4 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   $SCRIPTDIR/test-downstream.sh
 fi
 
-echo "Exiting $0, GROUP=$1"
+echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"

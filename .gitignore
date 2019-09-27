@@ -80,6 +80,8 @@ docs/examples/**/*.class
 docs/examples/MavenExample/Out.txt
 docs/examples/MavenExample-framework-all/Out.txt
 docs/examples/lombok/Out.txt
+docs/examples/lombok/.gradle/
+docs/examples/lombok/lombok.config
 docs/manual/manual.html-e
 
 # dataflow manual
@@ -125,10 +127,6 @@ docs/tutorial/sourcefiles.zip
 
 # release tmps
 tmp
-
-jsr308-langtools
-jsr308-langtools.basic
-langtools-ta
 
 # Maven files
 target/

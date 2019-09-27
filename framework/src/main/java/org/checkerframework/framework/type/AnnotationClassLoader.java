@@ -101,9 +101,10 @@ public class AnnotationClassLoader {
 
         // package name must use dots, this is later prepended to annotation
         // class names as we load the classes using the class loader
+        Package checkerPackage = checker.getClass().getPackage();
         packageName =
-                checker.getClass().getPackage() != null
-                        ? checker.getClass().getPackage().getName() + QUAL_PACKAGE_SUFFIX
+                checkerPackage != null && !checkerPackage.getName().isEmpty()
+                        ? checkerPackage.getName() + QUAL_PACKAGE_SUFFIX
                         : QUAL_PACKAGE_SUFFIX.substring(1);
 
         // the package name with dots replaced by slashes will be used to scan
