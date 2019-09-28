@@ -606,6 +606,12 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengths != null && rightLengths != null) {
             // Both operands have known lengths, compute set of result lengths
+            if (!isNotNullable(leftOperand)) {
+                leftLengths.add(4); // "null"
+            }
+            if (!isNotNullable(rightOperand)) {
+                rightLengths.add(4); // "null"
+            }
             List<Integer> concatLengths = calculateLengthAddition(leftLengths, rightLengths);
             return atypefactory.createArrayLenAnnotation(concatLengths);
         }
@@ -622,6 +628,12 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengthRange != null && rightLengthRange != null) {
             // Both operands have a length from a known range, compute a range of result lengths
+            if (!isNotNullable(leftOperand)) {
+                leftLengthRange.union(new Range(4, 4)); // "null"
+            }
+            if (!isNotNullable(rightOperand)) {
+                rightLengthRange.union(new Range(4, 4)); // "null"
+            }
             Range concatLengthRange =
                     calculateLengthRangeAddition(leftLengthRange, rightLengthRange);
             return atypefactory.createArrayLenRangeAnnotation(concatLengthRange);
