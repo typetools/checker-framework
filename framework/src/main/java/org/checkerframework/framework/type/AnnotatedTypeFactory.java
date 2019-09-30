@@ -3586,7 +3586,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the functional interface and the function type that this member reference targets.
+     * Returns the function type that this member reference targets.
      *
      * <p>The function type is the type of the single method declared in the functional interface
      * adapted as if it were invoked using the functional interface as the receiver expression.
@@ -3594,14 +3594,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The target type of a member reference is the type to which it is assigned or casted.
      *
      * @param tree member reference tree
-     * @return the functional interface and the function type that this method reference targets
+     * @return the function type that this method reference targets
      */
     public AnnotatedExecutableType getFunctionTypeTree(MemberReferenceTree tree) {
         return getFnInterfaceFromTree(tree).second;
     }
 
     /**
-     * Returns the functional interface and the function type that this lambda targets.
+     * Returns the function type that this lambda targets.
      *
      * <p>The function type is the type of the single method declared in the functional interface
      * adapted as if it were invoked using the functional interface as the receiver expression.
@@ -3609,7 +3609,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The target type of a lambda is the type to which it is assigned or casted.
      *
      * @param tree lambda expression tree
-     * @return the functional interface and the function type that this lambda targets
+     * @return the function type that this lambda targets
      */
     public AnnotatedExecutableType getFunctionTypeTree(LambdaExpressionTree tree) {
         return getFnInterfaceFromTree(tree).second;
@@ -3659,7 +3659,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * recursively search for lambdas nested in lambdas.
      *
      * @param tree the tree of the lambda or method reference
-     * @return the functional interface type
+     * @return the functional interface type or an uninferred type argument
      */
     private AnnotatedTypeMirror getFunctionalInterfaceType(Tree tree) {
 
