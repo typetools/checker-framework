@@ -547,24 +547,26 @@ public class ValueTransfer extends CFTransfer {
     /**
      * This method is only used to check for nullable nodes in string concatenations.
      *
-     * @return true if the node can't be null or false otherwise.
+     * @return false if the node can't take null value in a String concatenation or true otherwise.
+     *     There is an exception for StringConcatenationNode, as there is no need no check its
+     *     operands individually.
      */
-    private boolean isNotNullable(Node node) {
+    private boolean isNullable(Node node) {
         if (node instanceof StringLiteralNode) {
-            return true;
+            return false;
         } else if (node instanceof StringConversionNode) {
             if (((StringConversionNode) node).getOperand().getType().getKind().isPrimitive()) {
-                return true;
+                return false;
             }
         } else if (node instanceof StringConcatenateNode) {
             // no need to recurse because this method is called for every operand.
-            return true;
+            return false;
         }
 
         Element element = TreeUtils.elementFromUse((ExpressionTree) node.getTree());
-        return element != null
-                && ElementUtils.isEffectivelyFinal(element)
-                && element.getKind() != ElementKind.PARAMETER;
+        return element == null
+                || !ElementUtils.isEffectivelyFinal(element)
+                || element.getKind() == ElementKind.PARAMETER;
     }
 
     /** Creates an annotation for a result of string concatenation. */
@@ -579,10 +581,10 @@ public class ValueTransfer extends CFTransfer {
             // Both operands have known string values, compute set of results
             List<String> concatValues = new ArrayList<>();
 
-            if (!isNotNullable(leftOperand)) {
+            if (isNullable(leftOperand)) {
                 leftValues.add("null");
             }
-            if (!isNotNullable(rightOperand)) {
+            if (isNullable(rightOperand)) {
                 rightValues.add("null");
             }
 
@@ -606,10 +608,10 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengths != null && rightLengths != null) {
             // Both operands have known lengths, compute set of result lengths
-            if (!isNotNullable(leftOperand)) {
+            if (isNullable(leftOperand)) {
                 leftLengths.add(4); // "null"
             }
-            if (!isNotNullable(rightOperand)) {
+            if (isNullable(rightOperand)) {
                 rightLengths.add(4); // "null"
             }
             List<Integer> concatLengths = calculateLengthAddition(leftLengths, rightLengths);
@@ -628,10 +630,10 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengthRange != null && rightLengthRange != null) {
             // Both operands have a length from a known range, compute a range of result lengths
-            if (!isNotNullable(leftOperand)) {
+            if (isNullable(leftOperand)) {
                 leftLengthRange.union(new Range(4, 4)); // "null"
             }
-            if (!isNotNullable(rightOperand)) {
+            if (isNullable(rightOperand)) {
                 rightLengthRange.union(new Range(4, 4)); // "null"
             }
             Range concatLengthRange =
