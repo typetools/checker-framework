@@ -1005,10 +1005,10 @@ tIDE, an open-source Java IDE, supports the Checker Framework.
 You can download it from \myurl{https://sourceforge.net/projects/tide/}.
 \end{sloppypar}
 
-\sectionAndLabel{javac}{javac}
+\sectionAndLabel{Other tools}{javac}
 
 This section explain how to use the Checker Framework with \<javac>.  This is
-useful if you do not wish to use the javac wrapper script described in
+useful if you do not wish to use the \<javac> wrapper script described in
 Section~\ref{javac-installation} or to help you adapt your build tool.  This
 section assumes you have downloaded the Checker Framework release zip and set
 the environment variable \<CHECKERFRAMEWORK> to point to the unziped directory.
@@ -1020,6 +1020,8 @@ You can also get all of the jars mentioned in this section from Maven Central:
 \item \<checker-qual.jar>: \url{https://search.maven.org/artifact/org.checkerframework/checker-qual/2.11.0/jar}
 \item \<checker.jar>: \url{https://search.maven.org/artifact/org.checkerframework/checker/2.11.0/jar}
 \end{itemize}
+
+Different arguments are required for Java 8, Section~\ref{java8-install}, and Java 9+, Section~\ref{java11-install}.
 
 \subsectionAndLabel{Java 8}{java8-install}
 
@@ -1042,6 +1044,11 @@ ErrorProne javac.jar, the OpenJDK Java 9 compiler, must be on the JVM
 bootclasspath. The \<-J> indicates that this is a JVM argument rather than a
 compiler argument.
 
+The following exception is thrown if this argument is missing:
+\begin{Verbatim}
+error: SourceChecker.typeProcessingStart: unexpected Throwable (NoSuchMethodError); message: com.sun.tools.javac.code.Type.stripMetadata()Lcom/sun/tools/javac/code/Type;
+\end{Verbatim}
+
 \item \<-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/jdk8.jar>: jdk8.jar
 must be on the bootclasspath of the compiler.  (This is a compiler arguments, so do not add \<-J>.)
 
@@ -1049,10 +1056,11 @@ must be on the bootclasspath of the compiler.  (This is a compiler arguments, so
 must be on the compilation classpath.
 
 \item \<-processorpath \$CHECKERFRAMEWORK/checker/dist/checker.jar>:
-checker.jar must be on the processor path.
+checker.jar must be on the processor path. Using this option means that the classpath will not be
+searched for other annotation processors.
 
 \item \<-processor org.checkerframework.checker.nullness.NullnessChecker>:
-choose which checker to run by passing its fully qualified name as a processor.
+Choose which checker to run by passing its fully qualified name as a processor.
 (Note, using this options means that javac will not search for annotation
 processors, but rather run only those specified here.)
 
@@ -1080,6 +1088,15 @@ javac \
 \<jdk.compiler/com.sun.tools.java.comp> package.  This is required because the
 Checker Framework reflectivly accesses this package.  The rest of the arguments
 are explained above.
+
+If this option is missing, \<javac> may issue the following warning:
+\begin{Verbatim}
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.checkerframework.javacutil.Resolver (file:$CHECKERFRAMEWORK/checker/dist/checker.jar) to method com.sun.tools.javac.comp.Resolve.findMethod(com.sun.tools.javac.comp.Env,com.sun.tools.javac.code.Type,com.sun.tools.javac.util.Name,com.sun.tools.javac.util.List,com.sun.tools.javac.util.List,boolean,boolean)
+WARNING: Please consider reporting this to the maintainers of org.checkerframework.javacutil.Resolver
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+\end{Verbatim}
 
 For compiling a module, first add \<requires
 org.checkerframework.checker.qual;> to your \<module-info.java>.  The Checker
