@@ -513,9 +513,6 @@ public class StubParser {
     /** @param outertypeName the name of the containing class, when processing a nested class */
     private void processTypeDecl(
             TypeDeclaration<?> typeDecl, String outertypeName, List<AnnotationExpr> packageAnnos) {
-        if (isJdkAsStub && !typeDecl.getModifiers().contains(Modifier.publicModifier())) {
-            return;
-        }
         assert parseState != null;
         String innerName =
                 (outertypeName == null ? "" : outertypeName + ".") + typeDecl.getNameAsString();
@@ -529,6 +526,11 @@ public class StubParser {
                             && !warnIfNotFoundIgnoresClasses)) {
                 stubWarnNotFound("Type not found: " + fqTypeName);
             }
+            return;
+        }
+        if (isJdkAsStub
+                && !typeDecl.getModifiers().contains(Modifier.publicModifier())
+                && typeElt.getKind().isClass()) {
             return;
         }
 

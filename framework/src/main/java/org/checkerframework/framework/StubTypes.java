@@ -204,10 +204,10 @@ public class StubTypes {
         }
         if (jdk11StubFiles.containsKey(className)) {
             parseStubFile(jdk11StubFiles.get(className));
-            jdk11StubFiles.remove(className);
+            //            jdk11StubFiles.remove(className);
         } else if (jdk11StubFilesJar.containsKey(className)) {
             parseJarEntry(jdk11StubFilesJar.get(className));
-            jdk11StubFilesJar.remove(className);
+            //            jdk11StubFilesJar.remove(className);
         }
     }
 
