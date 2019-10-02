@@ -24,9 +24,8 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 ##  * daikon-typecheck is run as a separate CI project
 
 # Checker Framework demos
-# These don't work with Java 11, skip for now.
-#/tmp/plume-scripts/git-clone-related typetools checker-framework.demos
-#./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
+/tmp/plume-scripts/git-clone-related typetools checker-framework.demos
+./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
 
 # Guava
 eval `/tmp/plume-scripts/ci-info typetools`

@@ -296,23 +296,27 @@ task exampleTests(type: Exec, dependsOn: copyJarsToDist, group: 'Verification') 
 task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Test that the demos are working as expected.'
     doLast {
-        File demosDir = new File(projectDir, '../../checker-framework-demos');
-        if (!demosDir.exists()) {
-            exec {
-                workingDir file(demosDir.toString() + '/../')
-                executable 'git'
-                args = ['clone', 'https://github.com/typetools/checker-framework.demos.git', 'checker-framework-demos']
+        if(JavaVersion.current() == JavaVersion.VERSION_1_8) {
+            File demosDir = new File(projectDir, '../../checker-framework-demos');
+            if (!demosDir.exists()) {
+                exec {
+                    workingDir file(demosDir.toString() + '/../')
+                    executable 'git'
+                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git', 'checker-framework-demos']
+                }
+            } else {
+                exec {
+                    workingDir demosDir
+                    executable 'git'
+                    args = ['pull', 'https://github.com/typetools/checker-framework.demos.git']
+                    ignoreExitValue = true
+                }
             }
+            ant.properties.put('checker.lib', file("${projectDir}/dist/checker.jar").absolutePath)
+            ant.ant(dir: demosDir.toString())
         } else {
-            exec {
-                workingDir demosDir
-                executable 'git'
-                args = ['pull', 'https://github.com/typetools/checker-framework.demos.git']
-                ignoreExitValue = true
-            }
+            println("Skipping demosTests because they only work with Java 8.")
         }
-        ant.properties.put('checker.lib', file("${projectDir}/dist/checker.jar").absolutePath)
-        ant.ant(dir: demosDir.toString())
     }
 }
 
