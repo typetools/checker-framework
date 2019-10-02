@@ -3,7 +3,6 @@ package org.checkerframework.framework.type.poly;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -32,7 +31,6 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -574,30 +572,11 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
         @Override
         protected Void defaultAction(AnnotatedTypeMirror type, Void aVoid) {
-            Collection<? extends AnnotationMirror> replace = replacePolyAll(type.getAnnotations());
+            Set<AnnotationMirror> replace =
+                    qualifierHierarchy.replacePolyAll(type.getAnnotations());
             type.clearAnnotations();
             type.addAnnotations(replace);
             return super.defaultAction(type, aVoid);
-        }
-        /**
-         * Returns a new set that is the passed set, but PolyAll has been replaced by a polymorphic
-         * qualifiers, for hierarchies that do not have an annotation in the set.
-         *
-         * @param annos Set of annotations
-         * @return a new set with same annotations as anno, but PolyAll has been replaced with
-         *     polymorphic qualifiers
-         */
-        protected Collection<? extends AnnotationMirror> replacePolyAll(
-                Collection<? extends AnnotationMirror> annos) {
-            Set<AnnotationMirror> returnAnnos = AnnotationUtils.createAnnotationSet();
-            for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-                AnnotationMirror annotationInHierarchy =
-                        qualifierHierarchy.findAnnotationInHierarchy(annos, top);
-                if (annotationInHierarchy != null) {
-                    returnAnnos.add(annotationInHierarchy);
-                }
-            }
-            return returnAnnos;
         }
     }
 }

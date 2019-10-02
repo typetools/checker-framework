@@ -1459,7 +1459,7 @@ public abstract class AnnotatedTypeMirror {
             // annotations for all hierarchies, so we don't want to avoid placing bottom on the
             // lower bound for those hierarchies that don't have a qualifier in primaryAnnotations.
             if (!this.getAnnotationsField().isEmpty()) {
-                Collection<? extends AnnotationMirror> newAnnos =
+                Set<AnnotationMirror> newAnnos =
                         atypeFactory.qualHierarchy.replacePolyAll(this.getAnnotationsField());
                 if (upperBound != null) {
                     replaceUpperBoundAnnotations(newAnnos);

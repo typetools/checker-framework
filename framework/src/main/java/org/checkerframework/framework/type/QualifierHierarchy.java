@@ -223,8 +223,7 @@ public abstract class QualifierHierarchy {
      * @return a new set with same annotations as anno, but PolyAll has been replaced with
      *     polymorphic qualifiers
      */
-    protected Collection<? extends AnnotationMirror> replacePolyAll(
-            Collection<? extends AnnotationMirror> annos) {
+    public Set<AnnotationMirror> replacePolyAll(Collection<? extends AnnotationMirror> annos) {
         Set<AnnotationMirror> returnAnnos = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror top : getTopAnnotations()) {
             AnnotationMirror annotationInHierarchy = findAnnotationInHierarchy(annos, top);
