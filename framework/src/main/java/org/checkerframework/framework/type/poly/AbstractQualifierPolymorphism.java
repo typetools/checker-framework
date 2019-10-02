@@ -143,6 +143,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         if (TreeUtils.isEnumSuper(tree)) {
             return;
         }
+        polyAllReplacer.visit(type);
         List<AnnotatedTypeMirror> parameters =
                 AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments =
@@ -177,6 +178,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         if (polyQuals.isEmpty()) {
             return;
         }
+        polyAllReplacer.visit(type);
         List<AnnotatedTypeMirror> parameters =
                 AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments =
@@ -256,7 +258,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             AnnotatedTypeMirror type, AnnotatedTypeMirror actualType) {
         AnnotationMirrorMap<AnnotationMirrorSet> result = new AnnotationMirrorMap<>();
 
-        polyAllReplacer.visit(actualType);
         for (Map.Entry<AnnotationMirror, AnnotationMirror> kv : polyQuals.entrySet()) {
             AnnotationMirror top = kv.getValue();
             AnnotationMirror poly = kv.getKey();
@@ -304,7 +305,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         @Override
         public Void scan(
                 AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
-            polyAllReplacer.visit(type);
             replace(type, replacements);
             return super.scan(type, replacements);
         }
