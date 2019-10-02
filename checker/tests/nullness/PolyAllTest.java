@@ -54,4 +54,23 @@ public class PolyAllTest<T extends Comparable<T>> {
         // :: error: (argument.type.incompatible) :: error: (argument.type.incompatible)
         nonnull.comparePolyAll(nullableArray, nullableArray);
     }
+
+    <T> @PolyAll T polyAll(@PolyAll T param, @PolyAll T param2) {
+        return param;
+    }
+
+    <T> @PolyNull T polyNull(@PolyNull T param, @PolyNull T param2) {
+        return param;
+    }
+
+    public static boolean flag;
+
+    <S> S use(S s, @NonNull S nonNullS) {
+        if (flag) {
+            // :: error: (return.type.incompatible)
+            return this.<S>polyNull(s, nonNullS);
+        }
+        // :: error: (return.type.incompatible)
+        return this.<S>polyAll(s, nonNullS);
+    }
 }
