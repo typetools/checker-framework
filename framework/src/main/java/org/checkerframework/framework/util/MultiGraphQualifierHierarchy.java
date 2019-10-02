@@ -502,7 +502,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             throw new BugInCF(
                     "MultiGraphQualifierHierarchy found an unqualified type.  Please ensure that "
                             + "your defaulting rules cover all cases and/or "
-                            + "use a @DefaultQualifierInHierarchy annotation.");
+                            + "use a @DefaultQualifierInHierarchy annotation.  "
+                            + "Also ensure that overrides of addComputedTypeAnnotations call super.");
         } else {
             // System.out.println("MultiGraphQH: " + this);
             throw new BugInCF(
