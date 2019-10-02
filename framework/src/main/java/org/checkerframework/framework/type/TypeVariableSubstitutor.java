@@ -1,9 +1,11 @@
 package org.checkerframework.framework.type;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
@@ -50,7 +52,9 @@ public class TypeVariableSubstitutor {
         substitute.addAnnotations(argument.getAnnotationsField());
 
         if (!use.getAnnotationsField().isEmpty()) {
-            substitute.replaceAnnotations(use.getAnnotations());
+            Collection<? extends AnnotationMirror> newAnnos =
+                    use.atypeFactory.qualHierarchy.replacePolyAll(use.getAnnotationsField());
+            substitute.replaceAnnotations(newAnnos);
         }
 
         return substitute;
