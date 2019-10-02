@@ -1014,85 +1014,74 @@ You are probably interested in type inference to annotate a program's
 source code; see Section~\ref{type-inference-to-annotate}.  This section
 explains the two different varieties of type inference.
 
-\begin{enumerate}
-\item
-  Type inference during type-checking (Section~\ref{type-refinement}):
-  During type-checking, if certain variables have no programmer-written type qualifier, the
-  type-checker determines whether there is some type qualifier that would
-  permit the program to type-check.  If so, the type-checker uses that type
-  qualifier, but never tells the programmer what it was.  Each time the
-  type-checker runs, it re-infers the type qualifier for that variable.  If
-  no type qualifier exists that permits the program to type-check, the
-  type-checker issues a type warning.
 
-  This variety of type inference is built into the Checker Framework.  Every
-  checker can take advantage of it at no extra effort.  However, it only
-  works within a method, not across method boundaries.
+\subsectionAndLabel{Local variable type inference within a method body}{type-inference-local}
 
-  Advantages of this variety of type inference include:
-  \begin{itemize}
-  \item
-    If the type qualifier is obvious to the programmer, then omitting it
-    can reduce annotation clutter in the program.
-  \item
-    The type inference can take advantage of only the code currently being
-    compiled, rather than having to be correct for all possible calls.
-    Additionally, if the code changes, then there is no old annotation to
-    update.
-  \end{itemize}
+While type-checking a method, the
+type-checker determines types for local variables with no type
+annotation, and determines more precise types for all expressions (Section~\ref{type-refinement}).
+The type-checker uses those inferred types, but never tells the
+programmer (or other tools) what it inferred.  Each time the
+type-checker runs, it re-does local type inference.
 
-
-\item
-  Type inference to annotate a program (Section~\ref{type-inference-to-annotate}):
-  As a separate step before type-checking, a type inference tool takes the
-  program as input, and outputs a set of type qualifiers that would
-  type-check.  These qualifiers are inserted into the source code or the
-  class file.  They can be viewed and adjusted by the programmer, and can
-  be used by tools such as the type-checker.
-
-  This variety of type inference must be provided by a separate tool.  It
-  is not built into the Checker Framework.
-
-  Advantages of this variety of type inference include:
-  \begin{itemize}
-  \item
-    The program contains documentation in the form of type qualifiers,
-    which can aid programmer understanding.
-  \item
-    Error messages may be more comprehensible.  With type inference
-    during type-checking, error messages can be obscure, because the
-    compiler has already inferred (possibly incorrect) types for a number
-    of variables.
-  \item
-    A minor advantage is speed:  type-checking can be modular, which can be
-    faster than re-doing type inference every time the
-    program is type-checked.
-  \end{itemize}
-
-\end{enumerate}
-
-Advantages of both varieties of inference include:
-\begin{itemize}
-\item
-  Less work for the programmer.
-\item
-  The tool chooses the most general type, whereas a programmer might
-  accidentally write a more specific, less generally-useful annotation.
-\end{itemize}
-
-
-Each variety of type inference has its place.  When using the Checker
-Framework, type inference during type-checking is performed only
-\emph{within} a method (Section~\ref{type-refinement}).  Every method
+Local variable type inference is built into the Checker Framework.  Every
+checker can take advantage of it at no extra effort.  However, it only
+works within a method, not across method boundaries.
+%
+Every method
 signature (arguments and return values) and field must have already been explicitly annotated,
 either by the programmer or by a separate type-checking tool
 (Section~\ref{type-inference-to-annotate}).
-This approach enables modular checking (one class or method at a time) and
-gives documentation benefits.
-The programmer still has to
-put in some effort, but much less than without inference:  typically, a
-programmer does not have to write any qualifiers
+A
+programmer rarely writes any qualifiers
 inside the body of a method (except sometimes on type arguments).
+
+
+Advantages of this variety of type inference include:
+\begin{itemize}
+\item
+  If the type qualifier is obvious to the programmer, then omitting it
+  can reduce annotation clutter in the program.
+\item
+  If the code changes, then there is no old annotation to update.
+\item
+  Inference chooses the most general possible type, which may permit more
+  uses than a programmer-chosen type would have.
+\end{itemize}
+
+
+\subsectionAndLabel{Type inference to annotate a program's source code}{type-inference-whole-program}
+
+As a separate step before type-checking, a type inference tool takes the
+whole program as input, and outputs a set of type qualifiers that can be
+inserted into the source code or the class file
+(Section~\ref{type-inference-to-annotate}).  They can be used by other
+tools.
+
+A programmer runs inference just once.  The programmer can view and adjust the
+annotations before committing them to the source code repository.
+
+This variety of type inference must be provided by a separate tool,
+before type-checking runs.  The Checker Framework comes with such a tool
+(Section~\ref{whole-program-inference}).
+
+There exist monolithic whole-program analyses that run without requiring any
+annotations in the source code.  Using such an analysis is somewhat similar
+to running a whole-program inference tool, then running a type-checker.
+Advantages of the latter two-step approach include:
+\begin{itemize}
+\item
+  The type qualifiers act as machine-checked documentation,
+  which can aid programmer understanding.
+\item
+  Error messages may be more comprehensible.  With a monolithic
+  whole-program analysis, error messages can be obscure, because the
+  analysis has already inferred (possibly incorrect) types for a number of
+  variables.
+\item
+  Type-checking is modular, which can be faster than re-doing a
+  whole-program analysis every time the program is type-checked.
+\end{itemize}
 
 
 
