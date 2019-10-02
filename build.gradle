@@ -591,11 +591,12 @@ subprojects {
             if (isJava8) {
                 jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
             } else {
-                    forkEvery(1)
-                    jvmArgs += [
-                            "--illegal-access=warn",
-                            "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                    ]
+                // Without this, the test throw "java.lang.OutOfMemoryError: Java heap space"
+                forkEvery(1)
+                jvmArgs += [
+                        "--illegal-access=warn",
+                        "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                ]
             }
 
             if (project.name.is('checker')) {
@@ -606,14 +607,6 @@ subprojects {
             if (project.hasProperty('emit.test.debug')) {
                 systemProperties += ["emit.test.debug": 'true']
             }
-
-
-//            println classpath.asPath
-//            systemProperties += ["emit.test.debug": 'true']
-
-//            jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005'
-            jvmArgs '-XX:+HeapDumpOnOutOfMemoryError'
-            jvmArgs '-XX:HeapDumpPath=/Users/smillst/tmp/dump/'
 
             testLogging {
                 showStandardStreams = true
