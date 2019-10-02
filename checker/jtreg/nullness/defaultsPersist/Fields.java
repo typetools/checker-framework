@@ -4,6 +4,7 @@
  *
  * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Fields.java
  * @run main Driver Fields
+ * @ignore This is fails for Java 11.
  */
 
 import static com.sun.tools.classfile.TypeAnnotation.TargetType.FIELD;
@@ -169,7 +170,7 @@ public class Fields {
                 type = FIELD,
                 genericLocation = {3, 0}),
         @TADescription(
-                annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom",
+                annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
                 type = FIELD,
                 genericLocation = {3, 0}),
     })
@@ -199,7 +200,7 @@ public class Fields {
                 type = FIELD,
                 genericLocation = {3, 0}),
         @TADescription(
-                annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom",
+                annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
                 type = FIELD,
                 genericLocation = {3, 0}),
 
