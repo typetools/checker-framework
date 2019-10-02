@@ -49,9 +49,7 @@ public class PolyAllTest<T extends Comparable<T>> {
         nonnull.compare(nullableArray, nullableArray);
 
         nonnull.comparePolyAll(nonnullArray, nonnullArray);
-        // :: error: (argument.type.incompatible)
         nonnull.comparePolyAll(nullableArray, nonnullArray);
-        // :: error: (argument.type.incompatible) :: error: (argument.type.incompatible)
         nonnull.comparePolyAll(nullableArray, nullableArray);
     }
 
