@@ -662,6 +662,11 @@ checker as an annotation processor directly.
       <artifactId>jdk8</artifactId>
       <version>\ReleaseVersion{}</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>javac</artifactId>
+      <version>9+181-r4173-1</version>
+    </dependency>
   </dependencies>
 \end{alltt}
 
@@ -702,14 +707,13 @@ latest bug fixes and new features:
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/jdk8.jar</systemPath>
     </dependency>
+    <dependency>
+    <groupId>com.google.errorprone</groupId>
+      <artifactId>javac</artifactId>
+      <version>9+181-r4173-1</version>
+    </dependency>
   </dependencies>
 \end{alltt}
-
-Periodically update to the most recent version, to obtain the
-latest bug fixes and new features:
-\begin{Verbatim}
-  mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
-\end{Verbatim}
 
 \end{enumerate}
 
@@ -724,6 +728,7 @@ First, create the property in the \code{properties} section of the POM:
 <properties>
   <!-- These properties will be set by the Maven Dependency plugin -->
   <annotatedJdk>$\{org.checkerframework:jdk8:jar\}</annotatedJdk>
+  <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
 </properties>
 \end{alltt}
 
@@ -744,46 +749,6 @@ section, or add it if it is not present.
     </executions>
   </plugin>
 \end{alltt}
-
-
-\item If you are using Java 8, use the javac from Error Prone.
-
-\begin{alltt}
-  <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
-  <profiles>
-    <profile>
-      <id>jdk8</id>
-      <activation>
-        <jdk>1.8</jdk>
-      </activation>
-      <properties>
-        <javac.version>9+181-r4173-1</javac.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.google.errorprone</groupId>
-          <artifactId>javac</artifactId>
-          <version>9+181-r4173-1</version>
-        </dependency>
-      </dependencies>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <fork>true</fork>
-              <compilerArgs combine.children="append">
-                <arg>-J-Xbootclasspath/p:$\{settings.localRepository\}/com/google/errorprone/javac/$\{javac.version\}/javac-$\{javac.version\}.jar</arg>
-              </compilerArgs>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-\end{alltt}
-
 
 \item Direct the Maven compiler plugin to use the desired checkers.
 Change the reference to the \code{maven-compiler-plugin} within the \code{<plugins>}
@@ -815,7 +780,9 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <!-- Add all the checkers you want to enable here -->
         <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
       </annotationProcessors>
-      <compilerArgs combine.children="append">
+      <compilerArgs>
+        <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
+        <arg>-J-Xbootclasspath/p:$\{errorProneJavac\}</arg>
         <!-- location of the annotated JDK, which comes from a Maven dependency -->
         <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
         <!-- -Awarns turns type-checking errors into warnings. -->
