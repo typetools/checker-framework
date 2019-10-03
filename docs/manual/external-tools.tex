@@ -49,9 +49,9 @@ runtime annotations in the main dex, but strips out class-retention
 annotations.
 
 
-\sectionAndLabel{Android Studio 3.0 and the Android Gradle Plugin 3.0}{android-gradle}
+\sectionAndLabel{Android Studio and the Android Gradle Plugin}{android-gradle}
 
-Android Studio 3.0 and Android Gradle Plugin 3.0.0 support type
+Android Studio 3.0 and later, and Android Gradle Plugin 3.0.0 and later, support type
 annotations.  (See
 \url{https://developer.android.com/studio/write/java8-support}
 for more details.)  This section explains how to configure your Android
@@ -61,7 +61,7 @@ the module's \<build.gradle> file --- not the app's \<build.gradle> file.
 \begin{enumerate}
 
 \item In your module's \<build.gradle> file, set the source and target
-  compatibility to \<JavaVersion.VERSION\_1\_8>
+  compatibility to \<JavaVersion.VERSION\_1\_8>:
 
 \begin{Verbatim}
 android {
@@ -73,7 +73,7 @@ android {
 }
 \end{Verbatim}
 
-\item Add a build variant for running checkers.
+\item Add a build variant for running checkers:
 
  \begin{Verbatim}
  android {
@@ -117,7 +117,7 @@ dependencies {
 \end{Verbatim}
 \end{mysmall}
 
-\item Direct all tasks of type \<JavaCompile> used by the CheckTypes build variant to use the annotated JDK.
+\item Direct all tasks of type \<JavaCompile> used by the \<checkTypes> build variant to use the annotated JDK:
 \begin{mysmall}
 \begin{Verbatim}
 gradle.projectsEvaluated {
@@ -132,7 +132,7 @@ gradle.projectsEvaluated {
 \end{Verbatim}
 \end{mysmall}
 
-\item To run the checkers, build using the checkTypes variant.
+\item To run the checkers, build using the \<checkTypes> variant:
 \begin{Verbatim}
 gradlew checkTypes
 \end{Verbatim}
@@ -214,9 +214,9 @@ This section explains each part of the Ant task.
 \item Definition of \code{jsr308.javac}:
 
 The \code{fork} field of the \code{javac} task
-ensures that an external javac program is called.  Otherwise, Ant will run
-javac via a Java method call, and there is no guarantee that it will get
-the Checker Framework compiler that is distributed with the Checker Framework.
+ensures that an external \code{javac} program is called.  Otherwise, Ant will run
+\code{javac} via a Java method call, and there is no guarantee that it will get
+correct version of \code{javac}.
 
 The \code{-version} compiler argument is just for debugging; you may omit
 it.
@@ -273,14 +273,14 @@ prebuilt_jar(
 )
 
 java_library (
-	name = 'hello',
-	srcs = glob(['src/main/java/**/*.java']),
-	java_version = '1.8',
-	provided_deps = [ ':checker-framework', ':checker-qual' ],
+    name = 'hello',
+    srcs = glob(['src/main/java/**/*.java']),
+    java_version = '1.8',
+    provided_deps = [ ':checker-framework', ':checker-qual' ],
 # To add annotation processing
-	annotation_processors = [ 'org.checkerframework.checker.units.UnitsChecker' ],
-	annotation_processor_deps = [ ':checker-framework', ':checker-qual' ],
-	annotation_processor_params = [ 'nocheckjdk' ]
+    annotation_processors = [ 'org.checkerframework.checker.units.UnitsChecker' ],
+    annotation_processor_deps = [ ':checker-framework', ':checker-qual' ],
+    annotation_processor_params = [ 'nocheckjdk' ]
 )
 \end{Verbatim}
 
@@ -289,9 +289,14 @@ java_library (
 \sectionAndLabel{Command line, via Checker Framework javac wrapper}{javac-wrapper}
 \label{javac-installation}      % for backward compatibility, added 10/2/2019
 
-To perform pluggable type-checking, run the \<javac> compiler with the
-Checker Framework on the classpath.
-There are three ways to achieve this.  You can use any
+To perform pluggable type-checking from the command line, run the \<javac>
+command that ships with the Checker Framework.  This is called the
+``Checker Framework compiler''.  It is exactly the same as the OpenJDK
+\<javac> compiler, with one small difference:  it includes the Checker
+Framework jar file on its classpath.
+
+There are three ways to use the Checker Framework compiler from the command
+line.  You can use any
 one of them.  However, if you are using the Windows command shell, you must
 use the last one.
 % Is the last one required for Cygwin, as well as for the Windows command shell?
@@ -314,21 +319,16 @@ use the last one.
     then log out and back in to ensure that the environment variable
     setting takes effect.
 
-    Now, whenever you run \code{javac}, you will use the ``Checker
-    Framework compiler''.  It is exactly the same as the OpenJDK compiler,
-    with one small differences:  it includes the Checker Framework jar file
-    on its classpath.
-
   \item
     \begin{sloppypar}
     Option 2:
-    Whenever this document tells you to run \code{javac}, you
-    can instead run \code{\$CHECKERFRAMEWORK/checker/bin/javac}.
+    Whenever this document tells you to run \code{javac},
+    instead run \code{\$CHECKERFRAMEWORK/checker/bin/javac}.
     \end{sloppypar}
 
-    You can simplify this by introducing an alias.  Then,
-    whenever this document tells you to run \code{javac}, instead use that
-    alias.  Here is the syntax for your
+    You can simplify this by introducing an alias \<javacheck>.  Then,
+    whenever this document tells you to run \code{javac}, instead run
+    \<javacheck>.  Here is the syntax for your
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
@@ -339,15 +339,15 @@ use the last one.
    \item
    Option 3:
    Whenever this document tells you to run \code{javac}, instead
-   run checker.jar via \<java> (not \<javac>) as in:
+   run \<checker.jar> via \<java> (not \<javac>) as in:
 
 \begin{Verbatim}
   java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" -cp "myclasspath" -processor nullness MyFile.java
 \end{Verbatim}
 
-    You can simplify the above command by introducing an alias.  Then,
-    whenever this document tells you to run \code{javac}, instead use that
-    alias.  For example:
+    You can simplify the above command by introducing an alias
+    \<javacheck>.  Then, whenever this document tells you to run
+    \code{javac}, instead run \<javacheck>.  For example:
 
 \begin{Verbatim}
   # Unix
@@ -427,13 +427,13 @@ use the last one.
 % nor is Eclipse necessary for running the Checker Framework.
 
 You
-need to run the Checker Framework via Ant or via another build tool, rather
-than by supplying the \<-processor> command-line option to the ejc
-compiler, which is also known as eclipsec.
-The reason is that the Checker Framework is built upon javac,
-and ejc represents the Java program differently.  (If both javac and ejc
+need to run the Checker Framework via a build tool (Ant, Gradle, Maven, etc.), rather
+than by supplying the \<-processor> command-line option to the \<ejc>
+compiler, which is also known as \<eclipsec>.
+The reason is that the Checker Framework is built upon \<javac>,
+and \<ejc> represents the Java program differently.  (If both \<javac> and \<ejc>
 implemented JSR 198~\cite{JSR198}, then it would be possible to build
-a type-checking plug-in that works with both compilers.)
+an annotation processor that works with both compilers.)
 
 
 There is no dedicated Eclipse plug-in for running the Checker Framework,
@@ -474,7 +474,7 @@ run the Ant target by executing the following steps
 \subsectionAndLabel{Troubleshooting Eclipse}{eclipse-troubleshooting}
 
 Eclipse issues an ``Unhandled Token in @SuppressWarnings'' warning if you
-write a \<@SuppressWarnings> annotation containing a string that does not
+write a \<@SuppressWarnings> annotation containing a string that Eclipse does not
 know about.  Unfortunately, Eclipse
 \href{https://bugs.eclipse.org/bugs/show_bug.cgi?id=122475}{hard-codes}
 this list.
@@ -500,12 +500,14 @@ use the
 This section tells you how to make IntelliJ IDEA automatically run a
 checker on every compile for Java projects and/or modules.
 
-If your project uses a build tool such as Gradle, these instructions will
-not work.  Follow the instructions for that build tool instead (they are in
+If your project uses a build tool (Ant, Gradle, Maven, etc.), \emph{do not}
+use the instructions in this section.
+Follow the instructions for that build tool instead (they are in
 a different section of this chapter).  To compile your project, run the
-build tool (possibly from within Gradle, possibly not).
+build tool (possibly from within IntelliJ IDEA, possibly not).
 
-To run a checker within IntelliJ IDEA on every compile:
+If your project does not use a build tool, use the following instructions
+to run a checker within IntelliJ IDEA on every compile:
 
 \begin{enumerate}
 
@@ -517,8 +519,9 @@ To run a checker within IntelliJ IDEA on every compile:
 
 \item Add the annotated JDK library to the bootclasspath.
 On the Java compiler settings page, see \url{https://www.jetbrains.com/help/idea/java-compiler.html},
-in the ``Additional command line parameters'': section, add:\\
-  \code{-Xbootclasspath/p:"<path to checker framework>/checker/dist/jdk8.jar"}
+in the ``Additional command line parameters'' section, add:\\
+  \code{-Xbootclasspath/p:".../checker-framework/checker/dist/jdk8.jar"} \\
+(Be sure to fill in the ellipsis.)
 
 \item Configure an annotation profile.
 \begin{enumerate}
@@ -531,16 +534,14 @@ any desired modules with that profile.
 \item
 Configure that profile:
 \begin{enumerate}
-\item  Add checker.jar to the processor path.  (It's located in
-  \<checker-framework/checker/dist/>.)
-\item  Add checkers to be run during compilation by writing the
+\item Add \<.../checker-framework/checker/dist/checker.jar> to the processor path.
+\item Add checkers to be run during compilation by writing the
   fully-qualified name of the checker in the ``Processor FQ Name''
   section.
 \end{enumerate}
 \end{enumerate}
 
-\item Add \<checker-qual.jar>, located in
-\<checker-framework/checker/dist/checker-qual.jar>,  as a dependency to all
+\item Add \<.../checker-framework/checker/dist/checker-qual.jar>, as a dependency to all
 modules you wish to type check. (They should all have been associated with
 the annotation profile above.)
 Instructions appear at
@@ -848,8 +849,8 @@ profile, so that the checkers run only if the profile was enabled.
 There are two approaches to running a checker in NetBeans:  via modifying the
 project properties, or via a custom ant target.
 
-Note: The 'compile and save' action in NetBeans 8.1 automatically
-runs the Checker Framework whereas this functionality has not yet
+Note: The ``compile and save'' action in NetBeans 8.1 automatically
+runs the Checker Framework, but this functionality has not yet
 been incorporated into NetBeans 8.2. Additionally, JDK annotations
 are currently unavailable on NetBeans 8.1 and 8.2.
 
@@ -967,7 +968,7 @@ In this example, a nullness checker is run:
                     source="${javac.source}" sourcepath="@{sourcepath}"
                     srcdir="@{srcdir}" target="${javac.target}"
                     tempdir="${java.io.tmpdir}">
-		<src>
+                <src>
                     <dirset dir="@{gensrcdir}" erroronmissingdir="false">
                         <include name="*"/>
                     </dirset>
@@ -1022,85 +1023,74 @@ You are probably interested in type inference to annotate a program's
 source code; see Section~\ref{type-inference-to-annotate}.  This section
 explains the two different varieties of type inference.
 
-\begin{enumerate}
-\item
-  Type inference during type-checking (Section~\ref{type-refinement}):
-  During type-checking, if certain variables have no programmer-written type qualifier, the
-  type-checker determines whether there is some type qualifier that would
-  permit the program to type-check.  If so, the type-checker uses that type
-  qualifier, but never tells the programmer what it was.  Each time the
-  type-checker runs, it re-infers the type qualifier for that variable.  If
-  no type qualifier exists that permits the program to type-check, the
-  type-checker issues a type warning.
 
-  This variety of type inference is built into the Checker Framework.  Every
-  checker can take advantage of it at no extra effort.  However, it only
-  works within a method, not across method boundaries.
+\subsectionAndLabel{Local variable type inference within a method body}{type-inference-local}
 
-  Advantages of this variety of type inference include:
-  \begin{itemize}
-  \item
-    If the type qualifier is obvious to the programmer, then omitting it
-    can reduce annotation clutter in the program.
-  \item
-    The type inference can take advantage of only the code currently being
-    compiled, rather than having to be correct for all possible calls.
-    Additionally, if the code changes, then there is no old annotation to
-    update.
-  \end{itemize}
+While type-checking a method, the
+type-checker determines types for local variables with no type
+annotation, and determines more precise types for all expressions (Section~\ref{type-refinement}).
+The type-checker uses those inferred types, but never tells the
+programmer (or other tools) what it inferred.  Each time the
+type-checker runs, it re-does local type inference.
 
-
-\item
-  Type inference to annotate a program (Section~\ref{type-inference-to-annotate}):
-  As a separate step before type-checking, a type inference tool takes the
-  program as input, and outputs a set of type qualifiers that would
-  type-check.  These qualifiers are inserted into the source code or the
-  class file.  They can be viewed and adjusted by the programmer, and can
-  be used by tools such as the type-checker.
-
-  This variety of type inference must be provided by a separate tool.  It
-  is not built into the Checker Framework.
-
-  Advantages of this variety of type inference include:
-  \begin{itemize}
-  \item
-    The program contains documentation in the form of type qualifiers,
-    which can aid programmer understanding.
-  \item
-    Error messages may be more comprehensible.  With type inference
-    during type-checking, error messages can be obscure, because the
-    compiler has already inferred (possibly incorrect) types for a number
-    of variables.
-  \item
-    A minor advantage is speed:  type-checking can be modular, which can be
-    faster than re-doing type inference every time the
-    program is type-checked.
-  \end{itemize}
-
-\end{enumerate}
-
-Advantages of both varieties of inference include:
-\begin{itemize}
-\item
-  Less work for the programmer.
-\item
-  The tool chooses the most general type, whereas a programmer might
-  accidentally write a more specific, less generally-useful annotation.
-\end{itemize}
-
-
-Each variety of type inference has its place.  When using the Checker
-Framework, type inference during type-checking is performed only
-\emph{within} a method (Section~\ref{type-refinement}).  Every method
+Local variable type inference is built into the Checker Framework.  Every
+checker can take advantage of it at no extra effort.  However, it only
+works within a method, not across method boundaries.
+%
+Every method
 signature (arguments and return values) and field must have already been explicitly annotated,
 either by the programmer or by a separate type-checking tool
 (Section~\ref{type-inference-to-annotate}).
-This approach enables modular checking (one class or method at a time) and
-gives documentation benefits.
-The programmer still has to
-put in some effort, but much less than without inference:  typically, a
-programmer does not have to write any qualifiers
+A
+programmer rarely writes any qualifiers
 inside the body of a method (except sometimes on type arguments).
+
+
+Advantages of this variety of type inference include:
+\begin{itemize}
+\item
+  If the type qualifier is obvious to the programmer, then omitting it
+  can reduce annotation clutter in the program.
+\item
+  If the code changes, then there is no old annotation to update.
+\item
+  Inference chooses the most general possible type, which may permit more
+  uses than a programmer-chosen type would have.
+\end{itemize}
+
+
+\subsectionAndLabel{Type inference to annotate a program's source code}{type-inference-whole-program}
+
+As a separate step before type-checking, a type inference tool takes the
+whole program as input, and outputs a set of type qualifiers that can be
+inserted into the source code or the class file
+(Section~\ref{type-inference-to-annotate}).  They can be used by other
+tools.
+
+A programmer runs inference just once.  The programmer can view and adjust the
+annotations before committing them to the source code repository.
+
+This variety of type inference must be provided by a separate tool,
+before type-checking runs.  The Checker Framework comes with such a tool
+(Section~\ref{whole-program-inference}).
+
+There exist monolithic whole-program analyses that run without requiring any
+annotations in the source code.  Using such an analysis is somewhat similar
+to running a whole-program inference tool, then running a type-checker.
+Advantages of the latter two-step approach include:
+\begin{itemize}
+\item
+  The type qualifiers act as machine-checked documentation,
+  which can aid programmer understanding.
+\item
+  Error messages may be more comprehensible.  With a monolithic
+  whole-program analysis, error messages can be obscure, because the
+  analysis has already inferred (possibly incorrect) types for a number of
+  variables.
+\item
+  Type-checking is modular, which can be faster than re-doing a
+  whole-program analysis every time the program is type-checked.
+\end{itemize}
 
 
 
@@ -1111,8 +1101,10 @@ inside the body of a method (except sometimes on type arguments).
 % LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
 % LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env jdk
 % LocalWords:  javacheck checkerframework MavenExample org arg typecheck
-% LocalWords:  AoutputArgsToFile qual jdk8 annotatedJdk Unhandled dex
+% LocalWords:  AoutputArgsToFile qual jdk8 annotatedJdk Unhandled dex SDK
 % LocalWords:  annotationProcessors annotationProcessor JavaCompile Ctrl
-% LocalWords:  targetJavaVersion GradleExamples gradle JavaVersion
+% LocalWords:  targetJavaVersion GradleExamples gradle JavaVersion lombok
 % LocalWords:  systemPath artifactID MacOS eclipsec getter getRole setRole
-% LocalWords:  config copyableAnnotations
+% LocalWords:  config copyableAnnotations COPYABLE localRepository init
+% LocalWords:  compilerArguments Xmaxerrs Xmaxwarns netbeans macrodef
+% LocalWords:  annotationProcessorPaths
