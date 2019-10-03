@@ -577,15 +577,20 @@ public class ValueTransfer extends CFTransfer {
         List<String> leftValues = getStringValues(leftOperand, p);
         List<String> rightValues = getStringValues(rightOperand, p);
 
+        boolean allowNullStringConcat =
+                atypefactory.getContext().getChecker().hasOption("allowNullInStringconcatenations");
+
         if (leftValues != null && rightValues != null) {
             // Both operands have known string values, compute set of results
             List<String> concatValues = new ArrayList<>();
 
-            if (isNullable(leftOperand)) {
-                leftValues.add("null");
-            }
-            if (isNullable(rightOperand)) {
-                rightValues.add("null");
+            if (allowNullStringConcat) {
+                if (isNullable(leftOperand)) {
+                    leftValues.add("null");
+                }
+                if (isNullable(rightOperand)) {
+                    rightValues.add("null");
+                }
             }
 
             for (String left : leftValues) {
@@ -608,11 +613,13 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengths != null && rightLengths != null) {
             // Both operands have known lengths, compute set of result lengths
-            if (isNullable(leftOperand)) {
-                leftLengths.add(4); // "null"
-            }
-            if (isNullable(rightOperand)) {
-                rightLengths.add(4); // "null"
+            if (allowNullStringConcat) {
+                if (isNullable(leftOperand)) {
+                    leftLengths.add(4); // "null"
+                }
+                if (isNullable(rightOperand)) {
+                    rightLengths.add(4); // "null"
+                }
             }
             List<Integer> concatLengths = calculateLengthAddition(leftLengths, rightLengths);
             return atypefactory.createArrayLenAnnotation(concatLengths);
@@ -630,11 +637,13 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengthRange != null && rightLengthRange != null) {
             // Both operands have a length from a known range, compute a range of result lengths
-            if (isNullable(leftOperand)) {
-                leftLengthRange.union(new Range(4, 4)); // "null"
-            }
-            if (isNullable(rightOperand)) {
-                rightLengthRange.union(new Range(4, 4)); // "null"
+            if (allowNullStringConcat) {
+                if (isNullable(leftOperand)) {
+                    leftLengthRange.union(new Range(4, 4)); // "null"
+                }
+                if (isNullable(rightOperand)) {
+                    rightLengthRange.union(new Range(4, 4)); // "null"
+                }
             }
             Range concatLengthRange =
                     calculateLengthRangeAddition(leftLengthRange, rightLengthRange);
