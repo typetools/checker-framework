@@ -472,6 +472,11 @@ error: SourceChecker.typeProcessingStart: unexpected Throwable (NoSuchMethodErro
 message: com.sun.tools.javac.code.Type.stripMetadata()Lcom/sun/tools/javac/code/Type;
 \end{Verbatim}
 
+If you are compiling your own checker, the following exception is thrown if this argument is missing:
+\begin{Verbatim}
+java.lang.NoSuchFieldError: ANNOTATION_PROCESSOR_MODULE_PATH
+\end{Verbatim}
+
 \item \<-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/jdk8.jar>: jdk8.jar
   must be on the bootclasspath of the compiler.
   (This is a compiler argument, so do not add \<-J>.)
@@ -512,7 +517,7 @@ javac \
 The arguments are explained above, except for
 \<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
 opens the \<jdk.compiler/com.sun.tools.java.comp> package.  This is
-required because the Checker Framework reflectively accesses this package.
+required because the Checker Framework reflectively accesses private members of this package.
 
 If this option is missing, \<javac> may issue the following warning:
 \begin{Verbatim}
