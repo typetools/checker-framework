@@ -37,8 +37,10 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
      * If the underlying type is a type variable or a wildcard, then this is a set of maps for which
      * this value is a key. Otherwise, it's null.
      */
-    private Set<String> keyForMaps = null;
+    // Cannot be final because lub re-assigns; add a new constructor to do this cleanly?
+    private Set<String> keyForMaps;
 
+    /** Create an instance. */
     public KeyForValue(
             CFAbstractAnalysis<KeyForValue, ?, ?> analysis,
             Set<AnnotationMirror> annotations,
@@ -52,6 +54,8 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
             List<String> list =
                     AnnotationUtils.getElementValueArray(keyfor, "value", String.class, true);
             keyForMaps.addAll(list);
+        } else {
+            keyForMaps = null;
         }
     }
 

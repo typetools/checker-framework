@@ -3,9 +3,9 @@ package org.checkerframework.checker.index.searchindex;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.SearchIndexFor;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -56,13 +56,14 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
             Node left, Node right, CFStore store, int valueToCompareTo) {
         assert valueToCompareTo == 0 || valueToCompareTo == -1;
         Long leftValue =
-                IndexUtil.getExactValue(
+                ValueCheckerUtils.getExactValue(
                         left.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
         if (leftValue != null && leftValue == valueToCompareTo) {
             AnnotationMirror rightSI =
                     aTypeFactory.getAnnotationMirror(right.getTree(), SearchIndexFor.class);
             if (rightSI != null) {
-                List<String> arrays = IndexUtil.getValueOfAnnotationWithStringArgument(rightSI);
+                List<String> arrays =
+                        ValueCheckerUtils.getValueOfAnnotationWithStringArgument(rightSI);
                 AnnotationMirror nif = aTypeFactory.createNegativeIndexFor(arrays);
                 store.insertValue(
                         FlowExpressions.internalReprOf(analysis.getTypeFactory(), right), nif);

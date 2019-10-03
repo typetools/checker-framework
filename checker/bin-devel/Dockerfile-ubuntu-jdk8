@@ -6,10 +6,11 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
-#  * Put "apt-get update" and "apt-get install" in the same RUN command.
+#  * Put "apt-get update" and "apt-get install" and apt cleanup in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update && apt-get -qqy install \
+&& apt-get -qqy update \
+&& apt-get -qqy install \
   ant \
   cpp \
   git \
@@ -21,6 +22,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   mercurial \
   unzip \
   wget \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
+&& apt-get -qqy install \
   openjdk-8-jdk \
 && update-java-alternatives --set java-1.8.0-openjdk-amd64 \
 && apt-get clean \

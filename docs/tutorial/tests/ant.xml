@@ -99,7 +99,7 @@
 
         <!-- ignore version of Checker Framework javac -->
         <arg value="-I"/>
-        <arg value="^javac 1.8"/>
+        <arg value="^javac "/>
 
         <!-- ignore paths -->
         <arg value="-I"/>

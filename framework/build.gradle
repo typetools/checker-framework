@@ -43,10 +43,29 @@ task checkDependencies() {
 
 compileJava.dependsOn(checkDependencies)
 
+task allSourcesJar(type: Jar) {
+    description 'Creates a sources jar that includes sources for all Checker Framework classes in framework.jar'
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "framework-source.jar"
+    from (project(':framework').sourceSets.main.java,
+            project(':dataflow').sourceSets.main.allJava,
+            project(':javacutil').sourceSets.main.allJava)
+}
+
+task allJavadocJar(type: Jar) {
+    description 'Creates javadoc jar include Javadoc for all of the framework'
+    dependsOn rootProject.tasks.allJavadoc
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "framework-javadoc.jar"
+    from (project(':framework').tasks.javadoc.destinationDir,
+            project(':dataflow').tasks.javadoc.destinationDir,
+            project(':javacutil').tasks.javadoc.destinationDir)
+}
+
 shadowJar {
     description 'Creates the "fat" framework.jar in dist'
-    destinationDir = file("${projectDir}/dist")
-    archiveName = "framework.jar"
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "framework.jar"
     manifest {
         attributes('Automatic-Module-Name': "org.checkerframework.framework")
     }
@@ -135,19 +154,12 @@ task wholeProgramInferenceTests(dependsOn: 'shadowJar', group: 'Verification') {
 task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for the annotation class loader'
     dependsOn(compileTestJava)
+    // TODO: this dependency on checker is a bit ugly.
     dependsOn project(':checker-qual').tasks.jar
+    dependsOn project(':checker').tasks.assemble
     doLast {
-        copy {
-            from file(project(':checker-qual').tasks.getByName("jar").archivePath)
-            into "${projectDir}/dist"
-            rename { String fileName ->
-                fileName.replace(fileName, "checker-qual.jar")
-            }
-        }
-
         exec {
             executable 'make'
-            environment JAVAC: 'javac', STUBPARSERJAR: "${stubparserJar}"
             args = ['-C', "tests/annotationclassloader/", "all"]
         }
     }

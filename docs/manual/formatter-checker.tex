@@ -6,8 +6,8 @@
 The Format String Checker
 prevents use of incorrect format strings
 in format methods such as
-\sunjavadoc{java/io/PrintStream.html\#printf-java.lang.String-java.lang.Object...-}{System.out.printf}
-and \sunjavadoc{java/lang/String.html\#format-java.lang.String-java.lang.Object...-}{String.format}.
+\sunjavadoc{java.base/java/io/PrintStream.html\#printf(java.lang.String,java.lang.Object...)}{System.out.printf}
+and \sunjavadoc{java.base/java/lang/String.html\#format(java.lang.String,java.lang.Object...)}{String.format}.
 \end{sloppypar}
 
 The Format String Checker warns you if you write an invalid format string,
@@ -21,7 +21,7 @@ Section~\ref{formatter-guarantees} provides more details.
 % BUG FINDER
 % The Format String Checker helps to prevent bugs that are the result of an
 % incorrect use of format methods such as
-% \sunjavadoc{java/io/PrintStream.html\#printf-java.lang.String-java.lang.Object...-}{System.out.printf}.
+% \sunjavadoc{java.base/java/io/PrintStream.html\#printf(java.lang.String(java.lang.Object...)}{System.out.printf}.
 
 % VERIFICATION
 
@@ -65,9 +65,9 @@ The format specifier determines how the format argument is converted to a
 string.
 %% Redundant
 %  The Java standard library provides printf-style formatting in \emph{format methods} such as
-% \sunjavadoc{java/lang/String.html\#format-java.lang.String-java.lang.Object...-}{String.format}
+% \sunjavadoc{java.base/java/lang/String.html\#format(java.lang.String,java.lang.Object...)}{String.format}
 % and
-% \sunjavadoc{java/io/PrintStream.html\#printf-java.lang.String-java.lang.Object...-}{System.out.printf}.
+% \sunjavadoc{java.base/java/io/PrintStream.html\#printf(java.lang.String,java.lang.Object...)}{System.out.printf}.
 A format specifier is introduced by a \code{\%} character. For example,
 \code{String.format("The \%s is \%d.","answer",42)} yields
 \code{"The answer is 42."}.  \code{"The \%s is \%d."} is
@@ -80,7 +80,7 @@ the format string, \code{"\%s"} and \code{"\%d"} are the format specifiers;
 The \refqualclass{checker/formatter/qual}{Format} qualifier on a string type
 indicates a \emph{valid} format string.  The JDK documentation for the
 \<Formatter> class explains the requirements for a
-\sunjavadoc{java/util/Formatter.html\#syntax}{\textrm{valid format string}}.
+\sunjavadoc{java.base/java/util/Formatter.html\#syntax}{\textrm{valid format string}}.
 A programmer rarely writes the \<@Format> annotation, as it is inferred for
 string literals.  A programmer may need to write it on fields and on method
 signatures.
@@ -295,7 +295,7 @@ If the Format String Checker issues no errors, it provides the following guarant
 The following guarantees hold for every format method invocation:
 
 \begin{enumerate}
-    \item The format method's first parameter (or second if a \sunjavadoc{java/util/Locale.html}{Locale} is provided) is a valid
+    \item The format method's first parameter (or second if a \sunjavadoc{java.base/java/util/Locale.html}{Locale} is provided) is a valid
         format string (or \code{null}).
 
     \item A warning is issued if one of the format string's conversion categories is \code{UNUSED}.
@@ -383,7 +383,7 @@ Case \ref{formatter-array-warning}:
 %
 % \begin{enumerate}
 % \item Issue an \emph{error}, if the format method's first format argument (or
-%     second if a \sunjavadoc{java/util\Locale.html}{Locale} is provided) is not a
+%     second if a \sunjavadoc{java.base/java/util\Locale.html}{Locale} is provided) is not a
 %     \code{String} annotated with the \code{@Format} qualifier.
 % \item Issue a \emph{warning}, if any of the \code{@Format} string's
 %     conversion categories is \code{UNUSED}.
