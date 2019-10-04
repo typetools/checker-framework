@@ -425,7 +425,7 @@ use the last one.
 
 This section explains how to use the Checker Framework with the OpenJDK or
 OracleJDK \<javac>, rather than with the \<javac> wrapper script described in
-Section~\ref{javac-installation}.
+Section~\ref{javac-wrapper}.
 
 This
 section assumes you have downloaded the Checker Framework release zip and set
@@ -477,16 +477,16 @@ If you are compiling your own checker, the following exception is thrown if this
 java.lang.NoSuchFieldError: ANNOTATION_PROCESSOR_MODULE_PATH
 \end{Verbatim}
 
-\item \<-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/jdk8.jar>: jdk8.jar
+\item \<-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/jdk8.jar>: \<jdk8.jar>
   must be on the bootclasspath of the compiler.
   (This is a compiler argument, so do not add \<-J>.)
 
-\item \<-cp \$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>: checker-qual.jar
+\item \<-cp \$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>: \<checker-qual.jar>
 must be on the compilation classpath.
 
 \item \<-processorpath \$CHECKERFRAMEWORK/checker/dist/checker.jar>:
-checker.jar must be on the processor path. Using this option means that the classpath will not be
-searched for other annotation processors.
+\<checker.jar> must be on the processor path. Using this option means that the processor path, not
+the classpath, will be searched for annotation processors.
 
 \item \<-processor org.checkerframework.checker.nullness.NullnessChecker>:
 Choose which checker to run by passing its fully qualified name as a processor.
