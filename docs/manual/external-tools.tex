@@ -12,6 +12,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item Ant (Section~\ref{ant-task})
 \item Buck (Section~\ref{buck})
 \item Command line, via Checker Framework javac wrapper (Section~\ref{javac-wrapper})
+\item Command line, via JDK javac (Section~\ref{javac})
 \item Eclipse (Section~\ref{eclipse})
 \item Gradle (Section~\ref{gradle})
 \item IntelliJ IDEA (Section~\ref{intellij})
@@ -24,7 +25,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 If your build system or IDE is not listed above, you should customize how
 it runs the javac command on your behalf.  See your build system or IDE
 documentation to learn how to
-customize it, adapting the instructions for javac in Section~\ref{javac-wrapper}.
+customize it, adapting the instructions for javac in Section~\ref{javac}.
 If you make another tool support running a checker, please
 inform us via the
 \href{https://groups.google.com/forum/#!forum/checker-framework-discuss}{mailing
@@ -418,6 +419,131 @@ use the last one.
 %
 % This is a permanent change that only needs to be done once ever.
 % \end{itemize}
+
+
+\sectionAndLabel{Command line, via JDK javac}{javac}
+
+This section explains how to use the Checker Framework with the OpenJDK or
+OracleJDK \<javac>, rather than with the \<javac> wrapper script described in
+Section~\ref{javac-wrapper}.
+
+This
+section assumes you have downloaded the Checker Framework release zip and set
+the environment variable \<CHECKERFRAMEWORK> to point to the unzipped directory.
+Alternately, you can get all of the jars mentioned in this section from Maven Central:
+
+\begin{itemize}
+\item \<javac.jar>: \url{https://search.maven.org/artifact/com.google.errorprone/javac/9%2B181-r4173-1/jar}
+\item \<jdk8.jar>: \url{https://search.maven.org/artifact/org.checkerframework/jdk8/2.11.0/jar}
+\item \<checker-qual.jar>: \url{https://search.maven.org/artifact/org.checkerframework/checker-qual/2.11.0/jar}
+\item \<checker.jar>: \url{https://search.maven.org/artifact/org.checkerframework/checker/2.11.0/jar}
+\end{itemize}
+
+Different arguments to \<javac> are required for Java 8
+(Section~\ref{java8-install}) and for Java 9+ (Section~\ref{java11-install}).
+
+
+\subsectionAndLabel{Java 8}{java8-install}
+
+This section shows what arguments to pass to javac to run the Checker
+Framework, if you are using JDK 8.
+
+\begin{Verbatim}
+javac \
+-J-Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
+-Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/jdk8.jar \
+-cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar \
+-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar \
+-processor org.checkerframework.checker.nullness.NullnessChecker \
+-source 8 -target 8
+\end{Verbatim}
+
+Below is an explanation of each argument.
+\begin{enumerate}
+\item \<-J-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/javac.jar>:
+even when running under JDK 8, a Java 9 compiler (either the Error Prone
+compiler or the OpenJDK Java 9 compiler) must be on the JVM bootclasspath.
+The \<-J> indicates that this is a JVM argument rather than a compiler
+argument.
+
+The following exception is thrown if this argument is missing:
+\begin{Verbatim}
+error: SourceChecker.typeProcessingStart: unexpected Throwable (NoSuchMethodError);
+message: com.sun.tools.javac.code.Type.stripMetadata()Lcom/sun/tools/javac/code/Type;
+\end{Verbatim}
+
+If you are compiling your own checker, the following exception is thrown if this argument is missing:
+\begin{Verbatim}
+java.lang.NoSuchFieldError: ANNOTATION_PROCESSOR_MODULE_PATH
+\end{Verbatim}
+
+\item \<-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/jdk8.jar>: \<jdk8.jar>
+  must be on the bootclasspath of the compiler.
+  (This is a compiler argument, so do not add \<-J>.)
+
+\item \<-cp \$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>: \<checker-qual.jar>
+must be on the compilation classpath.
+
+\item \<-processorpath \$CHECKERFRAMEWORK/checker/dist/checker.jar>:
+\<checker.jar> must be on the processor path. Using this option means that the processor path, not
+the classpath, will be searched for annotation processors.
+
+\item \<-processor org.checkerframework.checker.nullness.NullnessChecker>:
+Choose which checker to run by passing its fully qualified name as a processor.
+(Note, using this option means that javac will not search for annotation
+processors, but rather will run only those specified here.)
+
+\item \<-source 8 -target 8>: Because the build is using
+a Java 9 compiler, these options ensure that the
+source code is Java 8 and that Java 8 bytecode is created.
+
+\end{enumerate}
+
+
+\subsectionAndLabel{Java 11}{java11-install}
+
+This section shows what arguments to pass to javac to run the Checker Framework using JDK 11.  These
+instructions should work on JDK 9 or later, but we only test with JDK 11.
+
+For compiling non-modularized code:
+\begin{Verbatim}
+javac \
+-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
+-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar \
+-cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar \
+-processor org.checkerframework.checker.nullness.NullnessChecker
+\end{Verbatim}
+
+The arguments are explained above, except for
+\<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
+opens the \<jdk.compiler/com.sun.tools.java.comp> package.  This is
+required because the Checker Framework reflectively accesses private members of this package.
+
+If this option is missing, \<javac> may issue the following warning:
+\begin{Verbatim}
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.checkerframework.javacutil.Resolver (file:$CHECKERFRAMEWORK/checker/dist/checker.jar) to method com.sun.tools.javac.comp.Resolve.findMethod(com.sun.tools.javac.comp.Env,com.sun.tools.javac.code.Type,com.sun.tools.javac.util.Name,com.sun.tools.javac.util.List,com.sun.tools.javac.util.List,boolean,boolean)
+WARNING: Please consider reporting this to the maintainers of org.checkerframework.javacutil.Resolver
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+\end{Verbatim}
+
+For compiling a module, first add \<requires
+org.checkerframework.checker.qual;> to your \<module-info.java>.  The Checker
+Framework inserts inferred annotations into bytecode even if none appear in source code,
+so you must do this even if you write no annotations in your code.
+
+\begin{Verbatim}
+javac \
+-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
+-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar \
+--module-path $CHECKERFRAMEWORK/checker/dist/checker-qual.jar \
+-processor org.checkerframework.checker.nullness.NullnessChecker
+\end{Verbatim}
+
+\<checker-qual.jar> must be on the module path rather than the class path, but
+do not put \<checker.jar> on the processor module path as it is not
+modularized.
 
 
 \sectionAndLabel{Eclipse}{eclipse}
