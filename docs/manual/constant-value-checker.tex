@@ -123,7 +123,7 @@ infers type annotations (using flow-sensitive type qualifier refinement, Section
 
 \begin{figure}
 \begin{Verbatim}
-public void foo(boolean b) {
+public void flowSensitivityExample(boolean b) {
     int i = 1;     // i has type:  @IntVal({1}) int
     if (b) {
         i = 2;     // i now has type:  @IntVal({2}) int
@@ -136,6 +136,12 @@ public void foo(boolean b) {
   for a variable on different lines of the program.}
 \label{fig-value-multivalue}
 \end{figure}
+
+
+\sectionAndLabel{Other constant value annotations}{other-constant-value-annotations}
+
+The Checker Framework's constant value annotations are similar to annotations used
+elsewhere.
 
 If your code is already annotated with a different constant value or range
 annotation, the Checker Framework can type-check your code.
@@ -200,14 +206,14 @@ method has already been compiled and is on the classpath}.
 \begin{figure}
 \begin{Verbatim}
 @StaticallyExecutable @Pure
-public int foo(int a, int b) {
+public int myAdd(int a, int b) {
     return a + b;
 }
 
 public void bar() {
-    int a = 5;          // a has type:  @IntVal({5}) int
-    int b = 4;          // b has type:  @IntVal({4}) int
-    int c = foo(a, b);  // c has type:  @IntVal({9}) int
+    int a = 5;            // a has type:  @IntVal({5}) int
+    int b = 4;            // b has type:  @IntVal({4}) int
+    int c = myAdd(a, b);  // c has type:  @IntVal({9}) int
 }
 \end{Verbatim}
 \caption{The

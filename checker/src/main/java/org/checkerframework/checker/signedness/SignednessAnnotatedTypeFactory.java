@@ -2,14 +2,12 @@ package org.checkerframework.checker.signedness;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
@@ -18,6 +16,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.util.Range;
@@ -76,7 +75,87 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // this whole method will no longer be needed.)
         addUnknownSignednessToSomeLocals(tree, type);
 
+        if (!computingAnnotatedTypeMirrorOfLHS) {
+            addSignednessGlbAnnotation(tree, type);
+        }
+
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
+    }
+
+    /**
+     * True when the AnnotatedTypeMirror currently being computed is the left hand side of an
+     * assignment or pseudo-assignment
+     *
+     * @see #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)
+     * @see #getAnnotatedTypeLhs(Tree)
+     */
+    private boolean computingAnnotatedTypeMirrorOfLHS = false;
+
+    @Override
+    public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
+        boolean oldComputingAnnotatedTypeMirrorOfLHS = computingAnnotatedTypeMirrorOfLHS;
+        computingAnnotatedTypeMirrorOfLHS = true;
+        AnnotatedTypeMirror result = super.getAnnotatedTypeLhs(lhsTree);
+        computingAnnotatedTypeMirrorOfLHS = oldComputingAnnotatedTypeMirrorOfLHS;
+        return result;
+    }
+
+    /**
+     * Refines an integer expression to @SignednessGlb if its value is within the signed positive
+     * range (i.e. its MSB is zero).
+     *
+     * @param tree an AST node, whose type may be refined
+     * @param type the type of the tree
+     */
+    private void addSignednessGlbAnnotation(Tree tree, AnnotatedTypeMirror type) {
+        TypeMirror javaType = type.getUnderlyingType();
+        TypeKind javaTypeKind = javaType.getKind();
+        if (tree.getKind() != Tree.Kind.VARIABLE) {
+            if (javaTypeKind == TypeKind.BYTE
+                    || javaTypeKind == TypeKind.CHAR
+                    || javaTypeKind == TypeKind.SHORT
+                    || javaTypeKind == TypeKind.INT
+                    || javaTypeKind == TypeKind.LONG) {
+                AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
+                // These annotations are trusted rather than checked.  Maybe have an option to
+                // disable using them?
+                if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
+                                || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
+                        && type.hasAnnotation(SIGNED)) {
+                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                } else {
+                    Range treeRange = ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
+
+                    if (treeRange != null) {
+                        switch (javaType.getKind()) {
+                            case BYTE:
+                            case CHAR:
+                                if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case SHORT:
+                                if (treeRange.isWithin(0, Short.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case INT:
+                                if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            case LONG:
+                                if (treeRange.isWithin(0, Long.MAX_VALUE)) {
+                                    type.replaceAnnotation(SIGNEDNESS_GLB);
+                                }
+                                break;
+                            default:
+                                // Nothing
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -149,61 +228,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
             annotateBooleanAsUnknownSignedness(type);
-            return null;
-        }
-
-        // Refines the type of an integer primitive to @SignednessGlb if it is within the signed
-        // positive range (i.e. its MSB is zero).
-        @Override
-        public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
-            TypeMirror javaType = type.getUnderlyingType();
-            TypeKind javaTypeKind = javaType.getKind();
-
-            if (javaTypeKind == TypeKind.BYTE
-                    || javaTypeKind == TypeKind.CHAR
-                    || javaTypeKind == TypeKind.SHORT
-                    || javaTypeKind == TypeKind.INT
-                    || javaTypeKind == TypeKind.LONG) {
-                AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
-                // These annotations are trusted rather than checked.  Maybe have an option to
-                // disable using them?
-                if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
-                                || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
-                        && type.hasAnnotation(SIGNED)) {
-                    type.replaceAnnotation(SIGNEDNESS_GLB);
-                } else {
-                    Range treeRange = IndexUtil.getPossibleValues(valueATM, valueFactory);
-
-                    if (treeRange != null) {
-                        switch (javaType.getKind()) {
-                            case BYTE:
-                            case CHAR:
-                                if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
-                                    type.replaceAnnotation(SIGNEDNESS_GLB);
-                                }
-                                break;
-                            case SHORT:
-                                if (treeRange.isWithin(0, Short.MAX_VALUE)) {
-                                    type.replaceAnnotation(SIGNEDNESS_GLB);
-                                }
-                                break;
-                            case INT:
-                                if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
-                                    type.replaceAnnotation(SIGNEDNESS_GLB);
-                                }
-                                break;
-                            case LONG:
-                                if (treeRange.isWithin(0, Long.MAX_VALUE)) {
-                                    type.replaceAnnotation(SIGNEDNESS_GLB);
-                                }
-                                break;
-                            default:
-                                // Nothing
-                        }
-                    }
-                }
-            }
-
             return null;
         }
     }

@@ -1,0 +1,27 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import org.checkerframework.checker.i18n.qual.Localized;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.common.subtyping.qual.Bottom;
+
+interface Importer {
+    List<Pair<@Localized String, List<String>>> getSupportedFileTypes();
+}
+
+interface Pair<A, B> {
+    B getSecond();
+}
+
+public class ImporterManager {
+    private static final List<Importer> registeredImporters = new ArrayList<>();
+
+    public static void chooseAndImportFile(Object parent) {
+        Function<@NonNull ?, @NonNull ?> x =
+                (@NonNull Importer imp) ->
+                        imp.getSupportedFileTypes().stream()
+                                .flatMap(
+                                        (@Bottom Pair<@Localized String, List<String>> p) ->
+                                                p.getSecond().stream());
+    }
+}

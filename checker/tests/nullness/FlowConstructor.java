@@ -31,8 +31,7 @@ public class FlowConstructor {
         b.toString();
     }
 
-    void semiRawMethod(
-                    @Raw(FlowConstructor.class) @UnderInitialization(FlowConstructor.class) FlowConstructor this) {
+    void semiRawMethod(@UnderInitialization(FlowConstructor.class) FlowConstructor this) {
         a.toString();
         b.toString();
     }

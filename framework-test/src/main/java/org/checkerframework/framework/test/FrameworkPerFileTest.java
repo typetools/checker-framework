@@ -28,6 +28,5 @@ public abstract class FrameworkPerFileTest extends CheckerFrameworkPerFileTest {
             String testDir,
             String... checkerOptions) {
         super(testFile, checker, testDir, checkerOptions);
-        this.checkerOptions.add("-Anocheckjdk");
     }
 }

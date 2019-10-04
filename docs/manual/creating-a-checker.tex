@@ -2,9 +2,9 @@
 \chapterAndLabel{How to create a new checker}{creating-a-checker}
 \label{writing-a-checker} % for old links; don't use any more!
 
-\newcommand{\TreeAPIBase}{https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/com/sun/source}
+\newcommand{\TreeAPIBase}{https://docs.oracle.com/en/java/javase/11/docs/api/jdk.compiler/com/sun/source}
 \newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
-\newcommand{\ModelAPIBase}{https://docs.oracle.com/javase/8/docs/api/javax/lang/model}
+\newcommand{\ModelAPIBase}{https://docs.oracle.com/en/java/javase/11/docs/api/java.compiler/javax/lang/model}
 \newcommand{\refModelclass}[2]{\href{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
@@ -265,7 +265,7 @@ Here is a good way to proceed.
   \<@NonNegative>, then you could write a test case such as:
 
 \begin{Verbatim}
-  void foo(@UnknownSign int us, @NonNegative int nn) {
+  void testHierarchy(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
     // :: error: assignment.type.incompatible
@@ -326,7 +326,7 @@ Here is a good way to proceed.
   possibly-negative value, then you would write a test case such as:
 
 \begin{Verbatim}
-  void foo(String[] myArray, @UnknownSign int us, @NonNegative int nn) {
+  void testArrayIndexing(String[] myArray, @UnknownSign int us, @NonNegative int nn) {
     myArray[us];  // expected error on this line
     myArray[nn];
   }
@@ -340,7 +340,7 @@ Here is a good way to proceed.
   integers and for array lengths, you would write a test case like the following:
 
 \begin{Verbatim}
-  void foo(String[] myArray) {
+  void testTypeIntroduction(String[] myArray) {
     @NonNegative nn1 = -1;  // expected error on this line
     @NonNegative nn2 = 0;
     @NonNegative nn3 = 1;
@@ -358,7 +358,7 @@ Here is a good way to proceed.
   test case such as:
 
 \begin{Verbatim}
-  void foo(@UnknownSign int us, @NonNegative int nn) {
+  void testDataflow(@UnknownSign int us, @NonNegative int nn) {
     @NonNegative nn2;
     nn2 = us;  // expected error on this line
     if (us > j) {
@@ -451,7 +451,7 @@ public @interface NonNegative {}
 The \refqualclass{framework/qual}{SubtypeOf} meta-annotation
 indicates the parent in the type hierarchy.
 
-The \sunjavadocanno{java/lang/annotation/Target.html}{Target}
+The \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}
 meta-annotation indicates where the annotation
 may be written. All type qualifiers that users can write in source code should
 have the value \<ElementType.TYPE\_USE> and optionally with the additional value
@@ -460,7 +460,7 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 % (Terminological note:  a \emph{meta-annotation} is an annotation that
 % is written on an annotation definition, such as
 % \refqualclass{framework/qual}{SubtypeOf} and
-% \sunjavadocanno{java/lang/annotation/Target.html}{Target}.)
+% \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}.)
 
 The annotations should be placed within a directory called \<qual>, and
 \<qual> should be placed in the same directory as your checker's source file.
@@ -859,7 +859,7 @@ must specify the component classes for construction.
 
 \begin{sloppypar}
 A checker can customize the default error messages through a
-\sunjavadoc{java/util/Properties.html}{Properties}-loadable text file named
+\sunjavadoc{java.base/java/util/Properties.html}{Properties}-loadable text file named
 \<messages.properties> that appears in the same directory as the checker class.
 The property file keys are the strings passed to \refmethodterse{framework/source}{SourceChecker}{report}{-org.checkerframework.framework.source.Result-java.lang.Object-}
 (like \code{type.incompatible}) and the values are the strings to be
@@ -1040,7 +1040,7 @@ Put them in a file \<\emph{MyChecker}Visitor.java> that extends
 BaseTypeVisitor performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\href{https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/}{Tree
+\href{https://docs.oracle.com/en/java/javase/11/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
 API},
 and it issues a warning (by calling
 \refmethod{framework/source}{SourceChecker}{report}
@@ -1296,7 +1296,7 @@ As an example, the Regex Checker's extended
 (If you disregard the instructions above and choose a different name or a
 different directory for your \<\emph{MyChecker}Transfer> class, you will
 also need to override the \<createFlowTransferFunction> method in your type
-factory to return to return a new instance of the class.)
+factory to return a new instance of the class.)
 
 (As a reminder, use of \refqualclass{framework/qual}{EnsuresQualifier} and
 \refqualclass{framework/qual}{EnsuresQualifierIf} may obviate the need for
@@ -1657,7 +1657,7 @@ To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jd
 
 To supply an annotated JDK as a stub file, create a file \<jdk.astub> in
 the checker's main source directory.  It will be automatically used by the
-checker.
+checker, unless the user supplies the command-line option \<-Aignorejdkastub>.
 You can also supply \<.astub> files in that directory for other libraries.
 You should list those other libraries in a
 \refqualclass{framework/qual}{StubFiles} annotation on the checker's main

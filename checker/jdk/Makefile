@@ -5,7 +5,7 @@
 # A version of the JDK with just headers/signatures: method bodies contain no bodies.
 CTSYM ?= $(JAVA_HOME)/lib/ct.sym
 
-CHECKER_DIRS = index lock nullness optional
+CHECKER_DIRS = index lock nullness optional signedness
 
 JAVA_FILES := $(shell find $(CHECKER_DIRS) -name '*.java' | sort)
 
@@ -32,6 +32,8 @@ jdk.jar-unconditionally: clean classes
 # the original JDK.
 jdk.jar-insertion:
 	echo Checker-Framework-Version: `git rev-parse --short HEAD` > manifest.txt
+	echo Checker-Framework-Commit-Author: `git show -s --pretty=%aN\ \<%ae\> HEAD` >> manifest.txt
+	echo Checker-Framework-Commit-Refs: `git show -s --pretty=%d HEAD` >> manifest.txt
 	echo Creation-Date: `date` >> manifest.txt
 	cd annotated; jar cfm ../jdk.jar ../manifest.txt .
 	rm manifest.txt
@@ -47,7 +49,8 @@ ANNOTATED_CLASSES = \
   $(patsubst lock/build/%.class,annotated/%.class, \
   $(patsubst nullness/build/%.class,annotated/%.class, \
   $(patsubst optional/build/%.class,annotated/%.class, \
-  $(ANNOTATED_CLASSES_BY_DIR)))))
+  $(patsubst signedness/build/%.class,annotated/%.class, \
+  $(ANNOTATED_CLASSES_BY_DIR))))))
 
 # Extract from $(CTSYM) an unannotated version of every file that will
 # eventually get any annotation.

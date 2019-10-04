@@ -39,6 +39,6 @@ public class ConditionalNotNode extends UnaryOperationNode {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getOperand());
+        return Objects.hash(ConditionalNotNode.class, getOperand());
     }
 }

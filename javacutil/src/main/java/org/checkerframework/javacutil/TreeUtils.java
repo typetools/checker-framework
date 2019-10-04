@@ -932,6 +932,9 @@ public final class TreeUtils {
             String typeName, String methodName, int params, ProcessingEnvironment env) {
         List<ExecutableElement> methods = new ArrayList<>(1);
         TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
+        if (typeElt == null) {
+            throw new UserError("Configuration problem! Could not load type: " + typeName);
+        }
         for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
             if (exec.getSimpleName().contentEquals(methodName)
                     && exec.getParameters().size() == params) {
@@ -955,7 +958,7 @@ public final class TreeUtils {
                 List<? extends VariableElement> params = exec.getParameters();
                 for (int i = 0; i < paramTypes.length; i++) {
                     VariableElement ve = params.get(i);
-                    TypeMirror tm = ve.asType();
+                    TypeMirror tm = TypeAnnotationUtils.unannotatedType(ve.asType());
                     if (!tm.toString().equals(paramTypes[i])) {
                         typesMatch = false;
                         break;
@@ -972,7 +975,8 @@ public final class TreeUtils {
                         + "."
                         + methodName
                         + "("
-                        + Arrays.toString(paramTypes));
+                        + Arrays.toString(paramTypes)
+                        + ")");
     }
 
     /**

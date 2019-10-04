@@ -1,6 +1,6 @@
 package org.checkerframework.checker.index.samelen;
 
-import static org.checkerframework.checker.index.IndexUtil.getValueOfAnnotationWithStringArgument;
+import static org.checkerframework.common.value.ValueCheckerUtils.getValueOfAnnotationWithStringArgument;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
@@ -131,7 +131,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (r != null) {
                     String varName = r.toString();
 
-                    List<String> exprs = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
+                    List<String> exprs = getValueOfAnnotationWithStringArgument(anm);
                     if (exprs.contains(varName)) {
                         exprs.remove(varName);
                     }

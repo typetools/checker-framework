@@ -63,7 +63,7 @@ public class TypeCastNode extends Node {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getOperand());
+        return Objects.hash(getType(), getOperand());
     }
 
     @Override

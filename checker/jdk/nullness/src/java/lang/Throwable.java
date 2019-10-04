@@ -31,7 +31,6 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 /**
@@ -462,7 +461,7 @@ public class Throwable implements Serializable {
   // @PolyRaw is a fair amount of work, so don't bother to do so yet.  See
   // https://github.com/typetools/checker-framework/issues/216 .
   // public synchronized @PolyRaw Throwable initCause(@PolyRaw Throwable this, @Nullable Throwable a1) { throw new RuntimeException("skeleton method"); }
-    public synchronized @UnknownInitialization @Raw Throwable initCause(@UnknownInitialization @Raw Throwable this, @Nullable Throwable cause) {
+    public synchronized @UnknownInitialization Throwable initCause(@UnknownInitialization Throwable this, @Nullable Throwable cause) {
         if (this.cause != this)
             throw new IllegalStateException("Can't overwrite cause with " +
                                             Objects.toString(cause, "a null"), this);

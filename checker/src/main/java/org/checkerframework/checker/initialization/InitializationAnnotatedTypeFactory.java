@@ -35,8 +35,6 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.NullnessAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.NullnessChecker;
-import org.checkerframework.checker.nullness.qual.NonRaw;
-import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -62,8 +60,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * The annotated type factory for the freedom-before-commitment type-system. The
  * freedom-before-commitment type-system and this class are abstract and need to be combined with
  * another type-system whose safe initialization should be tracked. For an example, see the {@link
- * NullnessChecker}. Also supports rawness as a type-system for tracking initialization, though FBC
- * is preferred.
+ * NullnessChecker}.
  */
 public abstract class InitializationAnnotatedTypeFactory<
                 Value extends CFAbstractValue<Value>,
@@ -72,58 +69,44 @@ public abstract class InitializationAnnotatedTypeFactory<
                 Flow extends CFAbstractAnalysis<Value, Store, Transfer>>
         extends GenericAnnotatedTypeFactory<Value, Store, Transfer, Flow> {
 
-    /** {@link UnknownInitialization} or {@link Raw}. */
-    protected final AnnotationMirror UNCLASSIFIED;
+    /** {@link UnknownInitialization}. */
+    protected final AnnotationMirror UNKNOWN_INITIALIZATION;
 
-    /** {@link Initialized} or {@link NonRaw}. */
-    protected final AnnotationMirror COMMITTED;
+    /** {@link Initialized}. */
+    protected final AnnotationMirror INITIALIZED;
 
     /** {@link UnderInitialization} or null. */
-    protected final AnnotationMirror FREE;
+    protected final AnnotationMirror UNDER_INITALIZATION;
 
     /** {@link NotOnlyInitialized} or null. */
-    protected final AnnotationMirror NOT_ONLY_COMMITTED;
+    protected final AnnotationMirror NOT_ONLY_INITIALIZED;
 
-    /** {@link FBCBottom} or {@link NonRaw}. */
+    /** {@link FBCBottom}. */
     protected final AnnotationMirror FBCBOTTOM;
 
-    /**
-     * Should the initialization type system be FBC? If not, the rawness type system is used for
-     * initialization.
-     */
-    protected final boolean useFbc;
-
-    // Cache for the initialization annotations
+    /** Cache for the initialization annotations. */
     protected final Set<Class<? extends Annotation>> initAnnos;
 
-    public InitializationAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
+    /**
+     * Create a new InitializationAnnotatedTypeFactory.
+     *
+     * @param checker the checker to which the new type factory belongs
+     */
+    public InitializationAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
-
-        this.useFbc = useFbc;
 
         Set<Class<? extends Annotation>> tempInitAnnos = new LinkedHashSet<>();
 
-        if (useFbc) {
-            COMMITTED = AnnotationBuilder.fromClass(elements, Initialized.class);
-            FREE = AnnotationBuilder.fromClass(elements, UnderInitialization.class);
-            NOT_ONLY_COMMITTED = AnnotationBuilder.fromClass(elements, NotOnlyInitialized.class);
-            FBCBOTTOM = AnnotationBuilder.fromClass(elements, FBCBottom.class);
-            UNCLASSIFIED = AnnotationBuilder.fromClass(elements, UnknownInitialization.class);
+        INITIALIZED = AnnotationBuilder.fromClass(elements, Initialized.class);
+        UNDER_INITALIZATION = AnnotationBuilder.fromClass(elements, UnderInitialization.class);
+        NOT_ONLY_INITIALIZED = AnnotationBuilder.fromClass(elements, NotOnlyInitialized.class);
+        FBCBOTTOM = AnnotationBuilder.fromClass(elements, FBCBottom.class);
+        UNKNOWN_INITIALIZATION = AnnotationBuilder.fromClass(elements, UnknownInitialization.class);
 
-            tempInitAnnos.add(UnderInitialization.class);
-            tempInitAnnos.add(Initialized.class);
-            tempInitAnnos.add(UnknownInitialization.class);
-            tempInitAnnos.add(FBCBottom.class);
-        } else {
-            COMMITTED = AnnotationBuilder.fromClass(elements, NonRaw.class);
-            FBCBOTTOM = COMMITTED; // @NonRaw is also bottom
-            UNCLASSIFIED = AnnotationBuilder.fromClass(elements, Raw.class);
-            FREE = null; // unused
-            NOT_ONLY_COMMITTED = null; // unused
-
-            tempInitAnnos.add(Raw.class);
-            tempInitAnnos.add(NonRaw.class);
-        }
+        tempInitAnnos.add(UnderInitialization.class);
+        tempInitAnnos.add(Initialized.class);
+        tempInitAnnos.add(UnknownInitialization.class);
+        tempInitAnnos.add(FBCBottom.class);
 
         initAnnos = Collections.unmodifiableSet(tempInitAnnos);
 
@@ -143,9 +126,9 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     protected boolean isInitializationAnnotation(AnnotationMirror anno) {
         assert anno != null;
-        return AnnotationUtils.areSameByName(anno, UNCLASSIFIED)
-                || AnnotationUtils.areSameByName(anno, FREE)
-                || AnnotationUtils.areSameByName(anno, COMMITTED)
+        return AnnotationUtils.areSameByName(anno, UNKNOWN_INITIALIZATION)
+                || AnnotationUtils.areSameByName(anno, UNDER_INITALIZATION)
+                || AnnotationUtils.areSameByName(anno, INITIALIZED)
                 || AnnotationUtils.areSameByName(anno, FBCBOTTOM);
     }
 
@@ -206,7 +189,6 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     public AnnotationMirror createFreeAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
-        assert useFbc : "The rawness type system does not have a @UnderInitialization annotation.";
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, UnderInitialization.class);
         builder.setValue("value", typeFrame);
         return builder.build();
@@ -220,42 +202,41 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     public AnnotationMirror createFreeAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
-        assert useFbc : "The rawness type system does not have a @UnderInitialization annotation.";
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, UnderInitialization.class);
         builder.setValue("value", typeFrame);
         return builder.build();
     }
 
     /**
-     * Creates a {@link UnknownInitialization} or {@link Raw} annotation with a given type frame.
+     * Creates a {@link UnknownInitialization} annotation with a given type frame.
      *
      * @param typeFrame the type down to which some value has been initialized
-     * @return an {@link UnknownInitialization} or {@link Raw} annotation with the given argument
+     * @return an {@link UnknownInitialization} annotation with the given argument
      */
     public AnnotationMirror createUnclassifiedAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
-        Class<? extends Annotation> clazz = useFbc ? UnknownInitialization.class : Raw.class;
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, clazz);
+        AnnotationBuilder builder =
+                new AnnotationBuilder(processingEnv, UnknownInitialization.class);
         builder.setValue("value", typeFrame);
         return builder.build();
     }
 
     /**
-     * Creates an {@link UnknownInitialization} or {@link Raw} annotation with a given type frame.
+     * Creates an {@link UnknownInitialization} annotation with a given type frame.
      *
      * @param typeFrame the type down to which some value has been initialized
-     * @return an {@link UnknownInitialization} or {@link Raw} annotation with the given argument
+     * @return an {@link UnknownInitialization} annotation with the given argument
      */
     public AnnotationMirror createUnclassifiedAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
-        Class<? extends Annotation> clazz = useFbc ? UnknownInitialization.class : Raw.class;
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, clazz);
+        AnnotationBuilder builder =
+                new AnnotationBuilder(processingEnv, UnknownInitialization.class);
         builder.setValue("value", typeFrame);
         return builder.build();
     }
 
     /**
-     * Returns the type frame of a given annotation.
+     * Returns the type frame (that is, the argument) of a given initialization annotation.
      *
      * @param annotation a {@link UnderInitialization} or {@link UnknownInitialization} annotation
      * @return the annotation's argument
@@ -267,93 +248,83 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Is {@code anno} the {@link UnderInitialization} annotation (with any type frame)? Always
-     * returns false if {@code useFbc} is false.
+     * Is {@code anno} the {@link UnderInitialization} annotation (with any type frame)?
      *
      * @param anno the annotation to check
      * @return true if {@code anno} is {@link UnderInitialization}
      */
     public boolean isFree(AnnotationMirror anno) {
-        return useFbc && AnnotationUtils.areSameByClass(anno, UnderInitialization.class);
+        return AnnotationUtils.areSameByClass(anno, UnderInitialization.class);
     }
 
     /**
-     * Is {@code anno} the {@link UnknownInitialization} annotation (with any type frame)? If {@code
-     * useFbc} is false, then {@link Raw} is used in the comparison.
+     * Is {@code anno} the {@link UnknownInitialization} annotation (with any type frame)?
      *
      * @param anno the annotation to check
-     * @return true if {@code anno} is {@link UnknownInitialization} or {@link Raw}
+     * @return true if {@code anno} is {@link UnknownInitialization}
      */
     public boolean isUnclassified(AnnotationMirror anno) {
-        Class<? extends Annotation> clazz = useFbc ? UnknownInitialization.class : Raw.class;
-        return AnnotationUtils.areSameByClass(anno, clazz);
+        return AnnotationUtils.areSameByClass(anno, UnknownInitialization.class);
     }
 
     /**
      * Is {@code anno} the bottom annotation?
      *
      * @param anno the annotation to check
-     * @return true if {@code anno} is {@link FBCBottom} or {@link NonRaw}
+     * @return true if {@code anno} is {@link FBCBottom}
      */
     public boolean isFbcBottom(AnnotationMirror anno) {
         return AnnotationUtils.areSame(anno, FBCBOTTOM);
     }
 
     /**
-     * Is {@code anno} the {@link Initialized} annotation? If {@code useFbc} is false, then {@link
-     * NonRaw} is used in the comparison.
+     * Is {@code anno} the {@link Initialized} annotation?
      *
      * @param anno the annotation to check
-     * @return true if {@code anno} is {@link Initialized} or {@link NonRaw}
+     * @return true if {@code anno} is {@link Initialized}
      */
     public boolean isCommitted(AnnotationMirror anno) {
-        return AnnotationUtils.areSame(anno, COMMITTED);
+        return AnnotationUtils.areSame(anno, INITIALIZED);
     }
 
     /**
      * Does {@code anno} have the annotation {@link UnderInitialization} (with any type frame)?
-     * Always returns false if {@code useFbc} is false.
      *
      * @param anno the annotation to check
      * @return true if {@code anno} has {@link UnderInitialization}
      */
     public boolean isFree(AnnotatedTypeMirror anno) {
-        return useFbc && anno.hasEffectiveAnnotation(UnderInitialization.class);
+        return anno.hasEffectiveAnnotation(UnderInitialization.class);
     }
 
     /**
-     * Does {@code anno} have the annotation {@link UnknownInitialization} (with any type frame)? If
-     * {@code useFbc} is false, then {@link Raw} is used in the comparison.
+     * Does {@code anno} have the annotation {@link UnknownInitialization} (with any type frame)?
      *
      * @param anno the annotation to check
-     * @return true if {@code anno} has {@link UnknownInitialization} or {@link Raw}
+     * @return true if {@code anno} has {@link UnknownInitialization}
      */
     public boolean isUnclassified(AnnotatedTypeMirror anno) {
-        Class<? extends Annotation> clazz = useFbc ? UnknownInitialization.class : Raw.class;
-        return anno.hasEffectiveAnnotation(clazz);
+        return anno.hasEffectiveAnnotation(UnknownInitialization.class);
     }
 
     /**
      * Does {@code anno} have the bottom annotation?
      *
      * @param anno the annotation to check
-     * @return true if {@code anno} has {@link FBCBottom} or {@link NonRaw}
+     * @return true if {@code anno} has {@link FBCBottom}
      */
     public boolean isFbcBottom(AnnotatedTypeMirror anno) {
-        Class<? extends Annotation> clazz = useFbc ? FBCBottom.class : NonRaw.class;
-        return anno.hasEffectiveAnnotation(clazz);
+        return anno.hasEffectiveAnnotation(FBCBottom.class);
     }
 
     /**
-     * Does {@code anno} have the annotation {@link Initialized}? If {@code useFbc} is false, then
-     * {@link NonRaw} is used in the comparison.
+     * Does {@code anno} have the annotation {@link Initialized}?
      *
      * @param anno the annotation to check
-     * @return true if {@code anno} has {@link Initialized} or {@link NonRaw}
+     * @return true if {@code anno} has {@link Initialized}
      */
     public boolean isCommitted(AnnotatedTypeMirror anno) {
-        Class<? extends Annotation> clazz = useFbc ? Initialized.class : NonRaw.class;
-        return anno.hasEffectiveAnnotation(clazz);
+        return anno.hasEffectiveAnnotation(Initialized.class);
     }
 
     @Override
@@ -363,11 +334,6 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     /** Are all fields committed-only? */
     protected boolean areAllFieldsCommittedOnly(ClassTree classTree) {
-        if (!useFbc) {
-            // In the rawness type system, no fields can store not fully
-            // initialized objects.
-            return true;
-        }
         for (Tree member : classTree.getMembers()) {
             if (!member.getKind().equals(Tree.Kind.VARIABLE)) {
                 continue;
@@ -486,11 +452,9 @@ public abstract class InitializationAnnotatedTypeFactory<
                     && getUninitializedInvariantFields(store, path, false, Collections.emptyList())
                             .isEmpty()) {
                 if (classType.isFinal()) {
-                    annotation = COMMITTED;
-                } else if (useFbc) {
-                    annotation = createFreeAnnotation(classType);
+                    annotation = INITIALIZED;
                 } else {
-                    annotation = createUnclassifiedAnnotation(classType);
+                    annotation = createFreeAnnotation(classType);
                 }
             }
         }
@@ -502,8 +466,8 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Returns a {@link UnderInitialization} annotation (or {@link UnknownInitialization} if rawness
-     * is used) that has the superclass of {@code type} as type frame.
+     * Returns a {@link UnderInitialization} annotation that has the superclass of {@code type} as
+     * type frame.
      */
     protected AnnotationMirror getFreeOrRawAnnotationOfSuperType(TypeMirror type) {
         // Find supertype if possible.
@@ -519,18 +483,10 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
         // Create annotation.
         if (superClass != null) {
-            if (useFbc) {
-                annotation = createFreeAnnotation(superClass);
-            } else {
-                annotation = createUnclassifiedAnnotation(superClass);
-            }
+            annotation = createFreeAnnotation(superClass);
         } else {
             // Use Object as a valid super-class.
-            if (useFbc) {
-                annotation = createFreeAnnotation(Object.class);
-            } else {
-                annotation = createUnclassifiedAnnotation(Object.class);
-            }
+            annotation = createFreeAnnotation(Object.class);
         }
         return annotation;
     }
@@ -614,8 +570,17 @@ public abstract class InitializationAnnotatedTypeFactory<
         return false;
     }
 
+    /**
+     * Return true if the type is initialized with respect to the given frame -- that is, all of the
+     * fields of the frame are initialized.
+     *
+     * @param type the type whose initialization type qualifiers to check
+     * @param frame a class in {@code type}'s class hierarchy
+     * @return true if the type is initialized for the given frame
+     */
     public boolean isInitializedForFrame(AnnotatedTypeMirror type, TypeMirror frame) {
-        AnnotationMirror initializationAnno = type.getEffectiveAnnotationInHierarchy(UNCLASSIFIED);
+        AnnotationMirror initializationAnno =
+                type.getEffectiveAnnotationInHierarchy(UNKNOWN_INITIALIZATION);
         TypeMirror typeFrame = getTypeFrameFromAnnotation(initializationAnno);
         Types types = processingEnv.getTypeUtils();
         return types.isSubtype(typeFrame, types.erasure(frame));
@@ -641,7 +606,8 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
         // not necessary if there is an explicit UnknownInitialization
         // annotation on the field
-        if (AnnotationUtils.containsSameByName(fieldAnnotations.getAnnotations(), UNCLASSIFIED)) {
+        if (AnnotationUtils.containsSameByName(
+                fieldAnnotations.getAnnotations(), UNKNOWN_INITIALIZATION)) {
             return;
         }
         if (isUnclassified(receiverType) || isFree(receiverType)) {
@@ -651,15 +617,15 @@ public abstract class InitializationAnnotatedTypeFactory<
                     isInitializedForFrame(receiverType, fieldDeclarationType);
             if (isInitializedForFrame) {
                 // The receiver is initialized for this frame.
-                // Change the type of the field to @UnknownInitialization or @Raw so that
+                // Change the type of the field to @UnknownInitialization so that
                 // anything can be assigned to this field.
-                type.replaceAnnotation(UNCLASSIFIED);
+                type.replaceAnnotation(UNKNOWN_INITIALIZATION);
             } else if (computingAnnotatedTypeMirrorOfLHS) {
                 // The receiver is not initialized for this frame, but the type of a lhs is being
                 // computed.
-                // Change the type of the field to @UnknownInitialization or @Raw so that
+                // Change the type of the field to @UnknownInitialization so that
                 // anything can be assigned to this field.
-                type.replaceAnnotation(UNCLASSIFIED);
+                type.replaceAnnotation(UNKNOWN_INITIALIZATION);
             } else {
                 // The receiver is not initialized for this frame and the type being computed is not
                 // a LHS.
@@ -668,11 +634,10 @@ public abstract class InitializationAnnotatedTypeFactory<
                 type.addAnnotations(qualHierarchy.getTopAnnotations());
             }
 
-            if (!AnnotationUtils.containsSame(declaredFieldAnnotations, NOT_ONLY_COMMITTED)
-                    || !useFbc) {
+            if (!AnnotationUtils.containsSame(declaredFieldAnnotations, NOT_ONLY_INITIALIZED)) {
                 // add root annotation for all other hierarchies, and
                 // Committed for the commitment hierarchy
-                type.replaceAnnotation(COMMITTED);
+                type.replaceAnnotation(INITIALIZED);
             }
         }
     }
@@ -732,26 +697,24 @@ public abstract class InitializationAnnotatedTypeFactory<
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
             super.visitNewClass(node, p);
-            if (useFbc) {
-                boolean allCommitted = true;
-                Type type = ((JCTree) node).type;
-                for (ExpressionTree a : node.getArguments()) {
-                    final AnnotatedTypeMirror t = getAnnotatedType(a);
-                    allCommitted &= (isCommitted(t) || isFbcBottom(t));
-                }
-                if (!allCommitted) {
-                    p.replaceAnnotation(createFreeAnnotation(type));
-                    return null;
-                }
+            boolean allCommitted = true;
+            Type type = ((JCTree) node).type;
+            for (ExpressionTree a : node.getArguments()) {
+                final AnnotatedTypeMirror t = getAnnotatedType(a);
+                allCommitted &= (isCommitted(t) || isFbcBottom(t));
             }
-            p.replaceAnnotation(COMMITTED);
+            if (!allCommitted) {
+                p.replaceAnnotation(createFreeAnnotation(type));
+                return null;
+            }
+            p.replaceAnnotation(INITIALIZED);
             return null;
         }
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (tree.getKind() != Tree.Kind.NULL_LITERAL) {
-                type.addAnnotation(COMMITTED);
+                type.addAnnotation(INITIALIZED);
             }
             return super.visitLiteral(tree, type);
         }
@@ -764,7 +727,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * and {@link InitializationQualifierHierarchy#leastUpperBoundInitialization(AnnotationMirror,
      * AnnotationMirror)} for appropriate qualifiers. See protected subclass
      * NullnessQualifierHierarchy within class {@link
-     * org.checkerframework.checker.nullness.AbstractNullnessChecker} for an example.
+     * org.checkerframework.checker.nullness.NullnessChecker} for an example.
      */
     protected abstract class InitializationQualifierHierarchy extends MultiGraphQualifierHierarchy {
 

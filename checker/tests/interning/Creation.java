@@ -28,12 +28,12 @@ public class Creation {
 
     public @Interned Object read_data_1() {
         // :: error: (return.type.incompatible)
-        return new Integer(22);
+        return Integer.valueOf(22);
     }
 
     public @Interned Integer read_data_2() {
         // :: error: (return.type.incompatible)
-        return new Integer(22);
+        return Integer.valueOf(22);
     }
 
     public @Interned Object read_data_3() {

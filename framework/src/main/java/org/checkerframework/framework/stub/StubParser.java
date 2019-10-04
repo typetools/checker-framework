@@ -109,6 +109,11 @@ public class StubParser {
     /** Whether to print warnings about stub files that overwrite annotations from bytecode. */
     private final boolean warnIfStubOverwritesBytecode;
 
+    /**
+     * Whether to print warnings about stub files that are redundant with annotations from bytecode.
+     */
+    private final boolean warnIfStubRedundantWithBytecode;
+
     /** Whether to print verbose debugging messages. */
     private final boolean debugStubParser;
 
@@ -191,6 +196,9 @@ public class StubParser {
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
         this.warnIfNotFoundIgnoresClasses = options.containsKey("stubWarnIfNotFoundIgnoresClasses");
         this.warnIfStubOverwritesBytecode = options.containsKey("stubWarnIfOverwritesBytecode");
+        this.warnIfStubRedundantWithBytecode =
+                options.containsKey("stubWarnIfRedundantWithBytecode")
+                        && atypeFactory.shouldWarnIfStubRedundantWithBytecode();
         this.debugStubParser = options.containsKey("stubDebug");
 
         this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
@@ -407,6 +415,7 @@ public class StubParser {
                             "No supported annotations found! This likely means stub file %s doesn't import them correctly.",
                             filename));
         }
+        allStubAnnotations.putAll(annosInPackage(findPackage("java.lang")));
     }
 
     /** Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. */
@@ -618,37 +627,38 @@ public class StubParser {
             for (ClassOrInterfaceType superType : typeDecl.getExtendedTypes()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
                 if (foundType == null) {
-                    throw new BugInCF(
-                            "StubParser: could not find superclass "
+                    stubWarn(
+                            "could not find superclass "
                                     + superType
                                     + " from type "
                                     + type
                                     + LINE_SEPARATOR
                                     + "Stub file does not match bytecode");
+                } else {
+                    annotate(foundType, superType, null);
                 }
-                annotate(foundType, superType, null);
             }
         }
         if (typeDecl.getImplementedTypes() != null) {
             for (ClassOrInterfaceType superType : typeDecl.getImplementedTypes()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
                 if (foundType == null) {
-                    throw new BugInCF(
-                            "StubParser: could not find superinterface "
+                    stubWarn(
+                            "could not find superinterface "
                                     + superType
                                     + " from type "
                                     + type
                                     + LINE_SEPARATOR
                                     + "Stub file does not match bytecode");
+                } else {
+                    annotate(foundType, superType, null);
                 }
-                annotate(foundType, superType, null);
             }
         }
     }
 
     /** Adds type and declaration annotations from {@code decl}. */
     private void processCallableDeclaration(CallableDeclaration<?> decl, ExecutableElement elt) {
-
         // Declaration annotations
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         if (decl.isMethodDeclaration()) {
@@ -658,6 +668,14 @@ public class StubParser {
         addDeclAnnotations(declAnnos, elt);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
+        AnnotatedExecutableType origMethodType;
+
+        if (warnIfStubRedundantWithBytecode) {
+            origMethodType = methodType.deepCopy();
+        } else {
+            origMethodType = null;
+        }
+
         // Type Parameters
         annotateTypeParameters(
                 decl, elt, atypes, methodType.getTypeVariables(), decl.getTypeParameters());
@@ -698,6 +716,16 @@ public class StubParser {
                         methodType.getReceiverType(),
                         decl.getReceiverParameter().get().getAnnotations());
             }
+        }
+
+        if (warnIfStubRedundantWithBytecode
+                && methodType.toString().equals(origMethodType.toString())) {
+            stubWarn(
+                    String.format(
+                            "in file %s at line %s: redundant stub file specification for: %s",
+                            filename.substring(filename.lastIndexOf('/') + 1),
+                            decl.getBegin().get().line,
+                            ElementUtils.getVerboseName(elt)));
         }
 
         // Store the type.
@@ -847,7 +875,11 @@ public class StubParser {
     private void annotate(
             AnnotatedTypeMirror atype, Type typeDef, NodeList<AnnotationExpr> declAnnos) {
         if (atype.getKind() == TypeKind.ARRAY) {
-            annotateAsArray((AnnotatedArrayType) atype, (ReferenceType) typeDef, declAnnos);
+            if (typeDef instanceof ReferenceType) {
+                annotateAsArray((AnnotatedArrayType) atype, (ReferenceType) typeDef, declAnnos);
+            } else {
+                stubWarn("expected ReferenceType but found: " + typeDef);
+            }
             return;
         }
 
@@ -878,14 +910,16 @@ public class StubParser {
                 if (declType.getTypeArguments().isPresent()
                         && !declType.getTypeArguments().get().isEmpty()
                         && !adeclType.getTypeArguments().isEmpty()) {
-                    assert declType.getTypeArguments().get().size()
-                                    == adeclType.getTypeArguments().size()
-                            : String.format(
-                                    "Mismatch in type argument size between %s (%d) and %s (%d)",
-                                    declType,
-                                    declType.getTypeArguments().get().size(),
-                                    adeclType,
-                                    adeclType.getTypeArguments().size());
+                    if (declType.getTypeArguments().get().size()
+                            != adeclType.getTypeArguments().size()) {
+                        stubWarn(
+                                String.format(
+                                        "Mismatch in type argument size between %s (%d) and %s (%d)",
+                                        declType,
+                                        declType.getTypeArguments().get().size(),
+                                        adeclType,
+                                        adeclType.getTypeArguments().size()));
+                    }
                     for (int i = 0; i < declType.getTypeArguments().get().size(); ++i) {
                         annotate(
                                 adeclType.getTypeArguments().get(i),
@@ -900,8 +934,8 @@ public class StubParser {
                 if (!typeDef.isWildcardType()) {
                     // We throw an error here, as otherwise we are just getting a generic cast error
                     // on the very next line.
-                    throw new Error(
-                            "StubParser: Wildcard type <"
+                    stubWarn(
+                            "Wildcard type <"
                                     + atype
                                     + "> doesn't match type in stubs file: <"
                                     + typeDef
@@ -912,6 +946,7 @@ public class StubParser {
                                     + LINE_SEPARATOR
                                     + "While parsing "
                                     + parseState);
+                    return;
                 }
                 WildcardType wildcardDef = (WildcardType) typeDef;
                 if (wildcardDef.getExtendedType().isPresent()) {
@@ -1062,6 +1097,7 @@ public class StubParser {
                 msg = msg + "%n  For more details, run with -AstubDebug";
             }
             stubWarn(msg);
+            return;
         }
         for (int i = 0; i < typeParameters.size(); ++i) {
             TypeParameter param = typeParameters.get(i);
@@ -1193,10 +1229,9 @@ public class StubParser {
         stubWarnNotFound(
                 "Class/interface " + wantedClassOrInterfaceName + " not found in type " + typeElt);
         if (debugStubParser) {
-            for (ExecutableElement method :
-                    ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-                stubDebug(String.format("  Here are the type declarations of %s:", typeElt));
-                stubDebug(String.format("  %s", method));
+            stubDebug(String.format("  Here are the type declarations of %s:", typeElt));
+            for (TypeElement method : ElementFilter.typesIn(typeElt.getEnclosedElements())) {
+                stubDebug(String.format("    %s", method));
             }
         }
         return null;
@@ -1222,10 +1257,9 @@ public class StubParser {
 
         stubWarnNotFound("Enum " + wantedEnumName + " not found in type " + typeElt);
         if (debugStubParser) {
-            for (ExecutableElement method :
-                    ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-                stubDebug(String.format("  Here are the type declarations of %s:", typeElt));
-                stubDebug(String.format("  %s", method));
+            stubDebug(String.format("  Here are the type declarations of %s:", typeElt));
+            for (TypeElement method : ElementFilter.typesIn(typeElt.getEnclosedElements())) {
+                stubDebug(String.format("    %s", method));
             }
         }
         return null;
@@ -1271,10 +1305,10 @@ public class StubParser {
         }
         stubWarnNotFound("Method " + wantedMethodString + " not found in type " + typeElt);
         if (debugStubParser) {
+            stubDebug(String.format("  Here are the methods of %s:", typeElt));
             for (ExecutableElement method :
                     ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-                stubDebug(String.format("  Here are the methods of %s:", typeElt));
-                stubDebug(String.format("  %s", method));
+                stubDebug(String.format("    %s", method));
             }
         }
         return null;
@@ -1390,18 +1424,16 @@ public class StubParser {
      */
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, AnnotationMirror> allStubAnnotations) {
-        AnnotationMirror annoMirror;
+        String annoName = annotation.getNameAsString();
+        AnnotationMirror annoMirror = allStubAnnotations.get(annoName);
+        if (annoMirror == null) {
+            // Not a supported qualifier -> ignore
+            return null;
+        }
         if (annotation instanceof MarkerAnnotationExpr) {
-            String annoName = ((MarkerAnnotationExpr) annotation).getNameAsString();
-            annoMirror = allStubAnnotations.get(annoName);
+            return annoMirror;
         } else if (annotation instanceof NormalAnnotationExpr) {
             NormalAnnotationExpr nrmanno = (NormalAnnotationExpr) annotation;
-            String annoName = nrmanno.getNameAsString();
-            annoMirror = allStubAnnotations.get(annoName);
-            if (annoMirror == null) {
-                // Not a supported qualifier -> ignore
-                return null;
-            }
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
             List<MemberValuePair> pairs = nrmanno.getPairs();
             if (pairs != null) {
@@ -1420,12 +1452,6 @@ public class StubParser {
             return builder.build();
         } else if (annotation instanceof SingleMemberAnnotationExpr) {
             SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr) annotation;
-            String annoName = sglanno.getNameAsString();
-            annoMirror = allStubAnnotations.get(annoName);
-            if (annoMirror == null) {
-                // Not a supported qualifier -> ignore
-                return null;
-            }
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
             Expression valexpr = sglanno.getMemberValue();
             boolean success = handleExpr(builder, "value", valexpr);
@@ -1439,7 +1465,6 @@ public class StubParser {
         } else {
             throw new BugInCF("StubParser: unknown annotation type: " + annotation);
         }
-        return annoMirror;
     }
 
     /** Returns the value of {@code expr}, or null if some problem occurred getting the value. */

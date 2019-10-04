@@ -224,10 +224,6 @@ public abstract class GenericAnnotatedTypeFactory<
             flowResultAnalysisCaches = null;
         }
 
-        // Add common aliases.
-        // addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
-        //         Pure.class, AnnotationUtils.fromClass(elements, Pure.class));
-
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
     }
@@ -791,6 +787,11 @@ public abstract class GenericAnnotatedTypeFactory<
         if (annotationMirror == null) {
             if (receiver instanceof LocalVariable) {
                 Element ele = ((LocalVariable) receiver).getElement();
+                // Because of
+                // https://github.com/eisop/checker-framework/issues/14
+                // and the workaround in
+                // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
+                // The annotationMirror may not contain all explicitly written annotations.
                 annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
             } else if (receiver instanceof FieldAccess) {
                 Element ele = ((FieldAccess) receiver).getField();
@@ -1359,6 +1360,9 @@ public abstract class GenericAnnotatedTypeFactory<
             case ARRAY_ACCESS:
                 res = getAnnotatedType(lhsTree);
                 break;
+            case PARENTHESIZED:
+                res = getAnnotatedTypeLhs(TreeUtils.withoutParens((ExpressionTree) lhsTree));
+                break;
             default:
                 if (TreeUtils.isTypeTree(lhsTree)) {
                     // lhsTree is a type tree at the pseudo assignment of a returned expression to
@@ -1470,8 +1474,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Like {#addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding implementations
-     * typically simply pass the boolean to calls to super.
+     * Like {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding
+     * implementations typically simply pass the boolean to calls to super.
      */
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
@@ -1551,7 +1555,6 @@ public abstract class GenericAnnotatedTypeFactory<
                 new DefaultInferredTypesApplier(getQualifierHierarchy(), this);
         applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
     }
-
     /**
      * Applies defaults for types in a class with an qualifier parameter.
      *
@@ -1603,6 +1606,14 @@ public abstract class GenericAnnotatedTypeFactory<
         }.visit(type);
     }
 
+    /**
+     * To add annotations to the type of method or constructor parameters, add a {@link
+     * TypeAnnotator} using {@link #createTypeAnnotator()} and see the comment in {@link
+     * TypeAnnotator#visitExecutable(AnnotatedExecutableType, Void)}.
+     *
+     * @param elt an element
+     * @param type the type obtained from {@code elt}
+     */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         applyQualifierParameterDefaults(elt, type);

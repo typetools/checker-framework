@@ -1,17 +1,17 @@
 #!/bin/bash
 
-echo "Entering `pwd`/.travis-build.sh, GROUP=$1"
+echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
 
 # Optional argument $1 is one of:
-#   all, all-tests, jdk.jar, misc, checker-framework-inference, plume-lib, downstream
+#   all, framework-tests, all-tests, jdk.jar, misc, checker-framework-inference, plume-lib, downstream
 # It defaults to "all".
 export GROUP=$1
 if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "checker-framework-inference" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
-  echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib."
+if [[ "${GROUP}" != "all" && "${GROUP}" != "framework-tests" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "checker-framework-inference" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
+  echo "Bad argument '${GROUP}'; should be omitted or one of: all, framework-tests, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib."
   exit 1
 fi
 
@@ -39,19 +39,19 @@ set -o xtrace
 
 export SHELLOPTS
 
-SLUGOWNER=${TRAVIS_PULL_REQUEST_SLUG%/*}
-if [[ "$SLUGOWNER" == "" ]]; then
-  SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
-fi
-if [[ "$SLUGOWNER" == "" ]]; then
-  SLUGOWNER=typetools
-fi
-echo SLUGOWNER=$SLUGOWNER
+git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
+  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+# For debugging
+/tmp/plume-scripts/ci-info typetools
+eval `/tmp/plume-scripts/ci-info typetools`
 
-export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
-source ./.travis-build-without-test.sh ${BUILDJDK}
+ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPTDIR=$ROOTDIR/checker/bin-devel/
+
+source $SCRIPTDIR/build.sh ${BUILDJDK}
 # The above command builds or downloads the JDK, so there is no need for a
 # subsequent command to build it except to test building it.
 
@@ -61,113 +61,37 @@ echo "In checker-framework/.travis-build.sh GROUP=$GROUP"
 
 ### TESTS OF THIS REPOSITORY
 
+if [[ "${GROUP}" == "framework-tests" || "${GROUP}" == "all" ]]; then
+  # These are tests that should pass without an annotated jdk. They are also run by all-tests.
+  # Once we have an annotataed jdk for 11 to test, this set of tests can be removed.
+  # TODO: These aren't being run by Azure.
+  ./gradlew nullnessExtraTests framework:test framework:jtreg --console=plain --warning-mode=all -s --no-daemon
+fi
+
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  ./gradlew allTests --console=plain --warning-mode=all --no-daemon
-  # Moved example-tests-nobuildjdk out of all tests because it fails in
-  # the release script because the newest maven artifacts are not published yet.
-  ./gradlew :checker:exampleTests --console=plain --warning-mode=all --no-daemon
+  $SCRIPTDIR/test-all-tests.sh
 fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
-  ## Run the tests for the type systems that use the annotated JDK
-  ./gradlew IndexTest LockTest NullnessFbcTest OptionalTest -PuseLocalJdk --console=plain --warning-mode=all --no-daemon
+  $SCRIPTDIR/test-jdk-jar.sh
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
-  ## jdkany tests: miscellaneous tests that shouldn't depend on JDK version.
-  ## (Maybe they don't even need the full ./.travis-build-without-test.sh ;
-  ## for example they currently don't need the annotated JDK.)
-
-  set -e
-
-  # Code style and formatting
-  ./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all --no-daemon
-
-  # Run error-prone
-  ./gradlew runErrorProne --console=plain --warning-mode=all --no-daemon
-
-  # HTML legality
-  ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
-
-  # Documentation
-  ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon
-  make -C docs/manual all
-
-  # This comes last, in case we wish to ignore it
-  echo "TRAVIS_COMMIT_RANGE = $TRAVIS_COMMIT_RANGE"
-  # $TRAVIS_COMMIT_RANGE is empty for builds triggered by the initial commit of a new branch.
-  if [ -n "$TRAVIS_COMMIT_RANGE" ] ; then
-    # Until https://github.com/travis-ci/travis-ci/issues/4596 is fixed, $TRAVIS_COMMIT_RANGE is a
-    # good argument to `git diff` but a bad argument to `git log` (they interpret "..." differently!).
-    (git diff $TRAVIS_COMMIT_RANGE > /tmp/diff.txt 2>&1) || true
-    (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/rjp-output.txt 2>&1) || true
-    [ -s /tmp/diff.txt ] || ([[ "${TRAVIS_BRANCH}" != "master" && "${TRAVIS_EVENT_TYPE}" == "push" ]] || (echo "/tmp/diff.txt is empty; try pulling base branch (often master) into compare branch (often feature branch)" && false))
-    wget https://raw.githubusercontent.com/plume-lib/plume-scripts/master/lint-diff.py
-    python lint-diff.py --strip-diff=1 --strip-lint=2 /tmp/diff.txt /tmp/rjp-output.txt
-  fi
-
+  $SCRIPTDIR/test-misc.sh
 fi
 
 ### TESTS OF DOWNSTREAM REPOSITORIES
 
 if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; then
-  ## checker-framework-inference is a downstream test, but run it in its
-  ## own group because it is most likely to fail, and it's helpful to see
-  ## that only it, not other downstream tests, failed.
-
-  # checker-framework-inference: 18 minutes
-  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
-  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools checker-framework-inference`
-  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
-  (cd .. && git clone -b ${BRANCH} -q --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
-
-  export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
-  export PATH=$AFU/scripts:$PATH
-  (cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all --no-daemon)
-
+  $SCRIPTDIR/test-cf-inference.sh
 fi
 
 if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
-  # plume-lib-typecheck: 15 minutes
-  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
-  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetests plume-lib-typecheck`
-  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
-  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
-
-  (cd ../plume-lib-typecheck && ./.travis-build.sh)
+  $SCRIPTDIR/test-plume-lib.sh
 fi
 
 if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
-  ## downstream tests:  projects that depend on the Checker Framework.
-  ## These are here so they can be run by pull requests.  (Pull requests
-  ## currently don't trigger downstream jobs.)
-  ## Not done in the Travis build, but triggered as a separate Travis project:
-  ##  * daikon-typecheck: (takes 2 hours)
-
-  echo "TRAVIS_PULL_REQUEST_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH"
-  echo "TRAVIS_BRANCH=$TRAVIS_BRANCH"
-
-  # Checker Framework demos
-  [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
-  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools checker-framework.demos`
-  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
-  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} checker-framework-demos) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} checker-framework-demos)
-  ./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
-
-  # Guava
-  REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools guava`
-  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
-  if [ $BRANCH = "master" ] ; then
-    REPO=https://github.com/typetools/guava.git
-    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} cf-master`
-    if [ $BRANCH = "master" ] ; then
-      BRANCH=cf-master
-    fi
-  fi
-  (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO} guava)
-  export CHECKERFRAMEWORK=${CHECKERFRAMEWORK:-$ROOT/checker-framework}
-  (cd $ROOT/guava/guava && mvn compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
-
+  $SCRIPTDIR/test-downstream.sh
 fi
 
-echo "Exiting `pwd`/.travis-build.sh, GROUP=$1"
+echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"

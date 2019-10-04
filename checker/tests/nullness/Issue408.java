@@ -2,7 +2,6 @@
 // https://github.com/typetools/checker-framework/issues/408
 
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
-import org.checkerframework.checker.nullness.qual.Raw;
 
 class Issue408 {
     static class Bar {
@@ -10,7 +9,7 @@ class Issue408 {
             doIssue408();
         }
 
-        String doIssue408(@UnderInitialization @Raw(Issue408.Bar.class) Bar this) {
+        String doIssue408(@UnderInitialization Bar this) {
             return "";
         }
     }
@@ -19,7 +18,7 @@ class Issue408 {
         String myString = "hello";
 
         @Override
-        String doIssue408(@UnderInitialization @Raw Baz this) {
+        String doIssue408(@UnderInitialization Baz this) {
             // :: error: (dereference.of.nullable)
             return myString.toLowerCase();
         }

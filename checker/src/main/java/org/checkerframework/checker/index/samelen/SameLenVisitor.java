@@ -12,6 +12,7 @@ import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -47,7 +48,9 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
                 if (am == null) {
                     exprs = Collections.singletonList(rhsExpr);
                 } else {
-                    exprs = new TreeSet<>(IndexUtil.getValueOfAnnotationWithStringArgument(am));
+                    exprs =
+                            new TreeSet<>(
+                                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(am));
                     exprs.add(rhsExpr);
                 }
                 AnnotationMirror newSameLen = atypeFactory.createSameLen(exprs);

@@ -371,7 +371,7 @@ public class WholeProgramInferenceScenesHelper {
             }
         }
 
-        // Checks if am is an implicit annotation.
+        // Checks if am is a default annotation.
         // This case checks if it is meta-annotated with @DefaultFor.
         // TODO: Handle cases of annotations added via an
         // org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator.

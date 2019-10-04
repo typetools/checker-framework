@@ -7,6 +7,6 @@ class ValidType {
         // :: error: (type.invalid.conflicting.annos)
         @NonNull @Nullable String l1;
         // :: error: (type.invalid.conflicting.annos)
-        @NonRaw @Raw @UnderInitialization @UnknownInitialization String f;
+        @UnderInitialization @UnknownInitialization String f;
     }
 }

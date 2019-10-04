@@ -12,7 +12,7 @@ public final class InitializedField {
     }
 
     @RequiresNonNull("stack")
-    public Object iPeek(@UnknownInitialization @Raw InitializedField this) {
+    public Object iPeek(@UnknownInitialization InitializedField this) {
         return stack.peek();
     }
 

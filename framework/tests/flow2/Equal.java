@@ -28,4 +28,17 @@ class Equal {
             @Odd String l3 = f1;
         }
     }
+
+    void t3(@Odd Long p1) {
+        // :: error: (assignment.type.incompatible)
+        @Odd Long l1 = Long.valueOf(2L);
+        if (Long.valueOf(2L) == p1) {
+            // The result of valueOf is not deterministic, so it can't be refined.
+            // :: error: (assignment.type.incompatible)
+            @Odd Long l2 = Long.valueOf(2L);
+        } else {
+            // :: error: (assignment.type.incompatible)
+            @Odd Long l3 = Long.valueOf(2L);
+        }
+    }
 }

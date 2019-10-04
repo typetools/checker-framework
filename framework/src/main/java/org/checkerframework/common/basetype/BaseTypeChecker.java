@@ -65,8 +65,8 @@ import org.checkerframework.javacutil.UserError;
  *       hierarchy, mainly, subtyping rules
  *   <li>{@link TypeHierarchy}: to check subtyping rules between <b>annotated types</b> rather than
  *       qualifiers
- *   <li>{@link AnnotatedTypeFactory}: to construct qualified types enriched with implicit
- *       qualifiers according to the type system rules
+ *   <li>{@link AnnotatedTypeFactory}: to construct qualified types enriched with default qualifiers
+ *       according to the type system rules
  *   <li>{@link BaseTypeVisitor}: to visit the compiled Java files and check for violations of the
  *       type system rules
  * </ul>

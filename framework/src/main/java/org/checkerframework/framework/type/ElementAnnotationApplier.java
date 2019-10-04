@@ -77,7 +77,7 @@ public class ElementAnnotationApplier {
         new TypeVarAnnotator().visit(type, typeFactory);
     }
 
-    /** Same as apply except that annatation aren't copied from type parameter declarations. */
+    /** Same as apply except that annotations aren't copied from type parameter declarations. */
     private static void applyInternal(
             final AnnotatedTypeMirror type,
             final Element element,
@@ -90,7 +90,13 @@ public class ElementAnnotationApplier {
             TypeVarUseApplier.apply(type, element, typeFactory);
 
         } else if (VariableApplier.accepts(type, element)) {
-            VariableApplier.apply(type, element);
+            if (element.getKind() != ElementKind.LOCAL_VARIABLE) {
+                // For local variables we have the source code,
+                // so there is no need to look at the Element.
+                // This is needed to avoid a bug in the JDK:
+                // https://github.com/eisop/checker-framework/issues/14
+                VariableApplier.apply(type, element);
+            }
 
         } else if (MethodApplier.accepts(type, element)) {
             MethodApplier.apply(type, element, typeFactory);
@@ -166,7 +172,7 @@ public class ElementAnnotationApplier {
      */
     private static boolean isCaptureConvertedTypeVar(final Element element) {
         final Element enclosure = element.getEnclosingElement();
-        return (((Symbol) enclosure).kind == com.sun.tools.javac.code.Kinds.NIL);
+        return (((Symbol) enclosure).kind == com.sun.tools.javac.code.Kinds.Kind.NIL);
     }
 
     /**

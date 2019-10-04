@@ -414,6 +414,9 @@ public class AnnotationUtils {
      * type is TYPE_USE, then ElementKinds returned should be the same as those returned for TYPE
      * and TYPE_PARAMETER, but this method returns the empty set instead.
      *
+     * <p>If the Element is MODULE, the empty set is returned. This is so that this method can
+     * compile with Java 8.
+     *
      * @param elementType the elementType to find ElementKinds for
      * @return the set of {@link ElementKind}s corresponding to {@code elementType}
      */
@@ -447,6 +450,11 @@ public class AnnotationUtils {
             case TYPE_USE:
                 return EnumSet.noneOf(ElementKind.class);
             default:
+                // TODO: Add actual case to check for the enum constant and return Set containing
+                // ElementKind.MODULE.  (Java 11)
+                if (elementType.name().contentEquals("MODULE")) {
+                    return EnumSet.noneOf(ElementKind.class);
+                }
                 throw new BugInCF("Unrecognized ElementType: " + elementType);
         }
     }
@@ -624,7 +632,10 @@ public class AnnotationUtils {
                 return expectedType.cast(val.getValue());
             }
         }
-        throw new BugInCF("No element with name \'" + elementName + "\' in annotation " + anno);
+        throw new BugInCF(
+                String.format(
+                        "No element with name \'%s\' in annotation %s; useDefaults=%s, valmap.keySet()=%s",
+                        elementName, anno, useDefaults, valmap.keySet()));
     }
 
     /**

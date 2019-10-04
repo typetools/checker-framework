@@ -38,22 +38,22 @@ class RawTypesBounded {
             init(); // valid
         }
 
-        public void init(@Raw @UnknownInitialization A this) {
+        public void init(@UnknownInitialization A this) {
             // :: error: (dereference.of.nullable)
             output(this.field.length());
         }
 
-        public void initExpl2(@Raw @UnknownInitialization A this) {
+        public void initExpl2(@UnknownInitialization A this) {
             // :: error: (argument.type.incompatible)
             output(this.field);
         }
 
-        public void initImpl1(@Raw @UnknownInitialization A this) {
+        public void initImpl1(@UnknownInitialization A this) {
             // :: error: (dereference.of.nullable)
             output(field.length());
         }
 
-        public void initImpl2(@Raw @UnknownInitialization A this) {
+        public void initImpl2(@UnknownInitialization A this) {
             // :: error: (argument.type.incompatible)
             output(field);
         }
@@ -70,23 +70,23 @@ class RawTypesBounded {
         }
 
         @Override
-        public void init(@Raw @UnknownInitialization B this) {
+        public void init(@UnknownInitialization B this) {
             // :: error: (dereference.of.nullable)
             output(this.field.length()); // error (TODO: substitution)
             super.init(); // valid
         }
 
-        public void initImpl1(@Raw @UnknownInitialization B this) {
+        public void initImpl1(@UnknownInitialization B this) {
             // :: error: (dereference.of.nullable)
             output(field.length()); // error (TODO: substitution)
         }
 
-        public void initExpl2(@Raw @UnknownInitialization B this) {
+        public void initExpl2(@UnknownInitialization B this) {
             // :: error: (dereference.of.nullable)
             output(this.otherField.length()); // error
         }
 
-        public void initImpl2(@Raw @UnknownInitialization B this) {
+        public void initImpl2(@UnknownInitialization B this) {
             // :: error: (dereference.of.nullable)
             output(otherField.length()); // error
         }
@@ -96,7 +96,7 @@ class RawTypesBounded {
             this.init(); // valid
         }
 
-        void otherRaw(@Raw @UnknownInitialization B this) {
+        void otherRaw(@UnknownInitialization B this) {
             init(); // valid
             this.init(); // valid
         }
@@ -107,19 +107,19 @@ class RawTypesBounded {
         @NonNull String[] strings;
 
         @Override
-        public void init(@Raw @UnknownInitialization C this) {
+        public void init(@UnknownInitialization C this) {
             // :: error: (dereference.of.nullable)
             output(this.strings.length); // error
             System.out.println(); // valid
         }
     }
 
-    // To test whether the argument is @NonNull and @NonRaw
+    // To test whether the argument is @NonNull and @Initialized
     static void output(@NonNull Object o) {}
 
     class D extends C {
         @Override
-        public void init(@Raw @UnknownInitialization D this) {
+        public void init(@UnknownInitialization D this) {
             this.field = "s";
             output(this.field.length());
         }
@@ -132,7 +132,7 @@ class RawTypesBounded {
             this.i = i;
         }
 
-        void myTest(@Raw @UnknownInitialization MyTest this) {
+        void myTest(@UnknownInitialization MyTest this) {
             i++;
         }
     }
@@ -197,12 +197,12 @@ class RawTypesBounded {
             @NonNull String s = string();
         }
 
-        public @NonNull String string(@Raw @UnknownInitialization MethodAccess this) {
+        public @NonNull String string(@UnknownInitialization MethodAccess this) {
             return "nonnull";
         }
     }
 
-    void cast(@Raw @UnknownInitialization Object... args) {
+    void cast(@UnknownInitialization Object... args) {
 
         @SuppressWarnings("rawtypes")
         // :: error: (assignment.type.incompatible)

@@ -94,6 +94,22 @@ public interface ProgramElementDoc extends Doc {
     @Pure public abstract boolean isFinal();
 }
 
+public interface ExecutableMemberDoc extends MemberDoc {
+    ClassDoc[] thrownExceptions();
+    Type[] thrownExceptionTypes();
+    @Pure boolean isNative();
+    @Pure boolean isSynchronized();
+    @Pure public boolean isVarArgs();
+    Parameter[] parameters();
+    @Pure Type receiverType();
+    ThrowsTag[] throwsTags();
+    ParamTag[] paramTags();
+    ParamTag[] typeParamTags();
+    String signature();
+    String flatSignature();
+    TypeVariable[] typeParameters();
+}
+
 public interface RootDoc extends Doc, DocErrorReporter {
     String [] @MinLen(1) [] options();
     PackageDoc[] specifiedPackages();

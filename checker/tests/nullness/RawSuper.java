@@ -23,7 +23,7 @@ class RawSuper {
             afield = new Object();
         }
 
-        void raw(@Raw A this) {}
+        void raw(A this) {}
 
         void nonRaw() {}
     }
@@ -43,8 +43,8 @@ class RawSuper {
             mRB(this);
             mB(this);
         }
-        // "@Raw" means "@Raw B @NonRaw A", but method overrides take precedence.
-        void raw(@Raw B this) {
+
+        void raw(B this) {
             // :: error: (type.incompatible)
             super.nonRaw();
         }
@@ -71,15 +71,15 @@ class RawSuper {
         }
     }
 
-    void mA(@NonRaw A a) {}
+    void mA(A a) {}
 
-    void mRA(@Raw A a) {}
+    void mRA(A a) {}
 
-    void mB(@NonRaw B b) {}
+    void mB(B b) {}
 
-    void mRB(@Raw B b) {}
+    void mRB(B b) {}
 
-    void mC(@NonRaw C c) {}
+    void mC(C c) {}
 
-    void mRC(@Raw C c) {}
+    void mRC(C c) {}
 }
