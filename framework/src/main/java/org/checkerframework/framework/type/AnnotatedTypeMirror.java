@@ -1454,11 +1454,13 @@ public abstract class AnnotatedTypeMirror {
         // The type of "@Nullable X" has to be "@Nullable X extends @Nullable Object",
         // because otherwise the annotations are inconsistent.
         private void fixupBoundAnnotations() {
-
-            // We allow the above replacement first because primary annotations might not have
-            // annotations for all hierarchies, so we don't want to avoid placing bottom on the
-            // lower bound for those hierarchies that don't have a qualifier in primaryAnnotations.
             if (!this.getAnnotationsField().isEmpty()) {
+                // @PolyAll can only be replace with type system specific poly qualifiers after all
+                // other explicit qualifiers have been added to the type. Otherwise, a poly
+                // qualifier might be added for a type system that has a different explicit
+                // annotation. So, we can't replace all @PolyAll in AnnotatedTypeMirror. In this
+                // case, we can because if another annotation is added the poly qualifier is
+                // replaced. (I'll this explanation as a comment.)
                 Set<AnnotationMirror> newAnnos =
                         atypeFactory.qualHierarchy.replacePolyAll(this.getAnnotationsField());
                 if (upperBound != null) {

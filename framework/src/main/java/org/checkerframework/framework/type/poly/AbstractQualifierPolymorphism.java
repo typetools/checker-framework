@@ -54,7 +54,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *       qualifier
  * </ul>
  */
-// TODO: All AnnotationMirrorMap<AnnotationMirrorSet> in this class change be changed to
+// TODO: All AnnotationMirrorMap<AnnotationMirrorSet> in this class should be changed to
 // AnnotationMirrorMap<AnnotationMirror>, but that's a breaking refactor, so do this later.
 public abstract class AbstractQualifierPolymorphism implements QualifierPolymorphism {
 
@@ -90,8 +90,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * bottom qualifiers.
      */
     private Completer completer = new Completer();
+
     /**
-     * Replaces all {@link PolyAll} annotations with in a type with the polymorphic annotations for
+     * Replaces all {@link PolyAll} annotations within a type with the polymorphic annotations for
      * hierarchies without another annotation.
      */
     private final PolyAllReplacer polyAllReplacer;
