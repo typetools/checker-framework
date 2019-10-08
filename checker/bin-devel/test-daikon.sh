@@ -7,9 +7,8 @@ export SHELLOPTS
 
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
   || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-eval `/tmp/plume-scripts/ci-info typetools`
 
-export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -17,9 +16,7 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 
 
 # daikon-typecheck: 15 minutes
-REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} codespecs daikon`
-BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
-(cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
+/tmp/plume-scripts/git-clone-related codespecs daikon
 
 cd ../daikon
 make compile

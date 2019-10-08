@@ -243,9 +243,8 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
                     nonMatches.add(sam);
                 }
             }
-            Set<? extends AnnotationMirror> res = null;
             if (!matches.isEmpty()) {
-                res = matches.get(0);
+                Set<? extends AnnotationMirror> res = matches.get(0);
                 for (Set<? extends AnnotationMirror> sam : matches) {
                     res = qualHierarchy.greatestLowerBounds(res, sam);
                 }

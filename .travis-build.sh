@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Entering $0, GROUP=$1"
+echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
 
 # Optional argument $1 is one of:
 #   all, framework-tests, all-tests, jdk.jar, misc, checker-framework-inference, plume-lib, downstream
@@ -45,7 +45,7 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
 /tmp/plume-scripts/ci-info typetools
 eval `/tmp/plume-scripts/ci-info typetools`
 
-export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -65,7 +65,7 @@ if [[ "${GROUP}" == "framework-tests" || "${GROUP}" == "all" ]]; then
   # These are tests that should pass without an annotated jdk. They are also run by all-tests.
   # Once we have an annotataed jdk for 11 to test, this set of tests can be removed.
   # TODO: These aren't being run by Azure.
-  ./gradlew framework:test framework:jtreg --console=plain --warning-mode=all -s --no-daemon
+  ./gradlew nullnessExtraTests framework:test framework:jtreg --console=plain --warning-mode=all -s --no-daemon
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
@@ -94,4 +94,4 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   $SCRIPTDIR/test-downstream.sh
 fi
 
-echo "Exiting $0, GROUP=$1"
+echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
