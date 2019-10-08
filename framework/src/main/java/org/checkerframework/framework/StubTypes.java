@@ -334,23 +334,22 @@ public class StubTypes {
         // 1. jdk.astub
         // Only look in .jar files, and parse it right away.
         if (!checker.hasOption("ignorejdkastub")) {
-            if (PluginUtil.getJreVersion() == 8) {
-                InputStream in = checker.getClass().getResourceAsStream("jdk8.astub");
-                if (in != null) {
-                    StubParser.parse(
-                            checker.getClass().getResource("jdk8.astub").toString(),
-                            in,
-                            factory,
-                            processingEnv,
-                            typesFromStubFiles,
-                            declAnnosFromStubFiles);
-                }
-            }
-            InputStream in = checker.getClass().getResourceAsStream("jdk.astub");
-            if (in != null) {
+            InputStream jdkStubIn = checker.getClass().getResourceAsStream("jdk.astub");
+            if (jdkStubIn != null) {
                 StubParser.parse(
                         checker.getClass().getResource("jdk.astub").toString(),
-                        in,
+                        jdkStubIn,
+                        factory,
+                        processingEnv,
+                        typesFromStubFiles,
+                        declAnnosFromStubFiles);
+            }
+            String jdkVersionStub = "jdk" + PluginUtil.getJreVersion() + ".astub";
+            InputStream jdkVersionStubIn = checker.getClass().getResourceAsStream(jdkVersionStub);
+            if (jdkVersionStubIn != null) {
+                StubParser.parse(
+                        checker.getClass().getResource(jdkVersionStub).toString(),
+                        jdkVersionStubIn,
                         factory,
                         processingEnv,
                         typesFromStubFiles,

@@ -1296,7 +1296,7 @@ As an example, the Regex Checker's extended
 (If you disregard the instructions above and choose a different name or a
 different directory for your \<\emph{MyChecker}Transfer> class, you will
 also need to override the \<createFlowTransferFunction> method in your type
-factory to return to return a new instance of the class.)
+factory to return a new instance of the class.)
 
 (As a reminder, use of \refqualclass{framework/qual}{EnsuresQualifier} and
 \refqualclass{framework/qual}{EnsuresQualifierIf} may obviate the need for
@@ -1656,7 +1656,9 @@ classes (say, more than 20 or so), then you should create an annotated JDK.
 To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jdk}.
 
 To supply an annotated JDK as a stub file, create a file \<jdk.astub> in
-the checker's main source directory.  It will be automatically used by the
+the checker's main source directory.  You can also create \<jdkN.astub> files that contain methods
+or classes that only exist in certain JDK versions.
+It will be automatically used by the
 checker, unless the user supplies the command-line option \<-Aignorejdkastub>.
 You can also supply \<.astub> files in that directory for other libraries.
 You should list those other libraries in a
@@ -1725,7 +1727,7 @@ large codebase without being inundated in stack traces.
 \begin{itemize}
 
 \item \code{-Aignorejdkastub}:
-  ignore the \<jdk.astub> file in the checker directory. Files passed
+  ignore the \<jdk.astub> and \<jdkN.astub> files in the checker directory. Files passed
   through the \code{-Astubs} option are still processed. This is useful
   when experimenting with an alternative stub file.
 
