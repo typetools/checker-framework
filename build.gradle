@@ -569,17 +569,21 @@ subprojects {
                                 "-javacoptions:-source 8",
                                 "-javacoptions:-target 8"
                                 ]
+                            if (project.name.is('checker')) {
+                                args += [
+                                        "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar",
+                                ]
+                            }
+                        } else {
+                            args += [
+                                    "-javacoptions:--add-modules jdk.jdeps",
+                                    "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+                            ]
                         }
                         if (project.name.is('framework')) {
                             // Do not check for the annotated JDK
                             args += [
                                     "-javacoptions:-Anocheckjdk"
-                            ]
-                        }
-                        if (isJava8 && project.name.is('checker')) {
-                            // TODO: enable annotated JDK on Java 9+
-                            args += [
-                                    "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar",
                             ]
                         }
 
@@ -601,10 +605,15 @@ subprojects {
 
         // Configure JUnit tests
         tasks.withType(Test) {
-            if (!isJava8) {
+            if (isJava8) {
+                jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+            } else {
+                // Without this, the test throw "java.lang.OutOfMemoryError: Java heap space"
+                forkEvery(1)
                 jvmArgs += [
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"
-                    ]
+                        "--illegal-access=warn",
+                        "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                ]
             }
 
             if (project.name.is('checker')) {
@@ -614,10 +623,6 @@ subprojects {
 
             if (project.hasProperty('emit.test.debug')) {
                 systemProperties += ["emit.test.debug": 'true']
-            }
-
-            if (isJava8) {
-                jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
             }
 
             testLogging {

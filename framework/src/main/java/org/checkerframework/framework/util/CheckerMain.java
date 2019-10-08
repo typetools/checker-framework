@@ -153,7 +153,9 @@ public class CheckerMain {
 
     protected List<String> createCompilationBootclasspath(final List<String> argsList) {
         final List<String> extractedBcp = extractBootClassPath(argsList);
-        extractedBcp.add(0, jdkJar.getAbsolutePath());
+        if (PluginUtil.getJreVersion() == 8) {
+            extractedBcp.add(0, jdkJar.getAbsolutePath());
+        }
 
         return extractedBcp;
     }
