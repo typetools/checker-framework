@@ -151,6 +151,14 @@ public class CheckerMain {
         return new ArrayList<>(Arrays.asList(javacJar.getAbsolutePath()));
     }
 
+    /**
+     * Returns the compilation bootclasspath from {@code argsList} and appends {@code jdkJar} if
+     * using Java 8.
+     *
+     * @param argsList args to add
+     * @return the compilation bootclasspath from {@code argsList} and appends {@code jdkJar} if
+     *     using Java 8
+     */
     protected List<String> createCompilationBootclasspath(final List<String> argsList) {
         final List<String> extractedBcp = extractBootClassPath(argsList);
         if (PluginUtil.getJreVersion() == 8) {
