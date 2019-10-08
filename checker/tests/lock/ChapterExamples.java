@@ -19,7 +19,6 @@ import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-@SuppressWarnings("deprecation")
 class ChapterExamples {
     // This code crashed when there was a bug before issue 524 was fixed.
     // An attempt to take the LUB between 'val' in the store with type 'long'
@@ -429,6 +428,7 @@ class ChapterExamples {
     private @GuardedBy({}) MyClass myField;
 
     // TODO: For now, boxed types are treated as primitive types. This may change in the future.
+    @SuppressWarnings("deprecation") // new Integer
     void unboxing() {
         int a = 1;
         // :: error: (immutable.type.guardedby)
