@@ -1,12 +1,12 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.framework.qual.PolyAll;
 
 public class PolyAllTest<T extends Comparable<T>> {
 
     @Pure
-    public int compare(@PolyNull T[] a1, @PolyNull T[] a2) {
+    public int compare(@PolyAll T[] a1, @PolyAll T[] a2) {
         if (a1 == a2) {
             return 0;
         }

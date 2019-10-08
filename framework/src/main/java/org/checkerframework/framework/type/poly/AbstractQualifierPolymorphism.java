@@ -3,7 +3,6 @@ package org.checkerframework.framework.type.poly;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -13,6 +12,7 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -28,11 +28,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.EquivalentAtmComboScanner;
-import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -56,8 +55,6 @@ import org.checkerframework.javacutil.TypesUtils;
  *       qualifier
  * </ul>
  */
-// TODO: All AnnotationMirrorMap<AnnotationMirrorSet> in this class change be changed to
-// AnnotationMirrorMap<AnnotationMirror>, but that's a breaking refactor, so do this later.
 public abstract class AbstractQualifierPolymorphism implements QualifierPolymorphism {
 
     /** Annotated type factory. */
@@ -93,7 +90,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      */
     private Completer completer = new Completer();
 
-    private final PolyAllReplacer polyAllReplacer;
+    /** {@link PolyAll} annotation mirror. */
+    protected final AnnotationMirror POLYALL;
 
     /**
      * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
@@ -107,7 +105,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         this.atypeFactory = factory;
         this.qualHierarchy = factory.getQualifierHierarchy();
         this.topQuals = new AnnotationMirrorSet(qualHierarchy.getTopAnnotations());
-        this.polyAllReplacer = new PolyAllReplacer(qualHierarchy);
+
+        Elements elements = env.getElementUtils();
+        this.POLYALL = AnnotationBuilder.fromClass(elements, PolyAll.class);
     }
 
     /**
@@ -253,11 +253,14 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             AnnotatedTypeMirror type, AnnotatedTypeMirror actualType) {
         AnnotationMirrorMap<AnnotationMirrorSet> result = new AnnotationMirrorMap<>();
 
-        polyAllReplacer.visit(actualType);
         for (Map.Entry<AnnotationMirror, AnnotationMirror> kv : polyQuals.entrySet()) {
             AnnotationMirror top = kv.getValue();
             AnnotationMirror poly = kv.getKey();
-            if (actualType.hasAnnotation(poly)) {
+
+            if (top == null && actualType.hasAnnotation(POLYALL)) {
+                // PolyAll qualifier
+                result.put(poly, new AnnotationMirrorSet(type.getAnnotations()));
+            } else if (actualType.hasAnnotation(poly)) {
                 AnnotationMirror typeQual = type.getAnnotationInHierarchy(top);
                 if (typeQual != null) {
                     result.put(poly, AnnotationMirrorSet.singleElementSet(typeQual));
@@ -301,7 +304,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         @Override
         public Void scan(
                 AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirrorSet> replacements) {
-            polyAllReplacer.visit(type);
             replace(type, replacements);
             return super.scan(type, replacements);
         }
@@ -320,7 +322,11 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
                 if (type.hasAnnotation(poly)) {
                     type.removeAnnotation(poly);
-                    if (type.getKind() != TypeKind.TYPEVAR && type.getKind() != TypeKind.WILDCARD) {
+                    if (top == null) {
+                        // poly is PolyAll -> add bottom for all hierarchies without an annotation.
+                        type.addMissingAnnotations(qualHierarchy.getBottomAnnotations());
+                    } else if (type.getKind() != TypeKind.TYPEVAR
+                            && type.getKind() != TypeKind.WILDCARD) {
                         // Do not add qualifiers to type variables and wildcards
                         type.addAnnotation(qualHierarchy.getBottomAnnotation(top));
                     }
@@ -334,6 +340,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * A helper class that resolves the polymorphic qualifiers with the most restrictive qualifier.
      * It returns a mapping from the polymorphic qualifier to the substitution for that qualifier,
      * which is a set of qualifiers. For most polymorphic qualifiers this will be a singleton set.
+     * For the @PolyAll qualifier, this is a set of qualifiers if the type system has multiple
+     * hierarchies.
      */
     private class PolyCollector
             extends EquivalentAtmComboScanner<AnnotationMirrorMap<AnnotationMirrorSet>, Void> {
@@ -555,42 +563,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         public void reset() {
             this.visitedTypes.clear();
             this.visited.clear();
-        }
-    }
-
-    static class PolyAllReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
-        QualifierHierarchy qualifierHierarchy;
-
-        PolyAllReplacer(QualifierHierarchy qualifierHierarchy) {
-            this.qualifierHierarchy = qualifierHierarchy;
-        }
-
-        @Override
-        protected Void defaultAction(AnnotatedTypeMirror type, Void aVoid) {
-            Collection<? extends AnnotationMirror> replace = replacePolyAll(type.getAnnotations());
-            type.clearAnnotations();
-            type.addAnnotations(replace);
-            return super.defaultAction(type, aVoid);
-        }
-        /**
-         * Returns a new set that is the passed set, but PolyAll has been replaced by a polymorphic
-         * qualifiers, for hierarchies that do not have an annotation in the set.
-         *
-         * @param annos Set of annotations
-         * @return a new set with same annotations as anno, but PolyAll has been replaced with
-         *     polymorphic qualifiers
-         */
-        protected Collection<? extends AnnotationMirror> replacePolyAll(
-                Collection<? extends AnnotationMirror> annos) {
-            Set<AnnotationMirror> returnAnnos = AnnotationUtils.createAnnotationSet();
-            for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-                AnnotationMirror annotationInHierarchy =
-                        qualifierHierarchy.findAnnotationInHierarchy(annos, top);
-                if (annotationInHierarchy != null) {
-                    returnAnnos.add(annotationInHierarchy);
-                }
-            }
-            return returnAnnos;
         }
     }
 }

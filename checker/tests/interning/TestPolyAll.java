@@ -17,12 +17,4 @@ class TestPolyAll {
     void fooArr(@Interned String[] p) {
         p = eqArr(p);
     }
-
-    @Interned @PolyAll String intern(@PolyAll TestPolyAll this) {
-        throw new RuntimeException("Doesn't matter");
-    }
-
-    void use(TestPolyAll test) {
-        @Interned String s = test.intern();
-    }
 }
