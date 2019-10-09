@@ -238,7 +238,7 @@ Here is a good way to proceed.
 
 \begin{enumerate}
 \item
-  Before you start coding, first write the user manual.  The manual
+  Write the user manual.  Do this before you start coding.  The manual
   explains the type system, what it guarantees, how to use it, etc., from
   the point of view of a user.  Writing the manual will help you flesh out
   your goals and the concepts, which are easier to understand and change in
@@ -292,6 +292,7 @@ Here is a good way to proceed.
 \end{Verbatim}
 
 \item
+  Test infrastructure.
   If your checker source code is in a clone of the Checker Framework
   repository, integrate your checker with the Checker Framework's Gradle
   targets for testing (Section~\ref{creating-testing-framework}).  This
@@ -487,13 +488,17 @@ is declared in the \<qual> package as a type qualifier.
 
 Your type system should include a top qualifier and a bottom qualifier
 (Section~\ref{creating-bottom-and-top-qualifier}).
+The top qualifier is conventionally named \<\emph{CheckerName}Unknown>.
 
 You should also define a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{qualifier-polymorphism}).
 
-The Javadoc of every type qualifier should include an example use of the
-qualifier.
+The Javadoc of every type qualifier should include a precise English
+description and an example use of the qualifier.
+
+Choose good names for the qualifiers, because users will write these in
+their source code.
 
 
 \subsectionAndLabel{Declaratively defining the qualifier hierarchy}{creating-declarative-hierarchy}
@@ -1670,12 +1675,27 @@ class, so that they will also be automatically used.
 
 \sectionAndLabel{Testing framework}{creating-testing-framework}
 
-\begin{sloppypar}
 The Checker Framework provides a convenient way to write tests for your
-checker.
+checker.  Each test case is a Java file, with inline indications of what
+errors and warnings (if any) a checker should emit.  An example is
+
+\begin{Verbatim}
+class MyNullnessTest {
+  void method() {
+    Object nullable = null;
+    // :: error: (dereference.of.nullable)
+    nullable.toString();
+  }
+}
+\end{Verbatim}
+
+\noindent
+When the Nullness Checker is run on the above code, it should produce
+exactly one error, whose suppression key is \<dereference.of.nullable>, on
+the line following the ``// ::'' comment.
+
 % Don't repeat the information here, to prevent them from getting out of sync.
-It is extensively documented in file \<checker-framework/checker/tests/README>.
-\end{sloppypar}
+The testing infrastructure is extensively documented in file \ahref{https://github.com/typetools/checker-framework/blob/master/checker/tests/README}{\<checker-framework/checker/tests/README>}.
 
 If your checker's source code is within a fork of the Checker Framework
 repository, then you can copy the testing infrastructure used by some
