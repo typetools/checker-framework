@@ -170,9 +170,7 @@ public class ElementAnnotationApplier {
         try {
             SuperTypeApplier.annotateSupers(supertypes, subtypeElement);
         } catch (UnexpectedAnnotationLocationException e) {
-            if (!supertypes.isEmpty()) {
-                reportInvalidLocation(subtypeElement, supertypes.get(0).atypeFactory);
-            }
+            reportInvalidLocation(subtypeElement, supertypes.get(0).atypeFactory);
         }
     }
 
@@ -226,7 +224,9 @@ public class ElementAnnotationApplier {
                 try {
                     ElementAnnotationApplier.applyInternal(type, tpelt, factory);
                 } catch (UnexpectedAnnotationLocationException e) {
-                    // Error was already reported by #apply.
+                    // The above is the second call to applyInternal on this type and element, so
+                    // any errors were already reported by the first call. (See the only use of this
+                    // class.)
                 }
             }
             return super.visitTypeVariable(type, factory);
