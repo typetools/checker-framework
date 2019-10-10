@@ -1576,7 +1576,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
 
-        AnnotatedExecutableType functionType = atypeFactory.getFunctionTypeTree(node);
+        AnnotatedExecutableType functionType = atypeFactory.getFunctionTypeFromTree(node);
 
         if (node.getBody().getKind() != Tree.Kind.BLOCK) {
             // Check return type for single statement returns here.
@@ -1641,7 +1641,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             } else {
                 AnnotatedExecutableType result =
-                        atypeFactory.getFunctionTypeTree((LambdaExpressionTree) enclosing);
+                        atypeFactory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
                 ret = result.getReturnType();
             }
 

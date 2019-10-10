@@ -198,7 +198,7 @@ public class TypeArgInferenceUtil {
                 res = atypeFactory.getAnnotatedType((MethodTree) enclosing).getReturnType();
             } else {
                 AnnotatedExecutableType fninf =
-                        atypeFactory.getFunctionTypeTree((LambdaExpressionTree) enclosing);
+                        atypeFactory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
                 res = fninf.getReturnType();
             }
 

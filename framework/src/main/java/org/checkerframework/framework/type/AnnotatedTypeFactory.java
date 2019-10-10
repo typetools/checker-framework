@@ -3614,7 +3614,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param tree member reference tree
      * @return the function type that this method reference targets
      */
-    public AnnotatedExecutableType getFunctionTypeTree(MemberReferenceTree tree) {
+    public AnnotatedExecutableType getFunctionTypeFromTree(MemberReferenceTree tree) {
         return getFnInterfaceFromTree(tree).second;
     }
 
@@ -3629,7 +3629,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param tree lambda expression tree
      * @return the function type that this lambda targets
      */
-    public AnnotatedExecutableType getFunctionTypeTree(LambdaExpressionTree tree) {
+    public AnnotatedExecutableType getFunctionTypeFromTree(LambdaExpressionTree tree) {
         return getFnInterfaceFromTree(tree).second;
     }
 
@@ -3765,13 +3765,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     return getAnnotatedType(enclosingMethod.getReturnType());
                 } else {
                     LambdaExpressionTree enclosingLambda = (LambdaExpressionTree) enclosing;
-                    AnnotatedExecutableType methodExe = getFunctionTypeTree(enclosingLambda);
+                    AnnotatedExecutableType methodExe = getFunctionTypeFromTree(enclosingLambda);
                     return methodExe.getReturnType();
                 }
 
             case LAMBDA_EXPRESSION:
                 LambdaExpressionTree enclosingLambda = (LambdaExpressionTree) parentTree;
-                AnnotatedExecutableType methodExe = getFunctionTypeTree(enclosingLambda);
+                AnnotatedExecutableType methodExe = getFunctionTypeFromTree(enclosingLambda);
                 return methodExe.getReturnType();
 
             case CONDITIONAL_EXPRESSION:

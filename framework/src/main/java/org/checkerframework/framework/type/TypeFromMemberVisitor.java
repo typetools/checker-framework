@@ -80,7 +80,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         if (declaredInTree.getKind() == Kind.LAMBDA_EXPRESSION) {
             LambdaExpressionTree lambdaDecl = (LambdaExpressionTree) declaredInTree;
             int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
-            AnnotatedExecutableType functionType = f.getFunctionTypeTree(lambdaDecl);
+            AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
             AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
             if (TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
                 if (f.types.isSubtype(funcTypeParam.actualType, lambdaParam.actualType)) {
