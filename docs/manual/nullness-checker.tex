@@ -266,7 +266,7 @@ This annotation is checked by a Map Key Checker
 (\chapterpageref{map-key-checker}) that the Nullness Checker
 invokes.  The \refqualclass{checker/nullness/qual}{KeyFor} annotation enables
 the Nullness Checker to treat calls to
-\sunjavadoc{java/util/Map.html\#get-java.lang.Object-}{\code{Map.get}}
+\sunjavadoc{java.base/java/util/Map.html\#get(java.lang.Object)}{\code{Map.get}}
 precisely rather than assuming it may always return null.  In particular,
 a call \<mymap.get(mykey)> returns a non-\<null> value if two conditions
 are satisfied:
@@ -369,11 +369,11 @@ The Nullness Checker supports a form of conditional nullness types, via the
 The annotation on a method declares that some expressions are non-null, if
 the method returns true (false, respectively).
 
-Consider \sunjavadoc{java/lang/Class.html}{java.lang.Class}.
+Consider \sunjavadoc{java.base/java/lang/Class.html}{java.lang.Class}.
 Method
-\sunjavadoc{java/lang/Class.html\#getComponentType--}{Class.getComponentType()}
+\sunjavadoc{java.base/java/lang/Class.html\#getComponentType()}{Class.getComponentType()}
 may return null, but it is specified to return a non-null value if
-\sunjavadoc{java/lang/Class.html\#isArray--}{Class.isArray()} is
+\sunjavadoc{java.base/java/lang/Class.html\#isArray()}{Class.isArray()} is
 true.
 You could declare this relationship in the following way (this particular
 example is already
@@ -401,9 +401,9 @@ uses such a pattern:
     }
 \end{Verbatim}
 
-Another example is \sunjavadoc{java/util/Queue.html\#peek--}{Queue.peek}
-and \sunjavadoc{java/util/Queue.html\#poll--}{Queue.poll}, which return
-non-null if \sunjavadoc{java/util/Collection.html\#isEmpty--}{isEmpty}
+Another example is \sunjavadoc{java.base/java/util/Queue.html\#peek()}{Queue.peek}
+and \sunjavadoc{java.base/java/util/Queue.html\#poll()}{Queue.poll}, which return
+non-null if \sunjavadoc{java.base/java/util/Collection.html\#isEmpty()}{isEmpty}
 returns false.
 
 The argument to \code{@EnsuresNonNullIf} is a Java expression, including method calls
@@ -472,10 +472,10 @@ The Nullness Checker does some special checks in certain circumstances, in
 order to soundly reduce the number of warnings that it produces.
 
 For example, a call to
-\sunjavadoc{java/lang/System.html\#getProperty-java.lang.String-}{System.getProperty(String)}
+\sunjavadoc{java.base/java/lang/System.html\#getProperty(java.lang.String)}{System.getProperty(String)}
 can return null in general, but it will not return null if the argument is
 one of the built-in-keys listed in the documentation of
-\sunjavadoc{java/lang/System.html\#getProperties--}{System.getProperties()}.
+\sunjavadoc{java.base/java/lang/System.html\#getProperties()}{System.getProperties()}.
 The Nullness Checker is aware of this fact, so you do not have to suppress
 a warning for a call like \<System.getProperty("line.separator")>.  The
 warning is still issued for code like this:
@@ -1059,7 +1059,7 @@ tool like the Checker Framework.)
 
 Many null pointer exceptions occur because the programmer forgets to check
 whether a reference is null before dereferencing it.  Java 8's
-\sunjavadoc{java/util/Optional.html}{\code{Optional<T>}}
+\sunjavadoc{java.base/java/util/Optional.html}{\code{Optional<T>}}
 class provides a partial solution:  a programmer must call the \<get> method to
 access the value, and the designers of \<Optional> hope that the syntactic
 occurrence of the \<get> method will remind programmers to first check that
@@ -1306,12 +1306,12 @@ The Initialization Checker issues an error if the constructor fails to initializ
 any \code{@NonNull} field.  This ensures that the object is in a legal (initialized)
 state by the time that the constructor exits.
 This is different than Java's test for definite assignment (see
-\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-16.html}{JLS ch.16}),
+\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-16.html}{JLS ch.16}),
 % , which requires that local
 % variables (and blank \code{final} fields) must be assigned.  Java does not
 % require that non-\code{final} fields be assigned, since
 which does not apply to fields (except blank final ones, defined in
-\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
+\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
 have a default value of null.
 
 
@@ -1391,16 +1391,16 @@ class A {
        // However, if this constructor is invoked as part of 'new B()', then
        // the fields of B are not yet initialized.
        // If we would type 'this' as @Initialized, then the following call is valid:
-       foo();
+       doSomething();
    }
-   void foo() {}
+   void doSomething() {}
 }
 
 class B extends A {
    @NonNull String b;
    @Override
-   void foo() {
-       // Dereferencing 'b' is ok, since 'this' is @Initialized and 'b' @NonNull.
+   void doSomething() {
+       // Dereferencing 'b' is ok, because 'this' is @Initialized and 'b' @NonNull.
        // However, when executing 'new B()', this line throws a null-pointer exception.
        b.toString();
    }
@@ -1768,7 +1768,7 @@ consider a doubly linked list:
 
 
 
-% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se10/html/jls-8.html#jls-8.8.7}
+% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se11/html/jls-8.html#jls-8.8.7}
 % (Recall that the superclass constructor is called on the first line, or is
 % inserted automatically by the compiler before the first line, see
 % \href{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
@@ -1814,7 +1814,7 @@ If your code calls an instance method from a constructor, you may see a
 message such as the following:
 
 \begin{Verbatim}
-Foo.java:123: error: call to initHelper() not allowed on the given receiver.
+MyFile.java:123: error: call to initHelper() not allowed on the given receiver.
     initHelper();
               ^
   found   : @UnderInitialization(com.google.Bar.class) @NonNull MyClass

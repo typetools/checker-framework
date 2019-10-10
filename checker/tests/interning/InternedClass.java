@@ -28,7 +28,7 @@ public @Interned class InternedClass {
     @org.checkerframework.dataflow.qual.Pure
     public String toString() {
         @Interned InternedClass c = this;
-        return new Integer(value).toString();
+        return Integer.valueOf(value).toString();
     }
 
     // Factory method

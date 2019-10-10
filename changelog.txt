@@ -1,5 +1,14 @@
 ---------------------------------------------------------------------------
 
+Version 2.11.1, October 1, 2019
+
+The manual links to the Object Construction Checker.
+
+Closed issues:
+1635, 2718, 2767.
+
+---------------------------------------------------------------------------
+
 Version 2.11.0, August 30, 2019
 
 The Checker Framework now uses the Java 9 javac API. The manual describes

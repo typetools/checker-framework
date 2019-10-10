@@ -125,8 +125,14 @@ public class CheckerMain {
         assertValidState();
     }
 
+    /** Assert that required jars exist. */
     protected void assertValidState() {
-        assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
+        if (PluginUtil.getJreVersion() < 9) {
+            assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
+        } else {
+            // TODO: once the jdk11 jars exist, check for them.
+            assertFilesExist(Arrays.asList(checkerJar, checkerQualJar));
+        }
     }
 
     public void addToClasspath(List<String> cpOpts) {
@@ -389,24 +395,7 @@ public class CheckerMain {
         } else {
             args.addAll(
                     Arrays.asList(
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"));
+                            "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
         }
 
         args.add("-classpath");
