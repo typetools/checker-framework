@@ -652,7 +652,7 @@ public abstract class QualifierHierarchy {
      * @param map the mapping to modify
      * @param key the key to update
      * @param newQual the value to add
-     * @return whether there was a qualifier hierarchy collision
+     * @return true if the update was done; false if there was a qualifier hierarchy collision
      */
     public <T> boolean updateMappingToMutableSet(
             Map<T, Set<AnnotationMirror>> map, T key, AnnotationMirror newQual) {
