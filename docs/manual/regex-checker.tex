@@ -6,17 +6,19 @@ regular expressions and access of invalid capturing groups.
 
 A regular expression, or regex, is a pattern for matching certain strings
 of text.  In Java, a programmer writes a regular expression as a string.
-At run time, the string is ``compiled'' into an efficient internal form
-(\sunjavadoc{java.base/java/util/regex/Pattern.html}{Pattern}) that is used for
-text-matching. Regular expression in Java also have capturing groups, which
-are delimited by parentheses and allow for extraction from text.
-
 The syntax of regular expressions is complex, so it is easy to make a
 mistake.  It is also easy to accidentally use a regex feature from another
 language that is not supported by Java (see section ``Comparison to Perl
 5'' in the \sunjavadoc{java.base/java/util/regex/Pattern.html}{Pattern} Javadoc).
-Ordinarily, the programmer does not learn of these errors until run time.
-The Regex Checker warns about these problems at compile time.
+These problems cause run-time errors.
+
+Regular expressions in Java also have capturing groups, which
+are delimited by parentheses and allow for extraction from text.
+If a programmer uses an incorrect index (larger than the number of
+capturing groups), an \<IndexOutOfBoundsException> is thrown.
+
+The Regex Checker warns about these problems at compile time, guaranteeing
+that your program does not crash due to incorrect use of regular expressions.
 
 For further details, including case studies, see a paper about the Regex
 Checker~\cite{SpishakDE2012}.
