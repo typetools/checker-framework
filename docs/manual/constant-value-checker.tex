@@ -334,6 +334,12 @@ value that is not in its \<@IntRange> qualifier.  You should either accept
 that possibility, or verify the lack of overflow using some other tool or
 manual analysis.
 
+\sectionAndLabel{All Strings are considered nullable in concatenations}
+
+The Constant Value Checker considers every element of a String concatenation
+not nullable, even though an annotation like \refqualclass{checker.nullness.qual}{Nullable} can be present. The
+\code{-AnullStringConcatenations} command-line option makes it consider every
+element nullable, even though this can be wrong if the element is \refqualclass{checker.nullness.qual}{NonNull}.
 
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
