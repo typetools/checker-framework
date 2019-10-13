@@ -593,6 +593,13 @@ public class ValueTransfer extends CFTransfer {
                 }
             }
 
+            if (leftValues.isEmpty()) {
+                leftValues.add("null");
+            }
+            if (rightValues.isEmpty()) {
+                rightValues.add("null");
+            }
+
             for (String left : leftValues) {
                 for (String right : rightValues) {
                     concatValues.add(left + right);

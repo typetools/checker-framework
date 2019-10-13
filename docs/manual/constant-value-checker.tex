@@ -334,12 +334,30 @@ value that is not in its \<@IntRange> qualifier.  You should either accept
 that possibility, or verify the lack of overflow using some other tool or
 manual analysis.
 
-\sectionAndLabel{All Strings are considered nullable in concatenations}
+\sectionAndLabel{Strings can be null in concatenations}{null-strings-concats}
 
-The Constant Value Checker considers every element of a String concatenation
-not nullable, even though an annotation like \refqualclass{checker.nullness.qual}{Nullable} can be present. The
-\code{-AnullStringConcatenations} command-line option makes it consider every
-element nullable, even though this can be wrong if the element is \refqualclass{checker.nullness.qual}{NonNull}.
+The Constant Value Checker considers all elements of a String concatenation
+non-null by default. The \code{-AnullStringsConcatenation} command-line option
+makes the checker more sound by analyzing the possibility of each element to
+be null. Only String literals, primitive types and effectively final variables
+are considered non-null. Figure~\ref{fig-null-strings-concat} gives an example
+of behavior with and without the \code{-AnullStringsConcatenation} option.
+
+\begin{figure}
+\begin{Verbatim}
+  ...
+  // This String can be null
+  @StringVal("a") String string1;
+  // The possible value "nullb" is omitted
+  @StringVal("ab") String string2 = string1 + "b";
+\end{Verbatim}
+\caption{With the \code{-AnullStringsConcatenation} command-line option, the
+Constant Value Checker considers that the first String can be null.}
+\label{fig-null-strings-concat}
+\end{figure}
+
+It is recommended to use the Nullness Checker before using the Constant Value Checker
+with this command-line option enabled for a better analysis on nullable elements.
 
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
