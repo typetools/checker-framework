@@ -12,7 +12,7 @@ public class ValueNullStringsConcatenationTest extends FrameworkPerDirectoryTest
         super(
                 testFiles,
                 org.checkerframework.common.value.ValueChecker.class,
-                "value-null-string-concatenations",
+                "value-null-strings-concatenation",
                 "-Anomsgtext",
                 "-Astubs=statically-executable.astub",
                 "-A" + ValueChecker.REPORT_EVAL_WARNS,

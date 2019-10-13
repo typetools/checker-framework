@@ -27,7 +27,7 @@ import org.checkerframework.framework.source.SupportedOptions;
 public class ValueChecker extends BaseTypeChecker {
     public static final String REPORT_EVAL_WARNS = "reportEvalWarns";
     public static final String IGNORE_RANGE_OVERFLOW = "ignoreRangeOverflow";
-    public static final String NULL_STRINGS_CONCATENATION = "nullStringConcatenations";
+    public static final String NULL_STRINGS_CONCATENATION = "nullStringsConcatenation";
 
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
