@@ -525,6 +525,9 @@ public class StubParser {
             TypeDeclaration<?> typeDecl, String outertypeName, List<AnnotationExpr> packageAnnos) {
         assert parseState != null;
         if (isJdkAsStub && typeDecl.getModifiers().contains(Modifier.privateModifier())) {
+            // Don't process private classes of the jdk.  They can't be referenced outside of the
+            // jdk
+            // and might refer to types that are not accessible.
             return;
         }
         String innerName =
@@ -1050,6 +1053,8 @@ public class StubParser {
 
     private void processField(FieldDeclaration decl, VariableElement elt) {
         if (isJdkAsStub && decl.getModifiers().contains(Modifier.privateModifier())) {
+            // Don't process private fields of the jdk.  They can't be referenced outside of the jdk
+            // and might refer to types that are not accessible.
             return;
         }
         addDeclAnnotations(declAnnos, elt);
@@ -1364,6 +1369,9 @@ public class StubParser {
      */
     private ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
         if (isJdkAsStub && methodDecl.getModifiers().contains(Modifier.privateModifier())) {
+            // Don't process private methods of the jdk.  They can't be referenced outside of the
+            // jdk
+            // and might refer to types that are not accessible.
             return null;
         }
         final String wantedMethodName = methodDecl.getNameAsString();
@@ -1403,6 +1411,9 @@ public class StubParser {
     private ExecutableElement findElement(
             TypeElement typeElt, ConstructorDeclaration constructorDecl) {
         if (isJdkAsStub && constructorDecl.getModifiers().contains(Modifier.privateModifier())) {
+            // Don't process private constructors of the jdk.  They can't be referenced outside of
+            // the jdk
+            // and might refer to types that are not accessible.
             return null;
         }
         final int wantedMethodParams =
