@@ -530,6 +530,7 @@ public class StubParser {
         }
         if (isJdkAsStub
                 && !typeDecl.getModifiers().contains(Modifier.publicModifier())
+                && !typeDecl.getModifiers().contains(Modifier.abstractModifier())
                 && typeElt.getKind().isClass()) {
             return;
         }
