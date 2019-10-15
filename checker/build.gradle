@@ -1,5 +1,3 @@
-//import java.util.zip.ZipFile
-
 ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
@@ -72,8 +70,7 @@ task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
             from(jdkHome)
             into("${buildDir}/jdk/jdk11/")
             for (String filename : annotatedForFiles) {
-                int index = filename.indexOf(absolutejdkHome)
-                include filename.substring(index + jdkDirStringSize)
+                include filename.substring(jdkDirStringSize)
             }
         }
     }
