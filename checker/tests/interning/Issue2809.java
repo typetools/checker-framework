@@ -1,6 +1,5 @@
 // test cases for #2809
 // https://github.com/typetools/checker-framework/issues/2809
-// @skip-test before the issue is solved.
 
 import org.checkerframework.checker.interning.qual.Interned;
 
