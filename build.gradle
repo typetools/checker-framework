@@ -576,6 +576,8 @@ subprojects {
                             }
                         } else {
                             args += [
+                                    // checker/jtreg/nullness/defaultsPersist/ReferenceInfoUtil.java
+                                    // uses the jdk.jdeps module.
                                     "-javacoptions:--add-modules jdk.jdeps",
                                     "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
                             ]
