@@ -593,11 +593,17 @@ public class ValueTransfer extends CFTransfer {
                 }
             }
 
-            if (leftValues.isEmpty()) {
-                leftValues.add("null");
+            if (leftOperand instanceof StringConversionNode) {
+                if (((StringConversionNode) leftOperand).getOperand().getType().getKind()
+                        == TypeKind.NULL) {
+                    leftValues.add("null");
+                }
             }
-            if (rightValues.isEmpty()) {
-                rightValues.add("null");
+            if (rightOperand instanceof StringConversionNode) {
+                if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
+                        == TypeKind.NULL) {
+                    rightValues.add("null");
+                }
             }
 
             for (String left : leftValues) {
