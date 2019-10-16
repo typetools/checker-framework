@@ -108,6 +108,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
@@ -3017,6 +3018,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <ol>
      *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option
      *       is not supplied <br>
+     *   <li>jdkN.astub, where N is the Java version in the same directory as the checker, if it
+     *       exists and ignorejdkastub option is not supplied <br>
      *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
      *       the checker<br>
      *   <li>Stub files provide via stubs system property <br>
@@ -3040,11 +3043,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // 1. jdk.astub
         // Only look in .jar files, and parse it right away.
         if (!checker.hasOption("ignorejdkastub")) {
-            InputStream in = checker.getClass().getResourceAsStream("jdk.astub");
-            if (in != null) {
+            InputStream jdkStubIn = checker.getClass().getResourceAsStream("jdk.astub");
+            if (jdkStubIn != null) {
                 StubParser.parse(
                         checker.getClass().getResource("jdk.astub").toString(),
-                        in,
+                        jdkStubIn,
+                        this,
+                        processingEnv,
+                        typesFromStubFiles,
+                        declAnnosFromStubFiles);
+            }
+            String jdkVersionStub = "jdk" + PluginUtil.getJreVersion() + ".astub";
+            InputStream jdkVersionStubIn = checker.getClass().getResourceAsStream(jdkVersionStub);
+            if (jdkVersionStubIn != null) {
+                StubParser.parse(
+                        checker.getClass().getResource(jdkVersionStub).toString(),
+                        jdkVersionStubIn,
                         this,
                         processingEnv,
                         typesFromStubFiles,

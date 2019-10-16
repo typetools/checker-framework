@@ -228,7 +228,7 @@ the Subtyping Checker is slightly different (Section~\ref{subtyping-using}).
 
 
 
-\subsectionAndLabel{Tips for creating a checker}{creating-tips}
+\sectionAndLabel{Tips for creating a checker}{creating-tips}
 
 To make your job easier, we recommend that you build your type-checker
 incrementally, testing at each phase rather than trying to build the whole
@@ -238,7 +238,7 @@ Here is a good way to proceed.
 
 \begin{enumerate}
 \item
-  Before you start coding, first write the user manual.  The manual
+  Write the user manual.  Do this before you start coding.  The manual
   explains the type system, what it guarantees, how to use it, etc., from
   the point of view of a user.  Writing the manual will help you flesh out
   your goals and the concepts, which are easier to understand and change in
@@ -254,6 +254,8 @@ Here is a good way to proceed.
   During manual checking, ask
   yourself what reasoning you applied, what information you needed, and
   whether your written-down rules were sufficient.
+  It is more efficient to find problems now rather than after coding up
+  your design.
 
 \item
   Implement the type qualifiers and hierarchy
@@ -290,6 +292,7 @@ Here is a good way to proceed.
 \end{Verbatim}
 
 \item
+  Test infrastructure.
   If your checker source code is in a clone of the Checker Framework
   repository, integrate your checker with the Checker Framework's Gradle
   targets for testing (Section~\ref{creating-testing-framework}).  This
@@ -485,13 +488,17 @@ is declared in the \<qual> package as a type qualifier.
 
 Your type system should include a top qualifier and a bottom qualifier
 (Section~\ref{creating-bottom-and-top-qualifier}).
+The top qualifier is conventionally named \<\emph{CheckerName}Unknown>.
 
 You should also define a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{qualifier-polymorphism}).
 
-The Javadoc of every type qualifier should include an example use of the
-qualifier.
+The Javadoc of every type qualifier should include a precise English
+description and an example use of the qualifier.
+
+Choose good names for the qualifiers, because users will write these in
+their source code.
 
 
 \subsectionAndLabel{Declaratively defining the qualifier hierarchy}{creating-declarative-hierarchy}
@@ -1656,7 +1663,9 @@ classes (say, more than 20 or so), then you should create an annotated JDK.
 To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jdk}.
 
 To supply an annotated JDK as a stub file, create a file \<jdk.astub> in
-the checker's main source directory.  It will be automatically used by the
+the checker's main source directory.  You can also create \<jdkN.astub> files that contain methods
+or classes that only exist in certain JDK versions.
+It will be automatically used by the
 checker, unless the user supplies the command-line option \<-Aignorejdkastub>.
 You can also supply \<.astub> files in that directory for other libraries.
 You should list those other libraries in a
@@ -1666,12 +1675,27 @@ class, so that they will also be automatically used.
 
 \sectionAndLabel{Testing framework}{creating-testing-framework}
 
-\begin{sloppypar}
 The Checker Framework provides a convenient way to write tests for your
-checker.
+checker.  Each test case is a Java file, with inline indications of what
+errors and warnings (if any) a checker should emit.  An example is
+
+\begin{Verbatim}
+class MyNullnessTest {
+  void method() {
+    Object nullable = null;
+    // :: error: (dereference.of.nullable)
+    nullable.toString();
+  }
+}
+\end{Verbatim}
+
+\noindent
+When the Nullness Checker is run on the above code, it should produce
+exactly one error, whose suppression key is \<dereference.of.nullable>, on
+the line following the ``// ::'' comment.
+
 % Don't repeat the information here, to prevent them from getting out of sync.
-It is extensively documented in file \<checker-framework/checker/tests/README>.
-\end{sloppypar}
+The testing infrastructure is extensively documented in file \ahref{https://github.com/typetools/checker-framework/blob/master/checker/tests/README}{\<checker-framework/checker/tests/README>}.
 
 If your checker's source code is within a fork of the Checker Framework
 repository, then you can copy the testing infrastructure used by some
@@ -1725,7 +1749,7 @@ large codebase without being inundated in stack traces.
 \begin{itemize}
 
 \item \code{-Aignorejdkastub}:
-  ignore the \<jdk.astub> file in the checker directory. Files passed
+  ignore the \<jdk.astub> and \<jdkN.astub> files in the checker directory. Files passed
   through the \code{-Astubs} option are still processed. This is useful
   when experimenting with an alternative stub file.
 
