@@ -526,8 +526,7 @@ public class StubParser {
         assert parseState != null;
         if (isJdkAsStub && typeDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private classes of the jdk.  They can't be referenced outside of the
-            // jdk
-            // and might refer to types that are not accessible.
+            // jdk and might refer to types that are not accessible.
             return;
         }
         String innerName =
@@ -1412,8 +1411,7 @@ public class StubParser {
             TypeElement typeElt, ConstructorDeclaration constructorDecl) {
         if (isJdkAsStub && constructorDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private constructors of the jdk.  They can't be referenced outside of
-            // the jdk
-            // and might refer to types that are not accessible.
+            // the jdk and might refer to types that are not accessible.
             return null;
         }
         final int wantedMethodParams =
@@ -1899,24 +1897,28 @@ public class StubParser {
     }
 
     /**
-     * Just like Map.put, but merges with any existing value for the given key, instead ef replacing
-     * it.
+     * Just like Map.put, but merges with any existing annotated type for the given key, instead of
+     * replacing it.
      */
     private void putNew(
-            Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
+            Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror newType) {
         if (key == null) {
             throw new BugInCF("StubParser: key is null");
         }
         if (m.containsKey(key)) {
-            AnnotatedTypeMirror value2 = m.get(key);
+            AnnotatedTypeMirror existingType = m.get(key);
             if (isJdkAsStub) {
-                AnnotatedTypeMerger.merge(value2, value);
+                // AnnotatedTypeMerger picks the annotations from the first argument if an
+                // annotation exist in both types in the same location for the same hierarchy.
+                // So, if the newType is from a JDK stub file, then prefer the existing type.  This
+                // way user supplied stub files override jdk stub files.
+                AnnotatedTypeMerger.merge(existingType, newType);
             } else {
-                AnnotatedTypeMerger.merge(value, value2);
+                AnnotatedTypeMerger.merge(newType, existingType);
             }
-            m.put(key, value2);
+            m.put(key, existingType);
         } else {
-            m.put(key, value);
+            m.put(key, newType);
         }
     }
 
