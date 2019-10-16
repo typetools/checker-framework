@@ -641,6 +641,8 @@ Unsound checking: ignore some errors
   supply \code{-Xmaxwarns 10000}, because by default \<javac> prints at
   most 100 warnings.  If you use this, don't supply \code{-Werror},
   which is a javac argument to halt compilation if a warning is issued.
+\item \<-AignoreInvalidAnnotationLocations>
+  Ignore annotations in bytecode that have invalid annotation locations.
 \end{itemize}
 
 \label{unsound-by-default}
