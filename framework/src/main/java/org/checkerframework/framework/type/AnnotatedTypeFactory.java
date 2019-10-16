@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -2308,17 +2309,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
                 if (type.getTypeArguments().size() == adctx.getTypeArguments().size()) {
                     // Try to simply take the type arguments from LHS.
-                    List<AnnotatedTypeMirror> oldArgs = type.getTypeArguments();
-                    List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
-                    for (int i = 0; i < type.getTypeArguments().size(); ++i) {
-                        if (!types.isSubtype(
-                                newArgs.get(i).actualType, oldArgs.get(i).actualType)) {
+                    Iterator<AnnotatedTypeMirror> lhsArgs = adctx.getTypeArguments().iterator();
+                    for (AnnotatedTypeMirror currentArg : type.getTypeArguments()) {
+                        AnnotatedTypeMirror lhsArg = lhsArgs.next();
+                        if (lhsArg.getKind() != TypeKind.WILDCARD
+                                && currentArg.getKind() != TypeKind.WILDCARD
+                                && !types.isSubtype(
+                                        lhsArg.getUnderlyingType(),
+                                        currentArg.getUnderlyingType())) {
                             // One of the underlying types doesn't match. Give up.
                             return;
                         }
                     }
 
-                    type.setTypeArguments(newArgs);
+                    type.setTypeArguments(adctx.getTypeArguments());
 
                     /* It would be nice to call isSubtype for a basic sanity check.
                      * However, the type might not have been completely initialized yet,
