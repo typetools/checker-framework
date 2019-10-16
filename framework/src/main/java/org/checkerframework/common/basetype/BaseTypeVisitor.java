@@ -3056,6 +3056,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             functionTypeReturnType);
             return overrideChecker.checkOverride();
         } else {
+            // If the functionalInterface is not a declared type, it must be an uninferred wildcard.
+            // In that case, only return false if uninferred type arguments should not be ignored.
             return !atypeFactory.ignoreUninferredTypeArguments;
         }
     }
