@@ -8,6 +8,7 @@ import javax.lang.model.element.ElementKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -16,8 +17,10 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
 
+    /** Apply annotations from {@code element} to {@code type}. */
     public static void apply(
-            AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
+            AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory)
+            throws UnexpectedAnnotationLocationException {
         new ClassTypeParamApplier(type, element, typeFactory).extractAndApply();
     }
 

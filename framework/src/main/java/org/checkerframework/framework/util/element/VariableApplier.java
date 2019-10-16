@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.element;
 
 import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 import java.util.List;
@@ -8,6 +9,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -15,7 +17,9 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class VariableApplier extends TargetedElementAnnotationApplier {
 
-    public static void apply(final AnnotatedTypeMirror type, final Element element) {
+    /** Apply annotations from {@code element} to {@code type}. */
+    public static void apply(final AnnotatedTypeMirror type, final Element element)
+            throws UnexpectedAnnotationLocationException {
         new VariableApplier(type, element).extractAndApply();
     }
 
@@ -85,12 +89,13 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
     }
 
     @Override
-    protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
+    protected void handleTargeted(final List<TypeCompound> targeted)
+            throws UnexpectedAnnotationLocationException {
         ElementAnnotationUtil.annotateViaTypeAnnoPosition(type, targeted);
     }
 
     @Override
-    public void extractAndApply() {
+    public void extractAndApply() throws UnexpectedAnnotationLocationException {
         // Add declaration annotations to the local variable type
         ElementAnnotationUtil.addAnnotationsFromElement(type, varSymbol.getAnnotationMirrors());
         super.extractAndApply();
