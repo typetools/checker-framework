@@ -3,6 +3,7 @@
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
+@SuppressWarnings("") // Just check for crashes.
 public class EnumToAdd<E extends Enum<E> & EnumToAdd.EppEnum>
         extends XmlAdapter<EnumToAdd.EnumShim, E> {
     public interface EppEnum {
