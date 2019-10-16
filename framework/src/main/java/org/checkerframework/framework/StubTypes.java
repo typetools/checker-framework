@@ -40,7 +40,7 @@ import org.checkerframework.javacutil.PluginUtil;
 /** Holds information about types parsed from stub files. */
 public class StubTypes {
     /** Types read from stub files (but not those from the annotated JDK jar file). */
-    private Map<Element, AnnotatedTypeMirror> typesFromStubFiles;
+    private final Map<Element, AnnotatedTypeMirror> typesFromStubFiles;
 
     /**
      * Declaration annotations read from stub files (but not those from the annotated JDK jar file).
@@ -48,7 +48,7 @@ public class StubTypes {
      * real files. So, map keys are the verbose element name, as returned by
      * ElementUtils.getVerboseName.
      */
-    private Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles;
+    private final Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles;
 
     /**
      * Whether or not a stub file is currently being parsed. (If one is being parsed, don't try to
@@ -57,13 +57,13 @@ public class StubTypes {
     private boolean parsing;
 
     /** AnnotatedTypeFactory */
-    private AnnotatedTypeFactory factory;
+    private final AnnotatedTypeFactory factory;
 
     /** JDK stub files from the file system. */
-    private Map<String, Path> jdk11StubFiles = new HashMap<>();
+    private final Map<String, Path> jdk11StubFiles = new HashMap<>();
 
     /** JDK stub files from the checker.jar. */
-    private Map<String, String> jdk11StubFilesJar = new HashMap<>();
+    private final Map<String, String> jdk11StubFilesJar = new HashMap<>();
 
     /** Creates a stub type. */
     public StubTypes(AnnotatedTypeFactory factory) {
