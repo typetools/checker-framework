@@ -339,9 +339,9 @@ manual analysis.
 The Constant Value Checker considers all elements of a String concatenation
 non-null by default. The \code{-AnullStringsConcatenation} command-line option
 makes the checker more sound by assuming that all objects can be null. Only
-String literals, primitive types, and effectively final variables
-are considered non-null. Figure~\ref{fig-null-strings-concat} gives an example
-of behavior with and without the \code{-AnullStringsConcatenation} option.
+String literals, primitive types, and compile-time constants are considered
+non-null. Figure~\ref{fig-null-strings-concat} gives an example of behavior
+with and without the \code{-AnullStringsConcatenation} option.
 
 \begin{figure}
 \begin{Verbatim}
