@@ -6,6 +6,15 @@
 interface Issue2779<S> {
     S get();
 
+    static <T> Issue2779<T> wrap2(T val) {
+        return new Issue2779<T>() {
+            @Override
+            public T get() {
+                return val;
+            }
+        };
+    }
+
     static <T> Issue2779<T> wrap(T val) {
         return new Issue2779<>() {
             @Override

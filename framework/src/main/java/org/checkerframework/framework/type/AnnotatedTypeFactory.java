@@ -35,7 +35,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -2255,28 +2254,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return AnnotatedDeclaredType
      */
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
-        if (TreeUtils.isDiamondTree(newClassTree)) {
+        if (TreeUtils.isDiamondTree(newClassTree) && newClassTree.getClassBody() == null) {
             AnnotatedDeclaredType type =
-                    (AnnotatedDeclaredType)
-                            TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
-            Set<AnnotationMirror> fromTypeTree = AnnotationUtils.createAnnotationSet();
-            fromTypeTree.addAll(type.getAnnotations());
+                    (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
             Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-            if (ctx != null) {
+            if (ctx != null && ctx.second.getKind() == TypeKind.DECLARED) {
                 AnnotatedTypeMirror ctxtype = ctx.second;
                 fromNewClassContextHelper(type, ctxtype);
             } else {
                 TreePath p = getPath(newClassTree);
                 AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
-                if (ctxtype != null) {
+                if (ctxtype != null && ctxtype.getKind() == TypeKind.DECLARED) {
                     fromNewClassContextHelper(type, ctxtype);
                 } else {
                     // give up trying and set to raw.
                     type.setWasRaw();
+                    type.getTypeArguments();
                 }
             }
-
-            type.replaceAnnotations(fromTypeTree);
+            AnnotatedDeclaredType fromTypeTree =
+                    (AnnotatedDeclaredType)
+                            TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
+            type.replaceAnnotations(fromTypeTree.getAnnotations());
             return type;
         } else if (newClassTree.getClassBody() != null) {
             AnnotatedDeclaredType type =
@@ -2309,20 +2308,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
                 if (type.getTypeArguments().size() == adctx.getTypeArguments().size()) {
                     // Try to simply take the type arguments from LHS.
-                    Iterator<AnnotatedTypeMirror> lhsArgs = adctx.getTypeArguments().iterator();
-                    for (AnnotatedTypeMirror currentArg : type.getTypeArguments()) {
-                        AnnotatedTypeMirror lhsArg = lhsArgs.next();
-                        if (lhsArg.getKind() != TypeKind.WILDCARD
-                                && currentArg.getKind() != TypeKind.WILDCARD
-                                && !types.isSubtype(
-                                        lhsArg.getUnderlyingType(),
-                                        currentArg.getUnderlyingType())) {
+                    List<AnnotatedTypeMirror> oldArgs = type.getTypeArguments();
+                    List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
+                    for (int i = 0; i < type.getTypeArguments().size(); ++i) {
+                        if (!types.isSubtype(
+                                newArgs.get(i).actualType, oldArgs.get(i).actualType)) {
                             // One of the underlying types doesn't match. Give up.
                             return;
                         }
                     }
 
-                    type.setTypeArguments(adctx.getTypeArguments());
+                    type.setTypeArguments(newArgs);
 
                     /* It would be nice to call isSubtype for a basic sanity check.
                      * However, the type might not have been completely initialized yet,
@@ -3604,7 +3600,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the functional interface and the function type that this member reference targets.
+     * Returns the function type that this member reference targets.
      *
      * <p>The function type is the type of the single method declared in the functional interface
      * adapted as if it were invoked using the functional interface as the receiver expression.
@@ -3612,15 +3608,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The target type of a member reference is the type to which it is assigned or casted.
      *
      * @param tree member reference tree
-     * @return the functional interface and the function type that this method reference targets
+     * @return the function type that this method reference targets
      */
-    public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(
-            MemberReferenceTree tree) {
-        return getFnInterfaceFromTree((Tree) tree);
+    public AnnotatedExecutableType getFunctionTypeFromTree(MemberReferenceTree tree) {
+        return getFnInterfaceFromTree(tree).second;
     }
 
     /**
-     * Returns the functional interface and the function type that this lambda targets.
+     * Returns the function type that this lambda targets.
      *
      * <p>The function type is the type of the single method declared in the functional interface
      * adapted as if it were invoked using the functional interface as the receiver expression.
@@ -3628,11 +3623,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The target type of a lambda is the type to which it is assigned or casted.
      *
      * @param tree lambda expression tree
-     * @return the functional interface and the function type that this lambda targets
+     * @return the function type that this lambda targets
      */
-    public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(
-            LambdaExpressionTree tree) {
-        return getFnInterfaceFromTree((Tree) tree);
+    public AnnotatedExecutableType getFunctionTypeFromTree(LambdaExpressionTree tree) {
+        return getFnInterfaceFromTree(tree).second;
     }
 
     /**
@@ -3649,11 +3643,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the functional interface and the function type that this method reference or lambda
      *     targets
      */
-    private Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(Tree tree) {
+    public Pair<AnnotatedTypeMirror, AnnotatedExecutableType> getFnInterfaceFromTree(Tree tree) {
 
         // Functional interface
-        AnnotatedDeclaredType functionalInterfaceType = getFunctionalInterfaceType(tree);
-        makeGroundTargetType(functionalInterfaceType, (DeclaredType) TreeUtils.typeOf(tree));
+        AnnotatedTypeMirror functionalInterfaceType = getFunctionalInterfaceType(tree);
+        if (functionalInterfaceType.getKind() == TypeKind.DECLARED) {
+            makeGroundTargetType(
+                    (AnnotatedDeclaredType) functionalInterfaceType,
+                    (DeclaredType) TreeUtils.typeOf(tree));
+        }
 
         // Functional method
         Element fnElement = TreeUtils.findFunction(tree, processingEnv);
@@ -3675,9 +3673,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * recursively search for lambdas nested in lambdas.
      *
      * @param tree the tree of the lambda or method reference
-     * @return the functional interface type
+     * @return the functional interface type or an uninferred type argument
      */
-    private AnnotatedDeclaredType getFunctionalInterfaceType(Tree tree) {
+    private AnnotatedTypeMirror getFunctionalInterfaceType(Tree tree) {
 
         Tree parentTree = getPath(tree).getParentPath().getLeaf();
         switch (parentTree.getKind()) {
@@ -3694,7 +3692,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     for (AnnotatedTypeMirror t : itype.directSuperTypes()) {
                         if (TypesUtils.isFunctionalInterface(
                                 t.getUnderlyingType(), getProcessingEnv())) {
-                            return (AnnotatedDeclaredType) t;
+                            return t;
                         }
                     }
                     // We should never reach here: isFunctionalInterface performs the same check
@@ -3705,7 +3703,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                             + "Found type: %s for tree: %s in lambda tree: %s",
                                     castATM, cast, tree));
                 }
-                return (AnnotatedDeclaredType) castATM;
+                return castATM;
 
             case NEW_CLASS:
                 NewClassTree newClass = (NewClassTree) parentTree;
@@ -3716,14 +3714,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                 con.executableType, indexOfLambda);
                 assert isFunctionalInterface(
                         constructorParam.getUnderlyingType(), parentTree, tree);
-                return (AnnotatedDeclaredType) constructorParam;
+                return constructorParam;
 
             case NEW_ARRAY:
                 NewArrayTree newArray = (NewArrayTree) parentTree;
                 AnnotatedArrayType newArrayATM = getAnnotatedType(newArray);
                 AnnotatedTypeMirror elementATM = newArrayATM.getComponentType();
                 assert isFunctionalInterface(elementATM.getUnderlyingType(), parentTree, tree);
-                return (AnnotatedDeclaredType) elementATM;
+                return elementATM;
 
             case METHOD_INVOCATION:
                 MethodInvocationTree method = (MethodInvocationTree) parentTree;
@@ -3738,17 +3736,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     addDefaultAnnotations(param);
                 }
                 assert isFunctionalInterface(param.getUnderlyingType(), parentTree, tree);
-                return (AnnotatedDeclaredType) param;
+                return param;
 
             case VARIABLE:
                 VariableTree varTree = (VariableTree) parentTree;
                 assert isFunctionalInterface(TreeUtils.typeOf(varTree), parentTree, tree);
-                return (AnnotatedDeclaredType) getAnnotatedType(varTree.getType());
+                return getAnnotatedType(varTree.getType());
 
             case ASSIGNMENT:
                 AssignmentTree assignmentTree = (AssignmentTree) parentTree;
                 assert isFunctionalInterface(TreeUtils.typeOf(assignmentTree), parentTree, tree);
-                return (AnnotatedDeclaredType) getAnnotatedType(assignmentTree.getVariable());
+                return getAnnotatedType(assignmentTree.getVariable());
 
             case RETURN:
                 Tree enclosing =
@@ -3760,22 +3758,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
                 if (enclosing.getKind() == Tree.Kind.METHOD) {
                     MethodTree enclosingMethod = (MethodTree) enclosing;
-                    return (AnnotatedDeclaredType)
-                            getAnnotatedType(enclosingMethod.getReturnType());
+                    return getAnnotatedType(enclosingMethod.getReturnType());
                 } else {
                     LambdaExpressionTree enclosingLambda = (LambdaExpressionTree) enclosing;
-                    Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
-                            getFnInterfaceFromTree(enclosingLambda);
-                    AnnotatedExecutableType methodExe = result.second;
-                    return (AnnotatedDeclaredType) methodExe.getReturnType();
+                    AnnotatedExecutableType methodExe = getFunctionTypeFromTree(enclosingLambda);
+                    return methodExe.getReturnType();
                 }
 
             case LAMBDA_EXPRESSION:
                 LambdaExpressionTree enclosingLambda = (LambdaExpressionTree) parentTree;
-                Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
-                        getFnInterfaceFromTree(enclosingLambda);
-                AnnotatedExecutableType methodExe = result.second;
-                return (AnnotatedDeclaredType) methodExe.getReturnType();
+                AnnotatedExecutableType methodExe = getFunctionTypeFromTree(enclosingLambda);
+                return methodExe.getReturnType();
 
             case CONDITIONAL_EXPRESSION:
                 ConditionalExpressionTree conditionalExpressionTree =
@@ -3800,7 +3793,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypeMirror conditionalType =
                         AnnotatedTypes.leastUpperBound(this, trueType, falseType);
                 assert isFunctionalInterface(conditionalType.getUnderlyingType(), parentTree, tree);
-                return (AnnotatedDeclaredType) conditionalType;
+                return conditionalType;
 
             default:
                 throw new BugInCF(
