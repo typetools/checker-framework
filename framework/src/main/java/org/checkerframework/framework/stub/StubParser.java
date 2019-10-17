@@ -775,9 +775,11 @@ public class StubParser {
                             methodType, decl.getReceiverParameter().get().getAnnotations());
                 }
             } else {
+                // Add declaration annotations.
                 annotate(
                         methodType.getReceiverType(),
                         decl.getReceiverParameter().get().getAnnotations());
+                // Add type annotations.
                 annotate(
                         methodType.getReceiverType(),
                         decl.getReceiverParameter().get().getType(),
@@ -1369,8 +1371,7 @@ public class StubParser {
     private ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
         if (isJdkAsStub && methodDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private methods of the jdk.  They can't be referenced outside of the
-            // jdk
-            // and might refer to types that are not accessible.
+            // jdk and might refer to types that are not accessible.
             return null;
         }
         final String wantedMethodName = methodDecl.getNameAsString();

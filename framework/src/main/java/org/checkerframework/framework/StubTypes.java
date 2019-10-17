@@ -59,10 +59,14 @@ public class StubTypes {
     /** AnnotatedTypeFactory */
     private final AnnotatedTypeFactory factory;
 
-    /** JDK stub files from the file system. */
+    /**
+     * Mapping from fully-qualified class name to corresponding JDK stub file from the file system.
+     */
     private final Map<String, Path> jdk11StubFiles = new HashMap<>();
 
-    /** JDK stub files from the checker.jar. */
+    /**
+     * Mapping from fully-qualified class name to corresponding JDK stub files from the checker.jar.
+     */
     private final Map<String, String> jdk11StubFilesJar = new HashMap<>();
 
     /** Creates a stub type. */
@@ -128,6 +132,9 @@ public class StubTypes {
                         declAnnosFromStubFiles);
             }
             prepJdkStubs();
+            // prepping the Jdk will parse all package-info.java files.  This sets parsing to false,
+            // so re-set it to true.
+            parsing = true;
         }
 
         // Stub files specified via stubs compiler option, stubs system property,
@@ -250,18 +257,17 @@ public class StubTypes {
      * file.
      *
      * @param elt element for which annotations are returned
-     * @param eltName name of the element
      * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written
      *     in the stubfile and in the element. {@code null} is returned if {@code element} does not
      *     appear in a stub file.
      */
-    public Set<AnnotationMirror> getDeclAnnotation(Element elt, String eltName) {
+    public Set<AnnotationMirror> getDeclAnnotation(Element elt) {
         if (parsing) {
             return Collections.emptySet();
         }
 
         parseEnclosingClass(elt);
-
+        String eltName = ElementUtils.getVerboseName(elt);
         if (declAnnosFromStubFiles.containsKey(eltName)) {
             return declAnnosFromStubFiles.get(eltName);
         }
@@ -315,7 +321,6 @@ public class StubTypes {
      * @param path path to file to parse
      */
     private void parseStubFile(Path path) {
-        boolean oldParsing = parsing;
         parsing = true;
         try (FileInputStream jdkStub = new FileInputStream(path.toFile())) {
             StubParser.parseJdkFileAsStub(
@@ -328,7 +333,7 @@ public class StubTypes {
         } catch (IOException e) {
             throw new BugInCF("cannot open the jdk stub file " + path, e);
         } finally {
-            parsing = oldParsing;
+            parsing = false;
         }
     }
 
@@ -339,7 +344,6 @@ public class StubTypes {
      */
     private void parseJarEntry(String jarEntryName) {
         JarURLConnection connection = getJarURLConnectionToJdk11();
-        boolean oldParsing = parsing;
         parsing = true;
         try (JarFile jarFile = connection.getJarFile()) {
             InputStream jdkStub;
@@ -360,7 +364,7 @@ public class StubTypes {
         } catch (BugInCF e) {
             throw new BugInCF("Exception while parsing " + jarEntryName, e);
         } finally {
-            parsing = oldParsing;
+            parsing = false;
         }
     }
 

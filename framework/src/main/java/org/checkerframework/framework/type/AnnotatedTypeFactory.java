@@ -206,6 +206,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private final Set<Class<? extends Annotation>> supportedQuals;
 
+    /** Parsers stub files and stores annotations from stub files. */
+    private final StubTypes stubTypes;
+
     /**
      * A cache used to store elements whose declaration annotations have already been stored by
      * calling the method {@link #getDeclAnnotations(Element)}.
@@ -392,6 +395,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.visitorState = new VisitorState();
 
         this.supportedQuals = new HashSet<>();
+        this.stubTypes = new StubTypes(this);
 
         this.cacheDeclAnnos = new HashMap<>();
 
@@ -1170,7 +1174,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // They only include qualifiers explicitly inserted by the user.
     // **********************************************************************
 
-    StubTypes stubTypes = new StubTypes(this);
     /**
      * Creates an AnnotatedTypeMirror for {@code elt} that includes: annotations explicitly written
      * on the element and annotations from stub files.
@@ -3126,12 +3129,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (!stubTypes.isParsing()) {
 
             // Retrieving annotations from stub files.
-            String eltName = ElementUtils.getVerboseName(elt);
-            Set<AnnotationMirror> stubAnnos = stubTypes.getDeclAnnotation(elt, eltName);
+            Set<AnnotationMirror> stubAnnos = stubTypes.getDeclAnnotation(elt);
             if (stubAnnos != null) {
                 results.addAll(stubAnnos);
             } else {
-                stubAnnos = stubTypes.getDeclAnnotation(elt, eltName);
+                stubAnnos = stubTypes.getDeclAnnotation(elt);
                 results.addAll(stubAnnos);
             }
 
