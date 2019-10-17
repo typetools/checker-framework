@@ -545,11 +545,11 @@ public class ValueTransfer extends CFTransfer {
     }
 
     /**
-     * This method is only used to check for nullable nodes in string concatenations.
+     * A light check for nodes that can be the null literal. Nodes that are certainly not the null
+     * literal are String literals, primitives and effectively final variables.
      *
-     * @return false if the node can't take null value in a String concatenation or true otherwise.
-     *     There is an exception for StringConcatenationNode, as there is no need no check its
-     *     operands individually.
+     * @return false if the node can't be null, or true if the node can be the null literal or the
+     *     check is not precise enough.
      */
     private boolean isNullable(Node node) {
         if (node instanceof StringLiteralNode) {
@@ -559,7 +559,6 @@ public class ValueTransfer extends CFTransfer {
                 return false;
             }
         } else if (node instanceof StringConcatenateNode) {
-            // no need to recurse because this method is called for every operand.
             return false;
         }
 
@@ -577,14 +576,14 @@ public class ValueTransfer extends CFTransfer {
         List<String> leftValues = getStringValues(leftOperand, p);
         List<String> rightValues = getStringValues(rightOperand, p);
 
-        boolean allowNullStringConcat =
+        boolean nullStringConcat =
                 atypefactory.getContext().getChecker().hasOption("nullStringsConcatenation");
 
         if (leftValues != null && rightValues != null) {
             // Both operands have known string values, compute set of results
             List<String> concatValues = new ArrayList<>();
 
-            if (allowNullStringConcat) {
+            if (nullStringConcat) {
                 if (isNullable(leftOperand)) {
                     leftValues.add("null");
                 }
@@ -626,7 +625,7 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengths != null && rightLengths != null) {
             // Both operands have known lengths, compute set of result lengths
-            if (allowNullStringConcat) {
+            if (nullStringConcat) {
                 if (isNullable(leftOperand)) {
                     leftLengths.add(4); // "null"
                 }
@@ -650,7 +649,7 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengthRange != null && rightLengthRange != null) {
             // Both operands have a length from a known range, compute a range of result lengths
-            if (allowNullStringConcat) {
+            if (nullStringConcat) {
                 if (isNullable(leftOperand)) {
                     leftLengthRange.union(new Range(4, 4)); // "null"
                 }
