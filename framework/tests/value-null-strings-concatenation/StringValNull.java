@@ -53,4 +53,15 @@ public class StringValNull {
     static @StringVal("arg=22") String toString6(@IntVal(22) int arg) {
         return "arg=" + arg;
     }
+
+    final @StringVal("hello") String s = null;
+
+    @StringVal("hello") String s2 = null;
+
+    void method2(StringValNull obj) {
+        // :: error: (assignment.type.incompatible)
+        @StringVal("hello") String l1 = "" + obj.s;
+        // :: error: (assignment.type.incompatible)
+        @StringVal("hello") String l2 = "" + obj.s2;
+    }
 }
