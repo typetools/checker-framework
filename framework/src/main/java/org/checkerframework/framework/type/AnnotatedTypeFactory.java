@@ -1348,8 +1348,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (shouldCache && tree.getKind() != Tree.Kind.NEW_CLASS) {
             // Don't cache types of NEW operator
             // Cached NEW_CLASS types may contain "Unknowned*" annotations
-            // Such annotation may from previous visits
-            // Potential better solution: clear cache after each annotation processor
+            // Such annotations are from previous dataflow analysis
+            // Potential better solution: clear cache after dataflow analysis
             fromExpressionTreeCache.put(tree, result.deepCopy());
         }
         return result;
