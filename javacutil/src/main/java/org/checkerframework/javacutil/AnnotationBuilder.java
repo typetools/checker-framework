@@ -549,20 +549,12 @@ public class AnnotationBuilder {
         }
 
         if (!isSubtype) {
-            if (found.toString().equals(expected.toString())) {
-                throw new BugInCF(
-                        "given value differs from expected, but same string representation; "
-                                + "this is likely a bootclasspath/classpath issue; "
-                                + "found: "
-                                + found);
-            } else {
-                throw new BugInCF(
-                        "given value differs from expected; "
-                                + "found: "
-                                + found
-                                + "; expected: "
-                                + expected);
-            }
+            throw new BugInCF(
+                    "given value differs from expected; "
+                            + "found: "
+                            + found
+                            + "; expected: "
+                            + expected);
         }
     }
 
