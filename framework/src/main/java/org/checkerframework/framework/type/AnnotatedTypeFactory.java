@@ -2254,21 +2254,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return AnnotatedDeclaredType
      */
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
+        // Diamond trees that are not anonymous classes.
         if (TreeUtils.isDiamondTree(newClassTree) && newClassTree.getClassBody() == null) {
             AnnotatedDeclaredType type =
                     (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-            Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-            if (ctx != null) {
-                AnnotatedTypeMirror ctxtype = ctx.second;
-                fromNewClassContextHelper(type, ctxtype);
-            } else {
-                TreePath p = getPath(newClassTree);
-                AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
-                if (ctxtype != null) {
+            if (((com.sun.tools.javac.code.Type) type.actualType)
+                    .tsym
+                    .getTypeParameters()
+                    .nonEmpty()) {
+                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+                if (ctx != null) {
+                    AnnotatedTypeMirror ctxtype = ctx.second;
                     fromNewClassContextHelper(type, ctxtype);
                 } else {
-                    // give up trying and set to raw.
-                    type.setWasRaw();
+                    TreePath p = getPath(newClassTree);
+                    AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
+                    if (ctxtype != null) {
+                        fromNewClassContextHelper(type, ctxtype);
+                    } else {
+                        // give up trying and set to raw.
+                        type.setWasRaw();
+                    }
                 }
             }
             AnnotatedDeclaredType fromTypeTree =
