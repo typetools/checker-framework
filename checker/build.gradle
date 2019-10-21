@@ -1,5 +1,3 @@
-import java.util.zip.ZipFile
-
 ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
@@ -8,13 +6,14 @@ ext {
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
+
+    jdkHome = '../../jdk'
 }
 sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-            srcDirs += ['src/main/java']
-            exclude '**/*.java'
+            srcDirs += ['src/main/java', "${buildDir}/jdk"]
         }
     }
     testannotations
@@ -32,6 +31,53 @@ dependencies {
 
     testannotationsCompile project(':checker-qual')
 }
+
+task cloneTypetoolsJdk() {
+    description 'Obtain or update the jdk'
+    if (file(jdkHome).exists()) {
+        exec {
+            workingDir jdkHome
+            executable 'git'
+            args = ['pull', '-q']
+            ignoreExitValue = true
+        }
+    } else {
+        exec {
+            workingDir "${jdkHome}/../"
+            executable 'git'
+            args = ['clone', '-q', 'https://github.com/typetools/jdk.git', 'jdk']
+        }
+    }
+}
+
+task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
+    description "Copy annotated jdk 11 files to ${buildDir}/jdk/jdk11/"
+    doLast {
+        FileTree tree = fileTree(dir: "${jdkHome}/src/")
+        SortedSet<String> annotatedForFiles = new TreeSet<>();
+        tree.visit { FileVisitDetails fvd ->
+            if (!fvd.file.isDirectory() && fvd.file.name.matches(".*\\.java")) {
+                fvd.getFile().readLines().any { line ->
+                    if (line.contains("@AnnotatedFor") || line.contains("org.checkerframework")) {
+                        annotatedForFiles.add(fvd.file.absolutePath)
+                        return true;
+                    }
+                }
+            }
+        }
+        String absolutejdkHome = file(jdkHome).absolutePath
+        int jdkDirStringSize = absolutejdkHome.size()
+        copy {
+            from(jdkHome)
+            into("${buildDir}/jdk/jdk11/")
+            for (String filename : annotatedForFiles) {
+                include filename.substring(jdkDirStringSize)
+            }
+        }
+    }
+}
+
+processResources.dependsOn(copyJdk11Files)
 
 jar {
     manifest {

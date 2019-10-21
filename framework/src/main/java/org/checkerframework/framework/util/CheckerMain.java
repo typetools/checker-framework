@@ -405,7 +405,9 @@ public class CheckerMain {
         } else {
             args.addAll(
                     Arrays.asList(
-                            "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
+                            "--illegal-access=warn",
+                            "--add-opens",
+                            "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
         }
 
         args.add("-classpath");
