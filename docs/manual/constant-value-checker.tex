@@ -337,8 +337,8 @@ manual analysis.
 \sectionAndLabel{Strings can be null in concatenations}{null-strings-concats}
 
 The definition of \refqualclass{common/value/qual}{StringVal} says that an
-expression of type \code{@StringVal("a", "b")} evaluates to one of the values
-"a", "b", or null. However, Java converts a String that is null to “null”
+expression of type \code{@StringVal(``a'', ``b'')} evaluates to one of the values
+``a'', ``b'', or null. However, Java converts a String that is null to “null”
 when that String is used in a String concatenation expression. Typically,
 the Value Checker does not consider this fact. The
 \code{-AnullStringsConcatenation} command-line option makes the checker more
