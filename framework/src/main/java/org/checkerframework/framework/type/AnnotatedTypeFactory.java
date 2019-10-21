@@ -2258,18 +2258,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotatedDeclaredType type =
                     (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
             Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-            if (ctx != null && ctx.second.getKind() == TypeKind.DECLARED) {
+            if (ctx != null) {
                 AnnotatedTypeMirror ctxtype = ctx.second;
                 fromNewClassContextHelper(type, ctxtype);
             } else {
                 TreePath p = getPath(newClassTree);
                 AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
-                if (ctxtype != null && ctxtype.getKind() == TypeKind.DECLARED) {
+                if (ctxtype != null) {
                     fromNewClassContextHelper(type, ctxtype);
                 } else {
                     // give up trying and set to raw.
                     type.setWasRaw();
-                    type.getTypeArguments();
                 }
             }
             AnnotatedDeclaredType fromTypeTree =
