@@ -544,11 +544,11 @@ public class ValueTransfer extends CFTransfer {
     }
 
     /**
-     * A light check for nodes that can be the null literal. Nodes that are certainly not the null
-     * literal are String literals, primitives and effectively final variables.
+     * Checks whether or not the passed node is nullable. This superficial check assumes that every
+     * node which is not a String literal, primitive or a compile-time constant is nullable.
      *
-     * @return false if the node can't be null, or true if the node can be the null literal or the
-     *     check is not precise enough.
+     * @return false if the node can't be null, or true if the node is nullable or the check is not
+     *     precise enough.
      */
     private boolean isNullable(Node node) {
         if (node instanceof StringLiteralNode) {
@@ -587,18 +587,18 @@ public class ValueTransfer extends CFTransfer {
                 if (isNullable(rightOperand)) {
                     rightValues.add("null");
                 }
-            }
-
-            if (leftOperand instanceof StringConversionNode) {
-                if (((StringConversionNode) leftOperand).getOperand().getType().getKind()
-                        == TypeKind.NULL) {
-                    leftValues.add("null");
+            } else {
+                if (leftOperand instanceof StringConversionNode) {
+                    if (((StringConversionNode) leftOperand).getOperand().getType().getKind()
+                            == TypeKind.NULL) {
+                        leftValues.add("null");
+                    }
                 }
-            }
-            if (rightOperand instanceof StringConversionNode) {
-                if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
-                        == TypeKind.NULL) {
-                    rightValues.add("null");
+                if (rightOperand instanceof StringConversionNode) {
+                    if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
+                            == TypeKind.NULL) {
+                        rightValues.add("null");
+                    }
                 }
             }
 

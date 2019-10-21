@@ -336,11 +336,15 @@ manual analysis.
 
 \sectionAndLabel{Strings can be null in concatenations}{null-strings-concats}
 
-The Constant Value Checker considers all elements of a String concatenation
-non-null by default. The \code{-AnullStringsConcatenation} command-line option
-makes the checker more sound by assuming that all objects can be null. Only
-String literals, primitive types, and compile-time constants are considered
-non-null. Figure~\ref{fig-null-strings-concat} gives an example of behavior
+The definition of \refqualclass{common/value/qual}{StringVal} says that an
+expression of type \code{@StringVal("a", "b")} evaluates to one of the values
+"a", "b", or null. However, Java converts a String that is null to “null”
+when that String is used in a String concatenation expression. Typically,
+the Value Checker does not consider this fact. The
+\code{-AnullStringsConcatenation} command-line option makes the checker more
+sound by assuming that all objects can be null. Only String literals,
+primitive types, and compile-time constants are considered non-null.
+Figure~\ref{fig-null-strings-concat} gives an example of behavior
 with and without the \code{-AnullStringsConcatenation} option.
 
 \begin{figure}
@@ -356,6 +360,9 @@ with and without the \code{-AnullStringsConcatenation} option.
 Constant Value Checker considers that the first String can be null.}
 \label{fig-null-strings-concat}
 \end{figure}
+
+This is not a full substitute for the Nullness Checker. Instead, it permits the
+Value Checker to retain soundness when run alone.
 
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal

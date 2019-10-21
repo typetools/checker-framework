@@ -32,7 +32,7 @@ public class ValueChecker extends BaseTypeChecker {
     public static final String REPORT_EVAL_WARNS = "reportEvalWarns";
     /** Command-line option to ignore the possibility of overflow for range annotations. */
     public static final String IGNORE_RANGE_OVERFLOW = "ignoreRangeOverflow";
-    /** Command-line option to allow elements of String concatenations to be null. */
+    /** Command-line option that assumes most expressions in String concatenations can be null. */
     public static final String NULL_STRINGS_CONCATENATION = "nullStringsConcatenation";
 
     @Override
