@@ -1,7 +1,5 @@
 package org.checkerframework.common.value;
 
-import static org.checkerframework.javacutil.TypesUtils.getQualifiedName;
-
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -356,7 +354,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 from = Character.MIN_VALUE;
                 break;
             case DECLARED:
-                String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+                String qualifiedName = TypesUtils.getQualifiedName((DeclaredType) type).toString();
                 switch (qualifiedName) {
                     case "java.lang.Integer":
                         from = Integer.MIN_VALUE;
