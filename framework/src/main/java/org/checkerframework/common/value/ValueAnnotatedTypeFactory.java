@@ -409,7 +409,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 to = Character.MAX_VALUE;
                 break;
             case DECLARED:
-                String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+                String qualifiedName = TypesUtils.getQualifiedName((DeclaredType) type).toString();
                 switch (qualifiedName) {
                     case "java.lang.Integer":
                         to = Integer.MAX_VALUE;
