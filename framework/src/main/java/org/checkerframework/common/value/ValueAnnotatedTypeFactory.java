@@ -1,5 +1,7 @@
 package org.checkerframework.common.value;
 
+import static org.checkerframework.javacutil.TypesUtils.getQualifiedName;
+
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -26,6 +28,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -338,7 +341,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         long from;
-        switch (atm.getUnderlyingType().getKind()) {
+        TypeMirror type = atm.getUnderlyingType();
+        switch (type.getKind()) {
             case INT:
                 from = Integer.MIN_VALUE;
                 break;
@@ -350,6 +354,25 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 break;
             case CHAR:
                 from = Character.MIN_VALUE;
+                break;
+            case DECLARED:
+                String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+                switch (qualifiedName) {
+                    case "java.lang.Integer":
+                        from = Integer.MIN_VALUE;
+                        break;
+                    case "java.lang.Short":
+                        from = Short.MIN_VALUE;
+                        break;
+                    case "java.lang.Byte":
+                        from = Byte.MIN_VALUE;
+                        break;
+                    case "java.lang.Character":
+                        from = Character.MIN_VALUE;
+                        break;
+                    default:
+                        from = Long.MIN_VALUE;
+                }
                 break;
             default:
                 from = Long.MIN_VALUE;
@@ -373,7 +396,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         long to;
-        switch (atm.getUnderlyingType().getKind()) {
+        TypeMirror type = atm.getUnderlyingType();
+        switch (type.getKind()) {
             case INT:
                 to = Integer.MAX_VALUE;
                 break;
@@ -385,6 +409,25 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 break;
             case CHAR:
                 to = Character.MAX_VALUE;
+                break;
+            case DECLARED:
+                String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+                switch (qualifiedName) {
+                    case "java.lang.Integer":
+                        to = Integer.MAX_VALUE;
+                        break;
+                    case "java.lang.Short":
+                        to = Short.MAX_VALUE;
+                        break;
+                    case "java.lang.Byte":
+                        to = Byte.MAX_VALUE;
+                        break;
+                    case "java.lang.Character":
+                        to = Character.MAX_VALUE;
+                        break;
+                    default:
+                        to = Long.MAX_VALUE;
+                }
                 break;
             default:
                 to = Long.MAX_VALUE;
