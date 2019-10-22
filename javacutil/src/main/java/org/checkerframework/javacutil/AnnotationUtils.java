@@ -154,6 +154,9 @@ public class AnnotationUtils {
      */
     public static boolean areSameByClass(
             AnnotationMirror am, Class<? extends Annotation> annoClass) {
+        if (am == null) {
+            return false;
+        }
         String canonicalName = annotationClassNames.get(annoClass);
         if (canonicalName == null) {
             // This method is faster than #areSameByName because of this cache.
