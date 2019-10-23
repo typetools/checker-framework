@@ -88,7 +88,7 @@ public class AnnotationUtils {
      * @param a2 the second AnnotationMirror to compare
      * @return true iff a1 and a2 are the same annotation
      */
-    public static boolean areSame(@Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
+    public static boolean areSame(AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
         }
@@ -117,8 +117,7 @@ public class AnnotationUtils {
      * @see #areSame(AnnotationMirror, AnnotationMirror)
      * @return true iff a1 and a2 have the same annotation name
      */
-    public static boolean areSameByName(
-            @Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
+    public static boolean areSameByName(AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
         }
