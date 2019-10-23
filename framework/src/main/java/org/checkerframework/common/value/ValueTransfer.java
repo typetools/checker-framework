@@ -545,10 +545,10 @@ public class ValueTransfer extends CFTransfer {
 
     /**
      * Checks whether or not the passed node is nullable. This superficial check assumes that every
-     * node which is not a String literal, primitive or a compile-time constant is nullable.
+     * node is nullable unless it is a primitive, String literal, or compile-time constant.
      *
-     * @return false if the node can't be null, or true if the node is nullable or the check is not
-     *     precise enough.
+     * @return false if the node's run-time can't be null; true if the node's run-time value may be
+     *     null, or if this method is not precise enough
      */
     private boolean isNullable(Node node) {
         if (node instanceof StringLiteralNode) {

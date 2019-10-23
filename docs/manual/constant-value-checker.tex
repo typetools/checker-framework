@@ -336,36 +336,28 @@ manual analysis.
 
 \sectionAndLabel{Strings can be null in concatenations}{null-strings-concats}
 
-The definition of \<@StringVal> says that an expression of type
-\<\refqualclass{common/value/qual}{StringVal}("a", "b")> evaluates to one of
-the values \<"a">, \<"b">, or \<null>. However, Java converts a String that
-is null to ``null'' when that String is used in a String concatenation
-expression. Typically, the Value Checker does not consider this fact.
-The \code{-AnullStringsConcatenation} command-line option makes the checker
-more sound by assuming that all objects can be null. Only String literals,
-primitive types, and compile-time constants are considered non-null.
-Figure~\ref{fig-null-strings-concat} gives an example of behavior
-with and without the \code{-AnullStringsConcatenation} option.
+By default, the Constant Value Checker is unsound with respect to string
+concatenation.  The \code{-AnullStringsConcatenation} command-line option
+eliminates this unsoundness, though it may lead to false positive warnings.
 
-\begin{figure}
-\begin{Verbatim}
-  ...
-  // This String can be null
-  @StringVal("a") String string1 = getString();
-  // With the command-line option, string2 can be "nullb" too, so an error is
-  // expected in this case.
-  @StringVal("ab") String string2 = string1 + "b";
-\end{Verbatim}
-\caption{With the \code{-AnullStringsConcatenation} command-line option, the
-Constant Value Checker considers that the first String can be null.}
-\label{fig-null-strings-concat}
-\end{figure}
+Consider a variable declared as
+\<\refqualclass{common/value/qual}{StringVal}("a", "b") String x;>.
+At run time, \<x> evaluates to one of the values \<"a">, \<"b">, or
+\<null>.  By default, the Constant Value
+Checker unsoundly assumes that when such a value is used in string
+concatenation, it expands to \<"a"> or \<"b"> but not \<"null">.
 
-This is not a full substitute for the Nullness Checker. Instead, it permits the
-Value Checker to retain soundness when run alone.
+The \code{-AnullStringsConcatenation} command-line option makes
+the checker assume that any value (other than primitive types and
+compile-time constant strings) may be null.  (This is
+conservative, but it is sound.)
+Without the command-line argument, the estimate for \<x + "c"> is
+\<@StringVal}("ac", "bc") String>.
+With the command-line argument, the estimate for \<x + "c"> is
+\<@StringVal}("ac", "bc", "nullc") String>.
 
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
-%  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
+%%  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
 %%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange casted
-%  LocalWords:  qual AignoreRangeOverflow MinLen PolyValue GTENegativeOne
-%%  LocalWords:  staticallyexecutable
+%%  LocalWords:  qual AignoreRangeOverflow MinLen PolyValue GTENegativeOne
+%%  LocalWords:  staticallyexecutable concats AnullStringsConcatenation
