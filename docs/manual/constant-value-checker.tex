@@ -351,10 +351,10 @@ The \code{-AnullStringsConcatenation} command-line option makes
 the checker assume that any value (other than primitive types and
 compile-time constant strings) may be null.  (This is
 conservative, but it is sound.)
-Without the command-line argument, the estimate for \<x + "c"> is
-\<@StringVal}("ac", "bc") String>.
-With the command-line argument, the estimate for \<x + "c"> is
-\<@StringVal}("ac", "bc", "nullc") String>.
+Without the command-line argument, the type of ``\<x + "c">'' is
+\<@StringVal("ac", "bc") String>.
+With the command-line argument, the type of ``\<x + "c">'' is
+\<@StringVal("ac", "bc", "nullc") String>.
 
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %%  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
