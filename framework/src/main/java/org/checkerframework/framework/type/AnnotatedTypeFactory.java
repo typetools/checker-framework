@@ -442,6 +442,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
      */
     private void checkSupportedQuals() {
+        if (supportedQuals.isEmpty()) {
+            // This is throwing a CF bug, but it could also be a bug in the checker rather than in
+            // the framework itself.
+            throw new BugInCF("Found no supported qualifiers.");
+        }
         boolean hasPolyAll = false;
         boolean hasPolymorphicQualifier = false;
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
