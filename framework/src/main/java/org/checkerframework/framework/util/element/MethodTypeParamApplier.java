@@ -8,13 +8,16 @@ import javax.lang.model.element.ElementKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 
 /** Applies the annotations present for a method type parameter onto an AnnotatedTypeVariable. */
 public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
 
+    /** Apply annotations from {@code element} to {@code type}. */
     public static void apply(
-            AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
+            AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory)
+            throws UnexpectedAnnotationLocationException {
         new MethodTypeParamApplier(type, element, typeFactory).extractAndApply();
     }
 

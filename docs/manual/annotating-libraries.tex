@@ -501,11 +501,9 @@ equivalent to specifying every file in it whose name ends with
 \code{.astub}.  The stub path entries are delimited by
 \<File.pathSeparator> (`\<:>' for Linux and Mac, `\<;>' for Windows).
 
-A checker automatically reads the stub file \code{jdk.astub}, unless
-command-line option \<-Aignorejdkastub> is supplied.  (The checker
-author should place \code{jdk.astub} in the same directory as the Checker class, i.e.,
-the subclass of \code{BaseTypeVisitor}.)  Programmers should only use the
-\<-Astubs> argument for additional stub files they create themselves.
+The \<-Astubs> argument is for stub files that users create.
+A checker automatically reads some of its own stub files; see
+Section~\ref{creating-a-checker-annotated-jdk}.
 
 If a method appears in more than one stub file (or twice in the same
 stub file), then the annotations are merged. If any of the
@@ -526,6 +524,9 @@ This feature allows stub files to change the effective annotations in
 all possible situations.
 Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
 warning whenever a stub file overwrites bytecode annotations.
+Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get
+a warning whenever a stub file specification is redundant with
+bytecode annotations.
 
 A file being compiled takes precedence over a stub file.  If file \<A.java>
 is being compiled, then any stub for class \<A> is ignored.
@@ -664,7 +665,7 @@ if an entry could not be found.
 
 \item
   Add annotations to the stub class.  For example, you might annotate
-  the \sunjavadoc{java/lang/String.html\#intern--}{String.intern()} method as follows:
+  the \sunjavadoc{java.base/java/lang/String.html\#intern()}{String.intern()} method as follows:
 
 \begin{Verbatim}
   @Interned String intern();

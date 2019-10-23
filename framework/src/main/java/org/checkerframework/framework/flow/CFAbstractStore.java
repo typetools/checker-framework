@@ -193,7 +193,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V otherVal = e.getValue();
 
                 // case 3:
-                if (!((GenericAnnotatedTypeFactory) atypeFactory)
+                if (!((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
                         .getSupportedMonotonicTypeQualifiers()
                         .isEmpty()) {
                     List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =

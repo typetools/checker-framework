@@ -208,6 +208,11 @@ import org.checkerframework.javacutil.UserError;
     // java.lang.String)
     "requirePrefixInWarningSuppressions",
 
+    // Ignore annotations in bytecode that have invalid annotation locations.
+    // See https://github.com/typetools/checker-framework/issues/2173
+    // org.checkerframework.framework.type.ElementAnnotationApplier.apply
+    "ignoreInvalidAnnotationLocations",
+
     ///
     /// Partially-annotated libraries
     ///
@@ -227,6 +232,9 @@ import org.checkerframework.javacutil.UserError;
     // Whether to print warnings about stub files that overwrite annotations
     // from bytecode.
     "stubWarnIfOverwritesBytecode",
+    // Whether to print warnings about stub files that are redundant with the annotations from
+    // bytecode.
+    "stubWarnIfRedundantWithBytecode",
     // Already listed above, but worth noting again in this section:
     // "useDefaultsForUncheckedCode"
 
@@ -1762,8 +1770,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Determines the value of the lint option with the given name. Just as <a
-     * href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a> uses
-     * "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
+     * href="https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html">javac</a>
+     * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
      * options are enabled with "-Alint=xxx" and disabled with "-Alint=-xxx".
      *
      * @throws IllegalArgumentException if the option name is not recognized via the {@link
@@ -1806,8 +1814,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Set the value of the lint option with the given name. Just as <a
-     * href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a> uses
-     * "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
+     * href="https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html">javac</a>
+     * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
      * options are enabled with "-Alint=xxx" and disabled with "-Alint=-xxx". This method can be
      * used by subclasses to enforce having certain lint options enabled/disabled.
      *

@@ -166,12 +166,9 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         boolean res = qualHierarchy.updateMappingToMutableSet(treeKinds, treeKind, theQual);
         if (!res) {
             throw new BugInCF(
-                    "LiteralTreeAnnotator: invalid update of treeKinds "
-                            + treeKinds
-                            + " at "
-                            + treeKind
-                            + " with "
-                            + theQual);
+                    String.format(
+                            "LiteralTreeAnnotator: tried to add mapping %s=%s to %s",
+                            treeKind, theQual, treeKinds));
         }
     }
 
@@ -243,9 +240,8 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
                     nonMatches.add(sam);
                 }
             }
-            Set<? extends AnnotationMirror> res = null;
             if (!matches.isEmpty()) {
-                res = matches.get(0);
+                Set<? extends AnnotationMirror> res = matches.get(0);
                 for (Set<? extends AnnotationMirror> sam : matches) {
                     res = qualHierarchy.greatestLowerBounds(res, sam);
                 }

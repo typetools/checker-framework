@@ -285,22 +285,13 @@ public class ElementAnnotationUtil {
      * @param annos all of the element annotations, TypeCompounds, for type
      */
     static void annotateViaTypeAnnoPosition(
-            final AnnotatedTypeMirror type, final Collection<TypeCompound> annos) {
+            final AnnotatedTypeMirror type, final Collection<TypeCompound> annos)
+            throws UnexpectedAnnotationLocationException {
         final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
                 new IdentityHashMap<>();
         for (final TypeCompound anno : annos) {
-            AnnotatedTypeMirror target;
-            try {
-                target = getTypeAtLocation(type, anno.position.location, anno, false);
-            } catch (UnexpectedAnnotationLocationException ex) {
-                // There's a bug in Java 8 compiler that creates bad bytecode such that an
-                // annotation on a lambda parameter is applied to a method parameter. (This bug has
-                // been fixed in Java 9.) If this happens, then the location could refer to a
-                // location, such as a type argument, that doesn't exist. Since Java 8 bytecode
-                // might be on the classpath, catch this exception and ignore the type.
-                // TODO: Issue an error if this annotation is from Java 9+ bytecode.
-                continue;
-            }
+            AnnotatedTypeMirror target =
+                    getTypeAtLocation(type, anno.position.location, anno, false);
             if (target.getKind() == TypeKind.WILDCARD) {
                 addWildcardToBoundMap((AnnotatedWildcardType) target, anno, wildcardToAnnos);
             } else {
@@ -623,7 +614,7 @@ public class ElementAnnotationUtil {
 
     /** Exception indicating an invalid location for an annotation was found. */
     @SuppressWarnings("serial")
-    static class UnexpectedAnnotationLocationException extends Exception {
+    public static class UnexpectedAnnotationLocationException extends Exception {
 
         /**
          * Creates an UnexpectedAnnotationLocationException.

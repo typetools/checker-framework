@@ -151,17 +151,6 @@ def get_current_date():
     "Return today's date in a string format similar to: 02 May 2016"
     return CURRENT_DATE.strftime("%d %b %Y")
 
-def download_jsr308_langtools():
-    """Download and unzip jsr308-langtools"""
-    langtools_dir = BUILD_DIR+"/jsr308-langtools"
-    langtools_2_4_0_dir = langtools_dir + "/jsr308-langtools-2.4.0"
-    if (os.path.exists(langtools_2_4_0_dir)):
-        print "Not downloading jsr308-langtools because found " + langtools_2_4_0_dir
-        return
-    execute('wget -q https://checkerframework.org/jsr308/jsr308-langtools-2.4.0.zip', True, False, BUILD_DIR)
-    execute('unzip -q jsr308-langtools-2.4.0.zip', True, False, BUILD_DIR)
-    execute('mv jsr308-langtools-2.4.0 '+langtools_dir, True, False, BUILD_DIR)
-
 def build_annotation_tools_release(version, afu_interm_dir):
     """Build the Annotation File Utilities project's artifacts and place them
     in the development web site."""
@@ -416,15 +405,12 @@ def main(argv):
     print_step("Build Step 5: Build projects and websites.") # AUTO
     print projects_to_release
 
-    print_step("6a: Download Type Annotations Compiler.")
-    download_jsr308_langtools()
-
     if projects_to_release[AFU_OPT]:
-        print_step("6b: Build Annotation File Utilities.")
+        print_step("5a: Build Annotation File Utilities.")
         build_annotation_tools_release(afu_version, afu_interm_dir)
 
     if projects_to_release[CF_OPT]:
-        print_step("6c: Build Checker Framework.")
+        print_step("5b: Build Checker Framework.")
         build_checker_framework_release(cf_version, old_cf_version, afu_version, afu_date, checker_framework_interm_dir)
 
 
