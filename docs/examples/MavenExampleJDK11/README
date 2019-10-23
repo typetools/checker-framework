@@ -8,4 +8,4 @@ You should see output that includes:
 
 MavenExample.java:[25,29] error: [assignment.type.incompatible] incompatible types in assignment.
 
-This example is for use with JDK 8.  For JDK 11, see ../MavenExampleJDK11.
+This example is for use with JDK 11.  For JDK 8, see ../MavenExample.

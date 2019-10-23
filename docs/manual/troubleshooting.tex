@@ -439,7 +439,7 @@ To solve the problem, add the missing annotations to the library (see
 Chapter~\ref{annotating-libraries}).  Depending on the checker, the
 annotations might be expressed in the form of stub files (which appear
 together with the checker's source code, such as in file
-\code{checker/src/org/checkerframework/checker/interning/jdk.astub} for the
+\code{checker/src/org/checkerframework/checker/interning/jdk8.astub} for the
 Interning Checker) or in the form of annotated libraries (which appear
 under \code{checker/jdk/}, such as at \code{checker/jdk/nullness/src/} for
 the Nullness Checker.
@@ -830,8 +830,7 @@ You might want to add an \<export CHECKERFRAMEWORK=...> line to your
 %  * the location of tools.jar, below.
 %  * the default location of CTSYM, in checker/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK
-8 installation (not the JRE installation, and not JDK 7 or earlier).
-This needs to be an Oracle JDK.
+8 or JDK 11 installation (not the JRE installation, and not JDK 7 or earlier).
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
