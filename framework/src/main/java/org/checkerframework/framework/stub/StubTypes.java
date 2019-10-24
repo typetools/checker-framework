@@ -1,4 +1,4 @@
-package org.checkerframework.framework;
+package org.checkerframework.framework.stub;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,9 +28,6 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.stub.StubParser;
-import org.checkerframework.framework.stub.StubResource;
-import org.checkerframework.framework.stub.StubUtil;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.BugInCF;
