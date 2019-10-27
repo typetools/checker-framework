@@ -654,7 +654,8 @@ public class QualifierDefaults {
                         && atypeFactory.declarationFromElement(annotationScope) == null
                         && !isFromStubFile;
         if (isBytecode) {
-            return useUncheckedCodeDefaultsBytecode;
+            return useUncheckedCodeDefaultsBytecode
+                    && !isElementAnnotatedForThisChecker(annotationScope);
         } else if (isFromStubFile) {
             // TODO: Types in stub files not annotated for a particular checker should be
             // treated as unchecked bytecode.   For now, all types in stub files are treated as

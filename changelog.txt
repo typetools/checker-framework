@@ -10,9 +10,12 @@ Renamed wrapper annotations (which users should not write):
 
 ---------------------------------------------------------------------------
 
-Version ??
+Version 2.11.1, October 1, 2019
 
 The manual links to the Object Construction Checker.
+
+Closed issues:
+1635, 2718, 2767.
 
 ---------------------------------------------------------------------------
 

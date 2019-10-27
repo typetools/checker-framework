@@ -93,33 +93,9 @@ public final class TreeUtils {
      *
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to super
-     * @deprecated use {@link #isSuperConstructorCall(MethodInvocationTree)}
-     */
-    @Deprecated // use isSuperConstructorCall
-    public static boolean isSuperCall(MethodInvocationTree tree) {
-        return isNamedMethodCall("super", tree);
-    }
-
-    /**
-     * Checks if the method invocation is a call to super.
-     *
-     * @param tree a tree defining a method invocation
-     * @return true iff tree describes a call to super
      */
     public static boolean isSuperConstructorCall(MethodInvocationTree tree) {
         return isNamedMethodCall("super", tree);
-    }
-
-    /**
-     * Checks if the method invocation is a call to "this".
-     *
-     * @param tree a tree defining a method invocation
-     * @return true iff tree describes a call to this
-     * @deprecated use {@link #isThisConstructorCall(MethodInvocationTree)}
-     */
-    @Deprecated // use isThisConstructorCall
-    public static boolean isThisCall(MethodInvocationTree tree) {
-        return isNamedMethodCall("this", tree);
     }
 
     /**
@@ -365,19 +341,6 @@ public final class TreeUtils {
             t = ((ParenthesizedTree) t).getExpression();
         }
         return t;
-    }
-
-    /**
-     * If the given tree is a parenthesized tree, it returns the enclosed non-parenthesized tree.
-     * Otherwise, it returns the same tree.
-     *
-     * @param tree an expression tree
-     * @return the outermost non-parenthesized tree enclosed by the given tree
-     * @deprecated use {@link #withoutParens}
-     */
-    @Deprecated // use withoutParens
-    public static ExpressionTree skipParens(final ExpressionTree tree) {
-        return withoutParens(tree);
     }
 
     /**

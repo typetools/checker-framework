@@ -501,7 +501,7 @@ equivalent to specifying every file in it whose name ends with
 \code{.astub}.  The stub path entries are delimited by
 \<File.pathSeparator> (`\<:>' for Linux and Mac, `\<;>' for Windows).
 
-The \<-Astubs> argument for is for stub files that users create.
+The \<-Astubs> argument is for stub files that users create.
 A checker automatically reads some of its own stub files; see
 Section~\ref{creating-a-checker-annotated-jdk}.
 
@@ -665,7 +665,7 @@ if an entry could not be found.
 
 \item
   Add annotations to the stub class.  For example, you might annotate
-  the \sunjavadoc{java/lang/String.html\#intern--}{String.intern()} method as follows:
+  the \sunjavadoc{java.base/java/lang/String.html\#intern()}{String.intern()} method as follows:
 
 \begin{Verbatim}
   @Interned String intern();

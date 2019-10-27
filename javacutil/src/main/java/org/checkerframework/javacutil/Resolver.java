@@ -31,6 +31,10 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 /** A Utility class to find symbols corresponding to string references. */
+// This class reflectively accesses jdk.compiler/com.sun.tools.javac.comp.
+// This is why --add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED is required when
+// running the Checker Framework.  If this class is re-written, then that --add-opens should be
+// removed.
 public class Resolver {
     private final Resolve resolve;
     private final Names names;

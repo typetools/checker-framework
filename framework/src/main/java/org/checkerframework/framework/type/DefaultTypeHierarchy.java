@@ -32,7 +32,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * options passed to DefaultTypeHierarchy.
  *
  * <p>Subtyping rules of the JLS can be found in section 4.10, "Subtyping":
- * https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.10
+ * https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10
  *
  * <p>Note: The visit methods of this class must be public but it is intended to be used through a
  * TypeHierarchy interface reference which will only allow isSubtype to be called. It does not make
@@ -312,7 +312,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * A declared type is considered a supertype of another declared type only if all of the type
      * arguments of the declared type "contain" the corresponding type arguments of the subtype.
      * Containment is described in the JLS section 4.5.1 "Type Arguments of Parameterized Types",
-     * https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.5.1
+     * https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1
      *
      * @param inside the "subtype" type argument
      * @param outside the "supertype" type argument
