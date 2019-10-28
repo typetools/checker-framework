@@ -521,11 +521,19 @@ subprojects {
         // Adds manifest to all Jar files
         tasks.withType(Jar) {
             includeEmptyDirs = false
+            from('.') {
+                include 'LICENSE.txt'
+            }
             manifest {
                 attributes("Implementation-Version": "${version}")
                 attributes("Implementation-URL": "https://checkerframework.org")
-		if (archiveFileName != "checker-source.jar") {
+                if (archiveFileName != "checker-source.jar") {
                     attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
+                }
+                if (archiveFileName.get().startsWith("checker-qual")) {
+                    attributes("Bundle-License": "MIT")
+                } else {
+                    attributes("Bundle-License": "(GPL-2.0-only WITH Classpath-exception-2.0)")
                 }
             }
         }

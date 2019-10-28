@@ -31,6 +31,7 @@ jdk.jar-unconditionally: clean classes
 # jdk.jar only contains those classes with annotations, not every class from
 # the original JDK.
 jdk.jar-insertion:
+	echo "Bundle-License: (GPL-2.0-only WITH Classpath-exception-2.0)" > manifest.txt
 	echo Checker-Framework-Version: `git rev-parse --short HEAD` > manifest.txt
 	echo Checker-Framework-Commit-Author: `git show -s --pretty=%aN\ \<%ae\> HEAD` >> manifest.txt
 	echo Checker-Framework-Commit-Refs: `git show -s --pretty=%d HEAD` >> manifest.txt
