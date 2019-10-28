@@ -7,7 +7,7 @@ plugins {
     id "de.undercouch.download" version "4.0.0"
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
-    id "net.ltgt.errorprone" version "1.1.0"
+    id "net.ltgt.errorprone" version "1.1.1"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '3.1.1' apply false
 }
@@ -521,11 +521,19 @@ subprojects {
         // Adds manifest to all Jar files
         tasks.withType(Jar) {
             includeEmptyDirs = false
+            from('.') {
+                include 'LICENSE.txt'
+            }
             manifest {
                 attributes("Implementation-Version": "${version}")
                 attributes("Implementation-URL": "https://checkerframework.org")
-		if (archiveFileName != "checker-source.jar") {
+                if (archiveFileName != "checker-source.jar") {
                     attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
+                }
+                if (archiveFileName.get().startsWith("checker-qual")) {
+                    attributes("Bundle-License": "MIT")
+                } else {
+                    attributes("Bundle-License": "(GPL-2.0-only WITH Classpath-exception-2.0)")
                 }
             }
         }

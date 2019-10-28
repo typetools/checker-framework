@@ -46,7 +46,7 @@ dex files (smaller distributed apps).
 The \<checker-qual-android> artifact is identical to the \<checker-qual>
 artifact, except that in \<checker-qual-android> annotations have classfile
 retention.  The default Android Gradle plugin retains types annotated with
-runtime annotations in the main dex, but strips out class-retention
+runtime-retention annotations in the main dex, but strips out class-retention
 annotations.
 
 
@@ -697,7 +697,7 @@ For information about the extension points, see
 \sectionAndLabel{Lombok}{lombok}
 
 Project Lombok (\url{https://projectlombok.org/}) is a library that
-generates getter, setter, and builder methods --- among other features.
+generates getter, setter, and builder methods, among other features.
 For example, if you declare
 a field:
 
@@ -710,46 +710,56 @@ a field:
 then Lombok will generate getter and setter methods:
 
 \begin{Verbatim}
-  public String getRole() { return role; }
-  public void setRole(String role) { this.role = role; }
+  public @Regex String getRole() { return role; }
+  public void setRole(@Regex String role) { this.role = role; }
 \end{Verbatim}
 
-Unfortunately, the generated code is lacking \<@Regex> annotations on
-the return type of \<getRole> and the argument type of \<setRole>.
-You need to tell Lombok to copy type annotations from the field, so that
-clients that use the generated methods will type-check properly.
 
-In your \<lombok.config> file, add to the \<lombok.copyableAnnotations>
-configuration key any type annotations that might interact with a
-Lombok feature (e.g., a type use annotation on a field annotated with
-\<@Getter> or \<@Setter>).  For example:
+\subsectionAndLabel{Annotations on generated code}{lombok-copying-annotations}
+
+As illustrated in the example above, Lombok copies type annotations from fields
+to generated methods, when the user writes Lombok's \<@Getter>, \<@Setter>,
+and \<@Builder> annotations.  Lombok does so only for certain type
+annotations (including all annotations in the Checker Framework
+distribution); see variable \<BASE\_COPYABLE\_ANNOTATIONS> in file
+\href{https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java}{\<HandlerUtil.java>}.
+
+To make Lombok copy other type annotations from fields to generated code,
+add those type annotations to the \<lombok.copyableAnnotations>
+configuration key in your \<lombok.config> file.  For example:
 
 \begin{Verbatim}
-  lombok.copyableAnnotations += org.checkerframework.checker.regex.qual.Regex
+  lombok.copyableAnnotations += my.checker.qual.MyTypeAnnotation
 \end{Verbatim}
 
 Directory \<docs/examples/lombok> contains an example Gradle project that
 augments the configuration key.
-
-(Note:
-Lombok does support a limited set of annotations without the need for the
-\<lombok.copyableAnnotations> configuration key, but as of version 1.18.4
-(October 2018),
-Lombok does not yet support any of the Checker Framework annotations; see variable
-\<BASE\_COPYABLE\_ANNOTATIONS> in
-\url{https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java}.)
 
 % Alternatives:
 %  * It would be better if Lombok automatically copied all type annotations.
 %    Unfortunately, there is no way for Lombok to know whether an annotation
 %    is a type annotation, at the (early) point in the javac pipeline where
 %    Lombok runs.
-%  * Add all Checker Framework annotations to BASE_COPYABLE_ANNOTATIONS in
-%    the Lombok implementation.  But lombok.copyableAnnotations is still
-%    needed for user-defined type annotations.
 
 % TODO: write a simple tool that generates a lombok.config file for a particular
 % project, with all type annotations used in the project.
+
+
+\subsectionAndLabel{Type-checking code with Lombok annotations}{lombok-typechecking}
+
+If you run the Checker Framework and Lombok in the same \<javac>
+invocation, the Checker Framework cannot type-check a class that contains
+Lombok annotations.  The way that Lombok changes the class prevents the
+Checker Framework from seeing any of the class.  (The Checker Framework
+works fine on classes that do not contain Lombok annotations, including if
+they call Lombok-generated code.)
+
+Therefore, you must run the Checker Framework in a postpass after the
+\<javac> that runs Lombok has completed.  Use the
+\href{https://projectlombok.org/features/delombok}{Delombok} tool
+(distributed with Lombok) to generate Java source code, then run the
+Checker Framework on that.  The \href{https://github.com/kelloggm/checkerframework-gradle-plugin}{Checker Framework}
+Gradle plugin does this for you automatically.
 
 
 \sectionAndLabel{Maven}{maven}
@@ -1199,7 +1209,7 @@ Advantages of the latter two-step approach include:
 
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
-% LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle
+% LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle cp
 % LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
 % LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
 % LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
@@ -1211,4 +1221,6 @@ Advantages of the latter two-step approach include:
 % LocalWords:  systemPath artifactID MacOS eclipsec getter getRole setRole
 % LocalWords:  config copyableAnnotations COPYABLE localRepository init
 % LocalWords:  compilerArguments Xmaxerrs Xmaxwarns netbeans macrodef
-% LocalWords:  annotationProcessorPaths
+% LocalWords:  annotationProcessorPaths checkTypes OracleJDK java8 java11
+% LocalWords:  bootclasspath processorpath intellij typechecking postpass
+% LocalWords:  Delombok r4173
