@@ -74,9 +74,11 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.UserError;
 
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -353,6 +355,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             case CHAR:
                 from = Character.MIN_VALUE;
                 break;
+            case LONG:
+                from = Long.MIN_VALUE;
+                break;
             case DECLARED:
                 String qualifiedName = TypesUtils.getQualifiedName((DeclaredType) type).toString();
                 switch (qualifiedName) {
@@ -368,12 +373,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     case "java.lang.Character":
                         from = Character.MIN_VALUE;
                         break;
-                    default:
+                    case "java.lang.Long":
                         from = Long.MIN_VALUE;
+                        break;
+                    default:
+                        throw new UserError("Found an @IntRange annotation on a " + qualifiedName + ". @IntRange can only be applied to built-in Java integral types.");
                 }
                 break;
             default:
-                from = Long.MIN_VALUE;
+                throw new BugInCF("Tried to apply a default to an IntRange annotation that was neither an integral primitive nor a declared type.")
         }
         return from;
     }
@@ -408,6 +416,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             case CHAR:
                 to = Character.MAX_VALUE;
                 break;
+            case LONG:
+                to = Long.MAX_VALUE;
+                break;
             case DECLARED:
                 String qualifiedName = TypesUtils.getQualifiedName((DeclaredType) type).toString();
                 switch (qualifiedName) {
@@ -423,12 +434,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     case "java.lang.Character":
                         to = Character.MAX_VALUE;
                         break;
-                    default:
+                    case "java.lang.Long":
                         to = Long.MAX_VALUE;
+                        break;
+                    default:
+                        throw new UserError("Found an @IntRange annotation on a " + qualifiedName + ". @IntRange can only be applied to built-in Java integral types.");
                 }
                 break;
             default:
-                to = Long.MAX_VALUE;
+                throw new BugInCF("Tried to apply a default to an IntRange annotation that was neither an integral primitive nor a declared type.")
         }
         return to;
     }
