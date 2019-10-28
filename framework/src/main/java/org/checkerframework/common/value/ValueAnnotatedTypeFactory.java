@@ -377,11 +377,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         from = Long.MIN_VALUE;
                         break;
                     default:
-                        throw new UserError("Found an @IntRange annotation on a " + qualifiedName + ". @IntRange can only be applied to built-in Java integral types.");
+                        throw new UserError(
+                                "Found an @IntRange annotation on a "
+                                        + qualifiedName
+                                        + ". @IntRange can only be applied to built-in Java integral types.");
                 }
                 break;
             default:
-                throw new BugInCF("Tried to apply a default to an IntRange annotation that was neither an integral primitive nor a declared type.")
+                throw new BugInCF(
+                        "Tried to apply a default to an IntRange annotation that was neither an integral primitive nor a declared type.");
         }
         return from;
     }
@@ -438,11 +442,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         to = Long.MAX_VALUE;
                         break;
                     default:
-                        throw new UserError("Found an @IntRange annotation on a " + qualifiedName + ". @IntRange can only be applied to built-in Java integral types.");
+                        throw new UserError(
+                                "Found an @IntRange annotation on a "
+                                        + qualifiedName
+                                        + ". @IntRange can only be applied to built-in Java integral types.");
                 }
                 break;
             default:
-                throw new BugInCF("Tried to apply a default to an IntRange annotation that was neither an integral primitive nor a declared type.")
+                throw new BugInCF(
+                        "Tried to apply a default to an IntRange annotation that was neither an integral primitive nor a declared type.");
         }
         return to;
     }
