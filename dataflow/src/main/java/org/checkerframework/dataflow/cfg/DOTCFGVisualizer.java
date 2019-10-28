@@ -76,10 +76,7 @@ public class DOTCFGVisualizer<
             Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
 
         StringBuilder sbDotNodes = new StringBuilder();
-        sbDotNodes
-                .append("    node [shape=rectangle];")
-                .append(lineSeparator)
-                .append(lineSeparator);
+        sbDotNodes.append(lineSeparator);
 
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
@@ -90,6 +87,8 @@ public class DOTCFGVisualizer<
                 sbDotNodes.append("shape=polygon sides=8 ");
             } else if (v.getType() == BlockType.SPECIAL_BLOCK) {
                 sbDotNodes.append("shape=oval ");
+            } else {
+                sbDotNodes.append("shape=rectangle ");
             }
             sbDotNodes.append("label=\"");
             if (verbose) {
@@ -101,18 +100,16 @@ public class DOTCFGVisualizer<
             if (strBlock.length() == 0) {
                 if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
                     // The footer of the conditional block.
-                    sbDotNodes.append(" \",];").append(lineSeparator);
+                    sbDotNodes.append("\"];").append(lineSeparator);
                 } else {
                     // The footer of the block which has no content and is not a special or
                     // conditional block.
-                    sbDotNodes.append("?? empty ?? \",];").append(lineSeparator);
+                    sbDotNodes.append("?? empty ??\"];").append(lineSeparator);
                 }
             } else {
-                sbDotNodes.append(strBlock).append(" \",];").append(lineSeparator);
+                sbDotNodes.append(strBlock).append("\"];").append(lineSeparator);
             }
         }
-
-        sbDotNodes.append(lineSeparator);
         return sbDotNodes.toString();
     }
 
@@ -180,8 +177,10 @@ public class DOTCFGVisualizer<
         } else {
             throw new BugInCF("Unexpected AST kind: " + ast.getKind() + " value: " + ast);
         }
-        outFile.append("-");
-        outFile.append(checkerName);
+        if (!checkerName.equals("")) {
+            outFile.append('-');
+            outFile.append(checkerName);
+        }
         outFile.append(".dot");
 
         // make path safe for Windows
