@@ -17,10 +17,6 @@ import java.util.Map;
  *       particular part of the manual
  * </ul>
  */
-@SuppressWarnings(
-        "removal" // com.sun.javadoc.* is deprecated in Java 9+, but we need to use it for Java 8.
-// Merge branch mernst/com-sun-javadoc-deprecated once the CF requires Java 9.
-)
 public class ManualTaglet implements Taglet {
 
     @Override
