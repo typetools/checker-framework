@@ -2,7 +2,7 @@
 
 Version 3.0, November 1, 2019
 
-@DefaultFor has new elements variableNames and variableNamesExcept..
+@DefaultFor has new elements variableNames and variableNamesExcept.
 
 ---------------------------------------------------------------------------
 
