@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
  *   <li>a particular location.
  *   <li>a use of a particular type.
  *   <li>a use of a particular kind of type.
+ *   <li>variables with particular names.
  * </ul>
  *
  * @see TypeUseLocation
@@ -36,4 +37,14 @@ public @interface DefaultFor {
      *     every occurrence of {@code String} is actually {@code @MyAnno String}.
      */
     Class<?>[] types() default {};
+
+    /**
+     * @return regular expressions matching variables to whose type an annotation should be applied.
+     *     A variable uses this default if it matches at least one of these regular expressions, and
+     *     it matches none of the exceptions in {@link #variableNamesExceptions}.
+     */
+    String[] variableNames() default {};
+
+    /** @return exceptions to regular exception rules. See {@link #variableNames}. */
+    String[] variableNamesExcept() default {};
 }

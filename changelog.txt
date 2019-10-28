@@ -1,5 +1,11 @@
 ---------------------------------------------------------------------------
 
+Version 3.0, November 1, 2019
+
+@DefaultFor has new elements variableNames and variableNamesExcept..
+
+---------------------------------------------------------------------------
+
 Version 2.11.1, October 1, 2019
 
 The manual links to the Object Construction Checker.
