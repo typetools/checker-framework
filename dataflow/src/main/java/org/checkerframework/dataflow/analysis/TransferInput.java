@@ -24,9 +24,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * The regular result store (or {@code null} if none is present). The following invariant is
      * maintained:
      *
-     * <pre>
+     * <pre><code>
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * </pre>
+     * </code></pre>
      */
     protected final @Nullable S store;
 
@@ -34,9 +34,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * The 'then' result store (or {@code null} if none is present). The following invariant is
      * maintained:
      *
-     * <pre>
+     * <pre><code>
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * </pre>
+     * </code></pre>
      */
     protected final @Nullable S thenStore;
 
@@ -44,9 +44,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * The 'else' result store (or {@code null} if none is present). The following invariant is
      * maintained:
      *
-     * <pre>
+     * <pre><code>
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * </pre>
+     * </code></pre>
      */
     protected final @Nullable S elseStore;
 
