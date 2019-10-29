@@ -551,12 +551,12 @@ public class ValueTransfer extends CFTransfer {
      *     null, or if this method is not precise enough
      */
     private boolean isNullable(Node node) {
-        if (node instanceof StringLiteralNode) {
-            return false;
-        } else if (node instanceof StringConversionNode) {
+        if (node instanceof StringConversionNode) {
             if (((StringConversionNode) node).getOperand().getType().getKind().isPrimitive()) {
                 return false;
             }
+        } else if (node instanceof StringLiteralNode) {
+            return false;
         } else if (node instanceof StringConcatenateNode) {
             return false;
         }
