@@ -1,5 +1,10 @@
 ---------------------------------------------------------------------------
 
+Version 3.0.0, November 1, 2019
+
+Removed @PolyAll.
+---------------------------------------------------------------------------
+
 Version 2.11.1, October 1, 2019
 
 The manual links to the Object Construction Checker.

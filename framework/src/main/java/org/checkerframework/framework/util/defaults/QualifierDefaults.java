@@ -774,7 +774,7 @@ public class QualifierDefaults {
 
             return !(type == null
                     // TODO: executables themselves should not be annotated
-                    // For some reason polyall-tests fails with this.
+                    // For some reason testchecker-tests fails with this.
                     // || type.getKind() == TypeKind.EXECUTABLE
                     || type.getKind() == TypeKind.NONE
                     || type.getKind() == TypeKind.WILDCARD

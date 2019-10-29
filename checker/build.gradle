@@ -2,7 +2,7 @@ ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = 'ca9535f9e149cccc75e726aba2d5ba277ea4b3c4'
+    jdkShaHash = 'a02516191ce8a1607d45978c4e876c39a58c03e1'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -46,6 +46,12 @@ task cloneTypetoolsJdk() {
             workingDir "${jdkHome}/../"
             executable 'git'
             args = ['clone', '-q', 'https://github.com/typetools/jdk.git', 'jdk']
+        }
+        // TODO DELETE:
+        exec {
+            workingDir "${jdkHome}/"
+            executable 'git'
+            args = ['checkout', '-b', 'removePolyAll']
         }
     }
 }
