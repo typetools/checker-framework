@@ -521,8 +521,14 @@ subprojects {
         // Adds manifest to all Jar files
         tasks.withType(Jar) {
             includeEmptyDirs = false
-            from('.') {
-                include 'LICENSE.txt'
+            if (archiveFileName.get().startsWith("checker-qual")) {
+                metaInf {
+                    from './LICENSE.txt'
+                }
+            } else {
+                from("$rootDir") {
+                    include "LICENSE.txt"
+                }
             }
             manifest {
                 attributes("Implementation-Version": "${version}")
