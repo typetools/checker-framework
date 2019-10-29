@@ -47,12 +47,6 @@ task cloneTypetoolsJdk() {
             executable 'git'
             args = ['clone', '-q', 'https://github.com/typetools/jdk.git', 'jdk']
         }
-        // TODO DELETE:
-        exec {
-            workingDir "${jdkHome}/"
-            executable 'git'
-            args = ['checkout', '-b', 'removePolyAll']
-        }
     }
 }
 
