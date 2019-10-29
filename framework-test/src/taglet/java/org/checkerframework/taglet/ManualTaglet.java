@@ -107,8 +107,9 @@ public class ManualTaglet implements Taglet {
         }
         StringJoiner sb = new StringJoiner(", ");
         for (Tag t : tags) {
-            String[] split = t.text().split(" ", 2);
-            sb.append(formatLink(split));
+            String text = t.text();
+            String[] split = text.split(" ", 2);
+            sb.add(formatLink(split));
         }
         return formatHeader(sb.toString());
     }

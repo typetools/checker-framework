@@ -87,7 +87,8 @@ public class ManualTaglet implements Taglet {
         }
         StringJoiner sb = new StringJoiner(", ");
         for (DocTree t : tags) {
-            String[] split = getText(t).split(" ", 2);
+            String text = getText(t);
+            String[] split = text.split(" ", 2);
             sb.add(formatLink(split));
         }
         return formatHeader(sb.toString());
