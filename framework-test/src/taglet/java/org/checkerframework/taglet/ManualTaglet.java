@@ -6,6 +6,7 @@ package org.checkerframework.taglet;
 import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
 import java.util.Map;
+import java.util.StringJoiner;
 
 /**
  * A taglet for processing the {@code @checker_framework.manual} javadoc block tag, which inserts
