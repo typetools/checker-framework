@@ -2,7 +2,10 @@
 
 Version 3.0.0, November 1, 2019
 
-Removed @PolyAll.
+The Checker Framework works on both JDK 8 and JDK 11.
+
+Removed the @PolyAll annotation.
+
 ---------------------------------------------------------------------------
 
 Version 2.11.1, October 1, 2019
