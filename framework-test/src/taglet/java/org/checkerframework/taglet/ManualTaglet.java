@@ -101,12 +101,9 @@ public class ManualTaglet implements Taglet {
         if (tags.length == 0) {
             return "";
         }
-        StringBuilder sb = new StringBuilder();
+        StringJoiner sb = new StringJoiner(", ");
         for (Tag t : tags) {
             String[] split = t.text().split(" ", 2);
-            if (t != tags[0]) {
-                sb.append(", ");
-            }
             sb.append(formatLink(split));
         }
         return formatHeader(sb.toString());
