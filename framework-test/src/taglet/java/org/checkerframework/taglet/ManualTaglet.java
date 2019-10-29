@@ -1,3 +1,6 @@
+// Keep this file in sync with
+// ../../../../../tagletJdk11/java/org/checkerframework/taglet/ManualTaglet.java .
+
 package org.checkerframework.taglet;
 
 import com.sun.javadoc.Tag;
