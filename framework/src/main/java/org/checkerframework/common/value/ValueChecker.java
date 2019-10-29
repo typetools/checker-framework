@@ -19,10 +19,21 @@ import org.checkerframework.framework.source.SupportedOptions;
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @StubFiles("statically-executable.astub")
-@SupportedOptions({ValueChecker.REPORT_EVAL_WARNS, ValueChecker.IGNORE_RANGE_OVERFLOW})
+@SupportedOptions({
+    ValueChecker.REPORT_EVAL_WARNS,
+    ValueChecker.IGNORE_RANGE_OVERFLOW,
+    ValueChecker.NULL_STRINGS_CONCATENATION
+})
 public class ValueChecker extends BaseTypeChecker {
+    /**
+     * Command-line option to warn the user if a @StaticallyExecutable method can't load and run at
+     * compile time.
+     */
     public static final String REPORT_EVAL_WARNS = "reportEvalWarns";
+    /** Command-line option to ignore the possibility of overflow for range annotations. */
     public static final String IGNORE_RANGE_OVERFLOW = "ignoreRangeOverflow";
+    /** Command-line option that assumes most expressions in String concatenations can be null. */
+    public static final String NULL_STRINGS_CONCATENATION = "nullStringsConcatenation";
 
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
