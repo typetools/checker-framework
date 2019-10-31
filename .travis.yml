@@ -26,7 +26,8 @@ env:
     - GROUP=misc JDKVER=jdk11-plus BUILDJDK=downloadjdk
     - GROUP=checker-framework-inference JDKVER=jdk8 BUILDJDK=downloadjdk
     - GROUP=plume-lib JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=plume-lib JDKVER=jdk11 BUILDJDK=downloadjdk
+    # TODO: enable once Gradle plugin works with Java 11.
+    # - GROUP=plume-lib JDKVER=jdk11 BUILDJDK=downloadjdk
     - GROUP=downstream JDKVER=jdk8 BUILDJDK=downloadjdk
     - GROUP=downstream JDKVER=jdk11 BUILDJDK=downloadjdk
 
