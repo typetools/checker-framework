@@ -205,8 +205,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private final Set<Class<? extends Annotation>> supportedQuals;
 
-    /** Parsers stub files and stores annotations from stub files. */
-    private final StubTypes stubTypes;
+    /** Parses stub files and stores annotations from stub files. */
+    public final StubTypes stubTypes;
 
     /**
      * A cache used to store elements whose declaration annotations have already been stored by
