@@ -75,7 +75,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
                 }
             }
         }
-        if (typeFactory.shouldCache) {
+        if (typeFactory.shouldCache && !typeFactory.stubTypes.isParsing()) {
             elementToDefaults.put(element, annosToApply);
         }
         return annosToApply;
