@@ -76,7 +76,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '2.11.1'
+    version '3.0.0'
 
     repositories {
         mavenCentral()
@@ -100,18 +100,22 @@ allprojects {
         // any module to reference classes in any other module.
         // Also, build and use ManualTaglet as a taglet.
         tasks.withType(Javadoc) {
+            def tagletVersion = isJava8 ? 'taglet' : 'tagletJdk11'
+
             dependsOn(':checker:shadowJar')
-            dependsOn(':framework-test:tagletClasses')
+            dependsOn(":framework-test:${tagletVersion}Classes")
             doFirst {
                 options.encoding = 'UTF-8'
                 options.memberLevel = javadocMemberLevel
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
                 options.taglets 'org.checkerframework.taglet.ManualTaglet'
-                options.tagletPath(project(':framework-test').sourceSets.taglet.output.classesDirs.getFiles() as File[])
-                options.links = ['https://docs.oracle.com/en/java/javase/11/docs/api/', 'https://docs.oracle.com/en/java/javase/11/docs/jdk/api/javac/tree/']
+                options.tagletPath(project(':framework-test').sourceSets."${tagletVersion}".output.classesDirs.getFiles() as File[])
+                // TODO: this doesn't work with JDK 11
+                options.links = isJava8 ? ['https://docs.oracle.com/en/java/javase/11/docs/api/', 'https://docs.oracle.com/en/java/javase/11/docs/jdk/api/javac/tree/'] : []
                 // This file is looked for by Javadoc.
                 file("${destinationDir}/resources/fonts/").mkdirs()
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
+                options.addStringOption('source', '8')
             }
         }
 
@@ -282,7 +286,6 @@ task htmlValidate(type: Exec, group: 'Format') {
 task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
     dependsOn(':checker:shadowJar')
-    dependsOn(':framework-test:tagletClasses')
     destinationDir = file("${rootDir}/docs/api")
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
