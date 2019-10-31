@@ -9,6 +9,8 @@ jar.
 Implementation details:
  * All previously deprecated methods have been removed.
  * AnnotatedTypeFactory#getFnInterfaceFromTree now returns an AnnotatedExecutableType.
+ * AnnotationUtils#areSame and #areSameByName now only accept non-null
+   AnnotationMirrors
 
 ---------------------------------------------------------------------------
 
