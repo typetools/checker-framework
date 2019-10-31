@@ -121,6 +121,8 @@ dependencies {
     ... existing dependencies...
     ext.checkerFrameworkVersion = '2.11.1'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
+    // or if you use no annotations in source code the above line could be
+    // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
     errorproneJavac 'com.google.errorprone:javac:9+181-r4173-1'
@@ -195,6 +197,8 @@ dependencies {
     ... existing dependencies...
     ext.checkerFrameworkVersion = '2.11.1'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
+    // or if you use no annotations in source code the above line could be
+    // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
 }
 \end{Verbatim}
