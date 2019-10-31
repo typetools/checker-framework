@@ -1,5 +1,17 @@
 ---------------------------------------------------------------------------
 
+Version 3.0.0, November 1, 2019
+
+The Checker Framework works on both JDK 8 and JDK 11.  JDK annotation for
+JDK 11 are stored in stub files in the checker jar rather than a seperate jdk11
+jar.
+
+Implementation details:
+ * All previously deprecated methods have been removed.
+ * AnnotatedTypeFactory#getFnInterfaceFromTree now returns an AnnotatedExecutableType.
+
+---------------------------------------------------------------------------
+
 Version 2.11.1, October 1, 2019
 
 The manual links to the Object Construction Checker.

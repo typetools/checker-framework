@@ -57,7 +57,13 @@ annotations.  (See
 \url{https://developer.android.com/studio/write/java8-support}
 for more details.)  This section explains how to configure your Android
 project to use the Checker Framework.  All the changes should be made to
-the module's \<build.gradle> file --- not the app's \<build.gradle> file.
+the module's \<build.gradle> file --- not the project's \<build.gradle> file.
+
+Different changes are required for JDK 8
+(Section~\ref{android-jdk8}) and for JDK 9+ (Section~\ref{android-jdk11}).
+
+\subsectionAndLabel{JDK 8}{android-jdk8}
+This section shows what changes to make if you are using JDK 8.
 
 \begin{enumerate}
 
@@ -99,6 +105,9 @@ configurations {
     checkerFrameworkAnnotatedJDK {
         description = 'a copy of JDK classes with Checker Framework type qualifiers inserted'
     }
+    errorproneJavac {
+        description = 'required to run the Checker Framework.'
+    }
 }
 
 \end{Verbatim}
@@ -112,8 +121,11 @@ dependencies {
     ... existing dependencies...
     ext.checkerFrameworkVersion = '2.11.1'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
+    // or if you use no annotations in source code the above line could be
+    // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
+    errorproneJavac 'com.google.errorprone:javac:9+181-r4173-1'
 }
 \end{Verbatim}
 \end{mysmall}
@@ -127,8 +139,67 @@ gradle.projectsEvaluated {
             compile.options.compilerArgs += [
                     "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
             ]
+            options.fork = true
+            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.errorproneJavac.asPath}"]
         }
     }
+}
+\end{Verbatim}
+\end{mysmall}
+
+\item To run the checkers, build using the \<checkTypes> variant:
+\begin{Verbatim}
+gradlew assembleCheckTypes
+\end{Verbatim}
+\end{enumerate}
+
+\subsectionAndLabel{JDK 11}{android-jdk11}
+This section shows what changes to make if you are using JDK 11.  They should work for JDK 9+, but
+we have only tested them with JDK 11.
+
+\begin{enumerate}
+
+\item In your module's \<build.gradle> file, set the source and target
+  compatibility to \<JavaVersion.VERSION\_1\_8>:
+
+\begin{Verbatim}
+android {
+    ...
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+\end{Verbatim}
+
+\item Add a build variant for running checkers:
+
+ \begin{Verbatim}
+ android {
+    ...
+      buildTypes {
+      ...
+        checkTypes {
+            javaCompileOptions.annotationProcessorOptions.
+                    classNames.add("org.checkerframework.checker.nullness.NullnessChecker")
+            // You can pass options like so:
+            // javaCompileOptions.annotationProcessorOptions.arguments.put("warns", "")
+        }
+    }
+}
+\end{Verbatim}
+
+\item Declare the Checker Framework dependencies:
+
+\begin{mysmall}
+\begin{Verbatim}
+dependencies {
+    ... existing dependencies...
+    ext.checkerFrameworkVersion = '2.11.1'
+    implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
+    // or if you use no annotations in source code the above line could be
+    // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
+    annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
 }
 \end{Verbatim}
 \end{mysmall}
@@ -450,8 +521,8 @@ Alternately, you can get all of the jars mentioned in this section from Maven Ce
 \item \<checker.jar>: \url{https://search.maven.org/artifact/org.checkerframework/checker/2.11.0/jar}
 \end{itemize}
 
-Different arguments to \<javac> are required for Java 8
-(Section~\ref{java8-install}) and for Java 9+ (Section~\ref{java11-install}).
+Different arguments to \<javac> are required for JDK 8
+(Section~\ref{java8-install}) and for JDK 9+ (Section~\ref{java11-install}).
 
 
 \subsectionAndLabel{JDK 8}{java8-install}
