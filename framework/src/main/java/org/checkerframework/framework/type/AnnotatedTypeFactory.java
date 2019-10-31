@@ -1219,9 +1219,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + elt);
         }
 
-        // Caching is disabled if stub files are being parsed, because calls to this
-        // method before the stub files are fully read can return incorrect results.
-        if (shouldCache && !stubTypes.isParsing()) {
+        if (shouldCache) {
             elementCache.put(elt, type.deepCopy());
         }
         return type;

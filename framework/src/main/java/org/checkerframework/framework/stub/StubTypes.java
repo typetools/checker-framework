@@ -79,6 +79,22 @@ public class StubTypes {
         return parsing;
     }
 
+    // previous value of factory.shouldCache
+    private boolean oldShouldCache;
+
+    /** Sets fields that indicate that parsing has started. */
+    private void startParsing() {
+        parsing = true;
+        oldShouldCache = factory.shouldCache;
+        factory.shouldCache = false;
+    }
+
+    /** Resets fields that were set in {@link #startParsing()}. */
+    private void stopParsing() {
+        parsing = false;
+        factory.shouldCache = oldShouldCache;
+    }
+
     /**
      * Parses the stub files in the following order:
      *
@@ -100,7 +116,7 @@ public class StubTypes {
      * annotation is request from a class in that file.
      */
     public void parseStubFiles() {
-        parsing = true;
+        startParsing();
         // TODO: Error if this is called more than once?
         SourceChecker checker = factory.getContext().getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
@@ -129,9 +145,9 @@ public class StubTypes {
                         declAnnosFromStubFiles);
             }
             prepJdkStubs();
-            // prepping the Jdk will parse all package-info.java files.  This sets parsing to false,
-            // so re-set it to true.
-            parsing = true;
+            // prepping the Jdk will parse all package-info.java files and call stopParsing,
+            // so call startParsing() again.
+            startParsing();
         }
 
         // Stub files specified via stubs compiler option, stubs system property,
@@ -227,7 +243,7 @@ public class StubTypes {
                         declAnnosFromStubFiles);
             }
         }
-        parsing = false;
+        stopParsing();
     }
 
     /**
@@ -318,7 +334,7 @@ public class StubTypes {
      * @param path path to file to parse
      */
     private void parseStubFile(Path path) {
-        parsing = true;
+        startParsing();
         try (FileInputStream jdkStub = new FileInputStream(path.toFile())) {
             StubParser.parseJdkFileAsStub(
                     path.toFile().getName(),
@@ -330,7 +346,7 @@ public class StubTypes {
         } catch (IOException e) {
             throw new BugInCF("cannot open the jdk stub file " + path, e);
         } finally {
-            parsing = false;
+            stopParsing();
         }
     }
 
@@ -341,7 +357,7 @@ public class StubTypes {
      */
     private void parseJarEntry(String jarEntryName) {
         JarURLConnection connection = getJarURLConnectionToJdk11();
-        parsing = true;
+        startParsing();
         try (JarFile jarFile = connection.getJarFile()) {
             InputStream jdkStub;
             try {
@@ -361,7 +377,7 @@ public class StubTypes {
         } catch (BugInCF e) {
             throw new BugInCF("Exception while parsing " + jarEntryName, e);
         } finally {
-            parsing = false;
+            stopParsing();
         }
     }
 
