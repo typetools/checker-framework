@@ -19,16 +19,17 @@ env:
     - OS=ubuntu
   matrix:
     # "framework-tests" are a subset of all-tests that do not require an annotated jdk 11.
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
-    - BUILDJDK=downloadjdk JDKVER=jdk11 GROUP=all-tests
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
-    - BUILDJDK=downloadjdk JDKVER=jdk8-plus GROUP=misc
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=checker-framework-inference
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=plume-lib
+    - GROUP=all-tests JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=all-tests JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=jdk.jar JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=misc JDKVER=jdk8-plus BUILDJDK=downloadjdk
+    - GROUP=misc JDKVER=jdk11-plus BUILDJDK=downloadjdk
+    - GROUP=checker-framework-inference JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=plume-lib JDKVER=jdk8 BUILDJDK=downloadjdk
     # TODO: enable once Gradle plugin works with Java 11.
-    # - BUILDJDK=downloadjdk JDKVER=jdk11 GROUP=plume-lib
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
-    - BUILDJDK=downloadjdk JDKVER=jdk11 GROUP=downstream
+    # - GROUP=plume-lib JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=downstream JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=downstream JDKVER=jdk11 BUILDJDK=downloadjdk
 
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
