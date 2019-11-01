@@ -2,12 +2,14 @@
 
 Version 3.0.0, November 1, 2019
 
-The Checker Framework works on both JDK 8 and JDK 11.  JDK annotation for
-JDK 11 are stored in stub files in the checker jar rather than a seperate jdk11
-jar.
+The Checker Framework works on both JDK 8 and JDK 11.
+ * Type annotations for JDK 8 remain in jdk8.jar.
+ * Type annotations for JDK 11 appear in stub files in checker.jar.
+
+Removed the @PolyAll annotation.
 
 Implementation details:
- * All previously deprecated methods have been removed.
+ * Removed all previously deprecated methods.
  * AnnotatedTypeFactory#getFnInterfaceFromTree now returns an AnnotatedExecutableType.
  * AnnotationUtils#areSame and #areSameByName now only accept non-null
    AnnotationMirrors

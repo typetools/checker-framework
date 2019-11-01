@@ -66,7 +66,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
          *   <li>the argument to @PolymorphicQualifier (typically the top qualifier in the
          *       hierarchy), or
          *   <li>"PolymorphicQualifier" if @PolymorphicQualifier is used without an argument, or
-         *   <li>null, for the PolyAll qualifier.
          * </ul>
          */
         protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
@@ -95,13 +94,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             if (pqtopclass != null) {
                 AnnotationMirror pqtop =
                         AnnotationBuilder.fromName(atypeFactory.getElementUtils(), pqtopclass);
-                if (QualifierPolymorphism.isPolyAll(qual)) {
-                    // Use key null as marker for polyall
-                    this.polyQualifiers.put(null, qual);
-                } else {
-                    // use given top (which might be PolymorphicQualifier) as key
-                    this.polyQualifiers.put(pqtop, qual);
-                }
+                // use given top (which might be PolymorphicQualifier) as key
+                this.polyQualifiers.put(pqtop, qual);
             } else {
                 supertypesDirect.put(qual, AnnotationUtils.createAnnotationSet());
             }
@@ -341,8 +335,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     public boolean isSubtype(
             Collection<? extends AnnotationMirror> rhs,
             Collection<? extends AnnotationMirror> lhs) {
-        rhs = replacePolyAll(rhs);
-        lhs = replacePolyAll(lhs);
         if (lhs.isEmpty() || rhs.isEmpty()) {
             throw new BugInCF(
                     "MultiGraphQualifierHierarchy: empty annotations in lhs: "
@@ -586,30 +578,14 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         for (Map.Entry<AnnotationMirror, AnnotationMirror> kv : polyQualifiers.entrySet()) {
             AnnotationMirror declTop = kv.getKey();
             AnnotationMirror polyQualifier = kv.getValue();
-            if (declTop == null
-                    || // PolyAll
-                    AnnotationUtils.areSame(declTop, polymorphicQualifier)) {
-                if (declTop == null
-                        || // PolyAll
-                        tops.size() == 1) { // un-ambigous single top
+            if (AnnotationUtils.areSame(declTop, polymorphicQualifier)) {
+                if (tops.size() == 1) { // un-ambigous single top
                     AnnotationUtils.updateMappingToImmutableSet(fullMap, polyQualifier, tops);
                     for (AnnotationMirror bottom : bottoms) {
                         // Add the polyqualifier as a supertype
                         // Need to copy over the set as it is unmodifiable.
                         AnnotationUtils.updateMappingToImmutableSet(
                                 fullMap, bottom, Collections.singleton(polyQualifier));
-                    }
-                    if (declTop == null) { // PolyAll
-                        // Make all other polymorphic qualifiers a subtype of PolyAll
-                        for (Map.Entry<AnnotationMirror, AnnotationMirror> otherpolyKV :
-                                polyQualifiers.entrySet()) {
-                            AnnotationMirror otherTop = otherpolyKV.getKey();
-                            AnnotationMirror otherPoly = otherpolyKV.getValue();
-                            if (otherTop != null) {
-                                AnnotationUtils.updateMappingToImmutableSet(
-                                        fullMap, otherPoly, Collections.singleton(polyQualifier));
-                            }
-                        }
                     }
                 } else {
                     throw new BugInCF(

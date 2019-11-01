@@ -531,7 +531,7 @@ hierarchy.
   permitting the type hierarchy to be an arbitrary DAG\@.
 
 % TODO: describe multiple type hierarchies
-% TODO: describe multiple polymorphic qualifiers and PolyAll
+% TODO: describe multiple polymorphic qualifiers
 % TODO: the code consistently uses "top" for type qualifiers and
 %       "root" for ASTs, in particular for CompilationUnitTrees.
 
@@ -882,10 +882,9 @@ when using a message key in a \<@SuppressWarnings> annotation.
 \subsectionAndLabel{Indicating supported annotations}{creating-indicating-supported-annotations}
 
 A checker must indicate the annotations that it supports (that make up its type
-hierarchy), including whether it supports the polymorphic qualifier
-\refqualclass{framework/qual}{PolyAll}.
+hierarchy).
 
-By default, a checker supports \<PolyAll>, and all type annotations located in a
+By default, a checker supports all type annotations located in a
 subdirectory called \<qual> that's located in the same directory as the checker.
 A type annotation is meta-annotated with either
 \<@Target(ElementType.TYPE\_USE)>
@@ -893,9 +892,8 @@ or
 \<@Target({ElementType.TYPE\_USE, ElementType.TYPE\_PARAMETER})>.
 
 To indicate support for annotations that are located outside of the \<qual>
-subdirectory, annotations that have other \<ElementType> values, or to indicate
-whether a checker supports the polymorphic qualifier
-\refqualclass{framework/qual}{PolyAll}, checker writers can override the
+subdirectory, annotations that have other \<ElementType> values
+checker writers can override the
 \refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
 method (see its Javadoc for details).
 
@@ -2239,7 +2237,7 @@ without warnings or errors.
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
 % LocalWords:  createTypeHierarchy ImplicitFor treeClasses TypeMirror Anno
 % LocalWords:  LiteralTree ExpressionTree typeClasses addComputedTypeAnnotations nullable
-% LocalWords:  createSupportedTypeQualifiers FooChecker nullness PolyAll
+% LocalWords:  createSupportedTypeQualifiers FooChecker nullness
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
 % LocalWords:  InterningAnnotatedTypeFactory QualifierDefaults TypeKind getKind
 % LocalWords:  setAbsoluteDefaults PolymorphicQualifier TreeVisitor subnodes
