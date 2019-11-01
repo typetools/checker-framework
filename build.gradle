@@ -33,7 +33,7 @@ ext {
 
     annotationTools = "${parentDir}/annotation-tools"
     afu = "${annotationTools}/annotation-file-utilities"
-    afuJar = "${afu}/annotation-file-utilities-all.jar"
+    afuJar = "${afu}/annotation-file-utilities-all-but-javac.jar"
 
     stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
@@ -489,6 +489,7 @@ subprojects {
         relocate 'org.apache', 'org.checkerframework.org.apache'
         relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
         relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
+        relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
         // relocate 'sun', 'org.checkerframework.sun'
         relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
         relocate 'com.google', 'org.checkerframework.com.google'
@@ -603,6 +604,10 @@ subprojects {
                             // Do not check for the annotated JDK
                             args += [
                                     "-javacoptions:-Anocheckjdk"
+                            ]
+                        } else if (project.name.is('checker')) {
+                            args += [
+                                    "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
                             ]
                         }
 
