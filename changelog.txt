@@ -11,6 +11,8 @@ Removed the @PolyAll annotation.
 Implementation details:
  * Removed all previously deprecated methods.
  * AnnotatedTypeFactory#getFnInterfaceFromTree now returns an AnnotatedExecutableType.
+ * AnnotationUtils#areSame and #areSameByName now only accept non-null
+   AnnotationMirrors
 
 ---------------------------------------------------------------------------
 
