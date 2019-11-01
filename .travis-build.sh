@@ -80,7 +80,12 @@ if [[ "${GROUP}" == "checker-framework-inference" || "${GROUP}" == "all" ]]; the
 fi
 
 if [[ "${GROUP}" == "plume-lib" || "${GROUP}" == "all" ]]; then
-  $SCRIPTDIR/test-plume-lib.sh
+  java -version 2>&1 | grep version | grep 1.8 > /dev/null
+  if [ $? -eq 0 ]; then
+    $SCRIPTDIR/test-plume-lib.sh
+  else
+    $SCRIPTDIR/test-plume-lib.sh allJdk11
+  fi
 fi
 
 if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
