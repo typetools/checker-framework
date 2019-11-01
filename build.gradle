@@ -33,7 +33,7 @@ ext {
 
     annotationTools = "${parentDir}/annotation-tools"
     afu = "${annotationTools}/annotation-file-utilities"
-    afuJar = "${afu}/annotation-file-utilities-all.jar"
+    afuJar = "${afu}/annotation-file-utilities-all-but-javac.jar"
 
     stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
