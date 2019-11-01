@@ -605,6 +605,10 @@ subprojects {
                             args += [
                                     "-javacoptions:-Anocheckjdk"
                             ]
+                        } else if (project.name.is('checker')) {
+                            args += [
+                                    "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
+                            ]
                         }
 
                         // Location of jtreg tests
