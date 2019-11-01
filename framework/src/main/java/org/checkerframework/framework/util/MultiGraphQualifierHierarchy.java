@@ -324,7 +324,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
         AnnotationMirror top = getTopAnnotation(start);
         for (AnnotationMirror key : polyQualifiers.keySet()) {
-            if (AnnotationUtils.areSame(key, top)) {
+            if (key != null && AnnotationUtils.areSame(key, top)) {
                 return polyQualifiers.get(key);
             }
         }
