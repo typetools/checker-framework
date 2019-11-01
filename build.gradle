@@ -108,6 +108,9 @@ allprojects {
                 options.encoding = 'UTF-8'
                 options.memberLevel = javadocMemberLevel
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
+                if (isJava8) {
+                    classpath += configurations.javacJar
+                }
                 options.taglets 'org.checkerframework.taglet.ManualTaglet'
                 options.tagletPath(project(':framework-test').sourceSets."${tagletVersion}".output.classesDirs.getFiles() as File[])
                 // TODO: this doesn't work with JDK 11
@@ -291,6 +294,9 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
     classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+    if (isJava8) {
+        classpath += configurations.javacJar
+    }
     doLast {
         copy {
             from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
