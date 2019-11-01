@@ -76,7 +76,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '2.11.1'
+    version '3.0.0'
 
     repositories {
         mavenCentral()
