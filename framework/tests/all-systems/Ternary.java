@@ -1,5 +1,3 @@
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.*;
 import java.lang.ref.WeakReference;
 
 class Ternary<F> {
@@ -49,17 +47,17 @@ class Ternary<F> {
     }
 
     void vars() {
-        // ClassSymbol and MethodSymbol generate an intersection type.
-        ClassSymbol c = null;
-        MethodSymbol m = null;
+        // String and Integer generate an intersection type.
+        String c = null;
+        Integer m = null;
         Object s = (m != null) ? m : c;
     }
 
     void vars2() {
-        // ClassSymbol and MethodSymbol generate an intersection type.
-        ClassSymbol c = null;
-        MethodSymbol m = null;
-        Symbol s = (m != null) ? m : c;
+        // String and Integer generate an intersection type.
+        String c = null;
+        Integer m = null;
+        Object s = (m != null) ? m : c;
     }
 
     public void test(MyWeakRef<? extends F> existingRef) {

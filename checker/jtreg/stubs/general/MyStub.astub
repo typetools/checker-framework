@@ -1,0 +1,6 @@
+package java.lang;
+import org.checkerframework.framework.qual.*;
+@SuppressWarnings("something")
+class String {
+
+}

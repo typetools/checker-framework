@@ -29,7 +29,6 @@ import org.checkerframework.checker.guieffect.qual.UI;
 import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -190,7 +189,6 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             Tree tree) {
         boolean ret =
                 useType.hasAnnotation(AlwaysSafe.class)
-                        || useType.hasAnnotation(PolyAll.class)
                         || useType.hasAnnotation(PolyUI.class)
                         || atypeFactory.isPolymorphicType(
                                 (TypeElement) declarationType.getUnderlyingType().asElement())
@@ -515,8 +513,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                     } else {
                         ret =
                                 atypeFactory
-                                        .getFnInterfaceFromTree((LambdaExpressionTree) enclosing)
-                                        .second
+                                        .getFunctionTypeFromTree((LambdaExpressionTree) enclosing)
                                         .getReturnType();
                     }
 

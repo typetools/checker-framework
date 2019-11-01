@@ -29,10 +29,11 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Finds the direct supertypes of an input AnnotatedTypeMirror. See
- * https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.10.2
+ * https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10.2
  *
  * @see Types#directSupertypes(TypeMirror)
  */
@@ -263,6 +264,23 @@ class SupertypeFinder {
                 AnnotatedDeclaredType adt =
                         (AnnotatedDeclaredType)
                                 atypeFactory.getAnnotatedTypeFromTypeTree(implemented);
+                if (adt.getTypeArguments().size()
+                                != adt.getUnderlyingType().getTypeArguments().size()
+                        && classTree.getSimpleName().contentEquals("")) {
+                    // classTree is an anonymous class with a diamond.
+                    List<AnnotatedTypeMirror> args = new ArrayList<>();
+                    for (TypeParameterElement element :
+                            TypesUtils.getTypeElement(adt.getUnderlyingType())
+                                    .getTypeParameters()) {
+                        AnnotatedTypeMirror arg =
+                                AnnotatedTypeMirror.createType(
+                                        element.asType(), atypeFactory, false);
+                        // TODO: After #979 is fixed, calculate the correct type using inference.
+                        atypeFactory.getUninferredWildcardType((AnnotatedTypeVariable) arg);
+                        args.add(arg);
+                    }
+                    adt.setTypeArguments(args);
+                }
                 supertypes.add(adt);
             }
 

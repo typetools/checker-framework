@@ -55,7 +55,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // type qualifier anymore.
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll(MaybeLeaked.class);
+        return getBundledTypeQualifiers(MaybeLeaked.class);
     }
 
     @Override
