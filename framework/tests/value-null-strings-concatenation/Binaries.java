@@ -76,7 +76,7 @@ class Binaries {
         if (true) {
             g = "B";
         }
-        @StringVal({"nullC", "AC", "BC"}) String h = g + "C";
+        @StringVal({"AC", "BC"}) String h = g + "C";
     }
 
     public void subtract() {
