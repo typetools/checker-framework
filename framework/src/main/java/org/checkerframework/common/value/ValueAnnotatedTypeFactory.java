@@ -53,7 +53,6 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -216,8 +215,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         IntRangeFromPositive.class,
                         IntRangeFromNonNegative.class,
                         IntRangeFromGTENegativeOne.class,
-                        PolyValue.class,
-                        PolyAll.class));
+                        PolyValue.class));
     }
 
     @Override
@@ -432,7 +430,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *
          * <p>If a user only writes one side of an {@code IntRange} annotation, this method also
          * computes an appropriate default based on the underlying type for the other side of the
-         * range. For instance, if the user write {@code @IntRange(from = 1) short x;} then this
+         * range. For instance, if the user writes {@code @IntRange(from = 1) short x;} then this
          * method will translate the annotation to {@code @IntRange(from = 1, to = Short.MAX_VALUE}.
          */
         private void replaceWithNewAnnoInSpecialCases(AnnotatedTypeMirror atm) {

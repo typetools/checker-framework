@@ -439,7 +439,7 @@ To solve the problem, add the missing annotations to the library (see
 Chapter~\ref{annotating-libraries}).  Depending on the checker, the
 annotations might be expressed in the form of stub files (which appear
 together with the checker's source code, such as in file
-\code{checker/src/org/checkerframework/checker/interning/jdk.astub} for the
+\code{checker/src/org/checkerframework/checker/interning/jdk8.astub} for the
 Interning Checker) or in the form of annotated libraries (which appear
 under \code{checker/jdk/}, such as at \code{checker/jdk/nullness/src/} for
 the Nullness Checker.
@@ -709,17 +709,27 @@ Section~\ref{stub}.
 
 If the library is annotated but has some incorrect or missing annotations,
 then please open a pull request that adds the annotations.
-You can find the annotated source for non-JDK libraries in
-\url{https://github.com/typetools/}.
-You can find the annotated JDK source in the
-\ahref{https://github.com/typetools/checker-framework}{Checker Framework
-  GitHub repository}, either in subdirectories of
-\ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
-or in files named \<jdk.astub> in the checker's implementation directory.
-
-If the library is not annotated at all, you can fork it, add annotations,
-and propose that your annotated version be moved into
-\url{https://github.com/typetools/}.
+\begin{itemize}
+\item
+  Non-JDK libraries:  You can find the annotated source in
+  \url{https://github.com/typetools/}.
+  If the library does not exist there, then it has no annotations yet.
+  You can fork it, add annotations,
+  and propose that your annotated version be moved into
+  \url{https://github.com/typetools/}.
+\item
+  JDK:  You need to open two pull requests, because there are two versions of the
+  annotated JDK.
+  \begin{itemize}
+  \item JDK 8: The annotated JDK source is in the
+    \ahref{https://github.com/typetools/checker-framework}{Checker Framework
+      GitHub repository}, either in a subdirectory of
+    \ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
+    or in files named \<jdk.astub> in the checker's implementation directory.
+  \item
+    JDK 11: The annotated JDK source is in \url{https://github.com/typetools/jdk}.
+  \end{itemize}
+\end{itemize}
 
 For either approach, please see \chapterpageref{annotating-libraries} for
 tips about writing library annotations.
@@ -830,8 +840,7 @@ You might want to add an \<export CHECKERFRAMEWORK=...> line to your
 %  * the location of tools.jar, below.
 %  * the default location of CTSYM, in checker/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK
-8 installation (not the JRE installation, and not JDK 7 or earlier).
-This needs to be an Oracle JDK.
+8 or JDK 11 installation (not the JRE installation, and not JDK 7 or earlier).
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
@@ -974,14 +983,15 @@ then we recommend that you enable CI builds,
 so that you learn quickly of any errors that creep into your fork.
 
 Follow the
-\ahref{https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline}{Azure
+\ahref{https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops}{Azure
   Pipelines getting started directions}.
 
 To save time, by default the CI jobs download a pre-built version of
 the JDK rather than building the JDK from the sources in the Checker
 Framework repository.  This means that if you make a change to the
 annotated JDK, your tests will fail.
-[TODO: Explain how to deal with this issue:]
+To fix your tests, follow the instructions at
+\url{https://github.com/typetools/annotated-libraries}.
 
 
 \subsubsectionAndLabel{Debugging continuous integration builds}{building-ci-debug}

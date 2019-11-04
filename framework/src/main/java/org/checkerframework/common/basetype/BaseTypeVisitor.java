@@ -1643,9 +1643,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
 
-        Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
-                atypeFactory.getFnInterfaceFromTree(node);
-        AnnotatedExecutableType functionType = result.second;
+        AnnotatedExecutableType functionType = atypeFactory.getFunctionTypeFromTree(node);
 
         if (node.getBody().getKind() != Tree.Kind.BLOCK) {
             // Check return type for single statement returns here.
@@ -1709,9 +1707,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     ret = atypeFactory.getMethodReturnType(enclosingMethod, node);
                 }
             } else {
-                Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
-                        atypeFactory.getFnInterfaceFromTree((LambdaExpressionTree) enclosing);
-                ret = result.second.getReturnType();
+                AnnotatedExecutableType result =
+                        atypeFactory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
+                ret = result.getReturnType();
             }
 
             if (ret != null) {
@@ -3050,11 +3048,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected boolean checkMethodReferenceAsOverride(
             MemberReferenceTree memberReferenceTree, Void p) {
 
-        Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
+        Pair<AnnotatedTypeMirror, AnnotatedExecutableType> result =
                 atypeFactory.getFnInterfaceFromTree(memberReferenceTree);
         // The type to which the member reference is assigned -- also known as the target type of
         // the reference.
-        AnnotatedDeclaredType functionalInterface = result.first;
+        AnnotatedTypeMirror functionalInterface = result.first;
         // The type of the single method that is declared by the functional interface.
         AnnotatedExecutableType functionType = result.second;
 
@@ -3150,17 +3148,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             functionTypeReturnType = invocationReturnType;
         }
 
-        // Check the member reference as if invocationType overrides functionType.
-        OverrideChecker overrideChecker =
-                createOverrideChecker(
-                        memberReferenceTree,
-                        invocationType,
-                        enclosingType,
-                        invocationReturnType,
-                        functionType,
-                        functionalInterface,
-                        functionTypeReturnType);
-        return overrideChecker.checkOverride();
+        if (functionalInterface.getKind() == TypeKind.DECLARED) {
+            // Check the member reference as if invocationType overrides functionType.
+            OverrideChecker overrideChecker =
+                    createOverrideChecker(
+                            memberReferenceTree,
+                            invocationType,
+                            enclosingType,
+                            invocationReturnType,
+                            functionType,
+                            (AnnotatedDeclaredType) functionalInterface,
+                            functionTypeReturnType);
+            return overrideChecker.checkOverride();
+        } else {
+            // If the functionalInterface is not a declared type, it must be an uninferred wildcard.
+            // In that case, only return false if uninferred type arguments should not be ignored.
+            return !atypeFactory.ignoreUninferredTypeArguments;
+        }
     }
 
     /** Check if method reference type argument inference is required. Issue an error if it is. */

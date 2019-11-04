@@ -542,22 +542,19 @@ public class AnnotationBuilder {
             found = elements.getTypeElement(givenValue.getClass().getCanonicalName()).asType();
             isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
         }
+        if (!isSubtype) {
+            // Annotations in stub files sometimes are the same type, but Types#isSubtype fails
+            // anyways.
+            isSubtype = found.toString().equals(expected.toString());
+        }
 
         if (!isSubtype) {
-            if (found.toString().equals(expected.toString())) {
-                throw new BugInCF(
-                        "given value differs from expected, but same string representation; "
-                                + "this is likely a bootclasspath/classpath issue; "
-                                + "found: "
-                                + found);
-            } else {
-                throw new BugInCF(
-                        "given value differs from expected; "
-                                + "found: "
-                                + found
-                                + "; expected: "
-                                + expected);
-            }
+            throw new BugInCF(
+                    "given value differs from expected; "
+                            + "found: "
+                            + found
+                            + "; expected: "
+                            + expected);
         }
     }
 

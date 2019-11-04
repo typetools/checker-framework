@@ -14,7 +14,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- These properties will be set by the Maven Dependency plugin -->
     <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
-    <checkerFrameworkVersion><!-- checker-framework-version -->2.11.1<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.0.0<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
@@ -34,6 +35,11 @@
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
       <version>${checkerFrameworkVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>javac</artifactId>
+      <version>9+181-r4173-1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -64,7 +70,7 @@
       </plugin>
       <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.0</version>
+          <version>3.8.1</version>
           <configuration>
               <fork>true</fork>
               <source>1.8</source>
@@ -81,7 +87,9 @@
                   <!-- Add all the checkers you want to enable here -->
                   <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
               </annotationProcessors>
-              <compilerArgs combine.children="append">
+              <compilerArgs>
+                  <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
+                  <arg>-J-Xbootclasspath/p:${errorProneJavac}</arg>
                   <!-- location of the annotated JDK, which comes from a Maven dependency -->
                   <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
                   <!-- -Awarns treats Checker Framework errors as warnings -->
@@ -119,39 +127,5 @@
             </plugin>
         </plugins>
     </reporting>
-
-  <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
-  <profiles>
-    <profile>
-      <id>jdk8</id>
-      <activation>
-        <jdk>1.8</jdk>
-      </activation>
-      <properties>
-        <javac.version>9+181-r4173-1</javac.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.google.errorprone</groupId>
-          <artifactId>javac</artifactId>
-          <version>9+181-r4173-1</version>
-        </dependency>
-      </dependencies>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <fork>true</fork>
-              <compilerArgs combine.children="append">
-                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${javac.version}/javac-${javac.version}.jar</arg>
-              </compilerArgs>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
 </project>

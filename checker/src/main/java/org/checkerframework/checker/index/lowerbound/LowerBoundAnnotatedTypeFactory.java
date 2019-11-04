@@ -38,7 +38,6 @@ import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -117,7 +116,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(IndexOrLow.class, GTEN1);
         addAliasedAnnotation(IndexOrHigh.class, NN);
         addAliasedAnnotation(LengthOf.class, NN);
-        addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
         addAliasedAnnotation(SubstringIndexFor.class, GTEN1);
 
