@@ -1,4 +1,4 @@
- The Checker Framework
+The Checker Framework
 Copyright 2004-present by the Checker Framework developers
 
 
