@@ -536,8 +536,8 @@ subprojects {
                     from './LICENSE.txt'
                 }
             } else {
-                from("$rootDir") {
-                    include "LICENSE.txt"
+                metaInf {
+                    from "${rootDir}/LICENSE.txt"
                 }
             }
             manifest {
