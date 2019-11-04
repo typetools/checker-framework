@@ -1,11 +1,13 @@
 package org.checkerframework.common.value;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -55,6 +57,7 @@ import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
+import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -65,6 +68,8 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The transfer class for the Value Checker. */
@@ -538,6 +543,28 @@ public class ValueTransfer extends CFTransfer {
         return leftLengths.plus(rightLengths).intersect(Range.INT_EVERYTHING);
     }
 
+    /**
+     * Checks whether or not the passed node is nullable. This superficial check assumes that every
+     * node is nullable unless it is a primitive, String literal, or compile-time constant.
+     *
+     * @return false if the node's run-time can't be null; true if the node's run-time value may be
+     *     null, or if this method is not precise enough
+     */
+    private boolean isNullable(Node node) {
+        if (node instanceof StringConversionNode) {
+            if (((StringConversionNode) node).getOperand().getType().getKind().isPrimitive()) {
+                return false;
+            }
+        } else if (node instanceof StringLiteralNode) {
+            return false;
+        } else if (node instanceof StringConcatenateNode) {
+            return false;
+        }
+
+        Element element = TreeUtils.elementFromUse((ExpressionTree) node.getTree());
+        return !ElementUtils.isCompileTimeConstant(element);
+    }
+
     /** Creates an annotation for a result of string concatenation. */
     private AnnotationMirror createAnnotationForStringConcatenation(
             Node leftOperand, Node rightOperand, TransferInput<CFValue, CFStore> p) {
@@ -546,15 +573,35 @@ public class ValueTransfer extends CFTransfer {
         List<String> leftValues = getStringValues(leftOperand, p);
         List<String> rightValues = getStringValues(rightOperand, p);
 
+        boolean nullStringConcat =
+                atypefactory.getContext().getChecker().hasOption("nullStringsConcatenation");
+
         if (leftValues != null && rightValues != null) {
             // Both operands have known string values, compute set of results
             List<String> concatValues = new ArrayList<>();
-            if (leftValues.isEmpty()) {
-                leftValues = Collections.singletonList("null");
+
+            if (nullStringConcat) {
+                if (isNullable(leftOperand)) {
+                    leftValues.add("null");
+                }
+                if (isNullable(rightOperand)) {
+                    rightValues.add("null");
+                }
+            } else {
+                if (leftOperand instanceof StringConversionNode) {
+                    if (((StringConversionNode) leftOperand).getOperand().getType().getKind()
+                            == TypeKind.NULL) {
+                        leftValues.add("null");
+                    }
+                }
+                if (rightOperand instanceof StringConversionNode) {
+                    if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
+                            == TypeKind.NULL) {
+                        rightValues.add("null");
+                    }
+                }
             }
-            if (rightValues.isEmpty()) {
-                rightValues = Collections.singletonList("null");
-            }
+
             for (String left : leftValues) {
                 for (String right : rightValues) {
                     concatValues.add(left + right);
@@ -575,6 +622,14 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengths != null && rightLengths != null) {
             // Both operands have known lengths, compute set of result lengths
+            if (nullStringConcat) {
+                if (isNullable(leftOperand)) {
+                    leftLengths.add(4); // "null"
+                }
+                if (isNullable(rightOperand)) {
+                    rightLengths.add(4); // "null"
+                }
+            }
             List<Integer> concatLengths = calculateLengthAddition(leftLengths, rightLengths);
             return atypefactory.createArrayLenAnnotation(concatLengths);
         }
@@ -591,6 +646,14 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengthRange != null && rightLengthRange != null) {
             // Both operands have a length from a known range, compute a range of result lengths
+            if (nullStringConcat) {
+                if (isNullable(leftOperand)) {
+                    leftLengthRange.union(new Range(4, 4)); // "null"
+                }
+                if (isNullable(rightOperand)) {
+                    rightLengthRange.union(new Range(4, 4)); // "null"
+                }
+            }
             Range concatLengthRange =
                     calculateLengthRangeAddition(leftLengthRange, rightLengthRange);
             return atypefactory.createArrayLenRangeAnnotation(concatLengthRange);

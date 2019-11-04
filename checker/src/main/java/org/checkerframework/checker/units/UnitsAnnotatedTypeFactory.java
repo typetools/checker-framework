@@ -162,7 +162,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         // get all the loaded annotations
-        Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiersWithPolyAll();
+        Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiers();
 
         // load all the external units
         loadAllExternalUnits();
