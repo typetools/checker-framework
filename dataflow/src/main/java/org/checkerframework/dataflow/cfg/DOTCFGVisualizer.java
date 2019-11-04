@@ -177,7 +177,7 @@ public class DOTCFGVisualizer<
         } else {
             throw new BugInCF("Unexpected AST kind: " + ast.getKind() + " value: " + ast);
         }
-        if (!checkerName.equals("")) {
+        if (!checkerName.isEmpty()) {
             outFile.append('-');
             outFile.append(checkerName);
         }
