@@ -97,7 +97,7 @@ public class StubTypes {
      * file, the qualifier in the last stub file is applied.
      *
      * <p>If using JDK 11, then the JDK stub files are only parsed if a type or declaration
-     * annotation is request from a class in that file.
+     * annotation is requested from a class in that file.
      */
     public void parseStubFiles() {
         parsing = true;
@@ -385,8 +385,8 @@ public class StubTypes {
     }
 
     /**
-     * Walk through the jdk11 directory and create a mapping from file name to the class contained
-     * with in it. Also, parses all package-info.java files.
+     * Walk through the jdk11 directory and create a mapping, {@link #jdk11StubFiles}, from file
+     * name to the class contained with in it. Also, parses all package-info.java files.
      */
     private void prepJdkStubs() {
         if (PluginUtil.getJreVersion() < 11) {

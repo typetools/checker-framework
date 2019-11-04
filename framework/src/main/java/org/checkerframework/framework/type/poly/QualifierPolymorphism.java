@@ -5,7 +5,6 @@ import com.sun.source.tree.NewClassTree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -18,11 +17,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * @see DefaultQualifierPolymorphism
  */
 public interface QualifierPolymorphism {
-
-    /** @return true if {@code qual} is {@code @PolyAll} */
-    static boolean isPolyAll(AnnotationMirror qual) {
-        return AnnotationUtils.areSameByClass(qual, PolyAll.class);
-    }
 
     /**
      * @return the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
