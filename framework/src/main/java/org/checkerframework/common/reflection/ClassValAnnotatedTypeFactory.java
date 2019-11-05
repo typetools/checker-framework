@@ -47,7 +47,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        if (this.getClass().equals(ClassValAnnotatedTypeFactory.class)) {
+        if (this.getClass() == ClassValAnnotatedTypeFactory.class) {
             this.postInit();
         }
     }

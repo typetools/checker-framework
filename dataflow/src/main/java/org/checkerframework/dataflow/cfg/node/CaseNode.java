@@ -24,7 +24,7 @@ public class CaseNode extends Node {
 
     public CaseNode(CaseTree tree, Node switchExpr, Node caseExpr, Types types) {
         super(types.getNoType(TypeKind.NONE));
-        assert tree.getKind().equals(Kind.CASE);
+        assert tree.getKind() == Kind.CASE;
         this.tree = tree;
         this.switchExpr = switchExpr;
         this.caseExpr = caseExpr;

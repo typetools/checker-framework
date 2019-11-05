@@ -21,7 +21,7 @@ public class ShortLiteralNode extends ValueLiteralNode {
 
     public ShortLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.INT_LITERAL);
+        assert t.getKind() == Tree.Kind.INT_LITERAL;
     }
 
     @Override

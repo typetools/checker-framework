@@ -15,7 +15,7 @@ public class EqualToNode extends BinaryOperationNode {
 
     public EqualToNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
-        assert tree.getKind().equals(Kind.EQUAL_TO);
+        assert tree.getKind() == Kind.EQUAL_TO;
     }
 
     @Override

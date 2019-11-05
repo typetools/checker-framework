@@ -13,17 +13,15 @@ public final class Effect {
     private final Class<? extends Annotation> annotClass;
 
     public Effect(Class<? extends Annotation> cls) {
-        assert (cls.equals(UIEffect.class)
-                || cls.equals(PolyUIEffect.class)
-                || cls.equals(SafeEffect.class));
+        assert cls == UIEffect.class || cls == PolyUIEffect.class || cls == SafeEffect.class;
         annotClass = cls;
     }
 
     public static boolean lessThanOrEqualTo(Effect left, Effect right) {
         assert (left != null && right != null);
-        boolean leftBottom = left.annotClass.equals(SafeEffect.class);
-        boolean rightTop = right.annotClass.equals(UIEffect.class);
-        return leftBottom || rightTop || left.annotClass.equals(right.annotClass);
+        boolean leftBottom = left.annotClass == SafeEffect.class;
+        boolean rightTop = right.annotClass == UIEffect.class;
+        return leftBottom || rightTop || left.annotClass == right.annotClass;
     }
 
     public static Effect min(Effect l, Effect r) {
@@ -46,15 +44,15 @@ public final class Effect {
     }
 
     public boolean isSafe() {
-        return annotClass.equals(SafeEffect.class);
+        return annotClass == SafeEffect.class;
     }
 
     public boolean isUI() {
-        return annotClass.equals(UIEffect.class);
+        return annotClass == UIEffect.class;
     }
 
     public boolean isPoly() {
-        return annotClass.equals(PolyUIEffect.class);
+        return annotClass == PolyUIEffect.class;
     }
 
     public Class<? extends Annotation> getAnnot() {
@@ -69,7 +67,7 @@ public final class Effect {
 
     @SuppressWarnings("NonOverridingEquals") // TODO: clean this up!
     public boolean equals(Effect e) {
-        return annotClass.equals(e.annotClass);
+        return annotClass == e.annotClass;
     }
 
     @Override

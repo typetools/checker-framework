@@ -1026,7 +1026,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
         for (Node node : nodes) {
-            if (node.getClass().equals(kind)) {
+            if (node.getClass() == kind) {
                 return kind.cast(node);
             }
         }

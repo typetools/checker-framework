@@ -16,7 +16,7 @@ public class NullLiteralNode extends ValueLiteralNode {
 
     public NullLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.NULL_LITERAL);
+        assert t.getKind() == Tree.Kind.NULL_LITERAL;
     }
 
     @Override

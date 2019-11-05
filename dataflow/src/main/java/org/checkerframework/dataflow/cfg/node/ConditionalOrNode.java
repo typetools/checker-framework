@@ -15,7 +15,7 @@ public class ConditionalOrNode extends BinaryOperationNode {
 
     public ConditionalOrNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
-        assert tree.getKind().equals(Kind.CONDITIONAL_OR);
+        assert tree.getKind() == Kind.CONDITIONAL_OR;
     }
 
     @Override

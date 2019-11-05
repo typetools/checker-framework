@@ -18,7 +18,7 @@ public class CharacterLiteralNode extends ValueLiteralNode {
 
     public CharacterLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.CHAR_LITERAL);
+        assert t.getKind() == Tree.Kind.CHAR_LITERAL;
     }
 
     @Override

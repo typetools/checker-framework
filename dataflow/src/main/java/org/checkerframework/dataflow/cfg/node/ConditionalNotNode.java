@@ -15,7 +15,7 @@ public class ConditionalNotNode extends UnaryOperationNode {
 
     public ConditionalNotNode(UnaryTree tree, Node operand) {
         super(tree, operand);
-        assert tree.getKind().equals(Kind.LOGICAL_COMPLEMENT);
+        assert tree.getKind() == Kind.LOGICAL_COMPLEMENT;
     }
 
     @Override
