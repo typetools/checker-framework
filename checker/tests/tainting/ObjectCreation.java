@@ -36,8 +36,8 @@ public class ObjectCreation {
         }
 
         @PolyTainted MyBuffer(Object o) {
-            // :: error : (super.invocation.invalid)
-            super(""); // error super("") is @Tainted
+            // :: error: (super.invocation.invalid)
+            super("");
         }
 
         @Untainted MyBuffer(Object o, int p) {
@@ -46,13 +46,6 @@ public class ObjectCreation {
 
         @Tainted MyBuffer(Object o, String s) {
             super();
-        }
-    }
-
-    static class Use {
-        void method() {
-            new Buffer(); // What's the type of new Buffer()?
-            new @Untainted Buffer();
         }
     }
 }

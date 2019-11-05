@@ -1483,9 +1483,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 : "GenericAnnotatedTypeFactory.addComputedTypeAnnotations: "
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
-
-        applyQualifierParameterDefaults(tree, type);
         addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
+        applyQualifierParameterDefaults(tree, type);
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(tree, type);
@@ -1616,8 +1615,8 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
-        applyQualifierParameterDefaults(elt, type);
         addAnnotationsFromDefaultQualifierForUse(elt, type);
+        applyQualifierParameterDefaults(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
         if (dependentTypesHelper != null) {
