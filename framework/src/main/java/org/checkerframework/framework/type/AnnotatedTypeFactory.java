@@ -541,6 +541,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return new QualifierUpperBounds(this);
     }
 
+    /** @return {@link QualifierUpperBounds} for this type factory */
+    public QualifierUpperBounds getQualifierUpperBounds() {
+        return qualifierUpperBounds;
+    }
+
     /** Returns the WholeProgramInference instance. */
     public WholeProgramInference getWholeProgramInference() {
         return wholeProgramInference;
