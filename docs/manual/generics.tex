@@ -884,6 +884,10 @@ In a type cast, if both the cast type and the type of casted expression have
 qualifier parameters, and if the qualifiers on the types are not equivalent,
 then the checker will issue an \<invariant.cast.unsafe> error.
 
+If a class extends a \<@HasQualifierParameter> class (or implements a
+\<@HasQualifierParameter> interface), then that class must also be marked
+\<@HasQualifierParameter>.
+
 \subsectionAndLabel{Using class qualifier parameters in method signatures}{class-qual-param-method}
 
 In classes with class qualifier parameters, a formal parameter type should
@@ -918,25 +922,26 @@ qualifier, that polymorphic qualifier is instantiated to the qualifier on the
 type of the receiver of the field access (or in the case of type variables, the
 qualifier on the upper bound).
 
-\subsectionAndLabel{Inheritance of classes with a qualifier parameter}{class-qual-param-inheritance}
-
-If a class extends a \<@HasQualifierParameter> class (or implements a
-\<@HasQualifierParameter> interface), then that class must also be marked
-\<@HasQualifierParameter>. A particular subclass can specify which qualifier
-parameter should be used for the super class.  (This is similar to \<class
-StringList implements List<String> \{...\}>.) For example,
-
-\begin{Verbatim}
-  @@HasQualifierParameter(Tainted.class)
-  class Buffer {
-  void append(@PolyTainted Buffer this, @PolyTainted String s) { ... }
-  }
-  @@HasQualifierParameter(Tainted.class)
-  @Tainted class TaintedBuffer extends @Tainted Buffer {
-  @Override
-  void append(@Tainted Buffer this, @Tainted String s) { ... } // legal override
-  }
-\end{Verbatim}
+%% TODO: implement this.
+%\subsectionAndLabel{Inheritance of classes with a qualifier parameter}{class-qual-param-inheritance}
+%
+%If a class extends a \<@HasQualifierParameter> class (or implements a
+%\<@HasQualifierParameter> interface), then that class must also be marked
+%\<@HasQualifierParameter>. A particular subclass can specify which qualifier
+%parameter should be used for the super class.  (This is similar to \<class
+%StringList implements List<String> \{...\}>.) For example,
+%
+%\begin{Verbatim}
+%  @HasQualifierParameter(Tainted.class)
+%  class Buffer {
+%  void append(@PolyTainted Buffer this, @PolyTainted String s) { ... }
+%  }
+%  @HasQualifierParameter(Tainted.class)
+%  @Tainted class TaintedBuffer extends @Tainted Buffer {
+%  @Override
+%  void append(@Tainted TaintedBuffer this, @Tainted String s) { ... } // legal override
+%  }
+%\end{Verbatim}
 
 \<@Untainted TaintedBuffer> is an invalid type.
 
