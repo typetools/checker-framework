@@ -17,7 +17,7 @@ public class LongLiteralNode extends ValueLiteralNode {
 
     public LongLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.LONG_LITERAL);
+        assert t.getKind() == Tree.Kind.LONG_LITERAL;
     }
 
     @Override

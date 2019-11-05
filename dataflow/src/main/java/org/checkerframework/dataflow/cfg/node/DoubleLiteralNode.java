@@ -17,7 +17,7 @@ public class DoubleLiteralNode extends ValueLiteralNode {
 
     public DoubleLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.DOUBLE_LITERAL);
+        assert t.getKind() == Tree.Kind.DOUBLE_LITERAL;
     }
 
     @Override

@@ -19,7 +19,7 @@ public class Constant implements AbstractValue<Constant> {
     }
 
     public Constant(Type type) {
-        assert !type.equals(Type.CONSTANT);
+        assert type != Type.CONSTANT;
         this.type = type;
     }
 
@@ -29,15 +29,15 @@ public class Constant implements AbstractValue<Constant> {
     }
 
     public boolean isTop() {
-        return type.equals(Type.TOP);
+        return type == Type.TOP;
     }
 
     public boolean isBottom() {
-        return type.equals(Type.BOTTOM);
+        return type == Type.BOTTOM;
     }
 
     public boolean isConstant() {
-        return type.equals(Type.CONSTANT);
+        return type == Type.CONSTANT;
     }
 
     public Integer getValue() {

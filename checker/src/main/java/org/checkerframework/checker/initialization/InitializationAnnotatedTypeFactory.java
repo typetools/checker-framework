@@ -335,7 +335,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     /** Are all fields committed-only? */
     protected boolean areAllFieldsCommittedOnly(ClassTree classTree) {
         for (Tree member : classTree.getMembers()) {
-            if (!member.getKind().equals(Tree.Kind.VARIABLE)) {
+            if (member.getKind() != Tree.Kind.VARIABLE) {
                 continue;
             }
             VariableTree var = (VariableTree) member;

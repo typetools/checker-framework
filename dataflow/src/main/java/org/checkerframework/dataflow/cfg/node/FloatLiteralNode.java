@@ -17,7 +17,7 @@ public class FloatLiteralNode extends ValueLiteralNode {
 
     public FloatLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.FLOAT_LITERAL);
+        assert t.getKind() == Tree.Kind.FLOAT_LITERAL;
     }
 
     @Override

@@ -364,7 +364,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             return uiLambdas.contains((LambdaExpressionTree) tree);
         } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
             AnnotatedTypeMirror typeMirror = super.getAnnotatedType(tree);
-            if (typeMirror.getKind().equals(TypeKind.DECLARED)) {
+            if (typeMirror.getKind() == TypeKind.DECLARED) {
                 return uiAnonClasses.contains(
                         ((DeclaredType) typeMirror.getUnderlyingType()).asElement());
             }
@@ -382,10 +382,10 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         // containing such class/lambda
         if (isDirectlyMarkedUIThroughInference(tree)) {
             typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
-        } else if (tree.getKind().equals(Tree.Kind.PARENTHESIZED)) {
+        } else if (tree.getKind() == Tree.Kind.PARENTHESIZED) {
             ParenthesizedTree parenthesizedTree = (ParenthesizedTree) tree;
             return this.getAnnotatedType(parenthesizedTree.getExpression());
-        } else if (tree.getKind().equals(Tree.Kind.CONDITIONAL_EXPRESSION)) {
+        } else if (tree.getKind() == Tree.Kind.CONDITIONAL_EXPRESSION) {
             ConditionalExpressionTree cet = (ConditionalExpressionTree) tree;
             boolean isTrueOperandUI =
                     (cet.getTrueExpression() != null

@@ -38,7 +38,7 @@ public class Default implements Comparable<Default> {
             return true;
         }
 
-        if (thatObj == null || !thatObj.getClass().equals(Default.class)) {
+        if (thatObj == null || thatObj.getClass() != Default.class) {
             return false;
         }
 

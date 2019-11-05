@@ -16,7 +16,7 @@ public class StringLiteralNode extends ValueLiteralNode {
 
     public StringLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.STRING_LITERAL);
+        assert t.getKind() == Tree.Kind.STRING_LITERAL;
     }
 
     @Override

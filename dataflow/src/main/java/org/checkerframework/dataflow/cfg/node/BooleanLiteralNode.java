@@ -17,7 +17,7 @@ public class BooleanLiteralNode extends ValueLiteralNode {
 
     public BooleanLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.BOOLEAN_LITERAL);
+        assert t.getKind() == Tree.Kind.BOOLEAN_LITERAL;
     }
 
     @Override
