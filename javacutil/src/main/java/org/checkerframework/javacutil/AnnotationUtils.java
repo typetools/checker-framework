@@ -490,6 +490,10 @@ public class AnnotationUtils {
      * @return true if if the two annotations have the same elements (fields)
      */
     public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
+        if (am1 == am2) {
+            return true;
+        }
+
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
         for (ExecutableElement meth :
