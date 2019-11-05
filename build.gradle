@@ -204,7 +204,7 @@ task version() {
  * @param checker full qualified name of the checker to run
  * @param shortName shorter version of the checker to use to name the task.
  */
-def createCheckTypeTask(projectName, checker, shortName) {
+def createCheckTypeTask(projectName, checker, shortName, args) {
     project("${projectName}").tasks.create(name: "check${shortName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
         description "Run the ${shortName} Checker on the main sources."
         group 'Verification'
@@ -221,6 +221,7 @@ def createCheckTypeTask(projectName, checker, shortName) {
                 '-proc:only',
                 '-Xlint:-processing',
                 ]
+        options.compilerArgs += args
         if (isJava8) {
             options.compilerArgs += [
                 "-Xbootclasspath/p:${rootDir}/checker/dist/jdk8.jar",
@@ -555,8 +556,9 @@ subprojects {
         }
 
         // Add tasks to run various checkers on all the main source sets.
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness')
-        createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness',[])
+        createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity',[])
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning',['-AsuppressWarnings=not.interned'])
 
         // Add jtregTests to framework and checker modules
         if (project.name.is('framework') || project.name.is('checker')) {
@@ -716,7 +718,7 @@ subprojects {
         // Create an allTests task per project
         tasks.create(name: 'allTests', type: GradleBuild, group: 'Verification') {
             description 'Run all Checker Framework tests'
-            tasks = ['test', 'checkPurity']
+            tasks = ['test', 'checkPurity', 'checkInterning']
             if (project.name.is('framework') || project.name.is('checker')) {
                 tasks += ['checkCompilerMessages', 'jtregTests']
             }
