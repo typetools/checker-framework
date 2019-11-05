@@ -391,13 +391,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * qualifier parameter, but this class does not.
      */
     private void checkQualifierParam(ClassTree classTree) {
-        Set<AnnotationMirror> topsWithOutQualiferParam = AnnotationUtils.createAnnotationSet();
+        Set<AnnotationMirror> polyWithOutQualiferParam = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
             TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
             if (atypeFactory.hasQualifierParameterInHierarchy(classElement, top)) {
                 continue;
             }
-            topsWithOutQualiferParam.add(top);
+            AnnotationMirror poly =
+                    atypeFactory.getQualifierHierarchy().getPolymorphicAnnotation(top);
+            if (poly != null) {
+                polyWithOutQualiferParam.add(poly);
+            }
             Element extendsEle = TypesUtils.getTypeElement(classElement.getSuperclass());
             if (extendsEle != null
                     && atypeFactory.hasQualifierParameterInHierarchy(extendsEle, top)) {
@@ -417,7 +421,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Tree mem : classTree.getMembers()) {
             if (mem.getKind() == Tree.Kind.VARIABLE) {
                 AnnotatedTypeMirror fieldAnno = atypeFactory.getAnnotatedType(mem);
-                if (polyScanner.visit(fieldAnno, topsWithOutQualiferParam)) {
+                if (polyScanner.visit(fieldAnno, polyWithOutQualiferParam)) {
                     checker.report(Result.failure("invalid.polymorphic.qualifier.use"), mem);
                 }
             }
@@ -435,15 +439,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         @Override
-        protected Boolean defaultAction(AnnotatedTypeMirror type, Set<AnnotationMirror> tops) {
+        protected Boolean defaultAction(AnnotatedTypeMirror type, Set<AnnotationMirror> polys) {
             if (type == null) {
                 return false;
             }
 
-            for (AnnotationMirror top : tops) {
-                AnnotationMirror polyAnnoInHierarchy =
-                        atypeFactory.getQualifierHierarchy().getPolymorphicAnnotation(top);
-                if (type.hasAnnotationRelaxed(polyAnnoInHierarchy)) {
+            for (AnnotationMirror poly : polys) {
+                if (type.hasAnnotationRelaxed(poly)) {
                     return true;
                 }
             }
