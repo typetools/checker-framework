@@ -45,6 +45,10 @@ public class DOTCFGVisualizer<
     public void init(Map<String, Object> args) {
         super.init(args);
         this.outDir = (String) args.get("outdir");
+        if (this.outDir == null) {
+            throw new BugInCF(
+                    "outDir should never be null, provide it in args when calling DOTCFGVisualizer.init(args).");
+        }
         this.checkerName = (String) args.get("checkerName");
         this.generated = new HashMap<>();
     }
@@ -177,7 +181,7 @@ public class DOTCFGVisualizer<
         } else {
             throw new BugInCF("Unexpected AST kind: " + ast.getKind() + " value: " + ast);
         }
-        if (!checkerName.isEmpty()) {
+        if (!checkerName.isEmpty() && checkerName != null) {
             outFile.append('-');
             outFile.append(checkerName);
         }
