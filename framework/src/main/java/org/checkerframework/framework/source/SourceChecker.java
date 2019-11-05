@@ -208,6 +208,11 @@ import org.checkerframework.javacutil.UserError;
     // java.lang.String)
     "requirePrefixInWarningSuppressions",
 
+    // Ignore annotations in bytecode that have invalid annotation locations.
+    // See https://github.com/typetools/checker-framework/issues/2173
+    // org.checkerframework.framework.type.ElementAnnotationApplier.apply
+    "ignoreInvalidAnnotationLocations",
+
     ///
     /// Partially-annotated libraries
     ///

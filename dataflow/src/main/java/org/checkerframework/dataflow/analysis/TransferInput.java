@@ -24,9 +24,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * The regular result store (or {@code null} if none is present). The following invariant is
      * maintained:
      *
-     * <pre>{@code
+     * <pre><code>
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * }</pre>
+     * </code></pre>
      */
     protected final @Nullable S store;
 
@@ -34,9 +34,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * The 'then' result store (or {@code null} if none is present). The following invariant is
      * maintained:
      *
-     * <pre>{@code
+     * <pre><code>
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * }</pre>
+     * </code></pre>
      */
     protected final @Nullable S thenStore;
 
@@ -44,9 +44,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * The 'else' result store (or {@code null} if none is present). The following invariant is
      * maintained:
      *
-     * <pre>{@code
+     * <pre><code>
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * }</pre>
+     * </code></pre>
      */
     protected final @Nullable S elseStore;
 
@@ -57,7 +57,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * Create a {@link TransferInput}, given a {@link TransferResult} and a node-value mapping.
      *
      * <p><em>Aliasing</em>: The stores returned by any methods of {@code to} will be stored
-     * internally and are not allowed to be used elsewhere. Full control of them is transfered to
+     * internally and are not allowed to be used elsewhere. Full control of them is transferred to
      * this object.
      *
      * <p>The node-value mapping {@code nodeValues} is provided by the analysis and is only read
@@ -80,7 +80,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * Create a {@link TransferInput}, given a store and a node-value mapping.
      *
      * <p><em>Aliasing</em>: The store {@code s} will be stored internally and is not allowed to be
-     * used elsewhere. Full control over {@code s} is transfered to this object.
+     * used elsewhere. Full control over {@code s} is transferred to this object.
      *
      * <p>The node-value mapping {@code nodeValues} is provided by the analysis and is only read
      * from within this {@link TransferInput}.
@@ -96,7 +96,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * Create a {@link TransferInput}, given two stores and a node-value mapping.
      *
      * <p><em>Aliasing</em>: The two stores {@code s1} and {@code s2} will be stored internally and
-     * are not allowed to be used elsewhere. Full control of them is transfered to this object.
+     * are not allowed to be used elsewhere. Full control of them is transferred to this object.
      */
     public TransferInput(Node n, Analysis<A, S, ?> analysis, S s1, S s2) {
         node = n;

@@ -3,6 +3,7 @@ package org.checkerframework.framework.type;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +29,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -540,9 +540,7 @@ public abstract class AnnotatedTypeMirror {
      * @param a the annotation to add
      */
     public void replaceAnnotation(AnnotationMirror a) {
-        if (!AnnotationUtils.areSameByClass(a, PolyAll.class)) {
-            this.removeAnnotationInHierarchy(a);
-        }
+        this.removeAnnotationInHierarchy(a);
         this.addAnnotation(a);
     }
 
@@ -1453,13 +1451,10 @@ public abstract class AnnotatedTypeMirror {
         // The type of "@Nullable X" has to be "@Nullable X extends @Nullable Object",
         // because otherwise the annotations are inconsistent.
         private void fixupBoundAnnotations() {
-
-            // We allow the above replacement first because primary annotations might not have
-            // annotations for all hierarchies, so we don't want to avoid placing bottom on the
-            // lower bound for those hierarchies that don't have a qualifier in primaryAnnotations.
             if (!this.getAnnotationsField().isEmpty()) {
+                Set<AnnotationMirror> newAnnos = this.getAnnotationsField();
                 if (upperBound != null) {
-                    replaceUpperBoundAnnotations();
+                    replaceUpperBoundAnnotations(newAnnos);
                 }
 
                 // Note:
@@ -1470,7 +1465,7 @@ public abstract class AnnotatedTypeMirror {
                 //   primary annotations overwrite the upper and lower bounds of type variables
                 //   when getUpperBound/getLowerBound is called
                 if (lowerBound != null) {
-                    lowerBound.replaceAnnotations(this.getAnnotationsField());
+                    lowerBound.replaceAnnotations(newAnnos);
                 }
             }
         }
@@ -1480,15 +1475,15 @@ public abstract class AnnotatedTypeMirror {
          * the AnnotatedTypeVariable with the annotations provided. The AnnotatedTypeVariable will
          * only have multiple upper bounds if the upper bound is an intersection.
          */
-        private void replaceUpperBoundAnnotations() {
+        private void replaceUpperBoundAnnotations(Collection<? extends AnnotationMirror> newAnnos) {
             if (upperBound.getKind() == TypeKind.INTERSECTION) {
                 final List<AnnotatedDeclaredType> bounds =
                         ((AnnotatedIntersectionType) upperBound).directSuperTypes();
                 for (final AnnotatedDeclaredType bound : bounds) {
-                    bound.replaceAnnotations(this.getAnnotationsField());
+                    bound.replaceAnnotations(newAnnos);
                 }
             } else {
-                upperBound.replaceAnnotations(this.getAnnotationsField());
+                upperBound.replaceAnnotations(newAnnos);
             }
         }
 
