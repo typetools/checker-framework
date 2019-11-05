@@ -8,6 +8,5 @@ dependencies {
     // Keep version number in sync with ../maven-artifacts/release/javacutilReleasePom.xml .
     compile 'org.plumelib:plume-util:1.0.10'
 
-    compile configurations.javacJar
     compileOnly project(':checker-qual')
 }

@@ -33,7 +33,7 @@ ext {
 
     annotationTools = "${parentDir}/annotation-tools"
     afu = "${annotationTools}/annotation-file-utilities"
-    afuJar = "${afu}/annotation-file-utilities-all.jar"
+    afuJar = "${afu}/annotation-file-utilities-all-but-javac.jar"
 
     stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
@@ -108,6 +108,9 @@ allprojects {
                 options.encoding = 'UTF-8'
                 options.memberLevel = javadocMemberLevel
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
+                if (isJava8) {
+                    classpath += configurations.javacJar
+                }
                 options.taglets 'org.checkerframework.taglet.ManualTaglet'
                 options.tagletPath(project(':framework-test').sourceSets."${tagletVersion}".output.classesDirs.getFiles() as File[])
                 // TODO: this doesn't work with JDK 11
@@ -291,6 +294,9 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
     classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+    if (isJava8) {
+        classpath += configurations.javacJar
+    }
     doLast {
         copy {
             from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
@@ -489,6 +495,7 @@ subprojects {
         relocate 'org.apache', 'org.checkerframework.org.apache'
         relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
         relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
+        relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
         // relocate 'sun', 'org.checkerframework.sun'
         relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
         relocate 'com.google', 'org.checkerframework.com.google'
@@ -529,8 +536,8 @@ subprojects {
                     from './LICENSE.txt'
                 }
             } else {
-                from("$rootDir") {
-                    include "LICENSE.txt"
+                metaInf {
+                    from "${rootDir}/LICENSE.txt"
                 }
             }
             manifest {
@@ -603,6 +610,10 @@ subprojects {
                             // Do not check for the annotated JDK
                             args += [
                                     "-javacoptions:-Anocheckjdk"
+                            ]
+                        } else if (project.name.is('checker')) {
+                            args += [
+                                    "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
                             ]
                         }
 

@@ -14,6 +14,10 @@ Implementation details:
  * AnnotationUtils#areSame and #areSameByName now only accept non-null
    AnnotationMirrors
 
+Closed issues:
+1169, 1654, 2081, 2703, 2739, 2749, 2779, 2781, 2798, 2820, 2824, 2829, 2842,
+2845, 2848.
+
 ---------------------------------------------------------------------------
 
 Version 2.11.1, October 1, 2019
