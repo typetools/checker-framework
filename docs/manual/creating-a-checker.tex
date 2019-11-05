@@ -531,7 +531,7 @@ hierarchy.
   permitting the type hierarchy to be an arbitrary DAG\@.
 
 % TODO: describe multiple type hierarchies
-% TODO: describe multiple polymorphic qualifiers and PolyAll
+% TODO: describe multiple polymorphic qualifiers
 % TODO: the code consistently uses "top" for type qualifiers and
 %       "root" for ASTs, in particular for CompilationUnitTrees.
 
@@ -882,10 +882,9 @@ when using a message key in a \<@SuppressWarnings> annotation.
 \subsectionAndLabel{Indicating supported annotations}{creating-indicating-supported-annotations}
 
 A checker must indicate the annotations that it supports (that make up its type
-hierarchy), including whether it supports the polymorphic qualifier
-\refqualclass{framework/qual}{PolyAll}.
+hierarchy).
 
-By default, a checker supports \<PolyAll>, and all type annotations located in a
+By default, a checker supports all type annotations located in a
 subdirectory called \<qual> that's located in the same directory as the checker.
 A type annotation is meta-annotated with either
 \<@Target(ElementType.TYPE\_USE)>
@@ -893,9 +892,8 @@ or
 \<@Target({ElementType.TYPE\_USE, ElementType.TYPE\_PARAMETER})>.
 
 To indicate support for annotations that are located outside of the \<qual>
-subdirectory, annotations that have other \<ElementType> values, or to indicate
-whether a checker supports the polymorphic qualifier
-\refqualclass{framework/qual}{PolyAll}, checker writers can override the
+subdirectory, annotations that have other \<ElementType> values
+checker writers can override the
 \refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
 method (see its Javadoc for details).
 
@@ -1154,7 +1152,7 @@ on the type system, so the framework provides way to specify what qualifiers sho
 
 Defaulting rules are type introduction rules for computing the annotated type for an unannotated type;
 these rules are explained in Section~\ref{creating-typesystem-defaults}. The meta-annotation \refqualclass{framework/qual}{QualifierForLiterals} can be written on an annotation
-declaration to specifiy that that annotation should be applied to the type of literals listed in the
+declaration to specify that that annotation should be applied to the type of literals listed in the
 meta-annotation.
 
 \subsectionAndLabel{Procedurally specifying type introduction rules}{creating-procedurally-specifying-implicit-annotations}
@@ -1653,17 +1651,24 @@ following two lines at the beginning of the constructor for your subtype of
 
 You will need to supply annotations for relevant parts of the JDK;
 otherwise, your type-checker may produce spurious warnings for code that
-uses the JDK.  As described in Section~\ref{annotating-libraries},
-there are two general ways to supply an annotated library:  in Java files
-that will be compiled to \<.class> files, or as stub files (partial Java source files).
+uses the JDK\@.  You need to write your annotations twice:  once for JDK 8
+and once for JDK 11.
 
+For JDK 11, write your annotations in
+\url{https://github.com/typetools/jdk}.
+
+For JDK 8, as described in Section~\ref{annotating-libraries}, you can
+supply annotations in Java files that will be compiled to \<.class> files,
+or as stub files (partial Java source files).
 It's easier to start out with stub files.  If you need to annotate many
 classes (say, more than 20 or so), then you should create an annotated JDK.
 
+\begin{itemize}
+\item
 To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jdk}.
-
+\item
 To supply an annotated JDK as a stub file, create a file \<jdk.astub> in
-the checker's main source directory.  You can also create \<jdkN.astub> files that contain methods
+the checker's main source directory.  You can also create \<jdk\emph{N}.astub> files that contain methods
 or classes that only exist in certain JDK versions.
 It will be automatically used by the
 checker, unless the user supplies the command-line option \<-Aignorejdkastub>.
@@ -1671,6 +1676,7 @@ You can also supply \<.astub> files in that directory for other libraries.
 You should list those other libraries in a
 \refqualclass{framework/qual}{StubFiles} annotation on the checker's main
 class, so that they will also be automatically used.
+\end{itemize}
 
 
 \sectionAndLabel{Testing framework}{creating-testing-framework}
@@ -1749,7 +1755,7 @@ large codebase without being inundated in stack traces.
 \begin{itemize}
 
 \item \code{-Aignorejdkastub}:
-  ignore the \<jdk.astub> and \<jdkN.astub> files in the checker directory. Files passed
+  ignore the \<jdk.astub> and \<jdk\emph{N}.astub> files in the checker directory. Files passed
   through the \code{-Astubs} option are still processed. This is useful
   when experimenting with an alternative stub file.
 
@@ -2239,7 +2245,7 @@ without warnings or errors.
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
 % LocalWords:  createTypeHierarchy ImplicitFor treeClasses TypeMirror Anno
 % LocalWords:  LiteralTree ExpressionTree typeClasses addComputedTypeAnnotations nullable
-% LocalWords:  createSupportedTypeQualifiers FooChecker nullness PolyAll
+% LocalWords:  createSupportedTypeQualifiers FooChecker nullness
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
 % LocalWords:  InterningAnnotatedTypeFactory QualifierDefaults TypeKind getKind
 % LocalWords:  setAbsoluteDefaults PolymorphicQualifier TreeVisitor subnodes

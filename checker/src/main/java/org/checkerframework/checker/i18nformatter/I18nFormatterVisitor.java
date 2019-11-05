@@ -129,7 +129,9 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         // i18nformat.missing.arguments and i18nformat.excess.arguments are issued here for
         // assignments.
         // For method calls, they are issued in checkInvocationFormatFor.
-        if (AnnotationUtils.areSameByName(rhs, atypeFactory.I18NFORMAT)
+        if (rhs != null
+                && lhs != null
+                && AnnotationUtils.areSameByName(rhs, atypeFactory.I18NFORMAT)
                 && AnnotationUtils.areSameByName(lhs, atypeFactory.I18NFORMAT)) {
             I18nConversionCategory[] rhsArgTypes =
                     atypeFactory.treeUtil.formatAnnotationToCategories(rhs);

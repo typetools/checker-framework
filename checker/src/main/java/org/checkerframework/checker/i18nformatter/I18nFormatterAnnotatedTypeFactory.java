@@ -76,8 +76,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll(
-                I18nUnknownFormat.class, I18nFormatBottom.class);
+        return getBundledTypeQualifiers(I18nUnknownFormat.class, I18nFormatBottom.class);
     }
 
     private Map<String, String> buildLookup() {

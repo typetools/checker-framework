@@ -11,10 +11,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -82,9 +80,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         if (declaredInTree.getKind() == Kind.LAMBDA_EXPRESSION) {
             LambdaExpressionTree lambdaDecl = (LambdaExpressionTree) declaredInTree;
             int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
-            Pair<AnnotatedDeclaredType, AnnotatedExecutableType> res =
-                    f.getFnInterfaceFromTree(lambdaDecl);
-            AnnotatedExecutableType functionType = res.second;
+            AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
             AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
             if (TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
                 if (f.types.isSubtype(funcTypeParam.actualType, lambdaParam.actualType)) {
