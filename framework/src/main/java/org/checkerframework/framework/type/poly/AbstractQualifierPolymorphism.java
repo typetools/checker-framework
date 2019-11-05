@@ -290,6 +290,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             if (actualType.hasAnnotation(poly)) {
                 AnnotationMirror typeQual = type.getAnnotationInHierarchy(top);
                 if (typeQual != null) {
+                    if (atypeFactory.hasQualifierParameterInHierarchy(actualType, top)) {
+                        polyBind.put(poly, AnnotationMirrorSet.singleElementSet(typeQual));
+                    }
                     result.put(poly, AnnotationMirrorSet.singleElementSet(typeQual));
                 }
             }
