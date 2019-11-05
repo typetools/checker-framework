@@ -1019,9 +1019,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         try {
             if (atypeFactory.getDependentTypesHelper() != null) {
-                atypeFactory
-                        .getDependentTypesHelper()
-                        .checkType(atypeFactory.getAnnotatedTypeLhs(node), node);
+                if (getCurrentPath().getParentPath() != null
+                        && getCurrentPath().getParentPath().getLeaf().getKind()
+                                == Tree.Kind.LAMBDA_EXPRESSION) {
+                    // Calling getAnnotatedTypeLhs on a lambda parameter node is possible expensive
+                    // because caching is turned off.  This should be fixed by #979.
+                    // See https://github.com/typetools/checker-framework/issues/2853 for an
+                    // example.
+                    atypeFactory
+                            .getDependentTypesHelper()
+                            .checkType(visitorState.getAssignmentContext().second, node);
+                } else {
+                    atypeFactory
+                            .getDependentTypesHelper()
+                            .checkType(atypeFactory.getAnnotatedTypeLhs(node), node);
+                }
             }
             // If there's no assignment in this variable declaration, skip it.
             if (node.getInitializer() != null) {
