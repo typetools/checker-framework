@@ -13,7 +13,7 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 
 
 
-./gradlew allTestsButJunit --console=plain --warning-mode=all --no-daemon
+./gradlew allTestsButCheckerJunit --console=plain --warning-mode=all --no-daemon
 # Moved example-tests-nobuildjdk out of all tests because it fails in
 # the release script because the newest maven artifacts are not published yet.
 ./gradlew :checker:exampleTests --console=plain --warning-mode=all --no-daemon
