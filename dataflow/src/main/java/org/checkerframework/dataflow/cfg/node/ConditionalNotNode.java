@@ -13,6 +13,12 @@ import java.util.Objects;
  */
 public class ConditionalNotNode extends UnaryOperationNode {
 
+    /**
+     * Create a new ConditionalNotNode.
+     *
+     * @param tree the logical-complement tree for this node
+     * @param operand the boolean expression being negated
+     */
     public ConditionalNotNode(UnaryTree tree, Node operand) {
         super(tree, operand);
         assert tree.getKind() == Kind.LOGICAL_COMPLEMENT;

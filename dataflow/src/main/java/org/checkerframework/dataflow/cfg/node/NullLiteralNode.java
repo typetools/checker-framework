@@ -14,6 +14,11 @@ import java.util.Collections;
  */
 public class NullLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new NullLiteralNode.
+     *
+     * @param t the tree for the literal value
+     */
     public NullLiteralNode(LiteralTree t) {
         super(t);
         assert t.getKind() == Tree.Kind.NULL_LITERAL;

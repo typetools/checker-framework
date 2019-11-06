@@ -13,6 +13,13 @@ import java.util.Objects;
  */
 public class ConditionalOrNode extends BinaryOperationNode {
 
+    /**
+     * Create a new ConditionalOrNode.
+     *
+     * @param tree the conditional-or tree for this node
+     * @param left the first argument
+     * @param right the second argument
+     */
     public ConditionalOrNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
         assert tree.getKind() == Kind.CONDITIONAL_OR;

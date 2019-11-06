@@ -43,6 +43,11 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private static final int UNKNOWN_PARAM_LENGTH = -1;
 
+    /**
+     * Create a new MethodValAnnotatedTypeFactory.
+     *
+     * @param checker the type-checker associated with this factory
+     */
     public MethodValAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         if (this.getClass() == MethodValAnnotatedTypeFactory.class) {

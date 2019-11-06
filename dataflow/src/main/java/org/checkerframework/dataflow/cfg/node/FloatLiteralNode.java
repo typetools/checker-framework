@@ -15,6 +15,11 @@ import java.util.Collections;
  */
 public class FloatLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new FloatLiteralNode.
+     *
+     * @param t the tree for the literal value
+     */
     public FloatLiteralNode(LiteralTree t) {
         super(t);
         assert t.getKind() == Tree.Kind.FLOAT_LITERAL;

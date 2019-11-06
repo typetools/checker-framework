@@ -15,6 +15,11 @@ import java.util.Collections;
  */
 public class BooleanLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new BooleanLiteralNode.
+     *
+     * @param t the tree for the literal value
+     */
     public BooleanLiteralNode(LiteralTree t) {
         super(t);
         assert t.getKind() == Tree.Kind.BOOLEAN_LITERAL;

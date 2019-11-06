@@ -7,6 +7,7 @@ import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
+/** An effect -- either UIEffect, PolyUIEffect, or SafeEffect. */
 public final class Effect {
     // Colin hates Java's comparable interface, so he's not using it
 
@@ -17,6 +18,13 @@ public final class Effect {
         annotClass = cls;
     }
 
+    /**
+     * Return true iff {@code left} is less than or equal to {@code right}.
+     *
+     * @param left the first effect to compare
+     * @param right the first effect to compare
+     * @return true iff {@code left} is less than or equal to {@code right}
+     */
     public static boolean lessThanOrEqualTo(Effect left, Effect right) {
         assert (left != null && right != null);
         boolean leftBottom = left.annotClass == SafeEffect.class;
@@ -43,14 +51,29 @@ public final class Effect {
         }
     }
 
+    /**
+     * Return true if this is SafeEffect.
+     *
+     * @return true if this is SafeEffect
+     */
     public boolean isSafe() {
         return annotClass == SafeEffect.class;
     }
 
+    /**
+     * Return true if this is UIEffect.
+     *
+     * @return true if this is UIEffect
+     */
     public boolean isUI() {
         return annotClass == UIEffect.class;
     }
 
+    /**
+     * Return true if this is PolyUIEffect.
+     *
+     * @return true if this is PolyUIEffect
+     */
     public boolean isPoly() {
         return annotClass == PolyUIEffect.class;
     }
@@ -65,6 +88,12 @@ public final class Effect {
         return annotClass.getSimpleName();
     }
 
+    /**
+     * Return true if this equals the given effect.
+     *
+     * @param the effect to compare this to
+     * @return true if this equals the given effect
+     */
     @SuppressWarnings("NonOverridingEquals") // TODO: clean this up!
     public boolean equals(Effect e) {
         return annotClass == e.annotClass;

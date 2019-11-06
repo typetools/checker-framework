@@ -15,6 +15,11 @@ import java.util.Collections;
  */
 public class DoubleLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new DoubleLiteralNode.
+     *
+     * @param t the tree for the literal value
+     */
     public DoubleLiteralNode(LiteralTree t) {
         super(t);
         assert t.getKind() == Tree.Kind.DOUBLE_LITERAL;
