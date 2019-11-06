@@ -13,6 +13,11 @@ public final class Effect {
 
     private final Class<? extends Annotation> annotClass;
 
+    /**
+     * Create a new Effect object.
+     *
+     * @param cls one of UIEffect.class, PolyUIEffect.class, or SafeEffect.class
+     */
     public Effect(Class<? extends Annotation> cls) {
         assert cls == UIEffect.class || cls == PolyUIEffect.class || cls == SafeEffect.class;
         annotClass = cls;
@@ -91,7 +96,7 @@ public final class Effect {
     /**
      * Return true if this equals the given effect.
      *
-     * @param the effect to compare this to
+     * @param e the effect to compare this to
      * @return true if this equals the given effect
      */
     @SuppressWarnings("NonOverridingEquals") // TODO: clean this up!
