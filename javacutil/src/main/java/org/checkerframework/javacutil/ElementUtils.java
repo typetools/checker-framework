@@ -366,6 +366,7 @@ public class ElementUtils {
         }
     }
 
+    /** @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError" */
     public static boolean isError(Element element) {
         return element.getClass().getName()
                 == "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError";
