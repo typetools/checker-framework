@@ -19,9 +19,14 @@ import java.util.Collections;
  */
 public class ShortLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new ShortLiteralNode.
+     *
+     * @param t the tree for the literal value
+     */
     public ShortLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.INT_LITERAL);
+        assert t.getKind() == Tree.Kind.INT_LITERAL;
     }
 
     @Override

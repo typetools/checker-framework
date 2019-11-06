@@ -1282,7 +1282,7 @@ public class BoundsInitializer {
             final TypeKind typeKind,
             final AnnotatedTypeVariable type,
             final AnnotatedTypeMirror parent) {
-        if (parent.getKind().equals(typeKind)) {
+        if (parent.getKind() == typeKind) {
             return;
         }
 
