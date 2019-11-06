@@ -14,6 +14,11 @@ import java.util.Collections;
  */
 public class IntegerLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new IntegerLiteralNode.
+     *
+     * @param t the tree for the literal value
+     */
     public IntegerLiteralNode(LiteralTree t) {
         super(t);
         assert t.getKind() == Tree.Kind.INT_LITERAL;

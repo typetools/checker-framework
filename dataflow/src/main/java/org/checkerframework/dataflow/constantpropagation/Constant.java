@@ -9,7 +9,7 @@ public class Constant implements AbstractValue<Constant> {
     /** What kind of abstract value is this? */
     protected Type type;
 
-    /** The value of this abstract value (or null) */
+    /** The value of this abstract value (or null). */
     protected @Nullable Integer value;
 
     public enum Type {

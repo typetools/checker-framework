@@ -18,10 +18,21 @@ import javax.lang.model.util.Types;
  */
 public class CaseNode extends Node {
 
+    /** The tree for this node. */
     protected final CaseTree tree;
+    /** The switch expression. */
     protected final Node switchExpr;
+    /** The case expression to match the switch expression against. */
     protected final Node caseExpr;
 
+    /**
+     * Create a new CaseNode.
+     *
+     * @param tree the tree for this node
+     * @param switchExpr the switch expression
+     * @param caseExpr the case expression to match the switch expression against
+     * @param types a factory of utility methods for operating on types
+     */
     public CaseNode(CaseTree tree, Node switchExpr, Node caseExpr, Types types) {
         super(types.getNoType(TypeKind.NONE));
         assert tree.getKind() == Kind.CASE;

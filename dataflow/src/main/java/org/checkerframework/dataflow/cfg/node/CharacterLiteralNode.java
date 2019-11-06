@@ -16,6 +16,11 @@ import java.util.Collections;
  */
 public class CharacterLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new CharacterLiteralNode.
+     *
+     * @param t the character literal
+     */
     public CharacterLiteralNode(LiteralTree t) {
         super(t);
         assert t.getKind() == Tree.Kind.CHAR_LITERAL;

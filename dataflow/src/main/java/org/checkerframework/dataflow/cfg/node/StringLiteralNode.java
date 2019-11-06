@@ -14,6 +14,11 @@ import java.util.Collections;
  */
 public class StringLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new StringLiteralNode.
+     *
+     * @param t the tree for the literal value
+     */
     public StringLiteralNode(LiteralTree t) {
         super(t);
         assert t.getKind() == Tree.Kind.STRING_LITERAL;
