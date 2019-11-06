@@ -713,10 +713,10 @@ subprojects {
             ]
         }
 
-        // Create an allTests task per project
-        tasks.create(name: 'allTests', type: GradleBuild, group: 'Verification') {
-            description 'Run all Checker Framework tests'
-            tasks = ['test', 'checkPurity']
+        // Create an allTestsButJunit task per project
+        tasks.create(name: 'allTestsButJunit', type: GradleBuild, group: 'Verification') {
+            description 'Run all Checker Framework tests except for Junit tests.'
+            tasks = ['checkPurity']
             if (project.name.is('framework') || project.name.is('checker')) {
                 tasks += ['checkCompilerMessages', 'jtregTests']
             }
@@ -727,6 +727,21 @@ subprojects {
             if (project.name.is('checker')) {
                 tasks += ['nullnessExtraTests', 'commandLineTests', 'tutorialTests']
             }
+        }
+
+        task javadocPrivate(dependsOn: javadoc) {
+            doFirst {
+                javadocMemberLevel = JavadocMemberLevel.PRIVATE
+            }
+            doLast {
+                javadocMemberLevel = JavadocMemberLevel.PROTECTED
+            }
+        }
+
+        // Create an allTests task per project
+        tasks.create(name: 'allTests', type: GradleBuild, group: 'Verification') {
+            description 'Run all Checker Framework tests'
+            tasks = ['test', 'allTestsButJunit']
         }
 
         task javadocPrivate(dependsOn: javadoc) {
