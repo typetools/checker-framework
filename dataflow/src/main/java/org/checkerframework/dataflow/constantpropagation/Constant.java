@@ -18,24 +18,28 @@ public class Constant implements AbstractValue<Constant> {
         BOTTOM,
     }
 
+    /** Create a constant for {@code type}. */
     public Constant(Type type) {
         assert type != Type.CONSTANT;
         this.type = type;
     }
 
+    /** Create a constant for {@code value}. */
     public Constant(Integer value) {
         this.type = Type.CONSTANT;
         this.value = value;
     }
 
+    /** @return whether or not the constant is TOP. */
     public boolean isTop() {
         return type == Type.TOP;
     }
 
+    /** @return whether or not the constant is BOTTOM. */
     public boolean isBottom() {
         return type == Type.BOTTOM;
     }
-
+    /** @return whether or not the constant is CONSTANT. */
     public boolean isConstant() {
         return type == Type.CONSTANT;
     }
