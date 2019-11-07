@@ -52,12 +52,11 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
      *     compilation root
      */
     public TreePath getPath(CompilationUnitTree root, Tree target) {
-        TreePath path = foundPaths.get(target);
-        if (path != null) {
-            return path;
+        if (foundPaths.containsKey(target)) {
+            return foundPaths.get(target);
         }
 
-        path = new TreePath(root);
+        TreePath path = new TreePath(root);
         if (path.getLeaf() == target) {
             return path;
         }
