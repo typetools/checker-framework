@@ -3,7 +3,6 @@ import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 import org.checkerframework.framework.qual.HasQualifierParameter;
 
-@SuppressWarnings({"inconsistent.constructor.type", "super.invocation.invalid"})
 @HasQualifierParameter(Tainted.class)
 public class PolyConstructor {
 
