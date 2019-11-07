@@ -713,7 +713,7 @@ subprojects {
             ]
         }
 
-        // Create an allTestsButJunit task per project
+        // Create an allTestsButCheckerJunit task per project
         tasks.create(name: 'allTestsButCheckerJunit', type: GradleBuild, group: 'Verification') {
             description 'Run all Checker Framework tests except for checker Junit tests.'
             tasks = ['checkPurity']
