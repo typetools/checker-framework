@@ -416,8 +416,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
         }
-        // Check for poly fields.
-        PolyTypeScanner polyScanner = new PolyTypeScanner();
+
         for (Tree mem : classTree.getMembers()) {
             if (mem.getKind() == Tree.Kind.VARIABLE) {
                 AnnotatedTypeMirror fieldAnno = atypeFactory.getAnnotatedType(mem);
@@ -428,8 +427,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /** A scanner that indicates whether any (sub-)types are annotated as polymorphic. */
-    class PolyTypeScanner extends SimpleAnnotatedTypeScanner<Boolean, Set<AnnotationMirror>> {
+    /**
+     * A scanner that indicates whether any part of an annotated type has a polymorphic annotation.
+     */
+    private final PolyTypeScanner polyScanner = new PolyTypeScanner();
+
+    /**
+     * A scanner that indicates whether any part of an annotated type has a polymorphic annotation.
+     */
+    static class PolyTypeScanner
+            extends SimpleAnnotatedTypeScanner<Boolean, Set<AnnotationMirror>> {
 
         @Override
         protected Boolean reduce(Boolean r1, Boolean r2) {
