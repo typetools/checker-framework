@@ -385,26 +385,37 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @Override
         public String visitWildcard(AnnotatedWildcardType type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
-            sb.append(
-                    annoFormatter.formatAnnotationString(
-                            type.getAnnotationsField(), currentPrintInvisibleSetting));
-            sb.append("?");
-            if (!visiting.contains(type)) {
+            if (type.isUninferredTypeArgument()) {
+                sb.append(
+                        annoFormatter.formatAnnotationString(
+                                type.getAnnotationsField(), currentPrintInvisibleSetting));
+                sb.append(" /*INFERENCE FAILED ");
+                sb.append(type.getUnderlyingType());
+                sb.append("*/");
+            } else {
 
-                try {
-                    visiting.add(type);
+                sb.append(
+                        annoFormatter.formatAnnotationString(
+                                type.getAnnotationsField(), currentPrintInvisibleSetting));
 
-                    if (currentPrintVerboseGenerics) {
-                        sb.append("[");
+                sb.append("?");
+                if (!visiting.contains(type)) {
+
+                    try {
+                        visiting.add(type);
+
+                        if (currentPrintVerboseGenerics) {
+                            sb.append("[");
+                        }
+                        printBound("extends", type.getExtendsBoundField(), visiting, sb);
+                        printBound("super", type.getSuperBoundField(), visiting, sb);
+                        if (currentPrintVerboseGenerics) {
+                            sb.append("]");
+                        }
+
+                    } finally {
+                        visiting.remove(type);
                     }
-                    printBound("extends", type.getExtendsBoundField(), visiting, sb);
-                    printBound("super", type.getSuperBoundField(), visiting, sb);
-                    if (currentPrintVerboseGenerics) {
-                        sb.append("]");
-                    }
-
-                } finally {
-                    visiting.remove(type);
                 }
             }
             return sb.toString();
