@@ -734,7 +734,7 @@ subprojects {
         // Create an allTests task per project
         tasks.create(name: 'allTests', type: GradleBuild, group: 'Verification') {
             description 'Run all Checker Framework tests'
-            tasks = ['allNonCheckerJunitTests']
+            tasks = ['nonCheckerJunitTests']
             if (project.name.is('checker')) {
                 tasks += ['test']
             }
