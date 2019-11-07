@@ -713,8 +713,8 @@ subprojects {
             ]
         }
 
-        // Create an allTestsButCheckerJunit task per project
-        tasks.create(name: 'allTestsButCheckerJunit', type: GradleBuild, group: 'Verification') {
+        // Create an allNonCheckerJunitTests task per project
+        tasks.create(name: 'allNonCheckerJunitTests', type: GradleBuild, group: 'Verification') {
             description 'Run all Checker Framework tests except for checker Junit tests.'
             tasks = ['checkPurity']
             if (project.name.is('framework') || project.name.is('checker')) {
@@ -734,7 +734,7 @@ subprojects {
         // Create an allTests task per project
         tasks.create(name: 'allTests', type: GradleBuild, group: 'Verification') {
             description 'Run all Checker Framework tests'
-            tasks = ['allTestsButCheckerJunit']
+            tasks = ['allNonCheckerJunitTests']
             if (project.name.is('checker')) {
                 tasks += ['test']
             }
