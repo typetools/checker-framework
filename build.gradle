@@ -736,7 +736,7 @@ subprojects {
             description 'Run all Checker Framework tests'
             tasks = ['allTestsButJunit']
             if (project.name.is('checker')) {
-                task += ['test']
+                tasks += ['test']
             }
         }
 
