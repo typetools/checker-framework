@@ -416,7 +416,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     @Override
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
         if (AnnotationUtils.areSameByName(a1, a2)) {
-            return AnnotationUtils.areSame(a1, a2) ? a1 : getBottomAnnotation(a1);
+            return AnnotationUtils.sameElementValues(a1, a2) ? a1 : getBottomAnnotation(a1);
         }
         if (glbs == null) {
             glbs = calculateGlbs();
@@ -465,7 +465,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             }
         }*/
         if (AnnotationUtils.areSameByName(subAnno, superAnno)) {
-            return AnnotationUtils.areSame(subAnno, superAnno);
+            return AnnotationUtils.sameElementValues(subAnno, superAnno);
         }
         Set<AnnotationMirror> supermap1 = this.supertypesTransitive.get(subAnno);
         return AnnotationUtils.containsSame(supermap1, superAnno);
