@@ -1909,7 +1909,6 @@ public class StubParser {
         }
         if (m.containsKey(key)) {
             AnnotatedTypeMirror existingType = m.get(key);
-            AnnotatedTypeMirror existingType = m.get(key);
             if (isJdkAsStub) {
                 // AnnotatedTypeMerger picks the annotations from the first argument if an
                 // annotation exist in both types in the same location for the same hierarchy.
