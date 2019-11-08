@@ -389,7 +389,9 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Finalize a AnnotatedTypeMirror instead of creating a new one based on parameter {@code member}
+     * Finalize a AnnotatedTypeMirror instead of creating a new one based on parameter {@code
+     * member}
+     *
      * @param memberType an AnnotatedTypeMirror without applying this function
      * @return finalized memberType
      */

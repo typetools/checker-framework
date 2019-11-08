@@ -1954,7 +1954,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public ParameterizedExecutableType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
-        AnnotatedTypeMirror memberType = getAnnotatedType(methodElt);  // get unsubstituted type
+        AnnotatedTypeMirror memberType = getAnnotatedType(methodElt); // get unsubstituted type
         if (shouldBeSubstituted(methodElt)) {
             methodFromUsePreSubstitution(tree, memberType);
         }
