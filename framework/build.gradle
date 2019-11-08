@@ -78,6 +78,63 @@ checkCompilerMessages {
     ]
 }
 
+task testWPIStubs(type: Test) {
+    doFirst {
+        delete("tests/whole-program-inference/annotated")
+    }
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceStubsTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+}
+
+task testWPIStubsValidate(type: Test) {
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceStubsValidationTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+}
+
+// This task is similar to the wholeProgramInferenceTests task below, but it doesn't
+// run the insert-annotations-to-source tool
+task wholeProgramInferenceStubTests(dependsOn: 'shadowJar', group: 'Verification') {
+    description 'Run tests for whole-program inference using stub files'
+    dependsOn(compileTestJava)
+    dependsOn(testWPIStubs)
+    outputs.upToDateWhen { false }
+
+    doLast {
+        // Copying all test files to another directory, removing all expected errors that should not
+        // occur after inserting inferred annotations from .jaif files.
+        copy {
+            from files('tests/whole-program-inference/non-annotated')
+            into file('tests/whole-program-inference/annotated')
+            filter { String line ->
+                line.contains('// :: error:') ? null : line
+            }
+        }
+        // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over
+        delete('tests/whole-program-inference/annotated/ExpectedErrors.java')
+        copy {
+            from file('tests/whole-program-inference/non-annotated/ExpectedErrors.java')
+            into file('tests/whole-program-inference/annotated')
+        }
+    }
+    finalizedBy(testWPIStubsValidate)
+}
+
 task testWPI(type: Test) {
     doFirst {
         delete("tests/whole-program-inference/annotated")

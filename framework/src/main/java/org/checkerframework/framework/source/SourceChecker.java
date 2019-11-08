@@ -187,8 +187,11 @@ import org.checkerframework.javacutil.UserError;
     // to be output.
     "resolveReflection",
 
-    // Whether to use .jaif files whole-program inference
+    // Whether to use whole-program inference (defaults to outputting .jaif files)
     "infer",
+    // Whether to output the results of whole-program inference to .astub files instead.
+    // Only makes sense (or does anything) in conjunction with -Ainfer.
+    "outputStubs",
 
     // With each warning, in addition to the concrete error key,
     // output the suppress warning keys that can be used to
@@ -235,6 +238,10 @@ import org.checkerframework.javacutil.UserError;
     // Whether to print warnings about stub files that are redundant with the annotations from
     // bytecode.
     "stubWarnIfRedundantWithBytecode",
+    // With this option, annotations in stub files are prioritized EVEN IF THE SOURCE FILE
+    // IS PRESENT. Only use this option when you intend to store types in stub files rather
+    // than directly in source code, such as during whole-program inference.
+    "prioritizeStubs",
     // Already listed above, but worth noting again in this section:
     // "useDefaultsForUncheckedCode"
 

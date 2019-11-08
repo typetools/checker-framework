@@ -136,5 +136,11 @@ public interface WholeProgramInference {
     /**
      * Saves the inferred results. Ideally should be called at the end of the type-checking process.
      */
-    void saveResults();
+    void saveResults(OutputKind kind);
+
+    /** A simple enum to differentiate the kinds of output from whole program inference. */
+    enum OutputKind {
+        STUB,
+        JAIF
+    }
 }

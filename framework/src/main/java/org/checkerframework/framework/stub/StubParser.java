@@ -841,6 +841,7 @@ public class StubParser {
                 annotate(paramType, param.getVarArgsAnnotations());
             } else {
                 annotate(paramType, param.getType(), param.getAnnotations());
+                putNew(atypes, paramElt, paramType);
             }
         }
     }
@@ -1907,6 +1908,7 @@ public class StubParser {
             throw new BugInCF("StubParser: key is null");
         }
         if (m.containsKey(key)) {
+            AnnotatedTypeMirror existingType = m.get(key);
             AnnotatedTypeMirror existingType = m.get(key);
             if (isJdkAsStub) {
                 // AnnotatedTypeMerger picks the annotations from the first argument if an

@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -86,6 +87,23 @@ public class WholeProgramInferenceScenesHelper {
      */
     private final Set<String> modifiedScenes = new HashSet<>();
 
+    /**
+     * AScene doesn't carry around the basetypes of annotated types, which precludes outputting
+     * correctly formatted stub files. #updateTypeElementFromATM intercepts updates to
+     * ATypeElement_s that add annotations, and populates this map with their corresponding
+     * basetypes. Then, these basetypes are used when outputting stub files.
+     *
+     * <p>This is super hacky, and could be avoided if we didn't go through AScene at all.
+     * Unfortunately, all the interesting WPI code uses them, so removing that dependency would be
+     * hard.
+     *
+     * <p>The ATypeElement_s themselves aren't useful as keys, because their hashes change when
+     * annotations are added to them. Instead, we use their description as the hash key. This is
+     * super sketchy (there is no guarantee that two different ATypeElement_s won't have the same
+     * description!), but it's the best I can come up with at the moment.
+     */
+    private final Map<String, TypeMirror> baseTypes = new HashMap<>();
+
     public WholeProgramInferenceScenesHelper(boolean ignoreNullAssignments) {
         this.ignoreNullAssignments = ignoreNullAssignments;
     }
@@ -120,6 +138,47 @@ public class WholeProgramInferenceScenesHelper {
                         e);
             } catch (DefException e) {
                 throw new BugInCF(e.getMessage(), e);
+            }
+        }
+        modifiedScenes.clear();
+    }
+
+    /**
+     * This alternative to #writeScenesToJaif instead writes the scenes out to .astub files.
+     *
+     * @param enumSet all fully-qualified classnames which should be output as enums. The stub
+     *     parser will crash if an enum is output as a class (i.e. as "class Foo" rather than "enum
+     *     Foo").
+     * @param types mapping from names to Java types
+     */
+    public void writeScenesToStub(Set<String> enumSet, Map<String, TypeElement> types) {
+        // Use the same directory that .jaif files would normally be written to.
+        File stubDir = new File(JAIF_FILES_PATH);
+        if (!stubDir.exists()) {
+            stubDir.mkdirs();
+        }
+        // Convert the .jaif file names in modifiedScenes into .astub files.
+        // Write scenes into .jaif files.
+
+        for (String jaifPath : modifiedScenes) {
+            String stubPath = jaifPath.replace(".jaif", ".astub");
+            AScene scene = scenes.get(jaifPath).clone();
+            removeIgnoredAnnosFromScene(scene);
+            new File(stubPath).delete();
+            scene.prune();
+            if (!scene.isEmpty()) {
+                // Only write non-empty scenes into .astub files.
+                try {
+                    SceneToStubWriter.write(
+                            scene, baseTypes, types, enumSet, new FileWriter(stubPath));
+                } catch (IOException e) {
+                    throw new UserError(
+                            "Problem while writing file: "
+                                    + stubPath
+                                    + ". Exception message: "
+                                    + e.getMessage(),
+                            e);
+                }
             }
         }
         modifiedScenes.clear();
@@ -505,6 +564,7 @@ public class WholeProgramInferenceScenesHelper {
             // estimate for the ATypeElement. Therefore, it is not a problem to remove
             // all annotations before inserting the new annotations.
             typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
+            baseTypes.put(typeToUpdate.description.toString(), newATM.getUnderlyingType());
         }
 
         // Only update the ATypeElement if there are no explicit annotations

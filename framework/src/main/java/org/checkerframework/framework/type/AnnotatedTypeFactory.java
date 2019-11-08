@@ -80,6 +80,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
@@ -1104,10 +1105,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
         if (checker.hasOption("infer") && wholeProgramInference != null) {
-            // Write scenes into .jaif files. In order to perform the write
-            // operation only once for each .jaif file, the best location to
+            // Write out the results of whole-program inference.
+            // In order to perform the write operation only once for each class, the best location
+            // to
             // do so is here.
-            wholeProgramInference.saveResults();
+            WholeProgramInference.OutputKind outputKind =
+                    checker.hasOption("outputStubs")
+                            ? WholeProgramInference.OutputKind.STUB
+                            : WholeProgramInference.OutputKind.JAIF;
+            wholeProgramInference.saveResults(outputKind);
         }
     }
 
@@ -1219,6 +1225,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + elt);
         }
 
+        if (checker.hasOption("prioritizeStubs")) {
+            AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
+            // This is a bit of a hack - need to decide if the annotated type mirror
+            // contains ANY annotations - i.e. on deep types, method params, etc.
+            boolean stubTypeHasAnAnnotation = stubType != null && stubType.toString().contains("@");
+            boolean typeHasAnAnnotation = type != null && type.toString().contains("@");
+
+            if (stubTypeHasAnAnnotation && !typeHasAnAnnotation) {
+                type = stubType;
+            } else if (stubTypeHasAnAnnotation && typeHasAnAnnotation) {
+                AnnotatedTypeMerger.merge(stubType, type);
+            }
+        }
+
         if (shouldCache) {
             elementCache.put(elt, type.deepCopy());
         }
@@ -1255,9 +1275,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return fromMemberTreeCache.get(tree).deepCopy();
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
+
+        if (checker.hasOption("prioritizeStubs")) {
+            Element elt = TreeUtils.elementFromTree(tree);
+            AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
+            if (stubType != null && !result.toString().contains("@")) {
+                result = stubType;
+            }
+        }
+
         if (shouldCache) {
             fromMemberTreeCache.put(tree, result.deepCopy());
         }
+
         return result;
     }
 
