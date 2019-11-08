@@ -1162,8 +1162,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypeMerger.merge(stubType, type);
             }
         }
-
-        if (shouldCache) {
+        // Caching is disabled if stub files are being parsed, because calls to this
+        // method before the stub files are fully read can return incorrect results.
+        if (shouldCache && !stubTypes.isParsing()) {
             elementCache.put(elt, type.deepCopy());
         }
         return type;

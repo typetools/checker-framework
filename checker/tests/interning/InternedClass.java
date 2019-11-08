@@ -136,8 +136,6 @@ public @Interned class InternedClass {
         java.lang.reflect.Constructor<?> ctor = c.getConstructor(parameterTypes);
     }
 
-    void test(Class<?> clazz) {}
-
     Class[] getSuperClasses(Class<?> c) {
         Vector<Class<?>> v = new Vector<>();
         while (true) {
