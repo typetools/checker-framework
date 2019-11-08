@@ -53,7 +53,6 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -178,7 +177,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         methods = new ValueMethodIdentifier(processingEnv);
 
-        if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
+        if (this.getClass() == ValueAnnotatedTypeFactory.class) {
             this.postInit();
         }
     }
@@ -216,8 +215,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         IntRangeFromPositive.class,
                         IntRangeFromNonNegative.class,
                         IntRangeFromGTENegativeOne.class,
-                        PolyValue.class,
-                        PolyAll.class));
+                        PolyValue.class));
     }
 
     @Override
@@ -1050,7 +1048,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror newQual;
                 Class<?> clazz = ValueCheckerUtils.getClassFromType(type.getUnderlyingType());
                 String stringVal = null;
-                if (clazz.equals(char[].class)) {
+                if (clazz == char[].class) {
                     stringVal = getCharArrayStringVal(initializers);
                 }
 

@@ -60,7 +60,7 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-plume-lib.sh
+  - bash: ./checker/bin-devel/test-plume-lib.sh allJdk11
     displayName: test-plume-lib.sh
 - job: plume_lib_jdk8
   pool:
