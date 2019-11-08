@@ -751,6 +751,10 @@ Partially-annotated libraries
   \refqualclass{framework/qual}{AnnotatedFor} annotation, use unchecked code
   default annotations and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
+\item \<-AprioritizeStubs>
+  If both a stub file and a source file for a class are available,
+  use the stronger type from the two. This flag overrides the default
+  behavior, which is to ignore the stub file.
 \end{itemize}
 
 Debugging
