@@ -1579,8 +1579,18 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
-        poly.resolve(tree, method);
+        // poly.resolve is moved to methodFromUsePreSubstitution(). See #2432
         return mType;
+    }
+
+    @Override
+    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedTypeMirror mirror) {
+        // this method could be invoked by various context
+        // but only such kind of tree and type mirror is resolvable
+        // otherwise do nothing
+        if (tree instanceof MethodInvocationTree && mirror instanceof AnnotatedExecutableType) {
+            poly.resolve((MethodInvocationTree) tree, (AnnotatedExecutableType) mirror);
+        }
     }
 
     @Override
