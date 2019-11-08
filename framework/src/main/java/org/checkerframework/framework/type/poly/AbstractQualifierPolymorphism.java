@@ -12,8 +12,6 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.Elements;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -31,7 +29,7 @@ import org.checkerframework.framework.type.visitor.EquivalentAtmComboScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
-import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -64,9 +62,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
     /**
      * The polymorphic qualifiers: mapping from a polymorphic qualifier of {@code qualHierarchy} to
-     * the top qualifier of that hierarchy. The field is always non-null, but it might be an empty
-     * mapping. If a value is null, the polymorphic qualifier, such as {@link PolyAll}, applies to
-     * all hierarchies.
+     * the top qualifier of that hierarchy.
      */
     protected final AnnotationMirrorMap<AnnotationMirror> polyQuals = new AnnotationMirrorMap<>();
 
@@ -89,9 +85,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      */
     private Completer completer = new Completer();
 
-    /** {@link PolyAll} annotation mirror. */
-    protected final AnnotationMirror POLYALL;
-
     /**
      * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
      * querying type qualifiers and the given factory for getting annotated types. Subclasses need
@@ -104,9 +97,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         this.atypeFactory = factory;
         this.qualHierarchy = factory.getQualifierHierarchy();
         this.topQuals = new AnnotationMirrorSet(qualHierarchy.getTopAnnotations());
-
-        Elements elements = env.getElementUtils();
-        this.POLYALL = AnnotationBuilder.fromClass(elements, PolyAll.class);
     }
 
     /**
@@ -255,11 +245,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         for (Map.Entry<AnnotationMirror, AnnotationMirror> kv : polyQuals.entrySet()) {
             AnnotationMirror top = kv.getValue();
             AnnotationMirror poly = kv.getKey();
-
-            if (top == null && actualType.hasAnnotation(POLYALL)) {
-                // PolyAll qualifier
-                result.put(poly, new AnnotationMirrorSet(type.getAnnotations()));
-            } else if (actualType.hasAnnotation(poly)) {
+            if (actualType.hasAnnotation(poly)) {
                 AnnotationMirror typeQual = type.getAnnotationInHierarchy(top);
                 if (typeQual != null) {
                     result.put(poly, AnnotationMirrorSet.singleElementSet(typeQual));
@@ -321,11 +307,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
                 if (type.hasAnnotation(poly)) {
                     type.removeAnnotation(poly);
-                    if (top == null) {
-                        // poly is PolyAll -> add bottom for all hierarchies without an annotation.
-                        type.addMissingAnnotations(qualHierarchy.getBottomAnnotations());
-                    } else if (type.getKind() != TypeKind.TYPEVAR
-                            && type.getKind() != TypeKind.WILDCARD) {
+                    if (type.getKind() != TypeKind.TYPEVAR && type.getKind() != TypeKind.WILDCARD) {
                         // Do not add qualifiers to type variables and wildcards
                         type.addAnnotation(qualHierarchy.getBottomAnnotation(top));
                     }
@@ -339,8 +321,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * A helper class that resolves the polymorphic qualifiers with the most restrictive qualifier.
      * It returns a mapping from the polymorphic qualifier to the substitution for that qualifier,
      * which is a set of qualifiers. For most polymorphic qualifiers this will be a singleton set.
-     * For the @PolyAll qualifier, this is a set of qualifiers if the type system has multiple
-     * hierarchies.
      */
     private class PolyCollector
             extends EquivalentAtmComboScanner<AnnotationMirrorMap<AnnotationMirrorSet>, Void> {
@@ -420,6 +400,16 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                 AnnotatedTypeMirror actualType = itera.next();
                 result = reduce(result, visit(type, actualType));
             }
+            if (itert.hasNext()) {
+                throw new BugInCF(
+                        "PolyCollector.visit: types is longer than polyTypes:%n  types = %s%n  polyTypes = %s%n",
+                        types, polyTypes);
+            }
+            if (itera.hasNext()) {
+                throw new BugInCF(
+                        "PolyCollector.visit: types is shorter than polyTypes:%n  types = %s%n  polyTypes = %s%n",
+                        types, polyTypes);
+            }
             return result;
         }
 
@@ -439,6 +429,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
             if (type.getKind() == TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) type;
+                if (wildcardType.getExtendsBound().getKind() == TypeKind.WILDCARD) {
+                    wildcardType = (AnnotatedWildcardType) wildcardType.getExtendsBound();
+                }
                 if (wildcardType.isUninferredTypeArgument()) {
                     return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
                 }

@@ -504,9 +504,8 @@ public class AnnotationBuilder {
         throw new BugInCF("Couldn't find " + key + " element in " + annotationElt);
     }
 
-    // TODO: this method always returns true and no-one ever looks at the return
-    // value.
-    private boolean checkSubtype(TypeMirror expected, Object givenValue) {
+    /** @throws BugInCF if the type of {@code givenValue} is not the same as {@code expected} */
+    private void checkSubtype(TypeMirror expected, Object givenValue) {
         if (expected.getKind().isPrimitive()) {
             expected = types.boxedClass((PrimitiveType) expected).asType();
         }
@@ -514,7 +513,7 @@ public class AnnotationBuilder {
         if (expected.getKind() == TypeKind.DECLARED
                 && TypesUtils.isClass(expected)
                 && givenValue instanceof TypeMirror) {
-            return true;
+            return;
         }
 
         TypeMirror found;
@@ -543,25 +542,20 @@ public class AnnotationBuilder {
             found = elements.getTypeElement(givenValue.getClass().getCanonicalName()).asType();
             isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
         }
-
         if (!isSubtype) {
-            if (types.isSameType(found, expected)) {
-                throw new BugInCF(
-                        "given value differs from expected, but same string representation; "
-                                + "this is likely a bootclasspath/classpath issue; "
-                                + "found: "
-                                + found);
-            } else {
-                throw new BugInCF(
-                        "given value differs from expected; "
-                                + "found: "
-                                + found
-                                + "; expected: "
-                                + expected);
-            }
+            // Annotations in stub files sometimes are the same type, but Types#isSubtype fails
+            // anyways.
+            isSubtype = found.toString().equals(expected.toString());
         }
 
-        return true;
+        if (!isSubtype) {
+            throw new BugInCF(
+                    "given value differs from expected; "
+                            + "found: "
+                            + found
+                            + "; expected: "
+                            + expected);
+        }
     }
 
     private AnnotationValue createValue(final Object obj) {
@@ -649,9 +643,10 @@ public class AnnotationBuilder {
         @SideEffectFree
         @Override
         public String toString() {
-            if (toStringVal != null) {
-                return toStringVal;
+            if (this.toStringVal != null) {
+                return this.toStringVal;
             }
+            String toStringVal;
             if (value instanceof String) {
                 toStringVal = "\"" + value + "\"";
             } else if (value instanceof Character) {
@@ -683,8 +678,8 @@ public class AnnotationBuilder {
             } else {
                 toStringVal = value.toString();
             }
-            toStringVal = toStringVal.intern();
-            return toStringVal;
+            this.toStringVal = toStringVal.intern();
+            return this.toStringVal;
         }
 
         @SuppressWarnings("unchecked")

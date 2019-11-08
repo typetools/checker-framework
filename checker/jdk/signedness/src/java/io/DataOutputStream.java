@@ -86,7 +86,7 @@ class DataOutputStream extends FilterOutputStream implements DataOutput {
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.FilterOutputStream#out
      */
-    public synchronized void write(int b) throws IOException {
+    public synchronized void write(@PolySigned int b) throws IOException {
         out.write(b);
         incCount(1);
     }

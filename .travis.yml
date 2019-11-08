@@ -18,17 +18,21 @@ env:
     - THIS_REPO=checker-framework
     - OS=ubuntu
   matrix:
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
-    - BUILDJDK=downloadjdk JDKVER=jdk8-plus GROUP=misc
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=checker-framework-inference
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=plume-lib
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
+    - GROUP=all-tests JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=all-tests JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=jdk.jar JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=misc JDKVER=jdk8-plus BUILDJDK=downloadjdk
+    - GROUP=misc JDKVER=jdk11-plus BUILDJDK=downloadjdk
+    - GROUP=checker-framework-inference JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=plume-lib JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=plume-lib JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=downstream JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=downstream JDKVER=jdk11 BUILDJDK=downloadjdk
 
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
 before_script:
-- timeout 5m docker pull charleszhuochen/$OS-for-cfi-$JDKVER || true
+- timeout 5m docker pull xingweitian/$OS-for-cfi-$JDKVER || true
 - timeout 5m docker pull mdernst/cf-$OS-$JDKVER || true
 
 # Using travis_wait here seems to cause the job to terminate after 1 minute
@@ -56,7 +60,7 @@ script:
   if [ $JDKVER = jdk8-plus ] ; then
     DOCKERIMAGE=mdernst/cf-$OS-$JDKVER
   else
-    DOCKERIMAGE=charleszhuochen/$OS-for-cfi-$JDKVER
+    DOCKERIMAGE=xingweitian/$OS-for-cfi-$JDKVER
   fi &&
   docker run -v $HOME/.gradle:/root/.gradle -v $HOME/.m2:/root/.m2 $DOCKERIMAGE /bin/bash -c "true &&
      if [ $TRAVIS_EVENT_TYPE = pull_request ] ; then

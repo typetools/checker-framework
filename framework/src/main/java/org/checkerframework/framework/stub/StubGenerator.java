@@ -1,7 +1,10 @@
 package org.checkerframework.framework.stub;
 
+import com.sun.tools.javac.main.JavaCompiler;
+import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Options;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -20,6 +23,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -411,6 +415,17 @@ public class StubGenerator {
         }
 
         Context context = new Context();
+        Options options = Options.instance(context);
+        if (PluginUtil.getJreVersion() == 8) {
+            options.put(Option.SOURCE, "8");
+            options.put(Option.TARGET, "8");
+            options.put(Option.XBOOTCLASSPATH_PREPEND, "jdk8.jar");
+        }
+
+        JavaCompiler javac = JavaCompiler.instance(context);
+        javac.initModules(com.sun.tools.javac.util.List.nil());
+        javac.enterDone();
+
         ProcessingEnvironment env = JavacProcessingEnvironment.instance(context);
 
         StubGenerator generator = new StubGenerator();

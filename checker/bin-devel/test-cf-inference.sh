@@ -9,7 +9,7 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
   || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 eval=`/tmp/plume-scripts/ci-info opprop`
 
-export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -24,6 +24,6 @@ REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetools checker-fram
 BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
 (cd .. && git clone -b ${BRANCH} -q --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
 
-export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
+export AFU="${AFU:-$(cd ../annotation-tools/annotation-file-utilities && pwd -P)}"
 export PATH=$AFU/scripts:$PATH
-(cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all --no-daemon)
+(cd ../checker-framework-inference && ./.travis-build.sh)

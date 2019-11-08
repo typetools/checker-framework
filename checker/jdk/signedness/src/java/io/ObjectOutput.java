@@ -56,7 +56,7 @@ public interface ObjectOutput extends DataOutput, AutoCloseable {
      * @param b the byte
      * @exception IOException If an I/O error has occurred.
      */
-    public void write(int b) throws IOException;
+    public void write(@PolySigned int b) throws IOException;
 
     /**
      * Writes an array of bytes. This method will block until the bytes

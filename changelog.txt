@@ -1,3 +1,50 @@
+---------------------------------------------------------------------------
+
+Version 3.0.0, November 1, 2019
+
+The Checker Framework works on both JDK 8 and JDK 11.
+ * Type annotations for JDK 8 remain in jdk8.jar.
+ * Type annotations for JDK 11 appear in stub files in checker.jar.
+
+Removed the @PolyAll annotation.
+
+Implementation details:
+ * Removed all previously deprecated methods.
+ * AnnotatedTypeFactory#getFnInterfaceFromTree now returns an AnnotatedExecutableType.
+ * AnnotationUtils#areSame and #areSameByName now only accept non-null
+   AnnotationMirrors
+
+Closed issues:
+1169, 1654, 2081, 2703, 2739, 2749, 2779, 2781, 2798, 2820, 2824, 2829, 2842,
+2845, 2848.
+
+---------------------------------------------------------------------------
+
+Version 2.11.1, October 1, 2019
+
+The manual links to the Object Construction Checker.
+
+Closed issues:
+1635, 2718, 2767.
+
+---------------------------------------------------------------------------
+
+Version 2.11.0, August 30, 2019
+
+The Checker Framework now uses the Java 9 javac API. The manual describes
+how to satisfy this dependency, in a way that works on a Java 8 JVM.
+Running the Checker Framework on a Java 9 JVM is not yet supported.
+
+---------------------------------------------------------------------------
+
+Version 2.10.1, August 22, 2019
+
+Closed issues:
+1152, 1614, 2031, 2482, 2543, 2587, 2678, 2686, 2690, 2712, 2717, 2713, 2721,
+2725, 2729.
+
+---------------------------------------------------------------------------
+
 Version 2.10.0, August 1, 2019
 
 Removed the NullnessRawnessChecker.  Use the NullnessChecker instead.

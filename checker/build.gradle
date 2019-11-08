@@ -1,20 +1,19 @@
-import java.util.zip.ZipFile
-
 ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = '91fd565e932597a8036a2d747f463956f0045d3e'
+    jdkShaHash = 'd7f53f36771f8007e617c52aa0e2dcc6213533d7'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
+
+    jdkHome = '../../jdk'
 }
 sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-            srcDirs += ['src/main/java']
-            exclude '**/*.java'
+            srcDirs += ['src/main/java', "${buildDir}/jdk"]
         }
     }
     testannotations
@@ -32,6 +31,53 @@ dependencies {
 
     testannotationsCompile project(':checker-qual')
 }
+
+task cloneTypetoolsJdk() {
+    description 'Obtain or update the jdk'
+    if (file(jdkHome).exists()) {
+        exec {
+            workingDir jdkHome
+            executable 'git'
+            args = ['pull', '-q']
+            ignoreExitValue = true
+        }
+    } else {
+        exec {
+            workingDir "${jdkHome}/../"
+            executable 'git'
+            args = ['clone', '-q', 'https://github.com/typetools/jdk.git', 'jdk']
+        }
+    }
+}
+
+task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
+    description "Copy annotated jdk 11 files to ${buildDir}/jdk/jdk11/"
+    doLast {
+        FileTree tree = fileTree(dir: "${jdkHome}/src/")
+        SortedSet<String> annotatedForFiles = new TreeSet<>();
+        tree.visit { FileVisitDetails fvd ->
+            if (!fvd.file.isDirectory() && fvd.file.name.matches(".*\\.java")) {
+                fvd.getFile().readLines().any { line ->
+                    if (line.contains("@AnnotatedFor") || line.contains("org.checkerframework")) {
+                        annotatedForFiles.add(fvd.file.absolutePath)
+                        return true;
+                    }
+                }
+            }
+        }
+        String absolutejdkHome = file(jdkHome).absolutePath
+        int jdkDirStringSize = absolutejdkHome.size()
+        copy {
+            from(jdkHome)
+            into("${buildDir}/jdk/jdk11/")
+            for (String filename : annotatedForFiles) {
+                include filename.substring(jdkDirStringSize)
+            }
+        }
+    }
+}
+
+processResources.dependsOn(copyJdk11Files)
 
 jar {
     manifest {
@@ -194,9 +240,9 @@ shadowJar {
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
 artifacts {
-    // Don't add this here or else the Javadoc is built during the assemble task.
+    // Don't add this here or else the Javadoc and the sources jar is built during the assemble task.
     // archives allJavadocJar
-    archives allSourcesJar
+    // archives allSourcesJar
     archives shadowJar
 }
 
@@ -248,23 +294,27 @@ task exampleTests(type: Exec, dependsOn: copyJarsToDist, group: 'Verification') 
 task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Test that the demos are working as expected.'
     doLast {
-        File demosDir = new File(projectDir, '../../checker-framework-demos');
-        if (!demosDir.exists()) {
-            exec {
-                workingDir file(demosDir.toString() + '/../')
-                executable 'git'
-                args = ['clone', 'https://github.com/typetools/checker-framework.demos.git', 'checker-framework-demos']
+        if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
+            File demosDir = new File(projectDir, '../../checker-framework-demos');
+            if (!demosDir.exists()) {
+                exec {
+                    workingDir file(demosDir.toString() + '/../')
+                    executable 'git'
+                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git', 'checker-framework-demos']
+                }
+            } else {
+                exec {
+                    workingDir demosDir
+                    executable 'git'
+                    args = ['pull', 'https://github.com/typetools/checker-framework.demos.git']
+                    ignoreExitValue = true
+                }
             }
+            ant.properties.put('checker.lib', file("${projectDir}/dist/checker.jar").absolutePath)
+            ant.ant(dir: demosDir.toString())
         } else {
-            exec {
-                workingDir demosDir
-                executable 'git'
-                args = ['pull', 'https://github.com/typetools/checker-framework.demos.git']
-                ignoreExitValue = true
-            }
+            println("Skipping demosTests because they only work with Java 8.")
         }
-        ant.properties.put('checker.lib', file("${projectDir}/dist/checker.jar").absolutePath)
-        ant.ant(dir: demosDir.toString())
     }
 }
 

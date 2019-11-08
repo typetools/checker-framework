@@ -371,7 +371,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @param len the number of characters to write
      * @return the lowest character location used
      */
-    static int formatUnsignedLong(long val, @IntVal({1,2,3,4}) int shift, char[] buf, @NonNegative @LTLengthOf(value="#3", offset="#5") int offset, @IndexFor("#3") int len) {
+    static int formatUnsignedLong(long val, @IntVal({1,2,3,4,5}) int shift, char[] buf, @NonNegative @LTLengthOf(value="#3", offset="#5") int offset, @IndexFor("#3") int len) {
         int charPos = len;
         int radix = 1 << shift;
         int mask = radix - 1;

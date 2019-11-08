@@ -285,22 +285,13 @@ public class ElementAnnotationUtil {
      * @param annos all of the element annotations, TypeCompounds, for type
      */
     static void annotateViaTypeAnnoPosition(
-            final AnnotatedTypeMirror type, final Collection<TypeCompound> annos) {
+            final AnnotatedTypeMirror type, final Collection<TypeCompound> annos)
+            throws UnexpectedAnnotationLocationException {
         final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
                 new IdentityHashMap<>();
         for (final TypeCompound anno : annos) {
-            AnnotatedTypeMirror target;
-            try {
-                target = getTypeAtLocation(type, anno.position.location);
-            } catch (UnexpectedAnnotationLocationException ex) {
-                // There's a bug in Java 8 compiler that creates bad bytecode such that an
-                // annotation on a lambda parameter is applied to a method parameter. (This bug has
-                // been fixed in Java 9.) If this happens, then the location could refer to a
-                // location, such as a type argument, that doesn't exist. Since Java 8 bytecode
-                // might be on the classpath, catch this exception and ignore the type.
-                // TODO: Issue an error if this annotation is from Java 9+ bytecode.
-                continue;
-            }
+            AnnotatedTypeMirror target =
+                    getTypeAtLocation(type, anno.position.location, anno, false);
             if (target.getKind() == TypeKind.WILDCARD) {
                 addWildcardToBoundMap((AnnotatedWildcardType) target, anno, wildcardToAnnos);
             } else {
@@ -375,17 +366,33 @@ public class ElementAnnotationUtil {
     }
 
     /**
+     * Overload of getTypeAtLocation with default values null/false for the annotation and array
+     * component flag, to make usage easier. Default visibility to allow usage within package.
+     */
+    static AnnotatedTypeMirror getTypeAtLocation(
+            AnnotatedTypeMirror type, List<TypeAnnotationPosition.TypePathEntry> location)
+            throws UnexpectedAnnotationLocationException {
+        return getTypeAtLocation(type, location, null, false);
+    }
+
+    /**
      * Given a TypePath into a type, return the component type that is located at the end of the
      * TypePath.
      *
      * @param type a type containing the type specified by location
      * @param location a type path into type
+     * @param anno an annotation to be applied to the inner types of a declared type if the declared
+     *     type is itself a component type of an array
+     * @param isComponentTypeOfArray indicates whether the type under analysis is a component type
+     *     of some array type
      * @return the type specified by location
      */
-    static AnnotatedTypeMirror getTypeAtLocation(
-            AnnotatedTypeMirror type, List<TypeAnnotationPosition.TypePathEntry> location)
+    private static AnnotatedTypeMirror getTypeAtLocation(
+            AnnotatedTypeMirror type,
+            List<TypeAnnotationPosition.TypePathEntry> location,
+            TypeCompound anno,
+            boolean isComponentTypeOfArray)
             throws UnexpectedAnnotationLocationException {
-
         if (location.isEmpty() && type.getKind() != TypeKind.DECLARED) {
             // An annotation with an empty type path on a declared type applies to the outermost
             // enclosing type. This logic is handled together with non-empty type paths in
@@ -397,7 +404,8 @@ public class ElementAnnotationUtil {
             case NULL:
                 return getLocationTypeANT((AnnotatedNullType) type, location);
             case DECLARED:
-                return getLocationTypeADT((AnnotatedDeclaredType) type, location);
+                return getLocationTypeADT(
+                        (AnnotatedDeclaredType) type, location, anno, isComponentTypeOfArray);
             case WILDCARD:
                 return getLocationTypeAWT((AnnotatedWildcardType) type, location);
             case TYPEVAR:
@@ -410,7 +418,7 @@ public class ElementAnnotationUtil {
                 // Raise an error for all other type variables (why isn't this needed?).
                 break;
             case ARRAY:
-                return getLocationTypeAAT((AnnotatedArrayType) type, location);
+                return getLocationTypeAAT((AnnotatedArrayType) type, location, anno);
             case UNION:
                 return getLocationTypeAUT((AnnotatedUnionType) type, location);
             case INTERSECTION:
@@ -430,18 +438,41 @@ public class ElementAnnotationUtil {
      *
      * @param type a type containing the type specified by location
      * @param location a type path into type
+     * @param anno an annotation to be applied to the inner types of the declared type if the
+     *     declared type is itself a component type of an array
+     * @param isComponentTypeOfArray indicates whether the type under analysis is a component type
+     *     of some array type
      * @return the type specified by location
      */
     private static AnnotatedTypeMirror getLocationTypeADT(
-            AnnotatedDeclaredType type, List<TypeAnnotationPosition.TypePathEntry> location)
+            AnnotatedDeclaredType type,
+            List<TypeAnnotationPosition.TypePathEntry> location,
+            TypeCompound anno,
+            boolean isComponentTypeOfArray)
             throws UnexpectedAnnotationLocationException {
-
         // List order by outer most type to inner most type.
         ArrayDeque<AnnotatedDeclaredType> outerToInner = new ArrayDeque<>();
         AnnotatedDeclaredType enclosing = type;
         while (enclosing != null) {
             outerToInner.addFirst(enclosing);
             enclosing = enclosing.getEnclosingType();
+        }
+
+        // If the AnnotatedDeclaredType is a component of an array type, then apply anno to all
+        // possible inner types.
+        // NOTE: This workaround can be removed once
+        // https://bugs.openjdk.java.net/browse/JDK-8208470 is fixed
+        // The number of enclosing types is outerToInner.size() - 1; there only is
+        // work to do if outerToInner contains more than one element.
+        if (anno != null
+                && isComponentTypeOfArray
+                && location.isEmpty()
+                && outerToInner.size() > 1) {
+            ArrayDeque<AnnotatedDeclaredType> innerTypes = new ArrayDeque<>(outerToInner);
+            innerTypes.removeFirst();
+            while (!innerTypes.isEmpty()) {
+                innerTypes.removeFirst().addAnnotation(anno);
+            }
         }
 
         // Create a linked list of the location, so removing the first element is easier.
@@ -505,7 +536,7 @@ public class ElementAnnotationUtil {
         }
 
         if (!location.isEmpty()
-                && location.get(0).tag.equals(TypeAnnotationPosition.TypePathEntryKind.WILDCARD)) {
+                && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.WILDCARD) {
             if (AnnotatedTypes.hasExplicitExtendsBound(type)) {
                 return getTypeAtLocation(type.getExtendsBound(), tail(location));
             } else if (AnnotatedTypes.hasExplicitSuperBound(type)) {
@@ -530,12 +561,14 @@ public class ElementAnnotationUtil {
      * its position.
      */
     private static AnnotatedTypeMirror getLocationTypeAAT(
-            AnnotatedArrayType type, List<TypeAnnotationPosition.TypePathEntry> location)
+            AnnotatedArrayType type,
+            List<TypeAnnotationPosition.TypePathEntry> location,
+            TypeCompound anno)
             throws UnexpectedAnnotationLocationException {
         if (location.size() >= 1
-                && location.get(0).tag.equals(TypeAnnotationPosition.TypePathEntryKind.ARRAY)) {
+                && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.ARRAY) {
             AnnotatedTypeMirror comptype = type.getComponentType();
-            return getTypeAtLocation(comptype, tail(location));
+            return getTypeAtLocation(comptype, tail(location), anno, true);
         } else {
             throw new UnexpectedAnnotationLocationException(
                     "ElementAnnotationUtil.annotateAAT: " + "invalid location %s for type: %s ",
@@ -563,9 +596,7 @@ public class ElementAnnotationUtil {
             AnnotatedIntersectionType type, List<TypeAnnotationPosition.TypePathEntry> location)
             throws UnexpectedAnnotationLocationException {
         if (location.size() >= 1
-                && location.get(0)
-                        .tag
-                        .equals(TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT)) {
+                && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT) {
             AnnotatedTypeMirror supertype = type.directSuperTypes().get(location.get(0).arg);
             return getTypeAtLocation(supertype, tail(location));
         } else {
@@ -581,7 +612,7 @@ public class ElementAnnotationUtil {
 
     /** Exception indicating an invalid location for an annotation was found. */
     @SuppressWarnings("serial")
-    static class UnexpectedAnnotationLocationException extends Exception {
+    public static class UnexpectedAnnotationLocationException extends Exception {
 
         /**
          * Creates an UnexpectedAnnotationLocationException.

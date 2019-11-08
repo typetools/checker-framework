@@ -14,7 +14,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- These properties will be set by the Maven Dependency plugin -->
     <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
-    <checkerFrameworkVersion><!-- checker-framework-version -->2.10.0<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.0.0<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
@@ -34,6 +35,11 @@
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
       <version>${checkerFrameworkVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>javac</artifactId>
+      <version>9+181-r4173-1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -64,8 +70,9 @@
       </plugin>
       <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.6.1</version>
+          <version>3.8.1</version>
           <configuration>
+              <fork>true</fork>
               <source>1.8</source>
               <target>1.8</target>
               <showWarnings>true</showWarnings>
@@ -81,6 +88,8 @@
                   <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
               </annotationProcessors>
               <compilerArgs>
+                  <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
+                  <arg>-J-Xbootclasspath/p:${errorProneJavac}</arg>
                   <!-- location of the annotated JDK, which comes from a Maven dependency -->
                   <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
                   <!-- -Awarns treats Checker Framework errors as warnings -->

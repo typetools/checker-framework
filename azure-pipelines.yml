@@ -8,6 +8,15 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-all-tests.sh
     displayName: test-all-tests.sh
+- job: all_tests_jdk11
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/cf-ubuntu-jdk11:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-all-tests.sh
+    displayName: test-all-tests.sh
 - job: jdk_jar_jdk8
   pool:
     vmImage: 'ubuntu-16.04'
@@ -26,6 +35,15 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
+- job: misc_jdk11
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/cf-ubuntu-jdk11-plus:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-misc.sh
+    displayName: test-misc.sh
 - job: cf_inference_jdk8
   pool:
     vmImage: 'ubuntu-16.04'
@@ -35,6 +53,15 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cf-inference.sh
     displayName: test-cf-inference.sh
+- job: plume_lib_jdk11
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/cf-ubuntu-jdk11:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-plume-lib.sh allJdk11
+    displayName: test-plume-lib.sh
 - job: plume_lib_jdk8
   pool:
     vmImage: 'ubuntu-16.04'
@@ -44,6 +71,33 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-plume-lib.sh
     displayName: test-plume-lib.sh
+- job: daikon_jdk8
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/cf-ubuntu-jdk8:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-daikon.sh
+    displayName: test-daikon.sh
+#- job: daikon_jdk11
+#  pool:
+#    vmImage: 'ubuntu-16.04'
+#  container: mdernst/cf-ubuntu-jdk11:latest
+#  steps:
+#  - checkout: self
+#    fetchDepth: 25
+#  - bash: ./checker/bin-devel/test-daikon.sh
+#    displayName: test-daikon.sh
+- job: downstream_jdk11
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/cf-ubuntu-jdk11:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-downstream.sh
+    displayName: test-downstream.sh
 - job: downstream_jdk8
   pool:
     vmImage: 'ubuntu-16.04'

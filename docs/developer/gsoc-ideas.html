@@ -167,7 +167,9 @@ You can find more potential projects in the
     <a href="https://checkerframework.org/manual/#installation">Install</a>
     the Checker Framework.
   <li>
-    Choose a library or program to type-check.  This should be an already-existing
+    Choose a library or program to type-check.
+    <br/>
+    This should be an already-existing
     program; it should not be newly-written code, nor a set of tiny
     benchmarks that aim to expose corner cases.
     <!-- (Corner cases are great to
@@ -175,11 +177,9 @@ You can find more potential projects in the
     -->
     The library or program should be under active maintenance; don't choose one
     that has not had a commit in several years.
-    <br/>
     You will find the case study easier if you are already familiar with
     the program, or if it is written in good style.
-    As your first choice, choose a small library or program (say, 1000 lines), then
-    move on to a larger one.
+    <br/>
     If you need ideas of what program to annotate, you could
     see <a href="#library-annotations">library annotations</a> below.
     Don't choose part of the JDK as your first case study.
@@ -205,12 +205,12 @@ You can find more potential projects in the
     the type-checker passes on the program.
     <ul>
       <li>Don't add an <code>if</code> statement that always succeeds, just
-	to suppress a warning.  Convince yourself that both branches can
-	execute, or else don't add the <code>if</code> statement.
+        to suppress a warning.  Convince yourself that both branches can
+        execute, or else don't add the <code>if</code> statement.
       <li>If you add a <code>@SuppressWarnings</code> annotation,
-	<a href="https://checkerframework.org/manual/#suppresswarnings-best-practices-justification">explain
-	why</a> the checker warning is a false positive and you are certain
-	the code is safe.
+        <a href="https://checkerframework.org/manual/#suppresswarnings-best-practices-justification">explain
+        why</a> the checker warning is a false positive and you are certain
+        the code is safe.
     </ul>
   <li>
     Share it with us so that
@@ -743,7 +743,7 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 
 <p>
 Java 8 introduced the
-<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html"><code>Optional</code></a>
+<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Optional.html"><code>Optional</code></a>
 class, a container that is either empty or contains a non-null value.
 It is intended to solve the problem of null
 pointer exceptions.  However, <code>Optional</code> has <a href="https://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html">its own problems</a>.

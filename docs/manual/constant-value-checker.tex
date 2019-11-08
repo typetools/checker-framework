@@ -123,7 +123,7 @@ infers type annotations (using flow-sensitive type qualifier refinement, Section
 
 \begin{figure}
 \begin{Verbatim}
-public void foo(boolean b) {
+public void flowSensitivityExample(boolean b) {
     int i = 1;     // i has type:  @IntVal({1}) int
     if (b) {
         i = 2;     // i now has type:  @IntVal({2}) int
@@ -136,6 +136,12 @@ public void foo(boolean b) {
   for a variable on different lines of the program.}
 \label{fig-value-multivalue}
 \end{figure}
+
+
+\sectionAndLabel{Other constant value annotations}{other-constant-value-annotations}
+
+The Checker Framework's constant value annotations are similar to annotations used
+elsewhere.
 
 If your code is already annotated with a different constant value or range
 annotation, the Checker Framework can type-check your code.
@@ -200,14 +206,14 @@ method has already been compiled and is on the classpath}.
 \begin{figure}
 \begin{Verbatim}
 @StaticallyExecutable @Pure
-public int foo(int a, int b) {
+public int myAdd(int a, int b) {
     return a + b;
 }
 
 public void bar() {
-    int a = 5;          // a has type:  @IntVal({5}) int
-    int b = 4;          // b has type:  @IntVal({4}) int
-    int c = foo(a, b);  // c has type:  @IntVal({9}) int
+    int a = 5;            // a has type:  @IntVal({5}) int
+    int b = 4;            // b has type:  @IntVal({4}) int
+    int c = myAdd(a, b);  // c has type:  @IntVal({9}) int
 }
 \end{Verbatim}
 \caption{The
@@ -328,9 +334,30 @@ value that is not in its \<@IntRange> qualifier.  You should either accept
 that possibility, or verify the lack of overflow using some other tool or
 manual analysis.
 
+\sectionAndLabel{Strings can be null in concatenations}{null-strings-concats}
+
+By default, the Constant Value Checker is unsound with respect to string
+concatenation.  The \code{-AnullStringsConcatenation} command-line option
+eliminates this unsoundness, though it may lead to false positive warnings.
+
+Consider a variable declared as
+\<\refqualclass{common/value/qual}{StringVal}("a", "b") String x;>.
+At run time, \<x> evaluates to one of the values \<"a">, \<"b">, or
+\<null>.  By default, the Constant Value
+Checker unsoundly assumes that when such a value is used in string
+concatenation, it expands to \<"a"> or \<"b"> but not \<"null">.
+
+The \code{-AnullStringsConcatenation} command-line option makes
+the checker assume that any value (other than primitive types and
+compile-time constant strings) may be null.  It ignores Nullness Checker
+annotations. (This behavior is conservative, but it is sound.)
+Without the command-line argument, the type of ``\<x + "c">'' is
+\<@StringVal("ac", "bc") String>.
+With the command-line argument, the type of ``\<x + "c">'' is
+\<@StringVal("ac", "bc", "nullc") String>.
 
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
-%  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
+%%  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
 %%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange casted
-%  LocalWords:  qual AignoreRangeOverflow MinLen PolyValue GTENegativeOne
-%%  LocalWords:  staticallyexecutable
+%%  LocalWords:  qual AignoreRangeOverflow MinLen PolyValue GTENegativeOne
+%%  LocalWords:  staticallyexecutable concats AnullStringsConcatenation

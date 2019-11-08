@@ -113,7 +113,7 @@ public class PerDirectorySuite extends Suite {
         switch (methodName) {
             case "getTestDirs":
                 if (returnType.isArray()) {
-                    if (!returnType.getComponentType().equals(String.class)) {
+                    if (returnType.getComponentType() != String.class) {
                         throw new RuntimeException(
                                 "Component type of getTestDirs must be java.lang.String, found "
                                         + returnType.getComponentType().getCanonicalName());

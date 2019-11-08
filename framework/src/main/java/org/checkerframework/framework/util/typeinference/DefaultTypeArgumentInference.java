@@ -58,7 +58,8 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7 See
- * <a href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7">JLS
+ * the JLS 7: <a
+ * href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7">JLS
  * &sect;5.12.2.7</a>
  *
  * <p>Note, there are some deviations JLS 7 for the following cases:
@@ -182,8 +183,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (showInferenceSteps) {
             checker.message(Kind.NOTE, "  results: %s\n", inferredArgs);
         }
-
-        return inferredArgs;
+        try {
+            return TypeArgInferenceUtil.correctResults(
+                    inferredArgs, expressionTree, methodType.getUnderlyingType(), typeFactory);
+        } catch (Throwable ex) {
+            // Ignore any exceptions
+            return inferredArgs;
+        }
     }
 
     /**

@@ -16,6 +16,6 @@ public class NTDAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         // there's no polymorphic qualifiers in NTD
-        return getBundledTypeQualifiersWithoutPolyAll();
+        return getBundledTypeQualifiers();
     }
 }

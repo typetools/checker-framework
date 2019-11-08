@@ -61,7 +61,7 @@ public abstract class OutputStream implements Closeable, Flushable {
      *             an <code>IOException</code> may be thrown if the
      *             output stream has been closed.
      */
-    public abstract void write(int b) throws IOException;
+    public abstract void write(@PolySigned int b) throws IOException;
 
     /**
      * Writes <code>b.length</code> bytes from the specified byte array

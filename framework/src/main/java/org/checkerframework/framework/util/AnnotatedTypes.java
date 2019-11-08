@@ -365,7 +365,7 @@ public class AnnotatedTypes {
             final AnnotatedTypeFactory atypeFactory,
             final AnnotatedTypeMirror of,
             final Element member) {
-        final AnnotatedTypeMirror memberType = atypeFactory.getAnnotatedType(member);
+        AnnotatedTypeMirror memberType = atypeFactory.getAnnotatedType(member);
 
         if (ElementUtils.isStatic(member)) {
             return memberType;
@@ -383,12 +383,22 @@ public class AnnotatedTypes {
                 return asMemberOf(
                         types, atypeFactory, ((AnnotatedTypeVariable) of).getUpperBound(), member);
             case WILDCARD:
+                if (((AnnotatedWildcardType) of).isUninferredTypeArgument()) {
+                    return substituteUninferredTypeArgs(atypeFactory, member, memberType);
+                }
                 return asMemberOf(
                         types,
                         atypeFactory,
                         ((AnnotatedWildcardType) of).getExtendsBound().deepCopy(),
                         member);
             case INTERSECTION:
+                for (AnnotatedDeclaredType superType :
+                        ((AnnotatedIntersectionType) of).directSuperTypes()) {
+                    memberType =
+                            substituteTypeVariables(
+                                    types, atypeFactory, superType, member, memberType);
+                }
+                return memberType;
             case UNION:
             case DECLARED:
                 return substituteTypeVariables(types, atypeFactory, of, member, memberType);
@@ -482,6 +492,34 @@ public class AnnotatedTypes {
         for (int i = 0; i < ownerParams.size(); ++i) {
             mappings.put(ownerParams.get(i).getUnderlyingType(), baseParams.get(i));
         }
+    }
+
+    /** Substitutes uninferred type arguments for type variables in {@code memberType}. */
+    private static AnnotatedTypeMirror substituteUninferredTypeArgs(
+            AnnotatedTypeFactory atypeFactory, Element member, AnnotatedTypeMirror memberType) {
+        TypeElement enclosingClassOfMember = ElementUtils.enclosingClass(member);
+        final Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
+
+        while (enclosingClassOfMember != null) {
+            if (!enclosingClassOfMember.getTypeParameters().isEmpty()) {
+                AnnotatedDeclaredType enclosingType =
+                        atypeFactory.getAnnotatedType(enclosingClassOfMember);
+                for (final AnnotatedTypeMirror type : enclosingType.getTypeArguments()) {
+                    AnnotatedTypeVariable typeParameter = (AnnotatedTypeVariable) type;
+                    mappings.put(
+                            typeParameter.getUnderlyingType(),
+                            atypeFactory.getUninferredWildcardType(typeParameter));
+                }
+            }
+            enclosingClassOfMember =
+                    ElementUtils.enclosingClass(enclosingClassOfMember.getEnclosingElement());
+        }
+
+        if (!mappings.isEmpty()) {
+            return atypeFactory.getTypeVarSubstitutor().substitute(mappings, memberType);
+        }
+
+        return memberType;
     }
 
     /**
@@ -974,9 +1012,9 @@ public class AnnotatedTypes {
         ElementType otherElementType = null;
 
         for (ElementType element : elements) {
-            if (element.equals(ElementType.TYPE_USE)) {
+            if (element == ElementType.TYPE_USE) {
                 hasTypeUse = true;
-            } else if (!element.equals(ElementType.TYPE_PARAMETER)) {
+            } else if (element != ElementType.TYPE_PARAMETER) {
                 otherElementType = element;
             }
             if (hasTypeUse && otherElementType != null) {

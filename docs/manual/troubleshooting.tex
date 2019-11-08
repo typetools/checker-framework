@@ -101,7 +101,7 @@ If you get an error like one of the following,
 
 \noindent
 then the problem may be that you have not set the \code{CHECKERFRAMEWORK} environment
-variable, as described in Section~\ref{javac-installation}.  Or, maybe
+variable, as described in Section~\ref{javac-wrapper}.  Or, maybe
 you made it a user variable instead of a system variable.
 
 \item
@@ -118,7 +118,7 @@ The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
 \noindent
 then you are likely \textbf{not} using the Checker Framework compiler.  Use
 either \code{\$CHECKERFRAMEWORK/checker/bin/javac} or one of the alternatives
-described in Section~\ref{javac-installation}.
+described in Section~\ref{javac-wrapper}.
 \end{sloppypar}
 
 
@@ -439,7 +439,7 @@ To solve the problem, add the missing annotations to the library (see
 Chapter~\ref{annotating-libraries}).  Depending on the checker, the
 annotations might be expressed in the form of stub files (which appear
 together with the checker's source code, such as in file
-\code{checker/src/org/checkerframework/checker/interning/jdk.astub} for the
+\code{checker/src/org/checkerframework/checker/interning/jdk8.astub} for the
 Interning Checker) or in the form of annotated libraries (which appear
 under \code{checker/jdk/}, such as at \code{checker/jdk/nullness/src/} for
 the Nullness Checker.
@@ -709,17 +709,27 @@ Section~\ref{stub}.
 
 If the library is annotated but has some incorrect or missing annotations,
 then please open a pull request that adds the annotations.
-You can find the annotated source for non-JDK libraries in
-\url{https://github.com/typetools/}.
-You can find the annotated JDK source in the
-\ahref{https://github.com/typetools/checker-framework}{Checker Framework
-  GitHub repository}, either in subdirectories of
-\ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
-or in files named \<jdk.astub> in the checker's implementation directory.
-
-If the library is not annotated at all, you can fork it, add annotations,
-and propose that your annotated version be moved into
-\url{https://github.com/typetools/}.
+\begin{itemize}
+\item
+  Non-JDK libraries:  You can find the annotated source in
+  \url{https://github.com/typetools/}.
+  If the library does not exist there, then it has no annotations yet.
+  You can fork it, add annotations,
+  and propose that your annotated version be moved into
+  \url{https://github.com/typetools/}.
+\item
+  JDK:  You need to open two pull requests, because there are two versions of the
+  annotated JDK.
+  \begin{itemize}
+  \item JDK 8: The annotated JDK source is in the
+    \ahref{https://github.com/typetools/checker-framework}{Checker Framework
+      GitHub repository}, either in a subdirectory of
+    \ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
+    or in files named \<jdk.astub> in the checker's implementation directory.
+  \item
+    JDK 11: The annotated JDK source is in \url{https://github.com/typetools/jdk}.
+  \end{itemize}
+\end{itemize}
 
 For either approach, please see \chapterpageref{annotating-libraries} for
 tips about writing library annotations.
@@ -828,10 +838,9 @@ You might want to add an \<export CHECKERFRAMEWORK=...> line to your
 % Why is this necessary?  What goes wrong if it is not set?  Can I avoid
 % the need to set it?  It's used for:
 %  * the location of tools.jar, below.
-%  * the default location of RTJAR, in checker/jdk/Makefile.
+%  * the default location of CTSYM, in checker/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK
-8 installation (not the JRE installation, and not JDK 7 or earlier).
-This needs to be an Oracle JDK.
+8 or JDK 11 installation (not the JRE installation, and not JDK 7 or earlier).
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
@@ -964,42 +973,31 @@ Please see the
 \href{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{Checker Framework Developer Manual}.
 
 
-\subsectionAndLabel{Enable Travis continuous integration builds}{building-travis}
+\subsectionAndLabel{Enable continuous integration builds}{building-ci}
 
-Travis-CI is a continuous integration system:  it runs tests every time you
+A continuous integration system runs tests every time you
 push a commit to GitHub.
 
 If you have forked any of the projects rather than just creating a clone,
-then we recommend that you enable Travis-CI builds,
+then we recommend that you enable CI builds,
 so that you learn quickly of any errors that creep into your fork.
 
-Run the
-\ahref{https://docs.travis-ci.com/user/getting-started/#To-get-started-with-Travis-CI\%3A}{Travis-CI getting started directions},
-though note that the \<.travis.yml> files already exist, so only the first
-two steps may be necessary.
+Follow the
+\ahref{https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops}{Azure
+  Pipelines getting started directions}.
 
-To save time, by default the Travis jobs download a pre-built version of
+To save time, by default the CI jobs download a pre-built version of
 the JDK rather than building the JDK from the sources in the Checker
 Framework repository.  This means that if you make a change to the
-annotated JDK, your tests will fail.  Here is how to deal with this issue:
-\begin{enumerate}
-\item
-In your pull request, edit file \<.travis.yml> so that it rebuilds
-the JDK (some jobs might time out).
-\item Verify that all tests pass.
-\item A Checker Framework developer needs to update the pre-built JDK from
-  your branch.
-\item
-  Undo your edits to file \<.travis.yml>.
-\item Verify that all tests pass.
-\item A Checker Framework developer will review your code and merge your branch.
-\end{enumerate}
+annotated JDK, your tests will fail.
+To fix your tests, follow the instructions at
+\url{https://github.com/typetools/annotated-libraries}.
 
 
-\subsubsectionAndLabel{Debugging Travis continuous integration builds}{building-travis-debug}
+\subsubsectionAndLabel{Debugging continuous integration builds}{building-ci-debug}
 
-If a Travis job is failing, you can reproduce the problem locally.
-The Travis jobs all run within Docker containers.
+If a continuous integration job is failing, you can reproduce the problem locally.
+The CI jobs all run within Docker containers.
 Install Docker on your local computer, then perform commands like the
 following to get a shell within Docker:
 
@@ -1009,14 +1007,7 @@ docker run -it mdernst/cf-ubuntu-jdk8 /bin/bash
 \end{Verbatim}
 
 Then, you can run arbitrary commands, including those that appear in the
-\<docker run> command in the \<.travis.yml> file.  For example:
-
-\begin{Verbatim}
-export JAVA_HOME=`which javac|xargs readlink -f|xargs dirname|xargs dirname`
-git clone -b $BRANCHNAME --depth 9 https://github.com/$USER/checker-framework.git checker-framework
-cd checker-framework
-./.travis-build.sh all-tests downloadjdk
-\end{Verbatim}
+CI configuration files.
 
 
 \sectionAndLabel{Contributing fixes (creating a pull request)}{pull-request}
@@ -1217,4 +1208,4 @@ For details, see file
 %%  LocalWords:  Barros Athaydes Ren Oblak Heule Steph Trask Stalnaker
 %%  LocalWords:  toolset's typechecking LiteralKind reifiable plaintext
 %%  LocalWords:  astub homebrew hevea cloneAndBuildDependencies allTests
-%%  LocalWords:  compileJava travis typedefs LPAR Tunable OIGJ sudo
+%%  LocalWords:  compileJava typedefs LPAR Tunable OIGJ sudo

@@ -786,6 +786,11 @@ public abstract class GenericAnnotatedTypeFactory<
         if (annotationMirror == null) {
             if (receiver instanceof LocalVariable) {
                 Element ele = ((LocalVariable) receiver).getElement();
+                // Because of
+                // https://github.com/eisop/checker-framework/issues/14
+                // and the workaround in
+                // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
+                // The annotationMirror may not contain all explicitly written annotations.
                 annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
             } else if (receiver instanceof FieldAccess) {
                 Element ele = ((FieldAccess) receiver).getField();
@@ -1021,7 +1026,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
         for (Node node : nodes) {
-            if (node.getClass().equals(kind)) {
+            if (node.getClass() == kind) {
                 return kind.cast(node);
             }
         }
@@ -1468,8 +1473,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Like {#addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding implementations
-     * typically simply pass the boolean to calls to super.
+     * Like {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding
+     * implementations typically simply pass the boolean to calls to super.
      */
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
@@ -1549,6 +1554,15 @@ public abstract class GenericAnnotatedTypeFactory<
         applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
     }
 
+    /**
+     * To add annotations to the type of method or constructor parameters, add a {@link
+     * TypeAnnotator} using {@link #createTypeAnnotator()} and see the comment in {@link
+     * TypeAnnotator#visitExecutable(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType,
+     * Void)}.
+     *
+     * @param elt an element
+     * @param type the type obtained from {@code elt}
+     */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         addAnnotationsFromDefaultQualifierForUse(elt, type);

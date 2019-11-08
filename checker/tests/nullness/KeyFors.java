@@ -123,7 +123,7 @@ public class KeyFors {
 
     public static void mapPut(String start) {
         Map<String, Integer> n2e = new HashMap<>();
-        n2e.put(start, new Integer(0));
+        n2e.put(start, Integer.valueOf(0));
         @KeyFor("n2e") String start2 = start;
     }
 }

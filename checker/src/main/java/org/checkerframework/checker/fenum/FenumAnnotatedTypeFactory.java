@@ -39,7 +39,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         // Load everything in qual directory, and top, bottom, unqualified, and fake enum
         Set<Class<? extends Annotation>> qualSet =
-                getBundledTypeQualifiersWithPolyAll(
+                getBundledTypeQualifiers(
                         FenumTop.class,
                         Fenum.class,
                         FenumUnqualified.class,

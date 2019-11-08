@@ -93,33 +93,9 @@ public final class TreeUtils {
      *
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to super
-     * @deprecated use {@link #isSuperConstructorCall(MethodInvocationTree)}
-     */
-    @Deprecated // use isSuperConstructorCall
-    public static boolean isSuperCall(MethodInvocationTree tree) {
-        return isNamedMethodCall("super", tree);
-    }
-
-    /**
-     * Checks if the method invocation is a call to super.
-     *
-     * @param tree a tree defining a method invocation
-     * @return true iff tree describes a call to super
      */
     public static boolean isSuperConstructorCall(MethodInvocationTree tree) {
         return isNamedMethodCall("super", tree);
-    }
-
-    /**
-     * Checks if the method invocation is a call to "this".
-     *
-     * @param tree a tree defining a method invocation
-     * @return true iff tree describes a call to this
-     * @deprecated use {@link #isThisConstructorCall(MethodInvocationTree)}
-     */
-    @Deprecated // use isThisConstructorCall
-    public static boolean isThisCall(MethodInvocationTree tree) {
-        return isNamedMethodCall("this", tree);
     }
 
     /**
@@ -365,19 +341,6 @@ public final class TreeUtils {
             t = ((ParenthesizedTree) t).getExpression();
         }
         return t;
-    }
-
-    /**
-     * If the given tree is a parenthesized tree, it returns the enclosed non-parenthesized tree.
-     * Otherwise, it returns the same tree.
-     *
-     * @param tree an expression tree
-     * @return the outermost non-parenthesized tree enclosed by the given tree
-     * @deprecated use {@link #withoutParens}
-     */
-    @Deprecated // use withoutParens
-    public static ExpressionTree skipParens(final ExpressionTree tree) {
-        return withoutParens(tree);
     }
 
     /**
@@ -958,7 +921,7 @@ public final class TreeUtils {
                 List<? extends VariableElement> params = exec.getParameters();
                 for (int i = 0; i < paramTypes.length; i++) {
                     VariableElement ve = params.get(i);
-                    TypeMirror tm = ve.asType();
+                    TypeMirror tm = TypeAnnotationUtils.unannotatedType(ve.asType());
                     if (!tm.toString().equals(paramTypes[i])) {
                         typesMatch = false;
                         break;
@@ -975,7 +938,8 @@ public final class TreeUtils {
                         + "."
                         + methodName
                         + "("
-                        + Arrays.toString(paramTypes));
+                        + Arrays.toString(paramTypes)
+                        + ")");
     }
 
     /**
@@ -1029,12 +993,12 @@ public final class TreeUtils {
      * @return true iff if tree is a field access expression (implicit or explicit)
      */
     public static boolean isFieldAccess(Tree tree) {
-        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             // explicit field access
             MemberSelectTree memberSelect = (MemberSelectTree) tree;
             Element el = TreeUtils.elementFromUse(memberSelect);
             return el.getKind().isField();
-        } else if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
+        } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
             // implicit field access
             IdentifierTree ident = (IdentifierTree) tree;
             Element el = TreeUtils.elementFromUse(ident);
@@ -1053,7 +1017,7 @@ public final class TreeUtils {
      */
     public static String getFieldName(Tree tree) {
         assert isFieldAccess(tree);
-        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             MemberSelectTree mtree = (MemberSelectTree) tree;
             return mtree.getIdentifier().toString();
         } else {
@@ -1073,12 +1037,12 @@ public final class TreeUtils {
      * @return true iff if tree is a method access expression (implicit or explicit)
      */
     public static boolean isMethodAccess(Tree tree) {
-        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             // explicit method access
             MemberSelectTree memberSelect = (MemberSelectTree) tree;
             Element el = TreeUtils.elementFromUse(memberSelect);
             return el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR;
-        } else if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
+        } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
             // implicit method access
             IdentifierTree ident = (IdentifierTree) tree;
             // The field "super" and "this" are also legal methods
@@ -1099,7 +1063,7 @@ public final class TreeUtils {
      */
     public static String getMethodName(Tree tree) {
         assert isMethodAccess(tree);
-        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             MemberSelectTree mtree = (MemberSelectTree) tree;
             return mtree.getIdentifier().toString();
         } else {

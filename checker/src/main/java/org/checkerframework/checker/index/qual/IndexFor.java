@@ -10,7 +10,8 @@ import java.lang.annotation.Target;
  * than both {@code a.length} and {@code b.length}. The sequences {@code a} and {@code b} might have
  * different lengths.
  *
- * <p>The <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#charAt-int-">
+ * <p>The <a
+ * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html#charAt(int)">
  * {@code String.charAt(int)}</a> method is declared as
  *
  * <pre>{@code
