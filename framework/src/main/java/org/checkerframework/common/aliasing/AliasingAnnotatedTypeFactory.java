@@ -44,7 +44,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Create the type factory. */
     public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        if (this.getClass().equals(AliasingAnnotatedTypeFactory.class)) {
+        if (this.getClass() == AliasingAnnotatedTypeFactory.class) {
             this.postInit();
         }
     }

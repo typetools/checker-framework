@@ -562,7 +562,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz) || receiver.containsOfClass(clazz);
+            return getClass() == clazz || receiver.containsOfClass(clazz);
         }
 
         @Override
@@ -599,7 +599,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -656,7 +656,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -707,7 +707,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -772,7 +772,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -816,7 +816,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -891,7 +891,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            if (getClass().equals(clazz)) {
+            if (getClass() == clazz) {
                 return true;
             }
             if (receiver.containsOfClass(clazz)) {
@@ -1046,7 +1046,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            if (getClass().equals(clazz)) {
+            if (getClass() == clazz) {
                 return true;
             }
             if (receiver.containsOfClass(clazz)) {
@@ -1161,12 +1161,12 @@ public class FlowExpressions {
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
             for (Receiver n : dimensions) {
-                if (n != null && n.getClass().equals(clazz)) {
+                if (n != null && n.getClass() == clazz) {
                     return true;
                 }
             }
             for (Receiver n : initializers) {
-                if (n.getClass().equals(clazz)) {
+                if (n.getClass() == clazz) {
                     return true;
                 }
             }

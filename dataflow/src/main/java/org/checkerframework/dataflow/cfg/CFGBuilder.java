@@ -2704,12 +2704,11 @@ public class CFGBuilder {
          * <p>Note 2: Visits the receiver and adds all necessary blocks to the CFG.
          *
          * @param tree the field access tree containing the receiver
-         * @param classTree the ClassTree enclosing the field access
          * @return the receiver of the field access
          */
         private Node getReceiver(ExpressionTree tree) {
             assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
-            if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+            if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
                 MemberSelectTree mtree = (MemberSelectTree) tree;
                 return scan(mtree.getExpression(), null);
             } else {
