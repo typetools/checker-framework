@@ -1,3 +1,6 @@
+Every operand of a String concatenation can be "null", unless it is a String literal,
+primitive or compile-time constant.
+
 ---------------------------------------------------------------------------
 
 Version 3.0.0, November 1, 2019
