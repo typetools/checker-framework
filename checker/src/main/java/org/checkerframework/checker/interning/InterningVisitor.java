@@ -43,6 +43,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.util.Heuristics;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -240,48 +241,31 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      *     java.lang.Object)
      */
     @Override
-    public void processClassTree(ClassTree node) {
-        // TODO: Should this method use the Javac types or some other utility to get
-        // all direct supertypes instead, and should it verify that each does not
-        // override .equals and that at least one of them is annotated with @UsesObjectEquals?
-
-        // Looking for an @UsesObjectEquals class declaration
-
-        TypeElement elt = TreeUtils.elementFromDeclaration(node);
-        UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class);
-
-        Tree superClass = node.getExtendsClause();
-        Element elmt = null;
-        if (superClass != null
-                && (superClass instanceof IdentifierTree
-                        || superClass instanceof MemberSelectTree)) {
-            elmt = TreeUtils.elementFromUse((ExpressionTree) superClass);
-        }
+    public void processClassTree(ClassTree classTree) {
+        TypeElement elt = TreeUtils.elementFromDeclaration(classTree);
+        AnnotationMirror annotation = atypeFactory.getDeclAnnotation(elt, UsesObjectEquals.class);
 
         // If @UsesObjectEquals is present, check to make sure the class does not override equals
         // and its supertype is Object or is annotated with @UsesObjectEquals.
         if (annotation != null) {
             // Check methods to ensure no .equals
-            if (overridesEquals(node)) {
-                checker.report(Result.failure("overrides.equals"), node);
+            if (overridesEquals(classTree)) {
+                checker.report(Result.failure("overrides.equals"), classTree);
             }
+            TypeMirror superClass = elt.getSuperclass();
+            if (superClass != null) {
+                TypeElement superClassElement = TypesUtils.getTypeElement(superClass);
 
-            if (!(superClass == null
-                    || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))) {
-                checker.report(Result.failure("superclass.notannotated"), node);
-            }
-        } else {
-            // The class is not annotated with @UsesObjectEquals -> make sure its superclass isn't
-            // either.
-            // TODO: is this impossible after the design change making @UsesObjectEquals inherited?
-            // This check is left behind in case of a future design change back to non-inherited.
-            if (superClass != null
-                    && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)) {
-                checker.report(Result.failure("superclass.annotated"), node);
+                if (superClassElement != null
+                        && !ElementUtils.isObject(superClassElement)
+                        && atypeFactory.getDeclAnnotation(superClassElement, UsesObjectEquals.class)
+                                == null) {
+                    checker.report(Result.failure("superclass.notannotated"), classTree);
+                }
             }
         }
 
-        super.processClassTree(node);
+        super.processClassTree(classTree);
     }
 
     @Override
@@ -904,5 +888,13 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         }
 
         return types.getDeclaredType(classElt);
+    }
+
+    @Override
+    protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
+        if (castType.getKind().isPrimitive()) {
+            return true;
+        }
+        return super.isTypeCastSafe(castType, exprType);
     }
 }
