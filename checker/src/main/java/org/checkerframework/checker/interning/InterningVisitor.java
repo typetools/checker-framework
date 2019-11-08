@@ -253,16 +253,15 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 checker.report(Result.failure("overrides.equals"), classTree);
             }
             TypeMirror superClass = elt.getSuperclass();
-            TypeElement superClassElement = null;
             if (superClass != null) {
-                superClassElement = TypesUtils.getTypeElement(superClass);
-            }
+                TypeElement superClassElement = TypesUtils.getTypeElement(superClass);
 
-            if (superClassElement != null
-                    && !ElementUtils.isObject(superClassElement)
-                    && atypeFactory.getDeclAnnotation(superClassElement, UsesObjectEquals.class)
-                            == null) {
-                checker.report(Result.failure("superclass.notannotated"), classTree);
+                if (superClassElement != null
+                        && !ElementUtils.isObject(superClassElement)
+                        && atypeFactory.getDeclAnnotation(superClassElement, UsesObjectEquals.class)
+                                == null) {
+                    checker.report(Result.failure("superclass.notannotated"), classTree);
+                }
             }
         }
 
