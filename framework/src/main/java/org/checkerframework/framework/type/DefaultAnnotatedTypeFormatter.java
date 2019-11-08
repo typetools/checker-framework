@@ -389,7 +389,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
                 sb.append(
                         annoFormatter.formatAnnotationString(
                                 type.getAnnotationsField(), currentPrintInvisibleSetting));
-                sb.append(" /*INFERENCE FAILED ");
+                sb.append(" /*INFERENCE FAILED for: ");
                 sb.append(type.getUnderlyingType());
                 sb.append("*/");
             } else {
