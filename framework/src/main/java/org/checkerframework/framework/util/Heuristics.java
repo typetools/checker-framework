@@ -131,7 +131,7 @@ public class Heuristics {
         /**
          * Create a new Within matcher.
          *
-         * @param mathcher the matcher that {@code Within.match} will try, on every parent of the
+         * @param matcher the matcher that {@code Within.match} will try, on every parent of the
          *     path it is given
          */
         public Within(Matcher matcher) {
