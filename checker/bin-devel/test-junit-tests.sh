@@ -13,4 +13,4 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 
 
 
-./gradlew checker:test --console=plain --warning-mode=all --no-daemon
+./gradlew test --console=plain --warning-mode=all --no-daemon
