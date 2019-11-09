@@ -1,0 +1,7 @@
+import org.checkerframework.checker.tainting.qual.*;
+package java.lang;
+
+class Object {
+    // TODO: Move to typetools/jdk.
+    public @Untainted Object();
+}
