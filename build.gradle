@@ -716,7 +716,7 @@ subprojects {
             ]
         }
 
-        // Create an nonJunitTests task per project
+        // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', type: GradleBuild, group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
             tasks = ['checkPurity']
@@ -735,6 +735,7 @@ subprojects {
         // Create an allTests task per project
         tasks.create(name: 'allTests', type: GradleBuild, group: 'Verification') {
             description 'Run all Checker Framework tests'
+	    // The 'test' target is just the JUnit tests.
             tasks = ['nonJunitTests', 'test']
         }
 
