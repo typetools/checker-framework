@@ -1557,7 +1557,8 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * To add annotations to the type of method or constructor parameters, add a {@link
      * TypeAnnotator} using {@link #createTypeAnnotator()} and see the comment in {@link
-     * TypeAnnotator#visitExecutable(AnnotatedExecutableType, Void)}.
+     * TypeAnnotator#visitExecutable(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType,
+     * Void)}.
      *
      * @param elt an element
      * @param type the type obtained from {@code elt}
