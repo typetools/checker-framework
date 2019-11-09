@@ -562,7 +562,7 @@ subprojects {
         // Add tasks to run various checkers on all the main source sets.
         createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness',[])
         createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity',[])
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning',['-AsuppressWarnings=not.interned'])
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-AsuppressWarnings=not.interned'])
 
         // Add jtregTests to framework and checker modules
         if (project.name.is('framework') || project.name.is('checker')) {
