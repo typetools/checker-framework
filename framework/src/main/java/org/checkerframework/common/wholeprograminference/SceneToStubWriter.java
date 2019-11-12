@@ -20,7 +20,6 @@ import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
 import scenelib.annotations.el.AnnotationDef;
-import scenelib.annotations.el.BoundLocation;
 import scenelib.annotations.el.DefCollector;
 import scenelib.annotations.el.DefException;
 import scenelib.annotations.el.InnerTypeLocation;
@@ -124,22 +123,6 @@ public final class SceneToStubWriter {
 
     private void printAnnotations(AElement e) {
         printAnnotations(e.tlAnnotationsHere);
-    }
-
-    private void printBounds(Map<BoundLocation, ATypeElement> bounds) {
-        printWriter.print("<");
-        boolean first = true;
-        for (Map.Entry<BoundLocation, ATypeElement> be : bounds.entrySet()) {
-            if (!first) {
-                printWriter.print(", ");
-            }
-            ATypeElement b = be.getValue();
-            printWriter.print(b);
-            if (first) {
-                first = false;
-            }
-        }
-        printWriter.print(">");
     }
 
     private void printArrayComponentTypeAnnotation(ATypeElement e) {
