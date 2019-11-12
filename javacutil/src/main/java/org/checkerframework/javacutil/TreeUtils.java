@@ -745,44 +745,44 @@ public final class TreeUtils {
 
     /** Returns the receiver tree of a field access or a method invocation. */
     public static ExpressionTree getReceiverTree(ExpressionTree expression) {
-        ExpressionTree receiver = TreeUtils.withoutParens(expression);
+        ExpressionTree receiver;
+        switch (expression.getKind()) {
+            case METHOD_INVOCATION:
+                // Trying to handle receiver calls to trees of the form
+                //     ((m).getArray())
+                // returns the type of 'm' in this case
+                receiver = ((MethodInvocationTree) expression).getMethodSelect();
 
-        if (!(receiver.getKind() == Tree.Kind.METHOD_INVOCATION
-                || receiver.getKind() == Tree.Kind.MEMBER_SELECT
-                || receiver.getKind() == Tree.Kind.IDENTIFIER
-                || receiver.getKind() == Tree.Kind.ARRAY_ACCESS)) {
-            // No receiver tree for anything but these four kinds.
-            return null;
+                if (receiver.getKind() == Tree.Kind.IDENTIFIER) {
+                    // It's a method call "m(foo)" without an explicit receiver
+                    return null;
+                } else if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
+                    receiver = ((MemberSelectTree) receiver).getExpression();
+                } else {
+                    // Otherwise, e.g. a NEW_CLASS: nothing to do.
+                    return null;
+                }
+                break;
+            case NEW_CLASS:
+                receiver = ((NewClassTree) expression).getEnclosingExpression();
+                break;
+            case ARRAY_ACCESS:
+                receiver = ((ArrayAccessTree) expression).getExpression();
+                break;
+            case MEMBER_SELECT:
+                receiver = ((MemberSelectTree) expression).getExpression();
+                // Avoid int.class
+                if (receiver instanceof PrimitiveTypeTree) {
+                    return null;
+                }
+                break;
+            case IDENTIFIER:
+                // It's a field access on implicit this or a local variable/parameter.
+                return null;
+            default:
+                return null;
         }
 
-        if (receiver.getKind() == Tree.Kind.METHOD_INVOCATION) {
-            // Trying to handle receiver calls to trees of the form
-            //     ((m).getArray())
-            // returns the type of 'm' in this case
-            receiver = ((MethodInvocationTree) receiver).getMethodSelect();
-
-            if (receiver.getKind() == Tree.Kind.IDENTIFIER) {
-                // It's a method call "m(foo)" without an explicit receiver
-                return null;
-            } else if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
-                receiver = ((MemberSelectTree) receiver).getExpression();
-            } else {
-                // Otherwise, e.g. a NEW_CLASS: nothing to do.
-            }
-        } else if (receiver.getKind() == Tree.Kind.IDENTIFIER) {
-            // It's a field access on implicit this or a local variable/parameter.
-            return null;
-        } else if (receiver.getKind() == Tree.Kind.ARRAY_ACCESS) {
-            return TreeUtils.withoutParens(((ArrayAccessTree) receiver).getExpression());
-        } else if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
-            receiver = ((MemberSelectTree) receiver).getExpression();
-            // Avoid int.class
-            if (receiver instanceof PrimitiveTypeTree) {
-                return null;
-            }
-        }
-
-        // Receiver is now really just the receiver tree.
         return TreeUtils.withoutParens(receiver);
     }
 
