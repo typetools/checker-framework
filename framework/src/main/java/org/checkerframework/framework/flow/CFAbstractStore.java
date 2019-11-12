@@ -1,6 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -639,47 +640,45 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *     abstract value is not known).
      */
     protected void removeConflicting(FlowExpressions.FieldAccess fieldAccess, @Nullable V val) {
-        Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
-        for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
-            FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
-            V otherVal = e.getValue();
+        final Iterator<Entry<FieldAccess, V>> fieldValuesIterator =
+                fieldValues.entrySet().iterator();
+        while (fieldValuesIterator.hasNext()) {
+            Entry<FieldAccess, V> entry = fieldValuesIterator.next();
+            FieldAccess otherFieldAccess = entry.getKey();
+            V otherVal = entry.getValue();
             // case 2:
             if (otherFieldAccess.getReceiver().containsModifiableAliasOf(this, fieldAccess)) {
-                continue; // remove information completely
+                fieldValuesIterator.remove(); // remove information completely
             }
             // case 1:
-            if (fieldAccess.getField().equals(otherFieldAccess.getField())) {
+            else if (fieldAccess.getField().equals(otherFieldAccess.getField())) {
                 if (canAlias(fieldAccess.getReceiver(), otherFieldAccess.getReceiver())) {
                     if (!otherFieldAccess.isFinal()) {
                         if (val != null) {
                             V newVal = val.leastUpperBound(otherVal);
-                            newFieldValues.put(otherFieldAccess, newVal);
+                            entry.setValue(newVal);
                         } else {
                             // remove information completely
+                            fieldValuesIterator.remove();
                         }
-                        continue;
                     }
                 }
             }
-            // information is save to be carried over
-            newFieldValues.put(otherFieldAccess, otherVal);
         }
-        fieldValues = newFieldValues;
 
-        Map<FlowExpressions.ArrayAccess, V> newArrayValues = new HashMap<>();
-        for (Entry<ArrayAccess, V> e : arrayValues.entrySet()) {
-            FlowExpressions.ArrayAccess otherArrayAccess = e.getKey();
-            V otherVal = e.getValue();
+        final Iterator<Entry<ArrayAccess, V>> arrayValuesIterator =
+                arrayValues.entrySet().iterator();
+        while (arrayValuesIterator.hasNext()) {
+            Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
+            FlowExpressions.ArrayAccess otherArrayAccess = entry.getKey();
             if (otherArrayAccess.containsModifiableAliasOf(this, fieldAccess)) {
                 // remove information completely
-                continue;
+                arrayValuesIterator.remove();
             }
-            newArrayValues.put(otherArrayAccess, otherVal);
         }
-        arrayValues = newArrayValues;
 
         // case 3:
-        methodValues = new HashMap<>();
+        methodValues.clear();
     }
 
     /**
@@ -702,41 +701,37 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *     abstract value is not known).
      */
     protected void removeConflicting(FlowExpressions.ArrayAccess arrayAccess, @Nullable V val) {
-        Map<FlowExpressions.ArrayAccess, V> newArrayValues = new HashMap<>();
-        for (Entry<FlowExpressions.ArrayAccess, V> e : arrayValues.entrySet()) {
-            FlowExpressions.ArrayAccess otherArrayAccess = e.getKey();
-            V otherVal = e.getValue();
+        final Iterator<Entry<ArrayAccess, V>> arrayValuesIterator =
+                arrayValues.entrySet().iterator();
+        while (arrayValuesIterator.hasNext()) {
+            Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
+            ArrayAccess otherArrayAccess = entry.getKey();
             // case 1:
             if (otherArrayAccess.containsModifiableAliasOf(this, arrayAccess)) {
-                continue; // remove information completely
-            }
-            if (canAlias(arrayAccess.getReceiver(), otherArrayAccess.getReceiver())) {
+                arrayValuesIterator.remove(); // remove information completely
+            } else if (canAlias(arrayAccess.getReceiver(), otherArrayAccess.getReceiver())) {
                 // TODO: one could be less strict here, and only raise the abstract
                 // value for all array expressions with potentially aliasing receivers.
-                continue; // remove information completely
+                arrayValuesIterator.remove(); // remove information completely
             }
-            // information is save to be carried over
-            newArrayValues.put(otherArrayAccess, otherVal);
         }
-        arrayValues = newArrayValues;
 
         // case 2:
-        Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
-        for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
-            FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
-            V otherVal = e.getValue();
+        final Iterator<Entry<FieldAccess, V>> fieldValuesIterator =
+                fieldValues.entrySet().iterator();
+        while (fieldValuesIterator.hasNext()) {
+            Entry<FieldAccess, V> entry = fieldValuesIterator.next();
+            FieldAccess otherFieldAccess = entry.getKey();
             Receiver receiver = otherFieldAccess.getReceiver();
             if (receiver.containsModifiableAliasOf(this, arrayAccess)
                     && receiver.containsOfClass(ArrayAccess.class)) {
                 // remove information completely
-                continue;
+                fieldValuesIterator.remove();
             }
-            newFieldValues.put(otherFieldAccess, otherVal);
         }
-        fieldValues = newFieldValues;
 
         // case 3:
-        methodValues = new HashMap<>();
+        methodValues.clear();
     }
 
     /**
@@ -753,39 +748,39 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * </ol>
      */
     protected void removeConflicting(LocalVariable var) {
-        Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
-        for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
-            FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
+        final Iterator<Entry<FieldAccess, V>> fieldValuesIterator =
+                fieldValues.entrySet().iterator();
+        while (fieldValuesIterator.hasNext()) {
+            Entry<FieldAccess, V> entry = fieldValuesIterator.next();
+            FieldAccess otherFieldAccess = entry.getKey();
             // case 1:
             if (otherFieldAccess.containsSyntacticEqualReceiver(var)) {
-                continue;
+                fieldValuesIterator.remove();
             }
-            newFieldValues.put(otherFieldAccess, e.getValue());
         }
-        fieldValues = newFieldValues;
 
-        Map<FlowExpressions.ArrayAccess, V> newArrayValues = new HashMap<>();
-        for (Entry<FlowExpressions.ArrayAccess, V> e : arrayValues.entrySet()) {
-            FlowExpressions.ArrayAccess otherArrayAccess = e.getKey();
+        final Iterator<Entry<ArrayAccess, V>> arrayValuesIterator =
+                arrayValues.entrySet().iterator();
+        while (arrayValuesIterator.hasNext()) {
+            Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
+            ArrayAccess otherArrayAccess = entry.getKey();
             // case 2:
             if (otherArrayAccess.containsSyntacticEqualReceiver(var)) {
-                continue;
+                arrayValuesIterator.remove();
             }
-            newArrayValues.put(otherArrayAccess, e.getValue());
         }
-        arrayValues = newArrayValues;
 
-        Map<FlowExpressions.MethodCall, V> newMethodValues = new HashMap<>();
-        for (Entry<FlowExpressions.MethodCall, V> e : methodValues.entrySet()) {
-            FlowExpressions.MethodCall otherMethodAccess = e.getKey();
+        final Iterator<Entry<MethodCall, V>> methodValuesIterator =
+                methodValues.entrySet().iterator();
+        while (methodValuesIterator.hasNext()) {
+            Entry<MethodCall, V> entry = methodValuesIterator.next();
+            MethodCall otherMethodAccess = entry.getKey();
             // case 3:
             if (otherMethodAccess.containsSyntacticEqualReceiver(var)
                     || otherMethodAccess.containsSyntacticEqualParameter(var)) {
-                continue;
+                methodValuesIterator.remove();
             }
-            newMethodValues.put(otherMethodAccess, e.getValue());
         }
-        methodValues = newMethodValues;
     }
 
     /**
