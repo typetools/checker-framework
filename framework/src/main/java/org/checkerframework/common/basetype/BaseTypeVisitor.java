@@ -385,20 +385,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Issues an error if {@code classTree} has polymorphic fields but is not annotated with
-     * {@code @HasQualifierParameter}.
+     * {@code @HasQualifierParameter}. Always issue a warning if the type of a static field is
+     * annotated with a polymorphic qualifier.
      *
      * <p>Issues an error if (@code classTree} extends or implements a class/interface that has a
      * qualifier parameter, but this class does not.
      */
     private void checkQualifierParam(ClassTree classTree) {
         Set<AnnotationMirror> polyWithOutQualiferParam = AnnotationUtils.createAnnotationSet();
+        Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
             TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
+            AnnotationMirror poly =
+                    atypeFactory.getQualifierHierarchy().getPolymorphicAnnotation(top);
+            if (poly != null) {
+                polys.add(poly);
+            }
             if (atypeFactory.hasQualifierParameterInHierarchy(classElement, top)) {
                 continue;
             }
-            AnnotationMirror poly =
-                    atypeFactory.getQualifierHierarchy().getPolymorphicAnnotation(top);
             if (poly != null) {
                 polyWithOutQualiferParam.add(poly);
             }
@@ -419,8 +424,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         for (Tree mem : classTree.getMembers()) {
             if (mem.getKind() == Tree.Kind.VARIABLE) {
-                AnnotatedTypeMirror fieldAnno = atypeFactory.getAnnotatedType(mem);
-                if (polyScanner.visit(fieldAnno, polyWithOutQualiferParam)) {
+                AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(mem);
+                Set<AnnotationMirror> polyAnnos;
+                if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration((VariableTree) mem))) {
+                    polyAnnos = polys;
+                } else {
+                    polyAnnos = polyWithOutQualiferParam;
+                }
+                if (polyScanner.visit(fieldType, polyAnnos)) {
                     checker.report(Result.failure("invalid.polymorphic.qualifier.use"), mem);
                 }
             }

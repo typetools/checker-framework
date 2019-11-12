@@ -11,6 +11,8 @@ import org.checkerframework.framework.qual.HasQualifierParameter;
 public class Buffer {
     final List<@PolyTainted String> list = new ArrayList<>();
     @PolyTainted String someString = "";
+    // :: error: (invalid.polymorphic.qualifier.use)
+    static @PolyTainted Object staticField;
 
     public @PolyTainted Buffer() {}
 
