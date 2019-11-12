@@ -35,7 +35,11 @@ if [ $BRANCH = "master" ] ; then
   # ${CI_ORGANIZATION} has a fork of Guava, but no branch that corresponds to the pull-requested branch,
   # nor a cf-master branch.  Use upstream.
   REPO_URL=https://github.com/typetools/guava.git
-  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO_URL} ${CI_BRANCH} cf-master`
+  if [ $CI_BRANCH = "master" ] ; then
+    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO_URL} cf-master`
+  else
+    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO_URL} ${CI_BRANCH} cf-master`
+  fi
 fi
 git -C .. clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO_URL} guava || git -C .. clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO_URL} guava
 (cd ../guava/guava && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)

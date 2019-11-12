@@ -38,13 +38,13 @@ A monitor lock is acquired upon entry to a \<synchronized> method or block,
 and is released on exit from that method or block.
 %  (More precisely,
 %  the current thread locks the monitor associated with the value of
-%  \emph{E}; see \href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-17.html#jls-17.1}{JLS \S17.1}.)
+%  \emph{E}; see \href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-17.html#jls-17.1}{JLS \S17.1}.)
 An explicit lock is acquired by a method call such as
-\sunjavadoc{java/util/concurrent/locks/Lock.html\#lock--}{Lock.lock()},
+\sunjavadoc{java.base/java/util/concurrent/locks/Lock.html\#lock()}{Lock.lock()},
 and is released by another method call such as
-\sunjavadoc{java/util/concurrent/locks/Lock.html\#unlock--}{Lock.unlock()}.
+\sunjavadoc{java.base/java/util/concurrent/locks/Lock.html\#unlock()}{Lock.unlock()}.
 The Lock Checker enforces that any expression whose type implements
-\sunjavadoc{java/util/concurrent/locks/Lock.html}{Lock} is used as an
+\sunjavadoc{java.base/java/util/concurrent/locks/Lock.html}{Lock} is used as an
 explicit lock, and all other expressions are used as monitor locks.
 % The class that implements the Lock interface could itself use the
 % current object as a monitor lock.  This doesn't seem like it
@@ -212,7 +212,7 @@ method itself rather than to some particular type.
   locked upon method return if the method
   terminates successfully.  This is useful for annotating a
   method that acquires a lock such as
-  \sunjavadoc{java/util/concurrent/locks/ReentrantLock.html\#lock--}{ReentrantLock.lock()}.
+  \sunjavadoc{java.base/java/util/concurrent/locks/ReentrantLock.html\#lock()}{ReentrantLock.lock()}.
 
 \item[\refqualclass{checker/lock/qual}{EnsuresLockHeldIf}\small{(String[] locks, boolean result)}]
   If the annotated method returns the given
@@ -665,7 +665,7 @@ to dereference the method's formal parameters even if the
 the method declaration site.
 
 The declaration of
-\sunjavadoc{java/lang/StringBuffer.html\#append-java.lang.String-}{StringBuffer.append(String str)}
+\sunjavadoc{java.base/java/lang/StringBuffer.html\#append(java.lang.String)}{StringBuffer.append(String str)}
 is annotated as:
 
 \begin{verbatim}
@@ -720,18 +720,18 @@ Java provides two types of locking:  monitor locks and explicit locks.
   modifier acquires the lock on the method receiver when called.
   (More precisely,
   the current thread locks the monitor associated with the value of
-  \emph{E}; see \href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-17.html#jls-17.1}{JLS \S17.1}.)
+  \emph{E}; see \href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-17.html#jls-17.1}{JLS \S17.1}.)
   The lock is automatically released when execution exits the block or the
   method body, respectively.
   We use the term ``monitor lock'' for a lock acquired using a
   \<synchronized>  block or \<synchronized> method modifier.
 \item A method call, such as
-  \sunjavadoc{java/util/concurrent/locks/Lock.html\#lock--}{Lock.lock()},
+  \sunjavadoc{java.base/java/util/concurrent/locks/Lock.html\#lock()}{Lock.lock()},
   acquires a lock that implements the
-  \sunjavadoc{java/util/concurrent/locks/Lock.html}{Lock}
+  \sunjavadoc{java.base/java/util/concurrent/locks/Lock.html}{Lock}
   interface.
   The lock is released by another method call, such as
-  \sunjavadoc{java/util/concurrent/locks/Lock.html\#unlock--}{Lock.unlock()}.
+  \sunjavadoc{java.base/java/util/concurrent/locks/Lock.html\#unlock()}{Lock.unlock()}.
   We use the term ``explicit lock'' for a lock expression acquired in this
   way.
 \end{itemize}
@@ -740,7 +740,7 @@ You should not mix the two varieties of locking, and the Lock Checker
 enforces this.  To prevent an object from being used both as a monitor and
 an explicit lock, the Lock Checker issues a warning if a
 \<synchronized(\emph{E})> block's expression \<\emph{E}> has a type that
-implements \sunjavadoc{java/util/concurrent/locks/Lock.html}{Lock}.
+implements \sunjavadoc{java.base/java/util/concurrent/locks/Lock.html}{Lock}.
 % The Lock Checker does not keep track of which locks are monitors
 % and which are explicit, so this check is necessary for the Lock Checker to
 % function correctly, and it also alerts the programmer of a code smell.

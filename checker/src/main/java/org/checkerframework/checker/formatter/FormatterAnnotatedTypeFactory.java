@@ -56,7 +56,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll(UnknownFormat.class, FormatBottom.class);
+        return getBundledTypeQualifiers(UnknownFormat.class, FormatBottom.class);
     }
 
     @Override

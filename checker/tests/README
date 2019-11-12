@@ -124,7 +124,7 @@ class MyNullnessTest {
   void method() {
     Object nullable = null;
     // :: error: (dereference.of.nullable)
-    nullable.toString();   // should emit error
+    nullable.toString();
   }
 }
 

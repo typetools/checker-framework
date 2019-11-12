@@ -342,7 +342,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     @SuppressWarnings("unchecked")
     public <T extends BaseTypeChecker> T getSubchecker(Class<T> checkerClass) {
         for (BaseTypeChecker checker : immediateSubcheckers) {
-            if (checker.getClass().equals(checkerClass)) {
+            if (checker.getClass() == checkerClass) {
                 return (T) checker;
             }
         }

@@ -1,0 +1,13 @@
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+class Binary {
+    // warn: redundant
+    @Nullable Object foo() { return null; }
+    // warn: redundant
+    Object bar(Object p) { return null; }
+    // TODO: https://github.com/typetools/checker-framework/issues/2759
+    int baz(Object @Nullable [] p) { return 1; }
+    // don't warn: changes unannotated parameter type
+    int baz2(Object @Nullable [] p) { return 1; }
+}

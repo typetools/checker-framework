@@ -279,7 +279,7 @@ some unknown subtype of \<CharSequence>:
 For more details about wildcards, see the
 \href{https://docs.oracle.com/javase/tutorial/java/generics/wildcards.html}{Java
   tutorial on wildcards} or
-\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.5.1}{JLS
+\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1}{JLS
   \S 4.5.1}.
 
 You can write a type annotation on the bound of a wildcard:
@@ -311,7 +311,7 @@ For an unbounded wildcard (\code{<?>}, with neither
 bound specified), the annotation in front of a wildcard applies
 to both bounds.  The following three declarations are equivalent (except
 that you cannot write the bottom type \<void>; note that
-\sunjavadoc{java/lang/Void.html}{Void} does not denote the bottom type):
+\sunjavadoc{java.base/java/lang/Void.html}{Void} does not denote the bottom type):
 
 \begin{Verbatim}
   List<@NonNull ?> lnn;
@@ -545,15 +545,11 @@ qualifier for the Nullness type system:
   public @interface PolyNull {}
 \end{Verbatim}
 
-\noindent
-See Section~\ref{polyall} for a way you can sometimes avoid defining a new
-polymorphic qualifier.
-
 
 \subsectionAndLabel{Examples of using polymorphic qualifiers}{qualifier-polymorphism-examples}
 
 As an example of the use of \<@PolyNull>, method
-\sunjavadoc{java/lang/Class.html\#cast-java.lang.Object-}{Class.cast}
+\sunjavadoc{java.base/java/lang/Class.html\#cast(java.lang.Object)}{Class.cast}
 returns null if and only if its argument is \<null>:
 
 \begin{Verbatim}
@@ -631,34 +627,8 @@ already provides the needed functionality.
 that is declared to take a \<String> parameter can also be called on an
 \<@Interned String> argument.
 
-
-\subsectionAndLabel{The \code{@PolyAll} qualifier applies to every type system}{polyall}
-
-Each type system may have its own polymorphic type qualifier.
-If some method is qualifier-polymorphic over every type qualifier
-hierarchy, then you can use \refqualclass{framework/qual}{PolyAll}.
-This is better than trying to write every \<@Poly*> qualifier on that method.
-
-For example, a method that only performs \<==> on array elements will work
-no matter what the array's element types are:
-
-\begin{Verbatim}
-  /**
-   * Searches for the first occurrence of the given element in the array,
-   * testing for equality using == (not the equals method).
-   */
-  public static int indexOfEq(@PolyAll Object[] a, @Nullable Object elt) {
-    for (int i=0; i<a.length; i++) {
-      if (elt == a[i]) {
-        return i;
-      }
-    }
-    return -1;
-  }
-\end{Verbatim}
-
-
-%% TODO: Polymorphic qualifiers such as @PolyAll do not yet take an optional argument.
+%% TODO: Polymorphic qualifiers do not yet take an optional argument.
+% PolyAll in the section below should be changed to any poly qualifier.
 %
 % \subsectionAndLabel{Multiple instances of polymorphic qualifiers (the index argument)}{qualifier-polymorphism-multiple-instances}
 %
@@ -813,7 +783,7 @@ It is unusual, but permitted, to write just one polymorphic qualifier, on a retu
 This is just like it is unusual, but permitted, to write just one
 occurrence of a generic type parameter, on a return type.  An example of
 such a method is
-\sunjavadoc{java/util/Collections.html\#emptyList--}{Collections.emptyList()}.
+\sunjavadoc{java.base/java/util/Collections.html\#emptyList()}{Collections.emptyList()}.
 
 
 \subsubsectionAndLabel{Using a single polymorphic qualifier on an element type}{qualifier-polymorphism-element-types}
@@ -882,60 +852,6 @@ type-check) than writing just
 \begin{Verbatim}
   void m(@Nullable Object obj)
 \end{Verbatim}
-
-
-\subsubsectionAndLabel{Using a single \<@PolyAll> qualifier to indicate all arguments are legal}{qualifier-polymorphism-top-type}
-
-A single \<@PolyAll> annotation can indicate that any possible value is
-permitted to be passed.  For example:
-
-\begin{Verbatim}
-  boolean eq(@PolyAll Object other) {
-    return this == other;
-  }
-\end{Verbatim}
-
-\noindent
-The \<@PolyAll> annotation applies to all type systems.
-It would be infeasible to write the top qualifier for every possible type
-system and to update this method's annotation whenever a new type system is
-defined.
-
-By contrast, a declaration of \<eq> without \<@PolyAll>:
-
-\begin{Verbatim}
-  boolean eq(Object other) {
-    return this == other;
-  }
-\end{Verbatim}
-
-\noindent
-would reject some calls, in type systems where the default type qualifier
-applied to \<Object> is not the top type.
-
-A related use of a single polymorphic qualifier is to override a generic
-type.  For example, the annotation on
-\sunjavadoc{java/lang/Comparable.html\#compareTo-T-}{Comparable.compareTo()}
-is:
-
-\begin{Verbatim}
-  public interface Comparable<T extends @NonNull Object> {
-    @Pure int compareTo(@PolyAll @NonNull T a1);
-  }
-\end{Verbatim}
-
-\noindent
-which indicates that, for every type system other than the nullness type
-system, every value is permitted as an argument, regardless of how the
-\<Comparable> type was instantiated.  For example, this call is legal:
-
-\begin{Verbatim}
-  Comparable<@MyBottom String> cble;
-  @MyTop String s;
-  ...
-  cble.compareTo(s);
-\end{Verbatim}
-
 
 % LocalWords:  nullable MyList nble nn Nullness DefaultQualifier MyClass quals
 % LocalWords:  DefaultLocation subtype's ImmutableList ListIterator nullness

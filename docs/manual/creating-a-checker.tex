@@ -2,9 +2,9 @@
 \chapterAndLabel{How to create a new checker}{creating-a-checker}
 \label{writing-a-checker} % for old links; don't use any more!
 
-\newcommand{\TreeAPIBase}{https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/com/sun/source}
+\newcommand{\TreeAPIBase}{https://docs.oracle.com/en/java/javase/11/docs/api/jdk.compiler/com/sun/source}
 \newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
-\newcommand{\ModelAPIBase}{https://docs.oracle.com/javase/8/docs/api/javax/lang/model}
+\newcommand{\ModelAPIBase}{https://docs.oracle.com/en/java/javase/11/docs/api/java.compiler/javax/lang/model}
 \newcommand{\refModelclass}[2]{\href{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
@@ -228,7 +228,7 @@ the Subtyping Checker is slightly different (Section~\ref{subtyping-using}).
 
 
 
-\subsectionAndLabel{Tips for creating a checker}{creating-tips}
+\sectionAndLabel{Tips for creating a checker}{creating-tips}
 
 To make your job easier, we recommend that you build your type-checker
 incrementally, testing at each phase rather than trying to build the whole
@@ -238,7 +238,7 @@ Here is a good way to proceed.
 
 \begin{enumerate}
 \item
-  Before you start coding, first write the user manual.  The manual
+  Write the user manual.  Do this before you start coding.  The manual
   explains the type system, what it guarantees, how to use it, etc., from
   the point of view of a user.  Writing the manual will help you flesh out
   your goals and the concepts, which are easier to understand and change in
@@ -254,6 +254,8 @@ Here is a good way to proceed.
   During manual checking, ask
   yourself what reasoning you applied, what information you needed, and
   whether your written-down rules were sufficient.
+  It is more efficient to find problems now rather than after coding up
+  your design.
 
 \item
   Implement the type qualifiers and hierarchy
@@ -265,7 +267,7 @@ Here is a good way to proceed.
   \<@NonNegative>, then you could write a test case such as:
 
 \begin{Verbatim}
-  void foo(@UnknownSign int us, @NonNegative int nn) {
+  void testHierarchy(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
     // :: error: assignment.type.incompatible
@@ -290,6 +292,7 @@ Here is a good way to proceed.
 \end{Verbatim}
 
 \item
+  Test infrastructure.
   If your checker source code is in a clone of the Checker Framework
   repository, integrate your checker with the Checker Framework's Gradle
   targets for testing (Section~\ref{creating-testing-framework}).  This
@@ -326,7 +329,7 @@ Here is a good way to proceed.
   possibly-negative value, then you would write a test case such as:
 
 \begin{Verbatim}
-  void foo(String[] myArray, @UnknownSign int us, @NonNegative int nn) {
+  void testArrayIndexing(String[] myArray, @UnknownSign int us, @NonNegative int nn) {
     myArray[us];  // expected error on this line
     myArray[nn];
   }
@@ -340,7 +343,7 @@ Here is a good way to proceed.
   integers and for array lengths, you would write a test case like the following:
 
 \begin{Verbatim}
-  void foo(String[] myArray) {
+  void testTypeIntroduction(String[] myArray) {
     @NonNegative nn1 = -1;  // expected error on this line
     @NonNegative nn2 = 0;
     @NonNegative nn3 = 1;
@@ -358,7 +361,7 @@ Here is a good way to proceed.
   test case such as:
 
 \begin{Verbatim}
-  void foo(@UnknownSign int us, @NonNegative int nn) {
+  void testDataflow(@UnknownSign int us, @NonNegative int nn) {
     @NonNegative nn2;
     nn2 = us;  // expected error on this line
     if (us > j) {
@@ -451,7 +454,7 @@ public @interface NonNegative {}
 The \refqualclass{framework/qual}{SubtypeOf} meta-annotation
 indicates the parent in the type hierarchy.
 
-The \sunjavadocanno{java/lang/annotation/Target.html}{Target}
+The \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}
 meta-annotation indicates where the annotation
 may be written. All type qualifiers that users can write in source code should
 have the value \<ElementType.TYPE\_USE> and optionally with the additional value
@@ -460,7 +463,7 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 % (Terminological note:  a \emph{meta-annotation} is an annotation that
 % is written on an annotation definition, such as
 % \refqualclass{framework/qual}{SubtypeOf} and
-% \sunjavadocanno{java/lang/annotation/Target.html}{Target}.)
+% \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}.)
 
 The annotations should be placed within a directory called \<qual>, and
 \<qual> should be placed in the same directory as your checker's source file.
@@ -485,13 +488,17 @@ is declared in the \<qual> package as a type qualifier.
 
 Your type system should include a top qualifier and a bottom qualifier
 (Section~\ref{creating-bottom-and-top-qualifier}).
+The top qualifier is conventionally named \<\emph{CheckerName}Unknown>.
 
 You should also define a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{qualifier-polymorphism}).
 
-The Javadoc of every type qualifier should include an example use of the
-qualifier.
+The Javadoc of every type qualifier should include a precise English
+description and an example use of the qualifier.
+
+Choose good names for the qualifiers, because users will write these in
+their source code.
 
 
 \subsectionAndLabel{Declaratively defining the qualifier hierarchy}{creating-declarative-hierarchy}
@@ -524,7 +531,7 @@ hierarchy.
   permitting the type hierarchy to be an arbitrary DAG\@.
 
 % TODO: describe multiple type hierarchies
-% TODO: describe multiple polymorphic qualifiers and PolyAll
+% TODO: describe multiple polymorphic qualifiers
 % TODO: the code consistently uses "top" for type qualifiers and
 %       "root" for ASTs, in particular for CompilationUnitTrees.
 
@@ -859,7 +866,7 @@ must specify the component classes for construction.
 
 \begin{sloppypar}
 A checker can customize the default error messages through a
-\sunjavadoc{java/util/Properties.html}{Properties}-loadable text file named
+\sunjavadoc{java.base/java/util/Properties.html}{Properties}-loadable text file named
 \<messages.properties> that appears in the same directory as the checker class.
 The property file keys are the strings passed to \refmethodterse{framework/source}{SourceChecker}{report}{-org.checkerframework.framework.source.Result-java.lang.Object-}
 (like \code{type.incompatible}) and the values are the strings to be
@@ -875,10 +882,9 @@ when using a message key in a \<@SuppressWarnings> annotation.
 \subsectionAndLabel{Indicating supported annotations}{creating-indicating-supported-annotations}
 
 A checker must indicate the annotations that it supports (that make up its type
-hierarchy), including whether it supports the polymorphic qualifier
-\refqualclass{framework/qual}{PolyAll}.
+hierarchy).
 
-By default, a checker supports \<PolyAll>, and all type annotations located in a
+By default, a checker supports all type annotations located in a
 subdirectory called \<qual> that's located in the same directory as the checker.
 A type annotation is meta-annotated with either
 \<@Target(ElementType.TYPE\_USE)>
@@ -886,9 +892,8 @@ or
 \<@Target({ElementType.TYPE\_USE, ElementType.TYPE\_PARAMETER})>.
 
 To indicate support for annotations that are located outside of the \<qual>
-subdirectory, annotations that have other \<ElementType> values, or to indicate
-whether a checker supports the polymorphic qualifier
-\refqualclass{framework/qual}{PolyAll}, checker writers can override the
+subdirectory, annotations that have other \<ElementType> values
+checker writers can override the
 \refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
 method (see its Javadoc for details).
 
@@ -1040,7 +1045,7 @@ Put them in a file \<\emph{MyChecker}Visitor.java> that extends
 BaseTypeVisitor performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\href{https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/}{Tree
+\href{https://docs.oracle.com/en/java/javase/11/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
 API},
 and it issues a warning (by calling
 \refmethod{framework/source}{SourceChecker}{report}
@@ -1147,7 +1152,7 @@ on the type system, so the framework provides way to specify what qualifiers sho
 
 Defaulting rules are type introduction rules for computing the annotated type for an unannotated type;
 these rules are explained in Section~\ref{creating-typesystem-defaults}. The meta-annotation \refqualclass{framework/qual}{QualifierForLiterals} can be written on an annotation
-declaration to specifiy that that annotation should be applied to the type of literals listed in the
+declaration to specify that that annotation should be applied to the type of literals listed in the
 meta-annotation.
 
 \subsectionAndLabel{Procedurally specifying type introduction rules}{creating-procedurally-specifying-implicit-annotations}
@@ -1296,7 +1301,7 @@ As an example, the Regex Checker's extended
 (If you disregard the instructions above and choose a different name or a
 different directory for your \<\emph{MyChecker}Transfer> class, you will
 also need to override the \<createFlowTransferFunction> method in your type
-factory to return to return a new instance of the class.)
+factory to return a new instance of the class.)
 
 (As a reminder, use of \refqualclass{framework/qual}{EnsuresQualifier} and
 \refqualclass{framework/qual}{EnsuresQualifierIf} may obviate the need for
@@ -1646,32 +1651,57 @@ following two lines at the beginning of the constructor for your subtype of
 
 You will need to supply annotations for relevant parts of the JDK;
 otherwise, your type-checker may produce spurious warnings for code that
-uses the JDK.  As described in Section~\ref{annotating-libraries},
-there are two general ways to supply an annotated library:  in Java files
-that will be compiled to \<.class> files, or as stub files (partial Java source files).
+uses the JDK\@.  You need to write your annotations twice:  once for JDK 8
+and once for JDK 11.
 
+For JDK 11, write your annotations in
+\url{https://github.com/typetools/jdk}.
+
+For JDK 8, as described in Section~\ref{annotating-libraries}, you can
+supply annotations in Java files that will be compiled to \<.class> files,
+or as stub files (partial Java source files).
 It's easier to start out with stub files.  If you need to annotate many
 classes (say, more than 20 or so), then you should create an annotated JDK.
 
+\begin{itemize}
+\item
 To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jdk}.
-
+\item
 To supply an annotated JDK as a stub file, create a file \<jdk.astub> in
-the checker's main source directory.  It will be automatically used by the
-checker.
+the checker's main source directory.  You can also create \<jdk\emph{N}.astub> files that contain methods
+or classes that only exist in certain JDK versions.
+It will be automatically used by the
+checker, unless the user supplies the command-line option \<-Aignorejdkastub>.
 You can also supply \<.astub> files in that directory for other libraries.
 You should list those other libraries in a
 \refqualclass{framework/qual}{StubFiles} annotation on the checker's main
 class, so that they will also be automatically used.
+\end{itemize}
 
 
 \sectionAndLabel{Testing framework}{creating-testing-framework}
 
-\begin{sloppypar}
 The Checker Framework provides a convenient way to write tests for your
-checker.
+checker.  Each test case is a Java file, with inline indications of what
+errors and warnings (if any) a checker should emit.  An example is
+
+\begin{Verbatim}
+class MyNullnessTest {
+  void method() {
+    Object nullable = null;
+    // :: error: (dereference.of.nullable)
+    nullable.toString();
+  }
+}
+\end{Verbatim}
+
+\noindent
+When the Nullness Checker is run on the above code, it should produce
+exactly one error, whose suppression key is \<dereference.of.nullable>, on
+the line following the ``// ::'' comment.
+
 % Don't repeat the information here, to prevent them from getting out of sync.
-It is extensively documented in file \<checker-framework/checker/tests/README>.
-\end{sloppypar}
+The testing infrastructure is extensively documented in file \ahref{https://github.com/typetools/checker-framework/blob/master/checker/tests/README}{\<checker-framework/checker/tests/README>}.
 
 If your checker's source code is within a fork of the Checker Framework
 repository, then you can copy the testing infrastructure used by some
@@ -1725,7 +1755,7 @@ large codebase without being inundated in stack traces.
 \begin{itemize}
 
 \item \code{-Aignorejdkastub}:
-  ignore the \<jdk.astub> file in the checker directory. Files passed
+  ignore the \<jdk.astub> and \<jdk\emph{N}.astub> files in the checker directory. Files passed
   through the \code{-Astubs} option are still processed. This is useful
   when experimenting with an alternative stub file.
 
@@ -2215,7 +2245,7 @@ without warnings or errors.
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
 % LocalWords:  createTypeHierarchy ImplicitFor treeClasses TypeMirror Anno
 % LocalWords:  LiteralTree ExpressionTree typeClasses addComputedTypeAnnotations nullable
-% LocalWords:  createSupportedTypeQualifiers FooChecker nullness PolyAll
+% LocalWords:  createSupportedTypeQualifiers FooChecker nullness
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
 % LocalWords:  InterningAnnotatedTypeFactory QualifierDefaults TypeKind getKind
 % LocalWords:  setAbsoluteDefaults PolymorphicQualifier TreeVisitor subnodes

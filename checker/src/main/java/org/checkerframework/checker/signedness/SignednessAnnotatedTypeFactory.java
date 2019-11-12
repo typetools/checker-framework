@@ -61,7 +61,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        Set<Class<? extends Annotation>> result = getBundledTypeQualifiersWithoutPolyAll();
+        Set<Class<? extends Annotation>> result = getBundledTypeQualifiers();
         result.remove(SignedPositive.class); // this method should not return aliases
         return result;
     }

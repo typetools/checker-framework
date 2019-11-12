@@ -15,9 +15,14 @@ import java.util.Collections;
  */
 public class LongLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new LongLiteralNode.
+     *
+     * @param t the tree for the literal value
+     */
     public LongLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.LONG_LITERAL);
+        assert t.getKind() == Tree.Kind.LONG_LITERAL;
     }
 
     @Override

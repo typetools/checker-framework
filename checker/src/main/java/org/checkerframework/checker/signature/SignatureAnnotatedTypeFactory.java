@@ -66,7 +66,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithPolyAll(SignatureUnknown.class, SignatureBottom.class);
+        return getBundledTypeQualifiers(SignatureUnknown.class, SignatureBottom.class);
     }
 
     @Override
