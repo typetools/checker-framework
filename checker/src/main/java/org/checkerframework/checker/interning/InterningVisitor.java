@@ -484,8 +484,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         // "return 0" statement (for the Comparator.compare heuristic).
         if (overrides(enclosing, Comparator.class, "compare")) {
             final boolean returnsZero =
-                    Heuristics.Matchers.withIn(
-                                    Heuristics.Matchers.ofKind(Tree.Kind.IF, matcherIfReturnsZero))
+                    new Heuristics.Within(new Heuristics.OfKind(Tree.Kind.IF, matcherIfReturnsZero))
                             .match(getCurrentPath());
 
             if (!returnsZero) {
@@ -508,8 +507,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         } else if (overrides(enclosing, Comparable.class, "compareTo")) {
 
             final boolean returnsZero =
-                    Heuristics.Matchers.withIn(
-                                    Heuristics.Matchers.ofKind(Tree.Kind.IF, matcherIfReturnsZero))
+                    new Heuristics.Within(new Heuristics.OfKind(Tree.Kind.IF, matcherIfReturnsZero))
                             .match(getCurrentPath());
 
             if (!returnsZero) {
@@ -674,9 +672,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 };
 
         boolean okay =
-                Heuristics.Matchers.withIn(
-                                Heuristics.Matchers.ofKind(
-                                        Tree.Kind.CONDITIONAL_OR, matcherEqOrEquals))
+                new Heuristics.Within(
+                                new Heuristics.OfKind(Tree.Kind.CONDITIONAL_OR, matcherEqOrEquals))
                         .match(getCurrentPath());
         return okay;
     }
@@ -778,8 +775,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 };
 
         boolean okay =
-                Heuristics.Matchers.withIn(
-                                Heuristics.Matchers.ofKind(
+                new Heuristics.Within(
+                                new Heuristics.OfKind(
                                         Tree.Kind.CONDITIONAL_OR, matcherEqOrCompareTo))
                         .match(getCurrentPath());
         return okay;

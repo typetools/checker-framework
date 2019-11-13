@@ -950,7 +950,7 @@ First, create the property in the \code{properties} section of the POM:
 <properties>
   <!-- These properties will be set by the Maven Dependency plugin -->
   <annotatedJdk>$\{org.checkerframework:jdk8:jar\}</annotatedJdk>
-  <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
+  <errorProneJavac>$\{com.google.errorprone:javac:jar\}</errorProneJavac>
 </properties>
 \end{alltt}
 
@@ -1006,13 +1006,14 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
       </annotationProcessors>
       <compilerArgs>
-        <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
+        <!-- If using JDK 8, use only the two arguments immediately below. -->
         <arg>-J-Xbootclasspath/p:$\{errorProneJavac\}</arg>
-        <!-- location of the annotated JDK 8, which comes from a Maven dependency -->
         <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
-        <!-- If using JDK 11 remove the two arguments above and uncomment the one below -->
-        <!-- <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg> -->
-        <!-- -Awarns turns type-checking errors into warnings. -->
+        <!-- If using JDK 11, remove the two arguments above, remove the
+             space in the one below, and uncomment it. -->
+        <!-- <arg>-J- -add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg> -->
+
+        <!-- Optionally, -Awarns turns type-checking errors into warnings. -->
         <!-- <arg>-Awarns</arg> -->
       </compilerArgs>
     </configuration>

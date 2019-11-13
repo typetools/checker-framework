@@ -2,7 +2,7 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
-    id 'com.github.johnrengelman.shadow' version '5.1.0'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
     // https://plugins.gradle.org/plugin/de.undercouch.download
     id "de.undercouch.download" version "4.0.0"
     id 'java'
@@ -716,10 +716,10 @@ subprojects {
             ]
         }
 
-        // Create an allTests task per project
-        tasks.create(name: 'allTests', type: GradleBuild, group: 'Verification') {
-            description 'Run all Checker Framework tests'
-            tasks = ['test', 'checkPurity']
+        // Create a nonJunitTests task per project
+        tasks.create(name: 'nonJunitTests', type: GradleBuild, group: 'Verification') {
+            description 'Run all Checker Framework tests except for the Junit tests.'
+            tasks = ['checkPurity']
             if (project.name.is('framework') || project.name.is('checker')) {
                 tasks += ['checkCompilerMessages', 'jtregTests']
             }
@@ -730,6 +730,13 @@ subprojects {
             if (project.name.is('checker')) {
                 tasks += ['nullnessExtraTests', 'commandLineTests', 'tutorialTests']
             }
+        }
+
+        // Create an allTests task per project
+        tasks.create(name: 'allTests', type: GradleBuild, group: 'Verification') {
+            description 'Run all Checker Framework tests'
+	    // The 'test' target is just the JUnit tests.
+            tasks = ['nonJunitTests', 'test']
         }
 
         task javadocPrivate(dependsOn: javadoc) {
