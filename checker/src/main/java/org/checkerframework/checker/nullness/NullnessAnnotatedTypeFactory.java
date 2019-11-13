@@ -120,7 +120,7 @@ public class NullnessAnnotatedTypeFactory
                     "org.eclipse.jgit.annotations.NonNull",
                     // https://github.com/JetBrains/intellij-community/blob/master/platform/annotations/java8/src/org/jetbrains/annotations/NotNull.java
                     "org.jetbrains.annotations.NotNull",
-                    // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
+                    // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/NonNull.java
                     "org.jmlspecs.annotation.NonNull",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
                     "org.netbeans.api.annotations.common.NonNull",
