@@ -693,7 +693,7 @@ public class BoundsInitializer {
             } // else
 
             final TypeVariableStructure toPop = (TypeVariableStructure) this.currentStructure;
-            if (toPop.typeVar != typeVar) {
+            if (toPop.typeVar != typeVar.getUnderlyingType()) {
                 this.currentStructure = toPop.parent;
             }
         }
