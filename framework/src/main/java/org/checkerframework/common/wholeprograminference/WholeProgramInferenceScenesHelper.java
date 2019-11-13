@@ -104,6 +104,7 @@ public class WholeProgramInferenceScenesHelper {
      */
     private final Map<String, TypeMirror> baseTypes = new HashMap<>();
 
+    /** Create a new helper. */
     public WholeProgramInferenceScenesHelper(boolean ignoreNullAssignments) {
         this.ignoreNullAssignments = ignoreNullAssignments;
     }

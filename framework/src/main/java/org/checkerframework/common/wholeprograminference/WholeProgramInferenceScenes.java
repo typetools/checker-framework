@@ -108,6 +108,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     private final Map<String, TypeElement> types = new HashMap<>();
 
+    /**
+     * Create a new WholeProgramInferenceScenes. ignoreNullAssignments is useful when inferring
+     * types for the nullness checker.
+     */
     public WholeProgramInferenceScenes(boolean ignoreNullAssignments) {
         helper = new WholeProgramInferenceScenesHelper(ignoreNullAssignments);
     }
