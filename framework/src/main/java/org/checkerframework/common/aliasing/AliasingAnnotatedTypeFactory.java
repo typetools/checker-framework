@@ -44,18 +44,18 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Create the type factory. */
     public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        if (this.getClass().equals(AliasingAnnotatedTypeFactory.class)) {
+        if (this.getClass() == AliasingAnnotatedTypeFactory.class) {
             this.postInit();
         }
     }
 
     // @NonLeaked and @LeakedToResult are type qualifiers because of a checker
     // framework limitation (Issue 383). Once the stub parser gets updated to read
-    // non-type-qualifers annotations on stub files, this annotation won't be a
+    // non-type-qualifiers annotations on stub files, this annotation won't be a
     // type qualifier anymore.
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll(MaybeLeaked.class);
+        return getBundledTypeQualifiers(MaybeLeaked.class);
     }
 
     @Override

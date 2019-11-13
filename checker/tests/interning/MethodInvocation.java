@@ -46,7 +46,7 @@ public class MethodInvocation {
         // TODO: autoboxing from char to Character // :: error: (argument.type.incompatible)
         internedCharacterParameter('a');
         // :: error: (argument.type.incompatible)
-        internedCharacterParameter(new Character('a'));
+        internedCharacterParameter(Character.valueOf('a'));
         // :: error: (argument.type.incompatible)
         internedCharacterParameter(Character.valueOf('a'));
     }

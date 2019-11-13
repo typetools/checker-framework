@@ -1,6 +1,5 @@
 package org.checkerframework.framework.qual;
 
-import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -25,7 +24,6 @@ import java.lang.annotation.RetentionPolicy;
  * to which the comment applies (e.g., local variable rather than method, and method rather than
  * class).
  */
-@Documented
 @Retention(RetentionPolicy.SOURCE)
 public @interface CFComment {
     /**

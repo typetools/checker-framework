@@ -56,7 +56,7 @@ public class ThrowNode extends Node {
 
     @Override
     public int hashCode() {
-        return Objects.hash(expression);
+        return Objects.hash(ThrowNode.class, expression);
     }
 
     @Override

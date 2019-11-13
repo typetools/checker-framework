@@ -48,6 +48,13 @@ public class TypecheckExecutor {
         final List<String> options = new ArrayList<>();
         options.add("-processor");
         options.add(String.join(",", configuration.getProcessors()));
+        if (PluginUtil.getJreVersion() == 8) {
+            options.add("-source");
+            options.add("8");
+            options.add("-target");
+            options.add("8");
+        }
+
         List<String> nonJvmOptions = new ArrayList<>();
         for (String option : configuration.getFlatOptions()) {
             if (!option.startsWith("-J-")) {
@@ -58,6 +65,10 @@ public class TypecheckExecutor {
         nonJvmOptions.add("100000");
         nonJvmOptions.add("-Xmaxwarns");
         nonJvmOptions.add("100000");
+        nonJvmOptions.add("-Xlint:deprecation");
+
+        nonJvmOptions.add("-Anocheckjdk");
+
         options.addAll(nonJvmOptions);
 
         if (configuration.shouldEmitDebugInfo()) {

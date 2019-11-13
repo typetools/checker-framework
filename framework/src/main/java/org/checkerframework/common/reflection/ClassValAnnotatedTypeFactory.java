@@ -45,9 +45,14 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror CLASSVAL_TOP =
             AnnotationBuilder.fromClass(elements, UnknownClass.class);
 
+    /**
+     * Create a new ClassValAnnotatedTypeFactory.
+     *
+     * @param checker the type-checker associated with this factory
+     */
     public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        if (this.getClass().equals(ClassValAnnotatedTypeFactory.class)) {
+        if (this.getClass() == ClassValAnnotatedTypeFactory.class) {
             this.postInit();
         }
     }

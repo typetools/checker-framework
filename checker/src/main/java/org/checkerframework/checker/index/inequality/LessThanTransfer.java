@@ -7,8 +7,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
@@ -109,7 +109,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         Receiver leftRec = FlowExpressions.internalReprOf(factory, n.getLeftOperand());
         if (leftRec != null && leftRec.isUnassignableByOtherCode()) {
             ValueAnnotatedTypeFactory valueFactory = factory.getValueAnnotatedTypeFactory();
-            Long right = IndexUtil.getMinValue(n.getRightOperand().getTree(), valueFactory);
+            Long right = ValueCheckerUtils.getMinValue(n.getRightOperand().getTree(), valueFactory);
             if (right != null && 0 < right) {
                 // left - right < left iff 0 < right
                 List<String> expressions = getLessThanExpressions(n.getLeftOperand());

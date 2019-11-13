@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -178,8 +177,6 @@ public abstract class QualifierHierarchy {
     public Set<? extends AnnotationMirror> leastUpperBounds(
             Collection<? extends AnnotationMirror> annos1,
             Collection<? extends AnnotationMirror> annos2) {
-        annos1 = replacePolyAll(annos1);
-        annos2 = replacePolyAll(annos2);
         if (annos1.size() != annos2.size()) {
             throw new BugInCF(
                     "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes.\n"
@@ -213,26 +210,6 @@ public abstract class QualifierHierarchy {
                         + result;
 
         return result;
-    }
-
-    /**
-     * Returns a new set that is the passed set, but PolyAll has been replaced by a polymorphic
-     * qualifiers, for hierarchies that do not have an annotation in the set.
-     *
-     * @param annos set of annotations
-     * @return a new set with same annotations as anno, but PolyAll has been replaced with
-     *     polymorphic qualifiers
-     */
-    protected Collection<? extends AnnotationMirror> replacePolyAll(
-            Collection<? extends AnnotationMirror> annos) {
-        Set<AnnotationMirror> returnAnnos = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror top : getTopAnnotations()) {
-            AnnotationMirror annotationInHierarchy = findAnnotationInHierarchy(annos, top);
-            if (annotationInHierarchy != null) {
-                returnAnnos.add(annotationInHierarchy);
-            }
-        }
-        return returnAnnos;
     }
 
     /**
@@ -599,9 +576,6 @@ public abstract class QualifierHierarchy {
     /**
      * Returns the annotation in annos that is in the same hierarchy as annotationMirror.
      *
-     * <p>If the annotation in the hierarchy is PolyAll, then the polymorphic qualifier in the
-     * hierarchy is returned instead of PolyAll.
-     *
      * @param annos set of annotations to search
      * @param annotationMirror annotation that is in the same hierarchy as the returned annotation
      * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
@@ -615,28 +589,16 @@ public abstract class QualifierHierarchy {
     /**
      * Returns the annotation in annos that is in the hierarchy for which annotationMirror is top.
      *
-     * <p>If the annotation in the hierarchy is PolyAll, then the polymorphic qualifier in the
-     * hierarchy is returned instead of PolyAll.
-     *
      * @param annos set of annotations to search
      * @param top the top annotation in the hierarchy to which the returned annotation belongs
      * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
      */
     public AnnotationMirror findAnnotationInHierarchy(
             Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
-        boolean hasPolyAll = false;
         for (AnnotationMirror anno : annos) {
-            boolean isSubtype = isSubtype(anno, top);
-            if (isSubtype && AnnotationUtils.areSameByClass(anno, PolyAll.class)) {
-                // If the set contains @PolyAll, only return the polymorphic qualifier if annos
-                // contains no other annotation in the hierarchy.
-                hasPolyAll = true;
-            } else if (isSubtype) {
+            if (isSubtype(anno, top)) {
                 return anno;
             }
-        }
-        if (hasPolyAll) {
-            return getPolymorphicAnnotation(top);
         }
         return null;
     }
@@ -652,7 +614,7 @@ public abstract class QualifierHierarchy {
      * @param map the mapping to modify
      * @param key the key to update
      * @param newQual the value to add
-     * @return whether there was a qualifier hierarchy collision
+     * @return true if the update was done; false if there was a qualifier hierarchy collision
      */
     public <T> boolean updateMappingToMutableSet(
             Map<T, Set<AnnotationMirror>> map, T key, AnnotationMirror newQual) {

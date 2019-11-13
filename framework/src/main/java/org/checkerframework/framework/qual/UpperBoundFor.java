@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface UpperBoundFor {
-    /** @return {@link TypeKind}s of types for which an annotation should be implicitly added */
+    /** @return {@link TypeKind}s of types for which an annotation should be added by default */
     TypeKind[] typeKinds() default {};
 
     /**

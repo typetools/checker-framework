@@ -45,7 +45,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -95,7 +94,7 @@ public class NullnessVisitor
         this.collectionSize =
                 TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
         this.collectionToArray =
-                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", 1, env);
+                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", env, "T[]");
     }
 
     @Override
@@ -106,17 +105,14 @@ public class NullnessVisitor
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-        // At most a single qualifier on a type, ignoring a possible PolyAll
-        // annotation.
+        // At most, a single qualifier on a type.
         boolean foundInit = false;
         boolean foundNonNull = false;
         Set<Class<? extends Annotation>> initQuals = atypeFactory.getInitializationAnnotations();
         Set<Class<? extends Annotation>> nonNullQuals = atypeFactory.getNullnessAnnotations();
 
         for (AnnotationMirror anno : useType.getAnnotations()) {
-            if (QualifierPolymorphism.isPolyAll(anno)) {
-                // ok.
-            } else if (containsSameByName(initQuals, anno)) {
+            if (containsSameByName(initQuals, anno)) {
                 if (foundInit) {
                     return false;
                 }

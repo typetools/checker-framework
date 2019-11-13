@@ -51,7 +51,7 @@ public class CollectionToArrayHeuristics {
         this.atypeFactory = factory;
 
         this.collectionToArrayE =
-                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", 1, env);
+                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", env, "T[]");
         this.size = TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
         this.collectionType =
                 factory.fromElement(env.getElementUtils().getTypeElement("java.util.Collection"));

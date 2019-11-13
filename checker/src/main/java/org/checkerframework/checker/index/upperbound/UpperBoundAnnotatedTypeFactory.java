@@ -50,13 +50,13 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -123,7 +123,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(SearchIndexFor.class, LTLengthOf.class, true);
         addAliasedAnnotation(NegativeIndexFor.class, LTLengthOf.class, true);
         addAliasedAnnotation(LengthOf.class, LTEqLengthOf.class, true);
-        addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
         imf = new IndexMethodIdentifier(this);
@@ -486,7 +485,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.containsSameByClass(
                     searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
                 AnnotationMirror nif = searchIndexType.getAnnotation(NegativeIndexFor.class);
-                List<String> arrays = IndexUtil.getValueOfAnnotationWithStringArgument(nif);
+                List<String> arrays = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(nif);
                 List<String> negativeOnes = Collections.nCopies(arrays.size(), "-1");
                 UBQualifier qual = UBQualifier.createUBQualifier(arrays, negativeOnes);
                 typeDst.addAnnotation(convertUBQualifierToAnnotation(qual));
@@ -553,7 +552,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // For non-negative numbers, right shift is equivalent to division by a power of two
                 // The range of the shift amount is limited to 0..30 to avoid overflows and int/long
                 // differences
-                Long shiftAmount = IndexUtil.getExactValue(right, getValueAnnotatedTypeFactory());
+                Long shiftAmount =
+                        ValueCheckerUtils.getExactValue(right, getValueAnnotatedTypeFactory());
                 if (shiftAmount != null && shiftAmount >= 0 && shiftAmount < Integer.SIZE - 1) {
                     int divisor = 1 << shiftAmount;
                     // Support average by shift just like for division
@@ -640,7 +640,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ExpressionTree divisorTree,
                 AnnotatedTypeMirror resultType) {
 
-            Long divisor = IndexUtil.getExactValue(divisorTree, getValueAnnotatedTypeFactory());
+            Long divisor =
+                    ValueCheckerUtils.getExactValue(divisorTree, getValueAnnotatedTypeFactory());
             if (divisor == null) {
                 resultType.addAnnotation(UNKNOWN);
                 return;

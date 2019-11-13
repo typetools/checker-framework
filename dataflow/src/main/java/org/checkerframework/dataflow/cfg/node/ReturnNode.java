@@ -81,7 +81,7 @@ public class ReturnNode extends Node {
 
     @Override
     public int hashCode() {
-        return Objects.hash(result);
+        return Objects.hash(ReturnNode.class, result);
     }
 
     @Override

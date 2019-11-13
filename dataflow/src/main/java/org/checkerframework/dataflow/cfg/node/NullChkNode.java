@@ -56,7 +56,7 @@ public class NullChkNode extends Node {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getOperand());
+        return Objects.hash(NullChkNode.class, getOperand());
     }
 
     @Override

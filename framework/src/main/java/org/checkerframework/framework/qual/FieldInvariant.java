@@ -6,7 +6,6 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import javax.lang.model.element.TypeElement;
 
 /**
  * Specifies that a field's type, in the class on which this annotation is written, is a subtype of
@@ -17,8 +16,8 @@ import javax.lang.model.element.TypeElement;
  * field invariant annotation and override {@link
  * org.checkerframework.framework.type.AnnotatedTypeFactory#getFieldInvariantDeclarationAnnotations()}
  * and {@link
- * org.checkerframework.framework.type.AnnotatedTypeFactory#getFieldInvariants(TypeElement)}. See
- * {@link org.checkerframework.common.value.qual.MinLenFieldInvariant} for example.
+ * org.checkerframework.framework.type.AnnotatedTypeFactory#getFieldInvariants(javax.lang.model.element.TypeElement)}.
+ * See {@link org.checkerframework.common.value.qual.MinLenFieldInvariant} for example.
  *
  * @checker_framework.manual #field-invariants Field invariants
  */

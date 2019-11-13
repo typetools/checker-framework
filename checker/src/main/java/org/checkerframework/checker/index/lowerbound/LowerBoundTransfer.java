@@ -1,6 +1,6 @@
 package org.checkerframework.checker.index.lowerbound;
 
-import static org.checkerframework.checker.index.IndexUtil.getExactValue;
+import static org.checkerframework.common.value.ValueCheckerUtils.getExactValue;
 
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -715,7 +715,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         List<? extends VariableTree> paramTrees = methodTree.getParameters();
 
         for (VariableTree variableTree : paramTrees) {
-            if (TreeUtils.typeOf(variableTree).getKind().equals(TypeKind.CHAR)) {
+            if (TreeUtils.typeOf(variableTree).getKind() == TypeKind.CHAR) {
 
                 Receiver rec = null;
                 try {

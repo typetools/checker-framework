@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.Subsequence;
 import org.checkerframework.checker.index.inequality.LessThanAnnotatedTypeFactory;
 import org.checkerframework.checker.index.qual.LessThan;
@@ -17,6 +16,7 @@ import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
@@ -202,7 +202,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CFStore store) {
         if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
             Long minValue =
-                    IndexUtil.getMinValue(
+                    ValueCheckerUtils.getMinValue(
                             other.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
             if (minValue != null && minValue > 1) {
                 typeOfMultiplication = (LessThanLengthOf) typeOfMultiplication.plusOffset(1);
@@ -437,7 +437,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             NumericalSubtractionNode subtraction = (NumericalSubtractionNode) lengthAccess;
             Node offsetNode = subtraction.getRightOperand();
             Long offsetValue =
-                    IndexUtil.getExactValue(
+                    ValueCheckerUtils.getExactValue(
                             offsetNode.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
             if (offsetValue != null
                     && offsetValue > Integer.MIN_VALUE
@@ -671,7 +671,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         List<String> sameLenSequences =
                 sameLenAnno == null
                         ? new ArrayList<>()
-                        : IndexUtil.getValueOfAnnotationWithStringArgument(sameLenAnno);
+                        : ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
 
         if (!sameLenSequences.contains(sequenceRec.toString())) {
             sameLenSequences.add(sequenceRec.toString());

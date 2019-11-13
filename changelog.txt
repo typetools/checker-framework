@@ -1,6 +1,59 @@
-Version ??, August 1, 2019
+---------------------------------------------------------------------------
+
+Version 3.0.0, November 1, 2019
+
+The Checker Framework works on both JDK 8 and JDK 11.
+ * Type annotations for JDK 8 remain in jdk8.jar.
+ * Type annotations for JDK 11 appear in stub files in checker.jar.
+
+Removed the @PolyAll annotation.
+
+Implementation details:
+ * Removed all previously deprecated methods.
+ * AnnotatedTypeFactory#getFnInterfaceFromTree now returns an AnnotatedExecutableType.
+ * AnnotationUtils#areSame and #areSameByName now only accept non-null
+   AnnotationMirrors
+
+Closed issues:
+1169, 1654, 2081, 2703, 2739, 2749, 2779, 2781, 2798, 2820, 2824, 2829, 2842,
+2845, 2848.
+
+---------------------------------------------------------------------------
+
+Version 2.11.1, October 1, 2019
+
+The manual links to the Object Construction Checker.
+
+Closed issues:
+1635, 2718, 2767.
+
+---------------------------------------------------------------------------
+
+Version 2.11.0, August 30, 2019
+
+The Checker Framework now uses the Java 9 javac API. The manual describes
+how to satisfy this dependency, in a way that works on a Java 8 JVM.
+Running the Checker Framework on a Java 9 JVM is not yet supported.
+
+---------------------------------------------------------------------------
+
+Version 2.10.1, August 22, 2019
+
+Closed issues:
+1152, 1614, 2031, 2482, 2543, 2587, 2678, 2686, 2690, 2712, 2717, 2713, 2721,
+2725, 2729.
+
+---------------------------------------------------------------------------
+
+Version 2.10.0, August 1, 2019
 
 Removed the NullnessRawnessChecker.  Use the NullnessChecker instead.
+
+Closed issues:
+435, 939, 1430, 1687, 1771, 1902, 2173, 2345, 2470, 2534, 2606, 2613, 2619,
+2633, 2638.
+
+---------------------------------------------------------------------------
 
 Version 2.9.0, July 3, 2019
 
@@ -11,15 +64,15 @@ Annotated the first argument of Opt.get and Opt.orElseThrow as @NonNull.
 
 Removed meta-annotation @ImplicitFor:
  * Use the new meta-annotation @QualifierForLiteral to replace
- @ImplicitFor(literals, stringpatterns).
+   @ImplicitFor(literals, stringpatterns).
  * Use the meta-annotation @DefaultFor to replace @ImplicitFor(typeKinds,
- types).
+   types).
  * Use the new meta-annotation @UpperBoundFor to specify a qualifier upper
- bound for certain types.
-* You can completely remove @ImplicitFor(typeNames =
- Void.class, literals = LiteralKind.NULL) on bottom qualifiers.
- @DefaultFor(types = Void.class) and @QualifierForLiterals(literals =
- LiteralKind.NULL) are added to the bottom qualifier by default.
+   bound for certain types.
+ * You can completely remove @ImplicitFor(typeNames =
+   Void.class, literals = LiteralKind.NULL) on bottom qualifiers.
+   @DefaultFor(types = Void.class) and @QualifierForLiterals(literals =
+   LiteralKind.NULL) are added to the bottom qualifier by default.
 
 Add @DefaultQualifierOnUse and @NoDefaultQualifierOnUse type declaration annotations
 
@@ -38,9 +91,8 @@ Implementation details:
  isSuperConstructorCall and isThisConstructorCall
 
 Closed issues:
-2247, 2247, 2391, 2391, 2409, 2409, 2434, 2434, 2451, 2451, 2457, 2457, 2468,
-2468, 2484, 2484, 2485, 2485, 2493, 2493, 2505, 2505, 2536, 2536, 2537, 2537,
-2540, 2540, 2541, 2541, 2564, 2564, 2565, 2565, 2585, 2585.
+2247, 2391, 2409, 2434, 2451, 2457, 2468, 2484, 2485, 2493, 2505, 2536, 2537,
+2540, 2541, 2564, 2565, 2585.
 
 ---------------------------------------------------------------------------
 
@@ -57,8 +109,7 @@ Implementation detail: deprecated TreeUtils.skipParens in favor of
 TreeUtils.withoutParens which has the same specification.
 
 Closed issues:
-2291, 2291, 2406, 2406, 2469, 2469, 2477, 2477, 2479, 2479, 2480, 2480, 2494,
-2494, 2499, 2499.
+2291, 2406, 2469, 2477, 2479, 2480, 2494, 2499.
 
 ---------------------------------------------------------------------------
 

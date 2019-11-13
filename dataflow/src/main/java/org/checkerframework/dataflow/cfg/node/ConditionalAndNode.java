@@ -13,9 +13,16 @@ import java.util.Objects;
  */
 public class ConditionalAndNode extends BinaryOperationNode {
 
+    /**
+     * Create a new ConditionalAndNode.
+     *
+     * @param tree the conditional-and tree for this node
+     * @param left the first argument
+     * @param right the second argument
+     */
     public ConditionalAndNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
-        assert tree.getKind().equals(Kind.CONDITIONAL_AND);
+        assert tree.getKind() == Kind.CONDITIONAL_AND;
     }
 
     @Override
