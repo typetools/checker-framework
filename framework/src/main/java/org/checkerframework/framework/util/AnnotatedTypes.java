@@ -389,10 +389,10 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Finalize a AnnotatedTypeMirror instead of creating a new one based on parameter {@code
-     * member}
+     * Finalize a given AnnotatedTypeMirror returned by getAnnotatedType(ExecutableElement) instead
+     * of creating a new one.
      *
-     * @param memberType an AnnotatedTypeMirror without applying this function
+     * @param memberType an AnnotatedTypeMirror returned by getAnnotatedType(ExecutableElement)
      * @return finalized memberType
      */
     private static AnnotatedTypeMirror asMemberOfImpl(

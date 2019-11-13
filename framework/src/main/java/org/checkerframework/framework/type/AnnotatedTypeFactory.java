@@ -1954,7 +1954,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public ParameterizedExecutableType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
-        AnnotatedTypeMirror memberType = getAnnotatedType(methodElt); // get unsubstituted type
+        AnnotatedExecutableType memberType = getAnnotatedType(methodElt); // get unsubstituted type
         if (shouldBeSubstituted(methodElt)) {
             methodFromUsePreSubstitution(tree, memberType);
         }
@@ -1991,21 +1991,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             adaptGetClassReturnTypeToReceiver(methodType, receiverType);
         }
 
-        if (!shouldBeSubstituted(methodElt)) {
-            methodFromUsePreSubstitution(tree, memberType);
-        }
         return new ParameterizedExecutableType(methodType, typeargs);
     }
 
     /**
-     * An empty slot to be overridden for any potential operation to AnnotatedTypeMirror before type
-     * variable substitution. Default operation is "no operation".
+     * Callback method for any operation to AnnotatedTypeMirror before type variable substitution.
+     * Default operation is "no operation" now.
      *
      * @param tree a source Tree
      * @param mirror mirror of type before substitution. changes may made on this
      */
-    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedTypeMirror mirror) {
-        // no-op in super
+    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType mirror) {
+        // no-op in here
     }
 
     /**
