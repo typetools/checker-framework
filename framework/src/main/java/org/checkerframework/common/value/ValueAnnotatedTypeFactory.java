@@ -804,8 +804,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (doubleValAnno != null) {
                 if (intRangeAnno != null) {
                     intValAnno = convertIntRangeToIntVal(intRangeAnno);
-                    intRangeAnno = null;
-                    if (intValAnno == UNKNOWNVAL) {
+                    if (AnnotationUtils.areSameByClass(intValAnno, UnknownVal.class)) {
                         intValAnno = null;
                     }
                 }
