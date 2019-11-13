@@ -54,7 +54,7 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
         this.arraysAreRelevant = false;
         this.relevantTypes = new ArrayList<>(relevantClasses.length);
         for (Class<?> clazz : relevantClasses) {
-            if (clazz.equals(Object[].class)) {
+            if (clazz == Object[].class) {
                 arraysAreRelevant = true;
             } else {
                 relevantTypes.add(

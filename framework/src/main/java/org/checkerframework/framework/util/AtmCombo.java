@@ -57,7 +57,7 @@ enum AtmKind {
 
         for (AtmKind atmKind : AtmKind.values()) {
             final Class<?> kindClass = atmKind.atmClass;
-            if (argClass.equals(kindClass)) {
+            if (argClass == kindClass) {
                 return atmKind;
             }
         }
