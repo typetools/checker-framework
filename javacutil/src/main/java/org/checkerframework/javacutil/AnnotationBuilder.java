@@ -563,7 +563,6 @@ public class AnnotationBuilder {
     }
 
     /** Implementation of AnnotationMirror used by the Checker Framework. */
-    /* default visibility to allow access from within package. */
     public static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
 
         private @Interned String toStringVal;
@@ -581,6 +580,7 @@ public class AnnotationBuilder {
             this.elementValues = ev;
         }
 
+        /** Copy constructor */
         public CheckerFrameworkAnnotationMirror(AnnotationMirror other) {
             this.annotationType = other.getAnnotationType();
             final TypeElement elm = (TypeElement) annotationType.asElement();

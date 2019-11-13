@@ -31,7 +31,6 @@ import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
-import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -66,32 +65,6 @@ import org.checkerframework.javacutil.TypesUtils;
 public class NullnessAnnotatedTypeFactory
         extends InitializationAnnotatedTypeFactory<
                 NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
-    public enum Qualifier {
-        NONNULL(NonNull.class.getCanonicalName()),
-        NULLABLE(Nullable.class.getCanonicalName()),
-        POLYNULL(PolyNull.class.getCanonicalName()),
-        MONOTONIC_NONNULL(MonotonicNonNull.class.getCanonicalName());
-        @Interned public final String name;
-
-        Qualifier(String name) {
-            this.name = name;
-        }
-    }
-
-    @Override
-    public AnnotationMirror convert(AnnotationMirror a) {
-        switch (AnnotationUtils.annotationName(a)) {
-            case "org.checkerfamework.checker.nullness.qual.NonNull":
-                return NONNULL;
-            case "org.checkerfamework.checker.nullness.qual.Nullable":
-                return NULLABLE;
-            case "org.checkerfamework.checker.nullness.qual.PolyNull":
-                return POLYNULL;
-            case "org.checkerfamework.checker.nullness.qual.MonotonicNonNull":
-                return MONOTONIC_NONNULL;
-        }
-        return a;
-    }
 
     /** The @{@link NonNull} annotation. */
     protected final AnnotationMirror NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
