@@ -723,6 +723,7 @@ public class FlowExpressions {
 
     public static class LocalVariable extends Receiver {
         protected final Element element;
+        /** Hashcode */
         private final int hashcode;
 
         public LocalVariable(LocalVariableNode localVar) {
