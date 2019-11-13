@@ -691,15 +691,7 @@ public class BoundsInitializer {
                                 + currentStructure
                                 + "\n");
             } // else
-
-            final TypeVariableStructure toPop = (TypeVariableStructure) this.currentStructure;
-            if (toPop.typeVar != typeVar) {
-                // TODO: This is code is unreachable because toPop.typeVar is TypeVariable and
-                // typeVar is AnnotatedTypeVariable.
-                // But changing the above to if (toPop.typeVar != typeVar.getUnderlyingType()) {
-                // causes crashes.
-                this.currentStructure = toPop.parent;
-            }
+            this.currentStructure = ((TypeVariableStructure) this.currentStructure).parent;
         }
 
         public ReferenceMap createReferenceMap(final BoundStructure boundStruct) {
