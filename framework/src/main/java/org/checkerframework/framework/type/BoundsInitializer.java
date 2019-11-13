@@ -693,7 +693,11 @@ public class BoundsInitializer {
             } // else
 
             final TypeVariableStructure toPop = (TypeVariableStructure) this.currentStructure;
-            if (toPop.typeVar != typeVar.getUnderlyingType()) {
+            if (toPop.typeVar != typeVar) {
+                // TODO: This is code is unreachable because toPop.typeVar is TypeVariable and
+                // typeVar is AnnotatedTypeVariable.
+                // But changing the above to if (toPop.typeVar != typeVar.getUnderlyingType()) {
+                // causes crashes.
                 this.currentStructure = toPop.parent;
             }
         }
