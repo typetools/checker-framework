@@ -373,7 +373,7 @@ public class I18nFormatUtil {
 
             // Try trimmed lowercase.
             String ls = s.trim().toLowerCase(Locale.ROOT);
-            if (ls.equals(s)) {
+            if (!ls.equals(s)) {
                 for (int i = 0; i < list.length; ++i) {
                     if (ls.equals(list[i])) {
                         return i;
