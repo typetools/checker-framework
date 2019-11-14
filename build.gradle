@@ -606,7 +606,6 @@ subprojects {
                             if (project.name.is('checker')) {
                                 args += [
                                         "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar",
-                                        "-exclude:${projectDir}/jtreg/jdk8-exclude-list "
                                 ]
                             }
                         } else {
