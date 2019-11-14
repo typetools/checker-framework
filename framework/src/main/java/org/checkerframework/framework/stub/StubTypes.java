@@ -59,12 +59,18 @@ public class StubTypes {
     /**
      * Mapping from fully-qualified class name to corresponding JDK stub file from the file system.
      */
-    private final Map<String, Path> jdk11StubFiles = new HashMap<>();
+    private final Map<String, Path> jdkStubFiles = new HashMap<>();
 
     /**
      * Mapping from fully-qualified class name to corresponding JDK stub files from the checker.jar.
      */
-    private final Map<String, String> jdk11StubFilesJar = new HashMap<>();
+    private final Map<String, String> jdkStubFilesJar = new HashMap<>();
+
+    /** Which version number of the annotated JDK should be used? */
+    private final int annotatedJdkVersion;
+
+    /** Should the JDK be parsed? */
+    private final boolean shouldParseJdk;
 
     /** Creates a stub type. */
     public StubTypes(AnnotatedTypeFactory factory) {
@@ -72,6 +78,11 @@ public class StubTypes {
         this.typesFromStubFiles = new HashMap<>();
         this.declAnnosFromStubFiles = new HashMap<>();
         this.parsing = false;
+        this.annotatedJdkVersion = factory.getProcessingEnv().getSourceVersion().ordinal();
+        this.shouldParseJdk =
+                !factory.getContext().getChecker().hasOption("ignorejdkastub")
+                        && PluginUtil.getJreVersion() != 8
+                        && annotatedJdkVersion == 11;
     }
 
     /** @return true if stub files are currently being parsed; otherwise, false. */
@@ -85,7 +96,7 @@ public class StubTypes {
      * <ol>
      *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option
      *       is not supplied <br>
-     *   <li>If using JDK 11, all package-info.java in jdk11 <br>
+     *   <li>If parings JDK as stub files, all package-info.java in the jdk directory <br>
      *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
      *       the checker<br>
      *   <li>Stub files provide via stubs system property <br>
@@ -117,7 +128,8 @@ public class StubTypes {
                         typesFromStubFiles,
                         declAnnosFromStubFiles);
             }
-            String jdkVersionStub = "jdk" + PluginUtil.getJreVersion() + ".astub";
+            int sourceVersion = processingEnv.getSourceVersion().ordinal();
+            String jdkVersionStub = "jdk" + sourceVersion + ".astub";
             InputStream jdkVersionStubIn = checker.getClass().getResourceAsStream(jdkVersionStub);
             if (jdkVersionStubIn != null) {
                 StubParser.parse(
@@ -276,16 +288,19 @@ public class StubTypes {
      * has not already been parsed.
      */
     private void parseEnclosingClass(Element e) {
+        if (!shouldParseJdk) {
+            return;
+        }
         String className = getOuterMostEnclosingClass(e);
         if (className == null) {
             return;
         }
-        if (jdk11StubFiles.containsKey(className)) {
-            parseStubFile(jdk11StubFiles.get(className));
-            jdk11StubFiles.remove(className);
-        } else if (jdk11StubFilesJar.containsKey(className)) {
-            parseJarEntry(jdk11StubFilesJar.get(className));
-            jdk11StubFilesJar.remove(className);
+        if (jdkStubFiles.containsKey(className)) {
+            parseStubFile(jdkStubFiles.get(className));
+            jdkStubFiles.remove(className);
+        } else if (jdkStubFilesJar.containsKey(className)) {
+            parseJarEntry(jdkStubFilesJar.get(className));
+            jdkStubFilesJar.remove(className);
         }
     }
 
@@ -340,7 +355,7 @@ public class StubTypes {
      * @param jarEntryName name of the jar entry to parse
      */
     private void parseJarEntry(String jarEntryName) {
-        JarURLConnection connection = getJarURLConnectionToJdk11();
+        JarURLConnection connection = getJarURLConnectionToJdk();
         parsing = true;
         try (JarFile jarFile = connection.getJarFile()) {
             InputStream jdkStub;
@@ -365,9 +380,9 @@ public class StubTypes {
         }
     }
 
-    /** @return JarURLConnection to "/jdk11" */
-    private JarURLConnection getJarURLConnectionToJdk11() {
-        URL resourceURL = factory.getClass().getResource("/jdk11");
+    /** @return JarURLConnection to "/jdk*" */
+    private JarURLConnection getJarURLConnectionToJdk() {
+        URL resourceURL = factory.getClass().getResource("/jdk" + annotatedJdkVersion);
         JarURLConnection connection;
         try {
             connection = (JarURLConnection) resourceURL.openConnection();
@@ -385,23 +400,23 @@ public class StubTypes {
     }
 
     /**
-     * Walk through the jdk11 directory and create a mapping, {@link #jdk11StubFiles}, from file
-     * name to the class contained with in it. Also, parses all package-info.java files.
+     * Walk through the jdk directory and create a mapping, {@link #jdkStubFiles}, from file name to
+     * the class contained with in it. Also, parses all package-info.java files.
      */
     private void prepJdkStubs() {
-        if (PluginUtil.getJreVersion() < 11) {
+        if (!shouldParseJdk) {
             return;
         }
-        URL resourceURL = factory.getClass().getResource("/jdk11");
+        URL resourceURL = factory.getClass().getResource("/jdk" + annotatedJdkVersion);
         if (resourceURL == null) {
             if (factory.getContext().getChecker().hasOption("nocheckjdk")) {
                 return;
             }
             throw new BugInCF("JDK not found");
         } else if (resourceURL.getProtocol().contentEquals("jar")) {
-            prepJdk11FromJar(resourceURL);
+            prepJdkFromJar(resourceURL);
         } else if (resourceURL.getProtocol().contentEquals("file")) {
-            prepJdk11FromFile(resourceURL);
+            prepJdkFromFile(resourceURL);
         } else {
             if (factory.getContext().getChecker().hasOption("nocheckjdk")) {
                 return;
@@ -411,10 +426,10 @@ public class StubTypes {
     }
 
     /**
-     * Walk through the jdk11 directory and create a mapping, {@link #jdk11StubFiles}, from file
-     * name to the class contained with in it. Also, parses all package-info.java files.
+     * Walk through the jdk directory and create a mapping, {@link #jdkStubFiles}, from file name to
+     * the class contained with in it. Also, parses all package-info.java files.
      */
-    private void prepJdk11FromFile(URL resourceURL) {
+    private void prepJdkFromFile(URL resourceURL) {
         Path root;
         try {
             root = Paths.get(resourceURL.toURI());
@@ -436,7 +451,7 @@ public class StubTypes {
                 Path savepath = relativePath.subpath(4, relativePath.getNameCount());
                 String s =
                         savepath.toString().replace(".java", "").replace(File.separatorChar, '.');
-                jdk11StubFiles.put(s, path);
+                jdkStubFiles.put(s, path);
             }
         } catch (IOException e) {
             throw new BugInCF("File Not Found", e);
@@ -444,27 +459,27 @@ public class StubTypes {
     }
 
     /**
-     * Walk through the jdk11 directory and create a mapping, {@link #jdk11StubFilesJar}, from file
-     * name to the class contained with in it. Also, parses all package-info.java files.
+     * Walk through the jdk directory and create a mapping, {@link #jdkStubFilesJar}, from file name
+     * to the class contained with in it. Also, parses all package-info.java files.
      *
      * @param resourceURL
      */
-    private void prepJdk11FromJar(URL resourceURL) {
-        JarURLConnection connection = getJarURLConnectionToJdk11();
+    private void prepJdkFromJar(URL resourceURL) {
+        JarURLConnection connection = getJarURLConnectionToJdk();
 
         try (JarFile jarFile = connection.getJarFile()) {
             for (JarEntry je : jarFile.stream().collect(Collectors.toList())) {
                 // filter out directories and non-class files
                 if (!je.isDirectory()
                         && je.getName().endsWith(".java")
-                        && je.getName().startsWith("jdk11")) {
+                        && je.getName().startsWith("jdk" + annotatedJdkVersion)) {
                     String jeNAme = je.getName();
                     int index = je.getName().indexOf("/share/classes/");
                     String shortName =
                             jeNAme.substring(index + "/share/classes/".length())
                                     .replace(".java", "")
                                     .replace('/', '.');
-                    jdk11StubFilesJar.put(shortName, jeNAme);
+                    jdkStubFilesJar.put(shortName, jeNAme);
                     if (jeNAme.endsWith("package-info.java")) {
                         parseJarEntry(jeNAme);
                     }

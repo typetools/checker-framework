@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.processing.ProcessingEnvironment;
 
 /**
  * This file contains basic utility functions that should be reused to create a command-line call to
@@ -522,11 +523,16 @@ public class PluginUtil {
     }
 
     /**
-     * Extract the major version number from java.version. Two possible formats are considered. Up
-     * to Java 8, from a version string like `1.8.whatever`, this method extracts 8. Since Java 9,
-     * from a version string like `11.0.1`, this method extracts 11.
+     * Returns the major JRE version.
      *
-     * @return The major version number from java.version
+     * <p>This is different from the version passed to the compiler via --release; use {@link
+     * ProcessingEnvironment#getSourceVersion()} to get that version.
+     *
+     * <p>Extract the major version number from java.version. Two possible formats are considered.
+     * Up to Java 8, from a version string like `1.8.whatever`, this method extracts 8. Since Java
+     * 9, from a version string like `11.0.1`, this method extracts 11.
+     *
+     * @return the major JRE version number
      */
     public static int getJreVersion() {
         final String jreVersionStr = System.getProperty("java.version");
