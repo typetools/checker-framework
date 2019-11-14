@@ -721,15 +721,19 @@ public class FlowExpressions {
         }
     }
 
+    /** FlowExpression representing a local variable. */
     public static class LocalVariable extends Receiver {
+
+        /** Element of representing the local variable. */
         protected final Element element;
         /** Hashcode */
         private final int hashcode;
 
-        public LocalVariable(LocalVariableNode localVar) {
-            super(localVar.getType());
-            this.element = localVar.getElement();
-            VarSymbol vs = (VarSymbol) element;
+        /** Create a {@link LocalVariable} from {@code node}. */
+        public LocalVariable(LocalVariableNode node) {
+            super(node.getType());
+            this.element = node.getElement();
+            VarSymbol vs = (VarSymbol) this.element;
             this.hashcode =
                     Objects.hash(
                             vs.name.toString(),
@@ -737,10 +741,11 @@ public class FlowExpressions {
                             vs.owner.toString());
         }
 
-        public LocalVariable(Element elem) {
-            super(ElementUtils.getType(elem));
-            this.element = elem;
-            VarSymbol vs = (VarSymbol) element;
+        /** Create a {@link LocalVariable} from {@code element}. */
+        public LocalVariable(Element element) {
+            super(ElementUtils.getType(element));
+            this.element = element;
+            VarSymbol vs = (VarSymbol) this.element;
             this.hashcode =
                     Objects.hash(
                             vs.name.toString(),
