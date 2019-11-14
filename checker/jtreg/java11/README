@@ -1,0 +1,2 @@
+Tests in this directory should only be run with JDK 11.  If you add a new test
+here, also add the file name to ../jdk8-exclude-list.

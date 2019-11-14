@@ -263,6 +263,13 @@ List<String> getJavaFilesToFormat(projectName) {
         }
     }
 
+    // Collect all java files in jtreg directory
+    fileTree("${project(projectName).projectDir}/jtregJdk11").visit { details ->
+        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
+            javaFiles.add(details.file)
+        }
+    }
+
     List<String> args = new ArrayList<>();
     for (File f : javaFiles) {
         args += f.absolutePath
@@ -599,6 +606,7 @@ subprojects {
                             if (project.name.is('checker')) {
                                 args += [
                                         "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar",
+                                        "-exclude:${projectDir}/jtreg/jdk8-exclude-list "
                                 ]
                             }
                         } else {
@@ -607,6 +615,7 @@ subprojects {
                                     // uses the jdk.jdeps module.
                                     "-javacoptions:--add-modules jdk.jdeps",
                                     "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
                             ]
                         }
                         if (project.name.is('framework')) {
@@ -728,6 +737,9 @@ subprojects {
             }
 
             if (project.name.is('checker')) {
+                if (!isJava8) {
+                    task += ['jtregJdk11Tests']
+                }
                 tasks += ['nullnessExtraTests', 'commandLineTests', 'tutorialTests']
             }
         }
