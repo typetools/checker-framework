@@ -3,15 +3,15 @@
 echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
 
 # Optional argument $1 is one of:
-#   all, all-tests, jdk.jar, misc, checker-framework-inference, plume-lib, downstream
+#   all, all-tests, junit-tests, nonjunit-tests, jdk.jar, misc, checker-framework-inference, plume-lib, downstream
 # It defaults to "all".
 export GROUP=$1
 if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "checker-framework-inference" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
-  echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib."
+if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "junit-tests" && "${GROUP}" != "nonjunit-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "checker-framework-inference" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" && "${GROUP}" != "plume-lib" ]]; then
+  echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, junit-tests, nonjunit-tests, jdk.jar, checker-framework-inference, downstream, misc, plume-lib."
   exit 1
 fi
 
@@ -63,6 +63,14 @@ echo "In checker-framework/.travis-build.sh GROUP=$GROUP"
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
   $SCRIPTDIR/test-all-tests.sh
+fi
+
+if [[ "${GROUP}" == "junit-tests" || "${GROUP}" == "all" ]]; then
+  $SCRIPTDIR/test-junit-tests.sh
+fi
+
+if [[ "${GROUP}" == "nonjunit-tests" || "${GROUP}" == "all" ]]; then
+  $SCRIPTDIR/test-nonjunit-tests.sh
 fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then

@@ -153,7 +153,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
             return false;
         }
 
-        return (lhtPrefix.equals(rhtPrefix) && rhtPrefix.equals(specificPrefix));
+        return lhtPrefix == rhtPrefix && rhtPrefix == specificPrefix;
     }
 
     /**

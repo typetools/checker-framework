@@ -536,7 +536,7 @@ public class ElementAnnotationUtil {
         }
 
         if (!location.isEmpty()
-                && location.get(0).tag.equals(TypeAnnotationPosition.TypePathEntryKind.WILDCARD)) {
+                && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.WILDCARD) {
             if (AnnotatedTypes.hasExplicitExtendsBound(type)) {
                 return getTypeAtLocation(type.getExtendsBound(), tail(location));
             } else if (AnnotatedTypes.hasExplicitSuperBound(type)) {
@@ -566,7 +566,7 @@ public class ElementAnnotationUtil {
             TypeCompound anno)
             throws UnexpectedAnnotationLocationException {
         if (location.size() >= 1
-                && location.get(0).tag.equals(TypeAnnotationPosition.TypePathEntryKind.ARRAY)) {
+                && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.ARRAY) {
             AnnotatedTypeMirror comptype = type.getComponentType();
             return getTypeAtLocation(comptype, tail(location), anno, true);
         } else {
@@ -596,9 +596,7 @@ public class ElementAnnotationUtil {
             AnnotatedIntersectionType type, List<TypeAnnotationPosition.TypePathEntry> location)
             throws UnexpectedAnnotationLocationException {
         if (location.size() >= 1
-                && location.get(0)
-                        .tag
-                        .equals(TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT)) {
+                && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT) {
             AnnotatedTypeMirror supertype = type.directSuperTypes().get(location.get(0).arg);
             return getTypeAtLocation(supertype, tail(location));
         } else {
