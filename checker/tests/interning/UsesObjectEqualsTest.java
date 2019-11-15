@@ -12,7 +12,13 @@ public class UsesObjectEqualsTest {
     @UsesObjectEquals
     class B extends A {}
 
-    class B2 extends A {}
+    // :: error: (overrides.equals)
+    class B2 extends A {
+        @Override
+        public boolean equals(Object o) {
+            return super.equals(o);
+        }
+    }
 
     // changed to inherited, no (superclass.annotated) warning
     class C extends A {}
