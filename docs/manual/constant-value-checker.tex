@@ -336,25 +336,26 @@ manual analysis.
 
 \sectionAndLabel{Strings can be null in concatenations}{null-strings-concats}
 
-By default, the Constant Value Checker is unsound with respect to string
+By default, the Constant Value Checker is sound with respect to string
 concatenation.  The \code{-AnullStringsConcatenation} command-line option
-eliminates this unsoundness, though it may lead to false positive warnings.
+makes it unsound.
 
 Consider a variable declared as
 \<\refqualclass{common/value/qual}{StringVal}("a", "b") String x;>.
 At run time, \<x> evaluates to one of the values \<"a">, \<"b">, or
 \<null>.  By default, the Constant Value
-Checker unsoundly assumes that when such a value is used in string
-concatenation, it expands to \<"a"> or \<"b"> but not \<"null">.
+Checker assumes that when such a value is used in string
+concatenation, it expands to \<"a">, \<"b"> or \<"null">. Every variable
+that is not a primitive, String literal or compile-time constant is
+considered nullable.
 
 The \code{-AnullStringsConcatenation} command-line option makes
-the checker assume that any value (other than primitive types and
-compile-time constant strings) may be null.  It ignores Nullness Checker
+the checker assume that all variables are non-null. It ignores Nullness Checker
 annotations. (This behavior is conservative, but it is sound.)
 Without the command-line argument, the type of ``\<x + "c">'' is
-\<@StringVal("ac", "bc") String>.
+\<@StringVal("ac", "bc", "nullC") String>.
 With the command-line argument, the type of ``\<x + "c">'' is
-\<@StringVal("ac", "bc", "nullc") String>.
+\<@StringVal("ac", "bc") String>.
 
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %%  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal

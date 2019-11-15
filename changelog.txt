@@ -1,5 +1,5 @@
-Every operand of a String concatenation can be "null", unless it is a String literal,
-primitive or compile-time constant.
+The -AnullStringsConcatenation command-line argument assumes that every operand
+of a String concatenation can't be the "null" String at run-time.
 
 ---------------------------------------------------------------------------
 
