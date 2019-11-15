@@ -574,7 +574,7 @@ public class ValueTransfer extends CFTransfer {
         List<String> rightValues = getStringValues(rightOperand, p);
 
         boolean nullStringConcat =
-                atypefactory.getContext().getChecker().hasOption("nullStringsConcatenation");
+                atypefactory.getContext().getChecker().hasOption("nonNullStringsConcatenation");
 
         if (leftValues != null && rightValues != null) {
             // Both operands have known string values, compute set of results

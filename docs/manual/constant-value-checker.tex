@@ -334,10 +334,10 @@ value that is not in its \<@IntRange> qualifier.  You should either accept
 that possibility, or verify the lack of overflow using some other tool or
 manual analysis.
 
-\sectionAndLabel{Strings can be null in concatenations}{null-strings-concats}
+\sectionAndLabel{Strings can be null in concatenations}{non-null-strings-concats}
 
 By default, the Constant Value Checker is sound with respect to string
-concatenation.  The \code{-AnullStringsConcatenation} command-line option
+concatenation.  The \code{-AnonNullStringsConcatenation} command-line option
 makes it unsound.
 
 Consider a variable declared as
@@ -349,7 +349,7 @@ concatenation, it expands to \<"a">, \<"b"> or \<"null">. Every variable
 that is not a primitive, String literal or compile-time constant is
 considered nullable.
 
-The \code{-AnullStringsConcatenation} command-line option makes
+The \code{-AnonNullStringsConcatenation} command-line option makes
 the checker assume that all variables are non-null. It ignores Nullness Checker
 annotations. (This behavior is conservative, but it is sound.)
 Without the command-line argument, the type of ``\<x + "c">'' is
@@ -361,4 +361,4 @@ With the command-line argument, the type of ``\<x + "c">'' is
 %%  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
 %%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange casted
 %%  LocalWords:  qual AignoreRangeOverflow MinLen PolyValue GTENegativeOne
-%%  LocalWords:  staticallyexecutable concats AnullStringsConcatenation
+%%  LocalWords:  staticallyexecutable concats AnonNullStringsConcatenation

@@ -1,4 +1,4 @@
-The -AnullStringsConcatenation command-line argument assumes that every operand
+The -AnoNullStringsConcatenation command-line argument assumes that every operand
 of a String concatenation can't be the "null" String at run-time.
 
 ---------------------------------------------------------------------------
