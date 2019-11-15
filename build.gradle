@@ -580,7 +580,7 @@ subprojects {
                                 "-dir:${projectDir}/jtreg",
                                 "-workDir:${jtregOutput}/${name}/work",
                                 "-reportDir:${jtregOutput}/${name}/report",
-                                "-verbose:summary",
+                                "-verbose:error,fail",
                                 "-javacoptions:-g",
                                 "-keywords:!ignore",
                                 "-samevm",
