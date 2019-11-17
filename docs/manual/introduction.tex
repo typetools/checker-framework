@@ -610,7 +610,7 @@ option (``\<A>'' stands for ``annotation'').  All of the distributed
 checkers support the following command-line options.
 
 % This list should be kept in sync with file
-% framework/src/org/checkerframework/framework/source/SourceChecker.java
+% framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java
 
 Unsound checking: ignore some errors
 \begin{itemize}
@@ -686,8 +686,9 @@ More sound (strict) checking: enable errors that are disabled by default
   See \href{https://github.com/typetools/checker-framework/issues/979}{Issue
   979}.
 \item \<-AignoreRawTypeArguments=false>
-Do not ignore subtype tests for type arguments that were inferred for a raw
-type. Must also use \<-AconservativeUninferredTypeArguments>. See Section~\ref{generics-raw-types}.
+  Do not ignore subtype tests for type arguments that were inferred for a
+  raw type. Must also use \<-AconservativeUninferredTypeArguments>.  See
+  Section~\ref{generics-raw-types}.
 \end{itemize}
 
 Type-checking modes:  enable/disable functionality
