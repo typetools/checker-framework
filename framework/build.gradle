@@ -108,7 +108,7 @@ task testWPIStubsValidate(type: Test) {
 }
 
 // This task is similar to the wholeProgramInferenceTests task below, but it doesn't
-// run the insert-annotations-to-source tool
+// run the insert-annotations-to-source tool.
 task wholeProgramInferenceStubTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for whole-program inference using stub files'
     dependsOn(compileTestJava)
