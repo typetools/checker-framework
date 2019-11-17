@@ -223,7 +223,7 @@ public class KeyStore {
          *
          * @return the parameter used to protect keystore data, or null
          */
-        public ProtectionParameter getProtectionParameter();
+        public @Nullable ProtectionParameter getProtectionParameter();
     }
 
     /**
@@ -261,7 +261,7 @@ public class KeyStore {
          *
          * @param password the password, which may be {@code null}
          */
-        public PasswordProtection(@Nullable char[] password) {
+        public PasswordProtection(char @Nullable [] password) {
             this.password = (password == null) ? null : password.clone();
             this.protectionAlgorithm = null;
             this.protectionParameters = null;
@@ -289,7 +289,7 @@ public class KeyStore {
          *
          * @since 1.8
          */
-        public PasswordProtection(@Nullable char[] password, String protectionAlgorithm,
+        public PasswordProtection(char @Nullable [] password, String protectionAlgorithm,
                 @Nullable AlgorithmParameterSpec protectionParameters) {
             if (protectionAlgorithm == null) {
                 throw new NullPointerException("invalid null input");
@@ -327,7 +327,7 @@ public class KeyStore {
          *
          * @since 1.8
          */
-        public AlgorithmParameterSpec getProtectionParameters() {
+        public @Nullable AlgorithmParameterSpec getProtectionParameters() {
             return protectionParameters;
         }
 
@@ -344,7 +344,7 @@ public class KeyStore {
          * @exception IllegalStateException if the password has
          *              been cleared (destroyed)
          */
-        public synchronized @Nullable char[] getPassword() {
+        public synchronized char @Nullable [] getPassword() {
             if (destroyed) {
                 throw new IllegalStateException("password has been cleared");
             }
@@ -1015,7 +1015,7 @@ public class KeyStore {
      * @exception UnrecoverableKeyException if the key cannot be recovered
      * (e.g., the given password is wrong).
      */
-    public final Key getKey(String alias, char[] password)
+    public final @Nullable Key getKey(String alias, char[] password)
             throws KeyStoreException, NoSuchAlgorithmException,
             UnrecoverableKeyException
     {
@@ -1041,7 +1041,7 @@ public class KeyStore {
      * @exception KeyStoreException if the keystore has not been initialized
      * (loaded).
      */
-    public final Certificate[] getCertificateChain(String alias)
+    public final Certificate @Nullable [] getCertificateChain(String alias)
             throws KeyStoreException
     {
         if (!initialized) {
@@ -1074,7 +1074,7 @@ public class KeyStore {
      * @exception KeyStoreException if the keystore has not been initialized
      * (loaded).
      */
-    public final Certificate getCertificate(String alias)
+    public final @Nullable Certificate getCertificate(String alias)
             throws KeyStoreException
     {
         if (!initialized) {
@@ -1094,7 +1094,7 @@ public class KeyStore {
      * @exception KeyStoreException if the keystore has not been initialized
      * (loaded).
      */
-    public final Date getCreationDate(String alias)
+    public final @Nullable Date getCreationDate(String alias)
             throws KeyStoreException
     {
         if (!initialized) {
@@ -1345,7 +1345,7 @@ public class KeyStore {
      * @exception KeyStoreException if the keystore has not been initialized
      * (loaded).
      */
-    public final String getCertificateAlias(Certificate cert)
+    public final @Nullable String getCertificateAlias(Certificate cert)
             throws KeyStoreException
     {
         if (!initialized) {
@@ -1441,7 +1441,7 @@ public class KeyStore {
      * @exception CertificateException if any of the certificates in the
      * keystore could not be loaded
      */
-    public final void load(@Nullable InputStream stream, @Nullable char[] password)
+    public final void load(@Nullable InputStream stream, char @Nullable [] password)
             throws IOException, NoSuchAlgorithmException, CertificateException
     {
         keyStoreSpi.engineLoad(stream, password);
@@ -1741,7 +1741,7 @@ public class KeyStore {
          *   of either PasswordProtection or CallbackHandlerProtection; or
          *   if file does not exist or does not refer to a normal file
          */
-        public static Builder newInstance(String type, Provider provider,
+        public static Builder newInstance(String type, @Nullable Provider provider,
                 File file, ProtectionParameter protection) {
             if ((type == null) || (file == null) || (protection == null)) {
                 throw new NullPointerException();
@@ -1907,7 +1907,7 @@ public class KeyStore {
          * @throws NullPointerException if type or protection is null
          */
         public static Builder newInstance(final String type,
-                final Provider provider, final ProtectionParameter protection) {
+                final @Nullable Provider provider, final ProtectionParameter protection) {
             if ((type == null) || (protection == null)) {
                 throw new NullPointerException();
             }
