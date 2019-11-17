@@ -506,7 +506,6 @@ public static void addNumbers(List<? super @SignednessBottom Integer> list) { ..
 
 
 \sectionAndLabel{Qualifier polymorphism for methods}{method-qualifier-polymorphism}
-%\label{qualifier-polymorphism}
 
 The Checker Framework supports type \emph{qualifier} polymorphism for
 methods, which permits a single method to have multiple different qualified
@@ -518,7 +517,8 @@ To \emph{use} a polymorphic qualifier, just write it on a type.
 For example, you can write \<@PolyNull> anywhere in a method that you would write
 \<@NonNull> or \<@Nullable>.
 A polymorphic qualifier can be used in a method signature or body.
-It may not be used on a class. (It may be used on fields, see Section~\ref{class-qualifier-polymorphism}.)
+It may not be used on a class.
+(It may be used on fields, see Section~\ref{class-qualifier-polymorphism}.)
 
 A method written using a polymorphic qualifier conceptually has multiple
 versions, somewhat like the generics feature of Java or a template in C++.
