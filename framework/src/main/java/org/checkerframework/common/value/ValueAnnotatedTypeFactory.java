@@ -1002,7 +1002,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * If {@code anno} is equalient to UnknownVal, return UnknownVal; otherwise, return {@code
+     * If {@code anno} is equivalent to UnknownVal, return UnknownVal; otherwise, return {@code
      * anno}.
      */
     private AnnotationMirror convertToUnknown(AnnotationMirror anno) {
@@ -1016,8 +1016,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (range.isLongEverything()) {
                 return UNKNOWNVAL;
             }
-        } 
-        return anno;        
+        }
+        return anno;
     }
 
     /** The TreeAnnotator for this AnnotatedTypeFactory. It adds/replaces annotations. */
