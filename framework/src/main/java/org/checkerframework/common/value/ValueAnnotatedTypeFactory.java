@@ -1011,16 +1011,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (range.from == 0 && range.to >= Integer.MAX_VALUE) {
                 return UNKNOWNVAL;
             }
-            return anno;
         } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
             Range range = getRange(anno);
             if (range.isLongEverything()) {
                 return UNKNOWNVAL;
             }
-            return anno;
-        } else {
-            return anno;
-        }
+        } 
+        return anno;        
     }
 
     /** The TreeAnnotator for this AnnotatedTypeFactory. It adds/replaces annotations. */
