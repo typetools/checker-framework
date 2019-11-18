@@ -1,18 +1,26 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
+import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -32,6 +40,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *         <li value="2">array creation tree of size 0, e.g. {@code c.toArray(new String[0])}, or
  *         <li value="3">array creation tree of the collection size method invocation {@code
  *             c.toArray(new String[c.size()])}
+ *         <li value="4">field access where the declaration has a @ArrayLen(0) annotation
  *       </ol>
  * </ol>
  *
@@ -67,11 +76,12 @@ public class CollectionToArrayHeuristics {
     public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
         if (TreeUtils.isMethodInvocation(tree, collectionToArrayE, processingEnv)) {
             assert !tree.getArguments().isEmpty() : tree;
-            Tree argument = tree.getArguments().get(0);
+            ExpressionTree argument = tree.getArguments().get(0);
             boolean argIsArrayCreation =
                     isHandledArrayCreation(argument, receiverName(tree.getMethodSelect()));
             boolean receiverIsNonNull = isNonNullReceiver(tree);
-            setComponentNullness(receiverIsNonNull && argIsArrayCreation, method.getReturnType());
+            boolean argIsHandled = argIsArrayCreation || isArrayLenZeroFieldAccess(argument);
+            setComponentNullness(receiverIsNonNull && argIsHandled, method.getReturnType());
 
             // TODO: We need a mechanism to prevent nullable collections
             // from inserting null elements into a nonnull arrays.
@@ -79,6 +89,35 @@ public class CollectionToArrayHeuristics {
                 setComponentNullness(false, method.getParameterTypes().get(0));
             }
         }
+    }
+
+    /**
+     * Determine whether the argument is a field access expression of which the declaration has a
+     * {@code ArrayLen(0)} annotation.
+     *
+     * @param argument the expression tree
+     * @return true if the expression is a field access expression of which the declaration has a
+     *     {@code ArrayLen(0)} annotation
+     */
+    private boolean isArrayLenZeroFieldAccess(ExpressionTree argument) {
+        Element el = TreeUtils.elementFromUse(argument);
+        if (el != null && el.getKind().isField()) {
+            TypeMirror t = ElementUtils.getType(el);
+            if (t.getKind() == TypeKind.ARRAY) {
+                List<? extends AnnotationMirror> ams = t.getAnnotationMirrors();
+                for (AnnotationMirror am : ams) {
+                    if (AnnotationUtils.areSameByClass(am, ArrayLen.class)) {
+                        List<Integer> lens =
+                                AnnotationUtils.getElementValueArray(
+                                        am, "value", Integer.class, false);
+                        if (lens.size() == 1 && lens.get(0) == 0) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
