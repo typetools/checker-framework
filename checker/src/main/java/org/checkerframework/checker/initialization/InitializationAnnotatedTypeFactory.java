@@ -437,7 +437,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             List<? extends Tree> classMembers = enclosingClass.getMembers();
             TreePath searchPath = path;
             while (searchPath.getParentPath() != null
-                    && searchPath.getParentPath() != enclosingClass) {
+                    && searchPath.getParentPath().getLeaf() != enclosingClass) {
                 searchPath = searchPath.getParentPath();
                 if (classMembers.contains(searchPath.getLeaf())) {
                     return searchPath.getLeaf();
