@@ -23,9 +23,8 @@ class Issue2809 {
         t.self(new MyType<>(non));
     }
 
-    private class MyType<MyTypeParam2F8A> {
-        MyType(MyTypeParam2F8A f2a8) {}
-
-        void self(MyType<MyTypeParam2F8A> myType) {}
+    class MyType<T> {
+        MyType(T p) {}
+        void self(MyType<T> myType) {}
     }
 }
