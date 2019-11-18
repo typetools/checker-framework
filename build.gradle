@@ -737,7 +737,7 @@ subprojects {
 
             if (project.name.is('checker')) {
                 if (!isJava8) {
-                    task += ['jtregJdk11Tests']
+                    tasks += ['jtregJdk11Tests']
                 }
                 tasks += ['nullnessExtraTests', 'commandLineTests', 'tutorialTests']
             }
