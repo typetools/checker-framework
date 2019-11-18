@@ -272,7 +272,7 @@ public class I18nFormatterTreeUtil {
                     this.formatArg = theargs.get(i);
                     this.formatAnno = atypeFactory.getAnnotatedType(formatArg);
 
-                    if (!typeMirrorToClass(paramType.getUnderlyingType()).equals(String.class)) {
+                    if (typeMirrorToClass(paramType.getUnderlyingType()) != String.class) {
                         // Invalid FormatFor invocation
                         return;
                     }
@@ -309,7 +309,7 @@ public class I18nFormatterTreeUtil {
 
             if (paramIndex != -1) {
                 VariableElement param = method.getParameters().get(paramIndex);
-                if (param.asType().getKind().equals(TypeKind.ARRAY)) {
+                if (param.asType().getKind() == TypeKind.ARRAY) {
                     this.args = theargs.subList(paramIndex, theargs.size());
                 } else {
                     this.args = theargs.subList(paramIndex, paramIndex + 1);

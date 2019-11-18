@@ -1012,9 +1012,9 @@ public class AnnotatedTypes {
         ElementType otherElementType = null;
 
         for (ElementType element : elements) {
-            if (element.equals(ElementType.TYPE_USE)) {
+            if (element == ElementType.TYPE_USE) {
                 hasTypeUse = true;
-            } else if (!element.equals(ElementType.TYPE_PARAMETER)) {
+            } else if (element != ElementType.TYPE_PARAMETER) {
                 otherElementType = element;
             }
             if (hasTypeUse && otherElementType != null) {

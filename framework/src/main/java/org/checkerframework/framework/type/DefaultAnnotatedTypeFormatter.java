@@ -385,9 +385,14 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @Override
         public String visitWildcard(AnnotatedWildcardType type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
+            if (type.isUninferredTypeArgument()) {
+                sb.append("/*INFERENCE FAILED for:*/ ");
+            }
+
             sb.append(
                     annoFormatter.formatAnnotationString(
                             type.getAnnotationsField(), currentPrintInvisibleSetting));
+
             sb.append("?");
             if (!visiting.contains(type)) {
 

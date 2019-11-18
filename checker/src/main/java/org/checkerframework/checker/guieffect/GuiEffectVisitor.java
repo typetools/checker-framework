@@ -220,7 +220,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             // Backtrack path to the lambda expression itself
             TreePath path = visitorState.getPath();
             while (path.getLeaf() != node) {
-                assert !path.getLeaf().getKind().equals(Tree.Kind.COMPILATION_UNIT);
+                assert path.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT;
                 path = path.getParentPath();
             }
             scanUp(path);
@@ -444,7 +444,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             // Backtrack path to the new class expression itself
             TreePath path = visitorState.getPath();
             while (path.getLeaf() != node) {
-                assert !path.getLeaf().getKind().equals(Tree.Kind.COMPILATION_UNIT);
+                assert path.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT;
                 path = path.getParentPath();
             }
             scanUp(visitorState.getPath().getParentPath());
