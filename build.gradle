@@ -208,7 +208,7 @@ task version() {
  * @param shortName shorter version of the checker to use to name the task.
  * @param args list of arguments to pass to the checker
  */
-def createCheckTypeTask(projectName, checker, shortName, args) {
+def createCheckTypeTask(projectName, checker, shortName, args = []) {
     project("${projectName}").tasks.create(name: "check${shortName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
         description "Run the ${shortName} Checker on the main sources."
         group 'Verification'
@@ -560,8 +560,8 @@ subprojects {
         }
 
         // Add tasks to run various checkers on all the main source sets.
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness',[])
-        createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity',[])
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness')
+        createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
         createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-AsuppressWarnings=not.interned'])
 
         // Add jtregTests to framework and checker modules
