@@ -102,7 +102,7 @@ public class WholeProgramInferenceScenesHelper {
      * super sketchy (there is no guarantee that two different ATypeElement_s won't have the same
      * description!), but it's the best I can come up with at the moment.
      */
-    private final Map<String, TypeMirror> baseTypes = new HashMap<>();
+    private final Map<String, TypeMirror> basetypes = new HashMap<>();
 
     /** Create a new helper. */
     public WholeProgramInferenceScenesHelper(boolean ignoreNullAssignments) {
@@ -171,7 +171,7 @@ public class WholeProgramInferenceScenesHelper {
                 // Only write non-empty scenes into .astub files.
                 try {
                     SceneToStubWriter.write(
-                            scene, baseTypes, types, enumSet, new FileWriter(stubPath));
+                            scene, basetypes, types, enumSet, new FileWriter(stubPath));
                 } catch (IOException e) {
                     throw new UserError(
                             "Problem while writing file: "
@@ -565,7 +565,7 @@ public class WholeProgramInferenceScenesHelper {
             // estimate for the ATypeElement. Therefore, it is not a problem to remove
             // all annotations before inserting the new annotations.
             typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
-            baseTypes.put(typeToUpdate.description.toString(), newATM.getUnderlyingType());
+            basetypes.put(typeToUpdate.description.toString(), newATM.getUnderlyingType());
         }
 
         // Only update the ATypeElement if there are no explicit annotations

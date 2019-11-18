@@ -564,6 +564,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         return null;
     }
 
+    /**
+     * Updates the metadata needed for stub output.
+     *
+     * <p>Should be called whenever a new class is processed, if outputting to stubs.
+     *
+     * <p>Metadata kept: - is the class an enum? - a map from fully-qualified names to classSymbols,
+     * used later to recover type parameter information.
+     */
     private void updateClassMetadata(ClassSymbol classSymbol) {
         String qualifiedName = classSymbol.getQualifiedName().toString();
         if (classSymbol.isEnum()) {

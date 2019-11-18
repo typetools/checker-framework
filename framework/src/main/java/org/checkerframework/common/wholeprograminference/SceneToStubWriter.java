@@ -31,22 +31,37 @@ import scenelib.annotations.field.ClassTokenAFT;
 import scenelib.annotations.util.Strings;
 
 /**
- * SceneToStubWriter provides two static methods named <code>write</code> that write a given {@link
+ * SceneToStubWriter provides two static methods named {@code write} that write a given {@link
  * AScene} to a given {@link Writer} or filename, in stub file format. This class is the equivalent
- * of IndexFileWriter from the Annotation File Utilities, but outputs the results in the .astub
- * format.
+ * of {@code IndexFileWriter} from the Annotation File Utilities, but outputs the results in the
+ * .astub format.
  *
- * <p>You can use this writer instead of IndexFileWriter by passing the -AoutputStubs when running
- * with -Ainfer.
+ * <p>You can use this writer instead of {@code IndexFileWriter} by passing the {@code
+ * -AoutputStubs} when running with {@code -Ainfer}.
  */
 public final class SceneToStubWriter {
-    final AScene scene;
 
+    /** How far to indent when writing members of a stub file. */
     private static final String INDENT = "    ";
 
-    final PrintWriter printWriter;
+    /**
+     * The printer. Kept as a field because every method in this class needs to access it, and
+     * threading it through would be kind of annoying.
+     */
+    private final PrintWriter printWriter;
 
+    /**
+     * A map from the descriptions of ATypeElement_s to the corresponding base Java types, since
+     * AScene_s don't carry that information. See the comment on the {@code basetypes} field of
+     * {@link WholeProgramInferenceScenesHelper} for more information.
+     */
     private Map<String, TypeMirror> basetypes;
+
+    /**
+     * A map from fully-qualified class names to the TypeElement that represents them. Computed by
+     * {@link WholeProgramInferenceScenes}. Used to output the correct names of generic parameters
+     * to classes, which the stub format requires.
+     */
     private Map<String, TypeElement> types;
 
     /**
@@ -56,6 +71,10 @@ public final class SceneToStubWriter {
      */
     private Set<String> enumSet;
 
+    /**
+     * Stolen from {@code IndexFileWriter}. Prints a literal; used when printing the arguments of
+     * annotations.
+     */
     private void printValue(AnnotationFieldType aft, Object o) {
         if (aft instanceof AnnotationAFT) {
             printAnnotation((Annotation) o);
@@ -95,6 +114,7 @@ public final class SceneToStubWriter {
         }
     }
 
+    /** Prints an annotation in Java source format. */
     private void printAnnotation(Annotation a) {
         printWriter.print("@" + a.def().name.substring(a.def().name.lastIndexOf('.') + 1));
         if (!a.fieldValues.isEmpty()) {
@@ -112,6 +132,9 @@ public final class SceneToStubWriter {
         }
     }
 
+    /**
+     * Prints all annotations in {@code annos}, separated by spaces. See {@link #printAnnotation}.
+     */
     private void printAnnotations(Collection<? extends Annotation> annos) {
         for (Annotation tla : annos) {
             if (!tla.def.name.contains("+")) {
@@ -121,25 +144,32 @@ public final class SceneToStubWriter {
         }
     }
 
-    private void printAnnotations(AElement e) {
-        printAnnotations(e.tlAnnotationsHere);
-    }
-
+    /** Finds and prints the annotations on the component type of an array, if there are any. */
     private void printArrayComponentTypeAnnotation(ATypeElement e) {
         for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
             InnerTypeLocation loc = ite.getKey();
             AElement it = ite.getValue();
             if (loc.toString().contains("ARRAY")) {
-                printAnnotations(it);
+                printAnnotations(it.tlAnnotationsHere);
                 printWriter.append(' ');
             }
         }
     }
 
-    private void printAField(AField aField, String fieldName, String classname) {
+    /**
+     * Prints the stub representation of an AField, which represents any variable declaration. In
+     * practice, this should either be a field or a method parameters, since there should be no
+     * local variable declarations in a stub.
+     *
+     * <p>Takes two extra parameters beyond the AField: {@code fieldName} is the name to use for the
+     * declaration in the stub file. This doesn't matter for parameters, but must be correct for
+     * fields. {@code className} is the name of the enclosing class. This is only used for printing
+     * the type of an explicit receiver parameter (i.e. a parameter named "this").
+     */
+    private void printAField(AField aField, String fieldName, String className) {
         String basetype;
         if ("this".equals(fieldName)) {
-            basetype = classname;
+            basetype = className;
         } else if (basetypes.containsKey(aField.type.description.toString())) {
             basetype = basetypes.get(aField.type.description.toString()).toString();
         } else {
@@ -163,11 +193,26 @@ public final class SceneToStubWriter {
         printWriter.print(fieldName);
     }
 
+    /**
+     * {@code DefCollector} is a facility in the annotation file utilities for determining which
+     * annotations are used in a given AScene, and then writing out their definitions into the index
+     * file. Here, we abuse that construct to write out the proper import statements into a stub
+     * file.
+     */
     private class ImportDefCollector extends DefCollector {
-        ImportDefCollector() throws DefException {
-            super(SceneToStubWriter.this.scene);
+
+        /**
+         * Constructs a new ImportDefCollector, which will run on the given AScene when its {@code
+         * visit} method is called.
+         */
+        ImportDefCollector(AScene scene) throws DefException {
+            super(scene);
         }
 
+        /**
+         * Write an import statement for a given AnnotationDef. Don't do anything fancy, and assume
+         * that DefCollector did its job so that this will only be called once on each annotation.
+         */
         @Override
         protected void visitAnnotationDef(AnnotationDef d) {
             if (!d.name.contains("+")) {
@@ -176,7 +221,19 @@ public final class SceneToStubWriter {
         }
     }
 
-    /** @return number of inner classes */
+    /**
+     * When an inner class is present in an AScene, its name is something like "Outer$Inner".
+     * Writing a stub file with that name would be useless to the stub parser, which expects inner
+     * classes to be properly nested.
+     *
+     * <p>For a given class, this prints out the hierarchy of outer classes, and returns the number
+     * of curly braces to close with.
+     *
+     * @param basename the name of the class without the package, in Outer$Inner form
+     * @param classname the fully-qualified name of the class in question, so that it can be printed
+     *     as an enum if it is one
+     * @param aClass the AClass representing the classname
+     */
     private int printClassDefinition(String basename, String classname, AClass aClass) {
 
         String nameToPrint = basename;
@@ -190,7 +247,7 @@ public final class SceneToStubWriter {
         } else {
             printWriter.print("class ");
         }
-        printAnnotations(aClass);
+        printAnnotations(aClass.tlAnnotationsHere);
         printWriter.print(" " + nameToPrint);
         printTypeParameters(classname);
         printWriter.println(" {");
@@ -201,11 +258,16 @@ public final class SceneToStubWriter {
         }
     }
 
-    private void writeImpl() {
+    /**
+     * The implementation of {@link #write(AScene, Map, Map, Set, Writer)} and {@link #write(AScene,
+     * Map, Map, Set, String)}. Prints imports, classes, method signatures, and fields; all with
+     * appropriate annotations in stub file format.
+     */
+    private void writeImpl(AScene scene) {
         // Write out all imports
         ImportDefCollector importDefCollector;
         try {
-            importDefCollector = new ImportDefCollector();
+            importDefCollector = new ImportDefCollector(scene);
         } catch (DefException e) {
             throw new BugInCF(e.getMessage(), e);
         }
@@ -297,6 +359,10 @@ public final class SceneToStubWriter {
         }
     }
 
+    /**
+     * Prints the type parameters of the class given by the fully-qualified name passes as {@code
+     * classname}.
+     */
     private void printTypeParameters(String classname) {
         TypeElement type = types.get(classname);
         if (type == null) {
@@ -318,18 +384,21 @@ public final class SceneToStubWriter {
         printWriter.print(">");
     }
 
+    /**
+     * Private constructor that initializes the printWriter and copies over relevant inputs to the
+     * fields in which they are stored.
+     */
     private SceneToStubWriter(
             AScene scene,
             Map<String, TypeMirror> basetypes,
             Map<String, TypeElement> types,
             Set<String> enumSet,
             Writer out) {
-        this.scene = scene;
         this.basetypes = basetypes;
         this.types = types;
         this.enumSet = enumSet;
         printWriter = new PrintWriter(out);
-        writeImpl();
+        writeImpl(scene);
         printWriter.flush();
     }
 
@@ -357,11 +426,13 @@ public final class SceneToStubWriter {
         write(scene, basetypes, types, enumSet, new FileWriter(filename));
     }
 
+    /** The part of a fully-qualified name that specifies the package. */
     private static String packagePart(String className) {
         int lastdot = className.lastIndexOf('.');
         return (lastdot == -1) ? "" : className.substring(0, lastdot);
     }
 
+    /** The part of a fully-qualified name that specifies the basename of the class. */
     private static String basenamePart(String className) {
         int lastdot = className.lastIndexOf('.');
         return (lastdot == -1) ? className : className.substring(lastdot + 1);
