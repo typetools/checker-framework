@@ -40,7 +40,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *         <li value="2">array creation tree of size 0, e.g. {@code c.toArray(new String[0])}, or
  *         <li value="3">array creation tree of the collection size method invocation {@code
  *             c.toArray(new String[c.size()])}
- *         <li value="4">field access where the declaration has a @ArrayLen(0) annotation
+ *         <li value="4">field access where the declaration has a {@code @ArrayLen(0)} annotation
  *       </ol>
  * </ol>
  *
