@@ -25,6 +25,7 @@ class Issue2809 {
 
     class MyType<T> {
         MyType(T p) {}
+
         void self(MyType<T> myType) {}
     }
 }
