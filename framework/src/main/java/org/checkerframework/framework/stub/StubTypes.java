@@ -67,7 +67,7 @@ public class StubTypes {
     private final Map<String, String> jdkStubFilesJar = new HashMap<>();
 
     /** Which version number of the annotated JDK should be used? */
-    private final int annotatedJdkVersion;
+    private final String annotatedJdkVersion;
 
     /** Should the JDK be parsed? */
     private final boolean shouldParseJdk;
@@ -78,11 +78,14 @@ public class StubTypes {
         this.typesFromStubFiles = new HashMap<>();
         this.declAnnosFromStubFiles = new HashMap<>();
         this.parsing = false;
-        this.annotatedJdkVersion = factory.getProcessingEnv().getSourceVersion().ordinal();
+        String release = PluginUtil.releaseValue(factory.getProcessingEnv());
+        this.annotatedJdkVersion =
+                release != null ? release : Double.toString(PluginUtil.getJreVersion());
+
         this.shouldParseJdk =
                 !factory.getContext().getChecker().hasOption("ignorejdkastub")
                         && PluginUtil.getJreVersion() != 8
-                        && annotatedJdkVersion == 11;
+                        && annotatedJdkVersion.equals(11);
     }
 
     /** @return true if stub files are currently being parsed; otherwise, false. */
@@ -128,8 +131,7 @@ public class StubTypes {
                         typesFromStubFiles,
                         declAnnosFromStubFiles);
             }
-            int sourceVersion = processingEnv.getSourceVersion().ordinal();
-            String jdkVersionStub = "jdk" + sourceVersion + ".astub";
+            String jdkVersionStub = "jdk" + annotatedJdkVersion + ".astub";
             InputStream jdkVersionStubIn = checker.getClass().getResourceAsStream(jdkVersionStub);
             if (jdkVersionStubIn != null) {
                 StubParser.parse(

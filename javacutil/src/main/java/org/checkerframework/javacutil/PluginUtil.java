@@ -1,5 +1,9 @@
 package org.checkerframework.javacutil;
 
+import com.sun.tools.javac.main.Option;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Options;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -526,7 +530,7 @@ public class PluginUtil {
      * Returns the major JRE version.
      *
      * <p>This is different from the version passed to the compiler via --release; use {@link
-     * ProcessingEnvironment#getSourceVersion()} to get that version.
+     * #releaseValue(ProcessingEnvironment)} to get that version.
      *
      * <p>Extract the major version number from java.version. Two possible formats are considered.
      * Up to Java 8, from a version string like `1.8.whatever`, this method extracts 8. Since Java
@@ -590,5 +594,12 @@ public class PluginUtil {
     public static String getJdkJarName() {
         final String fileName = getJdkJarPrefix() + ".jar";
         return fileName;
+    }
+
+    /** Returns the release value passed to the compiler. */
+    public static String releaseValue(ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        Options options = Options.instance(ctx);
+        return options.get(Option.RELEASE);
     }
 }
