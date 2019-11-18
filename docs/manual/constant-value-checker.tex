@@ -339,8 +339,8 @@ manual analysis.
 
 By default, the Constant Value Checker is sound with respect to string
 concatenation and nullness.  It assumes that, in a string concatenation,
-every non-primitive argument might be null, except for String literals.
-It ignores Nullness Checker annotations.
+every non-primitive argument might be null, except for String literals
+and compile-time constants. It ignores Nullness Checker annotations.
 (This behavior is conservative but sound.)
 
 Consider a variable declared as
