@@ -1034,7 +1034,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // to
             // do so is here.
             WholeProgramInference.OutputKind outputKind =
-                    checker.hasOption("outputStubs")
+                    checker.getOption("infer").equals("stubs")
                             ? WholeProgramInference.OutputKind.STUB
                             : WholeProgramInference.OutputKind.JAIF;
             wholeProgramInference.saveResults(outputKind);
@@ -1149,7 +1149,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + elt);
         }
 
-        if (checker.hasOption("prioritizeStubs")) {
+        if (checker.hasOption("mergeStubs")) {
             AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
             // This is a bit of a hack - need to decide if the annotated type mirror
             // contains ANY annotations - i.e. on deep types, method params, etc.
@@ -1201,7 +1201,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
 
-        if (checker.hasOption("prioritizeStubs")) {
+        if (checker.hasOption("mergeStubs")) {
             Element elt = TreeUtils.elementFromTree(tree);
             AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
             if (stubType != null && !result.toString().contains("@")) {

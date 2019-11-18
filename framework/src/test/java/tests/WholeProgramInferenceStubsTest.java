@@ -23,8 +23,7 @@ public class WholeProgramInferenceStubsTest extends FrameworkPerDirectoryTest {
                 WholeProgramInferenceTestChecker.class,
                 "whole-program-inference/non-annotated",
                 "-Anomsgtext",
-                "-Ainfer",
-                "-AoutputStubs");
+                "-Ainfer=stubs");
     }
 
     @Parameters
