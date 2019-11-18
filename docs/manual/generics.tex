@@ -889,6 +889,11 @@ If a class extends a \<@HasQualifierParameter> class (or implements a
 
 \subsectionAndLabel{Using class qualifier parameters in method signatures}{class-qual-param-method}
 
+In classes that have a qualifier parameter, using a polymorphic annotation in a method signature has
+two different meanings. 1.) If the receiver type is annotated with a polymorphic qualifier, then the
+polymorphic qualifiers mean class implicit qualifier polymorphism. That is the polymorphic
+qualifier polymorphism
+
 In a class with a class qualifier parameter, a formal parameter type should
 sometimes have the same qualifier as the class qualifier parameter.  To express
 this, annotate both the receiver type and the parameter type with the
@@ -900,8 +905,8 @@ class Buffer {
 }
 \end{Verbatim}
 Because \<@PolyTainted> applies to a type with a qualifier parameter, then all
-other uses of \<@PolyTainted> are instantiated to the instantiation of
-\<@PolyTainted>.
+uses of \<@PolyTainted> are instantiated to the qualifiers on the type of
+the receiver expression at call sites to \<append>.
 
 \subsectionAndLabel{Using class qualifier parameters in the type of a field}{class-qual-param-field}
 
