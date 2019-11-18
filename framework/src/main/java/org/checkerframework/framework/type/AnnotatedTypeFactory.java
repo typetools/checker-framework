@@ -1151,15 +1151,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         if (checker.hasOption("mergeStubs")) {
             AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
-            // This is a bit of a hack - need to decide if the annotated type mirror
-            // contains ANY annotations - i.e. on deep types, method params, etc.
-            boolean stubTypeHasAnAnnotation = stubType != null && stubType.toString().contains("@");
-            boolean typeHasAnAnnotation = type != null && type.toString().contains("@");
-
-            if (stubTypeHasAnAnnotation && !typeHasAnAnnotation) {
-                type = stubType;
-            } else if (stubTypeHasAnAnnotation && typeHasAnAnnotation) {
-                AnnotatedTypeMerger.merge(stubType, type);
+            if (stubType != null) {
+                if (type == null) {
+                    type = stubType;
+                } else {
+                    AnnotatedTypeMerger.merge(stubType, type);
+                }
             }
         }
         // Caching is disabled if stub files are being parsed, because calls to this
@@ -1204,8 +1201,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (checker.hasOption("mergeStubs")) {
             Element elt = TreeUtils.elementFromTree(tree);
             AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
-            if (stubType != null && !result.toString().contains("@")) {
-                result = stubType;
+            if (stubType != null) {
+                if (result == null) {
+                    result = stubType;
+                } else {
+                    AnnotatedTypeMerger.merge(stubType, result);
+                }
             }
         }
 
