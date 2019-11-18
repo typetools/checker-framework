@@ -80,7 +80,7 @@ public class StubTypes {
         this.parsing = false;
         String release = PluginUtil.releaseValue(factory.getProcessingEnv());
         this.annotatedJdkVersion =
-                release != null ? release : Double.toString(PluginUtil.getJreVersion());
+                release != null ? release : String.valueOf(PluginUtil.getJreVersion());
 
         this.shouldParseJdk =
                 !factory.getContext().getChecker().hasOption("ignorejdkastub")
