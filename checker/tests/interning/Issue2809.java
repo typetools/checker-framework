@@ -6,11 +6,11 @@ import org.checkerframework.checker.interning.qual.UnknownInterned;
 
 class Issue2809 {
 
-    void new2(MyType<int @Interned []> t, int @Interned [] non) {
+    void new1(MyType<int @Interned []> t, int @Interned [] non) {
         t.self(new MyType<>(non));
     }
 
-    void new2_1(MyType<int @Interned []> t, int @Interned [] non) {
+    void new2(MyType<int @Interned []> t, int @Interned [] non) {
         t.self(new MyType<int @Interned []>(non));
     }
 
