@@ -753,13 +753,10 @@ public final class TreeUtils {
                 // returns the type of 'm' in this case
                 receiver = ((MethodInvocationTree) expression).getMethodSelect();
 
-                if (receiver.getKind() == Tree.Kind.IDENTIFIER) {
-                    // It's a method call "m(foo)" without an explicit receiver
-                    return null;
-                } else if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
+                if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
                     receiver = ((MemberSelectTree) receiver).getExpression();
                 } else {
-                    // Otherwise, e.g. a NEW_CLASS: nothing to do.
+                    // It's a method call "m(foo)" without an explicit receiver
                     return null;
                 }
                 break;

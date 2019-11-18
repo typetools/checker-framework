@@ -17,4 +17,9 @@ public class Issue2865<T extends @Nullable Object> {
         s.new C(null);
         s.new C("");
     }
+
+    void test2(Issue2865<@Nullable String> s) {
+        s.new C(null);
+        s.new C("");
+    }
 }

@@ -2122,9 +2122,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
 
-        AnnotatedDeclaredType enclosingType = null;
+        AnnotatedDeclaredType enclosingType;
         if (newClassTree.getEnclosingExpression() != null) {
             enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
+        } else {
+            enclosingType = null;
         }
         // Diamond trees that are not anonymous classes.
         if (TreeUtils.isDiamondTree(newClassTree) && newClassTree.getClassBody() == null) {
