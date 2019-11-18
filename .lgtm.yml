@@ -6,10 +6,6 @@ extraction:
   java:
     before_index:
     - mkdir ${LGTM_WORKSPACE}/downloads
-    - wget -O ${LGTM_WORKSPACE}/downloads/jsr308-langtools.zip https://bitbucket.org/typetools/jsr308-langtools/get/tip.zip
-    - unzip -q -d ${LGTM_WORKSPACE} ${LGTM_WORKSPACE}/downloads/jsr308-langtools.zip
-    - mv ${LGTM_WORKSPACE}/*jsr308-langtools* ${LGTM_WORKSPACE}/jsr308-langtools
-    - (cd ${LGTM_WORKSPACE}/jsr308-langtools/make; ant)
     - wget -O ${LGTM_WORKSPACE}/downloads/stubparser.zip https://github.com/typetools/stubparser/archive/master.zip
     - unzip -q -d ${LGTM_WORKSPACE} ${LGTM_WORKSPACE}/downloads/stubparser.zip
     - mv ${LGTM_WORKSPACE}/*stubparser* ${LGTM_WORKSPACE}/stubparser
@@ -17,7 +13,7 @@ extraction:
     - wget -O ${LGTM_WORKSPACE}/downloads/annotation-tools.zip https://github.com/typetools/annotation-tools/archive/master.zip
     - unzip -q -d ${LGTM_WORKSPACE} ${LGTM_WORKSPACE}/downloads/annotation-tools.zip
     - mv ${LGTM_WORKSPACE}/*annotation-tools* ${LGTM_WORKSPACE}/annotation-tools
-    - (cd ${LGTM_WORKSPACE}/annotation-tools; ant compile)
+    - (cd ${LGTM_WORKSPACE}/annotation-tools/annotation-file-utilities; ./gradlew assemble)
     index:
       build_command:
-      - JSR308=${LGTM_WORKSPACE} ./gradlew assemble --console=plain --warning-mode=all --no-daemon
+      - ./gradlew assemble --console=plain --warning-mode=all --no-daemon
