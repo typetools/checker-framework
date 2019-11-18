@@ -55,6 +55,11 @@ public class CompoundAssignment {
         @IntVal(0) int zero = 0;
         zero *= 12;
 
+        @StringVal("null") String s = "null";
+        s += "";
+    }
+
+    void errorCompundAssignments() {
         @StringVal("hello") String s = "hello";
         s += "";
     }

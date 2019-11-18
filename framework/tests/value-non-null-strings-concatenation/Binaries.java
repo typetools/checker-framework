@@ -321,6 +321,33 @@ class Binaries {
         @BoolVal(true) boolean b = (s != null);
     }
 
+    public void nullConcatenation(@StringVal({"a", "b"}) String arg) {
+        String n1 = null;
+        String n2 = "null";
+        String k = "const";
+
+        // @StringVal("nullnull") String a1 = n1 + null;
+        @StringVal("nullnull") String a2 = n1 + "null";
+        // @StringVal("nullnull") String a3 = n1 + n1;
+        @StringVal("nullnull") String a4 = n1 + n2;
+        @StringVal("nullconst") String a5 = n1 + k;
+        @StringVal("nullconst") String a6 = n1 + "const";
+
+        @StringVal("nullnull") String b1 = n2 + null;
+        @StringVal("nullnull") String b2 = n2 + "null";
+        @StringVal("null") String b3 = n2 + n1;
+        @StringVal("nullnull") String b4 = n2 + n2;
+        @StringVal({"nullconst", "nullnull"}) String b5 = n2 + k;
+        @StringVal("nullconst") String b6 = n2 + "const";
+
+        @StringVal({"anull", "bnull"}) String c1 = arg + null;
+        @StringVal({"anull", "bnull"}) String c2 = arg + "null";
+        @StringVal({"anull", "bnull"}) String c3 = arg + n1;
+        @StringVal({"anull", "bnull"}) String c4 = arg + n2;
+        @StringVal({"aconst", "bconst"}) String c5 = arg + k;
+        @StringVal({"aconst", "bconst"}) String c6 = arg + "const";
+    }
+
     public void conditionalComparisions() {
         @BoolVal(true) boolean a1 = true || false;
         @BoolVal(true) boolean a2 = true || true;

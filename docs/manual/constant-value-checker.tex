@@ -334,28 +334,28 @@ value that is not in its \<@IntRange> qualifier.  You should either accept
 that possibility, or verify the lack of overflow using some other tool or
 manual analysis.
 
+
 \sectionAndLabel{Strings can be null in concatenations}{non-null-strings-concats}
 
 By default, the Constant Value Checker is sound with respect to string
-concatenation.  The \code{-AnonNullStringsConcatenation} command-line option
-makes it unsound.
+concatenation and nullness.  It assumes that, in a string concatenation,
+every non-primitive argument might be null, except for String literals.
+It ignores Nullness Checker annotations.
+(This behavior is conservative but sound.)
 
 Consider a variable declared as
 \<\refqualclass{common/value/qual}{StringVal}("a", "b") String x;>.
 At run time, \<x> evaluates to one of the values \<"a">, \<"b">, or
-\<null>.  By default, the Constant Value
-Checker assumes that when such a value is used in string
-concatenation, it expands to \<"a">, \<"b"> or \<"null">. Every variable
-that is not a primitive, String literal or compile-time constant is
-considered nullable.
+\<null>.
+Therefore, the type of ``\<x + "c">'' is
+\<@StringVal("ac", "bc", "nullc") String>.
 
-The \code{-AnonNullStringsConcatenation} command-line option makes
-the checker assume that all variables are non-null. It ignores Nullness Checker
-annotations. (This behavior is conservative, but it is sound.)
-Without the command-line argument, the type of ``\<x + "c">'' is
-\<@StringVal("ac", "bc", "nullC") String>.
+The \code{-AnonNullStringsConcatenation} command-line option makes the
+Constant Value Checker unsoundly assume that no arguments in a string
+concatenation are null.
 With the command-line argument, the type of ``\<x + "c">'' is
 \<@StringVal("ac", "bc") String>.
+
 
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %%  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
