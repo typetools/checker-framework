@@ -94,7 +94,7 @@ public class Range {
     }
 
    
-  /**
+    /**
      * Returns a range with its bounds specified by two parameters, {@code from} and {@code to}. If
      * {@code from} is greater than {@code to}, returns {@link #NOTHING}.
      *
