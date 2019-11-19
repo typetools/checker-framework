@@ -4,6 +4,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -12,6 +13,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 /**
@@ -120,10 +122,12 @@ public interface WholeProgramInference {
 
     /**
      * Updates the return type of the method {@code methodTree} based on {@code returnedExpression}.
+     * May also strengthen the return types of any abstract methods that this method overrides.
      *
      * @param returnedExpression the node that contains the expression returned
      * @param classSymbol the symbol of the class that contains the method
      * @param methodTree the tree of the method whose return type may be updated
+     * @param overriddenMethods the methods that the given method return overrides
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used to update the method's return type
      */
@@ -131,6 +135,7 @@ public interface WholeProgramInference {
             ReturnNode returnedExpression,
             ClassSymbol classSymbol,
             MethodTree methodTree,
+            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods,
             AnnotatedTypeFactory atf);
 
     /**

@@ -834,6 +834,16 @@ public abstract class CFAbstractTransfer<
             // Retrieves class containing the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
+
+            ExecutableElement methodElem =
+                    TreeUtils.elementFromDeclaration(analysis.getContainingMethod(n.getTree()));
+
+            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
+                    AnnotatedTypes.overriddenMethods(
+                            analysis.atypeFactory.getElementUtils(),
+                            analysis.atypeFactory,
+                            methodElem);
+
             // Updates the inferred return type of the method
             analysis.atypeFactory
                     .getWholeProgramInference()
@@ -841,6 +851,7 @@ public abstract class CFAbstractTransfer<
                             n,
                             classSymbol,
                             analysis.getContainingMethod(n.getTree()),
+                            overriddenMethods,
                             analysis.getTypeFactory());
         }
         return super.visitReturn(n, p);

@@ -11,9 +11,11 @@ import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -29,6 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
@@ -442,6 +445,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * Updates the return type of the method methodTree in the Scene of the class with symbol
      * classSymbol.
      *
+     * <p>Maybe also update the return types of abstract methods in the chain of overridden methods.
+     *
      * <p>If the Scene does not contain an annotated return type for the method methodTree, then the
      * type of the value passed to the return expression will be added to the return type of that
      * method in the Scene. If the Scene previously contained an annotated return type for the
@@ -451,6 +456,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param retNode the node that contains the expression returned
      * @param classSymbol the symbol of the class that contains the method
      * @param methodTree the tree of the method whose return type may be updated
+     * @param overriddenMethods the methods that this method overrides
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used to update the method's return type
      */
@@ -459,6 +465,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ReturnNode retNode,
             ClassSymbol classSymbol,
             MethodTree methodTree,
+            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods,
             AnnotatedTypeFactory atf) {
         // See Issue 682
         // https://github.com/typetools/checker-framework/issues/682
@@ -477,6 +484,38 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
         helper.updateAnnotationSetInScene(
                 method.returnType, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.RETURN);
+
+        // Now, update overridden methods based on the implementation we just saw.
+        // If the overridden method is abstract, then WPI cannot update it directly,
+        // so updating based on implementations makes sense (cf. how method parameters
+        // are updated).
+        for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
+                overriddenMethods.entrySet()) {
+
+            AnnotatedExecutableType overriddenMethod =
+                    AnnotatedTypes.asMemberOf(
+                            atf.getProcessingEnv().getTypeUtils(),
+                            atf,
+                            pair.getKey(),
+                            pair.getValue());
+
+            if (overriddenMethod.getElement().getModifiers().contains(Modifier.ABSTRACT)) {
+                String superClassName = pair.getKey().getUnderlyingType().toString();
+                String superJaifPath = helper.getJaifPath(superClassName);
+                AClass superClazz = helper.getAClass(superClassName, superJaifPath);
+                AMethod superMethod =
+                        superClazz.methods.getVivify(JVMNames.getJVMMethodName(pair.getValue()));
+                AnnotatedTypeMirror superLhsATM = overriddenMethod.getReturnType();
+
+                helper.updateAnnotationSetInScene(
+                        superMethod.returnType,
+                        atf,
+                        superJaifPath,
+                        rhsATM,
+                        superLhsATM,
+                        TypeUseLocation.RETURN);
+            }
+        }
     }
 
     /** Write all modified scenes into .jaif files. */
