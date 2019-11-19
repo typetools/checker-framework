@@ -32,22 +32,20 @@ import scenelib.annotations.util.Strings;
 
 /**
  * SceneToStubWriter provides two static methods named {@code write} that write a given {@link
- * AScene} to a given {@link Writer} or filename, in stub file format. This class is the equivalent
+ * AScene} to a given {@link Writer}, {@link #write(AScene, Map, Map, Set, Writer)}, or filename,
+ * {@link #write(AScene, Map, Map, Set, Writer)}, in stub file format. This class is the equivalent
  * of {@code IndexFileWriter} from the Annotation File Utilities, but outputs the results in the
- * .astub format.
+ * stub file format instead of jaif format.
  *
  * <p>You can use this writer instead of {@code IndexFileWriter} by passing the {@code
- * -AoutputStubs} when running with {@code -Ainfer}.
+ * -Ainfer=stubs}.
  */
 public final class SceneToStubWriter {
 
     /** How far to indent when writing members of a stub file. */
     private static final String INDENT = "    ";
 
-    /**
-     * The printer. Kept as a field because every method in this class needs to access it, and
-     * threading it through would be kind of annoying.
-     */
+    /** The printer where the stub file is written. */
     private final PrintWriter printWriter;
 
     /**
@@ -65,9 +63,10 @@ public final class SceneToStubWriter {
     private Map<String, TypeElement> types;
 
     /**
-     * AClass doesn't carry any information to differentiate classes from enums. The stub parser
-     * can't parse an enum that's labeled "class", so we have to track that separately. The names in
-     * this set are fully-qualified.
+     * The fully-qualified name of enums to be written to a stub file.
+     *
+     * <p>The stub parser can't parse an enum that's labeled "class", but {@link AClass} doesn't
+     * specify if a class is an enum. So track which classes are enums.
      */
     private Set<String> enumSet;
 
