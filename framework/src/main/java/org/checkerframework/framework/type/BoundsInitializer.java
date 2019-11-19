@@ -691,11 +691,7 @@ public class BoundsInitializer {
                                 + currentStructure
                                 + "\n");
             } // else
-
-            final TypeVariableStructure toPop = (TypeVariableStructure) this.currentStructure;
-            if (toPop.typeVar != typeVar) {
-                this.currentStructure = toPop.parent;
-            }
+            this.currentStructure = ((TypeVariableStructure) this.currentStructure).parent;
         }
 
         public ReferenceMap createReferenceMap(final BoundStructure boundStruct) {
