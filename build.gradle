@@ -84,6 +84,14 @@ allprojects {
 
     configurations {
         javacJar
+
+        // There's a bug in IntelliJ that adds the processor path to the classpath when building
+        // a Gradle project.  Because ErrorProne uses old versions of some of our jars, IntelliJ uses
+        // those jars instead of the source code. The next 3 lines exclude Checker Framework from the
+        // from the processor path as a work around for this problem.
+        annotationProcessor.exclude group:'org.checkerframework', module:'javacutil'
+        annotationProcessor.exclude group:'org.checkerframework', module:'dataflow'
+        annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
     dependencies {
@@ -727,7 +735,7 @@ subprojects {
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', type: GradleBuild, group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
-            tasks = ['checkPurity']
+            tasks = ['checkPurity', 'checkInterning']
             if (project.name.is('framework') || project.name.is('checker')) {
                 tasks += ['checkCompilerMessages', 'jtregTests']
             }
