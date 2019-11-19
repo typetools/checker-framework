@@ -34,13 +34,10 @@ type-checker does, and makes the Checker Framework's warnings easier to
 understand.
 
 If your code uses raw types, then the Checker Framework will do its best to
-infer the Java type parameters and the type qualifiers.  If it infers
-imprecise types that lead to type-checking warnings elsewhere, then you have
-two options.  You can convert the raw types such as \code{List} to
-parameterized types such as \code{List<String>}, or you can supply the
-\<-AignoreRawTypeArguments> command-line option.  That option causes the
-Checker Framework to ignore all subtype tests for type arguments that
-were inferred for a raw type.
+infer the Java type arguments and the type qualifiers.  By default these
+inferred types are ignored in subtyping checks. If you supply the
+command-line option \<-AignoreRawTypeArguments=false> you will see errors
+from raw types.
 
 
 \subsectionAndLabel{Restricting instantiation of a generic class}{generics-instantiation}
