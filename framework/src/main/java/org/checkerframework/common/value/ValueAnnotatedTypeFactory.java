@@ -442,8 +442,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
                 List<Long> values = getIntValues(anno);
                 if (values.size() > MAX_VALUES) {
-                    atm.replaceAnnotation(
-                            createIntRangeAnnotation(new Range(values)));
+                    atm.replaceAnnotation(createIntRangeAnnotation(new Range(values)));
                 }
             } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
                 List<Integer> values = getArrayLength(anno);
@@ -452,8 +451,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (Collections.min(values) < 0) {
                     atm.replaceAnnotation(BOTTOMVAL);
                 } else if (values.size() > MAX_VALUES) {
-                    atm.replaceAnnotation(
-                            createArrayLenRangeAnnotation(new Range(values)));
+                    atm.replaceAnnotation(createArrayLenRangeAnnotation(new Range(values)));
                 }
             } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
                 // Compute appropriate defaults for integral ranges.
