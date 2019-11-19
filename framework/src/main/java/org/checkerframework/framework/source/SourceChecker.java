@@ -108,11 +108,6 @@ import org.checkerframework.javacutil.UserError;
     "skipDefs",
     "onlyDefs",
 
-    // Whether to ignore all subtype tests for type arguments that
-    // were inferred for a raw type
-    // org.checkerframework.framework.type.TypeHierarchy.isSubtypeTypeArguments
-    "ignoreRawTypeArguments",
-
     // Unsoundly ignore side effects
     "assumeSideEffectFree",
 
@@ -168,6 +163,11 @@ import org.checkerframework.javacutil.UserError;
     // Whether to use a conservative value for type arguments that could not be inferred.
     // See Issue 979.
     "conservativeUninferredTypeArguments",
+
+    // Whether to ignore all subtype tests for type arguments that
+    // were inferred for a raw type. Defaults to true.
+    // org.checkerframework.framework.type.TypeHierarchy.isSubtypeTypeArguments
+    "ignoreRawTypeArguments",
 
     ///
     /// Type-checking modes:  enable/disable functionality

@@ -691,11 +691,7 @@ public class BoundsInitializer {
                                 + currentStructure
                                 + "\n");
             } // else
-
-            final TypeVariableStructure toPop = (TypeVariableStructure) this.currentStructure;
-            if (toPop.typeVar != typeVar) {
-                this.currentStructure = toPop.parent;
-            }
+            this.currentStructure = ((TypeVariableStructure) this.currentStructure).parent;
         }
 
         public ReferenceMap createReferenceMap(final BoundStructure boundStruct) {
@@ -1282,7 +1278,7 @@ public class BoundsInitializer {
             final TypeKind typeKind,
             final AnnotatedTypeVariable type,
             final AnnotatedTypeMirror parent) {
-        if (parent.getKind().equals(typeKind)) {
+        if (parent.getKind() == typeKind) {
             return;
         }
 

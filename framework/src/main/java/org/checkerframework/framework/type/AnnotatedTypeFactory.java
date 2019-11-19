@@ -446,8 +446,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ElementType[] elements = annotationClass.getAnnotation(Target.class).value();
             List<ElementType> otherElementTypes = new ArrayList<>();
             for (ElementType element : elements) {
-                if (!(element.equals(ElementType.TYPE_USE)
-                        || element.equals(ElementType.TYPE_PARAMETER))) {
+                if (!(element == ElementType.TYPE_USE || element == ElementType.TYPE_PARAMETER)) {
                     // if there's an ElementType with an enumerated value of something other
                     // than TYPE_USE or TYPE_PARAMETER then it isn't a valid qualifier
                     otherElementTypes.add(element);
@@ -530,7 +529,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         initializeReflectionResolution();
 
-        if (this.getClass().equals(AnnotatedTypeFactory.class)) {
+        if (this.getClass() == AnnotatedTypeFactory.class) {
             this.parseStubFiles();
         }
     }
@@ -643,9 +642,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
             AnnotationMirror typeQualifierAnno =
                     AnnotationBuilder.fromClass(elements, typeQualifier);
-            if (typeQualifierAnno == null) {
-                throw new BugInCF("Cannot load annotation " + typeQualifier);
-            }
             factory.addQualifier(typeQualifierAnno);
             // Polymorphic qualifiers can't declare their supertypes.
             // An error is raised if one is present.
@@ -1211,7 +1207,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         AnnotatedTypeMirror result = TypeFromTree.fromExpression(this, tree);
 
-        if (shouldCache) {
+        if (shouldCache && tree.getKind() != Tree.Kind.NEW_CLASS) {
+            // Don't cache the type of object creations, because incorrect
+            // annotations would be cached during dataflow analysis.
+            // See Issue #602.
             fromExpressionTreeCache.put(tree, result.deepCopy());
         }
         return result;
