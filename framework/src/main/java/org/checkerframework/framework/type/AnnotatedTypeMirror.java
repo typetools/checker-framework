@@ -615,7 +615,7 @@ public abstract class AnnotatedTypeMirror {
 
     public boolean removeAnnotation(Class<? extends Annotation> a) {
         AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
-        if (anno == null || !atypeFactory.isSupportedQualifier(anno)) {
+        if (!atypeFactory.isSupportedQualifier(anno)) {
             throw new BugInCF(
                     "AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
         }
