@@ -2,6 +2,7 @@ package org.checkerframework.common.value.util;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -57,6 +58,22 @@ public class Range {
     public static final Range NOTHING = new Range();
 
     /**
+    * Convenience construtor for often invoked pattern for Long collections
+    * @param collection the min and max value found in it will be used as from and to values in the range
+    */
+    public Range(Collection<Long> collection){
+        this(Collections.min(collection),Collections.max(collection));
+    }
+    
+    /**
+     * Convenience construtor for often invoked pattern for Integer collections
+     * @param collection the min and max value found in it will be used as from and to values in the range
+     */
+    public Range(List<Integer> collection){
+        this(Collections.min(collection),Collections.max(collection));
+    }
+    
+    /**
      * Constructs a range with its bounds specified by two parameters, {@code from} and {@code to}.
      *
      * @param from the lower bound (inclusive)
@@ -76,7 +93,8 @@ public class Range {
         this.to = Long.MIN_VALUE;
     }
 
-    /**
+   
+  /**
      * Returns a range with its bounds specified by two parameters, {@code from} and {@code to}. If
      * {@code from} is greater than {@code to}, returns {@link #NOTHING}.
      *
@@ -413,7 +431,7 @@ public class Range {
             List<Long> possibleValues =
                     Arrays.asList(
                             from * right.from, from * right.to, to * right.from, to * right.to);
-            return new Range(Collections.min(possibleValues), Collections.max(possibleValues));
+            return new Range(possibleValues);
         } else {
             List<BigInteger> bigPossibleValues =
                     Arrays.asList(
@@ -1047,7 +1065,7 @@ public class Range {
      * bound and upper bound.
      */
     public boolean isWithin(long lb, long ub) {
-        return from >= lb && to <= ub;
+        return lb <= from && to <= ub;
     }
 
     /**

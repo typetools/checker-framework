@@ -28,7 +28,7 @@ class RangeOrListOfValues {
     private boolean isRange;
 
     public RangeOrListOfValues(List<Integer> values) {
-        this.values = new ArrayList<>();
+        this.values = new ArrayList<>(values.size());
         isRange = false;
         addAll(values);
     }
@@ -57,7 +57,7 @@ class RangeOrListOfValues {
      */
     public void addAll(List<Integer> newValues) {
         if (isRange) {
-            Range newValueRange = new Range(Collections.min(newValues), Collections.max(newValues));
+            Range newValueRange = new Range(newValues);
             range = range.union(newValueRange);
         } else {
             for (Integer i : newValues) {
@@ -108,7 +108,7 @@ class RangeOrListOfValues {
     public void convertToRange() {
         if (!isRange) {
             isRange = true;
-            range = new Range(Collections.min(values), Collections.max(values));
+            range = new Range(values);
             values = null;
         }
     }

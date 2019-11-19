@@ -133,7 +133,7 @@ public class ValueCheckerUtils {
         for (Number value : values) {
             longValues.add(value.longValue());
         }
-        return new Range(Collections.min(longValues), Collections.max(longValues));
+        return new Range(longValues);
     }
 
     /**
@@ -319,7 +319,7 @@ public class ValueCheckerUtils {
             List<Long> values =
                     ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
             if (values != null) {
-                return new Range(Collections.min(values), Collections.max(values));
+                return new Range(values);
             } else {
                 return null;
             }
