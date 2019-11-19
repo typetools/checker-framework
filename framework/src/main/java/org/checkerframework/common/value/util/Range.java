@@ -1065,7 +1065,7 @@ public class Range {
      * bound and upper bound.
      */
     public boolean isWithin(long lb, long ub) {
-        return lb <= from && to <= ub;
+        return from >= lb && to <= ub;
     }
 
     /**
