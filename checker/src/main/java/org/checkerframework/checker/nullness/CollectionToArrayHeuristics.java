@@ -79,11 +79,9 @@ public class CollectionToArrayHeuristics {
             ExpressionTree argument = tree.getArguments().get(0);
             boolean receiverIsNonNull = isNonNullReceiver(tree);
             boolean argIsHandled =
-                    receiverIsNonNull
-                            && isHandledArrayCreation(
-                                    argument, receiverName(tree.getMethodSelect()));
+                    isHandledArrayCreation(argument, receiverName(tree.getMethodSelect()));
             argIsHandled = argIsHandled || isArrayLenZeroFieldAccess(argument);
-            setComponentNullness(argIsHandled, method.getReturnType());
+            setComponentNullness(receiverIsNonNull && argIsHandled, method.getReturnType());
 
             // TODO: We need a mechanism to prevent nullable collections
             // from inserting null elements into a nonnull arrays.
