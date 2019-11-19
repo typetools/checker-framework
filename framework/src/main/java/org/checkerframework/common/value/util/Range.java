@@ -64,7 +64,7 @@ public class Range {
     public Range(Collection<Long> collection){
         this(Collections.min(collection),Collections.max(collection));
     }
-    
+
     /**
      * Convenience construtor for often invoked pattern for Integer collections
      * @param collection the min and max value found in it will be used as from and to values in the range
@@ -72,7 +72,7 @@ public class Range {
     public Range(List<Integer> collection){
         this(Collections.min(collection),Collections.max(collection));
     }
-    
+
     /**
      * Constructs a range with its bounds specified by two parameters, {@code from} and {@code to}.
      *
@@ -93,7 +93,6 @@ public class Range {
         this.to = Long.MIN_VALUE;
     }
 
-   
     /**
      * Returns a range with its bounds specified by two parameters, {@code from} and {@code to}. If
      * {@code from} is greater than {@code to}, returns {@link #NOTHING}.
