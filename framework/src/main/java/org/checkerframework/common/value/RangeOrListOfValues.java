@@ -28,7 +28,7 @@ class RangeOrListOfValues {
     private boolean isRange;
 
     public RangeOrListOfValues(List<Integer> values) {
-        this.values = new ArrayList<>(values.size());
+        this.values = new ArrayList<>();
         isRange = false;
         addAll(values);
     }
