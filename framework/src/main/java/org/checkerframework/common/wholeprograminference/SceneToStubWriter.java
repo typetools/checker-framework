@@ -190,6 +190,8 @@ public final class SceneToStubWriter {
 
     /**
      * Prints all annotations in {@code annos}, separated by spaces. See {@link #printAnnotation}.
+     * Internal JDK annotation such as jdk.Profile+Annotation contain "+", so ignore those when
+     * printing. This code is mostly borrowed from {@code IndexFileWriter}.
      */
     private void printAnnotations(Collection<? extends Annotation> annos) {
         for (Annotation tla : annos) {
@@ -276,19 +278,20 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * When an inner class is present in an AScene, its name is something like "Outer$Inner".
+     * For a given class, this prints out the hierarchy of outer classes, and returns the number of
+     * curly braces to close with. The classes are printing with appropriate opening curly braces,
+     * in standard Java style. This routine does not attempt to indent them correctly.
+     *
+     * <p>When an inner class is present in an AScene, its name is something like "Outer$Inner".
      * Writing a stub file with that name would be useless to the stub parser, which expects inner
      * classes to be properly nested.
-     *
-     * <p>For a given class, this prints out the hierarchy of outer classes, and returns the number
-     * of curly braces to close with.
      *
      * @param basename the name of the class without the package, in Outer$Inner form
      * @param classname the fully-qualified name of the class in question, so that it can be printed
      *     as an enum if it is one
      * @param aClass the AClass representing the classname
      */
-    private int printClassDefinition(String basename, String classname, AClass aClass) {
+    private int printClassDefinitions(String basename, String classname, AClass aClass) {
 
         String nameToPrint = basename;
         String rest = "";
@@ -308,7 +311,7 @@ public final class SceneToStubWriter {
         if ("".equals(rest)) {
             return 0;
         } else {
-            return 1 + printClassDefinition(rest, classname, aClass);
+            return 1 + printClassDefinitions(rest, classname, aClass);
         }
     }
 
@@ -342,7 +345,7 @@ public final class SceneToStubWriter {
             if ("package-info".equals(basename) || "module-info".equals(basename)) {
                 continue;
             } else {
-                curlyCount += printClassDefinition(basename, classname, aClass);
+                curlyCount += printClassDefinitions(basename, classname, aClass);
             }
 
             // print fields, but not for enums (that causes the stub parser to reject the stub)
