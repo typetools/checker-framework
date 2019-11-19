@@ -804,8 +804,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (doubleValAnno != null) {
                 if (intRangeAnno != null) {
                     intValAnno = convertIntRangeToIntVal(intRangeAnno);
-                    intRangeAnno = null;
-                    if (intValAnno == UNKNOWNVAL) {
+                    if (AnnotationUtils.areSameByClass(intValAnno, UnknownVal.class)) {
                         intValAnno = null;
                     }
                 }
@@ -1002,7 +1001,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * If {@code anno} is equalient to UnknownVal, return UnknownVal; otherwise, return {@code
+     * If {@code anno} is equivalent to UnknownVal, return UnknownVal; otherwise, return {@code
      * anno}.
      */
     private AnnotationMirror convertToUnknown(AnnotationMirror anno) {
@@ -1011,16 +1010,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (range.from == 0 && range.to >= Integer.MAX_VALUE) {
                 return UNKNOWNVAL;
             }
-            return anno;
         } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
             Range range = getRange(anno);
             if (range.isLongEverything()) {
                 return UNKNOWNVAL;
             }
-            return anno;
-        } else {
-            return anno;
         }
+        return anno;
     }
 
     /** The TreeAnnotator for this AnnotatedTypeFactory. It adds/replaces annotations. */
