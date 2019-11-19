@@ -715,7 +715,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         List<? extends VariableTree> paramTrees = methodTree.getParameters();
 
         for (VariableTree variableTree : paramTrees) {
-            if (TreeUtils.typeOf(variableTree).getKind().equals(TypeKind.CHAR)) {
+            if (TreeUtils.typeOf(variableTree).getKind() == TypeKind.CHAR) {
 
                 Receiver rec = null;
                 try {

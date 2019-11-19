@@ -22,7 +22,6 @@ import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.util.NodeUtils;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -76,11 +75,7 @@ public class KeyForAnnotatedTypeFactory
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new LinkedHashSet<>(
                 Arrays.asList(
-                        KeyFor.class,
-                        UnknownKeyFor.class,
-                        KeyForBottom.class,
-                        PolyKeyFor.class,
-                        PolyAll.class));
+                        KeyFor.class, UnknownKeyFor.class, KeyForBottom.class, PolyKeyFor.class));
     }
 
     @Override
@@ -315,5 +310,11 @@ public class KeyForAnnotatedTypeFactory
     /** Returns true if the node is an invocation of Map.put. */
     boolean isMapPut(Node node) {
         return NodeUtils.isMethodInvocation(node, mapPut, getProcessingEnv());
+    }
+
+    /** Returns false. Redundancy in the KeyFor hierarchy is not worth warning about. */
+    @Override
+    public boolean shouldWarnIfStubRedundantWithBytecode() {
+        return false;
     }
 }

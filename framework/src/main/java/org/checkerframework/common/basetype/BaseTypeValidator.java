@@ -14,7 +14,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -25,7 +24,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -146,10 +144,6 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         Set<AnnotationMirror> annotations = type.getAnnotations();
         Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : annotations) {
-            if (QualifierPolymorphism.isPolyAll(anno)) {
-                // ignore PolyAll when counting annotations
-                continue;
-            }
             AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
             if (AnnotationUtils.containsSame(seenTops, top)) {
                 return Result.failure("type.invalid.conflicting.annos", annotations, type);
@@ -157,10 +151,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             seenTops.add(top);
         }
 
-        // treat types that have polyall like type variables
-        boolean hasPolyAll = type.hasAnnotation(PolyAll.class);
-        boolean canHaveEmptyAnnotationSet =
-                QualifierHierarchy.canHaveEmptyAnnotationSet(type) || hasPolyAll;
+        boolean canHaveEmptyAnnotationSet = QualifierHierarchy.canHaveEmptyAnnotationSet(type);
 
         // wrong number of annotations
         if (!canHaveEmptyAnnotationSet && seenTops.size() < qualifierHierarchy.getWidth()) {

@@ -1316,7 +1316,7 @@ Here are some style guidelines:
 
 Annotations such as \refqualclass{checker/nullness/qual}{NonNull} are
 declared with
-\<\sunjavadocanno{java/lang/annotation/Retention.html}{Retention}(RetentionPolicy.\sunjavadoc{java/lang/annotation/RetentionPolicy.html\#RUNTIME}{RUNTIME})>.  In other words,
+\<\sunjavadocanno{java.base/java/lang/annotation/Retention.html}{Retention}(RetentionPolicy.\sunjavadoc{java.base/java/lang/annotation/RetentionPolicy.html\#RUNTIME}{RUNTIME})>.  In other words,
 these type annotations are available to tools at run time.  Such run-time
 tools could check the annotations (like an \<assert> statement), type-check
 dynamically-loaded code, check casts and \<instanceof> operations, resolve
@@ -1328,9 +1328,9 @@ accommodate them in the future.
 increase in heap size).
 
 For the purpose of static checking at compile time,
-\sunjavadoc{java/lang/annotation/RetentionPolicy.html\#CLASS}{CLASS}
+\sunjavadoc{java.base/java/lang/annotation/RetentionPolicy.html\#CLASS}{CLASS}
 retention would be sufficient.  Note that
-\sunjavadoc{java/lang/annotation/RetentionPolicy.html\#SOURCE}{SOURCE}
+\sunjavadoc{java.base/java/lang/annotation/RetentionPolicy.html\#SOURCE}{SOURCE}
 retention would not be sufficient, because of separate compilation: when
 type-checking a class, the compiler needs to read the annotations on
 libraries that it uses, and separately-compiled libraries are available to
@@ -1656,7 +1656,7 @@ than the Nullness Checker.
 
 \subsectionAndLabel{How does the Checker Framework compare with the JDK's \<Optional> type?}{faq-optional}
 
-JDK 8 introduced the \sunjavadoc{java/util/Optional.html}{\code{Optional}}
+JDK 8 introduced the \sunjavadoc{java.base/java/util/Optional.html}{\code{Optional}}
 class, a container that is either empty or contains a non-null value.
 The Optional Checker (see Chapter~\ref{optional-checker}) guarantees that
 programmers use \<Optional> correctly.

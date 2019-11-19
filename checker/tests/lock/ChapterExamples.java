@@ -428,6 +428,7 @@ class ChapterExamples {
     private @GuardedBy({}) MyClass myField;
 
     // TODO: For now, boxed types are treated as primitive types. This may change in the future.
+    @SuppressWarnings("deprecation") // new Integer
     void unboxing() {
         int a = 1;
         // :: error: (immutable.type.guardedby)
