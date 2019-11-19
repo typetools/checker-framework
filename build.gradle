@@ -106,7 +106,9 @@ allprojects {
             dependsOn(":framework-test:${tagletVersion}Classes")
             doFirst {
                 options.encoding = 'UTF-8'
-                options.memberLevel = javadocMemberLevel
+                if (!name.equals('requireJavadocPrivate')) {
+                    options.memberLevel = javadocMemberLevel
+                }
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
                 if (isJava8) {
                     classpath += configurations.javacJar
@@ -324,6 +326,7 @@ dependencies {
 task requireJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Ensures that Java elements have Javadoc documentation.'
     destinationDir = file("${rootDir}/docs/tmpapi")
+    destinationDir.mkdirs()
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
     classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
@@ -338,6 +341,7 @@ task requireJavadoc(type: Javadoc, group: "Documentation") {
 task requireJavadocPrivate(type: Javadoc, group: "Documentation") {
     description = 'Ensures that all (even private) Java elements have Javadoc documentation.'
     destinationDir = file("${rootDir}/docs/tmpapi")
+    destinationDir.mkdirs()
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
     classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
