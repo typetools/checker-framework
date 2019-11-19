@@ -427,6 +427,8 @@ public class StubTypes {
                     walk.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(".java"))
                             .collect(Collectors.toList());
             for (Path path : paths) {
+                // TODO: revert.
+                parseStubFile(path);
                 if (path.getFileName().toString().equals("package-info.java")) {
                     parseStubFile(path);
                     continue;
@@ -465,6 +467,8 @@ public class StubTypes {
                                     .replace(".java", "")
                                     .replace('/', '.');
                     jdk11StubFilesJar.put(shortName, jeNAme);
+                    // TODO: revert
+                    parseJarEntry(jeNAme);
                     if (jeNAme.endsWith("package-info.java")) {
                         parseJarEntry(jeNAme);
                     }
