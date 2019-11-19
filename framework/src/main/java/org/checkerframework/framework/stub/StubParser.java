@@ -1590,16 +1590,35 @@ public class StubParser {
         } else if (expr instanceof LongLiteralExpr) {
             return convert(((LongLiteralExpr) expr).asLong(), valueKind);
         } else if (expr instanceof UnaryExpr) {
-            if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
-                Object value =
-                        getValueOfExpressionInAnnotation(
-                                name, ((UnaryExpr) expr).getExpression(), valueKind);
-                if (value instanceof Number) {
-                    return convert((Number) value, valueKind, true);
-                }
+            switch (expr.toString()) {
+                    // The standard case below doesn't correctly handle the minimum values
+                    // of integral types, because it parses them separately as a "-" and
+                    // then as a value. Because the absolute value of the smallest member
+                    // of an integral type is one less than the absolute value of the largest
+                    // type, this causes number format exceptions. See
+                    // https://github.com/typetools/checker-framework/issues/2830
+                    //
+                    // To work around that, check the String representation against
+                    // the known problematic cases and special-case those.
+                    // The test framework/tests/value/minint-stub.astub contains examples
+                    // of otherwise unparse-able annotations, and proves that only Integer
+                    // and Long need to be special-cased.
+                case "-9223372036854775808L":
+                    return convert(Long.MIN_VALUE, valueKind, false);
+                case "-2147483648":
+                    return convert(Integer.MIN_VALUE, valueKind, false);
+                default:
+                    if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
+                        Object value =
+                                getValueOfExpressionInAnnotation(
+                                        name, ((UnaryExpr) expr).getExpression(), valueKind);
+                        if (value instanceof Number) {
+                            return convert((Number) value, valueKind, true);
+                        }
+                    }
+                    stubWarn("Unexpected Unary annotation expression: " + expr);
+                    return null;
             }
-            stubWarn("Unexpected Unary annotation expression: " + expr);
-            return null;
         } else if (expr instanceof ClassExpr) {
             ClassExpr classExpr = (ClassExpr) expr;
             String className = classExpr.getType().toString();

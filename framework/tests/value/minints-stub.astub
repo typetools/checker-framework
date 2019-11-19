@@ -1,0 +1,26 @@
+// That the Value Checker can parse this stub file is a test case for
+// https://github.com/typetools/checker-framework/issues/2830
+
+import org.checkerframework.common.value.qual.IntVal;
+
+package java.lang;
+
+class Long {
+     static @IntVal(-9223372036854775808L) Long MIN_VALUE;
+}
+
+class Integer {
+    static @IntVal(-2147483648) Integer MIN_VALUE;
+}
+
+class Short {
+    static @IntVal(-32768) Short MIN_VALUE;
+}
+
+class Byte {
+    static @IntVal(-128) Byte MIN_VALUE;
+}
+
+class Character {
+    static @IntVal(0) Character MIN_VALUE;
+}
