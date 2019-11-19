@@ -613,6 +613,12 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
+    /**
+     * Removes an annotation of the given class from the type.
+     *
+     * @param a the class of the annotation to remove
+     * @return true if the annotation was removed, false if the type's annotations were unchanged
+     */
     public boolean removeAnnotation(Class<? extends Annotation> a) {
         AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
         if (!atypeFactory.isSupportedQualifier(anno)) {
