@@ -376,14 +376,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         break;
                     default:
                         throw new UserError(
-                                "Found an @IntRange annotation on a "
+                                "Illegal type \"@IntRange "
                                         + qualifiedName
-                                        + ". @IntRange can only be applied to built-in Java integral types.");
+                                        + "\". @IntRange can be applied to Java integral types.");
                 }
                 break;
             default:
                 throw new BugInCF(
-                        "Tried to apply a default to an IntRange annotation that was neither an integral primitive nor a declared type.");
+ 				  anno.toString() + " on a type of kind " + type.getKind());
         }
         return from;
     }
@@ -441,9 +441,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         break;
                     default:
                         throw new UserError(
-                                "Found an @IntRange annotation on a "
+                                "Illegal type \"@IntRange "
                                         + qualifiedName
-                                        + ". @IntRange can only be applied to built-in Java integral types.");
+                                        + "\". @IntRange can be applied to Java integral types.");
                 }
                 break;
             default:
