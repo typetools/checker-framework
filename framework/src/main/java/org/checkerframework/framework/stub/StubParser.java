@@ -107,8 +107,8 @@ public class StubParser {
      */
     private final boolean warnIfNotFoundIgnoresClasses;
 
-    /** Whether to print warnings about stub files that override annotations from bytecode. */
-    private final boolean warnIfStubOverridesBytecode;
+    /** Whether to print warnings about stub files that overwrite annotations from bytecode. */
+    private final boolean warnIfStubOverwritesBytecode;
 
     /**
      * Whether to print warnings about stub files that are redundant with annotations from bytecode.
@@ -862,8 +862,8 @@ public class StubParser {
         // TODO: This should check whether the stub file is @AnnotatedFor the current type system.
         // @AnnotatedFor isn't integrated in stub files yet.
         if (annos != null && !annos.isEmpty()) {
-            // TODO: only produce output if the removed annotation
-            // isn't the top and default annotation in the type hierarchy.
+            // TODO: only produce output if the removed annotation isn't the top and default
+            // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
             if (false) {
                 stubWarnOverwritesBytecode(
                         String.format(
@@ -1951,10 +1951,10 @@ public class StubParser {
 
     /**
      * Issues the given warning about overwriting bytecode, only if it has not been previously
-     * issued and the -AstubWarnIfOverridesBytecode command-line argument was passed.
+     * issued and the -AstubWarnIfOverwritesBytecode command-line argument was passed.
      */
     private void stubWarnOverwritesBytecode(String warning) {
-        if (warnings.add(warning) && (warnIfStubOverridesBytecode || debugStubParser)) {
+        if (warnings.add(warning) && (warnIfStubOverwritesBytecode || debugStubParser)) {
             processingEnv
                     .getMessager()
                     .printMessage(javax.tools.Diagnostic.Kind.WARNING, "StubParser: " + warning);

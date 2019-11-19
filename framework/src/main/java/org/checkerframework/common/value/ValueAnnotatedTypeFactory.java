@@ -145,7 +145,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // @Positive is aliased here because @Positive provides useful
         // information about @MinLen annotations.
         // @NonNegative and @GTENegativeOne are aliased similarly so
-        // that it's possible to override a function annotated to return
+        // that it's possible to overwrite a function annotated to return
         // @NonNegative with, for instance, a function that returns an @IntVal(0).
         addAliasedAnnotation(
                 "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
