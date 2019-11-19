@@ -94,23 +94,23 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     private final WholeProgramInferenceScenesHelper helper;
 
     /**
-     * The stub file format requires enums and classes to be output differently. This set keeps
-     * track of which AClass objects in the scenes are actually enums, to support outputting in that
-     * format.
+     * This set tracks which AClass objects in the scenes are actually enums, to support outputting
+     * using the "enum" keyword. The stub file format requires enums and classes to be output
+     * differently.
      */
     private final Set<String> enumSet = new HashSet<>();
 
     /**
-     * The stub file format requires that the correct number of type parameters be written on a
-     * class declaration. This map goes from fully-qualified names to the TypeElement representing a
-     * class declaration, and is passed to the stub file writer to facilitate using the correct type
-     * parameters in class declarations.
+     * This map goes from fully-qualified names to the TypeElement representing a class declaration,
+     * and is passed to the stub file writer to facilitate using the correct type parameters in
+     * class declarations. The stub file format requires that the correct number of type parameters
+     * be written on a class declaration.
      */
     private final Map<String, TypeElement> types = new HashMap<>();
 
     /**
-     * Create a new WholeProgramInferenceScenes. ignoreNullAssignments is useful when inferring
-     * types for the nullness checker.
+     * Create a new WholeProgramInferenceScenes. ignoreNullAssignments indicates whether assignments
+     * where the rhs is null should be ignored.
      */
     public WholeProgramInferenceScenes(boolean ignoreNullAssignments) {
         helper = new WholeProgramInferenceScenesHelper(ignoreNullAssignments);

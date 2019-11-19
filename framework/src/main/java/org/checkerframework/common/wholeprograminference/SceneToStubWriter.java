@@ -72,8 +72,64 @@ public final class SceneToStubWriter {
     private Set<String> enumSet;
 
     /**
-     * Stolen from {@code IndexFileWriter}. Prints a literal; used when printing the arguments of
-     * annotations.
+     * Private constructor that initializes the printWriter and copies over relevant inputs to the
+     * fields in which they are stored.
+     */
+    private SceneToStubWriter(
+            AScene scene,
+            Map<String, TypeMirror> basetypes,
+            Map<String, TypeElement> types,
+            Set<String> enumSet,
+            Writer out) {
+        this.basetypes = basetypes;
+        this.types = types;
+        this.enumSet = enumSet;
+        printWriter = new PrintWriter(out);
+        writeImpl(scene);
+        printWriter.flush();
+    }
+
+    /** Writes the annotations in <code>scene</code> to <code>out</code> in stub file format. */
+    public static void write(
+            AScene scene,
+            Map<String, TypeMirror> basetypes,
+            Map<String, TypeElement> types,
+            Set<String> enumSet,
+            Writer out) {
+        new SceneToStubWriter(scene, basetypes, types, enumSet, out);
+    }
+
+    /**
+     * Writes the annotations in {@code scene}to the file {@code filename} in stub file format; see
+     * {@link #write(AScene, Map, Map, Set, Writer)}.
+     */
+    public static void write(
+            AScene scene,
+            Map<String, TypeMirror> basetypes,
+            Map<String, TypeElement> types,
+            Set<String> enumSet,
+            String filename)
+            throws IOException {
+        write(scene, basetypes, types, enumSet, new FileWriter(filename));
+    }
+
+    /** The part of a fully-qualified name that specifies the package. */
+    private static String packagePart(String className) {
+        int lastdot = className.lastIndexOf('.');
+        return (lastdot == -1) ? "" : className.substring(0, lastdot);
+    }
+
+    /** The part of a fully-qualified name that specifies the basename of the class. */
+    private static String basenamePart(String className) {
+        int lastdot = className.lastIndexOf('.');
+        return (lastdot == -1) ? className : className.substring(lastdot + 1);
+    }
+
+    /**
+     * Prints a literal; used when printing the arguments of annotations. Nearly a copy of the
+     * same-named method in {@code IndexFileWriter}, with one modification: this version (correctly)
+     * prints long literals with an L at the end, so that they are valid Java source code (if they
+     * are larger than Integer.MAX_VALUE).
      */
     private void printValue(AnnotationFieldType aft, Object o) {
         if (aft instanceof AnnotationAFT) {
@@ -176,9 +232,6 @@ public final class SceneToStubWriter {
             basetype = "TODOTYPE";
         }
 
-        // Annotations on arrays should be printed after the component type.
-        // Don't even bother checking for annotations on component types,
-        // since we can't infer them (yet?).
         if (basetype.contains("[")) {
             String component = basetype.substring(0, basetype.lastIndexOf('['));
             printArrayComponentTypeAnnotation(aField.type);
@@ -286,7 +339,7 @@ public final class SceneToStubWriter {
             String basename = basenamePart(classname);
             int curlyCount = 1;
 
-            if ("package-info".equals(basename)) {
+            if ("package-info".equals(basename) || "module-info".equals(basename)) {
                 continue;
             } else {
                 curlyCount += printClassDefinition(basename, classname, aClass);
@@ -383,59 +436,5 @@ public final class SceneToStubWriter {
             first = false;
         }
         printWriter.print(">");
-    }
-
-    /**
-     * Private constructor that initializes the printWriter and copies over relevant inputs to the
-     * fields in which they are stored.
-     */
-    private SceneToStubWriter(
-            AScene scene,
-            Map<String, TypeMirror> basetypes,
-            Map<String, TypeElement> types,
-            Set<String> enumSet,
-            Writer out) {
-        this.basetypes = basetypes;
-        this.types = types;
-        this.enumSet = enumSet;
-        printWriter = new PrintWriter(out);
-        writeImpl(scene);
-        printWriter.flush();
-    }
-
-    /** Writes the annotations in <code>scene</code> to <code>out</code> in stub file format. */
-    public static void write(
-            AScene scene,
-            Map<String, TypeMirror> basetypes,
-            Map<String, TypeElement> types,
-            Set<String> enumSet,
-            Writer out) {
-        new SceneToStubWriter(scene, basetypes, types, enumSet, out);
-    }
-
-    /**
-     * Writes the annotations in {@code scene}to the file {@code filename} in stub file format; see
-     * {@link #write(AScene, Map, Map, Set, Writer)}.
-     */
-    public static void write(
-            AScene scene,
-            Map<String, TypeMirror> basetypes,
-            Map<String, TypeElement> types,
-            Set<String> enumSet,
-            String filename)
-            throws IOException {
-        write(scene, basetypes, types, enumSet, new FileWriter(filename));
-    }
-
-    /** The part of a fully-qualified name that specifies the package. */
-    private static String packagePart(String className) {
-        int lastdot = className.lastIndexOf('.');
-        return (lastdot == -1) ? "" : className.substring(0, lastdot);
-    }
-
-    /** The part of a fully-qualified name that specifies the basename of the class. */
-    private static String basenamePart(String className) {
-        int lastdot = className.lastIndexOf('.');
-        return (lastdot == -1) ? className : className.substring(lastdot + 1);
     }
 }

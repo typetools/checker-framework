@@ -539,8 +539,8 @@ bytecode annotations.
 A file being compiled takes precedence over a stub file.  If file \<A.java>
 is being compiled, then any stub for class \<A> is ignored. There is a
 command-line flag that can be provided to the Checker Framework to use
-stub types even if the corresponding source file is available:
-\<-AmergeStubs>.
+stronger types from stub files even if the corresponding source file is available:
+\<-AmergeStubsWithSource>.
 
 When a stub file is provided by the author of a checker, the stub file is used
 automatically, with no need for the user to supply a command-line option.

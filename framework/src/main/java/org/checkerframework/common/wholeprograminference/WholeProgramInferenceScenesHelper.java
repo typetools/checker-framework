@@ -88,23 +88,29 @@ public class WholeProgramInferenceScenesHelper {
     private final Set<String> modifiedScenes = new HashSet<>();
 
     /**
-     * AScene doesn't carry around the basetypes of annotated types, which precludes outputting
-     * correctly formatted stub files. #updateTypeElementFromATM intercepts updates to
+     * A map from the description of an ATypeElement to the corresponding TypeMirror.
+     *
+     * <p>AScene doesn't carry around the basetypes of annotated types, which precludes outputting
+     * correctly formatted stub files (which sometimes require correct base types, such as when
+     * outputting the parameters of a method). #updateTypeElementFromATM intercepts updates to
      * ATypeElement_s that add annotations, and populates this map with their corresponding
      * basetypes. Then, these basetypes are used when outputting stub files.
      *
-     * <p>This is super hacky, and could be avoided if we didn't go through AScene at all.
-     * Unfortunately, all the interesting WPI code uses them, so removing that dependency would be
-     * hard.
+     * <p>This is super hacky, because there is no guarantee that two ATypeElement objects won't
+     * have the same description. In practice, I haven't observed any problems caused by this. The
+     * ATypeElement_s themselves aren't useful as keys, because their hashes change when annotations
+     * are added to them.
      *
-     * <p>The ATypeElement_s themselves aren't useful as keys, because their hashes change when
-     * annotations are added to them. Instead, we use their description as the hash key. This is
-     * super sketchy (there is no guarantee that two different ATypeElement_s won't have the same
-     * description!), but it's the best I can come up with at the moment.
+     * <p>The need to keep this map around at all could be avoided if we didn't go through AScene at
+     * all. TODO: entirely remove the dependence on AScene, so that this map (and the hack that goes
+     * along with it) can be removed.
      */
     private final Map<String, TypeMirror> basetypes = new HashMap<>();
 
-    /** Create a new helper. */
+    /**
+     * Create a new helper. ignoreNullAssignments indicates whether assignments where the rhs is
+     * null should be ignored.
+     */
     public WholeProgramInferenceScenesHelper(boolean ignoreNullAssignments) {
         this.ignoreNullAssignments = ignoreNullAssignments;
     }
@@ -145,7 +151,8 @@ public class WholeProgramInferenceScenesHelper {
     }
 
     /**
-     * This alternative to #writeScenesToJaif instead writes the scenes out to .astub files.
+     * Writes the scenes out to .astub files. This method is an alternative to {@link
+     * #writeScenesToJaif}.
      *
      * @param enumSet all fully-qualified classnames which should be output as enums. The stub
      *     parser will crash if an enum is output as a class (i.e. as "class Foo" rather than "enum
@@ -159,8 +166,7 @@ public class WholeProgramInferenceScenesHelper {
             stubDir.mkdirs();
         }
         // Convert the .jaif file names in modifiedScenes into .astub files.
-        // Write scenes into .jaif files.
-
+        // Then write scenes into .astub files.
         for (String jaifPath : modifiedScenes) {
             String stubPath = jaifPath.replace(".jaif", ".astub");
             AScene scene = scenes.get(jaifPath).clone();

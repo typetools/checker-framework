@@ -1145,7 +1145,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + elt);
         }
 
-        if (checker.hasOption("mergeStubs")) {
+        if (checker.hasOption("mergeStubsWithSource")) {
             AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
             if (stubType != null) {
                 if (type == null) {
@@ -1194,7 +1194,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
 
-        if (checker.hasOption("mergeStubs")) {
+        if (checker.hasOption("mergeStubsWithSource")) {
             Element elt = TreeUtils.elementFromTree(tree);
             AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
             if (stubType != null) {

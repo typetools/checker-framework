@@ -242,7 +242,7 @@ import org.checkerframework.javacutil.UserError;
     // than directly in source code, such as during whole-program inference. The annotations
     // in the stub files will be merged (glb'd) with those in the source code before local
     // inference begins.
-    "mergeStubs",
+    "mergeStubsWithSource",
     // Already listed above, but worth noting again in this section:
     // "useDefaultsForUncheckedCode"
 
