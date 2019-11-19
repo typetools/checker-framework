@@ -1513,6 +1513,11 @@ public class StubParser {
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, AnnotationMirror> allStubAnnotations) {
         String annoName = annotation.getNameAsString();
+        if (annoName.equals("Deprecated")) {
+            // Ignore @Deprecated annotations as the annotation is different in JDK 8 and JDK 11.
+            return null;
+        }
+
         AnnotationMirror annoMirror = allStubAnnotations.get(annoName);
         if (annoMirror == null) {
             // Not a supported qualifier -> ignore
