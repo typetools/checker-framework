@@ -1031,10 +1031,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (checker.hasOption("infer") && wholeProgramInference != null) {
             // Write out the results of whole-program inference.
             // In order to perform the write operation only once for each class, the best location
-            // to
-            // do so is here.
+            // to do so is here.
             WholeProgramInference.OutputKind outputKind =
-                    checker.getOption("infer").equals("stubs")
+                    "stubs".equals(checker.getOption("infer"))
                             ? WholeProgramInference.OutputKind.STUB
                             : WholeProgramInference.OutputKind.JAIF;
             wholeProgramInference.saveResults(outputKind);
