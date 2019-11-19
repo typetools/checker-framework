@@ -1,5 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
+import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -148,7 +149,7 @@ public final class SceneToStubWriter {
         for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
             InnerTypeLocation loc = ite.getKey();
             AElement it = ite.getValue();
-            if (loc.toString().contains("ARRAY")) {
+            if (loc.location.contains(TypePathEntry.ARRAY)) {
                 printAnnotations(it.tlAnnotationsHere);
                 printWriter.append(' ');
             }
@@ -193,10 +194,11 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * {@code DefCollector} is a facility in the annotation file utilities for determining which
-     * annotations are used in a given AScene, and then writing out their definitions into the index
-     * file. Here, we abuse that construct to write out the proper import statements into a stub
-     * file.
+     * Writes out an import statement for each annotation used in an {@link AScene}.
+     *
+     * <p>{@code DefCollector} is a facility in the annotation file utilities for determining which
+     * annotations are used in a given AScene. Here, we use that construct to write out the proper
+     * import statements into a stub file.
      */
     private class ImportDefCollector extends DefCollector {
 
@@ -209,8 +211,8 @@ public final class SceneToStubWriter {
         }
 
         /**
-         * Write an import statement for a given AnnotationDef. Don't do anything fancy, and assume
-         * that DefCollector did its job so that this will only be called once on each annotation.
+         * Write an import statement for a given AnnotationDef. This is only called once per
+         * annotation used in the scene.
          */
         @Override
         protected void visitAnnotationDef(AnnotationDef d) {
@@ -412,8 +414,8 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Writes the annotations in <code>scene</code> to the file <code>filename</code> in stub file
-     * format; see {@link #write(AScene, Map, Map, Set, Writer)}.
+     * Writes the annotations in {@code scene}to the file {@code filename} in stub file format; see
+     * {@link #write(AScene, Map, Map, Set, Writer)}.
      */
     public static void write(
             AScene scene,
