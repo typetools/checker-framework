@@ -725,7 +725,7 @@ subprojects {
             description 'Run all Checker Framework tests except for the Junit tests.'
             tasks = ['checkPurity']
             if (project.name.is('framework') || project.name.is('checker')) {
-                tasks += ['checkCompilerMessages', 'jtregTests']
+                tasks += ['checkCompilerMessages', 'checkInterning', 'jtregTests']
             }
             if (project.name.is('framework')) {
                 tasks += ['wholeProgramInferenceTests', 'loaderTests']
