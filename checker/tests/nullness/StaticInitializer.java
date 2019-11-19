@@ -1,7 +1,7 @@
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
-// :: error: (initialization.fields.uninitialized)
+// :: error: (initialization.static.fields.uninitialized)
 class StaticInitializer {
 
     public static String a;
@@ -14,7 +14,7 @@ class StaticInitializer {
     public StaticInitializer() {}
 }
 
-// :: error: (initialization.fields.uninitialized)
+// :: error: (initialization.static.fields.uninitialized)
 class StaticInitializer2 {
     public static String a;
     public static String b;

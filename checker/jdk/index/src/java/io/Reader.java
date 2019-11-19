@@ -155,7 +155,7 @@ public abstract class Reader implements Readable, Closeable {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    abstract public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException;
+    abstract public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException;
 
     /** Maximum skip-buffer size */
     private static final int maxSkipBufferSize = 8192;
@@ -174,7 +174,7 @@ public abstract class Reader implements Readable, Closeable {
      * @exception  IllegalArgumentException  If <code>n</code> is negative.
      * @exception  IOException  If an I/O error occurs
      */
-    public long skip(long n) throws IOException {
+    public @NonNegative long skip(@NonNegative long n) throws IOException {
         if (n < 0L)
             throw new IllegalArgumentException("skip value is negative");
         int nn = (int) Math.min(n, maxSkipBufferSize);

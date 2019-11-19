@@ -67,7 +67,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         // The check only needs to be done for constructors with result type
         // @Unique. We also want to avoid visiting the <init> method.
         if (isInUniqueConstructor()) {
-            if (TreeUtils.isSuperCall(node)) {
+            if (TreeUtils.isSuperConstructorCall(node)) {
                 // Check if a call to super() might create an alias: that
                 // happens when the parent's respective constructor is not @Unique.
                 AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(node);

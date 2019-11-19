@@ -15,6 +15,7 @@ import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
+import com.sun.tools.javac.comp.Resolve.RecoveryLoadClass;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -557,15 +558,17 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     private Symbol getSymbol(String className, Env<AttrContext> env, Names names, Resolve resolve) {
         Method loadClass;
         try {
-            loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
+            loadClass =
+                    Resolve.class.getDeclaredMethod(
+                            "loadClass", Env.class, Name.class, RecoveryLoadClass.class);
             loadClass.setAccessible(true);
         } catch (SecurityException | NoSuchMethodException | IllegalArgumentException e) {
             // A problem with javac is serious and must be reported.
             throw new BugInCF("Error in obtaining reflective method.", e);
         }
         try {
-            Symbol symbol = (Symbol) loadClass.invoke(resolve, env, names.fromString(className));
-            return symbol;
+            RecoveryLoadClass noRecovery = (e, n) -> null;
+            return (Symbol) loadClass.invoke(resolve, env, names.fromString(className), noRecovery);
         } catch (SecurityException
                 | IllegalAccessException
                 | IllegalArgumentException

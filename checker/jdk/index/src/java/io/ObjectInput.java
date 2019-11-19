@@ -80,7 +80,7 @@ public interface ObjectInput extends DataInput, AutoCloseable {
      *          returned when the end of the stream is reached.
      * @exception IOException If an I/O error has occurred.
      */
-    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException;
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1")int len) throws IOException;
 
     /**
      * Skips n bytes of input.
@@ -88,7 +88,7 @@ public interface ObjectInput extends DataInput, AutoCloseable {
      * @return  the actual number of bytes skipped.
      * @exception IOException If an I/O error has occurred.
      */
-    public long skip(long n) throws IOException;
+    public @NonNegative long skip(long n) throws IOException;
 
     /**
      * Returns the number of bytes that can be read

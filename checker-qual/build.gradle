@@ -5,6 +5,7 @@ buildscript {
         }
     }
     dependencies {
+        // Create OSGI bundles
         classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:4.1.0"
     }
 }
@@ -49,5 +50,5 @@ compileJava {
 }
 
 clean {
-    delete file('generated-src/')
+    delete file('src/')
 }

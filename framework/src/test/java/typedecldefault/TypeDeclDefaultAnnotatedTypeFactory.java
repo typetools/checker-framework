@@ -19,6 +19,7 @@ public class TypeDeclDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
         return new HashSet<>(
                 Arrays.asList(
                         TypeDeclDefaultTop.class,
+                        TypeDeclDefaultMiddle.class,
                         TypeDeclDefaultBottom.class,
                         PolyTypeDeclDefault.class));
     }

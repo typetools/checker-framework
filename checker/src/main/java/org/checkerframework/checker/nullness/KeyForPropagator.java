@@ -21,8 +21,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * KeyForPropagator is used to move nested KeyFor annotations from one side of a pseudo-assignment
- * to the other. The KeyForPropagationTreeAnnotator details the locations in which this occurs.
+ * KeyForPropagator is used to move nested KeyFor annotations in type arguments from one side of a
+ * pseudo-assignment to the other. The KeyForPropagationTreeAnnotator details the locations in which
+ * this occurs.
  *
  * @see org.checkerframework.checker.nullness.KeyForPropagationTreeAnnotator
  */

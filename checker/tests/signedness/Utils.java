@@ -49,26 +49,26 @@ public class Utils {
         int res;
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.compareUnsigned(slong, slong);
+        res = Long.compareUnsigned(slong, slong);
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.compareUnsigned(slong, ulong);
+        res = Long.compareUnsigned(slong, ulong);
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.compareUnsigned(ulong, slong);
+        res = Long.compareUnsigned(ulong, slong);
 
-        res = SignednessUtil.compareUnsigned(ulong, ulong);
-
-        // :: error: (argument.type.incompatible)
-        res = SignednessUtil.compareUnsigned(sint, sint);
+        res = Long.compareUnsigned(ulong, ulong);
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.compareUnsigned(sint, uint);
+        res = Integer.compareUnsigned(sint, sint);
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.compareUnsigned(uint, sint);
+        res = Integer.compareUnsigned(sint, uint);
 
-        res = SignednessUtil.compareUnsigned(uint, uint);
+        // :: error: (argument.type.incompatible)
+        res = Integer.compareUnsigned(uint, sint);
+
+        res = Integer.compareUnsigned(uint, uint);
 
         // :: error: (argument.type.incompatible)
         res = SignednessUtil.compareUnsigned(sshort, sshort);
@@ -106,24 +106,24 @@ public class Utils {
         String res;
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.toUnsignedString(slong);
+        res = Long.toUnsignedString(slong);
 
-        res = SignednessUtil.toUnsignedString(ulong);
-
-        // :: error: (argument.type.incompatible)
-        res = SignednessUtil.toUnsignedString(slong, 10);
-
-        res = SignednessUtil.toUnsignedString(ulong, 10);
+        res = Long.toUnsignedString(ulong);
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.toUnsignedString(sint);
+        res = Long.toUnsignedString(slong, 10);
 
-        res = SignednessUtil.toUnsignedString(uint);
+        res = Long.toUnsignedString(ulong, 10);
 
         // :: error: (argument.type.incompatible)
-        res = SignednessUtil.toUnsignedString(sint, 10);
+        res = Integer.toUnsignedString(sint);
 
-        res = SignednessUtil.toUnsignedString(uint, 10);
+        res = Integer.toUnsignedString(uint);
+
+        // :: error: (argument.type.incompatible)
+        res = Integer.toUnsignedString(sint, 10);
+
+        res = Integer.toUnsignedString(uint, 10);
 
         // :: error: (argument.type.incompatible)
         res = SignednessUtil.toUnsignedString(sshort);

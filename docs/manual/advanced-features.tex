@@ -83,6 +83,73 @@ that either in the context (change the declaration of \<myStrings>) or in a
 \<new> construct (change the expression to \<new @Regex String[] >\verb|{"hello"}|).
 
 
+\sectionAndLabel{Upper bound of qualifiers on uses of a given type}{upper-bound-for-use}
+The examples in this section use the type qualifier hierarchy \code{@A :> @B :> @C}.
+
+A qualifier on a use of a certain type must be a subtype or equal to the upper bound for that type.
+The upper bound of qualifiers used on a given type is specified by annotating the type declaration
+with some qualifier.
+\begin{Verbatim}
+  @C class MyClass {}
+\end{Verbatim}
+
+This means that \<@B MyClass> is an invalid type.  (Annotations on class declarations may also specify
+default annotations for uses of the type; see Section~\ref{default-for-use})
+
+An upper bound can also be specified by the type-system designer using the meta-annotation
+\refqualclass{framework/qual}{UpperBoundFor}.
+
+If no annotation is present on a type declaration and if no \<@UpperBoundFor> mentions the type, then
+the bound is top. This can be changed by overriding
+\refmethodanchortext{framework/type}{AnnotatedTypeFactory}{getTypeDeclarationBounds}{-javax.lang.model.type.TypeMirror-}{AnnotatedTypeFactory\#getTypeDeclarationBounds}.
+
+There are two exceptions.
+\begin{itemize}
+  \item
+  An expression can have a supertype of the upper bound; that is, some expression could
+  have type \<@B MyClass>.  This type is not written explicitly, but results from viewpoint adaptation.
+  \item
+  Using usual CLIMB-to-top rules, local variables of type MyClass default to \<@A MyClass>.
+  It is legal for \<@A MyClass> to be the type of a local variable.
+  For consistency, users are allowed to write such a type on a local variable declaration.
+\end{itemize}
+
+Due to existing type rules, an expression of type \<A MyClass> can only be used in limited ways.
+\begin{itemize}
+  \item
+  Since every field, formal parameter, and return type of type MyClass (or lower) is annotated as
+  \<@B> (or lower), it cannot be assigned to a field, passed to a method, or returned from a method.
+  \item
+  It can be used in a context that requires \<@A Object> (or whatever the least supertype is of MyClass
+  for which the \<@A> qualifier is permitted).  Examples include being tested against \<null> or
+  (for most type systems) being passed to polymorphic routines such as \<System.out.println> or \<System.identityHashCode>.
+\end{itemize}
+
+These operations might refine its type.  If a user wishes to annotate a method that does type refinement,
+its formal parameter must be of illegal type \<@A MyClass>, which requires a warning suppression.
+
+If the framework forbid expressions and local variables from having types inconsistent with the class annotation,
+then important APIs and common coding paradigms will no longer type-check.
+
+Consider the annotation
+\begin{Verbatim}
+  @NonNull class Optional { ... }
+\end{Verbatim}
+and the client code
+
+\begin{Verbatim}
+  Map<String, Optional> m;
+  String key = ...;
+  Optional value = m.get(key);
+  if (value != null) {
+  ...;
+  }
+\end{Verbatim}
+
+The type of \<m.get(key)> is \<@Nullable Optional>, which is an illegal type.
+However, this is a very common paradigm.  Programmers should not need to rewrite the code to test
+\<m.containsKey(key)> nor suppress a warning in this safe code.
+
 \sectionAndLabel{The effective qualifier on a type (defaults and inference)}{effective-qualifier}
 
 A checker sometimes treats a type as having a slightly different qualifier
@@ -92,12 +159,7 @@ Most readers can skip this section on first reading, because you will
 probably find the system simply ``does what you mean'', without forcing
 you to write too many qualifiers in your program.
 In particular, qualifiers in method bodies are rare (except occasionally on
-type arguments).
-
-Most of this section is about defaults for source code that is read by
-the compiler.  When the compiler reads a \<.class> file, different
-defaulting rules apply.
-See Section~\ref{defaults-classfile} for these rules.
+type arguments and array component types).
 
 The following steps determine the effective
 qualifier on a type --- the qualifier that the checkers treat as being present.
@@ -106,66 +168,12 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 \item
   If a type qualifier is present in the source code, that qualifier is used.
 
-  If the type would have an implicit qualifier (step 2, immediately below),
-  then it is an error to write an
-  explicit qualifier that is equal to (redundant with) or a supertype of
-  (weaker than) the implicit qualifier.  A programmer may strengthen
-  (write a subtype of) an implicit qualifier, however.
-
 \item
-  If there is no explicit type qualifier,
-  the type system adds implicit qualifiers.
-
-  Implicit qualifiers arise from two sources:
-\begin{description}
-\item[built-in]
-  Implicit qualifiers can be
-  built into a type system (Section~\ref{creating-type-introduction}), in
-  which case the type system's documentation explains all of the type
-  system's implicit qualifiers.
-
-  Here are some examples of built-in implicit qualifiers:
-
-\begin{itemize}
-\item
-  In the Nullness type system (see \chapterpageref{nullness-checker}),
-  \<enum> values, string literals, and method receivers are always non-null.
-\item
-  In the Interning type system (see \chapterpageref{interning-checker}),
-  string literals and \<enum> values are always interned.
-\end{itemize}
-
-\item[programmer-declared]
-  A programmer may introduce an implicit annotation on each use of class
-  $C$ by writing a qualifier on the declaration of class $C$.  If \<MyClass>
-  is declared as \<class @MyAnno MyClass \ttlcb...\ttrcb>, then each
-  unqualified occurrence of
-  \<MyClass> in the source code is treated as if it were \<@MyAnno
-  MyClass>.
-
-  A programmer may introduce an implicit annotation on each invocation of a
-  constructor
-  by writing a qualifier on the declaration of the constructor.  Given
-  declaration \<@MyAnno MyClass(int arg) \ttlcb...\ttrcb>, then each
-  unqualified occurrence of
-  \<new MyClass(myInt)> in the source code is treated as if it were \<new @MyAnno
-  MyClass(myInt)>.
-\end{description}
-
-
-
-\item
-  If there is no explicit or implicit qualifier on a type, then a default
+  If there is no explicit qualifier on a type, then a default
   qualifier
   % except for type parameters, but don't clutter this text with that detail
-  is applied; see Section~\ref{defaults}.
-
-%BEGIN LATEX
-  % This looks bad in HTML.
-  \smallskip
-%END LATEX
-
-  At this point (after step 3), every type has a qualifier.
+  is applied; see Section~\ref{defaults}. Defaulted qualifiers are treated by checkers
+  exactly as if the programmer had written them explicitly.
 
 \item
   The type system may refine a qualified type on a local variable --- that
@@ -173,45 +181,100 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
   refinement is always sound and has the effect of eliminating false
   positive error messages.  See Section~\ref{type-refinement}.
 
-  % Type
-  % qualifier refinement is implemented by the \refclass{framework/flow}{Flow} class.
-
 \end{enumerate}
 
+%TODO: Where does @QualifierForLiterals go?
 
-
-\subsectionAndLabel{Default qualifier for unannotated types}{defaults}
+\sectionAndLabel{Default qualifier for unannotated types}{defaults}
 
 An unannotated
 Java type is treated as if it had a default annotation.
-A type system designer, or an end-user programmer, can control the defaulting.
+Both the type system designer and an end-user programmer can control the defaulting.
 Defaulting never applies to uses of type variables, even if they do not
 have an explicit type annotation.
+% TODO: If the type of a local variable is a use of a type parameter, then it is defaulted to top,
+% so it can be refined. I don't know that's worth mentioning here.  Maybe just change never to does not?
+Most of this section is about defaults for source code that is read by
+the compiler.  When the compiler reads a \<.class> file, different
+defaulting rules apply.
+See Section~\ref{defaults-classfile} for these rules.
 
 There are several defaulting mechanisms, for convenience and flexibility.
-When determining the default qualifier for a use of a type, the following
+When determining the default qualifier for a use of an unannotated type, \<MyClass>, the following
 rules are used in order, until one applies.
-(Some of these currently do not work in stub files.)
-\begin{itemize}
+%TODO: I don't think this is true.(Some of these currently do not work in stub files.)
+
+\begin{enumerate}
 \item
-  Use the innermost user-written \code{@DefaultQualifier}, as explained in
-  this section.
+  The qualifier specified via \<@DefaultQualifierForUse> on the declaration of the \<MyClass>.
+  (Section~\ref{default-for-use})
 \item
-  Use the default specified by the type system designer
-  (Section~\ref{creating-typesystem-defaults});
+  If no \<@NoDefaultQualifierForUse> is written on the declaration of \<MyClass>, the qualifier
+  explicitly written on the declaration of \<MyClass>. (Section~\ref{default-for-use})
+\item
+  The qualifier with a meta-annotation \<@DefaultFor(types = MyClass.class)>. (Section~\ref{default-for-use})
+\item
+  The qualifier with a meta-annotation \<@DefaultFor(typeKinds = KIND)>, where \<KIND> is the
+  \<TypeKind> of \<MyClass>. (Section~\ref{default-for-use})
+\item
+  The qualifier in the innermost user-written \<@DefaultQualifier> for the location of the use of \<MyClass>.
+  (Section~\ref{default-qualifier})
+\item
+  The qualifier in the meta-annotation \<@DefaultFor> for the location of the use of \<MyClass>.
+  These are defaults specified by the type system designer (Section~\ref{creating-typesystem-defaults});
   this is usually CLIMB-to-top (Section~\ref{climb-to-top}).
 \item
-  When using the Subtyping Checker,
-  use \refqualclass{common/subtyping/qual}{Unqualified}
-  as default, if it is a supported qualifier and nothing else is specified by the
-  type system designer.
-  This makes initial experiments with the Subtyping Checker convenient.
-\end{itemize}
+  The qualifier with the meta-annotation \<@DefaultQualifierInHierarchy>
+\end{enumerate}
+
+If the unannotated type is the type of a local variable, then the first 5 rules are skipped and only
+rules 6 and 7 apply.  This makes the type local variables top so they can be refined.
 
 % (Implementation detail:  setting defaults is implemented by the
 % \refclass{framework/util}{QualifierDefaults} class.)
 
+\subsectionAndLabel{Default for use of a type}{default-for-use}
+The type declaration annotation \refqualclass{framework/qual}{DefaultQualifierForUse}
+indicates that the specified qualifier should be added to all unannotated uses of the type.
 
+For example:
+\begin{Verbatim}
+@DefaultQualifierForUse(B.class)
+class MyClass {}
+\end{Verbatim}
+
+This means any unannotated use of \<MyClass> is treated as \<@B MyClass> by the checker.
+(Except for locals, which can be refined.)
+
+Similarly, the meta-annotation \refqualclass{framework/qual}{DefaultFor} can be used to specify defaults
+for uses of of types, using the \<types> element, or type kinds, using the \<typeKinds> elements.
+
+Interaction between qualifier bounds and \<DefaultQualifierForUse>:
+\begin{itemize}
+\item
+  If a type declaration is annotated with a qualifier bound, but not a \<@DefaultQualifierForUse>,
+  then the qualifier bound is added to all unannotated uses of that type (except locals).
+  For example, \<@C class MyClass {}> is equivalent to
+\begin{Verbatim}
+@DefaultQualifierForUse(C.class)
+@C class MyClass {}
+\end{Verbatim}
+
+\item
+  If the qualifier bound should not be added to all unannotated uses, then
+  \refqualclass{framework/qual}{NoDefaultQualifierForUse} should be written on the declaration:
+\begin{Verbatim}
+@NoDefaultQualifierForUse
+@C class MyClass {}
+\end{Verbatim}
+  This means that unannotated uses of MyClass are defaulted normally.
+\item
+  If neither \<@DefaultQualifierForUse> nor a qualifier bound is present on a type declaration, that
+  is equivalent to writing \<@NoDefaultQualifierForUse>.
+
+\end{itemize}
+
+\subsectionAndLabel{Controlling defaults in source code}{default-qualifier}
 The end-user programmer specifies a default qualifier by writing the
 \refqualclass{framework/qual}{DefaultQualifier}\code{(\emph{ClassName}, }[\emph{locations}]\<)>
 annotation on a package, class, method, or variable declaration.  The
@@ -254,13 +317,6 @@ all subpackages.
 % This is slightly at odds with Java's treatment of packages of different
 % names as essentially unrelated, but is more intuitive and useful.
 
-Recall that an annotation on a class definition indicates an implicit
-qualifier (Section~\ref{effective-qualifier}) that can only be
-strengthened, not weakened.  This can lead to unexpected results if
-the default qualifier applies to a class definition.  Thus, you may want to
-put explicit qualifiers on class declarations (which prevents the default
-from taking effect), or exclude class declarations from defaulting.
-
 
 %% Don't even bother to bring this up; it will just sow confusion without
 %% being helpful.
@@ -270,9 +326,9 @@ from taking effect), or exclude class declarations from defaulting.
 % Section~\ref{bottom-and-top-qualifier}.
 
 
-When a programmer omits an \<extends> clause at a declaration of a type
-parameter, the implicit upper bound is defaulted to the top qualifier; see
-Section~\ref{climb-to-top}.
+%When a programmer omits an \<extends> clause at a declaration of a type
+%parameter, the implicit upper bound is defaulted to the top qualifier; see
+%Section~\ref{climb-to-top}.
 
 
 \subsectionAndLabel{Defaulting rules and CLIMB-to-top}{climb-to-top}
@@ -329,6 +385,12 @@ Cast and instanceof types
 are given the same type as their argument expression.  This has the same
 effect as if they were given the
 top type and then flow-sensitively refined to the type of their argument.
+However, note that programmer-written type qualifiers are \emph{not}
+refined.
+% Programmer-written type qualifiers could be refined, but it has never
+% been a priority.  The code that defaults casts in this manner predates
+% the dataflow framework and we never reimplemented casts in the dataflow
+% framework.
 
 \item
 Implicit upper bounds are defaulted to top to allow them to be instantiated
@@ -555,29 +617,7 @@ misbehave at run time.
 
 
 \newpage
-
-\sectionAndLabel{Annotations on classes and constructors}{annotations-on-classes-and-constructors}
-
-\subsectionAndLabel{Annotations on class declarations}{annotations-on-class-declarations}
-
-% TODO: use a more realistic example.
-
-Writing an annotation on a class declaration makes that annotation implicit
-for all uses of the class (see Section~\ref{effective-qualifier}).
-That is, the annotation is an upper bound for all uses of the type.
-
-Consider the type hierarchy \code{@A :> @B :> @C} and the following
-declaration:
-
-\begin{Verbatim}
-@B class MyClass { ... }
-\end{Verbatim}
-
-\noindent
-Every unannotated use of \<MyClass> is \<@B MyClass>, and every use of
-\<MyClass> must be a subtype of \<@B> --- that is, \<@A MyClass> is not a
-valid type, but \<@C MyClass> is valid.
-
+\sectionAndLabel{Annotations on constructors}{annotations-on-constructors}
 
 \subsectionAndLabel{Annotations on constructor declarations}{annotations-on-constructor-declarations}
 
@@ -641,32 +681,102 @@ warning that it cannot verify that the cast is correct.  The programmer may
 suppress the warning if the code is correct.
 
 
-\sectionAndLabel{Automatic type refinement (flow-sensitive type qualifier inference)}{type-refinement}
+\sectionAndLabel{Type refinement (flow-sensitive type qualifier inference)}{type-refinement}
 
 The
-checkers soundly treat local variables and expressions within a method body as having a
+checkers treat expressions within a method body as having a
 subtype of their declared or defaulted (Section~\ref{defaults})
 type.
-This functionality
-reduces your burden of annotating types in your program and
-eliminates some false positive warnings, but it
-never introduces unsoundness nor causes an error to be missed.
-This functionality works within a method, but you still need to
-annotate method signatures (parameter and return type) and field types.
 
-By default all checkers
-automatically incorporate type refinement.  Most of the time, users don't
-have to think about, and may not even notice, type refinement.
-(And most readers can skip reading this section of the manual, except
-possibly the examples in Section~\ref{type-refinement-examples}.)
-The
-checkers simply do the right thing even when a programmer omits an
-annotation on a local variable, or when a programmer writes an
-unnecessarily general type in a declaration.
+Type refinement eliminates some false positive warnings.
+Type refinement also
+reduces your burden of writing type qualifiers in your program,
+since you do not need to write type qualifiers on local variables.
+
+
+\subsectionAndLabel{Type refinement examples}{type-refinement-examples}
+
+Here is an example for the Nullness Checker
+(\chapterpageref{nullness-checker}).
+\<myVar> is declared as \<@Nullable String>, but
+it is treated as \<@NonNull String> within the body of the \<if> test.
+
+\begin{Verbatim}
+  @Nullable String myVar;
+  ...                   // myVar has type @Nullable String here.
+  myVar.hashCode();     // warning: possible dereference of null.
+  ...
+  if (myVar != null) {
+    ...                 // myVar has type @NonNull String here.
+    myVar.hashCode();   // no warning.
+  }
+\end{Verbatim}
+
+Here is another example.
+Note that the same expression may yield a
+warning or not depending on its context (that is, depending on the current
+type refinement).
+
+\begin{Verbatim}
+  @Nullable String myVar;
+  ...                   // myVar has type @Nullable String
+  myVar = "hello";
+  ...                   // myVar has type @NonNull String
+  myVar.hashCode();     // no warning
+  ...
+  myVar = myMap.get(someKey);
+  ...                   // myVar has type @Nullable String
+  myVar.hashCode();     // warning: posible dereference of null
+\end{Verbatim}
+
+Type refinement applies to every checker, including new
+checkers that you write.  Here is an example for the Regex Checker
+(\chapterpageref{regex-checker}):
+
+\begin{Verbatim}
+  void m2(@Unannotated String s) {
+    s = RegexUtil.asRegex(s, 2);  // asRegex throws an exception if its argument is not
+                                  // a regex with the given number of capturing groups
+    ...   // s now has type "@Regex(2) String"
+  }
+\end{Verbatim}
+
+
+\subsectionAndLabel{Type refinement behavior}{type-refinement-behavior}
+
+The checker treats a variable or expression as a subtype of its declared type:
+\begin{itemize}
+\item
+  starting at the time that
+  it is assigned a value,
+  a method establishes a postcondition (e.g., as
+  expressed by \refqualclass{checker/nullness/qual}{EnsuresNonNull} or
+  \refqualclass{framework/qual}{EnsuresQualifierIf}), or
+  a run-time check is performed (e.g., via an assertion or
+  \code{if} statement).
+\item
+until its value might change (e.g.,
+via an assignment, or because a method call might have a side effect).
+\end{itemize}
+
+The checker never treats a variable as
+a supertype of its declared type.  For example, an expression with declared type \refqualclass{checker/nullness/qual}{NonNull}
+type is never treated as possibly-null, and such an assignment is always illegal.
 
 The functionality has a variety of names:  automatic type refinement,
 flow-sensitive type qualifier inference, local type inference, and
 sometimes just ``flow''.
+
+
+\subsectionAndLabel{Which types are refined}{type-refinement-which-types}
+
+You generally do not need to annotate the top-level type of a local variable.
+You do need to annotate its type arguments or array element types.
+(Type refinement does not change them, because doing so would not produce a
+subtype, as explained in see Section~\ref{covariant-type-parameters} and
+Section~\ref{invariant-arrays}.)
+Type refinement works within a method, so you still need to
+annotate method signatures (parameter and return type) and field types.
 
 If you find examples where you think a value should be inferred to have
 (or not have) a
@@ -675,120 +785,59 @@ report (see Section~\ref{reporting-bugs}) that includes a small piece of
 Java code that reproduces the problem.
 
 
-\subsectionAndLabel{Type refinement examples}{type-refinement-examples}
+\subsubsectionAndLabel{Fields and type refinement}{type-refinement-fields}
 
-Suppose you write
+Type refinement infers the type of fields in some restricted cases:
 
-\begin{Verbatim}
-  @Nullable String myVar;
-  ...
-  if (myVar != null) {
-    myVar.hashCode();
-  }
-\end{Verbatim}
-
-\noindent
-The Nullness Checker issues a warning whenever a method such as
-\<hashCode()> is called on a possibly-null value, which  may result in a
-null pointer exception.
-However, the Nullness Checker does not issue a warning for the call
-\<myVar.hashCode()>
-in the code above.
-Within the body
-of the \<if> test, the type of \<myVar> is \<@NonNull String>, even though
-\<myVar> is declared as \<@Nullable String>.
-
-Here is another example:
-
-\begin{Verbatim}
-  @Nullable String myVar;
-  ...                   // myVar has type @Nullable String
-  myVar = "hello";
-  ...                   // myVar has type @NonNull String
-  myVar.hashCode();
-  ...
-  myVar = myMap.get(someKey);
-  ...                   // myVar has type @Nullable String
-\end{Verbatim}
-
-\noindent
-The Nullness Checker does not issue a warning for
-the call \<myVar.hashCode()> above because after the assignment,
-the type-checker
-treats \<myVar> as having type \<@NonNull String>, which is more precise
-than the programmer-written type.
-
-
-Flow-sensitive type refinement applies to every checker, including new
-checkers that you write.  Here is an example for the Regex Checker
-(\chapterpageref{regex-checker}):
-
-\begin{Verbatim}
-  void m2(@Unannotated String s) {
-    s = RegexUtil.asRegex(s, 2);  // asRegex throws error if arg is not a regex
-                                  // with the given number of capturing groups
-    ...   // s now has type "@Regex(2) String"
-  }
-\end{Verbatim}
-
-
-As a further example,
-consider this code, along with comments indicating whether the
-Nullness Checker (Chapter~\ref{nullness-checker}) issues a warning.  Note that the same expression may yield a
-warning or not depending on its context.
-
-\begin{Verbatim}
-  // Requires an argument of type @NonNull String
-  void parse(@NonNull String toParse) { ... }
-
-  // Argument does NOT have a @NonNull type
-  void lex(@Nullable String toLex) {
-    parse(toLex);        // warning:  toLex might be null
-    if (toLex != null) {
-      parse(toLex);      // no warning:  toLex is known to be non-null
-    }
-    parse(toLex);        // warning:  toLex might be null
-    toLex = new String(...);
-    parse(toLex);        // no warning:  toLex is known to be non-null
-  }
-\end{Verbatim}
-
-This example shows the general rules for when
-the Nullness Checker (Chapter~\ref{nullness-checker}) can automatically
-determine that certain variables are non-null, even if they were explicitly
-or by default annotated as nullable.
-The checker treats a variable or expression as \refqualclass{checker/nullness/qual}{NonNull}:
 \begin{itemize}
+
 \item
-starting at the time that it is either
-assigned a non-null value or checked against null (e.g., via an assertion,
-\code{if} statement, or being dereferenced)
+A final initialized field:
+Type inference is performed for final fields that are initialized to a
+compile-time constant at the declaration site; so the type of \code{protocol}
+is \code{@NonNull String} in the following declaration:
+
+\begin{Verbatim}
+    public final String protocol = "https";
+\end{Verbatim}
+
+Such an inferred type may leak to the public interface of the class.
+If you wish to override such behavior, you can explicitly insert the desired
+annotation, e.g.,
+
+\begin{Verbatim}
+    public final @Nullable String protocol = "https";
+\end{Verbatim}
+
 \item
-until it might be re-assigned (e.g.,
-via an assignment that might affect this variable, or via a method call
-that might affect this variable).
+Within method bodies:
+Type inference is performed for fields in the context of method bodies,
+like local variables or any other expression.
+Consider the following example, where \code{updatedAt} is a nullable
+field:
+
+\begin{Verbatim}
+class DBObject {
+  @Nullable Date updatedAt;
+
+  void m() {
+    // updatedAt is @Nullable, so warning about .getTime()
+    ... updatedAt.getTime() ... // warning about possible NullPointerException
+
+    if (updatedAt == null) {
+      updatedAt = new Date();
+    }
+
+    // updatedAt is now @NonNull, so .getTime() call is OK
+    ... updatedAt.getTime() ...
+  }
+}
+\end{Verbatim}
+
+A method call may invalidate inferences about field types; see
+Section~\ref{type-refinement-purity}.
+
 \end{itemize}
-
-
-The inference indicates when a variable can be treated as having a subtype
-of its declared type --- for instance, when an otherwise nullable type can be
-treated as a \refqualclass{checker/nullness/qual}{NonNull} one.  The inference never treats a variable as
-a supertype of its declared type (e.g., an expression with declared type \refqualclass{checker/nullness/qual}{NonNull}
-type is never inferred to be treated as possibly-null).
-
-
-
-\subsectionAndLabel{Types that are not refined}{type-refinement-types-that-are-not-refined}
-
-Array element types and generic arguments are never changed by type
-refinement.  Changing these components of a type never yields a subtype of
-the declared type.
-For example, \code{List<Number>} is \emph{not} a
-subtype of \code{List<Object>}.  Similarly, the Checker Framework does not
-treat \code{Number[]} as a subtype of
-\code{Object[]}.
-For details, see Section~\ref{covariant-type-parameters} and
-Section~\ref{invariant-arrays}.
 
 
 \subsectionAndLabel{Run-time tests and type refinement}{type-refinement-runtime-tests}
@@ -817,7 +866,7 @@ Type systems that support a run-time test are:
   keys in a map (see \chapterpageref{map-key-checker})
 \item
   \ahrefloc{optional-checker}{Optional Checker} for errors in using the
-  \sunjavadoc{java/util/Optional.html}{Optional} type (see
+  \sunjavadoc{java.base/java/util/Optional.html}{Optional} type (see
   \chapterpageref{optional-checker})
 \item
   \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
@@ -897,118 +946,43 @@ Type systems that cannot support a run-time test are:
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
+  \ahrefloc{purity-checker}{Purity Checker} to identify whether
+  methods have side effects (see \chapterpageref{aliasing-checker})
+\item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
 \end{itemize}
 
 
 
-\subsectionAndLabel{Fields and flow-sensitive analysis}{type-refinement-fields}
+\subsectionAndLabel{Side effects, determinism, purity, and type refinement}{type-refinement-purity}
 
-Flow sensitivity analysis infers the type of fields in some restricted cases:
+Calling a method typically causes the checker to discard its knowledge of
+the refined type, because the method might assign a field.
+The \refqualclass{dataflow/qual}{SideEffectFree} annotation indicates that
+the method has no side effects, so calling it does not invalidate any
+dataflow facts.
 
-\begin{itemize}
+Calling a method twice might have different results, so facts known about
+one call cannot be relied upon at another call.
+The \refqualclass{dataflow/qual}{Deterministic} annotation indicates that
+the method returns the same result every time it is called on the same
+arguments.
 
-\item
-A final initialized field:
-Type inference is performed for final fields that are initialized to a
-compile-time constant at the declaration site; so the type of \code{protocol}
-is \code{@NonNull String} in the following declaration:
+\refqualclass{dataflow/qual}{Pure} means both
+\refqualclass{dataflow/qual}{SideEffectFree} and
+\refqualclass{dataflow/qual}{Deterministic}.
+The \refqualclass{dataflow/qual}{TerminatesExecution} annotation
+indicates that a given method never returns.  This can enable the
+type refinement to be more precise.
 
-\begin{Verbatim}
-    public final String protocol = "https";
-\end{Verbatim}
-
-Such an inferred type may leak to the public interface of the class.
-If you wish to override such behavior, you can explicitly insert the desired
-annotation, e.g.,
-
-\begin{Verbatim}
-    public final @Nullable String protocol = "https";
-\end{Verbatim}
-
-\item
-Within method bodies:
-Type inference is performed for fields in the context of method bodies,
-like local variables.
-Consider the following example, where \code{updatedAt} is a nullable
-field:
-
-\begin{Verbatim}
-class DBObject {
-  @Nullable Date updatedAt;
-
-  void m() {
-    // updatedAt is @Nullable, so warning about .getTime()
-    ... updatedAt.getTime() ... // warning about possible NullPointerException
-
-    if (updatedAt == null) {
-      updatedAt = new Date();
-    }
-
-    // updatedAt is now @NonNull, so .getTime() call is OK
-    ... updatedAt.getTime() ...
-  }
-}
-\end{Verbatim}
-
-Here the call to \code{persistData()} invalidates the inferred non-null type
-of \code{updatedAt}.
-
-A method call may invalidate inferences about field types; see
-Section~\ref{type-refinement-purity}.
-
-\end{itemize}
+Chapter~\ref{purity-checker} gives more information about these annotations.
+This section explains how to use them to improve type refinement.
 
 
-\subsectionAndLabel{Side effects, determinism, purity, and flow-sensitive analysis}{type-refinement-purity}
+\subsubsectionAndLabel{Side effects}{type-refinement-side-effects}
 
-Side effect analysis is important for helping a checker reason about the
-values of expressions.
-
-As described above, a checker can use a refined type for an expression from
-the time when the checker infers that the value has that refined type,
-until the checker can no longer support that inference.
-
-\begin{itemize}
-\item
-  The refined type \emph{begins} at a test (such as \<if (myvar != null)
-  ...>) or an assignment.  If the assignment occurs within a method body,
-  you can write a postcondition annotation such as
-  \refqualclass{checker/nullness/qual}{EnsuresNonNull}.
-\item
-  The refined type \emph{ends} at an assignment or possible assignment.
-  Any method call has the potential to side-effect any field, so calling a
-  method typically causes the checker to discard its knowledge of the
-  refined type.  This is undesirable if the method doesn't actually
-  re-assign the field.
-\end{itemize}
-
-There are three annotations, collectively called purity annotations, that
-you can use to help express what effects a method call does not have.
-Usually, you only need to use \refqualclass{dataflow/qual}{SideEffectFree}.
-
-
-\begin{description}
-
-\item[\refqualclass{dataflow/qual}{SideEffectFree}]
-  indicates that the method has no externally-visible side effects.
-
-\item[\refqualclass{dataflow/qual}{Deterministic}]
-  indicates that if the method is called multiple times with identical
-  arguments, then it returns the identical result according to \<==>
-  (not just according to \<equals()>).
-
-\item[\refqualclass{dataflow/qual}{Pure}]
-  indicates that the method is both \<@SideEffectFree> and \<@Deterministic>.
-
-\end{description}
-
-The Javadoc of the annotations describes their semantics and how they are
-checked.  This manual section gives examples and supplementary information.
-
-For example, consider the
-following declarations and uses:
+Consider the following declarations and uses:
 
 \begin{Verbatim}
   @Nullable Object myField;
@@ -1018,19 +992,22 @@ following declarations and uses:
   void m() {
     ...
     if (myField != null) {
+                        // The type of myField is now "@NonNull Object".
       int result = computeValue();
-      myField.toString();
+                        // The type of myField is now "@Nullable Object",
+                        // because computeValue might have set myField to null.
+      myField.toString(); // Warning: possible null pointer exception.
     }
   }
 \end{Verbatim}
 
-\noindent
-Ordinarily, the Nullness Checker would issue a warning regarding the
-\code{toString()} call, because the receiver \code{myField} might be
-\code{null}, according to the \code{@Nullable} annotation on the
-declaration of \code{myField}.  Even though the code checked the value of
-\<myField>, the call to \<computeValue> might have re-set \<myField> to null.
-If you change the declaration of \code{computeValue} to
+There are three ways to express that \<computeValue> does not set
+\<myField> to \<null>, and thus to prevent the Nullness Checker from
+issuing a warning about the call \<myField.toString()>.
+
+\begin{enumerate}
+\item
+  If \<computeValue> has no side effects, declare it as
 
 \begin{Verbatim}
   @SideEffectFree
@@ -1038,12 +1015,42 @@ If you change the declaration of \code{computeValue} to
 \end{Verbatim}
 
 \noindent
-then the Nullness Checker issues no warnings, because it can reason that
+The Nullness Checker issues no warnings, because it can reason that
 the second occurrence of \code{myField} has the same (non-null) value as
 the one in the test.
 
-As a more complex example, consider the
-following declaration and uses:
+\item
+  If no method resets \<myField> to \<null> after it has been initialized
+  to a non-null value (even if a method has some other side effect),
+  declare \<myField> as \refqualclass{checker/nullness/qual}{MonotonicNonNull}.
+
+\begin{Verbatim}
+  @MonotonicNonNull Object myField;
+\end{Verbatim}
+
+\item
+  If \<computeValue> sets \<myField> to a non-null value, declare it as
+
+\begin{Verbatim}
+  @EnsuresNonNull("myField")
+  int computeValue() { ... }
+\end{Verbatim}
+
+  If \<computeValue> maintains \<myField> as a non-null value, even if it
+  might have other side effects and even if other methods might set
+  \<myField> to \<null>, declare it as
+
+\begin{Verbatim}
+  @RequiresNonNull("myField")
+  @EnsuresNonNull("myField")
+  int computeValue() { ... }
+\end{Verbatim}
+\end{enumerate}
+
+
+\subsubsectionAndLabel{Deterministic methods}{type-refinement-determinism}
+
+Consider the following declaration and uses:
 
 \begin{Verbatim}
   @Nullable Object getField(Object arg) { ... }
@@ -1051,16 +1058,25 @@ following declaration and uses:
   void m() {
     ...
     if (x.getField(y) != null) {
-      x.getField(y).toString();
+      x.getField(y).toString(); // warning: possible null pointer exception
     }
   }
 \end{Verbatim}
 
-Ordinarily, the Nullness Checker would issue a warning regarding the
-\code{toString()} call, because the receiver \code{x.getField(y)} might
-be \code{null}, according to the \code{@Nullable} annotation in the
-declaration of \code{getField}.  If you change the declaration of
-\code{getField} to
+The Nullness Checker issues a warning regarding the
+\code{toString()} call, because its receiver \code{x.getField(y)} might
+be \code{null}, according to the \code{@Nullable} return type in the
+declaration of \code{getField}.  The Nullness Checker cannot assume that
+\<getField> returns non-null on the second call, just based on the fact
+that it returned non-null on the first call.
+
+To indicate that a method returns the same value each time it is called on
+the same arguments, use the \refqualclass{dataflow/qual}{Deterministic} annotation.
+Actually, it is necessary to use \refqualclass{dataflow/qual}{Pure} which
+means both \<@Deterministic> and \<@SideEffectFree>, because otherwise the
+first call might change a value that the method depends on.
+
+If you change the declaration of \code{getField} to
 
 \begin{Verbatim}
   @Pure
@@ -1068,89 +1084,14 @@ declaration of \code{getField}.  If you change the declaration of
 \end{Verbatim}
 
 \noindent
-then the Nullness Checker issues no warnings, because it can reason that
-the two invocations \code{x.getField(y)} have the same value, and
-therefore that \code{x.getField(y)} is non-null within the then branch
-of the if statement.
+then the Nullness Checker issues no warnings.
+Because \<getField> is \<@SideEffectFree>, the values of \<x> and \<y> are the
+same at both invocations.
+Because \<getField> is \<@Deterministic>, the two invocations of
+\code{x.getField(y)} have the same value.
+Therefore, \code{x.getField(y)} is non-null within the \<then> branch
+of the \<if> statement.
 
-
-If you supply the command-line option \<-AsuggestPureMethods>, then the
-Checker Framework will suggest methods that can be marked as
-\<@SideEffectFree>, \<@Deterministic>, or \<@Pure>.
-
-% Maybe this ambiguous option, which enables checking whether method
-% bodies are compatible with the method declaration annotation, should be
-% renamed, such as to -AcheckPurity.
-
-Currently, purity annotations are trusted.  Purity annotations on called
-methods affect type-checking of client code.  However, you can make a
-mistake by writing \<@SideEffectFree> on the declaration of a method that
-is not actually side-effect-free or by writing \<@Deterministic> on the
-declaration of a method that is not actually deterministic.  To enable
-checking of the annotations, supply the command-line option
-\<-AcheckPurityAnnotations>.  It is not enabled by default because of a high false
-positive rate.  In the future, after a new purity-checking analysis is
-implemented, the Checker Framework will default to checking purity
-annotations.
-
-It can be tedious to annotate library methods with purity annotations such
-as \<@SideEffectFree>.  If you supply the command-line option
-\<-AassumeSideEffectFree>, then the Checker Framework will unsoundly
-assume that every called method is side-effect-free.  This can make
-flow-sensitive type refinement much more effective, since method calls will
-not cause the analysis to discard information that it has learned.
-However, this option can mask real errors.  It is most appropriate when you
-are starting out annotating a project, or if you are using the Checker
-Framework to find some bugs but not to give a guarantee that no more errors
-exist of the given type.
-
-A common error is:
-
-\begin{mysmall}
-\begin{Verbatim}
-MyClass.java:1465: error: int hashCode() in MyClass cannot override int hashCode(Object this) in java.lang.Object;
-attempting to use an incompatible purity declaration
-    public int hashCode() {
-               ^
-  found   : []
-  required: [SIDE_EFFECT_FREE, DETERMINISTIC]
-\end{Verbatim}
-\end{mysmall}
-
-\noindent
-The reason for the error is that the \<Object> class is annotated as:
-
-\begin{Verbatim}
-class Object {
-  ...
-  @Pure int hashCode() { ... }
-}
-\end{Verbatim}
-
-\noindent
-(where \refqualclass{dataflow/qual}{Pure} means both
-\refqualclass{dataflow/qual}{SideEffectFree} and
-\refqualclass{dataflow/qual}{Deterministic}).  Every overriding
-definition, including those in your program, must use be at least as strong
-a specification; in particular, every overriding definition must be
-annotated as \<@Pure>.
-
-You can fix the definition by adding \<@Pure> to your method definition.
-Alternately, you can suppress the warning.
-You can suppress each such warning individually using
-\<@SuppressWarnings("purity.invalid.overriding")>,
-or you can use the \<-AsuppressWarnings=purity.invalid.overriding>
-command-line argument to suppress all such warnings.
-% The \<-AassumeSideEffectFree> command-line argument suppresses the
-% warning, but it does more too; don't mention it here.
-In the future, the Checker Framework will support inheriting annotations
-from superclass definitions.
-
-
-
-The \refqualclass{dataflow/qual}{TerminatesExecution} annotation
-indicates that a given method never returns.  This can enable the
-flow-sensitive type refinement to be more precise.
 
 
 % This is a slightly funny place for this section, but I cannot decide on a
@@ -1262,12 +1203,18 @@ The set of permitted expressions is a subset of all Java expressions:
 \item
   an array access.  For example:  \<this.myArray[i]>, \<vals[\#1]>.
 
-\item literals: string, integer, long, null, class literals.
+\item
+  an array creation. For example: \<new int[10]>, \<new String[] {"a", "b"}>.
+
+\item literals: string, integer, char, long, float, double, null, class literals.
 
 \item a method invocation on any expression.
   This even works for overloaded methods and methods with type parameters.
   For example:
   \<m1(x, y.z, \#2)>, \<a.m2("hello")>.
+
+  Currently, the Checker Framework cannot prove all contracts about method
+  calls, so you may need to suppress some warnings.
 
   One unusual feature of the Checker Framework's Java expressions is that a
   method call is allowed to have side effects.  Other tools forbid methods
@@ -1283,8 +1230,6 @@ The set of permitted expressions is a subset of all Java expressions:
 
   This states that if \<readLine()> is called immediately after \<ready()>
   returns true, then \<readLine()> returns a non-null value.
-  Currently, the Checker Framework cannot prove all contracts about method
-  calls, so you may need to suppress some warnings.
 
 \end{itemize}
 
@@ -1304,7 +1249,6 @@ The following Java expressions may not currently be written:
 % The Checker Framework is best at reasoning about Java expressions that
 % are variable references, but these expressions are not.
 \begin{itemize}
-\item Some literals:  floats, doubles, and chars.
 \item String concatenation expressions.
 \item Mathematical operators (plus, minus, division, ...).
 \item Comparisons (equality, less than, etc.).
@@ -1566,7 +1510,7 @@ class @Marsupial-Animal {
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
 %  LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
 %  LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
-%  LocalWords:  computeValue AsuggestPureMethods Instanceof arg myInt
+%  LocalWords:  computeValue AsuggestPureMethods Instanceof arg myInt Anno
 %  LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit instanceof m2
 %  LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
 %  LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName
@@ -1578,4 +1522,6 @@ class @Marsupial-Animal {
 %%  LocalWords:  AuseDefaultsForUncheckedCode DefaultFor TypeUseLocation
 % LocalWords:  AuseDefaultsForUncheckedcode EnsuresKeyFor EnsuresKeyForIf
 % LocalWords:  EnsuresLockHeld EnsuresLockHeldIf FieldInvariant fieldA
-% LocalWords:  fieldB myMethod SomeType
+% LocalWords:  fieldB myMethod SomeType runtime typedefs signedness
+%%  LocalWords:  Signedness MonotonicNonNull UpperBoundFor
+% LocalWords:  getTypeDeclarationBounds identityHashCode

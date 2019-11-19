@@ -106,9 +106,13 @@ third-party library.
 
 \subsectionAndLabel{Don't change the code}{library-tips-dont-change-the-code}
 
-When you annotate a library, you should only add annotations and, when
-necessary, documentation of those annotations in a Java comment (\<//>
-or \</*...*/>).
+If you annotate a library that you maintain, you can refactor it to improve
+its design.
+
+When you annotate a library that you do not maintain, you should only add
+annotations and, when necessary, documentation of those annotations.  You
+can place the documentation in a Java comment (\<//> or \</*...*/>) or in a
+\refqualclass{framework/qual}{CFComment} annotation.
 
 Do not change the library's code, which will change its behavior and make
 the annotated version inconsistent with the unannotated version.
@@ -234,7 +238,7 @@ This section describes how to create an annotated library.
     Add a line in its main README to indicate that this is an annotated
     version of the library.  That line should also indicate how to obtain
     the corresponding upstream version (typically a git tag
-    \ahref{../developer/developer-manual.html#annotated-library-version-numbers}{corresponding
+    \ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html#annotated-library-version-numbers}{corresponding
       to a release}), so that others can see exactly what edits you have
     made.
 
@@ -322,6 +326,14 @@ section describes the latter approach.
 It assumes that you have already followed the instructions for building the
 Checker Framework from source (Section~\ref{build-source}).
 
+Because there are two versions of the annotated JDK, you need to write your
+annotations in two places.
+
+For \textbf{JDK 11}, edit files in repository \url{https://github.com/typetools/jdk}.
+That is all you need to do.
+
+The rest of this section gives instructions for \textbf{JDK 8}.
+
 If you are adding annotations to an existing annotated JDK, then you only
 need to follow the last two steps.
 
@@ -366,15 +378,19 @@ option.
 Build the annotated JDK\@.  There are two ways:
 \begin{itemize}
 \item
+  Pass a flag.
   Run \<./gradlew buildJdk -PuseLocalJdk>
   % Is any more advice needed here, such as supplying -PuseLocalJdk to
   % other commands?
 \item
-  \begin{enumerate}
-  \item set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>
-  \item run \<./gradlew buildJdk>
-  \end{enumerate}
+  Make a setting in the buildfile.
+  Set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>, then
+  run \<./gradlew buildJdk>
 \end{itemize}
+
+(First, be sure you have followed the instructions for building the Checker
+Framework from source (Section~\ref{build-source})
+including running \<./gradlew cloneAndBuildDependencies>.)
 
 You may receive a compilation error because your files use a part of the
 JDK that is not in the annotated JDK\@.  If the missing part is relatively
@@ -493,11 +509,9 @@ equivalent to specifying every file in it whose name ends with
 \code{.astub}.  The stub path entries are delimited by
 \<File.pathSeparator> (`\<:>' for Linux and Mac, `\<;>' for Windows).
 
-A checker automatically reads the stub file \code{jdk.astub}, unless
-command-line option \<-Aignorejdkastub> is supplied.  (The checker
-author should place \code{jdk.astub} in the same directory as the Checker class, i.e.,
-the subclass of \code{BaseTypeVisitor}.)  Programmers should only use the
-\<-Astubs> argument for additional stub files they create themselves.
+The \<-Astubs> argument is for stub files that users create.
+A checker automatically reads some of its own stub files; see
+Section~\ref{creating-a-checker-annotated-jdk}.
 
 If a method appears in more than one stub file (or twice in the same
 stub file), then the annotations are merged. If any of the
@@ -518,6 +532,9 @@ This feature allows stub files to change the effective annotations in
 all possible situations.
 Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
 warning whenever a stub file overwrites bytecode annotations.
+Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get
+a warning whenever a stub file specification is redundant with
+bytecode annotations.
 
 A file being compiled takes precedence over a stub file.  If file \<A.java>
 is being compiled, then any stub for class \<A> is ignored.
@@ -656,7 +673,7 @@ if an entry could not be found.
 
 \item
   Add annotations to the stub class.  For example, you might annotate
-  the \sunjavadoc{java/lang/String.html\#intern--}{String.intern()} method as follows:
+  the \sunjavadoc{java.base/java/lang/String.html\#intern()}{String.intern()} method as follows:
 
 \begin{Verbatim}
   @Interned String intern();

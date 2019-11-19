@@ -11,6 +11,7 @@ public class CastedShifts {
         byteRes = (@Unsigned byte) (unsigned >> 23);
         byteRes = (@Signed byte) (signed >>> 23);
         byteRes = (@Signed byte) (signed >> 23);
+        byteRes = (byte) (signed >> 23);
 
         // Shifting right by 24, the introduced bits are still cast away.
         byteRes = (@Unsigned byte) (unsigned >>> 24);
@@ -410,5 +411,6 @@ public class CastedShifts {
         longRes = (@Unsigned long) ((unsigned >> 64));
         longRes = (@Signed long) ((signed >>> 64));
         longRes = (@Signed long) ((signed >> 64));
+        longRes = (long) ((signed >> 64));
     }
 }

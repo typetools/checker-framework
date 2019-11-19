@@ -2,7 +2,6 @@ package java.lang;
 
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
@@ -40,7 +39,7 @@ public void run() { throw new RuntimeException("skeleton method"); }
   public void destroy() { throw new RuntimeException("skeleton method"); }
   public final void suspend() { throw new RuntimeException("skeleton method"); }
   public final void resume() { throw new RuntimeException("skeleton method"); }
-  public final void setPriority(@UnknownInitialization(Thread.class) @Raw(Thread.class) Thread this, int a1) { throw new RuntimeException("skeleton method"); }
+  public final void setPriority(@UnknownInitialization(Thread.class) Thread this, int a1) { throw new RuntimeException("skeleton method"); }
   public final int getPriority() { throw new RuntimeException("skeleton method"); }
   public final void setName(String a1) { throw new RuntimeException("skeleton method"); }
   public final String getName() { throw new RuntimeException("skeleton method"); }
@@ -51,7 +50,7 @@ public void run() { throw new RuntimeException("skeleton method"); }
   public final synchronized void join(long a1, int a2) throws InterruptedException { throw new RuntimeException("skeleton method"); }
   public final void join() throws InterruptedException { throw new RuntimeException("skeleton method"); }
   public static void dumpStack() { throw new RuntimeException("skeleton method"); }
-  public final void setDaemon(@UnknownInitialization @Raw Thread this, boolean a1) { throw new RuntimeException("skeleton method"); }
+  public final void setDaemon(@UnknownInitialization Thread this, boolean a1) { throw new RuntimeException("skeleton method"); }
   @Pure public final boolean isDaemon() { throw new RuntimeException("skeleton method"); }
   public final void checkAccess() { throw new RuntimeException("skeleton method"); }
   @Override

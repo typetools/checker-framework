@@ -88,7 +88,7 @@ public class AnnotationUtils {
      * @param a2 the second AnnotationMirror to compare
      * @return true iff a1 and a2 are the same annotation
      */
-    public static boolean areSame(@Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
+    public static boolean areSame(AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
         }
@@ -117,13 +117,15 @@ public class AnnotationUtils {
      * @see #areSame(AnnotationMirror, AnnotationMirror)
      * @return true iff a1 and a2 have the same annotation name
      */
-    public static boolean areSameByName(
-            @Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
+    public static boolean areSameByName(AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
         }
-        if (a1 == null || a2 == null) {
-            return false;
+        if (a1 == null) {
+            throw new BugInCF("Unexpected null first argument to areSameByName");
+        }
+        if (a2 == null) {
+            throw new BugInCF("Unexpected null second argument to areSameByName");
         }
 
         return annotationName(a1).equals(annotationName(a2));
@@ -414,6 +416,9 @@ public class AnnotationUtils {
      * type is TYPE_USE, then ElementKinds returned should be the same as those returned for TYPE
      * and TYPE_PARAMETER, but this method returns the empty set instead.
      *
+     * <p>If the Element is MODULE, the empty set is returned. This is so that this method can
+     * compile with Java 8.
+     *
      * @param elementType the elementType to find ElementKinds for
      * @return the set of {@link ElementKind}s corresponding to {@code elementType}
      */
@@ -447,6 +452,11 @@ public class AnnotationUtils {
             case TYPE_USE:
                 return EnumSet.noneOf(ElementKind.class);
             default:
+                // TODO: Add actual case to check for the enum constant and return Set containing
+                // ElementKind.MODULE.  (Java 11)
+                if (elementType.name().contentEquals("MODULE")) {
+                    return EnumSet.noneOf(ElementKind.class);
+                }
                 throw new BugInCF("Unrecognized ElementType: " + elementType);
         }
     }
@@ -490,6 +500,10 @@ public class AnnotationUtils {
      * @return true if if the two annotations have the same elements (fields)
      */
     public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
+        if (am1 == am2) {
+            return true;
+        }
+
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
         for (ExecutableElement meth :
@@ -624,7 +638,10 @@ public class AnnotationUtils {
                 return expectedType.cast(val.getValue());
             }
         }
-        throw new BugInCF("No element with name \'" + elementName + "\' in annotation " + anno);
+        throw new BugInCF(
+                String.format(
+                        "No element with name \'%s\' in annotation %s; useDefaults=%s, valmap.keySet()=%s",
+                        elementName, anno, useDefaults, valmap.keySet()));
     }
 
     /**

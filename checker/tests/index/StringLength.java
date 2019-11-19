@@ -18,7 +18,7 @@ class StringLength {
     }
 
     void testNewArraySameLen(String s) {
-        int @SameLen("s") [] array = new int[s.length()]; // TODO
+        int @SameLen("s") [] array = new int[s.length()];
         // ::  error: (assignment.type.incompatible)
         int @SameLen("s") [] array1 = new int[s.length() + 1];
     }

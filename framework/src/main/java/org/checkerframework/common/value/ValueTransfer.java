@@ -1,11 +1,13 @@
 package org.checkerframework.common.value;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -55,22 +57,33 @@ import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
+import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** The transfer class for the Value Checker. */
 public class ValueTransfer extends CFTransfer {
+    /** The Value type factory. */
     protected final ValueAnnotatedTypeFactory atypefactory;
+    /** The Value qualifier hierarchy. */
+    protected final QualifierHierarchy hierarchy;
 
+    /** Create a new ValueTransfer. */
     public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         atypefactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
+        hierarchy = atypefactory.getQualifierHierarchy();
     }
 
     /** Returns a range of possible lengths for an integer from a range, as casted to a String. */
@@ -246,10 +259,8 @@ public class ValueTransfer extends CFTransfer {
 
         if (atypefactory.isIntRange(value.getAnnotations())) {
             intAnno =
-                    atypefactory
-                            .getQualifierHierarchy()
-                            .findAnnotationInHierarchy(
-                                    value.getAnnotations(), atypefactory.UNKNOWNVAL);
+                    hierarchy.findAnnotationInHierarchy(
+                            value.getAnnotations(), atypefactory.UNKNOWNVAL);
             Range range = ValueAnnotatedTypeFactory.getRange(intAnno);
             return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
@@ -262,10 +273,15 @@ public class ValueTransfer extends CFTransfer {
         return getValueAnnotation(value);
     }
 
+    /**
+     * Extract the Value Checker annotation from a CFValue object.
+     *
+     * @param cfValue a CFValue object
+     * @return the Value Checker annotation within cfValue
+     */
     private AnnotationMirror getValueAnnotation(CFValue cfValue) {
-        return atypefactory
-                .getQualifierHierarchy()
-                .findAnnotationInHierarchy(cfValue.getAnnotations(), atypefactory.UNKNOWNVAL);
+        return hierarchy.findAnnotationInHierarchy(
+                cfValue.getAnnotations(), atypefactory.UNKNOWNVAL);
     }
 
     /**
@@ -478,8 +494,7 @@ public class ValueTransfer extends CFTransfer {
         if (oldRecAnno == null) {
             combinedRecAnno = newRecAnno;
         } else {
-            combinedRecAnno =
-                    atypefactory.getQualifierHierarchy().greatestLowerBound(oldRecAnno, newRecAnno);
+            combinedRecAnno = hierarchy.greatestLowerBound(oldRecAnno, newRecAnno);
         }
         Receiver receiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiverNode);
         store.insertValue(receiver, combinedRecAnno);
@@ -528,6 +543,28 @@ public class ValueTransfer extends CFTransfer {
         return leftLengths.plus(rightLengths).intersect(Range.INT_EVERYTHING);
     }
 
+    /**
+     * Checks whether or not the passed node is nullable. This superficial check assumes that every
+     * node is nullable unless it is a primitive, String literal, or compile-time constant.
+     *
+     * @return false if the node's run-time can't be null; true if the node's run-time value may be
+     *     null, or if this method is not precise enough
+     */
+    private boolean isNullable(Node node) {
+        if (node instanceof StringConversionNode) {
+            if (((StringConversionNode) node).getOperand().getType().getKind().isPrimitive()) {
+                return false;
+            }
+        } else if (node instanceof StringLiteralNode) {
+            return false;
+        } else if (node instanceof StringConcatenateNode) {
+            return false;
+        }
+
+        Element element = TreeUtils.elementFromUse((ExpressionTree) node.getTree());
+        return !ElementUtils.isCompileTimeConstant(element);
+    }
+
     /** Creates an annotation for a result of string concatenation. */
     private AnnotationMirror createAnnotationForStringConcatenation(
             Node leftOperand, Node rightOperand, TransferInput<CFValue, CFStore> p) {
@@ -536,15 +573,35 @@ public class ValueTransfer extends CFTransfer {
         List<String> leftValues = getStringValues(leftOperand, p);
         List<String> rightValues = getStringValues(rightOperand, p);
 
+        boolean nullStringConcat =
+                atypefactory.getContext().getChecker().hasOption("nullStringsConcatenation");
+
         if (leftValues != null && rightValues != null) {
             // Both operands have known string values, compute set of results
             List<String> concatValues = new ArrayList<>();
-            if (leftValues.isEmpty()) {
-                leftValues = Collections.singletonList("null");
+
+            if (nullStringConcat) {
+                if (isNullable(leftOperand)) {
+                    leftValues.add("null");
+                }
+                if (isNullable(rightOperand)) {
+                    rightValues.add("null");
+                }
+            } else {
+                if (leftOperand instanceof StringConversionNode) {
+                    if (((StringConversionNode) leftOperand).getOperand().getType().getKind()
+                            == TypeKind.NULL) {
+                        leftValues.add("null");
+                    }
+                }
+                if (rightOperand instanceof StringConversionNode) {
+                    if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
+                            == TypeKind.NULL) {
+                        rightValues.add("null");
+                    }
+                }
             }
-            if (rightValues.isEmpty()) {
-                rightValues = Collections.singletonList("null");
-            }
+
             for (String left : leftValues) {
                 for (String right : rightValues) {
                     concatValues.add(left + right);
@@ -565,6 +622,14 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengths != null && rightLengths != null) {
             // Both operands have known lengths, compute set of result lengths
+            if (nullStringConcat) {
+                if (isNullable(leftOperand)) {
+                    leftLengths.add(4); // "null"
+                }
+                if (isNullable(rightOperand)) {
+                    rightLengths.add(4); // "null"
+                }
+            }
             List<Integer> concatLengths = calculateLengthAddition(leftLengths, rightLengths);
             return atypefactory.createArrayLenAnnotation(concatLengths);
         }
@@ -581,6 +646,14 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengthRange != null && rightLengthRange != null) {
             // Both operands have a length from a known range, compute a range of result lengths
+            if (nullStringConcat) {
+                if (isNullable(leftOperand)) {
+                    leftLengthRange.union(new Range(4, 4)); // "null"
+                }
+                if (isNullable(rightOperand)) {
+                    rightLengthRange.union(new Range(4, 4)); // "null"
+                }
+            }
             Range concatLengthRange =
                     calculateLengthRangeAddition(leftLengthRange, rightLengthRange);
             return atypefactory.createArrayLenRangeAnnotation(concatLengthRange);
@@ -1044,6 +1117,7 @@ public class ValueTransfer extends CFTransfer {
             return refineIntRanges(
                     leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
         }
+        // This is a list of all the values that the expression can evaluate to.
         List<Boolean> resultValues = new ArrayList<>();
 
         List<? extends Number> lefts = getNumericalValues(leftNode, leftAnno);
@@ -1203,17 +1277,24 @@ public class ValueTransfer extends CFTransfer {
     }
 
     private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
+        // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
         for (Node internal : splitAssignments(node)) {
-            AnnotationMirror currentAnno =
-                    atypefactory
-                            .getAnnotatedType(internal.getTree())
-                            .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+            CFValue currentValueFromStore;
+            if (CFAbstractStore.canInsertReceiver(rec)) {
+                currentValueFromStore = store.getValue(rec);
+            } else {
+                // Don't just `continue;` which would skip the calls to refine{Array,String}...
+                currentValueFromStore = null;
+            }
+            AnnotationMirror currentAnno =
+                    (currentValueFromStore == null
+                            ? atypefactory.UNKNOWNVAL
+                            : getValueAnnotation(currentValueFromStore));
             // Combine the new annotations based on the results of the comparison with the existing
             // type.
-            store.insertValue(
-                    rec,
-                    atypefactory.getQualifierHierarchy().greatestLowerBound(anno, currentAnno));
+            AnnotationMirror newAnno = hierarchy.greatestLowerBound(anno, currentAnno);
+            store.insertValue(rec, newAnno);
 
             if (node instanceof FieldAccessNode) {
                 refineArrayAtLengthAccess((FieldAccessNode) internal, store);

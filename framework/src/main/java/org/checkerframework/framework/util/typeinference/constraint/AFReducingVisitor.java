@@ -13,7 +13,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
@@ -197,7 +196,8 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
                 typeFactory.getContext().getTypeUtils())) {
             return null;
         }
-        AnnotatedDeclaredType subAsSuper = DefaultTypeHierarchy.castedAsSuper(subtype, supertype);
+        AnnotatedDeclaredType subAsSuper =
+                AnnotatedTypes.castedAsSuper(typeFactory, subtype, supertype);
 
         final List<AnnotatedTypeMirror> subTypeArgs = subAsSuper.getTypeArguments();
         final List<AnnotatedTypeMirror> superTypeArgs = supertype.getTypeArguments();
@@ -308,7 +308,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
 
         // at least one of the intersection bound types must be convertible to the param type
         final AnnotatedDeclaredType subtypeAsParam =
-                DefaultTypeHierarchy.castedAsSuper(subtype, supertype);
+                AnnotatedTypes.castedAsSuper(typeFactory, subtype, supertype);
         if (subtypeAsParam != null && !subtypeAsParam.equals(subtype)) {
             addConstraint(subtypeAsParam, supertype, constraints);
         }

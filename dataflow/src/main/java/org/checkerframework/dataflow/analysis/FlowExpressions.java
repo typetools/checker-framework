@@ -16,10 +16,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
@@ -162,20 +164,7 @@ public class FlowExpressions {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn.getTree());
 
-            // check if this represents a boxing operation of a constant, in which
-            // case we treat the method call as deterministic, because there is no way
-            // to behave differently in two executions where two constants are being used.
-            boolean considerDeterministic = false;
-            if (isLongValueOf(mn, invokedMethod)) {
-                Node arg = mn.getArgument(0);
-                if (arg instanceof ValueLiteralNode) {
-                    considerDeterministic = true;
-                }
-            }
-
-            if (PurityUtils.isDeterministic(provider, invokedMethod)
-                    || allowNonDeterministic
-                    || considerDeterministic) {
+            if (allowNonDeterministic || PurityUtils.isDeterministic(provider, invokedMethod)) {
                 List<Receiver> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
                     parameters.add(internalReprOf(provider, p));
@@ -194,30 +183,6 @@ public class FlowExpressions {
             receiver = new Unknown(receiverNode.getType());
         }
         return receiver;
-    }
-
-    /** Return true iff the invoked method is Long.valueOf(long). */
-    private static boolean isLongValueOf(MethodInvocationNode mn, ExecutableElement method) {
-
-        // Less efficient implementation:
-        // return method.toString().equals("valueOf(long)")
-        //     && mn.getTarget().getReceiver().toString().equals("Long")
-
-        if (mn.getTarget().getReceiver() == null
-                || !mn.getTarget().getReceiver().toString().equals("Long")) {
-            return false;
-        }
-
-        if (!method.getSimpleName().contentEquals("valueOf")) {
-            return false;
-        }
-        List<? extends VariableElement> params = method.getParameters();
-        if (params.size() != 1) {
-            return false;
-        }
-        VariableElement param = params.get(0);
-        TypeMirror paramType = param.asType();
-        return paramType.getKind() == TypeKind.LONG;
     }
 
     /**
@@ -506,6 +471,16 @@ public class FlowExpressions {
         public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
             return this.equals(other) || store.canAlias(this, other);
         }
+
+        /**
+         * Print this verbosely, for debugging.
+         *
+         * @return a verbose printed representation of this
+         */
+        public String debugToString() {
+            return String.format(
+                    "Receiver (%s) %s type=%s", getClass().getSimpleName(), toString(), type);
+        }
     }
 
     public static class FieldAccess extends Receiver {
@@ -587,7 +562,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz) || receiver.containsOfClass(clazz);
+            return getClass() == clazz || receiver.containsOfClass(clazz);
         }
 
         @Override
@@ -624,7 +599,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -681,7 +656,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -732,7 +707,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -797,7 +772,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -841,7 +816,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -916,7 +891,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            if (getClass().equals(clazz)) {
+            if (getClass() == clazz) {
                 return true;
             }
             if (receiver.containsOfClass(clazz)) {
@@ -1015,19 +990,20 @@ public class FlowExpressions {
             if (!(obj instanceof MethodCall)) {
                 return false;
             }
-            MethodCall other = (MethodCall) obj;
-            int i = 0;
-            for (Receiver p : parameters) {
-                if (!p.equals(other.parameters.get(i))) {
-                    return false;
-                }
-                i++;
+            if (method.getKind() == ElementKind.CONSTRUCTOR) {
+                return this == obj;
             }
-            return receiver.equals(other.receiver) && method.equals(other.method);
+            MethodCall other = (MethodCall) obj;
+            return parameters.equals(other.parameters)
+                    && receiver.equals(other.receiver)
+                    && method.equals(other.method);
         }
 
         @Override
         public int hashCode() {
+            if (method.getKind() == ElementKind.CONSTRUCTOR) {
+                return super.hashCode();
+            }
             return Objects.hash(method, receiver, parameters);
         }
 
@@ -1070,7 +1046,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            if (getClass().equals(clazz)) {
+            if (getClass() == clazz) {
                 return true;
             }
             if (receiver.containsOfClass(clazz)) {
@@ -1149,13 +1125,26 @@ public class FlowExpressions {
         }
     }
 
+    /** FlowExpression for array creations. {@code new String[]()}. */
     public static class ArrayCreation extends Receiver {
 
-        protected final List<Receiver> dimensions;
+        /**
+         * List of dimensions expressions. {code null} means that there is no dimension expression.
+         */
+        protected final List<@Nullable Receiver> dimensions;
+        /** List of initializers. */
         protected final List<Receiver> initializers;
 
+        /**
+         * Creates an ArrayCreation object.
+         *
+         * @param type array type
+         * @param dimensions list of dimension expressions; {code null} means that there is no
+         *     dimension expression
+         * @param initializers list of initializer expressions
+         */
         public ArrayCreation(
-                TypeMirror type, List<Receiver> dimensions, List<Receiver> initializers) {
+                TypeMirror type, List<@Nullable Receiver> dimensions, List<Receiver> initializers) {
             super(type);
             this.dimensions = dimensions;
             this.initializers = initializers;
@@ -1172,12 +1161,12 @@ public class FlowExpressions {
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
             for (Receiver n : dimensions) {
-                if (n.getClass().equals(clazz)) {
+                if (n != null && n.getClass() == clazz) {
                     return true;
                 }
             }
             for (Receiver n : initializers) {
-                if (n.getClass().equals(clazz)) {
+                if (n.getClass() == clazz) {
                     return true;
                 }
             }
@@ -1227,20 +1216,15 @@ public class FlowExpressions {
             StringBuilder sb = new StringBuilder();
             sb.append("new " + type);
             if (!dimensions.isEmpty()) {
-                boolean needComma = false;
-                sb.append(" (");
                 for (Receiver dim : dimensions) {
-                    if (needComma) {
-                        sb.append(", ");
-                    }
-                    sb.append(dim);
-                    needComma = true;
+                    sb.append("[");
+                    sb.append(dim == null ? "" : dim);
+                    sb.append("]");
                 }
-                sb.append(")");
             }
             if (!initializers.isEmpty()) {
                 boolean needComma = false;
-                sb.append(" = {");
+                sb.append(" {");
                 for (Receiver init : initializers) {
                     if (needComma) {
                         sb.append(", ");

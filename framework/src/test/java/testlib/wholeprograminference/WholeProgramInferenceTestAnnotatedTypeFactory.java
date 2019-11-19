@@ -2,6 +2,7 @@ package testlib.wholeprograminference;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,9 +10,10 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.UnknownClass;
+import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -42,7 +44,6 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
     public WholeProgramInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
-        addTypeNameImplicit(java.lang.Void.class, BOTTOM);
     }
 
     @Override
@@ -61,11 +62,11 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, BOTTOM);
-        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.INT_LITERAL, BOTTOM);
+        LiteralTreeAnnotator literalTreeAnnotator = new LiteralTreeAnnotator(this);
+        literalTreeAnnotator.addLiteralKind(LiteralKind.INT, BOTTOM);
+        literalTreeAnnotator.addStandardLiteralQualifiers();
 
-        return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
+        return new ListTreeAnnotator(new PropagationTreeAnnotator(this), literalTreeAnnotator);
     }
 
     @Override
@@ -87,6 +88,11 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
         @Override
         public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
             return BOTTOM;
+        }
+
+        @Override
+        public Set<? extends AnnotationMirror> getBottomAnnotations() {
+            return Collections.singleton(BOTTOM);
         }
 
         @Override

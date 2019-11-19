@@ -6,17 +6,19 @@ regular expressions and access of invalid capturing groups.
 
 A regular expression, or regex, is a pattern for matching certain strings
 of text.  In Java, a programmer writes a regular expression as a string.
-At run time, the string is ``compiled'' into an efficient internal form
-(\sunjavadoc{java/util/regex/Pattern.html}{Pattern}) that is used for
-text-matching. Regular expression in Java also have capturing groups, which
-are delimited by parentheses and allow for extraction from text.
-
 The syntax of regular expressions is complex, so it is easy to make a
 mistake.  It is also easy to accidentally use a regex feature from another
 language that is not supported by Java (see section ``Comparison to Perl
-5'' in the \sunjavadoc{java/util/regex/Pattern.html}{Pattern} Javadoc).
-Ordinarily, the programmer does not learn of these errors until run time.
-The Regex Checker warns about these problems at compile time.
+5'' in the \sunjavadoc{java.base/java/util/regex/Pattern.html}{Pattern} Javadoc).
+These problems cause run-time errors.
+
+Regular expressions in Java also have capturing groups, which
+are delimited by parentheses and allow for extraction from text.
+If a programmer uses an incorrect index (larger than the number of
+capturing groups), an \<IndexOutOfBoundsException> is thrown.
+
+The Regex Checker warns about these problems at compile time, guaranteeing
+that your program does not crash due to incorrect use of regular expressions.
 
 For further details, including case studies, see a paper about the Regex
 Checker~\cite{SpishakDE2012}.
@@ -52,7 +54,7 @@ Figure~\ref{fig-regex-hierarchy}.
 \begin{figure}
 \includeimage{regex}{9cm}
 \caption{The subtyping relationship of the Regex Checker's qualifiers.
-  The type qualifiers are applicable te \<CharSequence> and its subtypes.
+  The type qualifiers are applicable to \<CharSequence> and its subtypes.
   Because the parameter to a \<@Regex> qualifier is at least the number of
   capturing groups in a regular expression, a \<@Regex> qualifier with more
   capturing groups is a subtype of a \<@Regex> qualifier with fewer capturing
@@ -80,10 +82,10 @@ the \code{null} literal to be assigned to any type qualified with the
 \subsectionAndLabel{Capturing groups}{regex-capturing-groups}
 
 The Regex Checker validates that a legal capturing group number is passed
-to \sunjavadoc{java/util/regex/Matcher.html}{Matcher}'s
-\sunjavadoc{java/util/regex/Matcher.html\#group-int-}{group},
-\sunjavadoc{java/util/regex/Matcher.html\#start-int-}{start} and
-\sunjavadoc{java/util/regex/Matcher.html\#end-int-}{end} methods. To do this,
+to \sunjavadoc{java.base/java/util/regex/Matcher.html}{Matcher}'s
+\sunjavadoc{java.base/java/util/regex/Matcher.html\#group(int)}{group},
+\sunjavadoc{java.base/java/util/regex/Matcher.html\#start(int)}{start} and
+\sunjavadoc{java.base/java/util/regex/Matcher.html\#end(int)}{end} methods. To do this,
 the type of \<Matcher> must be qualified with a \<@Regex> annotation
 with the number of capturing groups in the regular expression. This is
 handled implicitly by the Regex Checker for local variables (see
@@ -135,8 +137,8 @@ example of the intended use of the \code{RegexUtil} methods.
 
 \item[\refmethod{checker/regex}{RegexUtil}{regexException}{-java.lang.String-}]
   returns the
-  \sunjavadoc{java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
-  that \sunjavadoc{java/util/regex/Pattern.html\#compile-java.lang.String-}{Pattern.compile(String)}
+  \sunjavadoc{java.base/java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
+  that \sunjavadoc{java.base/java/util/regex/Pattern.html\#compile(java.lang.String)}{Pattern.compile(String)}
   throws when compiling an invalid regular expression.  It returns \<null>
   if its argument is a valid regular expression.
 
@@ -158,7 +160,7 @@ to report the error higher up the call stack (potentially where you can
 provide a more detailed error message) you can throw a
 \refclass{checker/regex}{RegexUtil.CheckedPatternSyntaxException}. This exception is
 functionally the same as a
-\sunjavadoc{java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
+\sunjavadoc{java.base/java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
 except it is checked to guarantee that the error will be handled up the
 call stack.  For more details, see the Javadoc for
 \refclass{checker/regex}{RegexUtil.CheckedPatternSyntaxException}.
@@ -212,5 +214,6 @@ so the \<asRegex> method should be used rarely.
 
 
 % LocalWords:  Regex regex quals PolyRegex isRegex RegexUtil regexError asRegex
-% LocalWords:  regexException PatternSyntaxException Matcher java
-%  LocalWords:  CheckedPatternSyntaxException colo colou
+% LocalWords:  regexException PatternSyntaxException Matcher java qual
+%  LocalWords:  CheckedPatternSyntaxException colo colou CharSequence
+%%  LocalWords:  regexutil

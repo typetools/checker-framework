@@ -34,6 +34,10 @@ including people who wish to edit its source code or make pull requests.
         <ul>
           <li><a href="#pull-requests-maintainers">Pull request and commit notes for maintainers</a></li>
         </ul></li>
+      <li><a href="#ci">Continuous Integration</a>
+        <ul>
+          <li><a href="#ci-failure">What to do if a Continuous Integration build fails</a></li>
+        </ul></li>
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
       <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
       <li><a href="#Making_a_Checker_Framework_release">Making a Checker Framework release</a></li>
@@ -49,7 +53,7 @@ repository</a> contains several related projects:
 </p>
 
 <pre>
- framework     the "framework" aspects of the Checker Framework
+ framework     the framework that enables building pluggable type checkers
  checker       the type checkers provided with the Checker Framework
  javacutil     utilities for javac
  dataflow      a dataflow framework
@@ -234,6 +238,58 @@ too busy to do so, you should recognize that and move on.
 </p>
 
 
+<h2 id="ci">Continuous Integration</h2>
+
+<p>
+The Checker Framework has continuous integration jobs that run in Azure
+Pipelines, CircleCI, and/or Travis CI on each push to GitHub.
+</p>
+
+<p>
+  To enable Travis CI continuous integration for your fork:
+</p>
+<ul>
+  <li>Browse to travis-ci.com</li>
+  <li>Click the downarrow for the dropdown, near your face in the upper right corner</li>
+  <li>Click settings</li>
+  <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
+</ul>
+
+<p>
+  To enable Azure Pipelines continuous integration for your fork:
+</p>
+<ul>
+  <li>Go to dev.azure.com.
+      (You might need to create a (free) account.)</li>
+  <li>Click "Create a project to get started"</li>
+  <li>Click "public".</li>
+  <li>Click "create project"</li>
+  <li>At the left, click the blue rocket labeled "pipelines"</li>
+  <li>Click "new pipeline"</li>
+  <li>Cilck "GitHub"
+      (You might need to authorize the app on GitHub.)</li>
+  <li>Click "Select a repository"</li>
+  <li>Choose <em>MYUSERID</em>/checker-framework</li>
+  <li>Choose the default radio button, "only selected repositories".  <b>Do not</b> choose "all repositories".</li>
+  <li>Approve and install.</li>
+  <li>Click "run".</li>
+</ul>
+
+
+<h3 id="ci-failure">What to do if a Continuous Integration build fails</h3>
+
+<p>
+Sometimes, CI tests for your pull request may fail even though your local build passed.
+This is usually because the CI service performed more tests than you ran locally.
+</p>
+
+<p>
+First, examine the CI service's logs, which contain diagnostic output from the
+failing command.  You can determine which command was run from the logs, or
+from the CI configuration file (such as <code>azure-pipelines.yml</code>).
+</p>
+
+
 <h2 id="Documenting_refactoring_ideas">Documenting refactoring ideas</h2>
 
 <p>
@@ -262,15 +318,17 @@ lower-quality than it actually is.
 <p>
 Annotated libraries should be based on a released version of the upstream
 library, not an arbitrary commit in the upstream library's version control
-system.
+system.  The library's version number is the same as the upstream version
+number.
 </p>
 
 <p>
 When making a new version of an annotated library, between upstream
 releases, add ".0.1" to the end of the version number.  For example, if we
-already uploaded version 6.2 to Maven Central, the next version would be
-6.2.0.1.  This accommodates the possibility that the upstream maintainers
-release 6.2.1.
+already uploaded version 6.2 to Maven Central, the next version we upload
+would be 6.2.0.1.  This accommodates the possibility that the upstream
+maintainers release 6.2.1.  Our further releases increment the last number,
+for example to 6.2.0.2.
 </p>
 
 
@@ -285,7 +343,7 @@ See a separate document about the
 </body>
 </html>
 
-<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects
+<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre
  -->
 <!--  LocalWords:  subproject personalblog changelog
  -->

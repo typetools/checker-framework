@@ -9,7 +9,7 @@ public class Arrays {
         int len = a_old.length;
         Integer[] a_new = new Integer[len];
         for (int i = 0; i < len; i++) {
-            a_new[i] = new Integer(a_old[i]); // valid
+            a_new[i] = Integer.valueOf(a_old[i]); // valid
         }
         return a_new;
     }
@@ -33,7 +33,6 @@ public class Arrays {
         @Interned String @Interned [][] multi2 = new @Interned String @Interned [2][];
     }
 
-    // :: error: (super.invocation.invalid)
     public final @Interned class InternedClass {}
 
     private static InternedClass[] returnToArray() {

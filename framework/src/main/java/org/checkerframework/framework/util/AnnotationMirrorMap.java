@@ -123,4 +123,9 @@ public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
     public Set<Entry<AnnotationMirror, V>> entrySet() {
         return shadowMap.entrySet();
     }
+
+    @Override
+    public String toString() {
+        return shadowMap.toString();
+    }
 }

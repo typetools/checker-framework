@@ -13,10 +13,9 @@ pattern.
 Interning has two benefits:  it can save memory, and it can speed up testing for
 equality by permitting use of \code{==}.
 
-The Interning Checker prevents two types of errors in your code.  First,
-\code{==} should be used
-only on interned values; using \code{==} on
-non-interned values can result in subtle bugs.  For example:
+The Interning Checker prevents two types of problems in your code.
+First, it prevents using \code{==} on
+non-interned values, which can result in subtle bugs.  For example:
 
 \begin{Verbatim}
   Integer x = new Integer(22);
@@ -25,22 +24,21 @@ non-interned values can result in subtle bugs.  For example:
 \end{Verbatim}
 
 \noindent
-The Interning Checker helps programmers to prevent such bugs.
 Second,
-the Interning Checker also helps to prevent performance problems that result
+the Interning Checker helps to prevent performance problems that result
 from failure to use interning.
 (See Section~\ref{checker-guarantees} for caveats to the checker's guarantees.)
 
 Interning is such an important design pattern that Java builds it in for
 these types: \<String>, \<Boolean>, \<Byte>, \<Character>, \<Integer>,
 \<Short>.  Every string literal in the program is guaranteed to be interned
-(\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-3.html#jls-3.10.5}{JLS
+(\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-3.html#jls-3.10.5}{JLS
   \S3.10.5}), and the
-\sunjavadoc{java/lang/String.html\#intern--}{String.intern()} method
+\sunjavadoc{java.base/java/lang/String.html\#intern()}{String.intern()} method
 performs interning for strings that are computed at run time.
 The \<valueOf> methods in wrapper classes always (\<Boolean>, \<Byte>) or
 sometimes (\<Character>, \<Integer>, \<Short>) return an interned result
-(\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-5.html#jls-5.1.7}{JLS \S5.1.7}).
+(\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.7}{JLS \S5.1.7}).
 Users can also write their own interning methods for other types.
 
 It is a proper optimization to use \code{==}, rather than \code{equals()},
@@ -53,7 +51,7 @@ this property could hold:
 \item
   Interning.  A factory method ensures that, globally, no two different
   interned objects are \code{equals()} to one another.
-  (Not every value of the given type is necessarily interned; it is
+  (For some classes, every instance is interned; however, in other cases it is
   possible for two objects of the class to be
   \code{equals()} to one another, even if one of them is interned.)
   Interned objects should always be immutable.
@@ -66,9 +64,16 @@ this property could hold:
 \item
   Local control flow.  Even though not all objects of the given type may be
   compared with \code{==}, the specific objects that can reach a given
-  comparison may be.  For example, suppose that an array contains no
-  duplicates.  Then searching for the index of an element that is
-  known to be in the array can use \code{==}.
+  comparison may be.
+  \begin{itemize}
+  \item
+    When searching for an element (say, in a collection), \code{==} may be
+    appropriate.
+  \item
+    Some routines return either their argument, or a modified version of
+    it.  Your code might compare \code{s == s.toLowerCase()} to see whether
+    a string contained any upper-case characters.
+  \end{itemize}
 \end{enumerate}
 
 To eliminate Interning Checker errors, you will need to annotate the
@@ -90,6 +95,8 @@ command-line option to javac.  For examples, see Section~\ref{interning-example}
 
 \sectionAndLabel{Interning annotations}{interning-annotations}
 
+\subsectionAndLabel{Interning qualifiers}{interning-qualifiers}
+
 These qualifiers are part of the Interning type system:
 
 \begin{description}
@@ -100,7 +107,10 @@ These qualifiers are part of the Interning type system:
 
 \item[\refqualclass{checker/interning/qual}{InternedDistinct}]
   indicates a type such that each value is not \<equals()> to any other
-  Java value.  For details, see Section~\ref{interning-distinct}.
+  Java value.  This is a stronger (more restrictive) property than
+  \<@Interned>, but is a weaker property than writing \<@Interned> on a
+  class declaration.  For
+  details, see Section~\ref{interning-distinct}.
 
 \item[\refqualclass{checker/interning/qual}{UnknownInterned}]
   indicates a type whose values might or might not be interned.
@@ -110,6 +120,12 @@ These qualifiers are part of the Interning type system:
   indicates qualifier polymorphism (see
   Section~\ref{qualifier-polymorphism}).
 
+\end{description}
+
+\subsectionAndLabel{Interning method and class annotations}{interning-declaration-annotations}
+
+\begin{description}
+
 \item[\refqualclass{checker/interning/qual}{UsesObjectEquals}]
   is a class annotation (not a type annotation) that indicates that this class's
   \<equals> method is the same as that of \<Object>.  In other words,
@@ -118,8 +134,11 @@ These qualifiers are part of the Interning type system:
   for such a class, \<==> and \<equals> are equivalent, and so the
   Interning Checker does not issue errors or warnings for either one.
 
+\item[\refqualclass{checker/interning/qual}{InternMethod}]
+  is a method declaration annotation that indicates that this method
+  returns an interned object and may be invoked
+  on an uninterned object. See Section~\ref{interning-intern-methods} for more details.
 \end{description}
-
 
 \sectionAndLabel{Annotating your code with \code{@Interned}}{interning-annotating}
 
@@ -148,39 +167,93 @@ object:
 The Interning Checker ensures that only interned
 values can be assigned to \code{s2}.
 
-To specify that \emph{all} objects of a given type are interned, annotate the
-class declaration:
+\sectionAndLabel{Interned classes}{interning-interned-classes}
+
+An interned annotation on a class declaration indicates that all objects of a
+type are interned \textit{except for newly created objects}. That means that
+all uses of such types are \<@Interned> by default and the type \<@UnknownInterned
+MyClass> is an invalid type.
+
+An exception is \textit{constructor results}. Constructor results and \<this> within the
+body of the constructor are \<@UnknownInterned> by default. Although \<@UnknownInterned InternClass>
+is not a legal type, no ``type.invalid'' error is issued at constructor declarations.
+Instead, an ``interned.object.creation''
+error is issued at the invocation of the constructor. The user should inspect
+this location and suppress the warning if the newly created object is interned.
+
+For example:
 
 \begin{Verbatim}
-  public @Interned class MyInternedClass { ... }
+@Interned class InternedClass {
+  @UnknownInterned InternedClass() {
+  // error, "this" is @UnknownInterned.
+  @Interned InternedClass that = this;
+  }
+
+  @SuppressWarnings("intern") // Only creation of an InternedClass object.
+  static final InternedClass ONE = new InternedClass();
+}
 \end{Verbatim}
 
-This makes every use of \code{MyInternedClass}, in a
-declaration or elsewhere, implicitly \<@Interned>.
+\subsectionAndLabel{The intern() methods}{interning-intern-methods}
+Some interned classes use an \<intern()> method to look up the interned version of
+the object. These methods must be annotated with the declaration annotation
+\<@InternMethod>. This allows the checker to verify that a newly created object
+is immediately interned and therefore not issue an interned object creation
+error.
+
+\begin{Verbatim}
+new InternedClass().intern() // no error
+\end{Verbatim}
+
+Because an \<intern> method is expected to be called on uninterned objects, the
+type of \<this> in \<intern> is implicitly \<@UnknownInterned>. This will cause an
+error if \<this> is used someplace where an interned object is expected.  Some
+of these warnings will be false positives that should be suppressed by the
+user.
+
+\begin{Verbatim}
+@InternMethod
+public InternedClass intern() {
+  // Type of "this" inside an @InternMethod is @UnknownInterned
+  @Interned InternedClass that = this; // error
+
+  if (!pool.contains(this)) {
+    @SuppressWarning("interning:assignment.type.incompatible")
+    @Interned InternedClass internedThis = this;
+    pool.add(internedThis);
+  }
+  return pool.get(this);
+}
+\end{Verbatim}
+
+Some interned classes do not use an intern method to ensure that every object
+of that class is interned.  For these classes, the user will have to manually
+inspect every constructor invocation and suppress the ``interned.object.creation''
+error.
+
+If every invocation of a constructor is guaranteed to be interned, then the
+user should annotate the constructor result with \<@Interned> and suppress a
+warning at the constructor.
+
+\begin{Verbatim}
+@Interned class AnotherInternedClass {
+  // manually verified that all constructor invocations used such that all
+  // new objects are interned
+  @SuppressWarnings("super.invocation.invalid")
+  @Interned AnotherInternedClass() {}
+}
+\end{Verbatim}
 
 
-\subsectionAndLabel{Implicit qualifiers}{interning-implicit-qualifiers}
+\subsectionAndLabel{Default qualifiers and qualifiers for literals}{interning-implicit-qualifiers}
 
 The Interning Checker
-adds implicit qualifiers, reducing the number of annotations that must
+adds qualifiers to unannotated types, reducing the number of annotations that must
 appear in your code (see Section~\ref{effective-qualifier}).
-For example, String literals and the \<null> literal are always considered interned, and
-object creation expressions (using \code{new}) are never considered
-\refqualclass{checker/interning/qual}{Interned} unless they are annotated as such, as in
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-@Interned Double internedDoubleZero = new @Interned Double(0); // canonical representation for Double zero
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-For a complete description of all implicit interning qualifiers, see the
+For a complete description of all defaulting rules for interning qualifiers, see the
 Javadoc for \refclass{checker/interning}{InterningAnnotatedTypeFactory}.
-
 
 \subsectionAndLabel{InternedDistinct: values not equals() to any other value}{interning-distinct}
 
@@ -229,7 +302,8 @@ verify that it is only written in locations where its contract is satisfied.
 For example, here is one set of guidelines that you could check manually:
 \begin{itemize}
 \item The constructor is private.
-\item The factory method returns the canonical version for certain values.
+\item The factory method (whose return type is annotated with
+  \<@InternedDistinct> returns the canonical version for certain values.
 \item The class is final, so that subclasses cannot violate these properties.
 \end{itemize}
 
@@ -286,7 +360,7 @@ interning errors related to uses of \code{String}, you can pass
 subclasses and superclasses of the given class.
 
 
-\subsectionAndLabel{Limitations of the Interning Checker}{interning-limitations}
+\subsectionAndLabel{Imprecision (false positive warnings) of the Interning Checker}{interning-limitations}
 
 % There is no point to linking to the Javadoc for the valueOf methods,
 % which don't discuss interning.
@@ -294,7 +368,7 @@ subclasses and superclasses of the given class.
 The Interning Checker conservatively assumes that the \<Character>, \<Integer>,
 and \<Short> \<valueOf> methods return a non-interned value.  In fact, these
 methods sometimes return an interned value and sometimes a non-interned
-value, depending on the run-time argument (\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-5.html#jls-5.1.7}{JLS
+value, depending on the run-time argument (\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.7}{JLS
 \S5.1.7}).  If you know that the run-time argument to \<valueOf> implies that
 the result is interned, then you will need to suppress an error.
 (The Interning Checker should make use of the Value Checker to estimate the upper
@@ -383,3 +457,5 @@ $\Rightarrow$
 % LocalWords:  PolyInterned Alint dotequals quals InterningAnnotatedTypeFactory
 % LocalWords:  javac InterningVisitor JLS Acheckclass UsesObjectEquals
 %  LocalWords:  consing valueOf superclasses s2 cleanroom canonicalization
+%%  LocalWords:  InternedDistinct UnknownInterned myValue MyType MyClass
+% LocalWords:  toLowerCase InternMethod uninterned InternClass

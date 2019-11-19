@@ -1,17 +1,23 @@
 package org.checkerframework.checker.index.samelen;
 
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.SameLen;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -21,17 +27,20 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The transfer function for the SameLen checker. Contains three cases:
  *
- * <ol>
- *   <li>1. "b = new T[a.length]" implies that b is the same length as a.
- *   <li>2. after "if (a.length == b.length)", a and b have the same length.
- *   <li>3. after "if (a == b)", a and b have the same length, if they are arrays or strings.
- * </ol>
+ * <ul>
+ *   <li>new array: "b = new T[a.length]" implies that b is the same length as a.
+ *   <li>length equality: after "if (a.length == b.length)", a and b have the same length.
+ *   <li>object equality: after "if (a == b)", a and b have the same length, if they are arrays or
+ *       strings.
+ * </ul>
  */
 public class SameLenTransfer extends CFTransfer {
 
@@ -47,10 +56,10 @@ public class SameLenTransfer extends CFTransfer {
     }
 
     /**
-     * Gets the receiver (sequence) of a length access node, or null if lengthNode is not a length
-     * access.
+     * Gets the receiver sequence of a length access node, or null if {@code lengthNode} is not a
+     * length access.
      */
-    private Node getLengthNodeReceiver(Node lengthNode) {
+    private Node getLengthReceiver(Node lengthNode) {
         if (isArrayLengthAccess(lengthNode)) {
             // lengthNode is a.length
             FieldAccessNode lengthFieldAccessNode = (FieldAccessNode) lengthNode;
@@ -59,23 +68,23 @@ public class SameLenTransfer extends CFTransfer {
             // lengthNode is s.length()
             MethodInvocationNode lengthMethodInvocationNode = (MethodInvocationNode) lengthNode;
             return lengthMethodInvocationNode.getTarget().getReceiver();
+        } else {
+            return null;
         }
-
-        return null;
     }
 
-    /** Handles case 1. */
     @Override
     public TransferResult<CFValue, CFStore> visitAssignment(
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
+
         // Handle b = new T[a.length]
         if (node.getExpression() instanceof ArrayCreationNode) {
             ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
             if (acNode.getDimensions().size() == 1) {
 
                 Node lengthNode = acNode.getDimension(0);
-                Node lengthNodeReceiver = getLengthNodeReceiver(lengthNode);
+                Node lengthNodeReceiver = getLengthReceiver(lengthNode);
 
                 if (lengthNodeReceiver != null) {
                     // "new T[a.length]" or "new T[s.length()]" is the right hand side of the
@@ -96,6 +105,9 @@ public class SameLenTransfer extends CFTransfer {
                                     .getAnnotationInHierarchy(UNKNOWN);
 
                     AnnotationMirror combinedSameLen =
+                            // In Java 9, this can be:
+                            // aTypeFactory.createCombinedSameLen(
+                            //         List.of(targetRec, otherRec), List.of(lengthNodeAnnotation));
                             aTypeFactory.createCombinedSameLen(
                                     targetRec, otherRec, UNKNOWN, lengthNodeAnnotation);
 
@@ -126,6 +138,9 @@ public class SameLenTransfer extends CFTransfer {
             AnnotationMirror rightAnnoOrUnknown = rightAnno == null ? UNKNOWN : rightAnno;
 
             AnnotationMirror combinedSameLen =
+                    // In Java 9, this can be:
+                    // aTypeFactory.createCombinedSameLen(
+                    //         List.of(targetRec, exprRec), List.of(rightAnnoOrUnknown));
                     aTypeFactory.createCombinedSameLen(
                             targetRec, exprRec, UNKNOWN, rightAnnoOrUnknown);
 
@@ -136,29 +151,27 @@ public class SameLenTransfer extends CFTransfer {
     }
 
     /**
-     * Insert combinedSameLen into the store as the SameLen type of each array listed in
-     * combinedSameLen.
+     * Insert a @SameLen annotation into the store as the SameLen type of each array listed in it.
      *
-     * @param combinedSameLen a Samelen annotation. Not just an annotation in the SameLen hierarchy;
-     *     this annotation MUST be @SameLen().
+     * @param sameLenAnno a {@code @SameLen} annotation. Not just an annotation in the SameLen
+     *     hierarchy; this annotation must be {@code @SameLen(...)}.
      * @param node the node in the tree where the combination is happening. Used for context.
      * @param store the store to modify
      */
-    private void propagateCombinedSameLen(
-            AnnotationMirror combinedSameLen, Node node, CFStore store) {
+    private void propagateCombinedSameLen(AnnotationMirror sameLenAnno, Node node, CFStore store) {
         TreePath currentPath = aTypeFactory.getPath(node.getTree());
         if (currentPath == null) {
             return;
         }
-        for (String s : IndexUtil.getValueOfAnnotationWithStringArgument(combinedSameLen)) {
+        for (String expr : ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno)) {
             Receiver recS;
             try {
-                recS = aTypeFactory.getReceiverFromJavaExpressionString(s, currentPath);
+                recS = aTypeFactory.getReceiverFromJavaExpressionString(expr, currentPath);
             } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
                 continue;
             }
             store.clearValue(recS);
-            store.insertValue(recS, combinedSameLen);
+            store.insertValue(recS, sameLenAnno);
         }
     }
 
@@ -168,19 +181,18 @@ public class SameLenTransfer extends CFTransfer {
                 && ((FieldAccessNode) node).getFieldName().equals("length")
                 && ((FieldAccessNode) node).getReceiver().getType().getKind() == TypeKind.ARRAY);
     }
+
     /**
-     * Handles refinement of equality comparisons (cases 2 and 3). After "a.length == b.length"
-     * evaluates to true, a and b have SameLen of each other in the store.
+     * Handles refinement of equality comparisons. Assumes "a == b" or "a.length == b.length"
+     * evaluates to true. The method gives a and b SameLen of each other in the store.
      */
     private void refineEq(Node left, Node right, CFStore store) {
         List<Receiver> receivers = new ArrayList<>();
         List<AnnotationMirror> annos = new ArrayList<>();
-
         for (Node internal : splitAssignments(left)) {
             receivers.add(FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal));
             annos.add(getAnno(internal));
         }
-
         for (Node internal : splitAssignments(right)) {
             receivers.add(FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal));
             annos.add(getAnno(internal));
@@ -197,24 +209,23 @@ public class SameLenTransfer extends CFTransfer {
      * <p>analysis.getValue fails if called on an lvalue. However, this method needs to always
      * succeed, even when n is an lvalue. Consider this code:
      *
-     * <pre>{@code if ( (a = b) == c) {...}}</pre>
+     * <pre>{@code if ((a = b) == c) {...}}</pre>
      *
-     * where a, b, and c are all arrays, and a has type {@literal @}SameLen("d"). Afterwards, all
-     * three should have the type {@literal @}SameLen({"a", "b", "c", "d"}), but in order to
-     * accomplish this, this method must return the type of a, which is an lvalue.
+     * where a, b, and c are all arrays, and a has type {@code @SameLen("d")}. Afterwards, all three
+     * should have the type {@code @SameLen({"a", "b", "c", "d"})}, but in order to accomplish this,
+     * this method must return the type of a, which is an lvalue.
      */
     AnnotationMirror getAnno(Node n) {
         if (n.isLValue()) {
             return aTypeFactory.getAnnotatedType(n.getTree()).getAnnotationInHierarchy(UNKNOWN);
-        } else {
-            CFValue cfValue = analysis.getValue(n);
-            if (cfValue == null) {
-                return UNKNOWN;
-            }
-            return aTypeFactory
-                    .getQualifierHierarchy()
-                    .findAnnotationInHierarchy(cfValue.getAnnotations(), UNKNOWN);
         }
+        CFValue cfValue = analysis.getValue(n);
+        if (cfValue == null) {
+            return UNKNOWN;
+        }
+        return aTypeFactory
+                .getQualifierHierarchy()
+                .findAnnotationInHierarchy(cfValue.getAnnotations(), UNKNOWN);
     }
 
     /** Implements the transfer rules for both equal nodes and not-equals nodes. */
@@ -226,10 +237,14 @@ public class SameLenTransfer extends CFTransfer {
             CFValue firstValue,
             CFValue secondValue,
             boolean notEqualTo) {
-        CFStore equalStore = notEqualTo ? result.getElseStore() : result.getThenStore();
+        // If result is a Regular transfer, then the elseStore is a copy of the then store, that is
+        // created when getElseStore is called.  So do that before refining any values.
+        CFStore elseStore = result.getElseStore();
+        CFStore thenStore = result.getThenStore();
+        CFStore equalStore = notEqualTo ? elseStore : thenStore;
 
-        Node firstLengthReceiver = getLengthNodeReceiver(firstNode);
-        Node secondLengthReceiver = getLengthNodeReceiver(secondNode);
+        Node firstLengthReceiver = getLengthReceiver(firstNode);
+        Node secondLengthReceiver = getLengthReceiver(secondNode);
 
         if (firstLengthReceiver != null && secondLengthReceiver != null) {
             // Refinement in the else store if this is a.length == b.length (or length() in case of
@@ -240,7 +255,63 @@ public class SameLenTransfer extends CFTransfer {
             refineEq(firstNode, secondNode, equalStore);
         }
 
-        return new ConditionalTransferResult<>(
-                result.getResultValue(), result.getThenStore(), result.getElseStore());
+        return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+    }
+
+    /** Overridden to ensure that SameLen annotations on method parameters are symmetric. */
+    @Override
+    protected void addInformationFromPreconditions(
+            CFStore info,
+            AnnotatedTypeFactory factory,
+            UnderlyingAST.CFGMethod method,
+            MethodTree methodTree,
+            ExecutableElement methodElement) {
+        super.addInformationFromPreconditions(info, factory, method, methodTree, methodElement);
+
+        List<? extends VariableTree> paramTrees = methodTree.getParameters();
+        List<String> paramNames = new ArrayList<>();
+        List<AnnotatedTypeMirror> params = new ArrayList<>();
+
+        for (VariableTree tree : paramTrees) {
+            paramNames.add(tree.getName().toString());
+            params.add(aTypeFactory.getAnnotatedType(tree));
+        }
+
+        for (int index = 0; index < params.size(); index++) {
+
+            // if the parameter has a samelen annotation, then look
+            // for other parameters in that annotation and propagate
+            // default the other annotation so that it is symmetric
+            AnnotatedTypeMirror atm = params.get(index);
+            AnnotationMirror anm = atm.getAnnotation(SameLen.class);
+            if (anm == null) {
+                continue;
+            }
+
+            List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anm);
+            for (String value : values) {
+                int otherParamIndex = paramNames.indexOf(value);
+                if (otherParamIndex == -1) {
+                    continue;
+                }
+
+                // the SameLen value is in the list of params, so modify the type of
+                // that param in the store
+                AnnotationMirror newSameLen =
+                        aTypeFactory.createSameLen(
+                                Collections.singletonList(paramNames.get(index)));
+                Receiver otherParamRec = null;
+                try {
+                    otherParamRec =
+                            FlowExpressionParseUtil.internalReprOfVariable(
+                                    aTypeFactory, paramTrees.get(otherParamIndex));
+                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    // do nothing
+                }
+                if (otherParamRec != null) {
+                    info.insertValue(otherParamRec, newSameLen);
+                }
+            }
+        }
     }
 }

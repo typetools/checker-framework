@@ -2,9 +2,9 @@
 \chapterAndLabel{How to create a new checker}{creating-a-checker}
 \label{writing-a-checker} % for old links; don't use any more!
 
-\newcommand{\TreeAPIBase}{https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/com/sun/source}
+\newcommand{\TreeAPIBase}{https://docs.oracle.com/en/java/javase/11/docs/api/jdk.compiler/com/sun/source}
 \newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
-\newcommand{\ModelAPIBase}{https://docs.oracle.com/javase/8/docs/api/javax/lang/model}
+\newcommand{\ModelAPIBase}{https://docs.oracle.com/en/java/javase/11/docs/api/java.compiler/javax/lang/model}
 \newcommand{\refModelclass}[2]{\href{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
@@ -160,8 +160,8 @@ Framework:
   the type system and the subtyping relationships among qualified types
   (for instance, \<@NonNull Object> is a subtype of \<@Nullable
   Object>).  This is also where you specify the default annotation that
-  applies whenever the programmer wrote no annotation and no implicit
-  annotation applies.
+  applies whenever the programmer wrote no annotation and no other defaulting
+  rule applies.
 
 \item{\ref{creating-compiler-interface}}
   \textbf{Interface to the compiler.}  The compiler interface indicates
@@ -188,12 +188,8 @@ Framework:
 \end{itemize}
 
 \item{\ref{creating-type-introduction}}
-  \textbf{Type introduction rules.}  For some types and
-  expressions, a qualifier should be treated as implicitly present even if a
-  programmer did not explicitly write it.  For example, in the Nullness
-  type system every literal
-  other than \<null> has a \refqualclass{checker/nullness/qual}{NonNull} type.
-  Examples of literals include \code{"some string"} and \<java.util.Date.class>.
+  \textbf{Type introduction rules.}  You specify the type of some expressions where
+the rules differ from the built in framework rules
 
 \item{\ref{creating-dataflow}}
   \textbf{Dataflow rules.}  These optional rules enhance flow-sensitive
@@ -206,18 +202,12 @@ Framework:
 \sectionAndLabel{Compiling and using a custom checker}{creating-compiling}
 
 You can place your checker's source files wherever you like.
-\begin{itemize}
-\item
-  Forking the Checker Framework repository and putting your files in
-  parallel to existing checker implementations is a particularly convenient
-  choice.  You must be able to compile the Checker Framework
-  (Section~\ref{build-source}).
-\item
-  \begin{sloppypar}
-  If you put your checker elsewhere, then when you compile your checker,
-  the classpath must include \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>.
-  \end{sloppypar}
-\end{itemize}
+One choice is to write your checker in a fork of the Checker Framework
+repository \url{https://github.com/typetools/checker-framework}.
+Another choice is to write it in a stand-alone repository.  Here is a
+template for a stand-alone repository:
+\url{https://github.com/typetools/templatefora-checker}; at that URL,
+click the ``Use this template'' button.
 
 % You may also wish to consult Section~\ref{creating-testing-framework} for
 % information on testing a checker and
@@ -238,7 +228,7 @@ the Subtyping Checker is slightly different (Section~\ref{subtyping-using}).
 
 
 
-\subsectionAndLabel{Tips for creating a checker}{creating-tips}
+\sectionAndLabel{Tips for creating a checker}{creating-tips}
 
 To make your job easier, we recommend that you build your type-checker
 incrementally, testing at each phase rather than trying to build the whole
@@ -248,7 +238,7 @@ Here is a good way to proceed.
 
 \begin{enumerate}
 \item
-  Before you start coding, first write the user manual.  The manual
+  Write the user manual.  Do this before you start coding.  The manual
   explains the type system, what it guarantees, how to use it, etc., from
   the point of view of a user.  Writing the manual will help you flesh out
   your goals and the concepts, which are easier to understand and change in
@@ -264,6 +254,8 @@ Here is a good way to proceed.
   During manual checking, ask
   yourself what reasoning you applied, what information you needed, and
   whether your written-down rules were sufficient.
+  It is more efficient to find problems now rather than after coding up
+  your design.
 
 \item
   Implement the type qualifiers and hierarchy
@@ -275,7 +267,7 @@ Here is a good way to proceed.
   \<@NonNegative>, then you could write a test case such as:
 
 \begin{Verbatim}
-  void foo(@UnknownSign int us, @NonNegative int nn) {
+  void testHierarchy(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
     // :: error: assignment.type.incompatible
@@ -300,6 +292,7 @@ Here is a good way to proceed.
 \end{Verbatim}
 
 \item
+  Test infrastructure.
   If your checker source code is in a clone of the Checker Framework
   repository, integrate your checker with the Checker Framework's Gradle
   targets for testing (Section~\ref{creating-testing-framework}).  This
@@ -336,7 +329,7 @@ Here is a good way to proceed.
   possibly-negative value, then you would write a test case such as:
 
 \begin{Verbatim}
-  void foo(String[] myArray, @UnknownSign int us, @NonNegative int nn) {
+  void testArrayIndexing(String[] myArray, @UnknownSign int us, @NonNegative int nn) {
     myArray[us];  // expected error on this line
     myArray[nn];
   }
@@ -350,7 +343,7 @@ Here is a good way to proceed.
   integers and for array lengths, you would write a test case like the following:
 
 \begin{Verbatim}
-  void foo(String[] myArray) {
+  void testTypeIntroduction(String[] myArray) {
     @NonNegative nn1 = -1;  // expected error on this line
     @NonNegative nn2 = 0;
     @NonNegative nn3 = 1;
@@ -368,7 +361,7 @@ Here is a good way to proceed.
   test case such as:
 
 \begin{Verbatim}
-  void foo(@UnknownSign int us, @NonNegative int nn) {
+  void testDataflow(@UnknownSign int us, @NonNegative int nn) {
     @NonNegative nn2;
     nn2 = us;  // expected error on this line
     if (us > j) {
@@ -444,7 +437,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 /**
@@ -456,14 +448,13 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({UnknownSign.class})
-@ImplicitFor(literals = LiteralKind.NULL)
 public @interface NonNegative {}
 \end{Verbatim}
 
 The \refqualclass{framework/qual}{SubtypeOf} meta-annotation
 indicates the parent in the type hierarchy.
 
-The \sunjavadocanno{java/lang/annotation/Target.html}{Target}
+The \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}
 meta-annotation indicates where the annotation
 may be written. All type qualifiers that users can write in source code should
 have the value \<ElementType.TYPE\_USE> and optionally with the additional value
@@ -472,7 +463,7 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 % (Terminological note:  a \emph{meta-annotation} is an annotation that
 % is written on an annotation definition, such as
 % \refqualclass{framework/qual}{SubtypeOf} and
-% \sunjavadocanno{java/lang/annotation/Target.html}{Target}.)
+% \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}.)
 
 The annotations should be placed within a directory called \<qual>, and
 \<qual> should be placed in the same directory as your checker's source file.
@@ -497,15 +488,17 @@ is declared in the \<qual> package as a type qualifier.
 
 Your type system should include a top qualifier and a bottom qualifier
 (Section~\ref{creating-bottom-and-top-qualifier}).
-In most cases, the bottom qualifier should be meta-annotated with
-\<@ImplicitFor(literals=LiteralKind.NULL)>.
+The top qualifier is conventionally named \<\emph{CheckerName}Unknown>.
 
 You should also define a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{qualifier-polymorphism}).
 
-The Javadoc of every type qualifier should include an example use of the
-qualifier.
+The Javadoc of every type qualifier should include a precise English
+description and an example use of the qualifier.
+
+Choose good names for the qualifiers, because users will write these in
+their source code.
 
 
 \subsectionAndLabel{Declaratively defining the qualifier hierarchy}{creating-declarative-hierarchy}
@@ -538,7 +531,7 @@ hierarchy.
   permitting the type hierarchy to be an arbitrary DAG\@.
 
 % TODO: describe multiple type hierarchies
-% TODO: describe multiple polymorphic qualifiers and PolyAll
+% TODO: describe multiple polymorphic qualifiers
 % TODO: the code consistently uses "top" for type qualifiers and
 %       "root" for ASTs, in particular for CompilationUnitTrees.
 
@@ -624,13 +617,13 @@ generic \code{List}.
 (In the technical jargon, the generic arguments are ``invariant'' or ``novariant''.)
 
 
-\subsectionAndLabel{Defining a default annotation}{creating-typesystem-defaults}
+\subsectionAndLabel{Defining the default annotation}{creating-typesystem-defaults}
 
-A type system applies a default qualifier where the user has not written a
-qualifier (and no implicit qualifier is applicable), as explained in
+A type system applies the default qualifier where the user has not written a
+qualifier (and no other default qualifier is applicable), as explained in
 Section~\ref{defaults}.
 
-The type system designer may specify a default annotation declaratively,
+The type system designer must specify the default annotation. The designer can specify the default annotation declaratively,
 using the \refqualclass{framework/qual}{DefaultQualifierInHierarchy}
 meta-annotation.
 Note that the default will apply to any source code that the checker reads,
@@ -654,10 +647,9 @@ qualifier file.  For instance, \code{int value() default 0;} would make
 \code{value} default to zero. Alternatively, the procedural method
 described above can be used.
 
-Implicit annotations are distinct from default annotations.
-Section~\ref{creating-type-introduction} describes how to implement
-implicit annotations.
-
+The default qualifier applies to most, but not all, unannotated types, Section~\ref{climb-to-top}
+other defaulting rules are automatically added to every checker. Also, Section~\ref{defaults}
+describes other meta-annotations used to specify default annotations.
 
 \subsectionAndLabel{Relevant Java types}{creating-relevant-java-types}
 
@@ -713,12 +705,12 @@ Your type hierarchy must have a bottom qualifier
 --- a qualifier that is a (direct or indirect) subtype of every other
 qualifier.
 
-Your type system must give \<null> the bottom type.
+\<null> is the bottom type. Because the only value with type \<Void> is
+\<null>, uses of the type \<Void> are also bottom.
 (The only exception
 is if the type system has special treatment for \<null> values, as the
-Nullness Checker does.)
-A way to do this is to meta-annotate your bottom type with
-\<@ImplicitFor(literals=LiteralKind.NULL)>.
+Nullness Checker does. In that case, add the meta-annotation \<@QualifierForLiterals(LiteralKind.NULL)>
+to the correct qualifier.)
 This legal code
 will not type-check unless \<null> has the bottom type:
 \begin{Verbatim}
@@ -874,7 +866,7 @@ must specify the component classes for construction.
 
 \begin{sloppypar}
 A checker can customize the default error messages through a
-\sunjavadoc{java/util/Properties.html}{Properties}-loadable text file named
+\sunjavadoc{java.base/java/util/Properties.html}{Properties}-loadable text file named
 \<messages.properties> that appears in the same directory as the checker class.
 The property file keys are the strings passed to \refmethodterse{framework/source}{SourceChecker}{report}{-org.checkerframework.framework.source.Result-java.lang.Object-}
 (like \code{type.incompatible}) and the values are the strings to be
@@ -883,16 +875,16 @@ The \<messages.properties> file only need to mention the new messages that
 the checker defines.
 It is also allowed to override messages defined in superclasses, but this
 is rarely needed.
-For more details about message keys, see Section~\refwithpageparen{compiler-message-keys}.
+Section~\refwithpageparen{compiler-message-keys} discusses best practices
+when using a message key in a \<@SuppressWarnings> annotation.
 \end{sloppypar}
 
 \subsectionAndLabel{Indicating supported annotations}{creating-indicating-supported-annotations}
 
 A checker must indicate the annotations that it supports (that make up its type
-hierarchy), including whether it supports the polymorphic qualifier
-\refqualclass{framework/qual}{PolyAll}.
+hierarchy).
 
-By default, a checker supports \<PolyAll>, and all type annotations located in a
+By default, a checker supports all type annotations located in a
 subdirectory called \<qual> that's located in the same directory as the checker.
 A type annotation is meta-annotated with either
 \<@Target(ElementType.TYPE\_USE)>
@@ -900,9 +892,8 @@ or
 \<@Target({ElementType.TYPE\_USE, ElementType.TYPE\_PARAMETER})>.
 
 To indicate support for annotations that are located outside of the \<qual>
-subdirectory, annotations that have other \<ElementType> values, or to indicate
-whether a checker supports the polymorphic qualifier
-\refqualclass{framework/qual}{PolyAll}, checker writers can override the
+subdirectory, annotations that have other \<ElementType> values
+checker writers can override the
 \refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
 method (see its Javadoc for details).
 
@@ -1054,7 +1045,7 @@ Put them in a file \<\emph{MyChecker}Visitor.java> that extends
 BaseTypeVisitor performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\href{https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/}{Tree
+\href{https://docs.oracle.com/en/java/javase/11/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
 API},
 and it issues a warning (by calling
 \refmethod{framework/source}{SourceChecker}{report}
@@ -1150,83 +1141,35 @@ rule for method invocation, where your rule checks the name of the method
 being called and then treats the method in a special way.
 
 
-\sectionAndLabel{Type factory: Implicit annotations (type introduction rules)}{creating-type-introduction}
+\sectionAndLabel{Type factory: Type introduction rules}{creating-type-introduction}
 
-For some types and expressions, a qualifier should be treated as present
-even if a programmer did not explicitly write it.  For example, every
-literal (other than \<null>) has a \refqualclass{checker/nullness/qual}{NonNull} type.
-Section~\ref{effective-qualifier} explains the meaning of implicit
-qualifiers, such as that they cannot be overridden.
+The annotated type of expressions and types are defined via type introduction rules in the
+type factory.  For most expressions and types, these rules are the same regardless of the type system.
+For example, the type of a method invocation expression is the return type of the invoked method
+viewpoint-adapted for the call site.  The framework implements these rules so that all type systems
+automatically use them.  For other expressions, such as string literals, their (annotated) types depend
+on the type system, so the framework provides way to specify what qualifiers should apply to these expressions.
 
-The implicit annotations may be specified declaratively
-(Section~\ref{creating-declarative-type-introduction}) and/or procedurally
-(Section~\ref{creating-procedurally-specifying-implicit-annotations}).
-It is easiest to specify them declaratively, when the declarative method is
-sufficiently expressive.
+Defaulting rules are type introduction rules for computing the annotated type for an unannotated type;
+these rules are explained in Section~\ref{creating-typesystem-defaults}. The meta-annotation \refqualclass{framework/qual}{QualifierForLiterals} can be written on an annotation
+declaration to specify that that annotation should be applied to the type of literals listed in the
+meta-annotation.
 
-Default annotations are distinct from implicit annotations.
-Section~\ref{creating-typesystem-defaults} describes how to specify
-default annotations.
+\subsectionAndLabel{Procedurally specifying type introduction rules}{creating-procedurally-specifying-implicit-annotations}
 
-
-\subsectionAndLabel{Declaratively specifying implicit annotations}{creating-declarative-type-introduction}
-
-The \refqualclass{framework/qual}{ImplicitFor} meta-annotation indicates
-implicit annotations.
-When written on a qualifier, \refclass{framework/qual}{ImplicitFor}
-specifies the trees (AST nodes) and types for which the framework should
-automatically add that qualifier.
-
-In short, the types and trees can be
-specified via any combination of four fields in \refclass{framework/qual}{ImplicitFor}.
-
-For example, consider these (partial) definitions of the
-\refqualclass{checker/nullness/qual}{Nullable} and
-\refqualclass{checker/nullness/qual}{NonNull}
-type qualifiers:
-
-\begin{Verbatim}
-  @SubtypeOf({})
-  @ImplicitFor(literals = { LiteralKind.NULL },
-               typeNames = { java.lang.Void.class })
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface Nullable {}
-
-  @SubtypeOf( { Nullable.class } )
-  @ImplicitFor(literals = { LiteralKind.STRING },
-               types = { TypeKind.PACKAGE, TypeKind.INT, TypeKind.BOOLEAN,
-                         TypeKind.CHAR, TypeKind.DOUBLE, TypeKind.FLOAT,
-                         TypeKind.LONG, TypeKind.SHORT, TypeKind.BYTE })
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface NonNull {}
-\end{Verbatim}
-
-For more details, see the Javadoc for the \refclass{framework/qual}{ImplicitFor}
-annotation, and the Javadoc for the javac classes that are linked from
-it.  You only need to understand a small amount about the javac AST, such
-as the
-\href{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{Tree.Kind}}
-and
-\refModelclass{type}{TypeKind}
-enums.  All the information you need is in the Javadoc, and
-Section~\ref{creating-javac-tips} can help you get started.
-
-
-\subsectionAndLabel{Procedurally specifying implicit annotations}{creating-procedurally-specifying-implicit-annotations}
-
-If the \<@ImplicitFor> annotation is not sufficiently expressive, then you
-can write code to set implicit annotations.  To do so, create a subclass of
+If the meta-annotations are not sufficiently expressive, then you
+can write your own type introduction rules.  To do so, create a subclass of
 \refclass{framework/type}{AnnotatedTypeFactory} and override its
 two \<addComputedTypeAnnotations> methods.
 
 \<AnnotatedTypeFactory>, when given a program
 expression, returns the expression's type.  This should include not only
 the qualifiers that the programmer explicitly wrote in the source code, but
-also default and implicit annotations, and flow-sensitive local type
-inference (see Section~\ref{effective-qualifier} for explanations of these
+also default annotations and type
+refinement (see Section~\ref{effective-qualifier} for explanations of these
 concepts).
 
-To add implicit annotations, you should override
+To add type introduction rules, you should override
 \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)}
 (or
 \refmethodanchortext{framework/type}{GenericAnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-boolean-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)}
@@ -1235,19 +1178,19 @@ and
 \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Element,AnnotatedTypeMirror)}.
 The methods operate on \refclass{framework/type}{AnnotatedTypeMirror},
 which is the Checker Framework's representation of an annotated type.
-The methods can make arbitrary changes to the annotations on a type, but
-try to limit their work to implicit annotations; often some existing
-simpler mechanism in the Checker Framework will serve other purposes.
+The methods can make arbitrary changes to the annotations on a type.
+
+%TODO: document tree and type annotators here, which should be used instead of override addComputedTypeAnnotations if possible.
 
 
-\sectionAndLabel{Dataflow: enhancing flow-sensitive type qualifier inference}{creating-dataflow}
+\sectionAndLabel{Dataflow: enhancing flow-sensitive type refinement}{creating-dataflow}
 
 By default, every checker performs flow-sensitive type refinement, also known as
 local type inference, as described
 in Section~\ref{type-refinement}.
 
 This section of the manual explains how to enhance the Checker Framework's
-built-in flow-sensitive type refinement.
+built-in type refinement.
 Most commonly, you will inform the Checker Framework about a run-time test
 that gives information about the type qualifiers in your type system.
 Section~\refwithpageparen{type-refinement-runtime-tests} gives examples of
@@ -1270,7 +1213,7 @@ The Regex Checker's dataflow customization for the
 run-time check is used as a running example.
 
 If needed, you can find more details about the implementation of
-flow-sensitive type refinement, and the control flow graph (CFG) data
+type refinement, and the control flow graph (CFG) data
 structure that it uses, in the
 \href{https://checkerframework.org/manual/checker-framework-dataflow-manual.pdf}{Dataflow
   Manual}.
@@ -1358,7 +1301,7 @@ As an example, the Regex Checker's extended
 (If you disregard the instructions above and choose a different name or a
 different directory for your \<\emph{MyChecker}Transfer> class, you will
 also need to override the \<createFlowTransferFunction> method in your type
-factory to return to return a new instance of the class.)
+factory to return a new instance of the class.)
 
 (As a reminder, use of \refqualclass{framework/qual}{EnsuresQualifier} and
 \refqualclass{framework/qual}{EnsuresQualifierIf} may obviate the need for
@@ -1708,32 +1651,57 @@ following two lines at the beginning of the constructor for your subtype of
 
 You will need to supply annotations for relevant parts of the JDK;
 otherwise, your type-checker may produce spurious warnings for code that
-uses the JDK.  As described in Section~\ref{annotating-libraries},
-there are two general ways to supply an annotated library:  in Java files
-that will be compiled to \<.class> files, or as stub files (partial Java source files).
+uses the JDK\@.  You need to write your annotations twice:  once for JDK 8
+and once for JDK 11.
 
+For JDK 11, write your annotations in
+\url{https://github.com/typetools/jdk}.
+
+For JDK 8, as described in Section~\ref{annotating-libraries}, you can
+supply annotations in Java files that will be compiled to \<.class> files,
+or as stub files (partial Java source files).
 It's easier to start out with stub files.  If you need to annotate many
 classes (say, more than 20 or so), then you should create an annotated JDK.
 
+\begin{itemize}
+\item
 To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jdk}.
-
+\item
 To supply an annotated JDK as a stub file, create a file \<jdk.astub> in
-the checker's main source directory.  It will be automatically used by the
-checker.
+the checker's main source directory.  You can also create \<jdk\emph{N}.astub> files that contain methods
+or classes that only exist in certain JDK versions.
+It will be automatically used by the
+checker, unless the user supplies the command-line option \<-Aignorejdkastub>.
 You can also supply \<.astub> files in that directory for other libraries.
 You should list those other libraries in a
 \refqualclass{framework/qual}{StubFiles} annotation on the checker's main
 class, so that they will also be automatically used.
+\end{itemize}
 
 
 \sectionAndLabel{Testing framework}{creating-testing-framework}
 
-\begin{sloppypar}
 The Checker Framework provides a convenient way to write tests for your
-checker.
+checker.  Each test case is a Java file, with inline indications of what
+errors and warnings (if any) a checker should emit.  An example is
+
+\begin{Verbatim}
+class MyNullnessTest {
+  void method() {
+    Object nullable = null;
+    // :: error: (dereference.of.nullable)
+    nullable.toString();
+  }
+}
+\end{Verbatim}
+
+\noindent
+When the Nullness Checker is run on the above code, it should produce
+exactly one error, whose suppression key is \<dereference.of.nullable>, on
+the line following the ``// ::'' comment.
+
 % Don't repeat the information here, to prevent them from getting out of sync.
-It is extensively documented in file \<checker-framework/checker/tests/README>.
-\end{sloppypar}
+The testing infrastructure is extensively documented in file \ahref{https://github.com/typetools/checker-framework/blob/master/checker/tests/README}{\<checker-framework/checker/tests/README>}.
 
 If your checker's source code is within a fork of the Checker Framework
 repository, then you can copy the testing infrastructure used by some
@@ -1787,7 +1755,7 @@ large codebase without being inundated in stack traces.
 \begin{itemize}
 
 \item \code{-Aignorejdkastub}:
-  ignore the \<jdk.astub> file in the checker directory. Files passed
+  ignore the \<jdk.astub> and \<jdk\emph{N}.astub> files in the checker directory. Files passed
   through the \code{-Astubs} option are still processed. This is useful
   when experimenting with an alternative stub file.
 
@@ -2277,7 +2245,7 @@ without warnings or errors.
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
 % LocalWords:  createTypeHierarchy ImplicitFor treeClasses TypeMirror Anno
 % LocalWords:  LiteralTree ExpressionTree typeClasses addComputedTypeAnnotations nullable
-% LocalWords:  createSupportedTypeQualifiers FooChecker nullness PolyAll
+% LocalWords:  createSupportedTypeQualifiers FooChecker nullness
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
 % LocalWords:  InterningAnnotatedTypeFactory QualifierDefaults TypeKind getKind
 % LocalWords:  setAbsoluteDefaults PolymorphicQualifier TreeVisitor subnodes
@@ -2307,7 +2275,7 @@ without warnings or errors.
 %%  LocalWords:  RegexTransfer's newResultValue subcheckers taglet tex XXX
 %%  LocalWords:  ParameterizedCheckerTest AoutputArgsToFile ManualTaglet
 %%  LocalWords:  Hevea Hitchhiker's compilermsgs args Poly MyTypeSystem
-%%  LocalWords:  I18nChecker i18n I18nSubchecker LocalizableKeyChecker
+%%  LocalWords:  I18nChecker i18n I18nSubchecker LocalizableKeyChecker ast
 %%  LocalWords:  MyChecker MyHelperChecker getImmediateSubcheckerClasses
 %%  LocalWords:  MyChecker's subchecker plugins ElementType myClass myflag
 %%  LocalWords:  CheckerFrameworkTest GenericAnnotatedTypeFactory MyClass
@@ -2316,11 +2284,14 @@ without warnings or errors.
 %%  LocalWords:  ExpressionAnnotationHelper FlowExpressions CFTransfer
 %%  LocalWords:  AnnotationProvider FooTransfer createFlowTransferFunction
 %%  LocalWords:  SupportedLintOptions myoption StubFiles scriptfile outdir
-%%  LocalWords:  somedir Acfgviz Averbosecfg cfgviz MyVisualizer init
+%%  LocalWords:  somedir Acfgviz Averbosecfg cfgviz MyVisualizer init apis
 %%  LocalWords:  VizClassName CFGVisualizer MyProp MyPropChecker mypackage
 %  LocalWords:  SourceFile NonNegative JavaExpression DependentTypesHelper
 %  LocalWords:  createDependentTypesHelper boolean regex subclasses README
 %  LocalWords:  formatter nChecker nSubchecker AprintVerboseGenerics
 %  LocalWords:  AshowInferenceSteps DefaultTypeArgumentInference Graphviz
 %  LocalWords:  javacutil LiteralKind EnsuresQualifier EnsuresQualifierIf
-%%  LocalWords:  mychecker
+%%  LocalWords:  mychecker AnnotationBuilder AnnotationUtils typequals
+%%  LocalWords:  TypeAnnotationUtils reimplementing typesystem TreeType
+%%  LocalWords:  getTypeFactoryOfSubchecker someDirectory checkername
+%%  LocalWords:  AnnotationMirror AnnotationMirrorMap AnnotationMirrorSet

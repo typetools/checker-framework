@@ -83,12 +83,6 @@ Michael~D. Ernst.
 \newblock {Type Annotations} specification ({JSR} 308).
 \newblock \url{https://checkerframework.org/jsr308/}, September~12, 2008.
 
-\bibitem[FL03]{FahndrichL2003}
-Manuel F{\"a}hndrich and K.~Rustan~M. Leino.
-\newblock Declaring and checking non-null types in an object-oriented language.
-\newblock In {\em OOPSLA 2003, Object-Oriented Programming Systems, Languages,
-  and Applications}, pages 302--312, Anaheim, CA, USA, November 2003.
-
 \bibitem[GDEG13]{GordonDEG2013}
 Colin~S. Gordon, Werner Dietl, Michael~D. Ernst, and Dan Grossman.
 \newblock {JavaUI}: Effects for controlling {UI} object access.

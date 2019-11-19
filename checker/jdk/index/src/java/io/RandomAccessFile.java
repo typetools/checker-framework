@@ -343,7 +343,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
      * <code>len</code> is negative, or <code>len</code> is greater than
      * <code>b.length - off</code>
      */
-    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         return readBytes(b, off, len);
     }
 
@@ -400,7 +400,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
      *               all the bytes.
      * @exception  IOException   if an I/O error occurs.
      */
-    public final void readFully(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public final void readFully(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         int n = 0;
         do {
             int count = this.read(b, off + n, len - n);
@@ -487,7 +487,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
      * @param      len   the number of bytes to write.
      * @exception  IOException  if an I/O error occurs.
      */
-    public void write(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         writeBytes(b, off, len);
     }
 

@@ -5,6 +5,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -73,16 +74,12 @@ public class FunctionalInterfaceNode extends Node {
 
         FunctionalInterfaceNode that = (FunctionalInterfaceNode) o;
 
-        if (tree != null ? !tree.equals(that.tree) : that.tree != null) {
-            return false;
-        }
-
-        return true;
+        return tree != null ? tree.equals(that.tree) : that.tree == null;
     }
 
     @Override
     public int hashCode() {
-        return tree != null ? tree.hashCode() : 0;
+        return Objects.hash(tree);
     }
 
     @Override

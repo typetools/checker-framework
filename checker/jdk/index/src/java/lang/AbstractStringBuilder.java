@@ -598,7 +598,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *         if {@code offset < 0} or {@code len < 0}
      *         or {@code offset+len > str.length}
      */
-    public AbstractStringBuilder append(char str[], @NonNegative @LTLengthOf(value="#1", offset="#3 - 1") int offset, @IndexOrHigh("#1") int len) {
+    public AbstractStringBuilder append(char str[], @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value="#1", offset="#2 - 1") int len) {
         if (len > 0)                // let arraycopy report AIOOBE for len < 0
             ensureCapacityInternal(count + len);
         System.arraycopy(str, offset, value, count, len);

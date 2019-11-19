@@ -20,7 +20,7 @@ public class BaseAnnotatedTypeFactory
         super(checker, useFlow);
 
         // Every subclass must call postInit!
-        if (this.getClass().equals(BaseAnnotatedTypeFactory.class)) {
+        if (this.getClass() == BaseAnnotatedTypeFactory.class) {
             this.postInit();
         }
     }

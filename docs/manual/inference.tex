@@ -28,7 +28,7 @@ Advantages of \emph{all} varieties of type inference include:
 
 \sectionAndLabel{Local type inference during type-checking}{type-inference-refinement}
 
-During type-checking, if certain variables have no type qualifier, the
+During type-checking, if certain variables have no programmer-written type qualifier, the
 type-checker determines whether there is some type qualifier that would
 permit the program to type-check.  If so, the type-checker uses that type
 qualifier, but does not change the source code.  Each time the
@@ -59,7 +59,7 @@ Advantages of this variety of type inference include:
 \end{itemize}
 
 For more details about local type inference during type-checking, also
-known as ``flow-sensitive local type refinement'', see
+known as ``flow-sensitive type refinement'', see
 Section~\ref{type-refinement}.
 
 
@@ -126,8 +126,8 @@ You can find installation instructions and a video tutorial at \url{https://gith
 
 Whole-program inference is an interprocedural inference that
 infers types for fields, method parameters, and method return types that do not
-have a user-written annotation (for the given type system).
-The inferred types are inserted into
+have a user-written qualifier (for the given type system).
+The inferred type qualifiers are inserted into
 your program.
 The inferred type is the most specific type that is compatible with all the
 uses in the program.  For example, the inferred type for a field is the
@@ -298,48 +298,45 @@ This section explains how the \<infer-and-annotate.sh> script works.  If you
 merely want to run the script and you are not encountering trouble, you can
 skip this section.
 
-If you
-supply to javac the command-line option \code{-Ainfer}, then the
-checker outputs \<.jaif> files with refined types for fields and method signatures.
-The output \<.jaif> files are located in the folder \code{build/whole-program-inference},
-relative to where you executed the javac command.
-
-You can use the Annotation File Utilities
-(\myurl{https://checkerframework.org/annotation-file-utilities/}) to
-insert these refined types in your program.  Then, the next time that you
-run type-checking, there are likely to be fewer type-checking warnings.
-
-Note that a three-step process is required:
+The \<infer-and-annotate.sh> script repeatedly runs the following steps:
 \begin{enumerate}
-\item Run the checker with the \<-Ainfer> command-line option to
-  produce a \<.jaif> file.  Some type-checking errors may result.
-\item Insert the \<.jaif> file's annotations in the program.
-\item Run the checker again.  Fewer type-checking errors may result.
+\item Run the checker with the \<-Ainfer> command-line option to infer
+  types for fields and method signatures.  The output of this step
+  is a \<.jaif> file that records the inferred types.
+\item Insert the inferred annotations in the program.  This step uses the
+  Annotation File Utilities
+  (\myurl{https://checkerframework.org/annotation-file-utilities/}).
 \end{enumerate}
-\noindent
-A good approach is to repeatedly run the above process until there are no
-more changes to the inference results (that is, the \<.jaif> file is
-unchanged between two runs).  That is exactly what the
-\<infer-and-annotate.sh> script does.
 
-The \<infer-and-annotate.sh> script insulates you from the
-clumsy multi-step process.  The multi-step process
-is required because type-checking is modular:
-it processes each class only once, independently.  Modularity enables you
-to run type-checking on only part of your program, and
-it makes type-checking fast.  However, it has some disadvantages:
+The process halts when there are no more changes to the inference results,
+that is, the \<.jaif> file is unchanged between two runs.  On each
+iteration through the process, there may be new annotations in the \<.jaif>
+file, and some type-checking errors may be eliminated (though others might
+be introduced).
+
+When the type-checker is run on the program with the final annotations
+inserted, there might still be errors.  This may be because the tool did
+not infer enough annotations, or because your program contains a defect.
+However, each of the inferred annotations is sound, and this reduces your
+manual effort in annotating the program.
+
+The iterative process is required because type-checking is modular:  it
+processes each class and each method only once, independently.  Modularity
+enables you to run type-checking on only part of your program, and it makes
+type-checking fast.  However, it has some disadvantages:
 \begin{itemize}
 \item
-  The first run of the type-checker cannot take advantage
-  of whole-program inference results because whole-program inference is only complete at the
+  The first run of the type-checker cannot take advantage of whole-program
+  inference results because whole-program inference is only complete at the
   end of type-checking, and modular type-checking does not revisit any
   already-processed classes.
 \item
-  The reason that multiple executions are required is that revisiting an
+  Revisiting an
   already-processed class may result in a better estimate.
 \end{itemize}
 
 
 
-%%  LocalWords:  Ainfer java jaif plugin classpath m2 m1 multi
-%%  LocalWords:  AsuggestPureMethods CHECKERFRAMEWORK
+%%  LocalWords:  Ainfer java jaif plugin classpath m2 m1 multi javax
+%%  LocalWords:  AsuggestPureMethods CHECKERFRAMEWORK GuardedByBottom
+%%  LocalWords:  IgnoreInWholeProgramInference

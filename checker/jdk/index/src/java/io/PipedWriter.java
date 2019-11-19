@@ -118,7 +118,7 @@ public class PipedWriter extends Writer {
      *          {@link #connect(java.io.PipedReader) unconnected}, closed
      *          or an I/O error occurs.
      */
-    public void write(@NonNegative int c)  throws IOException {
+    public void write(int c)  throws IOException {
         if (sink == null) {
             throw new IOException("Pipe not connected");
         }
@@ -142,7 +142,7 @@ public class PipedWriter extends Writer {
      *          {@link #connect(java.io.PipedReader) unconnected}, closed
      *          or an I/O error occurs.
      */
-    public void write(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(char cbuf[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         if (sink == null) {
             throw new IOException("Pipe not connected");
         } else if ((off | len | (off + len) | (cbuf.length - (off + len))) < 0) {

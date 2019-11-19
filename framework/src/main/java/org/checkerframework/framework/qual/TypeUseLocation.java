@@ -11,9 +11,6 @@ package org.checkerframework.framework.qual;
  */
 public enum TypeUseLocation {
 
-    /** Apply default annotations to class, interface, and Enum declarations. */
-    TYPE_DECLARATION,
-
     /** Apply default annotations to all unannotated raw types of fields. */
     FIELD,
 

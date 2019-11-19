@@ -3,6 +3,7 @@ package org.checkerframework.checker.index;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.util.TreePath;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -33,7 +34,26 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         }
         if (expression.indexOf('-') == -1 && expression.indexOf('+') == -1) {
             // The expression contains no "-" or "+", so it can be standardized directly.
-            return super.standardizeString(expression, context, localScope, useLocalScope);
+            FlowExpressions.Receiver result;
+            try {
+                result =
+                        FlowExpressionParseUtil.parse(
+                                expression, context, localScope, useLocalScope);
+            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                return new DependentTypesError(expression, e).toString();
+            }
+            if (result == null) {
+                return new DependentTypesError(expression, " ").toString();
+            }
+            if (result instanceof FlowExpressions.FieldAccess
+                    && ((FlowExpressions.FieldAccess) result).isFinal()) {
+                Object constant =
+                        ((FlowExpressions.FieldAccess) result).getField().getConstantValue();
+                if (constant != null && !(constant instanceof String)) {
+                    return constant.toString();
+                }
+            }
+            return result.toString();
         }
 
         // The expression is a sum of several terms. This expression is standardized by splitting it
@@ -44,7 +64,8 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         }
         try {
             // Standardize individual terms of the expression.
-            equation.standardizeAndViewpointAdaptExpressions(context, localScope, useLocalScope);
+            equation.standardizeAndViewpointAdaptExpressions(
+                    context, localScope, useLocalScope, factory);
         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
         }

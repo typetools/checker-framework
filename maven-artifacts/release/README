@@ -4,4 +4,7 @@ to install a file to our local repositories.  The POMS found in this
 directory are used to provide information to the Central Repository when
 deploying there.
 
+File `README-jdk` contains information for the `jdk8-source.jar` and
+`jdk8-javadoc.jar` artifacts and is used in `docs/developer/release/release.xml`
+
 See release_push.py

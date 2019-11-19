@@ -138,8 +138,8 @@ CF_VERSION = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-fra
 
 CHECKER_BINARY = os.path.join(CHECKER_BIN_DIR, 'checker.jar')
 CHECKER_LIBS_DIR = os.path.join(CHECKER_FRAMEWORK, "checker", "build", "libs")
-CHECKER_SOURCE = os.path.join(CHECKER_LIBS_DIR, 'checker-'+CF_VERSION+'-source.jar')
-CHECKER_JAVADOC = os.path.join(CHECKER_LIBS_DIR, 'checker-'+CF_VERSION+'-javadoc.jar')
+CHECKER_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-source.jar')
+CHECKER_JAVADOC = os.path.join(CHECKER_BIN_DIR, 'checker-javadoc.jar')
 
 CHECKER_QUAL = os.path.join(CHECKER_BIN_DIR, 'checker-qual.jar')
 CHECKER_QUAL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "checker-qual", "build", "libs")

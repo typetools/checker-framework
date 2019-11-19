@@ -62,7 +62,7 @@ public abstract class FilterWriter extends Writer {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public void write(@NonNegative int c) throws IOException {
+    public void write(int c) throws IOException {
         out.write(c);
     }
 
@@ -75,7 +75,7 @@ public abstract class FilterWriter extends Writer {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public void write(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(char cbuf[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         out.write(cbuf, off, len);
     }
 
@@ -88,7 +88,7 @@ public abstract class FilterWriter extends Writer {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public void write(String str, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(String str, @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         out.write(str, off, len);
     }
 

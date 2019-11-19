@@ -9,6 +9,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.DiagnosticSource;
@@ -207,6 +208,11 @@ import org.checkerframework.javacutil.UserError;
     // java.lang.String)
     "requirePrefixInWarningSuppressions",
 
+    // Ignore annotations in bytecode that have invalid annotation locations.
+    // See https://github.com/typetools/checker-framework/issues/2173
+    // org.checkerframework.framework.type.ElementAnnotationApplier.apply
+    "ignoreInvalidAnnotationLocations",
+
     ///
     /// Partially-annotated libraries
     ///
@@ -226,6 +232,9 @@ import org.checkerframework.javacutil.UserError;
     // Whether to print warnings about stub files that overwrite annotations
     // from bytecode.
     "stubWarnIfOverwritesBytecode",
+    // Whether to print warnings about stub files that are redundant with the annotations from
+    // bytecode.
+    "stubWarnIfRedundantWithBytecode",
     // Already listed above, but worth noting again in this section:
     // "useDefaultsForUncheckedCode"
 
@@ -453,11 +462,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // This is used to trigger AggregateChecker's setProcessingEnvironment.
         setProcessingEnvironment(env);
 
-        double jreVersion = PluginUtil.getJreVersion();
-        if (jreVersion != 1.8) {
+        int jreVersion = PluginUtil.getJreVersion();
+        if (jreVersion < 8) {
             throw new UserError(
                     String.format(
-                            "The Checker Framework must be run under JDK 1.8.  You are using version %f.",
+                            "The Checker Framework must be run under at least JDK 8.  You are using version %d.",
                             jreVersion));
         }
     }
@@ -725,7 +734,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                     + " At most one separator "
                                     + OPTION_SEPARATOR
                                     + " expected, but found "
-                                    + split.length);
+                                    + split.length
+                                    + ".");
             }
         }
         return Collections.unmodifiableMap(activeOpts);
@@ -755,8 +765,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /** Log a user error. */
     private void logUserError(UserError ce) {
-        StringBuilder msg = new StringBuilder(ce.getMessage());
-        printMessage(msg + ".");
+        String msg = ce.getMessage();
+        printMessage(msg);
     }
 
     /** Log an internal error in the framework or a checker. */
@@ -960,8 +970,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
-        com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(context);
-        if (!warnedAboutSourceLevel && !source.allowTypeAnnotations()) {
+        Source source = Source.instance(context);
+        // Don't use source.allowTypeAnnotations() because that API changed after 9.
+        // Also the enum constant Source.JDK1_8 was renamed at some point...
+        if (!warnedAboutSourceLevel && source.compareTo(Source.lookup("8")) < 0) {
             messager.printMessage(
                     javax.tools.Diagnostic.Kind.WARNING,
                     "-source " + source.name + " does not support type annotations");
@@ -986,7 +998,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (visitor == null) {
             // typeProcessingStart invokes initChecker, which should
             // have set the visitor. If the field is still null, an
-            // exception occured during initialization, which was already
+            // exception occurred during initialization, which was already
             // logged there. Don't also cause a NPE here.
             return;
         }
@@ -1048,38 +1060,49 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     protected void warnUnneedSuppressions(
             Set<Element> elementsSuppress, Set<String> checkerKeys, Set<String> errorKeys) {
-        // It's not clear for which checker this suppression is intended,
-        // so never report it as unused.
+        // It's not clear for which checker "all" is intended, so never report it as unused.
         checkerKeys.remove(SourceChecker.SUPPRESS_ALL_KEY);
+
+        // Is the name of the checker required to suppress a warning?
+        boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
 
         for (Tree tree : getVisitor().treesWithSuppressWarnings) {
             Element elt = TreeUtils.elementFromTree(tree);
-            SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
-            if (suppressAnno == null || elementsSuppress.contains(elt)) {
+            // TODO: This test is too coarse.  The fact that this @SuppressWarnings suppressed
+            // *some* warning doesn't mean that every value in it did so.
+            if (elementsSuppress.contains(elt)) {
                 continue;
             }
-            for (String keyFromAnno : suppressAnno.value()) {
-                for (String checkerKey : checkerKeys) {
-                    // KeyFromAnno may contain a checker key, but may not be equal to it in cases
-                    // where the checker key if followed by a more precise warning.
-                    // For example if keyFromAnno is "nullness:assignment.type.incompatible"
-                    if (keyFromAnno.contains(checkerKey)) {
-                        reportUnneededSuppression(tree, keyFromAnno);
+            SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
+            // Check each value of the user-written @SuppressWarnings annotation.
+            for (String userKey : suppressAnno.value()) {
+                String fullUserKey = userKey;
+                int colonPos = userKey.indexOf(":");
+                if (colonPos == -1) {
+                    // User-written error key contains no ":".
+                    if (checkerKeys.contains(userKey)) {
+                        reportUnneededSuppression(tree, userKey);
                     }
+                    if (requirePrefix) {
+                        // This user-written key is not for the Checker Framework
+                        continue;
+                    }
+                } else {
+                    // User-written error key contains ":".
+                    String userCheckerKey = userKey.substring(0, colonPos);
+                    if (userCheckerKey.equals(SourceChecker.SUPPRESS_ALL_KEY)
+                            || !checkerKeys.contains(userCheckerKey)) {
+                        // This user-written key is for some other checker
+                        continue;
+                    }
+                    userKey = userKey.substring(colonPos + 1);
                 }
-                if (keyFromAnno.contains(":")) {
-                    // The key starts with a checker name, if that is this checker, then the warning
-                    // was issued above.  For example, if this is the Nullness Checker and the
-                    // keyForAnno is "index:override.return.invalid", then don't issue a warning.
-                    continue;
-                }
-
                 for (String errorKey : errorKeys) {
-                    // The keyFromAnno may only be a part of an error key.
+                    // The userKey may only be a part of an error key.
                     // For example, @SuppressWarnings("purity") suppresses errors with keys:
                     // purity.deterministic.void.method, purity.deterministic.constructor, etc.
-                    if (errorKey.contains(keyFromAnno)) {
-                        reportUnneededSuppression(tree, keyFromAnno);
+                    if (errorKey.contains(userKey)) {
+                        reportUnneededSuppression(tree, fullUserKey);
                     }
                 }
             }
@@ -1097,8 +1120,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         report(
                 Result.warning(
                         SourceChecker.UNNEEDED_SUPPRESSION_KEY,
-                        getClass().getSimpleName(),
-                        "\"" + key + "\""),
+                        "\"" + key + "\"",
+                        getClass().getSimpleName()),
                 swTree);
     }
 
@@ -1468,8 +1491,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Return true if the given error should be suppressed, based on the given @SuppressWarnings
      * keys.
      *
-     * @param userSwKeys the @SuppressWarnings keys supplied by the user; may be null (in which case
-     *     this method returns false), otherwise contains lowercase strings
+     * @param userSwKeys the @SuppressWarnings keys supplied by the user (in a @SuppressWarnings
+     *     annotation or on the command line). May be null, in which case this method returns false.
      * @param errKey the error key the checker is emitting; a lowercase string
      * @return true if one of the {@code userSwKeys} is returned by {@link
      *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
@@ -1481,25 +1504,30 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // Is the name of the checker required to suppress a warning?
         boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
 
-        Collection<String> checkerSwKeys = this.getSuppressWarningsKeys();
+        Collection<String> checkerKeys = this.getSuppressWarningsKeys();
 
         // Check each value of the user-written @SuppressWarnings annotation.
-        for (String suppressWarningValue : userSwKeys) {
-            for (String checkerKey : checkerSwKeys) {
-                if (suppressWarningValue.equals(checkerKey)) {
+        for (String userKey : userSwKeys) {
+            int colonPos = userKey.indexOf(":");
+            if (colonPos == -1) {
+                // User-written error key contains no ":".
+                if (checkerKeys.contains(userKey)) {
                     // Emitted error is exactly a @SuppressWarnings key: "nullness", for example.
                     return true;
                 }
-
-                String expected = checkerKey + ":" + errKey;
-                if (expected.contains(suppressWarningValue)) {
-                    if (!requirePrefix
-                            || suppressWarningValue
-                                    .toLowerCase()
-                                    .startsWith(checkerKey.toLowerCase())) {
-                        return true;
-                    }
+                if (requirePrefix) {
+                    continue;
                 }
+            } else {
+                // User-written error key contains ":".
+                String userCheckerKey = userKey.substring(0, colonPos);
+                if (!checkerKeys.contains(userCheckerKey)) {
+                    continue;
+                }
+                userKey = userKey.substring(colonPos + 1);
+            }
+            if (errKey.contains(userKey)) {
+                return true;
             }
         }
 
@@ -1631,7 +1659,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
     public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
         if (UNNEEDED_SUPPRESSION_KEY.equals(errKey)) {
-            // never suppress an unneeded suppression key warning.
+            // Never suppress an unneeded suppression key warning.
+            // TODO: This choice is questionable, because these warnings should be suppressable just
+            // like any others.  The reason for the choice is that if a user writes
+            // `@SuppressWarnings("nullness")` that isn't needed, then that annotation would
+            // suppress the unneeded suppression warning.  It would take extra work to permit more
+            // desirable behavior in that case.
             return false;
         }
 
@@ -1687,16 +1720,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param src the position object associated with the result
      */
     public void report(final Result r, final Object src) {
+        if (r.isSuccess()) {
+            return;
+        }
 
         String errKey = r.getMessageKeys().iterator().next();
         if (src instanceof Tree && shouldSuppressWarnings((Tree) src, errKey)) {
             return;
         }
         if (src instanceof Element && shouldSuppressWarnings((Element) src, errKey)) {
-            return;
-        }
-
-        if (r.isSuccess()) {
             return;
         }
 
@@ -1738,8 +1770,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Determines the value of the lint option with the given name. Just as <a
-     * href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a> uses
-     * "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
+     * href="https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html">javac</a>
+     * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
      * options are enabled with "-Alint=xxx" and disabled with "-Alint=-xxx".
      *
      * @throws IllegalArgumentException if the option name is not recognized via the {@link
@@ -1782,8 +1814,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Set the value of the lint option with the given name. Just as <a
-     * href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a> uses
-     * "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
+     * href="https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html">javac</a>
+     * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
      * options are enabled with "-Alint=xxx" and disabled with "-Alint=-xxx". This method can be
      * used by subclasses to enforce having certain lint options enabled/disabled.
      *
@@ -1886,7 +1918,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Set the supported lint options. Use of this method should be limited to the AggregateChecker,
      * who needs to set the lint options to the union of all subcheckers. Also, e.g. the
-     * NullnessSubchecker/RawnessSubchecker need to use this method, as one is created by the other.
+     * NullnessSubchecker need to use this method, as one is created by the other.
      */
     protected void setSupportedLintOptions(Set<String> newlints) {
         supportedLints = newlints;

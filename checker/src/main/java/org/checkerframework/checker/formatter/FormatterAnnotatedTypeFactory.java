@@ -32,28 +32,31 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    protected final AnnotationMirror UNKNOWNFORMAT;
-    protected final AnnotationMirror FORMAT;
-    protected final AnnotationMirror INVALIDFORMAT;
-    protected final AnnotationMirror FORMATBOTTOM;
+    /** The @{@link UnknownFormat} annotation. */
+    protected final AnnotationMirror UNKNOWNFORMAT =
+            AnnotationBuilder.fromClass(elements, UnknownFormat.class);
+    /** The @{@link Format} annotation. */
+    protected final AnnotationMirror FORMAT = AnnotationBuilder.fromClass(elements, Format.class);
+    /** The @{@link InvalidFormat} annotation. */
+    protected final AnnotationMirror INVALIDFORMAT =
+            AnnotationBuilder.fromClass(elements, InvalidFormat.class);
+    /** The @{@link FormatBottom} annotation. */
+    protected final AnnotationMirror FORMATBOTTOM =
+            AnnotationBuilder.fromClass(elements, FormatBottom.class);
 
-    protected final FormatterTreeUtil treeUtil;
+    /** Syntax tree utilities. */
+    protected final FormatterTreeUtil treeUtil = new FormatterTreeUtil(checker);
 
+    /** Creates a FormatterAnnotatedTypeFactory. */
     public FormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        UNKNOWNFORMAT = AnnotationBuilder.fromClass(elements, UnknownFormat.class);
-        FORMAT = AnnotationBuilder.fromClass(elements, Format.class);
-        INVALIDFORMAT = AnnotationBuilder.fromClass(elements, InvalidFormat.class);
-        FORMATBOTTOM = AnnotationBuilder.fromClass(elements, FormatBottom.class);
-
-        this.treeUtil = new FormatterTreeUtil(checker);
         this.postInit();
     }
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll(UnknownFormat.class, FormatBottom.class);
+        return getBundledTypeQualifiers(UnknownFormat.class, FormatBottom.class);
     }
 
     @Override

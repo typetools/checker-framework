@@ -17,7 +17,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #regex-checker Regex Checker
  */
-// @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(UnknownRegex.class)

@@ -238,12 +238,12 @@ public class GuardSatisfiedTest {
                 @GuardSatisfied MyParameterizedClass1<T>[] array) {}
     };
 
-    // TODO: Enable :: error: (guardsatisfied.location.disallowed)
     void testGuardSatisfiedOnWildCardExtendsBound(
+            // :: error: (guardsatisfied.location.disallowed)
             MyParameterizedClass1<? extends @GuardSatisfied Object> l) {}
 
-    // TODO: Enable :: error: (guardsatisfied.location.disallowed)
     void testGuardSatisfiedOnWildCardSuperBound(
+            // :: error: (guardsatisfied.location.disallowed)
             MyParameterizedClass1<? super @GuardSatisfied Object> l) {}
 
     @GuardSatisfied(1) Object testGuardSatisfiedOnParameters(

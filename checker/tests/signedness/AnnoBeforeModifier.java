@@ -1,3 +1,4 @@
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 
 public class AnnoBeforeModifier {
@@ -86,5 +87,14 @@ public class AnnoBeforeModifier {
 
     public @SuppressWarnings("foobar") final int tMethod() {
         return 0;
+    }
+
+    // Use @NonNull rather than a signedness annotation to avoid errors.
+    @NonNull public enum MyEnum {
+        @NonNull CONSTANT
+    }
+
+    interface MyInterface {
+        @NonNull String myMethod();
     }
 }

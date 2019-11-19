@@ -28,6 +28,7 @@ import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -38,12 +39,14 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -67,7 +70,8 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <li>Changes invalid expression strings to an error string that includes the reason why the
  *       expression is invalid. For example, {@code @KeyFor("m")} would be changed to
  *       {@code @KeyFor("[error for expression: m error: m: identifier not found]")} if m is not a
- *       valid identifier.
+ *       valid identifier. This allows subtyping checks to assume that if two strings are equal and
+ *       not errors, the reference the same valid Java expression.
  *   <li>Checks annotated types for error strings that have been added by this class and issues an
  *       error if any are found.
  * </ol>
@@ -194,9 +198,31 @@ public class DependentTypesHelper {
             receiver = FlowExpressions.internalReprOf(factory, receiverTree);
         }
 
-        List<FlowExpressions.Receiver> argReceivers = new ArrayList<>(args.size());
-        for (ExpressionTree argTree : args) {
-            argReceivers.add(FlowExpressions.internalReprOf(factory, argTree));
+        List<Receiver> argReceivers = new ArrayList<>();
+        boolean isVarargs = false;
+        if (tree.getKind() == Kind.METHOD_INVOCATION) {
+            ExecutableElement methodCalled = TreeUtils.elementFromUse((MethodInvocationTree) tree);
+            if (isVarArgsMethodInvocation(methodCalled, typeFromUse, args)) {
+                isVarargs = true;
+                for (int i = 0; i < methodCalled.getParameters().size() - 1; i++) {
+                    argReceivers.add(FlowExpressions.internalReprOf(factory, args.get(i)));
+                }
+                List<Receiver> varargArgs = new ArrayList<>();
+                for (int i = methodCalled.getParameters().size() - 1; i < args.size(); i++) {
+                    varargArgs.add(FlowExpressions.internalReprOf(factory, args.get(i)));
+                }
+                Element varargsElement =
+                        methodCalled.getParameters().get(methodCalled.getParameters().size() - 1);
+                TypeMirror tm = ElementUtils.getType(varargsElement);
+                argReceivers.add(
+                        new FlowExpressions.ArrayCreation(tm, Collections.emptyList(), varargArgs));
+            }
+        }
+
+        if (!isVarargs) {
+            for (ExpressionTree argTree : args) {
+                argReceivers.add(FlowExpressions.internalReprOf(factory, argTree));
+            }
         }
 
         TreePath currentPath = factory.getPath(tree);
@@ -222,6 +248,35 @@ public class DependentTypesHelper {
         new ViewpointAdaptedCopier().visit(viewpointAdaptedType, typeFromUse);
     }
 
+    /**
+     * @return true if methodCalled is varargs method invocation and its varargs arguments are not
+     *     passed in an array, false otherwise
+     */
+    private boolean isVarArgsMethodInvocation(
+            ExecutableElement methodCalled,
+            AnnotatedExecutableType typeFromUse,
+            List<? extends ExpressionTree> args) {
+        if (methodCalled != null && methodCalled.isVarArgs()) {
+            if (methodCalled.getParameters().size() == args.size()) {
+                AnnotatedTypeMirror lastArg = factory.getAnnotatedType(args.get(args.size() - 1));
+                List<AnnotatedTypeMirror> argTypes = typeFromUse.getParameterTypes();
+                AnnotatedArrayType varargsArg =
+                        (AnnotatedArrayType) argTypes.get(argTypes.size() - 1);
+                return lastArg.getKind() != TypeKind.ARRAY
+                        || AnnotatedTypes.getArrayDepth(varargsArg)
+                                != AnnotatedTypes.getArrayDepth((AnnotatedArrayType) lastArg);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Standardizes new class declarations in Java expressions.
+     *
+     * @param tree the new class declaration
+     * @param type the type representing the class
+     */
     public void standardizeNewClassTree(NewClassTree tree, AnnotatedDeclaredType type) {
         if (!hasDependentType(type)) {
             return;
@@ -243,6 +298,12 @@ public class DependentTypesHelper {
         standardizeUseLocals(context, path, type);
     }
 
+    /**
+     * Standardizes a method return in a Java expression.
+     *
+     * @param m the method to be standardized
+     * @param atm the method return type
+     */
     public void standardizeReturnType(MethodTree m, AnnotatedTypeMirror atm) {
         if (atm.getKind() == TypeKind.NONE) {
             return;
@@ -338,6 +399,7 @@ public class DependentTypesHelper {
                 standardizeUseLocals(localContext, path, type);
                 break;
             case FIELD:
+            case ENUM_CONSTANT:
                 FlowExpressions.Receiver receiverF;
                 if (node.getKind() == Tree.Kind.IDENTIFIER) {
                     FlowExpressions.Receiver r =

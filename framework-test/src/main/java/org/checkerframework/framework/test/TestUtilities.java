@@ -27,12 +27,14 @@ import org.junit.Assert;
 public class TestUtilities {
 
     public static final boolean IS_AT_LEAST_9_JVM;
+    public static final boolean IS_AT_LEAST_11_JVM;
 
     static {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         OutputStream err = new ByteArrayOutputStream();
         compiler.run(null, null, err, "-version");
-        IS_AT_LEAST_9_JVM = PluginUtil.getJreVersion() >= 1.9d;
+        IS_AT_LEAST_9_JVM = PluginUtil.getJreVersion() >= 9;
+        IS_AT_LEAST_11_JVM = PluginUtil.getJreVersion() >= 11;
     }
 
     public static List<File> findNestedJavaTestFiles(String... dirNames) {
@@ -186,7 +188,8 @@ public class TestUtilities {
         while (in.hasNext()) {
             String nextLine = in.nextLine();
             if (nextLine.contains("@skip-test")
-                    || (!IS_AT_LEAST_9_JVM && nextLine.contains("@below-java9-jdk-skip-test"))) {
+                    || (!IS_AT_LEAST_9_JVM && nextLine.contains("@below-java9-jdk-skip-test"))
+                    || (!IS_AT_LEAST_11_JVM && nextLine.contains("@below-java11-jdk-skip-test"))) {
                 in.close();
                 return false;
             }

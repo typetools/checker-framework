@@ -94,4 +94,9 @@ public class CastsNullness {
             nt = (T) null;
         }
     }
+
+    void testSafeCasts() {
+        // :: error: (type.invalid.annotations.on.use)
+        Integer x = (@Nullable int) 1;
+    }
 }

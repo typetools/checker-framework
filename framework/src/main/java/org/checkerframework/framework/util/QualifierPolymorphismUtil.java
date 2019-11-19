@@ -25,7 +25,6 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -122,7 +121,7 @@ public class QualifierPolymorphismUtil {
             if (enclosing.getKind() == Kind.METHOD) {
                 res = atypeFactory.getAnnotatedType((MethodTree) enclosing).getReturnType();
             } else {
-                Pair<AnnotatedDeclaredType, AnnotatedExecutableType> fninf =
+                Pair<AnnotatedTypeMirror, AnnotatedExecutableType> fninf =
                         atypeFactory.getFnInterfaceFromTree((LambdaExpressionTree) enclosing);
                 res = fninf.second.getReturnType();
             }
@@ -186,7 +185,7 @@ public class QualifierPolymorphismUtil {
      * expression, isArgument is called recursively on the true and false expressions.
      */
     private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
-        argumentTree = TreeUtils.skipParens(argumentTree);
+        argumentTree = TreeUtils.withoutParens(argumentTree);
         if (argumentTree == path.getLeaf()) {
             return true;
         } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {

@@ -13,7 +13,7 @@ class RawMethodInvocation {
     }
 
     @EnsuresNonNull("b")
-    void init_b(@Raw @UnknownInitialization RawMethodInvocation this) {
+    void init_b(@UnknownInitialization RawMethodInvocation this) {
         b = "";
     }
 
@@ -33,7 +33,7 @@ class RawMethodInvocation {
     }
 
     @EnsuresNonNull({"a", "b"})
-    void init_ab(@Raw @UnknownInitialization RawMethodInvocation this) {
+    void init_ab(@UnknownInitialization RawMethodInvocation this) {
         a = "";
         b = "";
     }

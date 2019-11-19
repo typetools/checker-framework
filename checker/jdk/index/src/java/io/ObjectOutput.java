@@ -72,7 +72,7 @@ public interface ObjectOutput extends DataOutput, AutoCloseable {
      * @param len       the number of bytes that are written
      * @exception IOException If an I/O error has occurred.
      */
-    public void write(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException;
+    public void write(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException;
 
     /**
      * Flushes the stream. This will write any buffered

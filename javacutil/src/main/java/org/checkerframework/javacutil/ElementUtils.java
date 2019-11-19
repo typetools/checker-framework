@@ -214,7 +214,7 @@ public class ElementUtils {
                     return type.toString();
                 }
         }
-        throw new BugInCF("ElementUtils: unhandled type: " + type);
+        throw new BugInCF("ElementUtils: unhandled type kind: %s, type: %s", type.getKind(), type);
     }
 
     /**
@@ -227,7 +227,7 @@ public class ElementUtils {
         return element.getQualifiedName().contentEquals("java.lang.Object");
     }
 
-    /** Returns true if the element is a constant time reference. */
+    /** Returns true if the element is a reference to a compile-time constant. */
     public static boolean isCompileTimeConstant(Element elt) {
         return elt != null
                 && (elt.getKind() == ElementKind.FIELD
@@ -366,10 +366,10 @@ public class ElementUtils {
         }
     }
 
+    /** @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError" */
     public static boolean isError(Element element) {
-        return element.getClass()
-                .getName()
-                .equals("com.sun.tools.javac.comp.Resolve$SymbolNotFoundError");
+        return element.getClass().getName()
+                == "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError";
     }
 
     /**

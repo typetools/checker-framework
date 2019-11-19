@@ -466,19 +466,6 @@ public class QualifierDefaults {
                 // (The above probably means that we should use defaults in the
                 // scope of the declaration of the array.  Is that right?  -MDE)
 
-            case CLASS:
-                if (((ClassTree) tree).getExtendsClause() != null) {
-                    Element extendsElt =
-                            TreeUtils.elementFromTree(((ClassTree) tree).getExtendsClause());
-                    applyDefaultsToElement(extendsElt, type);
-                }
-                for (Tree implicitClause : ((ClassTree) tree).getImplementsClause()) {
-                    Element implementsElt = TreeUtils.elementFromTree(implicitClause);
-                    applyDefaultsToElement(implementsElt, type);
-                }
-                elt = nearestEnclosingExceptLocal(tree);
-                break;
-
             default:
                 // If no associated symbol was found, use the tree's (lexical)
                 // scope.
@@ -488,16 +475,6 @@ public class QualifierDefaults {
         // System.out.println("applyDefaults on tree " + tree +
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
-        applyDefaultsToElement(elt, type);
-    }
-
-    /**
-     * Applies default annotations to {@code type}.
-     *
-     * @param elt the element associated with the type
-     * @param type the type to which defaults will be applied
-     */
-    void applyDefaultsToElement(Element elt, AnnotatedTypeMirror type) {
         boolean defaultTypeVarLocals =
                 (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
                         && ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
@@ -677,7 +654,8 @@ public class QualifierDefaults {
                         && atypeFactory.declarationFromElement(annotationScope) == null
                         && !isFromStubFile;
         if (isBytecode) {
-            return useUncheckedCodeDefaultsBytecode;
+            return useUncheckedCodeDefaultsBytecode
+                    && !isElementAnnotatedForThisChecker(annotationScope);
         } else if (isFromStubFile) {
             // TODO: Types in stub files not annotated for a particular checker should be
             // treated as unchecked bytecode.   For now, all types in stub files are treated as
@@ -796,7 +774,7 @@ public class QualifierDefaults {
 
             return !(type == null
                     // TODO: executables themselves should not be annotated
-                    // For some reason polyall-tests fails with this.
+                    // For some reason testchecker-tests fails with this.
                     // || type.getKind() == TypeKind.EXECUTABLE
                     || type.getKind() == TypeKind.NONE
                     || type.getKind() == TypeKind.WILDCARD
@@ -844,17 +822,6 @@ public class QualifierDefaults {
                 }
 
                 switch (location) {
-                    case TYPE_DECLARATION:
-                        {
-                            if (scope != null
-                                    && (scope.getKind() == ElementKind.CLASS
-                                            || scope.getKind() == ElementKind.INTERFACE
-                                            || scope.getKind() == ElementKind.ENUM)
-                                    && t == type) {
-                                addAnnotation(t, qual);
-                            }
-                            break;
-                        }
                     case FIELD:
                         {
                             if (scope != null
