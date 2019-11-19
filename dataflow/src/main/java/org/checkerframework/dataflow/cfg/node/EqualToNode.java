@@ -13,9 +13,16 @@ import java.util.Objects;
  */
 public class EqualToNode extends BinaryOperationNode {
 
+    /**
+     * Create a new EqualToNode object.
+     *
+     * @param tree the tree for this node
+     * @param left the first argument
+     * @param right the second argument
+     */
     public EqualToNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
-        assert tree.getKind().equals(Kind.EQUAL_TO);
+        assert tree.getKind() == Kind.EQUAL_TO;
     }
 
     @Override

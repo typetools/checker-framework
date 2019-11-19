@@ -13,10 +13,9 @@ pattern.
 Interning has two benefits:  it can save memory, and it can speed up testing for
 equality by permitting use of \code{==}.
 
-The Interning Checker prevents two types of errors in your code.  First,
-\code{==} should be used
-only on interned values; using \code{==} on
-non-interned values can result in subtle bugs.  For example:
+The Interning Checker prevents two types of problems in your code.
+First, it prevents using \code{==} on
+non-interned values, which can result in subtle bugs.  For example:
 
 \begin{Verbatim}
   Integer x = new Integer(22);
@@ -25,9 +24,8 @@ non-interned values can result in subtle bugs.  For example:
 \end{Verbatim}
 
 \noindent
-The Interning Checker helps programmers to prevent such bugs.
 Second,
-the Interning Checker also helps to prevent performance problems that result
+the Interning Checker helps to prevent performance problems that result
 from failure to use interning.
 (See Section~\ref{checker-guarantees} for caveats to the checker's guarantees.)
 
@@ -53,7 +51,7 @@ this property could hold:
 \item
   Interning.  A factory method ensures that, globally, no two different
   interned objects are \code{equals()} to one another.
-  (Not every value of the given type is necessarily interned; it is
+  (For some classes, every instance is interned; however, in other cases it is
   possible for two objects of the class to be
   \code{equals()} to one another, even if one of them is interned.)
   Interned objects should always be immutable.
@@ -66,9 +64,16 @@ this property could hold:
 \item
   Local control flow.  Even though not all objects of the given type may be
   compared with \code{==}, the specific objects that can reach a given
-  comparison may be.  For example, suppose that an array contains no
-  duplicates.  Then searching for the index of an element that is
-  known to be in the array can use \code{==}.
+  comparison may be.
+  \begin{itemize}
+  \item
+    When searching for an element (say, in a collection), \code{==} may be
+    appropriate.
+  \item
+    Some routines return either their argument, or a modified version of
+    it.  Your code might compare \code{s == s.toLowerCase()} to see whether
+    a string contained any upper-case characters.
+  \end{itemize}
 \end{enumerate}
 
 To eliminate Interning Checker errors, you will need to annotate the
@@ -102,7 +107,10 @@ These qualifiers are part of the Interning type system:
 
 \item[\refqualclass{checker/interning/qual}{InternedDistinct}]
   indicates a type such that each value is not \<equals()> to any other
-  Java value.  For details, see Section~\ref{interning-distinct}.
+  Java value.  This is a stronger (more restrictive) property than
+  \<@Interned>, but is a weaker property than writing \<@Interned> on a
+  class declaration.  For
+  details, see Section~\ref{interning-distinct}.
 
 \item[\refqualclass{checker/interning/qual}{UnknownInterned}]
   indicates a type whose values might or might not be interned.
@@ -127,7 +135,8 @@ These qualifiers are part of the Interning type system:
   Interning Checker does not issue errors or warnings for either one.
 
 \item[\refqualclass{checker/interning/qual}{InternMethod}]
-  is a method declaration annotation that indicates that this method returns an interned object and maybe be invoked
+  is a method declaration annotation that indicates that this method
+  returns an interned object and may be invoked
   on an uninterned object. See Section~\ref{interning-intern-methods} for more details.
 \end{description}
 
@@ -293,7 +302,8 @@ verify that it is only written in locations where its contract is satisfied.
 For example, here is one set of guidelines that you could check manually:
 \begin{itemize}
 \item The constructor is private.
-\item The factory method returns the canonical version for certain values.
+\item The factory method (whose return type is annotated with
+  \<@InternedDistinct> returns the canonical version for certain values.
 \item The class is final, so that subclasses cannot violate these properties.
 \end{itemize}
 
@@ -350,7 +360,7 @@ interning errors related to uses of \code{String}, you can pass
 subclasses and superclasses of the given class.
 
 
-\subsectionAndLabel{Limitations of the Interning Checker}{interning-limitations}
+\subsectionAndLabel{Imprecision (false positive warnings) of the Interning Checker}{interning-limitations}
 
 % There is no point to linking to the Javadoc for the valueOf methods,
 % which don't discuss interning.
@@ -447,4 +457,5 @@ $\Rightarrow$
 % LocalWords:  PolyInterned Alint dotequals quals InterningAnnotatedTypeFactory
 % LocalWords:  javac InterningVisitor JLS Acheckclass UsesObjectEquals
 %  LocalWords:  consing valueOf superclasses s2 cleanroom canonicalization
-%%  LocalWords:  InternedDistinct UnknownInterned myValue MyType
+%%  LocalWords:  InternedDistinct UnknownInterned myValue MyType MyClass
+% LocalWords:  toLowerCase InternMethod uninterned InternClass

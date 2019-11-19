@@ -24,7 +24,7 @@ examples appear in a table below.
 \caption{Partial type hierarchy for the Signature type system, showing
   string representations of a Java type.
   The type qualifiers are applicable to \<CharSequence> and its subtypes.
-  Programmers only need to write
+  Programmers usually only need to write
   the boldfaced qualifiers; other qualifiers are
   included to improve the internal handling of String literals.}
 \label{fig-signature-hierarchy}
@@ -85,7 +85,8 @@ examples appear in a table below.
   \refqualclass{checker/signature/qual}{Identifier}.
 
 \item[\refqualclass{checker/signature/qual}{FqBinaryName}]
-  Like \refqualclass{checker/signature/qual}{FullyQualifiedName}, but using
+  An extension of binary name format to represent primitives and arrays.
+  It is like \refqualclass{checker/signature/qual}{FullyQualifiedName}, but using
   ``\<\$>'' instead of ``\<.>'' to separate nested classes from their
   containing classes.  For example, \<"pkg.Outer\$Inner"> or
   \<"pkg.Outer\$Inner[][]"> or \<"int[]">.

@@ -1026,7 +1026,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
         for (Node node : nodes) {
-            if (node.getClass().equals(kind)) {
+            if (node.getClass() == kind) {
                 return kind.cast(node);
             }
         }
@@ -1557,7 +1557,8 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * To add annotations to the type of method or constructor parameters, add a {@link
      * TypeAnnotator} using {@link #createTypeAnnotator()} and see the comment in {@link
-     * TypeAnnotator#visitExecutable(AnnotatedExecutableType, Void)}.
+     * TypeAnnotator#visitExecutable(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType,
+     * Void)}.
      *
      * @param elt an element
      * @param type the type obtained from {@code elt}
@@ -1680,8 +1681,10 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     private String getCheckerName() {
         String checkerName = checker.getClass().getSimpleName();
-        if (checkerName.endsWith("Checker") || checkerName.endsWith("checker")) {
-            checkerName = checkerName.substring(0, checkerName.length() - "checker".length());
+        if (checkerName.endsWith("Checker")) {
+            checkerName = checkerName.substring(0, checkerName.length() - "Checker".length());
+        } else if (checkerName.endsWith("Subchecker")) {
+            checkerName = checkerName.substring(0, checkerName.length() - "Subchecker".length());
         }
         return checkerName;
     }

@@ -32,7 +32,6 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -179,8 +178,7 @@ public class NullnessTransfer
                     secondValue != null
                             ? secondValue.getAnnotations()
                             : AnnotationUtils.createAnnotationSet();
-            if (AnnotationUtils.containsSameByClass(secondAnnos, PolyNull.class)
-                    || AnnotationUtils.containsSameByClass(secondAnnos, PolyAll.class)) {
+            if (AnnotationUtils.containsSameByClass(secondAnnos, PolyNull.class)) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
                 thenStore.setPolyNullNull(true);

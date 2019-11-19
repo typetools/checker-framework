@@ -119,13 +119,18 @@ Java code conventions</a>.
 </p>
 
 <p>
-Code formatting is enforced by a Git pre-commit hook.  You
+From the command line, you can format your code by running <code>./gradlew reformat</code>.
+You
 can <a href="https://github.com/google/google-java-format#using-the-formatter">configure
-your IDE</a> (Eclipse or IntelliJ) to use that formatting.
+your IDE</a> (Eclipse or IntelliJ) to use the formatting (don't forget the
+non-standard <code>-a</code> flag).
 </p>
-<!-- You could also install settings in your IDE:
-https://github.com/HPI-Information-Systems/Metanome/wiki/Installing-the-google-styleguide-settings-in-intellij-and-eclipse
-but that is not what is recommended by the google-java-format documentation. -->
+
+<!--
+<p>
+Code formatting is enforced by a Git pre-commit hook and by a continuous integration job.
+</p>
+-->
 
 <p>
 We don't use <code>@author</code> Javadoc tags in code files.

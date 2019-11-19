@@ -643,9 +643,10 @@ public class AnnotationBuilder {
         @SideEffectFree
         @Override
         public String toString() {
-            if (toStringVal != null) {
-                return toStringVal;
+            if (this.toStringVal != null) {
+                return this.toStringVal;
             }
+            String toStringVal;
             if (value instanceof String) {
                 toStringVal = "\"" + value + "\"";
             } else if (value instanceof Character) {
@@ -677,8 +678,8 @@ public class AnnotationBuilder {
             } else {
                 toStringVal = value.toString();
             }
-            toStringVal = toStringVal.intern();
-            return toStringVal;
+            this.toStringVal = toStringVal.intern();
+            return this.toStringVal;
         }
 
         @SuppressWarnings("unchecked")
