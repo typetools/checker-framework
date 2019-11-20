@@ -95,8 +95,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /**
      * This set tracks which AClass objects in the scenes are actually enums, to support outputting
-     * using the "enum" keyword. The stub file format requires enums and classes to be output
-     * differently.
+     * using the "enum" keyword. The stub file format requires enums to be output differently than
+     * classes.
      */
     private final Set<String> enumSet = new HashSet<>();
 

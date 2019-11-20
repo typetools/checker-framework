@@ -138,7 +138,7 @@ public interface WholeProgramInference {
      */
     void saveResults(OutputKind kind);
 
-    /** A simple enum to differentiate the kinds of output from whole-program inference. */
+    /** The kinds of output that whole-program inference can produce. */
     enum OutputKind {
         /**
          * Output the results of whole-program inference as a stub file that can be parsed back into
