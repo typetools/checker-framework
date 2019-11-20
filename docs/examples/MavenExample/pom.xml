@@ -83,8 +83,9 @@
                   <version>${checkerFrameworkVersion}</version>
                 </path>
                 <!--
-                    Any custom type qualifiers must be in a separate pre-compiled module;
-                    see https://checkerframework.org/manual/#subtyping-compiling .
+                    When using the Subtyping Checker, any custom type qualifiers must be in a
+		    separate pre-compiled module; see
+		    https://checkerframework.org/manual/#subtyping-compiling .
                     Once <annotationProcessorPaths> is defined, it is the only source for
                     classpath lookup; see
                     https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html#annotationProcessorPaths .
