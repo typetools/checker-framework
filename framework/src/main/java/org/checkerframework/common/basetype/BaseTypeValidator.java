@@ -234,7 +234,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     protected void reportInvalidAnnotationsOnUse(final AnnotatedTypeMirror type, final Tree p) {
         reportValidityResultOnUnannotatedType("type.invalid.annotations.on.use", type, p);
+        newMethod("");
     }
+
+    /** This comment doesn't document newParam. */
+    private static void newMethod(Object newParam) {}
 
     @Override
     public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {

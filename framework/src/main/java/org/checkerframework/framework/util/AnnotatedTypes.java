@@ -111,9 +111,6 @@ public class AnnotatedTypes {
         return asSuperVisitor.asSuper(type, superType);
     }
 
-    /** This commit doesn't document the params. */
-    private static void newMethod(String newPAram) {}
-
     /**
      * Calls asSuper and casts the result to the same type as the input supertype.
      *
