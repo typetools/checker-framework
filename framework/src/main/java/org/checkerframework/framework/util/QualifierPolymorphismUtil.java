@@ -34,6 +34,9 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 
+/**
+ * A utility class made for {@link org.checkerframework.framework.type.poly.QualifierPolymorphism}.
+ */
 public class QualifierPolymorphismUtil {
 
     private static final Set<TreePath> visitedPaths = new HashSet<>();
