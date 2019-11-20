@@ -99,9 +99,9 @@ public class StubTypes {
      * <ol>
      *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option
      *       is not supplied <br>
-     *   <li>If parings JDK as stub files, all package-info.java in the jdk directory <br>
+     *   <li>If parsing a JDK as stub files, all package-info.java in the jdk directory <br>
      *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
-     *       the checker<br>
+     *       the checker <br>
      *   <li>Stub files provide via stubs system property <br>
      *   <li>Stub files provide via stubs environment variable <br>
      *   <li>Stub files provide via stubs compiler option
