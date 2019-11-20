@@ -56,9 +56,6 @@ public class StubTypes {
     /** AnnotatedTypeFactory */
     private final AnnotatedTypeFactory factory;
 
-    /**
-     * Mapping from fully-qualified class name to corresponding JDK stub file from the file system.
-     */
     private final Map<String, Path> jdk11StubFiles = new HashMap<>();
 
     /**
@@ -253,7 +250,6 @@ public class StubTypes {
      * explicitly written in a stub file or the empty set if {@code e} does not appear in a stub
      * file.
      *
-     * @param elt element for which annotations are returned
      * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written
      *     in the stubfile and in the element. {@code null} is returned if {@code element} does not
      *     appear in a stub file.
