@@ -1595,6 +1595,7 @@ public class StubParser {
                     // doesn't correctly handle the minimum values, because the absolute value of
                     // the smallest member of an integral type is larger than the largest value.
                 case "-9223372036854775808L":
+                case "-9223372036854775808l":
                     return convert(Long.MIN_VALUE, valueKind, false);
                 case "-2147483648":
                     return convert(Integer.MIN_VALUE, valueKind, false);
