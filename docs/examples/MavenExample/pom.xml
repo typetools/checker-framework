@@ -83,12 +83,12 @@
                   <version>${checkerFrameworkVersion}</version>
                 </path>
                 <!--
-                    When using the Subtyping Checker, any custom type qualifiers must be in a
-		    separate pre-compiled module; see
-		    https://checkerframework.org/manual/#subtyping-compiling .
-                    Once <annotationProcessorPaths> is defined, it is the only source for
-                    classpath lookup; see
-                    https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html#annotationProcessorPaths .
+                  When using the Subtyping Checker, any custom type qualifiers must be in a
+                  separate pre-compiled module; see
+                  https://checkerframework.org/manual/#subtyping-compiling .
+                  Once <annotationProcessorPaths> is defined, it is the only source for
+                  classpath lookup; see
+                  https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html#annotationProcessorPaths .
                 -->
                 <!-- <path> -->
                 <!--   <groupId>your.qual.group</groupId> -->
@@ -108,7 +108,7 @@
                   <!-- -Awarns treats Checker Framework errors as warnings -->
                   <!-- <arg>-Awarns</arg> -->
                   <!--
-                    Annotations defined in module 'your-qual-artifact'
+                    For the Subtyping Checker, annotations defined in module 'your-qual-artifact':
                     <arg>-Aquals=myPackage.qual.MyFenum,myPackage.qual.MyCustomType</arg>
                   -->
                   <arg>-Alint</arg>
