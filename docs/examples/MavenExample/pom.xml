@@ -78,7 +78,7 @@
                 </path>
                 <!--
                     If custom subtypes or fenums are to be used, they need to be packaged into a separate module so that
-                    they could be compiled beforehand. See https://checkerframework.org/manual/#subtyping-checker
+                    they could be compiled beforehand. See https://checkerframework.org/manual/#subtyping-compiling
                     Note, once <annotationProcessorPaths> is defined, it becomes the only source for classpath lookup.
                     See https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html#annotationProcessorPaths
                 -->
