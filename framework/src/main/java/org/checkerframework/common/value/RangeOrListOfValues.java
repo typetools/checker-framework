@@ -1,7 +1,6 @@
 package org.checkerframework.common.value;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.value.qual.ArrayLen;
