@@ -84,6 +84,14 @@ allprojects {
 
     configurations {
         javacJar
+
+        // There's a bug in IntelliJ that adds the processor path to the classpath when building
+        // a Gradle project.  Because ErrorProne uses old versions of some of our jars, IntelliJ uses
+        // those jars instead of the source code. The next 3 lines exclude Checker Framework from the
+        // from the processor path as a work around for this problem.
+        annotationProcessor.exclude group:'org.checkerframework', module:'javacutil'
+        annotationProcessor.exclude group:'org.checkerframework', module:'dataflow'
+        annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
     dependencies {
@@ -106,7 +114,9 @@ allprojects {
             dependsOn(":framework-test:${tagletVersion}Classes")
             doFirst {
                 options.encoding = 'UTF-8'
-                options.memberLevel = javadocMemberLevel
+                if (!name.equals('requireJavadocPrivate')) {
+                    options.memberLevel = javadocMemberLevel
+                }
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
                 if (isJava8) {
                     classpath += configurations.javacJar
@@ -206,8 +216,9 @@ task version() {
  * @param projectName name of the project
  * @param checker full qualified name of the checker to run
  * @param shortName shorter version of the checker to use to name the task.
+ * @param args list of arguments to pass to the checker
  */
-def createCheckTypeTask(projectName, checker, shortName) {
+def createCheckTypeTask(projectName, checker, shortName, args = []) {
     project("${projectName}").tasks.create(name: "check${shortName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
         description "Run the ${shortName} Checker on the main sources."
         group 'Verification'
@@ -224,6 +235,7 @@ def createCheckTypeTask(projectName, checker, shortName) {
                 '-proc:only',
                 '-Xlint:-processing',
                 ]
+        options.compilerArgs += args
         if (isJava8) {
             options.compilerArgs += [
                 "-Xbootclasspath/p:${rootDir}/checker/dist/jdk8.jar",
@@ -322,6 +334,7 @@ dependencies {
 task requireJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Ensures that Java elements have Javadoc documentation.'
     destinationDir = file("${rootDir}/docs/tmpapi")
+    destinationDir.mkdirs()
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
     classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
@@ -336,6 +349,7 @@ task requireJavadoc(type: Javadoc, group: "Documentation") {
 task requireJavadocPrivate(type: Javadoc, group: "Documentation") {
     description = 'Ensures that all (even private) Java elements have Javadoc documentation.'
     destinationDir = file("${rootDir}/docs/tmpapi")
+    destinationDir.mkdirs()
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
     classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
@@ -560,6 +574,8 @@ subprojects {
         // Add tasks to run various checkers on all the main source sets.
         createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness')
         createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
+        // TODO: fix or suppress all not.interned warnings and remove the suppression here.
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-AsuppressWarnings=not.interned'])
 
         // Add jtregTests to framework and checker modules
         if (project.name.is('framework') || project.name.is('checker')) {
@@ -719,7 +735,7 @@ subprojects {
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', type: GradleBuild, group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
-            tasks = ['checkPurity']
+            tasks = ['checkPurity', 'checkInterning']
             if (project.name.is('framework') || project.name.is('checker')) {
                 tasks += ['checkCompilerMessages', 'jtregTests']
             }
