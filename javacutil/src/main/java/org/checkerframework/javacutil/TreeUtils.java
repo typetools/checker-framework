@@ -417,18 +417,20 @@ public final class TreeUtils {
             case RETURN:
             case VARIABLE:
                 return parent;
-            case MEMBER_SELECT:
-                // Also check case when treepath's leaf tree is used as methohd
-                // invocation's actual receiver
-                // If so, return that method invocation tree too as the assignment
-                // context tree rather than null as we did before
-                TreePath grandParentPath = parentPath.getParentPath();
-                if (grandParentPath != null
-                        && grandParentPath.getLeaf() instanceof MethodInvocationTree) {
-                    return grandParentPath.getLeaf();
-                } else {
-                    return null;
-                }
+                // Comment it for now. It will cause false negative in MyTree.java.
+                //            case MEMBER_SELECT:
+                //                // Also check case when treepath's leaf tree is used as methohd
+                //                // invocation's actual receiver
+                //                // If so, return that method invocation tree too as the assignment
+                //                // context tree rather than null as we did before
+                //                TreePath grandParentPath = parentPath.getParentPath();
+                //                if (grandParentPath != null
+                //                        && grandParentPath.getLeaf() instanceof
+                // MethodInvocationTree) {
+                //                    return grandParentPath.getLeaf();
+                //                } else {
+                //                    return null;
+                //                }
 
             default:
                 // 11 Tree.Kinds are CompoundAssignmentTrees,
