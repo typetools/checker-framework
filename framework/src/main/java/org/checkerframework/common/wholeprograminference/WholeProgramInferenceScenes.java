@@ -91,6 +91,7 @@ import scenelib.annotations.util.JVMNames;
 //  results (order of annotations).
 public class WholeProgramInferenceScenes implements WholeProgramInference {
 
+    /** A singleton helper class that stores scenes and implements operations on them. */
     private final WholeProgramInferenceScenesHelper helper;
 
     /**
