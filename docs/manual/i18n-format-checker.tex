@@ -5,7 +5,7 @@ The Internationalization Format String Checker, or I18n Format String Checker,
 prevents use of incorrect i18n format strings.
 
 If the I18n Format String Checker issues no warnings or errors, then
-\sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}
+\sunjavadoc{java.base/java/text/MessageFormat.html\#format(java.lang.String,java.lang.Object...)}{MessageFormat.format}
 will raise no error at run time.
 ``I18n'' is short for
 ``internationalization'' because there are 18 characters between the ``i'' and
@@ -59,7 +59,7 @@ localization resource and all keys exist in that resource.
 \label{i18n-format-type-hierarchy}
 \end{figure}
 
-The \sunjavadoc{java/text/MessageFormat.html}{MessageFormat} documentation
+The \sunjavadoc{java.base/java/text/MessageFormat.html}{MessageFormat} documentation
 specifies the syntax of the i18n format string.
 
 These are the qualifiers that make up the I18n Format String type system.
@@ -182,31 +182,33 @@ means that any value can be supplied as an argument.
 
 \item[\refenum{checker/i18nformatter/qual}{I18nConversionCategory}{DATE}{}]
 is applicable for date, time, and number types. An argument needs to be
-of \sunjavadoc{java/sql/Date.html}{Date}, \sunjavadoc{java/sql/Time.html}{Time}, or \sunjavadoc{java/lang/Number.html}{Number} type or a subclass of them,
-including \sunjavadoc{java/sql/Timestamp.html}{Timestamp} and the classes
+of \sunjavadoc{java.sql/java/sql/Date.html}{Date},
+\sunjavadoc{java.sql/java/sql/Time.html}{Time}, or
+\sunjavadoc{java.base/java/lang/Number.html}{Number} type or a subclass of them,
+including \sunjavadoc{java.sql/java/sql/Timestamp.html}{Timestamp} and the classes
 listed immediately below.
 
 \item[\refenum{checker/i18nformatter/qual}{I18nConversionCategory}{NUMBER}{}]
 means that the argument needs to be of \code{Number}
 type or a subclass:
-\sunjavadoc{java/lang/Number.html}{Number},
-\sunjavadoc{java/util/concurrent/atomic/AtomicInteger.html}{AtomicInteger},
-\sunjavadoc{java/util/concurrent/atomic/AtomicLong.html}{AtomicLong},
-\sunjavadoc{java/math/BigDecimal.html}{BigDecimal},
-\sunjavadoc{java/math/BigInteger.html}{BigInteger},
-\sunjavadoc{java/lang/Byte.html}{Byte},
-\sunjavadoc{java/lang/Double.html}{Double},
-\sunjavadoc{java/lang/Float.html}{Float},
-\sunjavadoc{java/lang/Integer.html}{Integer},
-\sunjavadoc{java/lang/Long.html}{Long},
-\sunjavadoc{java/lang/Short.html}{Short}.
+\sunjavadoc{java.base/java/lang/Number.html}{Number},
+\sunjavadoc{java.base/java/util/concurrent/atomic/AtomicInteger.html}{AtomicInteger},
+\sunjavadoc{java.base/java/util/concurrent/atomic/AtomicLong.html}{AtomicLong},
+\sunjavadoc{java.base/java/math/BigDecimal.html}{BigDecimal},
+\sunjavadoc{java.base/java/math/BigInteger.html}{BigInteger},
+\sunjavadoc{java.base/java/lang/Byte.html}{Byte},
+\sunjavadoc{java.base/java/lang/Double.html}{Double},
+\sunjavadoc{java.base/java/lang/Float.html}{Float},
+\sunjavadoc{java.base/java/lang/Integer.html}{Integer},
+\sunjavadoc{java.base/java/lang/Long.html}{Long},
+\sunjavadoc{java.base/java/lang/Short.html}{Short}.
 
 \end{description}
 
 \sectionAndLabel{What the Internationalization Format String Checker checks}{i18n-format-checks}
 
 The Internationalization Format String Checker checks calls to the i18n
-formatting method \sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}
+formatting method \sunjavadoc{java.base/java/text/MessageFormat.html\#format(java.lang.String,java.lang.Object...)}{MessageFormat.format}
 and guarantees the following:
 
 \begin{enumerate}
@@ -377,7 +379,7 @@ method to define the type of the string in the scope of a conditional statement.
 \sectionAndLabel{Examples of using the Internationalization Format Checker}{i18n-format-examples}
 
 \begin{itemize}
-  \item Using \sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}.
+  \item Using \sunjavadoc{java.base/java/text/MessageFormat.html\#format(java.lang.String,java.lang.Object...)}{MessageFormat.format}.
 \begin{Verbatim}
       // suppose the bundle "MyResource" contains:  key1={0, number} {1, date}
       String value = ResourceBundle.getBundle("MyResource").getString("key1");

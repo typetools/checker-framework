@@ -46,7 +46,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -59,7 +58,6 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -183,6 +181,10 @@ public class TypeArgInferenceUtil {
         } else if (assignmentContext instanceof NewClassTree) {
             // This need to be basically like MethodTree
             NewClassTree newClassTree = (NewClassTree) assignmentContext;
+            if (newClassTree.getEnclosingExpression() instanceof NewClassTree
+                    && (newClassTree.getEnclosingExpression() == path.getLeaf())) {
+                return null;
+            }
             ExecutableElement constructorElt = TreeUtils.constructor(newClassTree);
             AnnotatedTypeMirror receiver = atypeFactory.fromNewClass(newClassTree);
             res =
@@ -199,9 +201,9 @@ public class TypeArgInferenceUtil {
             if (enclosing.getKind() == Kind.METHOD) {
                 res = atypeFactory.getAnnotatedType((MethodTree) enclosing).getReturnType();
             } else {
-                Pair<AnnotatedDeclaredType, AnnotatedExecutableType> fninf =
-                        atypeFactory.getFnInterfaceFromTree((LambdaExpressionTree) enclosing);
-                res = fninf.second.getReturnType();
+                AnnotatedExecutableType fninf =
+                        atypeFactory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
+                res = fninf.getReturnType();
             }
 
         } else if (assignmentContext instanceof VariableTree) {

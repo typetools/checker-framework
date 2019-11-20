@@ -93,33 +93,9 @@ public final class TreeUtils {
      *
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to super
-     * @deprecated use {@link #isSuperConstructorCall(MethodInvocationTree)}
-     */
-    @Deprecated // use isSuperConstructorCall
-    public static boolean isSuperCall(MethodInvocationTree tree) {
-        return isNamedMethodCall("super", tree);
-    }
-
-    /**
-     * Checks if the method invocation is a call to super.
-     *
-     * @param tree a tree defining a method invocation
-     * @return true iff tree describes a call to super
      */
     public static boolean isSuperConstructorCall(MethodInvocationTree tree) {
         return isNamedMethodCall("super", tree);
-    }
-
-    /**
-     * Checks if the method invocation is a call to "this".
-     *
-     * @param tree a tree defining a method invocation
-     * @return true iff tree describes a call to this
-     * @deprecated use {@link #isThisConstructorCall(MethodInvocationTree)}
-     */
-    @Deprecated // use isThisConstructorCall
-    public static boolean isThisCall(MethodInvocationTree tree) {
-        return isNamedMethodCall("this", tree);
     }
 
     /**
@@ -365,19 +341,6 @@ public final class TreeUtils {
             t = ((ParenthesizedTree) t).getExpression();
         }
         return t;
-    }
-
-    /**
-     * If the given tree is a parenthesized tree, it returns the enclosed non-parenthesized tree.
-     * Otherwise, it returns the same tree.
-     *
-     * @param tree an expression tree
-     * @return the outermost non-parenthesized tree enclosed by the given tree
-     * @deprecated use {@link #withoutParens}
-     */
-    @Deprecated // use withoutParens
-    public static ExpressionTree skipParens(final ExpressionTree tree) {
-        return withoutParens(tree);
     }
 
     /**
@@ -782,44 +745,41 @@ public final class TreeUtils {
 
     /** Returns the receiver tree of a field access or a method invocation. */
     public static ExpressionTree getReceiverTree(ExpressionTree expression) {
-        ExpressionTree receiver = TreeUtils.withoutParens(expression);
+        ExpressionTree receiver;
+        switch (expression.getKind()) {
+            case METHOD_INVOCATION:
+                // Trying to handle receiver calls to trees of the form
+                //     ((m).getArray())
+                // returns the type of 'm' in this case
+                receiver = ((MethodInvocationTree) expression).getMethodSelect();
 
-        if (!(receiver.getKind() == Tree.Kind.METHOD_INVOCATION
-                || receiver.getKind() == Tree.Kind.MEMBER_SELECT
-                || receiver.getKind() == Tree.Kind.IDENTIFIER
-                || receiver.getKind() == Tree.Kind.ARRAY_ACCESS)) {
-            // No receiver tree for anything but these four kinds.
-            return null;
+                if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
+                    receiver = ((MemberSelectTree) receiver).getExpression();
+                } else {
+                    // It's a method call "m(foo)" without an explicit receiver
+                    return null;
+                }
+                break;
+            case NEW_CLASS:
+                receiver = ((NewClassTree) expression).getEnclosingExpression();
+                break;
+            case ARRAY_ACCESS:
+                receiver = ((ArrayAccessTree) expression).getExpression();
+                break;
+            case MEMBER_SELECT:
+                receiver = ((MemberSelectTree) expression).getExpression();
+                // Avoid int.class
+                if (receiver instanceof PrimitiveTypeTree) {
+                    return null;
+                }
+                break;
+            case IDENTIFIER:
+                // It's a field access on implicit this or a local variable/parameter.
+                return null;
+            default:
+                return null;
         }
 
-        if (receiver.getKind() == Tree.Kind.METHOD_INVOCATION) {
-            // Trying to handle receiver calls to trees of the form
-            //     ((m).getArray())
-            // returns the type of 'm' in this case
-            receiver = ((MethodInvocationTree) receiver).getMethodSelect();
-
-            if (receiver.getKind() == Tree.Kind.IDENTIFIER) {
-                // It's a method call "m(foo)" without an explicit receiver
-                return null;
-            } else if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
-                receiver = ((MemberSelectTree) receiver).getExpression();
-            } else {
-                // Otherwise, e.g. a NEW_CLASS: nothing to do.
-            }
-        } else if (receiver.getKind() == Tree.Kind.IDENTIFIER) {
-            // It's a field access on implicit this or a local variable/parameter.
-            return null;
-        } else if (receiver.getKind() == Tree.Kind.ARRAY_ACCESS) {
-            return TreeUtils.withoutParens(((ArrayAccessTree) receiver).getExpression());
-        } else if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
-            receiver = ((MemberSelectTree) receiver).getExpression();
-            // Avoid int.class
-            if (receiver instanceof PrimitiveTypeTree) {
-                return null;
-            }
-        }
-
-        // Receiver is now really just the receiver tree.
         return TreeUtils.withoutParens(receiver);
     }
 
@@ -1030,12 +990,12 @@ public final class TreeUtils {
      * @return true iff if tree is a field access expression (implicit or explicit)
      */
     public static boolean isFieldAccess(Tree tree) {
-        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             // explicit field access
             MemberSelectTree memberSelect = (MemberSelectTree) tree;
             Element el = TreeUtils.elementFromUse(memberSelect);
             return el.getKind().isField();
-        } else if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
+        } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
             // implicit field access
             IdentifierTree ident = (IdentifierTree) tree;
             Element el = TreeUtils.elementFromUse(ident);
@@ -1054,7 +1014,7 @@ public final class TreeUtils {
      */
     public static String getFieldName(Tree tree) {
         assert isFieldAccess(tree);
-        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             MemberSelectTree mtree = (MemberSelectTree) tree;
             return mtree.getIdentifier().toString();
         } else {
@@ -1074,12 +1034,12 @@ public final class TreeUtils {
      * @return true iff if tree is a method access expression (implicit or explicit)
      */
     public static boolean isMethodAccess(Tree tree) {
-        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             // explicit method access
             MemberSelectTree memberSelect = (MemberSelectTree) tree;
             Element el = TreeUtils.elementFromUse(memberSelect);
             return el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR;
-        } else if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
+        } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
             // implicit method access
             IdentifierTree ident = (IdentifierTree) tree;
             // The field "super" and "this" are also legal methods
@@ -1100,7 +1060,7 @@ public final class TreeUtils {
      */
     public static String getMethodName(Tree tree) {
         assert isMethodAccess(tree);
-        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             MemberSelectTree mtree = (MemberSelectTree) tree;
             return mtree.getIdentifier().toString();
         } else {

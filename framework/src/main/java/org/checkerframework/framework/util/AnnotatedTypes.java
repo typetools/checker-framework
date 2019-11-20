@@ -365,7 +365,7 @@ public class AnnotatedTypes {
             final AnnotatedTypeFactory atypeFactory,
             final AnnotatedTypeMirror of,
             final Element member) {
-        final AnnotatedTypeMirror memberType = atypeFactory.getAnnotatedType(member);
+        AnnotatedTypeMirror memberType = atypeFactory.getAnnotatedType(member);
 
         if (ElementUtils.isStatic(member)) {
             return memberType;
@@ -392,6 +392,13 @@ public class AnnotatedTypes {
                         ((AnnotatedWildcardType) of).getExtendsBound().deepCopy(),
                         member);
             case INTERSECTION:
+                for (AnnotatedDeclaredType superType :
+                        ((AnnotatedIntersectionType) of).directSuperTypes()) {
+                    memberType =
+                            substituteTypeVariables(
+                                    types, atypeFactory, superType, member, memberType);
+                }
+                return memberType;
             case UNION:
             case DECLARED:
                 return substituteTypeVariables(types, atypeFactory, of, member, memberType);
@@ -1005,9 +1012,9 @@ public class AnnotatedTypes {
         ElementType otherElementType = null;
 
         for (ElementType element : elements) {
-            if (element.equals(ElementType.TYPE_USE)) {
+            if (element == ElementType.TYPE_USE) {
                 hasTypeUse = true;
-            } else if (!element.equals(ElementType.TYPE_PARAMETER)) {
+            } else if (element != ElementType.TYPE_PARAMETER) {
                 otherElementType = element;
             }
             if (hasTypeUse && otherElementType != null) {

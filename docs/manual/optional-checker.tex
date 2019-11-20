@@ -1,7 +1,7 @@
 \htmlhr
 \chapterAndLabel{Optional Checker for possibly-present data}{optional-checker}
 
-Java 8 introduced the \sunjavadoc{java/util/Optional.html}{Optional}
+Java 8 introduced the \sunjavadoc{java.base/java/util/Optional.html}{Optional}
 class, a container that is either empty or contains a non-null value.
 
 Using \<Optional> is intended to help programmers remember to check whether
@@ -20,11 +20,11 @@ Stuart Marks gave
 \item
   Never, ever, use \<null> for an \<Optional> variable or return value.
 \item
-  Never use \sunjavadoc{java/util/Optional.html\#get--}{Optional.get()} unless you can prove that the Optional is present.
+  Never use \sunjavadoc{java.base/java/util/Optional.html\#get()}{Optional.get()} unless you can prove that the Optional is present.
 \item
   Prefer alternative APIs over
-  \sunjavadoc{java/util/Optional.html\#isPresent--}{Optional.isPresent()}
-  and \sunjavadoc{java/util/Optional.html\#get--}{Optional.get()}.
+  \sunjavadoc{java.base/java/util/Optional.html\#isPresent()}{Optional.isPresent()}
+  and \sunjavadoc{java.base/java/util/Optional.html\#get()}{Optional.get()}.
 \item
   It's generally a bad idea to create an \<Optional> for the specific
   purpose of chaining methods from it to get a value.
@@ -94,18 +94,19 @@ Figure~\ref{fig-optional-hierarchy}.
 The Optional Checker guarantees that your code will not throw an exception
 due to use of an absent \<Optional> where a present \<Optional> is needed.
 More specifically, the Optional Checker will issue a warning if you call
-\ahref{https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html#get--}{\<get>}
+\sunjavadoc{java.base/java/util/Optional.html\#get()
+}{get}
 or
-\ahref{https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html#orElseThrow-java.util.function.Supplier-}{\<orElseThrow>}
+\sunjavadoc{java.base/java/util/Optional.html\#orElseThrow(java.util.function.Supplier)}{orElseThrow}
 on a \<@MaybePresent Optional> receiver, because each of these methods
 throws an exception if the receiver is an absent
 \<Optional>.
 
 The Optional Checker does not check nullness properties, such as requiring
 that the argument to
-\ahref{https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html#of-T-}{\<of>}
+\sunjavadoc{java.base/java/util/Optional.html\#of(T)}{of}
 is non-null or guaranteeing that the result of
-\ahref{https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html#get--}{\<get>}
+\sunjavadoc{java.base/java/util/Optional.html\#get()}{get}
 is non-null.  To obtain such a guarantee, run both the Optional Checker and
 the Nullness Checker (\chapterpageref{nullness-checker}).
 

@@ -60,7 +60,7 @@ following two command-line options:
 \item \code{-Abundlenames=\emph{resource\_name}}
 
   \emph{resource\_name} is the name of the resource to be used with
-  \sunjavadoc{java/util/ResourceBundle.html\#getBundle-java.lang.String-java.util.Locale-java.lang.ClassLoader-}{ResourceBundle.getBundle()}.
+  \sunjavadoc{java.base/java/util/ResourceBundle.html\#getBundle(java.lang.String,java.util.Locale,java.lang.ClassLoader)}{ResourceBundle.getBundle()}.
   The checker uses the default \code{Locale} and \code{ClassLoader} in the
   compilation system.
   (For a tutorial about \code{ResourceBundle}s, see
@@ -75,7 +75,7 @@ following two command-line options:
   \emph{prop\_file} is the name of a properties file that maps
   keys to values.  The file format is described in
   the Javadoc for
-  \sunjavadoc{java/util/Properties.html\#load-java.io.Reader-}{Properties.load()}.
+  \sunjavadoc{java.base/java/util/Properties.html\#load(java.io.Reader)}{Properties.load()}.
   Multiple files are separated by colons '\code{:}'.
 
 \end{enumerate}
@@ -125,7 +125,7 @@ Internationalization Format String Checker, or I18n Format String Checker
 (Chapter~\ref{i18n-formatter-checker}).
 It verifies that internationalization format strings are well-formed and
 used with arguments of the proper type, so that
-\sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}
+\sunjavadoc{java.base/java/text/MessageFormat.html\#format(java.lang.String,java.lang.Object...)}{MessageFormat.format}
 does not fail at run time.
 
 \subsectionAndLabel{Internationalization annotations}{i18n-annotations}

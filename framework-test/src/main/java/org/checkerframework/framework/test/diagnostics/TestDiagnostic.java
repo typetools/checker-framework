@@ -85,7 +85,7 @@ public class TestDiagnostic {
      */
     @Override
     public boolean equals(Object otherObj) {
-        if (otherObj == null || !otherObj.getClass().equals(TestDiagnostic.class)) {
+        if (otherObj == null || otherObj.getClass() != TestDiagnostic.class) {
             return false;
         }
 

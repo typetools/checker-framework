@@ -66,9 +66,7 @@ public final class TypesUtils {
     }
 
     /**
-     * Checks if the type represents a java.lang.String declared type. TODO: it would be cleaner to
-     * use String.class.getCanonicalName(), but the two existing methods above don't do that, I
-     * guess for performance reasons.
+     * Checks if the type represents a java.lang.String declared type.
      *
      * @param type the type
      * @return true iff type represents java.lang.String
@@ -85,8 +83,7 @@ public final class TypesUtils {
      * @return true iff type represents a boolean type
      */
     public static boolean isBooleanType(TypeMirror type) {
-        return isDeclaredOfName(type, "java.lang.Boolean")
-                || type.getKind().equals(TypeKind.BOOLEAN);
+        return isDeclaredOfName(type, "java.lang.Boolean") || type.getKind() == TypeKind.BOOLEAN;
     }
 
     /**
@@ -151,9 +148,8 @@ public final class TypesUtils {
      */
     public static boolean isAnonymous(TypeMirror type) {
         return (type instanceof DeclaredType)
-                && ((TypeElement) ((DeclaredType) type).asElement())
-                        .getNestingKind()
-                        .equals(NestingKind.ANONYMOUS);
+                && ((TypeElement) ((DeclaredType) type).asElement()).getNestingKind()
+                        == NestingKind.ANONYMOUS;
     }
 
     /**

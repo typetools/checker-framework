@@ -105,7 +105,19 @@ very_clean: clean
 
 .PHONY: checklink
 checklink:
+	checklink-via-http
+
+.PHONY: checklink-via-file
+checklink-via-file:
 	${CHECKLINK}/checklink -q -e `grep -v '^#' ${CHECKLINK}/checklink-args.txt` manual.html
+
+# Example invocation:
+#   CHECKLINK=$HOME/bin/src/checklink make checklink-via-http
+.PHONY: checklink-via-http
+checklink-via-http: manual.html
+	rm -rf ${HOME}/public_html/tmp-cf-manual
+	(cd .. && cp -prf manual ${HOME}/public_html/tmp-cf-manual)
+	${CHECKLINK}/checklink -q -e `grep -v '^#' ${CHECKLINK}/checklink-args.txt` https://homes.cs.washington.edu/~mernst/tmp-cf-manual/manual.html
 
 .PHONY: tags
 tags: TAGS
