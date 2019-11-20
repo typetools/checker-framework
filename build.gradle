@@ -363,9 +363,14 @@ def createRequireJavaTask(taskNameSuffix, memberLevel, doclintAll = false) {
         // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
     }
 }
-
+// With JDK 11 this task produces the following error:
+// javadoc: error - invalid flag: -d
 createRequireJavaTask("", JavadocMemberLevel.PROTECTED)
+// With JDK 11 this task produces the following error:
+// javadoc: error - invalid flag: -d
 createRequireJavaTask("Private", JavadocMemberLevel.PRIVATE)
+// With JDK 8 this task produces the following error:
+// javadoc: error - java.lang.NullPointerException
 createRequireJavaTask("PrivateStrict", JavadocMemberLevel.PRIVATE, true)
 
 task downloadJtreg(type: Download) {
