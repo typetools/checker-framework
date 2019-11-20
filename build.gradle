@@ -129,7 +129,9 @@ allprojects {
                 file("${destinationDir}/resources/fonts/").mkdirs()
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
                 options.addStringOption('source', '8')
-                options.addBooleanOption('Xerror', isJava8)
+                if (JavaVersion.current().isJava8Compatible()) {
+                    options.addStringOption('Xwerror', '-quiet')
+                }
             }
         }
 
