@@ -110,8 +110,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     private final Map<String, TypeElement> types = new HashMap<>();
 
     /**
-     * Create a new WholeProgramInferenceScenes. ignoreNullAssignments indicates whether assignments
-     * where the rhs is null should be ignored.
+     * Create a new WholeProgramInferenceScenes.
+     *
+     * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
+     *     ignored.
      */
     public WholeProgramInferenceScenes(boolean ignoreNullAssignments) {
         helper = new WholeProgramInferenceScenesHelper(ignoreNullAssignments);
@@ -572,6 +574,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *
      * <p>Metadata kept: - is the class an enum? - a map from fully-qualified names to classSymbols,
      * used later to recover type parameter information.
+     *
+     * @param classSymbol the class for which to update metadata
      */
     private void updateClassMetadata(ClassSymbol classSymbol) {
         String qualifiedName = classSymbol.getQualifiedName().toString();

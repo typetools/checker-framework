@@ -108,8 +108,10 @@ public class WholeProgramInferenceScenesHelper {
     private final Map<String, TypeMirror> basetypes = new HashMap<>();
 
     /**
-     * Create a new helper. ignoreNullAssignments indicates whether assignments where the rhs is
-     * null should be ignored.
+     * Create a new helper.
+     *
+     * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
+     *     ignored.
      */
     public WholeProgramInferenceScenesHelper(boolean ignoreNullAssignments) {
         this.ignoreNullAssignments = ignoreNullAssignments;
