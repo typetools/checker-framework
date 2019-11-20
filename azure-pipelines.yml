@@ -33,8 +33,6 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: env
-    displayName: env
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: misc_jdk11
