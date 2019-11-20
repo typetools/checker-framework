@@ -33,5 +33,5 @@ make -C docs/manual all
 (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/warnings.txt 2>&1) || true
 /tmp/plume-scripts/ci-lint-diff /tmp/warnings.txt
 
-(./gradlew requireJavadocPrivateStrict --console=plain --warning-mode=all --no-daemon > /tmp/warnings.txt 2>&1) || true
+(./gradlew javadocDoclintAll --console=plain --warning-mode=all --no-daemon > /tmp/warnings.txt 2>&1) || true
 /tmp/plume-scripts/ci-lint-diff /tmp/warnings.txt

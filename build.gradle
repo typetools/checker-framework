@@ -114,7 +114,7 @@ allprojects {
             dependsOn(":framework-test:${tagletVersion}Classes")
             doFirst {
                 options.encoding = 'UTF-8'
-                if (!name.startsWith('requireJavadoc')) {
+                if (!name.startsWith('requireJavadoc') && !name.equals("javadocDoclintAll")) {
                     options.memberLevel = javadocMemberLevel
                 }
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
@@ -334,30 +334,34 @@ dependencies {
 
 
 /**
- * Creates a task named,requireJavadoc${taskNameSuffix}, that ensures Javadoc is present.
- * @param taskNameSuffix the end of the task name.
+ * Creates a task named taskName that runs javadoc.
+ *
+ * @param taskName the name of the task to create
  * @param memberLevel the JavadocMemberLevel to use
- * @param doclintAll whether or not -Xdoclint:all is used, defaults to false
+ * @param requireJavadoc whether or not to run the RequireJavadoc doclet. If false -Xdoclint:all is
+ * passed. Defaults to true.
  * @return the new task
  */
-def createRequireJavaTask(taskNameSuffix, memberLevel, doclintAll = false) {
-    tasks.create(name: "requireJavadoc${taskNameSuffix}", type: Javadoc) {
+def createJavadocTask(taskName, memberLevel, requireJavadoc = true) {
+    tasks.create(name: taskName, type: Javadoc) {
         description = 'Ensures that Java elements have Javadoc documentation.'
         destinationDir = file("${rootDir}/docs/tmpapi")
         destinationDir.mkdirs()
         subprojects.forEach {
-            source += it.sourceSets.main.allJava
+            if(!it.name.startsWith("checker-qual")) {
+                source += it.sourceSets.main.allJava
+            }
         }
 
         classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
 
         destinationDir.deleteDir()
         options.memberLevel = memberLevel
-        if(!doclintAll) {
+        if (requireJavadoc) {
             options.docletpath = configurations.requireJavadoc.asList()
             options.doclet = "org.plumelib.javadoc.RequireJavadoc"
         }
-        options.addBooleanOption('Xdoclint:all', doclintAll)
+        options.addBooleanOption('Xdoclint:all', !requireJavadoc)
         options.addStringOption('Xmaxwarns', '99999')
 
         // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
@@ -365,13 +369,13 @@ def createRequireJavaTask(taskNameSuffix, memberLevel, doclintAll = false) {
 }
 // With JDK 11 this task produces the following error:
 // javadoc: error - invalid flag: -d
-createRequireJavaTask("", JavadocMemberLevel.PROTECTED)
+createJavadocTask('requireJavadoc', JavadocMemberLevel.PROTECTED)
 // With JDK 11 this task produces the following error:
 // javadoc: error - invalid flag: -d
-createRequireJavaTask("Private", JavadocMemberLevel.PRIVATE)
+createJavadocTask('requireJavadocPrivate', JavadocMemberLevel.PRIVATE)
 // With JDK 8 this task produces the following error:
 // javadoc: error - java.lang.NullPointerException
-createRequireJavaTask("PrivateStrict", JavadocMemberLevel.PRIVATE, true)
+createJavadocTask('javadocDoclintAll', JavadocMemberLevel.PRIVATE, false)
 
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
