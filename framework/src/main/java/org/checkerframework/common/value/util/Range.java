@@ -70,10 +70,11 @@ public class Range {
     /**
      * Create a Range from a collection of Integers.
      *
-     * @param collection from which min and max values will be used as from and to values in the
-     *     range
+     * @param list from which min and max values will be used as from and to values in the range
      */
-    public Range(Collection<Integer> collection) {
+    // The formal parameter type cannot be Collection<Integer> because that would erase to the same
+    // raw types as the Range(Collection<Long>) constructor.
+    public Range(List<Integer> list) {
         this(Collections.min(list), Collections.max(list));
     }
 
