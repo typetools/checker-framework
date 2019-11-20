@@ -418,7 +418,7 @@ public final class TreeUtils {
             case VARIABLE:
                 return parent;
             case MEMBER_SELECT:
-                // Also check case when treepath's leaf tree is used as methohd
+                // Also check case when treepath's leaf tree is used as method
                 // invocation's actual receiver
                 // If so, return that method invocation tree too as the assignment
                 // context tree rather than null as we did before
