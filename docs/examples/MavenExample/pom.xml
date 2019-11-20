@@ -108,7 +108,7 @@
                   <!-- <arg>-Awarns</arg> -->
                   <!--
                     Annotations defined in module 'your-qual-artifact'
-                    -Aquals=myPackage.qual.MyFenum, myPackage.qual.MyCustomType
+                    <arg>-Aquals=myPackage.qual.MyFenum,myPackage.qual.MyCustomType</arg>
                   -->
                   <arg>-Alint</arg>
               </compilerArgs>
