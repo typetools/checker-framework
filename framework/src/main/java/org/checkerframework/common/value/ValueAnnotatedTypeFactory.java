@@ -382,8 +382,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 break;
             default:
-                throw new BugInCF(
- 				  anno.toString() + " on a type of kind " + type.getKind());
+                throw new BugInCF(anno.toString() + " on a type of kind " + type.getKind());
         }
         return from;
     }
