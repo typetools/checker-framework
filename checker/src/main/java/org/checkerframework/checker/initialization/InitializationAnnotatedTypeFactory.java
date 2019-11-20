@@ -169,8 +169,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Returns whether or not {@code field} has the invariant annotation.
      *
-     * <p>This method is a convenience method for {@link *
-     * #hasFieldInvariantAnnotation(AnnotatedTypeMirror, VariableElement)}.
+     * <p>This method is a convenience method for {@link
      * #hasFieldInvariantAnnotation(AnnotatedTypeMirror, VariableElement)}.
      *
      * <p>If the {@code field} is a type variable, this method returns true if any possible
