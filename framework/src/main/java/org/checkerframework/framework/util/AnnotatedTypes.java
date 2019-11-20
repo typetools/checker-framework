@@ -100,8 +100,6 @@ public class AnnotatedTypes {
      *
      * @param atypeFactory {@link AnnotatedTypeFactory}
      * @param type type from which to copy annotations
-     * @param superType a type whose erased Java type is a supertype of {@code type}'s erased Java
-     *     type.
      * @return {@code superType} with annotations copied from {@code type} and type variables
      *     substituted from {@code type}.
      */
