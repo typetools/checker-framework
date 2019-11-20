@@ -114,7 +114,7 @@ allprojects {
             dependsOn(":framework-test:${tagletVersion}Classes")
             doFirst {
                 options.encoding = 'UTF-8'
-                if (!name.equals('requireJavadocPrivate')) {
+                if (!name.startsWith('requireJavadoc')) {
                     options.memberLevel = javadocMemberLevel
                 }
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
@@ -129,9 +129,7 @@ allprojects {
                 file("${destinationDir}/resources/fonts/").mkdirs()
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
                 options.addStringOption('source', '8')
-                if (JavaVersion.current().isJava8Compatible()) {
-                    options.addStringOption('Xwerror', '-quiet')
-               }
+                options.addBooleanOption('Xerror', isJava8)
             }
         }
 
@@ -329,38 +327,41 @@ configurations {
 }
 dependencies {
     // https://mvnrepository.com/artifact/org.plumelib/require-javadoc
-    compileOnly group: 'org.plumelib', name: 'require-javadoc', version: '0.1.2'
+    requireJavadoc group: 'org.plumelib', name: 'require-javadoc', version: '0.1.2'
 }
-task requireJavadoc(type: Javadoc, group: "Documentation") {
-    description = 'Ensures that Java elements have Javadoc documentation.'
-    destinationDir = file("${rootDir}/docs/tmpapi")
-    destinationDir.mkdirs()
-    source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
-            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
-    classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
 
-    destinationDir.deleteDir()
 
-    // options.memberLevel = JavadocMemberLevel.PRIVATE
-    options.docletpath = project.sourceSets.main.compileClasspath as List
-    options.doclet = "org.plumelib.javadoc.RequireJavadoc"
-    // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
+/**
+ * Creates a task named,requireJavadoc${taskNameSuffix}, that ensures Javadoc is present.
+ * @param taskNameSuffix the end of the task name.
+ * @param memberLevel the JavadocMemberLevel to use
+ * @param doclintAll whether or not -Xdoclint:all is used, defaults to false
+ * @return the new task
+ */
+def createRequireJavaTask(taskNameSuffix, memberLevel, doclintAll = false) {
+    tasks.create(name: "requireJavadoc${taskNameSuffix}", type: Javadoc) {
+        description = 'Ensures that Java elements have Javadoc documentation.'
+        destinationDir = file("${rootDir}/docs/tmpapi")
+        destinationDir.mkdirs()
+        subprojects.forEach {
+            source += it.sourceSets.main.allJava
+        }
+
+        classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+
+        destinationDir.deleteDir()
+        options.memberLevel = memberLevel
+        options.docletpath = configurations.requireJavadoc.asList()
+        options.doclet = "org.plumelib.javadoc.RequireJavadoc"
+        options.addBooleanOption('Xdoclint:all', doclintAll)
+
+        // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
+    }
 }
-task requireJavadocPrivate(type: Javadoc, group: "Documentation") {
-    description = 'Ensures that all (even private) Java elements have Javadoc documentation.'
-    destinationDir = file("${rootDir}/docs/tmpapi")
-    destinationDir.mkdirs()
-    source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
-            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
-    classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
 
-    destinationDir.deleteDir()
-
-    options.memberLevel = JavadocMemberLevel.PRIVATE
-    options.docletpath = project.sourceSets.main.compileClasspath as List
-    options.doclet = "org.plumelib.javadoc.RequireJavadoc"
-    // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
-}
+createRequireJavaTask("", JavadocMemberLevel.PROTECTED)
+createRequireJavaTask("Private", JavadocMemberLevel.PRIVATE)
+createRequireJavaTask("PrivateStrict", JavadocMemberLevel.PRIVATE, true)
 
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
