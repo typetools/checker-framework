@@ -58,23 +58,21 @@ public class Range {
     public static final Range NOTHING = new Range();
 
     /**
-     * Convenience construtor for often invoked pattern for Long collections
+     * Convenience construtor for a any collection of Long elements.
      *
-     * @param collection the min and max value found in it will be used as from and to values in the
-     *     range
+     * @param collection from which min and max values will be used as from and to values in the range.
      */
     public Range(Collection<Long> collection) {
         this(Collections.min(collection), Collections.max(collection));
     }
 
     /**
-     * Convenience construtor for often invoked pattern for Integer collections
+     * Convenience construtor for List of Integer.
      *
-     * @param collection the min and max value found in it will be used as from and to values in the
-     *     range
+     * @param list from which min and max values will be used as from and to values in the range.
      */
-    public Range(List<Integer> collection) {
-        this(Collections.min(collection), Collections.max(collection));
+    public Range(List<Integer> list) {
+        this(Collections.min(list), Collections.max(list));
     }
 
     /**
