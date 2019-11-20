@@ -356,8 +356,11 @@ def createRequireJavaTask(taskNameSuffix, memberLevel, doclintAll = false) {
         if(!doclintAll) {
             options.docletpath = configurations.requireJavadoc.asList()
             options.doclet = "org.plumelib.javadoc.RequireJavadoc"
+        } else {
+            options.docletpath = []
         }
         options.addBooleanOption('Xdoclint:all', doclintAll)
+        options.addStringOption('Xmaxwarns', '99999')
 
         // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
     }
