@@ -353,8 +353,10 @@ def createRequireJavaTask(taskNameSuffix, memberLevel, doclintAll = false) {
 
         destinationDir.deleteDir()
         options.memberLevel = memberLevel
-        options.docletpath = configurations.requireJavadoc.asList()
-        options.doclet = "org.plumelib.javadoc.RequireJavadoc"
+        if(!doclintAll) {
+            options.docletpath = configurations.requireJavadoc.asList()
+            options.doclet = "org.plumelib.javadoc.RequireJavadoc"
+        }
         options.addBooleanOption('Xdoclint:all', doclintAll)
 
         // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
