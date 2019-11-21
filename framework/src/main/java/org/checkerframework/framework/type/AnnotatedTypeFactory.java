@@ -317,6 +317,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final boolean infer;
 
     /**
+     * Which whole-program inference output mode to use, if doing whole-program inference. Would be
+     * final, but not set unless WPI is enabled.
+     */
+    private WholeProgramInference.OutputKind wpiOutputKind;
+
+    /**
      * Should results be cached? This means that ATM.deepCopy() will be called. ATM.deepCopy() used
      * to (and perhaps still does) side effect the ATM being copied. So setting this to false is not
      * equivalent to setting shouldReadCache to false.
@@ -427,6 +433,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         infer = checker.hasOption("infer");
         if (infer) {
             checkInvalidOptionsInferSignatures();
+            wpiOutputKind =
+                    "stubs".equals(checker.getOption("infer"))
+                            ? WholeProgramInference.OutputKind.STUB
+                            : WholeProgramInference.OutputKind.JAIF;
             wholeProgramInference =
                     new WholeProgramInferenceScenes(
                             !"NullnessAnnotatedTypeFactory"
@@ -1025,15 +1035,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
-        if (checker.hasOption("infer") && wholeProgramInference != null) {
+        if (infer && wholeProgramInference != null) {
             // Write out the results of whole-program inference.
             // In order to perform the write operation only once for each class, the best location
             // to do so is here.
-            WholeProgramInference.OutputKind outputKind =
-                    "stubs".equals(checker.getOption("infer"))
-                            ? WholeProgramInference.OutputKind.STUB
-                            : WholeProgramInference.OutputKind.JAIF;
-            wholeProgramInference.writeResultsToFile(outputKind);
+            wholeProgramInference.writeResultsToFile(wpiOutputKind);
         }
     }
 
