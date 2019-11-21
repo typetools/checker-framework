@@ -55,7 +55,7 @@ public abstract class AbstractCFGVisualizer<
         this.verbose =
                 verb != null
                         && (verb instanceof String
-                                ? Boolean.getBoolean((String) verb)
+                                ? Boolean.parseBoolean((String) verb)
                                 : (boolean) verb);
     }
 
