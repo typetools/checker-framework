@@ -522,11 +522,11 @@ public class PluginUtil {
     }
 
     /**
-     * Extract the major version number from java.version. Two possible formats are considered. Up
-     * to Java 8, from a version string like `1.8.whatever`, this method extracts 8. Since Java 9,
-     * from a version string like `11.0.1`, this method extracts 11.
+     * Extract the major version number from the Java.version. Two possible formats are considered.
+     * Up to Java 8, from a version string like `1.8.whatever`, this method extracts 8. Since Java
+     * 9, from a version string like `11.0.1`, this method extracts 11.
      *
-     * @return The major version number from java.version
+     * @return the major version number from the Java.version
      */
     public static int getJreVersion() {
         final String jreVersionStr = System.getProperty("java.version");
