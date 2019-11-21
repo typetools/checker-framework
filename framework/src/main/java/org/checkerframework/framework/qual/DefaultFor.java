@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * A meta-annotation applied to the declaration of a type qualifier specifies that the given
- * annotation should be the default for
+ * annotation should be the default for.
  *
  * <ul>
  *   <li>a particular location.

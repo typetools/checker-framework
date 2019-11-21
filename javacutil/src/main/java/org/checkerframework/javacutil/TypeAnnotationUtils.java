@@ -540,7 +540,7 @@ public class TypeAnnotationUtils {
      * Remove type annotations from the given type.
      *
      * @param in the input type
-     * @return the same underlying type, but without type annotations.
+     * @return the same underlying type, but without type annotations
      */
     public static Type unannotatedType(final TypeMirror in) {
         final Type impl = (Type) in;

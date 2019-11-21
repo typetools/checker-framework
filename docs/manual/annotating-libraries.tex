@@ -530,8 +530,9 @@ un-annotated type variable in a stub file is used instead of
 annotations on a type variable in bytecode.
 This feature allows stub files to change the effective annotations in
 all possible situations.
-Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
-warning whenever a stub file overwrites bytecode annotations.
+%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
+% Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
+% warning whenever a stub file overwrites bytecode annotations.
 Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get
 a warning whenever a stub file specification is redundant with
 bytecode annotations.
@@ -709,9 +710,10 @@ Some command-line options make the stub parser issue more warnings:
   other classes from the same package are present.
   Useful if a package spans more than one jar.
 
-\item[\<-AstubWarnIfOverwritesBytecode>]
-  Warn whenever some element of a
-  stub file overwrites annotations contained in bytecode.
+%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
+% \item[\<-AstubWarnIfOverwritesBytecode>]
+%   Warn whenever some element of a
+%   stub file overwrites annotations contained in bytecode.
 \end{description}
 
 Finally,
