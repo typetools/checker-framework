@@ -98,7 +98,7 @@ public class Range {
      * @param from the lower bound (inclusive)
      * @param to the upper bound (inclusive)
      */
-    private Range createRangeOrEverything(long from, long to) {    
+    private static Range createRangeOrEverything(long from, long to) {    
         if (from <= to) {
             return new Range(from, to);
         } else {
@@ -1104,7 +1104,7 @@ public class Range {
      * @param bigTo the upper bound of the BigInteger range
      * @return a range with Long type bounds converted from the BigInteger range
      */
-    private Range bigRangeToLongRange(BigInteger bigFrom, BigInteger bigTo) {
+    private static Range bigRangeToLongRange(BigInteger bigFrom, BigInteger bigTo) {
         if (ignoreOverflow) {
             bigFrom = bigFrom.max(BIG_LONG_MIN_VALUE);
             bigTo = bigTo.min(BIG_LONG_MAX_VALUE);
