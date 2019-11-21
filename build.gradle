@@ -373,8 +373,6 @@ createJavadocTask('requireJavadoc', JavadocMemberLevel.PROTECTED)
 // With JDK 11 this task produces the following error:
 // javadoc: error - invalid flag: -d
 createJavadocTask('requireJavadocPrivate', JavadocMemberLevel.PRIVATE)
-// With JDK 8 this task produces the following error:
-// javadoc: error - java.lang.NullPointerException
 createJavadocTask('javadocDoclintAll', JavadocMemberLevel.PRIVATE, false)
 
 task downloadJtreg(type: Download) {
