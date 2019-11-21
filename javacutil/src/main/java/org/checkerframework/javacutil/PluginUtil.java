@@ -12,8 +12,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * This file contains basic utility functions that should be reused to create a command-line call to
@@ -155,7 +157,7 @@ public class PluginUtil {
             if (notFirst) {
                 sb.append(delimiter);
             }
-            sb.append(obj.toString());
+            sb.append(Objects.toString(obj));
             notFirst = true;
         }
 
@@ -390,9 +392,9 @@ public class PluginUtil {
 
     // TODO: Perhaps unify this with CheckerMain as it violates DRY
     public static List<String> getCmd(
-            final String executable,
-            final File javacPath,
-            final File jdkPath,
+            final @Nullable String executable,
+            final @Nullable File javacPath,
+            final @Nullable File jdkPath,
             final File srcFofn,
             final String processors,
             final String checkerHome,
@@ -534,7 +536,9 @@ public class PluginUtil {
         final Pattern oldVersionPattern = Pattern.compile("^1\\.(\\d+)\\..*$");
         final Matcher oldVersionMatcher = oldVersionPattern.matcher(jreVersionStr);
         if (oldVersionMatcher.matches()) {
-            return Integer.parseInt(oldVersionMatcher.group(1));
+            String v = oldVersionMatcher.group(1);
+            assert v != null : "@AssumeAssertion(nullness): inspection";
+            return Integer.parseInt(v);
         }
 
         // See http://openjdk.java.net/jeps/223
@@ -542,14 +546,18 @@ public class PluginUtil {
         final Pattern newVersionPattern = Pattern.compile("^(\\d+).*$");
         final Matcher newVersionMatcher = newVersionPattern.matcher(jreVersionStr);
         if (newVersionMatcher.matches()) {
-            return Integer.parseInt(newVersionMatcher.group(1));
+            String v = newVersionMatcher.group(1);
+            assert v != null : "@AssumeAssertion(nullness): inspection";
+            return Integer.parseInt(v);
         }
 
         // For Early Access version of the JDK
         final Pattern eaVersionPattern = Pattern.compile("^(\\d+)-ea$");
         final Matcher eaVersionMatcher = eaVersionPattern.matcher(jreVersionStr);
         if (eaVersionMatcher.matches()) {
-            return Integer.parseInt(eaVersionMatcher.group(1));
+            String v = eaVersionMatcher.group(1);
+            assert v != null : "@AssumeAssertion(nullness): inspection";
+            return Integer.parseInt(v);
         }
 
         throw new RuntimeException(

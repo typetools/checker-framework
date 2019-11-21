@@ -10,6 +10,7 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Names;
 import java.util.StringTokenizer;
 import javax.annotation.processing.ProcessingEnvironment;
+import org.checkerframework.javacutil.Pair;
 
 /**
  * A Utility class for parsing Java expression snippets, and converting them to proper Javac AST
@@ -33,7 +34,7 @@ import javax.annotation.processing.ProcessingEnvironment;
  */
 public class TreeParser {
     private static final String DELIMS = ".[](),";
-    private static final String SENTINAL = "";
+    private static final String SENTINEL = "";
 
     private final TreeMaker maker;
     private final Names names;
@@ -51,11 +52,11 @@ public class TreeParser {
      * @return the AST corresponding to the snippet
      */
     public ExpressionTree parseTree(String s) {
-        tokenizer = new StringTokenizer(s, DELIMS, true);
-        token = tokenizer.nextToken();
+        StringTokenizer tokenizer = new StringTokenizer(s, DELIMS, true);
+        String token = tokenizer.nextToken();
 
         try {
-            return parseExpression();
+            return parseExpression(tokenizer, token).first;
         } catch (Exception e) {
             throw new ParseError(e);
         } finally {
@@ -64,15 +65,11 @@ public class TreeParser {
         }
     }
 
-    StringTokenizer tokenizer = null;
-    String token = null;
-
-    private String nextToken() {
-        token = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : SENTINAL;
-        return token;
+    private String nextToken(StringTokenizer tokenizer) {
+        return tokenizer.hasMoreTokens() ? tokenizer.nextToken() : SENTINEL;
     }
 
-    JCExpression fromToken(String token) {
+    private JCExpression fromToken(String token) {
         // Optimization
         if ("true".equals(token)) {
             return maker.Literal(true);
@@ -97,38 +94,44 @@ public class TreeParser {
         return maker.Literal(value);
     }
 
-    JCExpression parseExpression() {
+    private Pair<JCExpression, String> parseExpression(StringTokenizer tokenizer, String token) {
         JCExpression tree = fromToken(token);
 
         while (tokenizer.hasMoreTokens()) {
-            String delim = nextToken();
+            String delim = nextToken(tokenizer);
+            token = delim;
             if (".".equals(delim)) {
-                nextToken();
+                token = nextToken(tokenizer);
                 tree = maker.Select(tree, names.fromString(token));
             } else if ("(".equals(delim)) {
-                nextToken();
+                token = nextToken(tokenizer);
                 ListBuffer<JCExpression> args = new ListBuffer<>();
                 while (!")".equals(token)) {
-                    JCExpression arg = parseExpression();
+                    Pair<JCExpression, String> p = parseExpression(tokenizer, token);
+                    JCExpression arg = p.first;
+                    token = p.second;
                     args.append(arg);
                     if (",".equals(token)) {
-                        nextToken();
+                        token = nextToken(tokenizer);
                     }
                 }
                 // For now, handle empty args only
-                assert ")".equals(token);
+                assert ")".equals(token) : "Unexpected token: " + token;
                 tree = maker.Apply(List.nil(), tree, args.toList());
             } else if ("[".equals(token)) {
-                nextToken();
-                JCExpression index = parseExpression();
-                assert "]".equals(token);
+                token = nextToken(tokenizer);
+                Pair<JCExpression, String> p = parseExpression(tokenizer, token);
+                JCExpression index = p.first;
+                token = p.second;
+                assert "]".equals(token) : "Unexpected token: " + token;
                 tree = maker.Indexed(tree, index);
             } else {
-                return tree;
+                return Pair.of(tree, token);
             }
+            assert tokenizer != null : "@AssumeAssertion(nullness): side effects";
         }
 
-        return tree;
+        return Pair.of(tree, token);
     }
 
     private static class ParseError extends RuntimeException {
