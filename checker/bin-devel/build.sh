@@ -27,7 +27,7 @@ else
 fi
 
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
-  || git -C /tmp clone --depth 1 -b ciRangeEnd -q https://github.com/plume-lib/plume-scripts.git
+  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 
 # This does not work:
 #   AT=${AFU}/..
