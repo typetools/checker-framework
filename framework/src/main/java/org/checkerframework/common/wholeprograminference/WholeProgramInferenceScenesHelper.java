@@ -92,11 +92,10 @@ public class WholeProgramInferenceScenesHelper {
     /**
      * A map from the description of an ATypeElement to the corresponding TypeMirror.
      *
-     * <p>AScene doesn't carry around the basetypes of annotated types, which precludes outputting
-     * correctly formatted stub files (which sometimes require correct base types, such as when
-     * outputting the parameters of a method). #updateTypeElementFromATM intercepts updates to
-     * ATypeElement_s that add annotations, and populates this map with their corresponding
-     * basetypes. Then, these basetypes are used when outputting stub files.
+     * <p>AScene doesn't carry around the basetypes of annotated types, but this is needed to output
+     * stub files, such as when outputting the parameters of a method. {@link
+     * #updateTypeElementFromATM} intercepts updates to ATypeElements that add annotations, and
+     * populates this map with their corresponding basetypes.
      *
      * <p>This is super hacky, because there is no guarantee that two ATypeElement objects won't
      * have the same description. In practice, I haven't observed any problems caused by this. The
@@ -171,7 +170,7 @@ public class WholeProgramInferenceScenesHelper {
         if (!stubDir.exists()) {
             stubDir.mkdirs();
         }
-        // Convert the .jaif file names in modifiedScenes into .astub files.
+        // Convert the .jaif file names in modifiedScenes into .astub file names..
         // Then write scenes into .astub files.
         for (String jaifPath : modifiedScenes) {
             String stubPath = jaifPath.replace(".jaif", ".astub");
