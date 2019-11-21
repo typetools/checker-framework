@@ -284,8 +284,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      * @return true if the annotated type is annotated as {@link Unsigned} or {@link PolySigned}
      */
     private boolean hasUnsignedAnnotation(AnnotatedTypeMirror type) {
-        if (type.hasAnnotation(Unsigned.class) || type.hasAnnotation(PolySigned.class)) return true;
-        else return false;
+        return type.hasAnnotation(Unsigned.class) || type.hasAnnotation(PolySigned.class);
     }
 
     /**
@@ -295,8 +294,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      * @return true if the annotated type is annotated as {@link Signed} or {@link PolySigned}
      */
     private boolean hasSignedAnnotation(AnnotatedTypeMirror type) {
-        if (type.hasAnnotation(Signed.class) || type.hasAnnotation(PolySigned.class)) return true;
-        else return false;
+        return type.hasAnnotation(Signed.class) || type.hasAnnotation(PolySigned.class);
     }
 
     /**
