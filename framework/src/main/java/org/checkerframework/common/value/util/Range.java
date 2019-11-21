@@ -98,14 +98,14 @@ public class Range {
      * @param from the lower bound (inclusive)
      * @param to the upper bound (inclusive)
      */
-    private static Range createRangeOrEverything(long from, long to) {    
+    private static Range createRangeOrEverything(long from, long to) {
         if (from <= to) {
             return new Range(from, to);
         } else {
             return EVERYTHING;
         }
     }
-    
+
     @Override
     public String toString() {
         if (this.isNothing()) {
@@ -433,14 +433,15 @@ public class Range {
             final BigInteger bigLeftFrom = BigInteger.valueOf(from);
             final BigInteger bigRightFrom = BigInteger.valueOf(right.from);
             final BigInteger bigRightTo = BigInteger.valueOf(right.to);
-            final BigInteger bigLeftTo=BigInteger.valueOf(to);
+            final BigInteger bigLeftTo = BigInteger.valueOf(to);
             List<BigInteger> bigPossibleValues =
                     Arrays.asList(
                             bigLeftFrom.multiply(bigRightFrom),
                             bigLeftFrom.multiply(bigRightTo),
                             bigLeftTo.multiply(bigRightFrom),
                             bigLeftTo.multiply(bigRightTo));
-            return bigRangeToLongRange(Collections.min(bigPossibleValues), Collections.max(bigPossibleValues));
+            return bigRangeToLongRange(
+                    Collections.min(bigPossibleValues), Collections.max(bigPossibleValues));
         }
     }
 
@@ -1083,15 +1084,12 @@ public class Range {
     private static final BigInteger BIG_LONG_MIN_VALUE = BigInteger.valueOf(Long.MIN_VALUE);
     private static final BigInteger BIG_LONG_MAX_VALUE = BigInteger.valueOf(Long.MAX_VALUE);
     private static final BigInteger BIG_LONG_WIDTH =
-            BIG_LONG_MAX_VALUE
-                    .subtract(BIG_LONG_MIN_VALUE)
-                    .add(BigInteger.ONE);
+            BIG_LONG_MAX_VALUE.subtract(BIG_LONG_MIN_VALUE).add(BigInteger.ONE);
 
     /**
      * Converts a range with BigInteger type bounds to a range with Long type bounds.
      *
-     * <p>If the BigInteger range is wider than the full range of the Long class,
-     * return EVERYTHING.
+     * <p>If the BigInteger range is wider than the full range of the Long class, return EVERYTHING.
      *
      * <p>If one of the BigInteger bounds is out of Long's range and {@link #ignoreOverflow} is
      * false, convert the bounds to Long type in accordance with Java twos-complement overflow
@@ -1118,5 +1116,4 @@ public class Range {
         long longTo = bigTo.longValue();
         return createRangeOrEverything(longFrom, longTo);
     }
-  
 }
