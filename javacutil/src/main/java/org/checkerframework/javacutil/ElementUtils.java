@@ -357,7 +357,7 @@ public class ElementUtils {
         TypeElement elt = TypesUtils.getTypeElement(type);
         assert elt != null : "@AssumeAssertion(nullness): assumption";
         Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
-        for (VariableElement field : new HashSet<>(fieldElts)) {
+        for (VariableElement field : new HashSet<VariableElement>(fieldElts)) {
             if (!field.getModifiers().contains(Modifier.PRIVATE)) {
                 notFound.remove(field.getSimpleName().toString());
             } else {
