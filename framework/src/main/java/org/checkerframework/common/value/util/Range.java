@@ -113,6 +113,21 @@ public class Range {
         }
     }
 
+    /**
+     * Returns a range with its bounds specified by two parameters, {@code from} and {@code to}. If
+     * {@code from} is greater than {@code to}, returns {@link #EVERYTHING}.
+     *
+     * @param from the lower bound (inclusive)
+     * @param to the upper bound (inclusive)
+     */
+    private static Range createRangeOrEverything(long from, long to) {
+        if (from <= to) {
+            return new Range(from, to);
+        } else {
+            return EVERYTHING;
+        }
+    }
+
     @Override
     public String toString() {
         if (this.isNothing()) {
@@ -437,15 +452,18 @@ public class Range {
                             from * right.from, from * right.to, to * right.from, to * right.to);
             return new Range(possibleValues);
         } else {
+            final BigInteger bigLeftFrom = BigInteger.valueOf(from);
+            final BigInteger bigRightFrom = BigInteger.valueOf(right.from);
+            final BigInteger bigRightTo = BigInteger.valueOf(right.to);
+            final BigInteger bigLeftTo = BigInteger.valueOf(to);
             List<BigInteger> bigPossibleValues =
                     Arrays.asList(
-                            BigInteger.valueOf(from).multiply(BigInteger.valueOf(right.from)),
-                            BigInteger.valueOf(from).multiply(BigInteger.valueOf(right.to)),
-                            BigInteger.valueOf(to).multiply(BigInteger.valueOf(right.from)),
-                            BigInteger.valueOf(to).multiply(BigInteger.valueOf(right.to)));
-            BigInteger bigFrom = Collections.min(bigPossibleValues);
-            BigInteger bigTo = Collections.max(bigPossibleValues);
-            return bigRangeToLongRange(bigFrom, bigTo);
+                            bigLeftFrom.multiply(bigRightFrom),
+                            bigLeftFrom.multiply(bigRightTo),
+                            bigLeftTo.multiply(bigRightFrom),
+                            bigLeftTo.multiply(bigRightTo));
+            return bigRangeToLongRange(
+                    Collections.min(bigPossibleValues), Collections.max(bigPossibleValues));
         }
     }
 
@@ -1085,16 +1103,18 @@ public class Range {
         return isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
-    private static final BigInteger longWidth =
-            BigInteger.valueOf(Long.MAX_VALUE)
-                    .subtract(BigInteger.valueOf(Long.MIN_VALUE))
-                    .add(BigInteger.ONE);
+    /** Long.MIN_VALUE, as a BigInteger. */
+    private static final BigInteger BIG_LONG_MIN_VALUE = BigInteger.valueOf(Long.MIN_VALUE);
+    /** Long.MAX_VALUE, as a BigInteger. */
+    private static final BigInteger BIG_LONG_MAX_VALUE = BigInteger.valueOf(Long.MAX_VALUE);
+    /** The number of Long values, as a BigInteger. */
+    private static final BigInteger BIG_LONG_WIDTH =
+            BIG_LONG_MAX_VALUE.subtract(BIG_LONG_MIN_VALUE).add(BigInteger.ONE);
 
     /**
      * Converts a range with BigInteger type bounds to a range with Long type bounds.
      *
-     * <p>If the BigInteger range is too wide, i.e., wider than the full range of the Long class,
-     * return EVERYTHING.
+     * <p>If the BigInteger range is wider than the full range of the Long class, return EVERYTHING.
      *
      * <p>If one of the BigInteger bounds is out of Long's range and {@link #ignoreOverflow} is
      * false, convert the bounds to Long type in accordance with Java twos-complement overflow
@@ -1107,28 +1127,18 @@ public class Range {
      * @param bigTo the upper bound of the BigInteger range
      * @return a range with Long type bounds converted from the BigInteger range
      */
-    private Range bigRangeToLongRange(BigInteger bigFrom, BigInteger bigTo) {
-        BigInteger numValues = bigTo.subtract(bigFrom).add(BigInteger.ONE);
-        long resultFrom;
-        long resultTo;
+    private static Range bigRangeToLongRange(BigInteger bigFrom, BigInteger bigTo) {
         if (ignoreOverflow) {
-            BigInteger longMin = BigInteger.valueOf(Long.MIN_VALUE);
-            resultFrom = bigFrom.max(longMin).longValue();
-            BigInteger longMax = BigInteger.valueOf(Long.MAX_VALUE);
-            resultTo = bigTo.min(longMax).longValue();
+            bigFrom = bigFrom.max(BIG_LONG_MIN_VALUE);
+            bigTo = bigTo.min(BIG_LONG_MAX_VALUE);
         } else {
-            if (numValues.compareTo(longWidth) > 0) {
+            BigInteger bigWidth = bigTo.subtract(bigFrom).add(BigInteger.ONE);
+            if (bigWidth.compareTo(BIG_LONG_WIDTH) > 0) {
                 return EVERYTHING;
-            } else {
-                resultFrom = bigFrom.longValue();
-                resultTo = bigTo.longValue();
             }
         }
-
-        if (resultFrom <= resultTo) {
-            return new Range(resultFrom, resultTo);
-        } else {
-            return EVERYTHING;
-        }
+        long longFrom = bigFrom.longValue();
+        long longTo = bigTo.longValue();
+        return createRangeOrEverything(longFrom, longTo);
     }
 }
