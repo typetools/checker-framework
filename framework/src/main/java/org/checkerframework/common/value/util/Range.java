@@ -1081,8 +1081,11 @@ public class Range {
         return isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
+    /** Long.MIN_VALUE, as a BigInteger. */
     private static final BigInteger BIG_LONG_MIN_VALUE = BigInteger.valueOf(Long.MIN_VALUE);
+    /** Long.MAX_VALUE, as a BigInteger. */
     private static final BigInteger BIG_LONG_MAX_VALUE = BigInteger.valueOf(Long.MAX_VALUE);
+    /** The number of Long values, as a BigInteger. */
     private static final BigInteger BIG_LONG_WIDTH =
             BIG_LONG_MAX_VALUE.subtract(BIG_LONG_MIN_VALUE).add(BigInteger.ONE);
 
