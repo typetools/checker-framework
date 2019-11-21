@@ -196,8 +196,7 @@ public class Range {
     }
 
     /** The number of values representable in 32 bits: 2^32 or 1&lt;&lt;32. */
-    private static final long INTEGER_WIDTH =
-            (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
+    private static final long INT_WIDTH = INT_EVERYTHING.width();
 
     /**
      * Converts this range to a 32-bit integral range.
@@ -219,7 +218,7 @@ public class Range {
         if (ignoreOverflow) {
             return new Range(Math.max(from, Integer.MIN_VALUE), Math.min(to, Integer.MAX_VALUE));
         }
-        if (this.isWiderThan(INTEGER_WIDTH)) {
+        if (this.isWiderThan(INT_WIDTH)) {
             return INT_EVERYTHING;
         }
         int intFrom = (int) this.from;
@@ -231,7 +230,7 @@ public class Range {
     }
 
     /** The number of values representable in 16 bits: 2^16 or 1&lt;&lt;16. */
-    private static final long SHORT_WIDTH = Short.MAX_VALUE - Short.MIN_VALUE + 1;
+    private static final long SHORT_WIDTH = SHORT_EVERYTHING.width();
 
     /**
      * Converts a this range to a 16-bit short range.
@@ -266,7 +265,7 @@ public class Range {
     }
 
     /** The number of values representable in char: */
-    private static final long CHAR_WIDTH = Character.MAX_VALUE - Character.MIN_VALUE + 1;
+    private static final long CHAR_WIDTH = CHAR_EVERYTHING.width();
 
     /**
      * Converts this range to a char range.
@@ -302,7 +301,7 @@ public class Range {
     }
 
     /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
-    private static final long BYTE_WIDTH = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
+    private static final long BYTE_WIDTH = BYTE_EVERYTHING.width();
 
     /**
      * Converts a this range to a 8-bit byte range.
@@ -1159,5 +1158,10 @@ public class Range {
         long longFrom = bigFrom.longValue();
         long longTo = bigTo.longValue();
         return createRangeOrEverything(longFrom, longTo);
+    }
+
+    /** @return how many integers in the range */
+    private long width() {
+        return to - from + 1;
     }
 }
