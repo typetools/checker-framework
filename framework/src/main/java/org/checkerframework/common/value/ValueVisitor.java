@@ -29,7 +29,7 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.javacutil.AnnotationUtils;
+import static org.checkerframework.javacutil.AnnotationUtils.*;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Visitor for the Constant Value type system. */
@@ -161,25 +161,25 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
         AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
 
-        if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+        if (areSameByClass(anno, IntRange.class)) {
             // If there are 2 arguments, issue an error if from.greater.than.to.
             // If there are fewer than 2 arguments, we needn't worry about this problem because the
             // other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE accordingly.
             if (args.size() == 2) {
-                long from = AnnotationUtils.getElementValue(anno, "from", Long.class, true);
-                long to = AnnotationUtils.getElementValue(anno, "to", Long.class, true);
+                long from = getElementValue(anno, "from", Long.class, true);
+                long to = getElementValue(anno, "to", Long.class, true);
                 if (from > to) {
                     checker.report(Result.failure("from.greater.than.to"), node);
                     return null;
                 }
             }
-        } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)
-                || AnnotationUtils.areSameByClass(anno, BoolVal.class)
-                || AnnotationUtils.areSameByClass(anno, DoubleVal.class)
-                || AnnotationUtils.areSameByClass(anno, IntVal.class)
-                || AnnotationUtils.areSameByClass(anno, StringVal.class)) {
+        } else if (areSameByClass(anno, ArrayLen.class)
+                || areSameByClass(anno, BoolVal.class)
+                || areSameByClass(anno, DoubleVal.class)
+                || areSameByClass(anno, IntVal.class)
+                || areSameByClass(anno, StringVal.class)) {
             List<Object> values =
-                    AnnotationUtils.getElementValueArray(anno, "value", Object.class, true);
+                    getElementValueArray(anno, "value", Object.class, true);
 
             if (values.isEmpty()) {
                 checker.report(Result.warning("no.values.given"), node);
@@ -187,13 +187,13 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             } else if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
                 checker.report(
                         Result.warning(
-                                (AnnotationUtils.areSameByClass(anno, IntVal.class)
+                                (areSameByClass(anno, IntVal.class)
                                         ? "too.many.values.given.int"
                                         : "too.many.values.given"),
                                 ValueAnnotatedTypeFactory.MAX_VALUES),
                         node);
                 return null;
-            } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
+            } else if (areSameByClass(anno, ArrayLen.class)) {
                 List<Integer> arrayLens = ValueAnnotatedTypeFactory.getArrayLength(anno);
                 if (Collections.min(arrayLens) < 0) {
                     checker.report(
@@ -201,9 +201,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     return null;
                 }
             }
-        } else if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
-            int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
-            int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
+        } else if (areSameByClass(anno, ArrayLenRange.class)) {
+            int from = getElementValue(anno, "from", Integer.class, true);
+            int to = getElementValue(anno, "to", Integer.class, true);
             if (from > to) {
                 checker.report(Result.failure("from.greater.than.to"), node);
                 return null;
@@ -284,16 +284,16 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         boolean result = super.validateType(tree, type);
         if (!result) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
-            if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+            if (areSameByClass(anno, IntRange.class)) {
                 long to = atypeFactory.getToValueFromIntRange(type);
                 long from = atypeFactory.getFromValueFromIntRange(type);
                 if (from > to) {
                     checker.report(Result.failure("from.greater.than.to"), tree);
                     return false;
                 }
-            } else if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
-                int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
-                int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
+            } else if (areSameByClass(anno, ArrayLenRange.class)) {
+                int from = getElementValue(anno, "from", Integer.class, true);
+                int to = getElementValue(anno, "to", Integer.class, true);
                 if (from > to) {
                     checker.report(Result.failure("from.greater.than.to"), tree);
                     return false;
