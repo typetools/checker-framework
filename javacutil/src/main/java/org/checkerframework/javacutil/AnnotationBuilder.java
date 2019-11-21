@@ -479,6 +479,7 @@ public class AnnotationBuilder {
         return this;
     }
 
+    /** Find the VariableElement for the given enum. */
     private VariableElement findEnumElement(Enum<?> value) {
         String enumClass = value.getDeclaringClass().getCanonicalName();
         assert enumClass != null : "@AssumeAssertion(nullness): assumption";
@@ -573,11 +574,13 @@ public class AnnotationBuilder {
     /** Implementation of AnnotationMirror used by the Checker Framework. */
     /* default visibility to allow access from within package. */
     static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
-
+        /** The interned toString value. */
         private @Nullable @Interned String toStringVal;
+        /** The annotation type. */
         private final DeclaredType annotationType;
+        /** The element values. */
         private final Map<ExecutableElement, AnnotationValue> elementValues;
-
+        /** The annotation name. */
         // default visibility to allow access from within package.
         final @Interned String annotationName;
 
@@ -635,10 +638,14 @@ public class AnnotationBuilder {
         }
     }
 
+    /** Implementation of AnnotationValue used by the Checker Framework. */
     private static class CheckerFrameworkAnnotationValue implements AnnotationValue {
+        /** The value. */
         private final Object value;
+        /** The interned value of toString. */
         private @Nullable @Interned String toStringVal;
 
+        /** Create an annotation value. */
         CheckerFrameworkAnnotationValue(Object obj) {
             this.value = obj;
         }

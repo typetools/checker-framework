@@ -23,6 +23,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public abstract class ValueLiteralNode extends Node {
 
+    /** The tree for the value literal. */
     protected final LiteralTree tree;
 
     /** @return the value of the literal, null for the null literal */

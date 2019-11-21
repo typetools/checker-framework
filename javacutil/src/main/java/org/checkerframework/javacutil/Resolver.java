@@ -391,10 +391,12 @@ public class Resolver {
         return f.get(receiver);
     }
 
+    /** Wrap a method invocation on the {code resolve} object. */
     private Symbol wrapInvocationOnResolveInstance(Method method, Object... args) {
         return wrapInvocation(resolve, method, args);
     }
 
+    /** Wrap a method invocation. */
     private Symbol wrapInvocation(Object receiver, Method method, @Nullable Object... args) {
         try {
             @SuppressWarnings("nullness") // assume arguments are OK

@@ -102,6 +102,7 @@ public abstract class Node {
      */
     public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
 
+    /** Is the node an lvalue or not? */
     @Pure
     public boolean isLValue() {
         return lvalue;
@@ -120,6 +121,7 @@ public abstract class Node {
         inSource = inSrc;
     }
 
+    /** The assignment context for the node. */
     public @Nullable AssignmentContext getAssignmentContext() {
         return assignmentContext;
     }

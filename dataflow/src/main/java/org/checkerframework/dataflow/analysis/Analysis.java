@@ -120,6 +120,7 @@ public class Analysis<
     /** The current transfer input when the analysis is running. */
     protected @Nullable TransferInput<A, S> currentInput;
 
+    /** The tree that is currently being looked at. */
     public @Nullable Tree getCurrentTree() {
         return currentTree;
     }
@@ -163,6 +164,7 @@ public class Analysis<
         this.finalLocalValues = new HashMap<>();
     }
 
+    /** The current transfer function. */
     public @Nullable T getTransferFunction() {
         return transferFunction;
     }
@@ -583,6 +585,7 @@ public class Analysis<
         }
     }
 
+    /** Merge two stores, possibly widening the result. */
     private S mergeStores(S newStore, @Nullable S previousStore, boolean shouldWiden) {
         if (previousStore == null) {
             return newStore;
@@ -628,6 +631,7 @@ public class Analysis<
             queue.clear();
         }
 
+        /** @see PriorityQueue.isEmpty */
         @EnsuresNonNullIf(result = false, expression = "poll()")
         @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied") // forwarded
         public boolean isEmpty() {
@@ -642,6 +646,7 @@ public class Analysis<
             queue.add(block);
         }
 
+        /** @see PriorityQueue.poll */
         public @Nullable Block poll() {
             return queue.poll();
         }
@@ -797,6 +802,7 @@ public class Analysis<
         return ct;
     }
 
+    /** The transfer results for each return node in the CFG. */
     public List<Pair<ReturnNode, TransferResult<A, S>>> getReturnStatementStores() {
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
         List<Pair<ReturnNode, TransferResult<A, S>>> result = new ArrayList<>();
@@ -807,6 +813,10 @@ public class Analysis<
         return result;
     }
 
+    /**
+     * The result of running the analysis. This is only available once the analysis finished
+     * running.
+     */
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
@@ -833,6 +843,7 @@ public class Analysis<
         }
     }
 
+    /** @return the exceptional exit store. */
     public S getExceptionalExitStore() {
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
         S exceptionalExitStore = inputs.get(cfg.getExceptionalExitBlock()).getRegularStore();

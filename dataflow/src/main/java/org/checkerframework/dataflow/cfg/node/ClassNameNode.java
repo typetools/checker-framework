@@ -67,6 +67,7 @@ public class ClassNameNode extends Node {
         return element;
     }
 
+    /** The parent node of the current node. */
     public @Nullable Node getParent() {
         return parent;
     }

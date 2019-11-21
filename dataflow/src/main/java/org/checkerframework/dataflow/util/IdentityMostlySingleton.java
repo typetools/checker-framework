@@ -10,10 +10,12 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public final class IdentityMostlySingleton<T extends Object> extends AbstractMostlySingleton<T> {
 
+    /** Create an IdentityMostlySingleton. */
     public IdentityMostlySingleton() {
         super(State.EMPTY);
     }
 
+    /** Create an IdentityMostlySingleton. */
     public IdentityMostlySingleton(T value) {
         super(State.SINGLETON, value);
     }

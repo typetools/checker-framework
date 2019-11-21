@@ -49,6 +49,7 @@ public class ReturnNode extends Node {
         }
     }
 
+    /** The result of the return node, {@code null} otherwise. */
     public @Nullable Node getResult() {
         return result;
     }

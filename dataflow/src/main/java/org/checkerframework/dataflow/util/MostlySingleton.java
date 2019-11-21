@@ -11,10 +11,12 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public final class MostlySingleton<T extends Object> extends AbstractMostlySingleton<T> {
 
+    /** Create a MostlySingleton. */
     public MostlySingleton() {
         super(State.EMPTY);
     }
 
+    /** Create a MostlySingleton. */
     public MostlySingleton(T value) {
         super(State.SINGLETON, value);
     }

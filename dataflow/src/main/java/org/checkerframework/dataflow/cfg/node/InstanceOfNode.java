@@ -43,6 +43,7 @@ public class InstanceOfNode extends Node {
         return operand;
     }
 
+    /** The reference type being tested against. */
     public TypeMirror getRefType() {
         return refType;
     }

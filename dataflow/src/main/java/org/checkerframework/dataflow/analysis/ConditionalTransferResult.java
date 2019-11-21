@@ -15,6 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Store<S>>
         extends TransferResult<A, S> {
 
+    /** Whether the store changed. */
     private final boolean storeChanged;
 
     /** The 'then' result store. */
@@ -24,35 +25,40 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
     protected final S elseStore;
 
     /**
-     * Create a {@code ConditionalTransferResult} with {@code thenStore} as the resulting store if
-     * the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} evaluates to {@code
-     * true} and {@code elseStore} otherwise.
-     *
-     * <p>For the meaning of storeChanged, see {@link
-     * org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
-     *
-     * <p><em>Exceptions</em>: If the corresponding {@link
-     * org.checkerframework.dataflow.cfg.node.Node} throws an exception, then it is assumed that no
-     * special handling is necessary and the store before the corresponding {@link
-     * org.checkerframework.dataflow.cfg.node.Node} will be passed along any exceptional edge.
+     * <em>Exceptions</em>: If the corresponding {@link org.checkerframework.dataflow.cfg.node.Node}
+     * throws an exception, then it is assumed that no special handling is necessary and the store
+     * before the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} will be passed
+     * along any exceptional edge.
      *
      * <p><em>Aliasing</em>: {@code thenStore} and {@code elseStore} are not allowed to be used
      * anywhere outside of this class (including use through aliases). Complete control over the
      * objects is transfered to this class.
+     *
+     * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
      */
     public ConditionalTransferResult(
             @Nullable A value, S thenStore, S elseStore, boolean storeChanged) {
         this(value, thenStore, elseStore, null, storeChanged);
     }
 
+    /** @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean) */
     public ConditionalTransferResult(@Nullable A value, S thenStore, S elseStore) {
         this(value, thenStore, elseStore, false);
+    }
+
+    /** @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean) */
+    public ConditionalTransferResult(
+            A value, S thenStore, S elseStore, Map<TypeMirror, S> exceptionalStores) {
+        this(value, thenStore, elseStore, exceptionalStores, false);
     }
 
     /**
      * Create a {@code ConditionalTransferResult} with {@code thenStore} as the resulting store if
      * the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} evaluates to {@code
      * true} and {@code elseStore} otherwise.
+     *
+     * <p>For the meaning of storeChanged, see {@link
+     * org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
      *
      * <p><em>Exceptions</em>: If the corresponding {@link
      * org.checkerframework.dataflow.cfg.node.Node} throws an exception, then the corresponding
@@ -77,11 +83,7 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
         this.storeChanged = storeChanged;
     }
 
-    public ConditionalTransferResult(
-            A value, S thenStore, S elseStore, Map<TypeMirror, S> exceptionalStores) {
-        this(value, thenStore, elseStore, exceptionalStores, false);
-    }
-
+    /** The regular result store. */
     @Override
     public S getRegularStore() {
         return thenStore.leastUpperBound(elseStore);

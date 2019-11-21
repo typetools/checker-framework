@@ -33,12 +33,17 @@ import org.checkerframework.javacutil.Pair;
  * <p>It's implemented via a Recursive-Descend parser.
  */
 public class TreeParser {
+    /** Valid delimiters. */
     private static final String DELIMS = ".[](),";
+    /** A sentinel value. */
     private static final String SENTINEL = "";
 
+    /** The TreeMaker instance. */
     private final TreeMaker maker;
+    /** The names instance. */
     private final Names names;
 
+    /** Create a TreeParser. */
     public TreeParser(ProcessingEnvironment env) {
         Context context = ((JavacProcessingEnvironment) env).getContext();
         maker = TreeMaker.instance(context);
@@ -65,10 +70,12 @@ public class TreeParser {
         }
     }
 
+    /** The next token from the tokenizer, or the {@code SENTINEL} if none is available. */
     private String nextToken(StringTokenizer tokenizer) {
         return tokenizer.hasMoreTokens() ? tokenizer.nextToken() : SENTINEL;
     }
 
+    /** The parsed expression tree for the given token. */
     private JCExpression fromToken(String token) {
         // Optimization
         if ("true".equals(token)) {
@@ -94,6 +101,13 @@ public class TreeParser {
         return maker.Literal(value);
     }
 
+    /**
+     * Parse an expression.
+     *
+     * @param tokenizer the tokenizer
+     * @param token the first token
+     * @return a pair of a parsed expression and the next token
+     */
     private Pair<JCExpression, String> parseExpression(StringTokenizer tokenizer, String token) {
         JCExpression tree = fromToken(token);
 
@@ -134,9 +148,12 @@ public class TreeParser {
         return Pair.of(tree, token);
     }
 
+    /** An internal error. */
     private static class ParseError extends RuntimeException {
+        /** The serial version UID. */
         private static final long serialVersionUID = 1887754619522101929L;
 
+        /** Create a ParseError. */
         ParseError(Throwable cause) {
             super(cause);
         }

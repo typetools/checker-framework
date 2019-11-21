@@ -121,5 +121,6 @@ public abstract class AssignmentContext {
     /** Returns an {@link Element} that has the type of this assignment context. */
     public abstract @Nullable Element getElementForType();
 
+    /** Returns the context tree. */
     public abstract @Nullable Tree getContextTree();
 }

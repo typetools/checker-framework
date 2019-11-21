@@ -23,11 +23,16 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class MethodInvocationNode extends Node {
 
+    /** The tree for the method invocation. */
     protected final @Nullable MethodInvocationTree tree;
+    /** The target of the method invocation. */
     protected final MethodAccessNode target;
+    /* The arguments of the method invocation. */
     protected final List<Node> arguments;
+    /** The tree path to the method invocation. */
     protected final TreePath treePath;
 
+    /** Create a MethodInvocationNode. */
     public MethodInvocationNode(
             @Nullable MethodInvocationTree tree,
             MethodAccessNode target,

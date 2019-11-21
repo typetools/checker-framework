@@ -12,23 +12,27 @@ import org.checkerframework.javacutil.BugInCF;
 /** Base class for sets that are more efficient than HashSet for 0 and 1 elements. */
 public abstract class AbstractMostlySingleton<T extends Object> implements Set<T> {
 
+    /** The possible states of the collection. */
     public enum State {
         EMPTY,
         SINGLETON,
         ANY
     }
 
+    /** The current state. */
     protected State state;
-    // non-Null when state == SINGLETON
+    /** The current value, non-null when the state is SINGLETON. */
     protected @Nullable T value;
-    // non-null when state == ANY
+    /** The wrapped collection, non-null when the state is ANY. */
     protected @Nullable Collection<T> set;
 
+    /** Create an AbstractMostlySingleton. */
     protected AbstractMostlySingleton(State s) {
         this.state = s;
         this.value = null;
     }
 
+    /** Create an AbstractMostlySingleton. */
     protected AbstractMostlySingleton(State s, T v) {
         this.state = s;
         this.value = v;

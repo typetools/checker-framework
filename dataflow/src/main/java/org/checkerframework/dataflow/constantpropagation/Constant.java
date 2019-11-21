@@ -40,12 +40,14 @@ public class Constant implements AbstractValue<Constant> {
     public boolean isBottom() {
         return type == Type.BOTTOM;
     }
+
     /** @return whether or not the constant is CONSTANT. */
     @EnsuresNonNullIf(result = true, expression = "value")
     public boolean isConstant() {
         return type == Type.CONSTANT && value != null;
     }
 
+    /** @return the value. */
     public Integer getValue() {
         assert isConstant() : "@AssumeAssertion(nullness): inspection";
         return value;

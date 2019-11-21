@@ -23,13 +23,18 @@ import org.checkerframework.javacutil.TreeUtils;
 // TODO: don't use for parameters, as they don't have a tree
 public class LocalVariableNode extends Node {
 
+    /** The tree for the local variable. */
     protected final Tree tree;
+
+    /** The receiver node for the local variable, {@code null} otherwise. */
     protected final @Nullable Node receiver;
 
+    /** Create a new local variable node for the given tree. */
     public LocalVariableNode(Tree t) {
         this(t, null);
     }
 
+    /** Create a new local variable node for the given tree and receiver. */
     public LocalVariableNode(Tree t, @Nullable Node receiver) {
         super(TreeUtils.typeOf(t));
         // IdentifierTree for normal uses of the local variable or parameter,
@@ -53,6 +58,7 @@ public class LocalVariableNode extends Node {
         return el;
     }
 
+    /** The receiver node for the local variable, {@code null} otherwise. */
     public @Nullable Node getReceiver() {
         return receiver;
     }

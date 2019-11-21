@@ -390,6 +390,7 @@ public class PluginUtil {
         return "@" + fileArg.getAbsolutePath();
     }
 
+    /** Build a javac command. */
     // TODO: Perhaps unify this with CheckerMain as it violates DRY
     public static List<String> getCmd(
             final @Nullable String executable,
