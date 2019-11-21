@@ -285,8 +285,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         if (!result) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
             if (areSameByClass(anno, IntRange.class)) {
-                long to = atypeFactory.getToValueFromIntRange(type);
                 long from = atypeFactory.getFromValueFromIntRange(type);
+                long to = atypeFactory.getToValueFromIntRange(type);
                 if (from > to) {
                     checker.report(Result.failure("from.greater.than.to"), tree);
                     return false;
