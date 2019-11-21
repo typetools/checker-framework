@@ -458,7 +458,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     protected class ValueTypeAnnotator extends TypeAnnotator {
 
-        /** Construct a new ValueTypeAnnotator */
+        /** Construct a new ValueTypeAnnotator. */
         protected ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
@@ -1351,8 +1351,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * @return The Range of the Math.min or Math.max method, or null if the argument is none of
-         *     these methods or their arguments are not annotated in ValueChecker hierarchy.
+         * @return the Range of the Math.min or Math.max method, or null if the argument is none of
+         *     these methods or their arguments are not annotated in ValueChecker hierarchy
          */
         private Range getRangeForMathMinMax(MethodInvocationTree tree) {
             if (getMethodIdentifier().isMathMin(tree, processingEnv)) {
