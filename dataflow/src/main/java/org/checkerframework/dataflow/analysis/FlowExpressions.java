@@ -809,15 +809,29 @@ public class FlowExpressions {
         }
     }
 
+    /** FlowExpression.Receiver for literals. */
     public static class ValueLiteral extends Receiver {
 
+        /** The value of the literal. */
         protected final @Nullable Object value;
 
+        /**
+         * Creates a ValueLiteral from the node with the given type.
+         *
+         * @param type type of the literal
+         * @param node the literal represents by this {@link ValueLiteral}
+         */
         public ValueLiteral(TypeMirror type, ValueLiteralNode node) {
             super(type);
             value = node.getValue();
         }
 
+        /**
+         * Creates a ValueLiteral where the value is {@code value} that has the given type.
+         *
+         * @param type type of the literal
+         * @param value the literal value
+         */
         public ValueLiteral(TypeMirror type, Object value) {
             super(type);
             this.value = value;
@@ -876,6 +890,7 @@ public class FlowExpressions {
             return false; // not modifiable
         }
 
+        /** @return the value of this literal */
         public @Nullable Object getValue() {
             return value;
         }
@@ -1162,6 +1177,7 @@ public class FlowExpressions {
             this.initializers = initializers;
         }
 
+        /** @return a list of receivers representing the dimension of this array creation */
         public List<? extends @Nullable Receiver> getDimensions() {
             return dimensions;
         }

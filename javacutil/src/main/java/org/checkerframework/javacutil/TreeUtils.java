@@ -660,6 +660,14 @@ public final class TreeUtils {
         return "this".contentEquals(TreeUtils.methodName(invocation));
     }
 
+    /**
+     * Returns the first statement of the tree if it is a block. If it is not a block or an empty
+     * block, tree is returned.
+     *
+     * @param tree any kind of tree
+     * @return the first statement of the tree if it is a block. If it is not a block or an empty
+     *     block, tree is returned.
+     */
     public static Tree firstStatement(Tree tree) {
         Tree first;
         if (tree.getKind() == Tree.Kind.BLOCK) {
@@ -1249,15 +1257,27 @@ public final class TreeUtils {
         return false;
     }
 
+    /**
+     * Converts the given AnnotationTrees to AnnotationMirrors.
+     *
+     * @param annoTreess list of annotation trees to convert to annotation mirrors
+     * @return list of annotation mirrors that represent the given annotation trees
+     */
     public static List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
-            List<? extends AnnotationTree> annos) {
-        List<AnnotationMirror> annotations = new ArrayList<>(annos.size());
-        for (AnnotationTree anno : annos) {
+            List<? extends AnnotationTree> annoTreess) {
+        List<AnnotationMirror> annotations = new ArrayList<>(annoTreess.size());
+        for (AnnotationTree anno : annoTreess) {
             annotations.add(TreeUtils.annotationFromAnnotationTree(anno));
         }
         return annotations;
     }
 
+    /**
+     * Converts the given AnnotationTree to an AnnotationMirror.
+     *
+     * @param tree annotation tree to convert to an annotation mirror
+     * @return annotation mirror that represent the given annotation tree
+     */
     public static AnnotationMirror annotationFromAnnotationTree(AnnotationTree tree) {
         return ((JCAnnotation) tree).attribute;
     }
