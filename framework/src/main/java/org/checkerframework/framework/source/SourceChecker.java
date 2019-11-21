@@ -199,7 +199,7 @@ import org.checkerframework.javacutil.UserError;
     // org.checkerframework.common.basetype.BaseTypeChecker.warnUnneededSuppressions
     // org.checkerframework.framework.source.SourceChecker.warnUnneededSuppressions
     // org.checkerframework.framework.source.SourceChecker.shouldSuppressWarnings(javax.lang.model.element.Element, java.lang.String)
-    // org.checkerframework.framework.source.SourceeVisitor.checkForSuppressWarningsAnno
+    // org.checkerframework.framework.source.SourceVisitor.checkForSuppressWarningsAnno
     "warnUnneededSuppressions",
 
     // Require that warning suppression annotations contain a checker key as a prefix in order for
@@ -2192,7 +2192,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * also be used from primitive types, which don't have an element.
      *
      * <p>Checkers that require their annotations not to be checked on certain JDK classes may
-     * override this method to skip them. They shall call {@code super.shouldSkipUses(typerName)} to
+     * override this method to skip them. They shall call {@code super.shouldSkipUses(typeName)} to
      * also skip the classes matching the pattern.
      *
      * @param typeName the fully-qualified name of a type
