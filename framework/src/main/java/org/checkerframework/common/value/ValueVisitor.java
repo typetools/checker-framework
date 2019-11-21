@@ -237,20 +237,21 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 && exprAnno != null
                 && atypeFactory.isIntRange(castAnno)
                 && atypeFactory.isIntRange(exprAnno)) {
-            Range castRange = ValueAnnotatedTypeFactory.getRange(castAnno);
-            if (castType.getKind() == TypeKind.BYTE && castRange.isByteEverything()) {
+            final Range castRange = ValueAnnotatedTypeFactory.getRange(castAnno);
+            final TypeKind castTypeKind = castType.getKind();
+            if (castTypeKind == TypeKind.BYTE && castRange.isByteEverything()) {
                 return p;
             }
-            if (castType.getKind() == TypeKind.CHAR && castRange.isCharEverything()) {
+            if (castTypeKind == TypeKind.CHAR && castRange.isCharEverything()) {
                 return p;
             }
-            if (castType.getKind() == TypeKind.SHORT && castRange.isShortEverything()) {
+            if (castTypeKind == TypeKind.SHORT && castRange.isShortEverything()) {
                 return p;
             }
-            if (castType.getKind() == TypeKind.INT && castRange.isIntEverything()) {
+            if (castTypeKind == TypeKind.INT && castRange.isIntEverything()) {
                 return p;
             }
-            if (castType.getKind() == TypeKind.LONG && castRange.isLongEverything()) {
+            if (castTypeKind == TypeKind.LONG && castRange.isLongEverything()) {
                 return p;
             }
             if (Range.ignoreOverflow) {
@@ -258,11 +259,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 // In that case, do not warn if the range of the expression encompasses
                 // the whole type being casted to (i.e. the warning is actually about overflow).
                 Range exprRange = ValueAnnotatedTypeFactory.getRange(exprAnno);
-                TypeKind casttypekind = castType.getKind();
-                if (casttypekind == TypeKind.BYTE
-                        || casttypekind == TypeKind.CHAR
-                        || casttypekind == TypeKind.SHORT
-                        || casttypekind == TypeKind.INT) {
+                if (castTypeKind == TypeKind.BYTE
+                        || castTypeKind == TypeKind.CHAR
+                        || castTypeKind == TypeKind.SHORT
+                        || castTypeKind == TypeKind.INT) {
                     exprRange = NumberUtils.castRange(castType.getUnderlyingType(), exprRange);
                 }
                 if (castRange.equals(exprRange)) {
