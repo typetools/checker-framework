@@ -131,6 +131,15 @@ public class Range {
         }
     }
 
+    /**
+     * Returns the number of values in this range.
+     *
+     * @return how many values are in the range
+     */
+    private long width() {
+        return to - from + 1;
+    }
+
     @Override
     public String toString() {
         if (this.isNothing()) {
@@ -159,7 +168,7 @@ public class Range {
      * instanceof check such as equals(Object) does.
      *
      * @param range to compare against
-     * @return true for ranges that match from and to respectively.
+     * @return true for ranges that match from and to respectively
      */
     private boolean equalsRange(Range range) {
         return from == range.from && to == range.to;
@@ -382,12 +391,12 @@ public class Range {
         return createRangeOrNothing(resultFrom, resultTo);
     }
 
-    /** @return the range with the lowest to and from values of this range and the passed range. */
+    /** @return the range with the lowest to and from values of this range and the passed range */
     public Range min(Range other) {
         return new Range(Math.min(this.from, other.from), Math.min(this.to, other.to));
     }
 
-    /** @return the range with the highest to and from values of this range and the passed range. */
+    /** @return the range with the highest to and from values of this range and the passed range */
     public Range max(Range other) {
         return new Range(Math.max(this.from, other.from), Math.max(this.to, other.to));
     }
@@ -1115,7 +1124,7 @@ public class Range {
     /**
      * Determines if this range is completely contained in the scope of the Integer type.
      *
-     * @return true if the range is contained within the Integer range inclusive.
+     * @return true if the range is contained within the Integer range inclusive
      */
     public boolean isWithinInteger() {
         return isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -1158,10 +1167,5 @@ public class Range {
         long longFrom = bigFrom.longValue();
         long longTo = bigTo.longValue();
         return createRangeOrEverything(longFrom, longTo);
-    }
-
-    /** @return how many integers in the range */
-    private long width() {
-        return to - from + 1;
     }
 }
