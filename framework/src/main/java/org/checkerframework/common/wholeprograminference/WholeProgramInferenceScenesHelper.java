@@ -109,8 +109,6 @@ public class WholeProgramInferenceScenesHelper {
     private final Map<String, TypeMirror> basetypes = new HashMap<>();
 
     /**
-     * Create a new helper.
-     *
      * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
      *     ignored.
      */
@@ -160,7 +158,7 @@ public class WholeProgramInferenceScenesHelper {
      * @param enumNamesToEnumConstants a map from all fully-qualified classnames which should be
      *     output as enums to their enum constants. The stub parser will crash if an enum is output
      *     as a class (i.e. as "class Foo" rather than "enum Foo").
-     * @param types mapping from names to Java types
+     * @param types mapping from fully-qualified names to Java types
      */
     public void writeScenesToStub(
             Map<String, List<VariableElement>> enumNamesToEnumConstants,
