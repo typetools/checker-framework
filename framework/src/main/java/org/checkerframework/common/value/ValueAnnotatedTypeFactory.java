@@ -1971,7 +1971,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (range.isNothing()) {
             return BOTTOMVAL;
         } else if (range.isLongEverything()
-                || !range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+                || !range.isWithinInteger()) {
             return UNKNOWNVAL;
         } else {
             return createArrayLenRangeAnnotation(

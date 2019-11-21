@@ -40,7 +40,7 @@ public class Range {
     public static boolean ignoreOverflow = false;
 
     /** A range containing all possible 64-bit values. */
-    public static final Range EVERYTHING = new Range(Long.MIN_VALUE, Long.MAX_VALUE);
+    public static final Range LONG_EVERYTHING = new Range(Long.MIN_VALUE, Long.MAX_VALUE);
 
     /** A range containing all possible 32-bit values. */
     public static final Range INT_EVERYTHING = new Range(Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -57,6 +57,9 @@ public class Range {
     /** The empty range. */
     public static final Range NOTHING = new Range();
 
+    /** An alias to the range containing all possible 64-bit values. */
+    public static final Range EVERYTHING = LONG_EVERYTHING;
+    
     /**
      * Create a Range from a collection of Longs.
      *
@@ -153,27 +156,27 @@ public class Range {
 
     /** Return true if this range contains every {@code long} value. */
     public boolean isLongEverything() {
-        return from == Long.MIN_VALUE && to == Long.MAX_VALUE;
+        return equals(LONG_EVERYTHING);
     }
 
     /** Return true if this range contains every {@code int} value. */
     public boolean isIntEverything() {
-        return from == Integer.MIN_VALUE && to == Integer.MAX_VALUE;
+        return equals(INT_EVERYTHING);
     }
 
     /** Return true if this range contains every {@code short} value. */
     public boolean isShortEverything() {
-        return from == Short.MIN_VALUE && to == Short.MAX_VALUE;
+        return equals(SHORT_EVERYTHING);
     }
 
     /** Return true if this range contains every {@code char} value. */
     public boolean isCharEverything() {
-        return from == Character.MIN_VALUE && to == Character.MAX_VALUE;
+        return equals(CHAR_EVERYTHING);
     }
 
     /** Return true if this range contains every {@code byte} value. */
     public boolean isByteEverything() {
-        return from == Byte.MIN_VALUE && to == Byte.MAX_VALUE;
+        return equals(BYTE_EVERYTHING);
     }
 
     /** Return true if this range contains no values. */
@@ -1084,22 +1087,25 @@ public class Range {
 
     /**
      * Determines if this range is completely contained in the range specified by the given lower
-     * bound and upper bound.
+     * bound inclusive and upper bound inclusive.
      */
     public boolean isWithin(long lb, long ub) {
-        return from >= lb && to <= ub;
+        return lb <= from && to <= ub;
     }
 
     /**
-     * Determines if this range is completely contained in the range that is of half length of the
-     * Long type and centered with 0.
+     * Determines if this range is contained inclusively between Long.MIN_VALUE/2 and Long.MAX_VALUE/2.
+     * Note: Long.MIN_VALUE/2 != -Long.MAX_VALUE/2
      */
     private boolean isWithinHalfLong() {
         return isWithin(Long.MIN_VALUE >> 1, Long.MAX_VALUE >> 1);
     }
 
-    /** Determines if this range is completely contained in the scope of the Integer type. */
-    private boolean isWithinInteger() {
+    /** 
+     * Determines if this range is completely contained in the scope of the Integer type.
+     * @return true if the range is contained within the Integer range inclusive.
+     */     
+    public boolean isWithinInteger() {
         return isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
