@@ -134,9 +134,12 @@ public interface WholeProgramInference {
             AnnotatedTypeFactory atf);
 
     /**
-     * Saves the inferred results. Ideally should be called at the end of the type-checking process.
+     * Writes the inferred results to a file. Ideally should be called at the end of the
+     * type-checking process.
+     *
+     * @param kind the file format in which to write the results
      */
-    void saveResults(OutputKind kind);
+    void writeResultsToFile(OutputKind kind);
 
     /** The kinds of output that whole-program inference can produce. */
     enum OutputKind {

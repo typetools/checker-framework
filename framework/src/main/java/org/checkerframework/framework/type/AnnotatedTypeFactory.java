@@ -1033,7 +1033,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     "stubs".equals(checker.getOption("infer"))
                             ? WholeProgramInference.OutputKind.STUB
                             : WholeProgramInference.OutputKind.JAIF;
-            wholeProgramInference.saveResults(outputKind);
+            wholeProgramInference.writeResultsToFile(outputKind);
         }
     }
 
