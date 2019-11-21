@@ -862,8 +862,8 @@ public class StubParser {
         // TODO: This should check whether the stub file is @AnnotatedFor the current type system.
         // @AnnotatedFor isn't integrated in stub files yet.
         if (annos != null && !annos.isEmpty()) {
-            // TODO: only produce output if the removed annotation
-            // isn't the top and default annotation in the type hierarchy.
+            // TODO: only produce output if the removed annotation isn't the top and default
+            // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
             if (false) {
                 stubWarnOverwritesBytecode(
                         String.format(
@@ -1590,16 +1590,27 @@ public class StubParser {
         } else if (expr instanceof LongLiteralExpr) {
             return convert(((LongLiteralExpr) expr).asLong(), valueKind);
         } else if (expr instanceof UnaryExpr) {
-            if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
-                Object value =
-                        getValueOfExpressionInAnnotation(
-                                name, ((UnaryExpr) expr).getExpression(), valueKind);
-                if (value instanceof Number) {
-                    return convert((Number) value, valueKind, true);
-                }
+            switch (expr.toString()) {
+                    // Special-case the minimum values.  Separately parsing a "-" and a value
+                    // doesn't correctly handle the minimum values, because the absolute value of
+                    // the smallest member of an integral type is larger than the largest value.
+                case "-9223372036854775808L":
+                case "-9223372036854775808l":
+                    return convert(Long.MIN_VALUE, valueKind, false);
+                case "-2147483648":
+                    return convert(Integer.MIN_VALUE, valueKind, false);
+                default:
+                    if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
+                        Object value =
+                                getValueOfExpressionInAnnotation(
+                                        name, ((UnaryExpr) expr).getExpression(), valueKind);
+                        if (value instanceof Number) {
+                            return convert((Number) value, valueKind, true);
+                        }
+                    }
+                    stubWarn("Unexpected Unary annotation expression: " + expr);
+                    return null;
             }
-            stubWarn("Unexpected Unary annotation expression: " + expr);
-            return null;
         } else if (expr instanceof ClassExpr) {
             ClassExpr classExpr = (ClassExpr) expr;
             String className = classExpr.getType().toString();

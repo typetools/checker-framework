@@ -892,10 +892,14 @@ or
 \<@Target({ElementType.TYPE\_USE, ElementType.TYPE\_PARAMETER})>.
 
 To indicate support for annotations that are located outside of the \<qual>
-subdirectory, annotations that have other \<ElementType> values
+subdirectory, annotations that have other \<ElementType> values,
 checker writers can override the
 \refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
 method (see its Javadoc for details).
+It is required to define \<createSupportedTypeQualifiers> if you are mixing
+qualifiers from multiple directories (including when extending an existing
+checker that has its own qualifiers) and when using the Buck build tool,
+whose classloader cannot find the qualifier directory.
 
 An aggregate checker (which extends
 \refclass{framework/source}{AggregateChecker}) does not need to specify its
