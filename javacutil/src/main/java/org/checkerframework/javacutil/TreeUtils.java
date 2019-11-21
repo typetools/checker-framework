@@ -755,7 +755,7 @@ public final class TreeUtils {
     }
 
     /** Returns the receiver tree of a field access or a method invocation. */
-    public static ExpressionTree getReceiverTree(ExpressionTree expression) {
+    public static @Nullable ExpressionTree getReceiverTree(ExpressionTree expression) {
         ExpressionTree receiver;
         switch (expression.getKind()) {
             case METHOD_INVOCATION:
