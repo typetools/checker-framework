@@ -608,6 +608,8 @@ use the stub file \<checker/resources/javadoc.astub> by using \<-Astubs=checker.
 You can pass command-line arguments to a checker via javac's standard \<-A>
 option (``\<A>'' stands for ``annotation'').  All of the distributed
 checkers support the following command-line options.
+Each checker may support additional command-line options; see the checker's
+documentation.
 
 % This list should be kept in sync with file
 % framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java
@@ -739,9 +741,10 @@ Partially-annotated libraries
   Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
 \item \<-AstubWarnIfNotFoundIgnoresClasses>
   Don't warn about missing classes (only methods and fields) even when \<-AwarnIfNotFound> is true.
-\item \<-AstubWarnIfOverwritesBytecode>
-  Warn if a stub file entry overwrite bytecode information; see
-  Section~\ref{stub-using}.
+%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
+% \item \<-AstubWarnIfOverwritesBytecode>
+%   Warn if a stub file entry overwrite bytecode information; see
+%   Section~\ref{stub-using}.
 \item \<-AstubWarnIfRedundantWithBytecode>
   Warn if a stub file entry is redundant with bytecode information; see
   Section~\ref{stub-using}.
