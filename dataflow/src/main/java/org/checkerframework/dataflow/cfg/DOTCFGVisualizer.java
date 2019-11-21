@@ -25,6 +25,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.UserError;
 
 /** Generate a graph description in the DOT language of a control graph. */
+@SuppressWarnings("initialization.fields.uninitialized") // uses init method
 public class DOTCFGVisualizer<
                 A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
         extends AbstractCFGVisualizer<A, S, T> {
@@ -42,6 +43,7 @@ public class DOTCFGVisualizer<
     protected static final String leftJustifiedTerminator = "\\l";
 
     @Override
+    @SuppressWarnings("nullness") // assume arguments are set correctly
     public void init(Map<String, Object> args) {
         super.init(args);
         this.outDir = (String) args.get("outdir");

@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * A node in the abstract representation used for Java code inside a basic block.
@@ -78,6 +79,7 @@ public abstract class Node {
      *
      * @return the corresponding {@link Tree} or {@code null}.
      */
+    @Pure
     public abstract @Nullable Tree getTree();
 
     /**
@@ -100,6 +102,7 @@ public abstract class Node {
      */
     public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
 
+    @Pure
     public boolean isLValue() {
         return lvalue;
     }
@@ -117,7 +120,7 @@ public abstract class Node {
         inSource = inSrc;
     }
 
-    public AssignmentContext getAssignmentContext() {
+    public @Nullable AssignmentContext getAssignmentContext() {
         return assignmentContext;
     }
 

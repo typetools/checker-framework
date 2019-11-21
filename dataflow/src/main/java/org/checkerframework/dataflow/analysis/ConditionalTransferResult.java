@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.analysis;
 import java.util.Map;
 import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Implementation of a {@link TransferResult} with two non-exceptional store; one for the 'then'
@@ -39,11 +40,12 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
      * anywhere outside of this class (including use through aliases). Complete control over the
      * objects is transfered to this class.
      */
-    public ConditionalTransferResult(A value, S thenStore, S elseStore, boolean storeChanged) {
+    public ConditionalTransferResult(
+            @Nullable A value, S thenStore, S elseStore, boolean storeChanged) {
         this(value, thenStore, elseStore, null, storeChanged);
     }
 
-    public ConditionalTransferResult(A value, S thenStore, S elseStore) {
+    public ConditionalTransferResult(@Nullable A value, S thenStore, S elseStore) {
         this(value, thenStore, elseStore, false);
     }
 
@@ -64,10 +66,10 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
      * through aliases). Complete control over the objects is transfered to this class.
      */
     public ConditionalTransferResult(
-            A value,
+            @Nullable A value,
             S thenStore,
             S elseStore,
-            Map<TypeMirror, S> exceptionalStores,
+            @Nullable Map<TypeMirror, S> exceptionalStores,
             boolean storeChanged) {
         super(value, exceptionalStores);
         this.thenStore = thenStore;

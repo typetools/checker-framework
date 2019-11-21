@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.constantpropagation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
@@ -89,7 +90,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (o == null) {
             return false;
         }
@@ -162,6 +163,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
      * @return {@code null} because {@link ConstantPropagationStore} doesn't support visualization
      */
     @Override
+    @SuppressWarnings("nullness")
     public String visualize(CFGVisualizer<?, ConstantPropagationStore, ?> viz) {
         return null;
     }

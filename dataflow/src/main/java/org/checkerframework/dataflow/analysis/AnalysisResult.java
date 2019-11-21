@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -180,7 +181,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /** @return the store immediately before a given {@link Tree}. */
-    public S getStoreBefore(Tree tree) {
+    public @Nullable S getStoreBefore(Tree tree) {
         Set<Node> nodes = getNodesForTree(tree);
         if (nodes == null) {
             return null;
@@ -198,12 +199,12 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /** @return the store immediately before a given {@link Node}. */
-    public S getStoreBefore(Node node) {
+    public @Nullable S getStoreBefore(Node node) {
         return runAnalysisFor(node, true);
     }
 
     /** @return the store immediately after a given {@link Tree}. */
-    public S getStoreAfter(Tree tree) {
+    public @Nullable S getStoreAfter(Tree tree) {
         Set<Node> nodes = getNodesForTree(tree);
         if (nodes == null) {
             return null;
@@ -221,7 +222,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /** @return the store immediately after a given {@link Node}. */
-    public S getStoreAfter(Node node) {
+    public @Nullable S getStoreAfter(Node node) {
         return runAnalysisFor(node, false);
     }
 
@@ -233,8 +234,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * <p>If the given {@link Node} cannot be reached (in the control flow graph), then {@code null}
      * is returned.
      */
-    protected S runAnalysisFor(Node node, boolean before) {
+    protected @Nullable S runAnalysisFor(Node node, boolean before) {
         Block block = node.getBlock();
+        assert block != null : "@AssumeAssertion(nullness): invariant";
         TransferInput<A, S> transferInput = stores.get(block);
         if (transferInput == null) {
             return null;
@@ -260,6 +262,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
             Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
         assert node != null;
         Block block = node.getBlock();
+        assert block != null : "@AssumeAssertion(nullness): invariant";
         assert transferInput != null;
         Analysis<A, S, ?> analysis = transferInput.analysis;
         Node oldCurrentNode = analysis.currentNode;
@@ -277,6 +280,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         }
 
         if (analysis.isRunning) {
+            assert analysis.currentInput != null : "@AssumeAssertion(nullness): invariant";
             return analysis.currentInput.getRegularStore();
         }
         analysis.setNodeValues(nodeValues);
@@ -313,7 +317,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
                         // This point should never be reached. If the block of 'node' is
                         // 'block', then 'node' must be part of the contents of 'block'.
                         assert false;
-                        return null;
+                        @SuppressWarnings("nullness") // dead
+                        @NonNull S fake = null;
+                        return fake;
                     }
 
                 case EXCEPTION_BLOCK:
@@ -334,10 +340,10 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
                 default:
                     // Only regular blocks and exceptional blocks can hold nodes.
                     assert false;
-                    break;
+                    @SuppressWarnings("nullness") // dead
+                    @NonNull S fake = null;
+                    return fake;
             }
-
-            return null;
         } finally {
             analysis.currentNode = oldCurrentNode;
             analysis.isRunning = false;
