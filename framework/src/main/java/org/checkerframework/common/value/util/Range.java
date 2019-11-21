@@ -105,7 +105,7 @@ public class Range {
      * @param from the lower bound (inclusive)
      * @param to the upper bound (inclusive)
      */
-    private Range createRangeOrNothing(long from, long to) {
+    private static Range createRangeOrNothing(long from, long to) {
         if (from <= to) {
             return new Range(from, to);
         } else {
@@ -182,7 +182,7 @@ public class Range {
     }
 
     /** The number of values representable in 32 bits: 2^32 or 1&lt;&lt;32. */
-    private static long integerWidth = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
+    private static final long INTEGER_WIDTH = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
 
     /**
      * Converts this range to a 32-bit integral range.
@@ -204,7 +204,7 @@ public class Range {
         if (ignoreOverflow) {
             return new Range(Math.max(from, Integer.MIN_VALUE), Math.min(to, Integer.MAX_VALUE));
         }
-        if (this.isWiderThan(integerWidth)) {
+        if (this.isWiderThan(INTEGER_WIDTH)) {
             return INT_EVERYTHING;
         }
         int intFrom = (int) this.from;
@@ -216,7 +216,7 @@ public class Range {
     }
 
     /** The number of values representable in 16 bits: 2^16 or 1&lt;&lt;16. */
-    private static long shortWidth = Short.MAX_VALUE - Short.MIN_VALUE + 1;
+    private static final long SHORT_WIDTH = Short.MAX_VALUE - Short.MIN_VALUE + 1;
 
     /**
      * Converts a this range to a 16-bit short range.
@@ -238,7 +238,7 @@ public class Range {
         if (ignoreOverflow) {
             return new Range(Math.max(from, Short.MIN_VALUE), Math.min(to, Short.MAX_VALUE));
         }
-        if (this.isWiderThan(shortWidth)) {
+        if (this.isWiderThan(SHORT_WIDTH)) {
             // short is promoted to int before the operation so no need for explicit casting
             return SHORT_EVERYTHING;
         }
@@ -251,7 +251,7 @@ public class Range {
     }
 
     /** The number of values representable in char: */
-    private static long charWidth = Character.MAX_VALUE - Character.MIN_VALUE + 1;
+    private static final long CHAR_WIDTH = Character.MAX_VALUE - Character.MIN_VALUE + 1;
 
     /**
      * Converts this range to a char range.
@@ -274,7 +274,7 @@ public class Range {
             return new Range(
                     Math.max(from, Character.MIN_VALUE), Math.min(to, Character.MAX_VALUE));
         }
-        if (this.isWiderThan(charWidth)) {
+        if (this.isWiderThan(CHAR_WIDTH)) {
             // char is promoted to int before the operation so no need for explicit casting
             return CHAR_EVERYTHING;
         }
@@ -287,7 +287,7 @@ public class Range {
     }
 
     /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
-    private static long byteWidth = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
+    private static final long BYTE_WIDTH = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
 
     /**
      * Converts a this range to a 8-bit byte range.
@@ -309,7 +309,7 @@ public class Range {
         if (ignoreOverflow) {
             return new Range(Math.max(from, Byte.MIN_VALUE), Math.min(to, Byte.MAX_VALUE));
         }
-        if (this.isWiderThan(byteWidth)) {
+        if (this.isWiderThan(BYTE_WIDTH)) {
             // byte is promoted to int before the operation so no need for explicit casting
             return BYTE_EVERYTHING;
         }
