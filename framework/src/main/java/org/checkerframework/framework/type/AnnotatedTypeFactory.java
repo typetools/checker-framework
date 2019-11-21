@@ -1157,6 +1157,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (type == null) {
                     type = stubType;
                 } else {
+                    // Must merge (rather than only take the stub type if it is a subtype)
+                    // to support WPI.
                     AnnotatedTypeMerger.merge(stubType, type);
                 }
             }
@@ -1207,6 +1209,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (result == null) {
                     result = stubType;
                 } else {
+                    // Must merge (rather than only take the stub type if it is a subtype)
+                    // to support WPI.
                     AnnotatedTypeMerger.merge(stubType, result);
                 }
             }
