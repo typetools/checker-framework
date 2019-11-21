@@ -1081,7 +1081,7 @@ public class Range {
             // This bound is adequate to guarantee no overflow when using long to evaluate.
             // Long.MIN_VALUE >> 1 + 1 = -4611686018427387903
             // Long.MAX_VALUE >> 1 = 4611686018427387903
-            return to - from + 1 > value;
+            return width() > value;
         } else {
             return BigInteger.valueOf(to)
                             .subtract(BigInteger.valueOf(from))
