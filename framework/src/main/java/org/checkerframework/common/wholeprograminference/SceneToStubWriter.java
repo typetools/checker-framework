@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
@@ -33,8 +34,8 @@ import scenelib.annotations.util.Strings;
 
 /**
  * SceneToStubWriter provides two static methods named {@code write} that write a given {@link
- * AScene} to a given {@link Writer}, {@link #write(AScene, Map, Map, Set, Writer)}, or filename,
- * {@link #write(AScene, Map, Map, Set, Writer)}, in stub file format. This class is the equivalent
+ * AScene} to a given {@link Writer}, {@link #write(AScene, Map, Map, Map, Writer)}, or filename,
+ * {@link #write(AScene, Map, Map, Map, Writer)}, in stub file format. This class is the equivalent
  * of {@code IndexFileWriter} from the Annotation File Utilities, but outputs the results in the
  * stub file format instead of jaif format.
  *
@@ -64,12 +65,13 @@ public final class SceneToStubWriter {
     private Map<String, TypeElement> types;
 
     /**
-     * The fully-qualified name of enums to be written to a stub file.
+     * Map from the fully-qualified name of each enum to its list of enum constants.
      *
      * <p>The stub parser can't parse an enum that's labeled "class", but {@link AClass} doesn't
-     * specify if a class is an enum. So track which classes are enums.
+     * specify if a class is an enum. So track which classes are enums. In addition, enums constants
+     * need to be present in the stub file.
      */
-    private Set<String> enumSet;
+    private Map<String, List<VariableElement>>  enumNamesToEnumConstant;
 
     /**
      * Private constructor that initializes the printWriter and copies over relevant inputs to the
@@ -79,11 +81,11 @@ public final class SceneToStubWriter {
             AScene scene,
             Map<String, TypeMirror> basetypes,
             Map<String, TypeElement> types,
-            Set<String> enumSet,
+            Map<String, List<VariableElement>> enumNamesToEnumConstant,
             Writer out) {
         this.basetypes = basetypes;
         this.types = types;
-        this.enumSet = enumSet;
+        this.enumNamesToEnumConstant = enumNamesToEnumConstant;
         printWriter = new PrintWriter(out);
         writeImpl(scene);
         printWriter.flush();
@@ -94,23 +96,23 @@ public final class SceneToStubWriter {
             AScene scene,
             Map<String, TypeMirror> basetypes,
             Map<String, TypeElement> types,
-            Set<String> enumSet,
+            Map<String, List<VariableElement>> enumNamesToEnumConstant,
             Writer out) {
-        new SceneToStubWriter(scene, basetypes, types, enumSet, out);
+        new SceneToStubWriter(scene, basetypes, types, enumNamesToEnumConstant, out);
     }
 
     /**
      * Writes the annotations in {@code scene}to the file {@code filename} in stub file format; see
-     * {@link #write(AScene, Map, Map, Set, Writer)}.
+     * {@link #write(AScene, Map, Map, Map, Writer)}.
      */
     public static void write(
             AScene scene,
             Map<String, TypeMirror> basetypes,
             Map<String, TypeElement> types,
-            Set<String> enumSet,
+            Map<String, List<VariableElement>> enumNamesToEnumConstant,
             String filename)
             throws IOException {
-        write(scene, basetypes, types, enumSet, new FileWriter(filename));
+        write(scene, basetypes, types, enumNamesToEnumConstant, new FileWriter(filename));
     }
 
     /** The part of a fully-qualified name that specifies the package. */
@@ -119,10 +121,15 @@ public final class SceneToStubWriter {
         return (lastdot == -1) ? "" : className.substring(0, lastdot);
     }
 
-    /** The part of a fully-qualified name that specifies the basename of the class. */
+    /**
+     *  The part of a fully-qualified name that specifies the basename of the class.
+     *  This method replaces the $_s in the names of inner classes with ._s, so that
+     *  they can be printed correctly in stub files.
+     */
     private static String basenamePart(String className) {
         int lastdot = className.lastIndexOf('.');
-        return (lastdot == -1) ? className : className.substring(lastdot + 1);
+        String result = (lastdot == -1) ? className : className.substring(lastdot + 1);
+        return result.replace('$', '.');
     }
 
     /**
@@ -282,7 +289,7 @@ public final class SceneToStubWriter {
      * curly braces to close with. The classes are printing with appropriate opening curly braces,
      * in standard Java style. This routine does not attempt to indent them correctly.
      *
-     * <p>When an inner class is present in an AScene, its name is something like "Outer$Inner".
+     * <p>When an inner class is present in an AScene, its name is something like "Outer.Inner".
      * Writing a stub file with that name would be useless to the stub parser, which expects inner
      * classes to be properly nested.
      *
@@ -295,11 +302,14 @@ public final class SceneToStubWriter {
 
         String nameToPrint = basename;
         String rest = "";
-        if (basename.contains("$")) {
-            nameToPrint = basename.substring(0, basename.indexOf('$'));
-            rest = basename.substring(basename.indexOf('$') + 1);
+        if (basename.contains(".")) {
+            nameToPrint = basename.substring(0, basename.indexOf('.'));
+            rest = basename.substring(basename.indexOf('.') + 1);
         }
-        if (enumSet.contains(classname)) {
+
+        // Enums cannot be nested within non-classes,
+        // so only print as an enum if the leaf has been reached.
+        if (enumNamesToEnumConstant.containsKey(classname) && "".equals(rest)) {
             printWriter.print("enum");
         } else {
             printWriter.print("class ");
@@ -316,8 +326,8 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * The implementation of {@link #write(AScene, Map, Map, Set, Writer)} and {@link #write(AScene,
-     * Map, Map, Set, String)}. Prints imports, classes, method signatures, and fields; all with
+     * The implementation of {@link #write(AScene, Map, Map, Map, Writer)} and {@link #write(AScene,
+     * Map, Map, Map, String)}. Prints imports, classes, method signatures, and fields; all with
      * appropriate annotations in stub file format.
      */
     private void writeImpl(AScene scene) {
@@ -340,6 +350,11 @@ public final class SceneToStubWriter {
                 printWriter.println("package " + pkg + ";");
             }
             String basename = basenamePart(classname);
+            // At this point, we no longer care about the distinction between packages
+            // and inner classes, so we should replace the $ in the definition of any
+            // inner classes with a ., so that they are printed correctly in stub files.
+            classname = classname.replace('$', '.');
+
             int curlyCount = 1;
 
             if ("package-info".equals(basename) || "module-info".equals(basename)) {
@@ -349,13 +364,27 @@ public final class SceneToStubWriter {
             }
 
             // print fields, but not for enums (that causes the stub parser to reject the stub)
-            if (!enumSet.contains(classname)) {
+            if (!enumNamesToEnumConstant.containsKey(classname)) {
                 for (Map.Entry<String, AField> fieldEntry : aClass.fields.entrySet()) {
                     String fieldName = fieldEntry.getKey();
                     AField aField = fieldEntry.getValue();
                     printWriter.println();
                     printWriter.print(INDENT);
                     printAField(aField, fieldName, classname);
+                    printWriter.println(";");
+                }
+            } else {
+                // for enums, instead of printing fields print the enum constants
+                List<VariableElement> enumConstants = enumNamesToEnumConstant.get(classname);
+                boolean first = true;
+                for (VariableElement enumConstant : enumConstants) {
+                    if (!first) {
+                        printWriter.print(", ");
+                    }
+                    printWriter.print(enumConstant.getSimpleName());
+                    first = false;
+                }
+                if (!first) {
                     printWriter.println(";");
                 }
             }
@@ -371,7 +400,9 @@ public final class SceneToStubWriter {
                         aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
                 // Use Java syntax for constructors.
                 if ("<init>".equals(methodName)) {
-                    methodName = basename;
+                    // Constructor names cannot contain dots, if this is an inner class.
+                    methodName = basename.contains(".") ?
+                            basename.substring(basename.lastIndexOf('.') + 1) : basename;
                 } else {
                     // only add a return type if this isn't a constructor
                     if (basetypes.containsKey(aMethod.returnType.description.toString())) {
