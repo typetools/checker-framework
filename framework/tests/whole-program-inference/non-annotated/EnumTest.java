@@ -1,4 +1,3 @@
-
 public class EnumTest {
     public enum MyEnum {
         ONE("ONE"),
@@ -19,14 +18,12 @@ public class EnumTest {
         public static MyEnum fromValue(String value) throws IllegalArgumentException {
             for (MyEnum method : MyEnum.values()) {
                 String methodString = method.toString();
-                if (methodString != null && methodString.equals
-                        (value)) {
+                if (methodString != null && methodString.equals(value)) {
                     return method;
                 }
             }
 
-            throw new IllegalArgumentException(
-                    "Cannot create enum from " + value + " value!");
+            throw new IllegalArgumentException("Cannot create enum from " + value + " value!");
         }
     }
 }

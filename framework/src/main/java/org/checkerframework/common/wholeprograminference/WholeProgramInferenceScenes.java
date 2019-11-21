@@ -10,13 +10,13 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type.ClassType;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -95,11 +95,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     private final WholeProgramInferenceScenesHelper helper;
 
     /**
-     * This set tracks which AClass objects in the scenes are actually enums, to support outputting
-     * using the "enum" keyword. The stub file format requires enums to be output differently than
-     * classes.
+     * This maps from fully-qualified names of enums to their list of enum constants. The stub file
+     * format requires enums to be output differently than classes.
      */
-    private final Set<String> enumSet = new HashSet<>();
+    private final Map<String, List<VariableElement>> enumNamesToEnumConstants = new HashMap<>();
 
     /**
      * This map goes from fully-qualified names to the TypeElement representing a class declaration,
@@ -521,7 +520,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 helper.writeScenesToJaif();
                 break;
             case STUB:
-                helper.writeScenesToStub(enumSet, types);
+                helper.writeScenesToStub(enumNamesToEnumConstants, types);
                 break;
         }
     }
@@ -572,7 +571,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *
      * <p>Should be called whenever a new class is processed, if outputting to stubs.
      *
-     * <p>Metadata kept: - is the class an enum? - a map from fully-qualified names to classSymbols,
+     * <p>Metadata kept: - a map from fully-qualified names of each enum to the enum constants for
+     * that enum, used to properly output enums - a map from fully-qualified names to classSymbols,
      * used later to recover type parameter information.
      *
      * @param classSymbol the class for which to update metadata
@@ -580,7 +580,13 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     private void updateClassMetadata(ClassSymbol classSymbol) {
         String qualifiedName = classSymbol.getQualifiedName().toString();
         if (classSymbol.isEnum()) {
-            enumSet.add(qualifiedName);
+            List<VariableElement> enumConstants = new ArrayList<>();
+            for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
+                if (e.getKind() == ElementKind.ENUM_CONSTANT) {
+                    enumConstants.add((VariableElement) e);
+                }
+            }
+            enumNamesToEnumConstants.put(qualifiedName, enumConstants);
         }
         if (!types.containsKey(qualifiedName)) {
             types.put(qualifiedName, classSymbol);

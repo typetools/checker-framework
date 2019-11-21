@@ -8,11 +8,13 @@ import java.lang.annotation.Target;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -156,12 +158,14 @@ public class WholeProgramInferenceScenesHelper {
      * Writes the scenes out to .astub files. This method is an alternative to {@link
      * #writeScenesToJaif}.
      *
-     * @param enumSet all fully-qualified classnames which should be output as enums. The stub
-     *     parser will crash if an enum is output as a class (i.e. as "class Foo" rather than "enum
-     *     Foo").
+     * @param enumNamesToEnumConstants a map from all fully-qualified classnames which should be
+     *     output as enums to their enum constants. The stub parser will crash if an enum is output
+     *     as a class (i.e. as "class Foo" rather than "enum Foo").
      * @param types mapping from names to Java types
      */
-    public void writeScenesToStub(Set<String> enumSet, Map<String, TypeElement> types) {
+    public void writeScenesToStub(
+            Map<String, List<VariableElement>> enumNamesToEnumConstants,
+            Map<String, TypeElement> types) {
         // Use the same directory that .jaif files would normally be written to.
         File stubDir = new File(JAIF_FILES_PATH);
         if (!stubDir.exists()) {
@@ -179,7 +183,11 @@ public class WholeProgramInferenceScenesHelper {
                 // Only write non-empty scenes into .astub files.
                 try {
                     SceneToStubWriter.write(
-                            scene, basetypes, types, enumSet, new FileWriter(stubPath));
+                            scene,
+                            basetypes,
+                            types,
+                            enumNamesToEnumConstants,
+                            new FileWriter(stubPath));
                 } catch (IOException e) {
                     throw new UserError(
                             "Problem while writing file: "

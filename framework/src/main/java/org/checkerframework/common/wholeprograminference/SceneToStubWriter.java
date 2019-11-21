@@ -8,7 +8,6 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -71,7 +70,7 @@ public final class SceneToStubWriter {
      * specify if a class is an enum. So track which classes are enums. In addition, enums constants
      * need to be present in the stub file.
      */
-    private Map<String, List<VariableElement>>  enumNamesToEnumConstant;
+    private Map<String, List<VariableElement>> enumNamesToEnumConstants;
 
     /**
      * Private constructor that initializes the printWriter and copies over relevant inputs to the
@@ -81,11 +80,11 @@ public final class SceneToStubWriter {
             AScene scene,
             Map<String, TypeMirror> basetypes,
             Map<String, TypeElement> types,
-            Map<String, List<VariableElement>> enumNamesToEnumConstant,
+            Map<String, List<VariableElement>> enumNamesToEnumConstants,
             Writer out) {
         this.basetypes = basetypes;
         this.types = types;
-        this.enumNamesToEnumConstant = enumNamesToEnumConstant;
+        this.enumNamesToEnumConstants = enumNamesToEnumConstants;
         printWriter = new PrintWriter(out);
         writeImpl(scene);
         printWriter.flush();
@@ -122,9 +121,9 @@ public final class SceneToStubWriter {
     }
 
     /**
-     *  The part of a fully-qualified name that specifies the basename of the class.
-     *  This method replaces the $_s in the names of inner classes with ._s, so that
-     *  they can be printed correctly in stub files.
+     * The part of a fully-qualified name that specifies the basename of the class. This method
+     * replaces the $_s in the names of inner classes with ._s, so that they can be printed
+     * correctly in stub files.
      */
     private static String basenamePart(String className) {
         int lastdot = className.lastIndexOf('.');
@@ -309,7 +308,7 @@ public final class SceneToStubWriter {
 
         // Enums cannot be nested within non-classes,
         // so only print as an enum if the leaf has been reached.
-        if (enumNamesToEnumConstant.containsKey(classname) && "".equals(rest)) {
+        if (enumNamesToEnumConstants.containsKey(classname) && "".equals(rest)) {
             printWriter.print("enum");
         } else {
             printWriter.print("class ");
@@ -364,7 +363,7 @@ public final class SceneToStubWriter {
             }
 
             // print fields, but not for enums (that causes the stub parser to reject the stub)
-            if (!enumNamesToEnumConstant.containsKey(classname)) {
+            if (!enumNamesToEnumConstants.containsKey(classname)) {
                 for (Map.Entry<String, AField> fieldEntry : aClass.fields.entrySet()) {
                     String fieldName = fieldEntry.getKey();
                     AField aField = fieldEntry.getValue();
@@ -375,7 +374,7 @@ public final class SceneToStubWriter {
                 }
             } else {
                 // for enums, instead of printing fields print the enum constants
-                List<VariableElement> enumConstants = enumNamesToEnumConstant.get(classname);
+                List<VariableElement> enumConstants = enumNamesToEnumConstants.get(classname);
                 boolean first = true;
                 for (VariableElement enumConstant : enumConstants) {
                     if (!first) {
@@ -401,8 +400,10 @@ public final class SceneToStubWriter {
                 // Use Java syntax for constructors.
                 if ("<init>".equals(methodName)) {
                     // Constructor names cannot contain dots, if this is an inner class.
-                    methodName = basename.contains(".") ?
-                            basename.substring(basename.lastIndexOf('.') + 1) : basename;
+                    methodName =
+                            basename.contains(".")
+                                    ? basename.substring(basename.lastIndexOf('.') + 1)
+                                    : basename;
                 } else {
                     // only add a return type if this isn't a constructor
                     if (basetypes.containsKey(aMethod.returnType.description.toString())) {
