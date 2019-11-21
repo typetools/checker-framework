@@ -2,6 +2,7 @@ package org.checkerframework.common.value.util;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +56,27 @@ public class Range {
 
     /** The empty range. */
     public static final Range NOTHING = new Range();
+
+    /**
+     * Create a Range from a collection of Longs.
+     *
+     * @param collection from which min and max values will be used as from and to values in the
+     *     range
+     */
+    public Range(Collection<Long> collection) {
+        this(Collections.min(collection), Collections.max(collection));
+    }
+
+    /**
+     * Create a Range from a collection of Integers.
+     *
+     * @param list from which min and max values will be used as from and to values in the range
+     */
+    // The formal parameter type cannot be Collection<Integer> because that would erase to the same
+    // raw types as the Range(Collection<Long>) constructor.
+    public Range(List<Integer> list) {
+        this(Collections.min(list), Collections.max(list));
+    }
 
     /**
      * Constructs a range with its bounds specified by two parameters, {@code from} and {@code to}.
@@ -413,7 +435,7 @@ public class Range {
             List<Long> possibleValues =
                     Arrays.asList(
                             from * right.from, from * right.to, to * right.from, to * right.to);
-            return new Range(Collections.min(possibleValues), Collections.max(possibleValues));
+            return new Range(possibleValues);
         } else {
             List<BigInteger> bigPossibleValues =
                     Arrays.asList(
