@@ -350,8 +350,7 @@ public class CFGBuilder {
 
         @Override
         public String toString() {
-            assert false;
-            return null;
+            throw new BugInCF("DO NOT CALL ExtendedNode.toString(). Write your own.");
         }
     }
 
