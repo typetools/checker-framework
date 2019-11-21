@@ -389,11 +389,17 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Finalize a given AnnotatedTypeMirror returned by getAnnotatedType(ExecutableElement) instead
-     * of creating a new one.
+     * Do the actual works described in the javadoc in {@link AnnotatedTypes#asMemberOf(Types,
+     * AnnotatedTypeFactory, AnnotatedTypeMirror, Element)}. Works on a given unsubstituted
+     * AnnotatedTypeMirror returned by {@link
+     * AnnotatedTypeFactory#getAnnotatedType(ExecutableElement)} instead of creating a new one.
      *
-     * @param memberType an AnnotatedTypeMirror returned by getAnnotatedType(ExecutableElement)
-     * @return finalized memberType
+     * @param memberType unsubstituted AnnotatedTypeMirror returned by {@link
+     *     AnnotatedTypeFactory#getAnnotatedType(ExecutableElement)}, MAY be changed during
+     *     processing
+     * @return The result described in {@link AnnotatedTypes#asMemberOf(Types, AnnotatedTypeFactory,
+     *     AnnotatedTypeMirror, Element)}, may share the same reference with parameter {@code
+     *     memberType}
      */
     private static AnnotatedTypeMirror asMemberOfImpl(
             final Types types,
