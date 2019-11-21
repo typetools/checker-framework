@@ -152,8 +152,7 @@ public class Range {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Range) {
-            Range range = (Range) obj;
-            return from == range.from && to == range.to;
+            return equalsRange((Range) obj);
         }
         return false;
     }
