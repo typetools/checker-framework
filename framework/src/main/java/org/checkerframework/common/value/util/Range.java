@@ -59,7 +59,7 @@ public class Range {
 
     /** An alias to the range containing all possible 64-bit values. */
     public static final Range EVERYTHING = LONG_EVERYTHING;
-    
+
     /**
      * Create a Range from a collection of Longs.
      *
@@ -154,29 +154,40 @@ public class Range {
         return Objects.hash(from, to);
     }
 
+    /**
+     * Compare two ranges in a type safe manner for equality without incurring the cost of an
+     * instanceof check such as equals(Object) does.
+     *
+     * @param range to compare against
+     * @return true for ranges that match from and to respectively.
+     */
+    private boolean equalsRange(Range range) {
+        return from == range.from && to == range.to;
+    }
+
     /** Return true if this range contains every {@code long} value. */
     public boolean isLongEverything() {
-        return equals(LONG_EVERYTHING);
+        return equalsRange(LONG_EVERYTHING);
     }
 
     /** Return true if this range contains every {@code int} value. */
     public boolean isIntEverything() {
-        return equals(INT_EVERYTHING);
+        return equalsRange(INT_EVERYTHING);
     }
 
     /** Return true if this range contains every {@code short} value. */
     public boolean isShortEverything() {
-        return equals(SHORT_EVERYTHING);
+        return equalsRange(SHORT_EVERYTHING);
     }
 
     /** Return true if this range contains every {@code char} value. */
     public boolean isCharEverything() {
-        return equals(CHAR_EVERYTHING);
+        return equalsRange(CHAR_EVERYTHING);
     }
 
     /** Return true if this range contains every {@code byte} value. */
     public boolean isByteEverything() {
-        return equals(BYTE_EVERYTHING);
+        return equalsRange(BYTE_EVERYTHING);
     }
 
     /** Return true if this range contains no values. */
@@ -185,7 +196,8 @@ public class Range {
     }
 
     /** The number of values representable in 32 bits: 2^32 or 1&lt;&lt;32. */
-    private static final long INTEGER_WIDTH = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
+    private static final long INTEGER_WIDTH =
+            (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
 
     /**
      * Converts this range to a 32-bit integral range.
@@ -331,7 +343,7 @@ public class Range {
 
     /** Returns true if the element is contained in this range. */
     public boolean contains(Range other) {
-        return from <= other.from && other.to <= to;
+        return other.isWithin(from, to);
     }
 
     /**
@@ -1094,17 +1106,18 @@ public class Range {
     }
 
     /**
-     * Determines if this range is contained inclusively between Long.MIN_VALUE/2 and Long.MAX_VALUE/2.
-     * Note: Long.MIN_VALUE/2 != -Long.MAX_VALUE/2
+     * Determines if this range is contained inclusively between Long.MIN_VALUE/2 and
+     * Long.MAX_VALUE/2. Note: Long.MIN_VALUE/2 != -Long.MAX_VALUE/2
      */
     private boolean isWithinHalfLong() {
         return isWithin(Long.MIN_VALUE >> 1, Long.MAX_VALUE >> 1);
     }
 
-    /** 
+    /**
      * Determines if this range is completely contained in the scope of the Integer type.
+     *
      * @return true if the range is contained within the Integer range inclusive.
-     */     
+     */
     public boolean isWithinInteger() {
         return isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
