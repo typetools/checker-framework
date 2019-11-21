@@ -437,8 +437,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Issue an error and abort if any of the support qualifiers has a @Target meta-annotation that
-     * contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
+     * @throws BugInCF If supportedQuals is empty or if any of the support qualifiers has a @Target
+     *     meta-annotation that contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({})
+     *     is allowed.)
      */
     private void checkSupportedQuals() {
         if (supportedQuals.isEmpty()) {
