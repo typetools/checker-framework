@@ -1880,7 +1880,7 @@ $ javac -processor org.checkerframework.checker.interning.InterningChecker \
      actual: DECLARED java.lang.String
    expected: DECLARED java.lang.String
 docs/examples/InterningExampleWithWarnings.java:21: (not.interned)
-    if (foo == bar)
+    if (foo == bar) {
             ^
  success (line  22): STRING_LITERAL "foo == bar"
      actual: DECLARED @org.checkerframework.checker.interning.qual.Interned java.lang.String
