@@ -96,7 +96,7 @@ public class RangeTest {
         for (long lowerbound : rangeBounds) {
             for (long upperbound : rangeBounds) {
                 if (lowerbound <= upperbound) {
-                    rangesList.add(new Range(lowerbound, upperbound));
+                    rangesList.add(Range.create(lowerbound, upperbound));
                 }
             }
         }
@@ -411,7 +411,7 @@ public class RangeTest {
 
     @Test
     public void testDivide() {
-        assert new Range(1, 2).divide(new Range(0, 0)) == Range.NOTHING;
+        assert Range.create(1, 2).divide(Range.create(0, 0)) == Range.NOTHING;
         for (RangeAndElement re1 : rangeAndElements()) {
             for (RangeAndElement re2 : rangeAndElements()) {
                 if (re2.element == 0) {
@@ -429,7 +429,7 @@ public class RangeTest {
 
     @Test
     public void testRemainder() {
-        assert new Range(1, 2).remainder(new Range(0, 0)) == Range.NOTHING;
+        assert Range.create(1, 2).remainder(Range.create(0, 0)) == Range.NOTHING;
         for (RangeAndElement re1 : rangeAndElements()) {
             for (RangeAndElement re2 : rangeAndElements()) {
                 if (re2.element == 0) {

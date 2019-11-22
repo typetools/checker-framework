@@ -56,7 +56,7 @@ class RangeOrListOfValues {
      */
     public void addAll(List<Integer> newValues) {
         if (isRange) {
-            Range newValueRange = new Range(newValues);
+            Range newValueRange = Range.create(newValues);
             range = range.union(newValueRange);
         } else {
             for (Integer i : newValues) {
@@ -107,7 +107,7 @@ class RangeOrListOfValues {
     public void convertToRange() {
         if (!isRange) {
             isRange = true;
-            range = new Range(values);
+            range = Range.create(values);
             values = null;
         }
     }
