@@ -155,7 +155,13 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 && receiver.toString().length() < 1000;
     }
 
-    private void undocumented1() {
+    public void undocumented1() {
+        if (UNKNOWN == BOTTOM) {
+            undocumented2();
+        }
+    }
+
+    public void undocumented2() {
         undocumented1();
     }
 
