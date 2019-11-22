@@ -1,6 +1,7 @@
 package tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -664,6 +665,7 @@ public class RangeTest {
         assertEquals((long) 3, Range.create(Arrays.asList(1, 2, 3)).to);
         assertEquals((long) 1, Range.create(Arrays.asList(3, 2, 1)).from);
         assertEquals((long) 3, Range.create(Arrays.asList(3, 2, 1)).to);
-        assertEquals(Range.NOTHING, Range.create(Collections.<Integer>emptyList()).to);
+        assertEquals(Range.NOTHING, Range.create(Collections.<Integer>emptyList()));
+        assertTrue(Range.NOTHING == Range.create(Collections.<Integer>emptyList()));
     }
 }
