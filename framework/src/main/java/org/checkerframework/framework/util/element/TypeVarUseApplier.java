@@ -112,7 +112,7 @@ public class TypeVarUseApplier {
      * explicit annotations written on the type variable.
      */
     public void extractAndApply() throws UnexpectedAnnotationLocationException {
-        ElementAnnotationUtil.addAnnotationsFromElement(
+        ElementAnnotationUtil.addDeclarationAnnotationsFromElement(
                 typeVariable, useElem.getAnnotationMirrors());
 
         // apply declaration annotations
