@@ -127,12 +127,7 @@ public class ValueCheckerUtils {
         } else if (values.isEmpty()) {
             return Range.NOTHING;
         }
-        // The number elements in the values list should not exceed MAX_VALUES (10).
-        List<Long> longValues = new ArrayList<>();
-        for (Number value : values) {
-            longValues.add(value.longValue());
-        }
-        return Range.create(longValues);
+        return Range.create(values);
     }
 
     /**
