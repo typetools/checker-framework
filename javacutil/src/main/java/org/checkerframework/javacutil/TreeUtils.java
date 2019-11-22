@@ -1282,16 +1282,34 @@ public final class TreeUtils {
         return ((JCAnnotation) tree).attribute;
     }
 
-    public static List<? extends AnnotationMirror> annotationsFromTree(AnnotatedTypeTree node) {
+    /**
+     * Converts the given AnnotatedTypeTree to a list of AnnotationMirrors.
+     *
+     * @param tree annotated type tree to convert
+     * @return list of AnnotationMirrors from the tree
+     */
+    public static List<? extends AnnotationMirror> annotationsFromTree(AnnotatedTypeTree tree) {
         return annotationsFromTypeAnnotationTrees(((JCAnnotatedType) node).annotations);
     }
 
-    public static List<? extends AnnotationMirror> annotationsFromTree(TypeParameterTree node) {
+    /**
+     * Converts the given TypeParameterTree to a list of AnnotationMirrors.
+     *
+     * @param tree type parameter tree to convert
+     * @return list of AnnotationMirrors from the tree
+     */
+    public static List<? extends AnnotationMirror> annotationsFromTree(TypeParameterTree tree) {
         return annotationsFromTypeAnnotationTrees(((JCTypeParameter) node).annotations);
     }
 
+    /**
+     * Converts the given NewArrayTree to a list of AnnotationMirrors.
+     *
+     * @param tree new array tree
+     * @return list of AnnotationMirrors from the tree
+     */
     public static List<? extends AnnotationMirror> annotationsFromArrayCreation(
-            NewArrayTree node, int level) {
+            NewArrayTree tree, int level) {
 
         assert node instanceof JCNewArray;
         final JCNewArray newArray = ((JCNewArray) node);

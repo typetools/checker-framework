@@ -14,8 +14,11 @@ public abstract class AbstractMostlySingleton<T extends Object> implements Set<T
 
     /** The possible states of the collection. */
     public enum State {
+        /** An empty set. */
         EMPTY,
+        /** A singleton set. */
         SINGLETON,
+        /** A set of arbitrary size. */
         ANY
     }
 
