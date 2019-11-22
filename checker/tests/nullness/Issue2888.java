@@ -8,6 +8,14 @@ class Issue2888 {
         // :: error: (accessing.nullable) :: error: (assignment.type.incompatible)
         noa[0] = null;
     }
+
+    @Nullable Object[] foo2(@Nullable Object[] p) {
+        noa = p;
+        noa = foo2(noa);
+        noa = foo2(p);
+        return p;
+    }
+
     // The below is copied from Issue 2923.
     public void bar1(@Nullable String... args) {
         bar2(args);
