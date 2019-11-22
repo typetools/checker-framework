@@ -1970,8 +1970,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createArrayLenRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
-        } else if (range.isLongEverything()
-                || !range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+        } else if (range.isLongEverything() || !range.isWithinInteger()) {
             return UNKNOWNVAL;
         } else {
             return createArrayLenRangeAnnotation(
