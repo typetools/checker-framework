@@ -13,6 +13,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -30,11 +31,17 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(f, node.getType());
 
         // Add primary annotations
-        List<? extends AnnotationTree> annos = node.getModifiers().getAnnotations();
-        if (annos != null && !annos.isEmpty()) {
-            List<AnnotationMirror> ams = TreeUtils.annotationsFromTypeAnnotationTrees(annos);
+        List<? extends AnnotationTree> annoTrees = node.getModifiers().getAnnotations();
+        if (annoTrees != null && !annoTrees.isEmpty()) {
+            List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
             AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(result);
-            innerType.addAnnotations(ams);
+            for (AnnotationMirror anno : annos) {
+                if (AnnotationUtils.isDeclarationAnnotation(anno)) {
+                    result.addAnnotation(anno);
+                } else {
+                    innerType.addAnnotation(anno);
+                }
+            }
         }
 
         Element elt = TreeUtils.elementFromDeclaration(node);
