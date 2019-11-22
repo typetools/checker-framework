@@ -519,7 +519,8 @@ For example, you can write \<@PolyNull> anywhere in a method that you would writ
 A polymorphic qualifier can be used in a method signature or body.
 It may not be used on a class declaration.
 (It may be used on a field declaration, but it has a different meaning;
-see Section~\ref{class-qualifier-polymorphism}.)
+see Section~\ref{class-qualifier-polymorphism}. Also, if it is written on a method in a class with
+a qualifier parameter, then it has a slightly different meaning, see Section~\ref{class-qual-param-method}.)
 
 A method written using a polymorphic qualifier conceptually has multiple
 versions, somewhat like the generics feature of Java or a template in C++.
@@ -861,21 +862,66 @@ type-check) than writing just
 The Checker Framework supports type \emph{qualifier} polymorphism for classes.  This is similar to
 Java's generic classes, but is used in situations where you cannot use Java generics.
 
-To add a qualifier parameter to a class, annotate its declaration with \refqualclass{framework/qual}{HasQualifierParameter}.
+For example, in Java, a collection is typically written generically, as in
+\begin{Verbatim}
+class MyCollection<T> { ... }
+\end{Verbatim}
+
+This has attractive properties, such as:
+\begin{itemize}
+  \item argument types depend on the element type, as in
+\begin{Verbatim}
+class MyCollection<E> {
+void add(E arg) { ... }
+}
+\end{Verbatim}
+\item two collections with different element types are not related in the subtype hierarchy, as in
+\begin{Verbatim}
+MyCollection<@Tainted Character> tBuffer = ...
+MyCollection<@Untainted Character> uBuffer = ...
+\end{Verbatim}
+\end{itemize}
+
+Sometimes, a collection is specialized to a particular Java type, as in a StringBuffer whose elements can
+be thought of as characters or strings. Because the element type is hard-coded, the qualifier on that
+element type is hard-coded, too. For example,
+
+\begin{Verbatim}
+class StringBuffer {
+  StringBuffer append(Object obj) { ... }
+  String toString() { ... }
+}
+\end{Verbatim}
+
+The qualifier on the parameter type of \<append> must be the same as that on the return type of \<toString>.
+If we use \<@Tainted>, then the type of all \<StringBuffer#toString> calls will be \<@Tainted> even
+if only Objects with type \<@Untainted> are appended. If we use \<@Untainted>, no objects with type
+\<@Tainted> may be appended.  It might seem that annotating all the parameter, receiver, and return
+types of both \<append> and \<toString> with \<@PolyTainted> would be correct, but the bodies of the
+methods would not type check and these annotations lead to the following unsoundness.
+
+\begin{Verbatim}
+  @Untainted StringBuffer usb = ...;
+  @Tainted Object tainted = ...;
+  @Tainted StringBuffer tsb = usb;
+  tsb.append(tainted);  // puts tainted value in (alias to) untainted list
+\end{Verbatim}
+
+We can fix the problems by providing the StringBuffer class with the two features that generic
+collections have.  It analogizes StringBuffer to a generic collection.  The qualifier on the
+StringBuffer itself is treated as appearing both on the StringBuffer and on its conceptual type
+argument.  That is:\\
+\begin{tt}
+  @Tainted StringBuffer $\approx$ @Tainted Collection<@Tainted Character>\\
+  @Untainted StringBuffer $\approx$ @Untainted Collection<@Untainted Character>
+\end{tt}
+
+To do this, we add a qualifier parameter to a class by annotating its declaration with \refqualclass{framework/qual}{HasQualifierParameter}.
 
 \begin{Verbatim}
 @HasQualifierParameter(Tainted.class)
 class StringBuffer { ... }
 \end{Verbatim}
-
-\<@HasQualifierParameter> analogizes \<StringBuffer> to a
-generic collection.  A qualifier on a use of \<StringBuffer> is treated as
-appearing both on the \<StringBuffer> and on its conceptual type argument.  That
-is:\\
-\begin{tt}
-  @Tainted StringBuffer $\approx$ @Tainted Collection<@Tainted Character>\\
-  @Untainted StringBuffer $\approx$ @Untainted Collection<@Untainted Character>
-\end{tt}
 
 If two types have different qualifier arguments, they have no subtyping
 relationship.  (This is ``invariant subtyping'', also used by Java for
@@ -887,12 +933,18 @@ If a class extends a \<@HasQualifierParameter> class (or implements a
 \<@HasQualifierParameter> interface), then that class must also be marked
 \<@HasQualifierParameter>.
 
+The default of qualifier for uses of types with a qualifier parameter is the polymorphic qualifier
+within the class that declares the type.
+
 \subsectionAndLabel{Using class qualifier parameters in method signatures}{class-qual-param-method}
 
-In classes that have a qualifier parameter, using a polymorphic annotation in a method signature has
-two different meanings. 1.) If the receiver type is annotated with a polymorphic qualifier, then the
-polymorphic qualifiers mean class implicit qualifier polymorphism. That is the polymorphic
-qualifier polymorphism
+A polymorphic qualifier in a method signature has two different meanings.
+1.) If the receiver type has a qualifier parameter and is annotated with a polymorphic qualifier,
+then at a call site all polymorphic annotations are instantiated to
+the same qualifier as the type of the receiver expression of the method call.
+2.) If the receiver type does not have a qualifier parameter or if it is not annotated with a
+polymorphic annotation, then the polymorphic qualifiers are instantiated as explained in
+Section~\ref{method-qualifier-polymorphism}.
 
 In a class with a class qualifier parameter, a formal parameter type should
 sometimes have the same qualifier as the class qualifier parameter.  To express
