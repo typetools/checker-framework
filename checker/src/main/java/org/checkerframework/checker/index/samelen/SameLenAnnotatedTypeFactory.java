@@ -155,16 +155,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 && receiver.toString().length() < 1000;
     }
 
-    public void undocumented1() {
-        if (UNKNOWN == BOTTOM) {
-            undocumented2();
-        }
-    }
-
-    public void undocumented2() {
-        undocumented1();
-    }
-
     /**
      * The qualifier hierarchy for the SameLen type system. Most types are distinct and at the same
      * level: for instance @SameLen("a") and @SameLen("b) have nothing in common. However, if one
