@@ -100,13 +100,11 @@ public class Range {
      * <p>This is a public convenience factory method that builds using the public factory for a
      * range.
      *
-     * @param values never null collection from which min and max values will be used as from and to
+     * @param values collection from which min and max values will be used as from and to
      *     values in the range.
-     * @return NOTHING on empty collection; a valid Range on any collection; NullPointerException on
-     *     null.
+     * @return NOTHING on empty collection; a valid Range on any collection.
      */
     public static Range create(Collection<? extends Number> values) {
-        Objects.requireNonNull(values, "values must be non null");
         if (values.isEmpty()) return NOTHING;
         // traverses the list once for min and max
         long min = values.iterator().next().longValue();
@@ -184,7 +182,7 @@ public class Range {
      * Compare two ranges in a type safe manner for equality without incurring the cost of an
      * instanceof check such as equals(Object) does.
      *
-     * @param range to compare against; never null
+     * @param range to compare against
      * @return true for ranges that match from and to respectively
      */
     private boolean equalsRange(Range range) {
