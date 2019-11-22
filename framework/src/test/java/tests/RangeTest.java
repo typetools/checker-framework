@@ -651,19 +651,20 @@ public class RangeTest {
             }
         }
     }
-    
-     @Test
+
+    @Test
     public void testFactoryLongLong() {
         assertEquals((long) 1, Range.create(1, 2).from);
         assertEquals((long) 2, Range.create(1, 2).to);
-     }
-     
-     @Test
-     public void testFactoryList() {
-         assertEquals((long) 1, Range.create(Arrays.asList(1,2,3)).from);
-         assertEquals((long) 3, Range.create(Arrays.asList(1,2,3)).to);
-         assertEquals((long) 1, Range.create(Arrays.asList(3,2,1)).from);
-         assertEquals((long) 3, Range.create(Arrays.asList(3,2,1)).to);
-         assertEquals(Range.NOTHING, Range.create((List<Integer>)Collections.<Integer>emptyList()).to);
-     }
+    }
+
+    @Test
+    public void testFactoryList() {
+        assertEquals((long) 1, Range.create(Arrays.asList(1, 2, 3)).from);
+        assertEquals((long) 3, Range.create(Arrays.asList(1, 2, 3)).to);
+        assertEquals((long) 1, Range.create(Arrays.asList(3, 2, 1)).from);
+        assertEquals((long) 3, Range.create(Arrays.asList(3, 2, 1)).to);
+        assertEquals(
+                Range.NOTHING, Range.create((List<Integer>) Collections.<Integer>emptyList()).to);
+    }
 }
