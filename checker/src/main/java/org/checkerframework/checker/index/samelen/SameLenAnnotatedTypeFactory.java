@@ -155,7 +155,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 && receiver.toString().length() < 1000;
     }
 
-    private void undocumented() {}
+    private void undocumented1() {
+        undocumented1();
+    }
 
     /**
      * The qualifier hierarchy for the SameLen type system. Most types are distinct and at the same
