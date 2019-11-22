@@ -1925,6 +1925,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Whether an element is being type parameter substituted in {@code asMemberOf()}, i.e. {@link
+     * AnnotatedTypes#substituteTypeVariables(Types, AnnotatedTypeFactory, AnnotatedTypeMirror,
+     * Element, AnnotatedTypeMirror)} is called in {@link AnnotatedTypes#asMemberOf(Types,
+     * AnnotatedTypeFactory, AnnotatedTypeMirror, ExecutableElement)}
+     *
+     * @param elem an element
+     * @return true if being substituted in {@code asMemberOf()}, otherwise false.
+     */
+    private boolean shouldBeSubstituted(Element elem) {
+        switch (elem.getKind()) {
+            case PACKAGE:
+            case INSTANCE_INIT:
+            case OTHER:
+            case STATIC_INIT:
+            case TYPE_PARAMETER:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    /**
      * Determines the type of the invoked method based on the passed expression tree, executable
      * element, and receiver type.
      *
@@ -1937,8 +1959,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public ParameterizedExecutableType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
+        AnnotatedExecutableType memberType = getAnnotatedType(methodElt); // get unsubstituted type
+        if (shouldBeSubstituted(methodElt)) {
+            methodFromUsePreSubstitution(tree, memberType);
+        }
+
+        // memberType may replaced after asMemberOf(). Why poly not affected?
         AnnotatedExecutableType methodType =
-                AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt);
+                AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt, memberType);
         List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
 
         Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
@@ -1969,6 +1997,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         return new ParameterizedExecutableType(methodType, typeargs);
+    }
+
+    /**
+     * Callback method for any operation to AnnotatedTypeMirror before type variable substitution.
+     * Default operation is "no operation" now.
+     *
+     * @param tree a source Tree
+     * @param mirror mirror of type before substitution. changes may made on this
+     */
+    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType mirror) {
+        // no-op in here
     }
 
     /**
