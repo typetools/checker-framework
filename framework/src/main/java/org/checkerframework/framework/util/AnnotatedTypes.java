@@ -1004,29 +1004,11 @@ public class AnnotatedTypes {
      * @return true iff the give array contains {@link ElementType#TYPE_USE}
      * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
      *     something besides {@link ElementType#TYPE_PARAMETER}
+     * @deprecated use {@link AnnotationUtils#hasTypeQualifierElementTypes(ElementType[], Class)}.
      */
+    @Deprecated
     public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
-        // True if the array contains TYPE_USE
-        boolean hasTypeUse = false;
-        // Non-null if the array contains an element other than TYPE_USE or TYPE_PARAMETER
-        ElementType otherElementType = null;
-
-        for (ElementType element : elements) {
-            if (element == ElementType.TYPE_USE) {
-                hasTypeUse = true;
-            } else if (element != ElementType.TYPE_PARAMETER) {
-                otherElementType = element;
-            }
-            if (hasTypeUse && otherElementType != null) {
-                throw new BugInCF(
-                        "@Target meta-annotation should not contain both TYPE_USE and "
-                                + otherElementType
-                                + ", for annotation "
-                                + cls.getName());
-            }
-        }
-
-        return hasTypeUse;
+        return AnnotationUtils.hasTypeQualifierElementTypes(elements, cls);
     }
 
     private static String annotationClassName =
