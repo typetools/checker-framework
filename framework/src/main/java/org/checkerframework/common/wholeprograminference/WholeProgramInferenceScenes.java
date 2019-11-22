@@ -214,20 +214,19 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             // https://github.com/typetools/checker-framework/issues/682
             return;
         }
-        ClassSymbol classSymbol = getEnclosingClassSymbol(receiverTree);
+        final MethodTree methodDefinitionTree = (MethodTree) atf.declarationFromElement(methodElt);
+        final ClassSymbol classSymbol;
+        if (methodDefinitionTree != null) {
+            classSymbol = getEnclosingClassSymbol(methodDefinitionTree);
+        } else {
+            classSymbol = getEnclosingClassSymbol(receiverTree);
+        }
         if (classSymbol == null) {
             // TODO: Handle anonymous classes.
             // Also struggled to obtain the ClassTree from an anonymous class.
             // Ignoring it for now.
             // See Issue 682
             // https://github.com/typetools/checker-framework/issues/682
-            return;
-        }
-        // TODO: We must handle cases where the method is declared on a superclass.
-        // Currently we are ignoring them. See ElementUtils#getSuperTypes.
-        // See Issue 682
-        // https://github.com/typetools/checker-framework/issues/682
-        if (!classSymbol.getEnclosedElements().contains((Symbol) methodElt)) {
             return;
         }
 
