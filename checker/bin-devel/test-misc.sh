@@ -31,4 +31,4 @@ make -C docs/manual all
 # This comes last, in case we wish to ignore it
 # if [ "$CI_IS_PR" == "true" ] ; then
 (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/warnings.txt 2>&1) || true
-/tmp/plume-scripts/ci-lint-diff --debug /tmp/warnings.txt
+/tmp/plume-scripts/ci-lint-diff /tmp/warnings.txt
