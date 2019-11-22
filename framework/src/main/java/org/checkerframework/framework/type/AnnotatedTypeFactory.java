@@ -1925,6 +1925,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return mType;
     }
 
+    /**
+     * Whether an element is being type parameter substituted in {@code asMemberOf()}, i.e. {@link
+     * AnnotatedTypes#substituteTypeVariables(Types, AnnotatedTypeFactory, AnnotatedTypeMirror,
+     * Element, AnnotatedTypeMirror)} is called in {@link AnnotatedTypes#asMemberOf(Types,
+     * AnnotatedTypeFactory, AnnotatedTypeMirror, ExecutableElement)}
+     *
+     * @param elem an element
+     * @return true if being substituted in {@code asMemberOf()}, otherwise false.
+     */
     private boolean shouldBeSubstituted(Element elem) {
         switch (elem.getKind()) {
             case PACKAGE:
