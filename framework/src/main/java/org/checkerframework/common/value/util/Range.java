@@ -65,10 +65,8 @@ public class Range {
     /**
      * Constructs a range with its bounds specified by two parameters, {@code from} and {@code to}.
      *
-     * <p>Private constructor does no validation of arguments so special instances can be created
-     * through it.
-     *
-     * <p>Example {@code #NOTHING}.
+     * <p>This is a private constructor that does no validation of arguments, so special instances
+     * (e.g., {@link #NOTHING}) can be created through it.
      *
      * @param from the lower bound (inclusive)
      * @param to the upper bound (inclusive)
@@ -80,12 +78,11 @@ public class Range {
 
     /**
      * Constructs a range with its bounds specified by two parameters, {@code from} and {@code to}.
-     *
-     * <p>Public factory method validates that {@code from <= to}
+     * Requires {@code from <= to}.
      *
      * @param from the lower bound (inclusive)
      * @param to the upper bound (inclusive)
-     * @return a valid Range for {@code from <= to}, otherwise IllegalArgumentException.
+     * @return the Range [from..to]
      */
     public static Range create(long from, long to) {
         if (!(from <= to)) {
@@ -95,18 +92,17 @@ public class Range {
     }
 
     /**
-     * Create a Range from a collection of Number, Longs, Integer.
+     * Create a Range from a collection of Numbers.
      *
-     * <p>This is a public convenience factory method that builds using the public factory for a
-     * range.
-     *
-     * @param values collection from which min and max values will be used as from and to values in
-     *     the range.
-     * @return NOTHING on empty collection; a valid Range on any collection.
+     * @param values collection whose min and max values will be used as the range's from and to
+     *     values
+     * @return a range that encompasses all the argument's values ({@link #NOTHING} if the argument
+     *     is an empty collection)
      */
     public static Range create(Collection<? extends Number> values) {
-        if (values.isEmpty()) return NOTHING;
-        // traverses the list once for min and max
+        if (values.isEmpty()) {
+            return NOTHING;
+        }
         long min = values.iterator().next().longValue();
         long max = min;
         for (Number value : values) {
