@@ -1289,7 +1289,7 @@ public final class TreeUtils {
      * @return list of AnnotationMirrors from the tree
      */
     public static List<? extends AnnotationMirror> annotationsFromTree(AnnotatedTypeTree tree) {
-        return annotationsFromTypeAnnotationTrees(((JCAnnotatedType) node).annotations);
+        return annotationsFromTypeAnnotationTrees(((JCAnnotatedType) tree).annotations);
     }
 
     /**
@@ -1299,7 +1299,7 @@ public final class TreeUtils {
      * @return list of AnnotationMirrors from the tree
      */
     public static List<? extends AnnotationMirror> annotationsFromTree(TypeParameterTree tree) {
-        return annotationsFromTypeAnnotationTrees(((JCTypeParameter) node).annotations);
+        return annotationsFromTypeAnnotationTrees(((JCTypeParameter) tree).annotations);
     }
 
     /**
@@ -1311,8 +1311,8 @@ public final class TreeUtils {
     public static List<? extends AnnotationMirror> annotationsFromArrayCreation(
             NewArrayTree tree, int level) {
 
-        assert node instanceof JCNewArray;
-        final JCNewArray newArray = ((JCNewArray) node);
+        assert tree instanceof JCNewArray;
+        final JCNewArray newArray = ((JCNewArray) tree);
 
         if (level == -1) {
             return annotationsFromTypeAnnotationTrees(newArray.annotations);
