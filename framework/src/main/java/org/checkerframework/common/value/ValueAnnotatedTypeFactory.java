@@ -2034,11 +2034,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRange.class)) {
-            return Range.create(AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true), AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true));
+            return Range.create(
+                    AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true),
+                    AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true));
         }
 
         if (AnnotationUtils.areSameByClass(rangeAnno, ArrayLenRange.class)) {
-            return Range.create(AnnotationUtils.getElementValue(rangeAnno, "from", Integer.class, true), AnnotationUtils.getElementValue(rangeAnno, "to", Integer.class, true));
+            return Range.create(
+                    AnnotationUtils.getElementValue(rangeAnno, "from", Integer.class, true),
+                    AnnotationUtils.getElementValue(rangeAnno, "to", Integer.class, true));
         }
 
         return null;
