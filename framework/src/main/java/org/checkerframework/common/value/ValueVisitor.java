@@ -1,5 +1,9 @@
 package org.checkerframework.common.value;
 
+import static org.checkerframework.javacutil.AnnotationUtils.areSameByClass;
+import static org.checkerframework.javacutil.AnnotationUtils.getElementValue;
+import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -29,9 +33,6 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import static org.checkerframework.javacutil.AnnotationUtils.areSameByClass;
-import static org.checkerframework.javacutil.AnnotationUtils.getElementValue;
-import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Visitor for the Constant Value type system. */
@@ -180,8 +181,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 || areSameByClass(anno, DoubleVal.class)
                 || areSameByClass(anno, IntVal.class)
                 || areSameByClass(anno, StringVal.class)) {
-            List<Object> values =
-                    getElementValueArray(anno, "value", Object.class, true);
+            List<Object> values = getElementValueArray(anno, "value", Object.class, true);
 
             if (values.isEmpty()) {
                 checker.report(Result.warning("no.values.given"), node);
