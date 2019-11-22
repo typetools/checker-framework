@@ -132,7 +132,7 @@ public class ValueCheckerUtils {
         for (Number value : values) {
             longValues.add(value.longValue());
         }
-        return new Range(longValues);
+        return Range.create(longValues);
     }
 
     /**
@@ -318,7 +318,7 @@ public class ValueCheckerUtils {
             List<Long> values =
                     ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
             if (values != null) {
-                return new Range(values);
+                return Range.create(values);
             } else {
                 return null;
             }
