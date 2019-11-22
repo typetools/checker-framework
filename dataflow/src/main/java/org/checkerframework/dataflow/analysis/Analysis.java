@@ -631,7 +631,7 @@ public class Analysis<
             queue.clear();
         }
 
-        /** @see PriorityQueue.isEmpty */
+        /** @see PriorityQueue#isEmpty */
         @EnsuresNonNullIf(result = false, expression = "poll()")
         @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied") // forwarded
         public boolean isEmpty() {
@@ -646,7 +646,7 @@ public class Analysis<
             queue.add(block);
         }
 
-        /** @see PriorityQueue.poll */
+        /** @see PriorityQueue#poll */
         public @Nullable Block poll() {
             return queue.poll();
         }
