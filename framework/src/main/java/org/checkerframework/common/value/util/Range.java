@@ -76,6 +76,7 @@ public class Range {
     private Range(long from, long to) {
         this.from = from;
         this.to = to;
+        this.hash = Objects.hash(from, to);
     }
 
     /**
@@ -173,9 +174,11 @@ public class Range {
         return false;
     }
 
+    private final int hash;
+
     @Override
     public int hashCode() {
-        return Objects.hash(from, to);
+        return hash;
     }
 
     /**
