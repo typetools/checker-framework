@@ -96,6 +96,15 @@ command-line option.)
   See Section~\ref{nullness-arrays} for a discussion.
   % TODO: this option is temporary and the sound option
   % should become the default.
+
+\item
+  \label{nullness-lint-trustarraylenzero}%
+  If you supply the \code{-Alint=trustArrayLenZero} command-line option, then
+  the checker trusts \refqualclass{common/value/qual}{ArrayLen} annotations with
+  length 0 when determining whether a call to \code{Collection.toArray} will
+  return an array with non-null components.
+  See Section~\ref{nullness-collection-toarray} for a discussion.
+
 \end{itemize}
 
 \item
@@ -454,6 +463,46 @@ needs to be trusted:  that is, a programmer must verify that it is safe,
 then write a \<@SuppressWarnings> annotation.
 
 % TODO: explain more aspects, give more examples.
+
+
+\subsectionAndLabel{Nullness and conversions from collections to arrays}{nullness-collection-toarray}
+
+% Keep this in sync with the javadoc of org.checkerframework.checker.nullness.CollectionToArrayHeuristics
+
+The semantics of
+\sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])}
+cannot be captured by the nullness type system syntax. The nullness type of the
+returned array depends on the size of the passed parameter. In particular, the
+returned array component is of type \<@NonNull> if the following conditions
+hold:
+
+\begin{itemize}
+\item The receiver collection type argument is \<@NonNull>, and
+\item The passed array size is less than the collection size. Here are heuristics to
+       handle the most common cases:
+
+  \begin{itemize}
+    \item an empty array initializer, e.g. \<c.toArray(new String[] \{\})>,
+
+    \item array creation tree of size 0, e.g. \<c.toArray(new String[0])>, or
+
+    \item array creation tree of the collection size method invocation
+      \<c.toArray(new String[c.size()])>.
+\end{itemize}
+
+\end{itemize}
+
+Additionally, when the lint option \<-Alint=trustArrayLenZero> is provided,
+field accesses where the field declaration has a \<@ArrayLen(0)> annotation are
+considered when determining whether a call to \code{Collection.toArray} will
+return an array with non-null components.
+
+This trusts the \<@ArrayLen(0)> annotation, but does not verify it. Run the
+Constant Value Checker (see \chapterpageref{constant-value-checker}) to verify
+that annotation.
+
+Note: The nullness of the returned array doesn't depend on the passed array nullness.
+
 
 
 

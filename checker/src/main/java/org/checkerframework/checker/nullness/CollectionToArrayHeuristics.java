@@ -40,30 +40,51 @@ import org.checkerframework.javacutil.TreeUtils;
  *         <li value="2">array creation tree of size 0, e.g. {@code c.toArray(new String[0])}, or
  *         <li value="3">array creation tree of the collection size method invocation {@code
  *             c.toArray(new String[c.size()])}
- *         <li value="4">field access where the declaration has a {@code @ArrayLen(0)} annotation
  *       </ol>
  * </ol>
  *
- * Note: The nullness of the returned array doesn't depend on the passed array nullness.
+ * <p>Additionally, when the lint option {@link NullnessChecker.LINT_TRUSTARRAYLENZERO} is provided,
+ * field accesses where the field declaration has a {@code @ArrayLen(0)} annotation are considered
+ * when determining whether a call to {@link Collection#toArray(Object[]) Collection.toArray(T[])}
+ * will return an array with non-null components. . This trusts the {@code @ArrayLen(0)} annotation,
+ * but does not verify it. Run the Constant Value Checker to verify that annotation.
+ *
+ * <p>Note: The nullness of the returned array doesn't depend on the passed array nullness.
  */
 public class CollectionToArrayHeuristics {
+    /** The processing environment. */
     private final ProcessingEnvironment processingEnv;
+    /** The type factory. */
     private final NullnessAnnotatedTypeFactory atypeFactory;
 
+    /** The element for {@link Collection#toArray(Object[])}. */
     private final ExecutableElement collectionToArrayE;
+    /** The element for {@link Collection#size()}. */
     private final ExecutableElement size;
+    /** The type for {@link Collection}. */
     private final AnnotatedDeclaredType collectionType;
+    /** Whether to trust {@code @ArrayLen(0)} annotations. */
+    private final boolean trustArrayLenZero;
 
+    /** Create the heuristics for the given nullness checker and factory. */
     public CollectionToArrayHeuristics(
-            ProcessingEnvironment env, NullnessAnnotatedTypeFactory factory) {
-        this.processingEnv = env;
+            NullnessChecker checker, NullnessAnnotatedTypeFactory factory) {
+        this.processingEnv = checker.getProcessingEnvironment();
         this.atypeFactory = factory;
 
         this.collectionToArrayE =
-                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", env, "T[]");
-        this.size = TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
+                TreeUtils.getMethod(
+                        java.util.Collection.class.getName(), "toArray", processingEnv, "T[]");
+        this.size =
+                TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, processingEnv);
         this.collectionType =
-                factory.fromElement(env.getElementUtils().getTypeElement("java.util.Collection"));
+                factory.fromElement(
+                        processingEnv.getElementUtils().getTypeElement("java.util.Collection"));
+
+        this.trustArrayLenZero =
+                checker.getLintOption(
+                        NullnessChecker.LINT_TRUSTARRAYLENZERO,
+                        NullnessChecker.LINT_DEFAULT_TRUSTARRAYLENZERO);
     }
 
     /**
@@ -80,7 +101,8 @@ public class CollectionToArrayHeuristics {
             boolean receiverIsNonNull = isNonNullReceiver(tree);
             boolean argIsHandled =
                     isHandledArrayCreation(argument, receiverName(tree.getMethodSelect()));
-            argIsHandled = argIsHandled || isArrayLenZeroFieldAccess(argument);
+            argIsHandled =
+                    argIsHandled || (trustArrayLenZero && isArrayLenZeroFieldAccess(argument));
             setComponentNullness(receiverIsNonNull && argIsHandled, method.getReturnType());
 
             // TODO: We need a mechanism to prevent nullable collections

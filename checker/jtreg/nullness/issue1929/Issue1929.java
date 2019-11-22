@@ -1,5 +1,10 @@
-// Test case for Issue 1929:
-// https://github.com/typetools/checker-framework/issues/1929
+/*
+ * @test
+ * @summary Test case for Issue 1929: test -Alint=trustArrayLenZero
+ *
+ * @compile/fail/ref=Issue1929-notrust.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker Issue1929.java
+ * @compile/fail/ref=Issue1929-trust.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Alint=trustArrayLenZero Issue1929.java
+ */
 
 import java.util.Collection;
 import org.checkerframework.common.value.qual.ArrayLen;

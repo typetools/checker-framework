@@ -27,7 +27,8 @@ import org.checkerframework.framework.source.SupportedLintOptions;
     // It is the default temporarily, until we improve the analysis to reduce false positives or we
     // learn what advice to give programmers about avoid false positive warnings.
     // See issue #986: https://github.com/typetools/checker-framework/issues/986
-    "forbidnonnullarraycomponents"
+    "forbidnonnullarraycomponents",
+    NullnessChecker.LINT_TRUSTARRAYLENZERO
 })
 public class NullnessChecker extends InitializationChecker {
 
@@ -45,6 +46,15 @@ public class NullnessChecker extends InitializationChecker {
 
     /** Default for {@link #LINT_REDUNDANTNULLCOMPARISON}. */
     public static final boolean LINT_DEFAULT_REDUNDANTNULLCOMPARISON = false;
+
+    /**
+     * Should we unsoundly trust {@link @ArrayLen(0)} annotations to improve handling of {@link
+     * java.util.Collection#toArray()} by {@link CollectionToArrayHeuristics}?
+     */
+    public static final String LINT_TRUSTARRAYLENZERO = "trustArrayLenZero";
+
+    /** Default for {@link #LINT_NOINITFORMONOTONICNONNULL}. */
+    public static final boolean LINT_DEFAULT_TRUSTARRAYLENZERO = false;
 
     /*
     @Override
