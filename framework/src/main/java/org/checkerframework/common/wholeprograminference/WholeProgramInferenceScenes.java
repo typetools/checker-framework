@@ -318,9 +318,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (classTree == null
-                || ElementUtils.isElementFromByteCode(
-                        TreeUtils.elementFromDeclaration(classTree))) {
+        if (ElementUtils.isElementFromByteCode(lhs.getElement())) {
             return;
         }
 
@@ -432,9 +430,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             FieldAccessNode lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (classTree == null
-                || ElementUtils.isElementFromByteCode(
-                        TreeUtils.elementFromDeclaration(classTree))) {
+        if (ElementUtils.isElementFromByteCode(lhs.getElement())) {
             return;
         }
 
