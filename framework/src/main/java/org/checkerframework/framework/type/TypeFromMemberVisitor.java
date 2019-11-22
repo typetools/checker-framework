@@ -65,7 +65,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
 
         // TODO: Needed to visit parameter types, etc.
         // It would be nicer if this didn't decode the information from the Element and
-        // instead also used the Tree.
+        // instead also used the Tree. If this is implemented, then care needs to be taken to put
+        // any alias declaration annotations in the correct place for return types that are arrays.
         ElementAnnotationApplier.apply(result, elt, f);
         return result;
     }
