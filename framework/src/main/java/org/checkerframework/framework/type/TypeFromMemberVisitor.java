@@ -36,12 +36,16 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
             List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
             AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(result);
             for (AnnotationMirror anno : annos) {
+                // The code here is similar to
+                // org.checkerframework.framework.util.element.ElementAnnotationUtil.addDeclarationAnnotationsFromElement.
                 if (AnnotationUtils.isDeclarationAnnotation(anno)
                         // Always treat Checker Framework annotations as type annotations.
                         && !AnnotationUtils.annotationName(anno)
                                 .startsWith("org.checkerframework")) {
+                    // Declaration annotations apply to the outer type.
                     result.addAnnotation(anno);
                 } else {
+                    // Type annotations apply to the inner most type.
                     innerType.addAnnotation(anno);
                 }
             }
