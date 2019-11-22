@@ -145,11 +145,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return atm;
     }
 
-    /**
-     * Returns true if the given expression may appear in a @SameLen annotation.
-     *
-     * @param recv a bogus Javadoc tag
-     */
+    /** Returns true if the given expression may appear in a @SameLen annotation. */
     public static boolean mayAppearInSameLen(Receiver receiver) {
         return !receiver.containsUnknown()
                 && !(receiver instanceof FlowExpressions.ArrayCreation)
