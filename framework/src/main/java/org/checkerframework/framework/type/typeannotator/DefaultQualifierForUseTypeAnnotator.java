@@ -121,7 +121,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
      * annotationMirror}.
      *
      * @param annotationMirror a non-null annotation with a value element that is an array of
-     *     annotation classes.
+     *     annotation classes
      * @return the set of qualifiers supported by this type system from the value element of {@code
      *     annotationMirror}
      */

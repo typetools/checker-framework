@@ -1685,8 +1685,8 @@ public abstract class GenericAnnotatedTypeFactory<
         return null;
     }
 
-    /* A simple utility method to determine a short checker name to be
-     * used by CFG visualizations.
+    /**
+     * A simple utility method to determine a short checker name to be used by CFG visualizations.
      */
     private String getCheckerName() {
         String checkerName = checker.getClass().getSimpleName();
