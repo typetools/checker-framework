@@ -36,7 +36,10 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
             List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
             AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(result);
             for (AnnotationMirror anno : annos) {
-                if (AnnotationUtils.isDeclarationAnnotation(anno)) {
+                if (AnnotationUtils.isDeclarationAnnotation(anno)
+                        // Always treat Checker Framework annotations as type annotations.
+                        && !AnnotationUtils.annotationName(anno)
+                                .startsWith("org.checkerframework")) {
                     result.addAnnotation(anno);
                 } else {
                     innerType.addAnnotation(anno);
