@@ -53,7 +53,7 @@ public class StubTypes {
      */
     private boolean parsing;
 
-    /** AnnotatedTypeFactory */
+    /** AnnotatedTypeFactory. */
     private final AnnotatedTypeFactory factory;
 
     /**
@@ -234,7 +234,7 @@ public class StubTypes {
      * Returns the annotated type for {@code e} containing only annotations explicitly written in a
      * stub file or {@code null} if {@code e} does not appear in a stub file.
      *
-     * @param e Element whose type is returned.
+     * @param e an Element whose type is returned
      * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written
      *     in the stubfile and in the element. {@code null} is returned if {@code element} does not
      *     appear in a stub file.
