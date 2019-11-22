@@ -101,8 +101,8 @@ public class Range {
      * <p>This is a public convenience factory method that builds using the public factory for a
      * range.
      *
-     * @param values collection from which min and max values will be used as from and to
-     *     values in the range.
+     * @param values collection from which min and max values will be used as from and to values in
+     *     the range.
      * @return NOTHING on empty collection; a valid Range on any collection.
      */
     public static Range create(Collection<? extends Number> values) {
@@ -125,27 +125,8 @@ public class Range {
      * @param from the lower bound (inclusive)
      * @param to the upper bound (inclusive)
      */
-    private static Range createRangeOrNothing(long from, long to) {
-        if (from <= to) {
-            return create(from, to);
-        } else {
-            return NOTHING;
-        }
-    }
-
-    /**
-     * Returns a range with its bounds specified by two parameters, {@code from} and {@code to}. If
-     * {@code from} is greater than {@code to}, returns {@link #EVERYTHING}.
-     *
-     * @param from the lower bound (inclusive)
-     * @param to the upper bound (inclusive)
-     */
-    private static Range createRangeOrEverything(long from, long to) {
-        if (from <= to) {
-            return create(from, to);
-        } else {
-            return EVERYTHING;
-        }
+    private static Range createOrNothing(long from, long to) {
+        return createOrElse(from, to, NOTHING);
     }
 
     /**
@@ -248,12 +229,7 @@ public class Range {
         if (this.isWiderThan(INT_WIDTH)) {
             return INT_EVERYTHING;
         }
-        int intFrom = (int) this.from;
-        int intTo = (int) this.to;
-        if (intFrom <= intTo) {
-            return create(intFrom, intTo);
-        }
-        return INT_EVERYTHING;
+        return createOrElse((int) this.from, (int) this.to, INT_EVERYTHING);
     }
 
     /** The number of values representable in 16 bits: 2^16 or 1&lt;&lt;16. */
@@ -283,12 +259,7 @@ public class Range {
             // short is promoted to int before the operation so no need for explicit casting
             return SHORT_EVERYTHING;
         }
-        short shortFrom = (short) this.from;
-        short shortTo = (short) this.to;
-        if (shortFrom <= shortTo) {
-            return create(shortFrom, shortTo);
-        }
-        return SHORT_EVERYTHING;
+        return createOrElse((short) this.from, (short) this.to, SHORT_EVERYTHING);
     }
 
     /** The number of values representable in char: */
@@ -318,12 +289,7 @@ public class Range {
             // char is promoted to int before the operation so no need for explicit casting
             return CHAR_EVERYTHING;
         }
-        char charFrom = (char) this.from;
-        char charTo = (char) this.to;
-        if (charFrom <= charTo) {
-            return create(charFrom, charTo);
-        }
-        return CHAR_EVERYTHING;
+        return createOrElse((char) this.from, (char) this.to, CHAR_EVERYTHING);
     }
 
     /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
@@ -353,12 +319,7 @@ public class Range {
             // byte is promoted to int before the operation so no need for explicit casting
             return BYTE_EVERYTHING;
         }
-        byte byteFrom = (byte) this.from;
-        byte byteTo = (byte) this.to;
-        if (byteFrom <= byteTo) {
-            return create(byteFrom, byteTo);
-        }
-        return BYTE_EVERYTHING;
+        return createOrElse((byte) this.from, (byte) this.to, BYTE_EVERYTHING);
     }
 
     /** Returns true if the element is contained in this range. */
@@ -405,7 +366,7 @@ public class Range {
 
         long resultFrom = Math.max(from, right.from);
         long resultTo = Math.min(to, right.to);
-        return createRangeOrNothing(resultFrom, resultTo);
+        return createOrNothing(resultFrom, resultTo);
     }
 
     /** @return the range with the lowest to and from values of this range and the passed range */
@@ -930,7 +891,7 @@ public class Range {
         }
 
         long resultTo = Math.min(to, right.to - 1);
-        return createRangeOrNothing(from, resultTo);
+        return createOrNothing(from, resultTo);
     }
 
     /**
@@ -963,7 +924,7 @@ public class Range {
         }
 
         long resultTo = Math.min(to, right.to);
-        return createRangeOrNothing(from, resultTo);
+        return createOrNothing(from, resultTo);
     }
 
     /**
@@ -1000,7 +961,7 @@ public class Range {
         }
 
         long resultFrom = Math.max(from, right.from + 1);
-        return createRangeOrNothing(resultFrom, to);
+        return createOrNothing(resultFrom, to);
     }
 
     /**
@@ -1033,7 +994,7 @@ public class Range {
         }
 
         long resultFrom = Math.max(from, right.from);
-        return createRangeOrNothing(resultFrom, to);
+        return createOrNothing(resultFrom, to);
     }
 
     /**
@@ -1182,6 +1143,22 @@ public class Range {
         }
         long longFrom = bigFrom.longValue();
         long longTo = bigTo.longValue();
-        return createRangeOrEverything(longFrom, longTo);
+        return createOrElse(longFrom, longTo, EVERYTHING);
+    }
+
+    /**
+     * Internal factory that handles creation of Range that may be in overflow or underflow as a
+     * result of an internal cast conversion.
+     *
+     * <p>Overflow and underflow here are any violations of {@code from<=to}.
+     *
+     * @param from
+     * @param to
+     * @param underflow
+     * @return
+     */
+    private static Range createOrElse(long from, long to, Range underflow) {
+        if (from <= to) return new Range(from, to);
+        return underflow;
     }
 }
