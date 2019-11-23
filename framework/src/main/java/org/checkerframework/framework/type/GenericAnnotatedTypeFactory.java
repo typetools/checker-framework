@@ -1584,12 +1584,10 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType mirror) {
-        // this method could be invoked by various context
-        // tree could be MethodInvocationTree or MemberReferenceTree
-        assert tree instanceof MemberReferenceTree || tree instanceof MethodInvocationTree;
+    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
+        super.methodFromUsePreSubstitution(tree, type);
         if (tree instanceof MethodInvocationTree) {
-            poly.resolve((MethodInvocationTree) tree, mirror);
+            poly.resolve((MethodInvocationTree) tree, type);
         }
     }
 

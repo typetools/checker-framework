@@ -2006,14 +2006,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Callback method for any operation to AnnotatedTypeMirror before type variable substitution.
-     * Default operation is "no operation" now.
+     * Callback to handle the declared method type before type variable substitution.
      *
-     * @param tree a source Tree
-     * @param mirror mirror of type before substitution. changes may made on this
+     * @param tree either a method invocation or a member reference tree
+     * @param type declared method type before type variable substitution
      */
-    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType mirror) {
-        // no-op in here
+    protected void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
+        assert tree instanceof MethodInvocationTree || tree instanceof MemberReferenceTree;
     }
 
     /**
