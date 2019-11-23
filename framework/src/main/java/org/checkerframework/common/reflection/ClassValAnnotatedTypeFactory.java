@@ -122,11 +122,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (isSubtype(a2, a1)) {
                 return a1;
             } else {
-                List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
-                List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
                 Set<String> lubClassNames = new TreeSet<>();
-                lubClassNames.addAll(a1ClassNames);
-                lubClassNames.addAll(a2ClassNames);
+                lubClassNames.addAll(getClassNamesFromAnnotation(a1));
+                lubClassNames.addAll(getClassNamesFromAnnotation(a2));
 
                 // If either annotation is a ClassBound, the lub must also be a class bound.
                 if (AnnotationUtils.areSameByClass(a1, ClassBound.class)
@@ -147,11 +145,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (isSubtype(a2, a1)) {
                 return a2;
             } else {
-                List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
-                List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
                 Set<String> glbClassNames = new TreeSet<>();
-                glbClassNames.addAll(a1ClassNames);
-                glbClassNames.retainAll(a2ClassNames);
+                glbClassNames.addAll(getClassNamesFromAnnotation(a1));
+                glbClassNames.retainAll(getClassNamesFromAnnotation(a2));
 
                 // If either annotation is a ClassVal, the glb must also be a ClassVal.
                 // For example:
