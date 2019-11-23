@@ -35,7 +35,9 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  *
  * <pre>{@code   @EnsuresNonNullIf(expression="next_cache", result=true)
  *   public boolean hasNext() {
- *     if (next_cache == null) return false;
+ *     if (next_cache == null) {
+ *       return false;
+ *     }
  *     ...
  *   }}</pre>
  *
