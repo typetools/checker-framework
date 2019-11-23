@@ -417,9 +417,8 @@ public class AnnotatedTypes {
      * @param of the receiver type
      * @param member the element that should be viewed as member of of
      * @param memberType unsubstituted type of member
-     * @return The result described in {@link AnnotatedTypes#asMemberOf(Types, AnnotatedTypeFactory,
-     *     AnnotatedTypeMirror, Element)}, may share the same reference with parameter {@code
-     *     memberType}
+     * @return the type of member as member of of, with initial type memberType; can be an alias to
+     *     memberType
      */
     private static AnnotatedTypeMirror asMemberOfImpl(
             final Types types,
