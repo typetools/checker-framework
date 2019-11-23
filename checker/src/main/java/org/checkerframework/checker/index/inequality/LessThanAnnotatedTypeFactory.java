@@ -85,7 +85,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> subList = getLessThanExpressions(subAnno);
             if (subList == null) {
                 return true;
-            } 
+            }
             List<String> superList = getLessThanExpressions(superAnno);
             if (superList == null) {
                 return false;
