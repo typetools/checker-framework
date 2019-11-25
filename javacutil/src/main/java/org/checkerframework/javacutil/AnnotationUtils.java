@@ -128,11 +128,6 @@ public class AnnotationUtils {
         if (a2 == null) {
             throw new BugInCF("Unexpected null second argument to areSameByName");
         }
-        if (a1 instanceof CheckerFrameworkAnnotationMirror
-                && a2 instanceof CheckerFrameworkAnnotationMirror) {
-            return ((CheckerFrameworkAnnotationMirror) a1).annotationName
-                    == ((CheckerFrameworkAnnotationMirror) a2).annotationName;
-        }
 
         if (a1 instanceof CheckerFrameworkAnnotationMirror
                 && a2 instanceof CheckerFrameworkAnnotationMirror) {
