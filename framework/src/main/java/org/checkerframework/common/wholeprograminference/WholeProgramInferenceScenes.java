@@ -415,16 +415,34 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         helper.writeScenesToJaif();
     }
 
-    private String getEnclosingClassName(LocalVariableNode field) {
-        return ((ClassSymbol) ElementUtils.enclosingClass(field.getElement()))
+    /**
+     * Returns the "flatname" of the class enclosing {@code localVariableNode}
+     *
+     * @param localVariableNode the {@link LocalVariableNode}
+     * @return the "flatname" of the class enclosing {@code localVariableNode}
+     */
+    private String getEnclosingClassName(LocalVariableNode localVariableNode) {
+        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
                 .flatName()
                 .toString();
     }
 
+    /**
+     * Returns the "flatname" of the class enclosing {@code executableElement}
+     *
+     * @param executableElement the ExecutableElement
+     * @return the "flatname" of the class enclosing {@code executableElement}
+     */
     private String getEnclosingClassName(ExecutableElement executableElement) {
         return ((MethodSymbol) executableElement).enclClass().flatName().toString();
     }
 
+    /**
+     * Returns the "flatname" of the class enclosing {@code variableElement}
+     *
+     * @param variableElement the VariableElement
+     * @return the "flatname" of the class enclosing {@code variableElement}
+     */
     private String getEnclosingClassName(VariableElement variableElement) {
         return ((VarSymbol) variableElement).enclClass().flatName().toString();
     }
