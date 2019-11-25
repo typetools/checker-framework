@@ -184,7 +184,7 @@ public class StubParser {
      * @param filename name of stub file, used only for diagnostic messages
      * @param atypeFactory AnnotatedtypeFactory to use
      * @param processingEnv ProcessingEnviroment to use
-     * @param isJdkAsStub whether or not the stub file is a part of the jdk.
+     * @param isJdkAsStub whether or not the stub file is a part of the JDK
      */
     public StubParser(
             String filename,
@@ -807,7 +807,7 @@ public class StubParser {
      * Adds declaration and type annotations to the parameters of {@code methodType}, which is
      * either a method or constructor.
      *
-     * @param method Method or Constructor declaration
+     * @param method a Method or Constructor declaration
      * @param elt ExecutableElement of {@code method}
      * @param declAnnos map of declaration elements strings to annotations
      * @param methodType annotated type of {@code method}
@@ -862,8 +862,8 @@ public class StubParser {
         // TODO: This should check whether the stub file is @AnnotatedFor the current type system.
         // @AnnotatedFor isn't integrated in stub files yet.
         if (annos != null && !annos.isEmpty()) {
-            // TODO: only produce output if the removed annotation
-            // isn't the top and default annotation in the type hierarchy.
+            // TODO: only produce output if the removed annotation isn't the top and default
+            // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
             if (false) {
                 stubWarnOverwritesBytecode(
                         String.format(
@@ -1595,16 +1595,27 @@ public class StubParser {
         } else if (expr instanceof LongLiteralExpr) {
             return convert(((LongLiteralExpr) expr).asLong(), valueKind);
         } else if (expr instanceof UnaryExpr) {
-            if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
-                Object value =
-                        getValueOfExpressionInAnnotation(
-                                name, ((UnaryExpr) expr).getExpression(), valueKind);
-                if (value instanceof Number) {
-                    return convert((Number) value, valueKind, true);
-                }
+            switch (expr.toString()) {
+                    // Special-case the minimum values.  Separately parsing a "-" and a value
+                    // doesn't correctly handle the minimum values, because the absolute value of
+                    // the smallest member of an integral type is larger than the largest value.
+                case "-9223372036854775808L":
+                case "-9223372036854775808l":
+                    return convert(Long.MIN_VALUE, valueKind, false);
+                case "-2147483648":
+                    return convert(Integer.MIN_VALUE, valueKind, false);
+                default:
+                    if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
+                        Object value =
+                                getValueOfExpressionInAnnotation(
+                                        name, ((UnaryExpr) expr).getExpression(), valueKind);
+                        if (value instanceof Number) {
+                            return convert((Number) value, valueKind, true);
+                        }
+                    }
+                    stubWarn("Unexpected Unary annotation expression: " + expr);
+                    return null;
             }
-            stubWarn("Unexpected Unary annotation expression: " + expr);
-            return null;
         } else if (expr instanceof ClassExpr) {
             ClassExpr classExpr = (ClassExpr) expr;
             String className = classExpr.getType().toString();
@@ -1677,7 +1688,7 @@ public class StubParser {
      * Converts {@code number} to {@code expectedKind}. The value converted is multiplied by -1 if
      * {@code negate} is true
      *
-     * @param number Number value to be converted
+     * @param number a Number value to be converted
      * @param expectedKind one of type {byte, short, int, long, char, float, double}
      * @param negate whether to negate the value of the Number Object while converting
      * @return the converted Object

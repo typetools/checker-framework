@@ -532,11 +532,11 @@ public class PluginUtil {
      * <p>This is different from the version passed to the compiler via --release; use {@link
      * #releaseValue(ProcessingEnvironment)} to get that version.
      *
-     * <p>Extract the major version number from java.version. Two possible formats are considered.
-     * Up to Java 8, from a version string like `1.8.whatever`, this method extracts 8. Since Java
-     * 9, from a version string like `11.0.1`, this method extracts 11.
+     * <p>Extract the major version number from the "java.version" system property. Two possible
+     * formats are considered. Up to Java 8, from a version string like `1.8.whatever`, this method
+     * extracts 8. Since Java 9, from a version string like `11.0.1`, this method extracts 11.
      *
-     * @return the major JRE version number
+     * @return the major version number from "java.version"
      */
     public static int getJreVersion() {
         final String jreVersionStr = System.getProperty("java.version");

@@ -1119,11 +1119,8 @@ value.  Your code can suffer a NullPointerException when using a
 The Nullness Checker prevents this problem by warning you anytime that you
 may be accessing an uninitialized field.  This check is useful because it
 prevents errors in your code.  However, the analysis can be confusing to
-understand.  If you wish to disable the initialization checks, pass the
-command-line argument \<-AsuppressWarnings=uninitialized> when running the
-Nullness Checker.  You will no longer get a guarantee of no null pointer
-exceptions, but you can still use the Nullness Checker to find most of the
-null pointer problems in your code.
+understand.  If you wish to disable the initialization checks, see
+Section~\ref{initialization-checking-suppressing-warnings}.
 
 
 An object is partially initialized from the time that its constructor starts until its constructor
@@ -1883,25 +1880,32 @@ initialization was actually complete, then the receiver should have type
 \end{sloppypar}
 
 
-\subsectionAndLabel{More details about initialization checking}{initialization-checking}
+\subsectionAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
 
+To suppress most warnings related to partially-initialized values, use the
+``initialization.''~(note the trailing period) warning suppression key.  You
+can write \<@SuppressWarnings("initialization.")> on a field, constructor, or
+class, or pass the command-line argument
+\<-AsuppressWarnings=initialization.>~when running the Nullness Checker.
+(For more about suppressing warnings, see
+\chapterpageref{suppressing-warnings}).  You will no longer get a guarantee
+of no null pointer exceptions, but you can still use the Nullness Checker
+to find most of the null pointer problems in your code.
 
-\paragraphAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
+This suppresses warnings that are specific to the Initialization Checker,
+but does not suppress warnings issued by the Checker Framework itself, such
+as about assignments or method overriding.
 
-\begin{sloppypar}
-You can suppress warnings related to partially-initialized objects with
-\<@SuppressWarnings("initialization")>.
-This can be placed on a single field; on a constructor; or on a class to
-suppress all initialization warnings for all constructors.
-\end{sloppypar}
-
-To disable initialization checking, supply the command-line argument
-\<-AsuppressWarnings=uninitialized>.  Do \emph{not} use
-\<-AsuppressWarnings=initialization>, because doing so will disable all
-nullness checking as well as all initialization checking.  (That is because
+It is not possible to completely disable initialization checking while
+retaining nullness checking.  The ``initialization'' warning suppression
+key (without a period) has the same effect as the ``nullness'' key:  both
+of them disable all nullness and initialization checking.  That is because
 of an implementation detail of the Nullness and Initialization Checkers:
 they are actually the same checker, rather than being two separate checkers
-that are aggregated together.)
+that are aggregated together.
+
+
+\subsectionAndLabel{More details about initialization checking}{initialization-checking}
 
 
 \paragraphAndLabel{Use of method annotations}{initialization-checking-method-annotations}
