@@ -108,11 +108,6 @@ import org.checkerframework.javacutil.UserError;
     "skipDefs",
     "onlyDefs",
 
-    // Whether to ignore all subtype tests for type arguments that
-    // were inferred for a raw type
-    // org.checkerframework.framework.type.TypeHierarchy.isSubtypeTypeArguments
-    "ignoreRawTypeArguments",
-
     // Unsoundly ignore side effects
     "assumeSideEffectFree",
 
@@ -169,6 +164,11 @@ import org.checkerframework.javacutil.UserError;
     // See Issue 979.
     "conservativeUninferredTypeArguments",
 
+    // Whether to ignore all subtype tests for type arguments that
+    // were inferred for a raw type. Defaults to true.
+    // org.checkerframework.framework.type.TypeHierarchy.isSubtypeTypeArguments
+    "ignoreRawTypeArguments",
+
     ///
     /// Type-checking modes:  enable/disable functionality
     ///
@@ -199,7 +199,7 @@ import org.checkerframework.javacutil.UserError;
     // org.checkerframework.common.basetype.BaseTypeChecker.warnUnneededSuppressions
     // org.checkerframework.framework.source.SourceChecker.warnUnneededSuppressions
     // org.checkerframework.framework.source.SourceChecker.shouldSuppressWarnings(javax.lang.model.element.Element, java.lang.String)
-    // org.checkerframework.framework.source.SourceeVisitor.checkForSuppressWarningsAnno
+    // org.checkerframework.framework.source.SourceVisitor.checkForSuppressWarningsAnno
     "warnUnneededSuppressions",
 
     // Require that warning suppression annotations contain a checker key as a prefix in order for
@@ -2192,7 +2192,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * also be used from primitive types, which don't have an element.
      *
      * <p>Checkers that require their annotations not to be checked on certain JDK classes may
-     * override this method to skip them. They shall call {@code super.shouldSkipUses(typerName)} to
+     * override this method to skip them. They shall call {@code super.shouldSkipUses(typeName)} to
      * also skip the classes matching the pattern.
      *
      * @param typeName the fully-qualified name of a type

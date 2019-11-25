@@ -134,6 +134,12 @@ public class AnnotationUtils {
                     == ((CheckerFrameworkAnnotationMirror) a2).annotationName;
         }
 
+        if (a1 instanceof CheckerFrameworkAnnotationMirror
+                && a2 instanceof CheckerFrameworkAnnotationMirror) {
+            return ((CheckerFrameworkAnnotationMirror) a1).annotationName
+                    == ((CheckerFrameworkAnnotationMirror) a2).annotationName;
+        }
+
         return annotationName(a1).equals(annotationName(a2));
     }
 

@@ -188,9 +188,9 @@ annotated.
 
 Whenever you annotate any part of a file, fully annotate the file!  That
 is, write annotations for all the methods and fields, based on their
-documentation.  If you don't annotate the whole file, then other people
-won't know whether a particular method is unannotated because you didn't
-get to it yet or because you decided that it didn't need any annotations.
+documentation.  If you don't annotate the whole file, then users may be
+surprised that calls to some methods type-check as expected whereas other
+methods do not (because they have not been annotated).
 
 
 \subsectionAndLabel{Verify your annotations}{library-tips-verify}
@@ -530,8 +530,9 @@ un-annotated type variable in a stub file is used instead of
 annotations on a type variable in bytecode.
 This feature allows stub files to change the effective annotations in
 all possible situations.
-Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
-warning whenever a stub file overwrites bytecode annotations.
+%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
+% Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
+% warning whenever a stub file overwrites bytecode annotations.
 Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get
 a warning whenever a stub file specification is redundant with
 bytecode annotations.
@@ -709,9 +710,10 @@ Some command-line options make the stub parser issue more warnings:
   other classes from the same package are present.
   Useful if a package spans more than one jar.
 
-\item[\<-AstubWarnIfOverwritesBytecode>]
-  Warn whenever some element of a
-  stub file overwrites annotations contained in bytecode.
+%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
+% \item[\<-AstubWarnIfOverwritesBytecode>]
+%   Warn whenever some element of a
+%   stub file overwrites annotations contained in bytecode.
 \end{description}
 
 Finally,
