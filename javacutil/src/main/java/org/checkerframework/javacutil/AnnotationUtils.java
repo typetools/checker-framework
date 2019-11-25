@@ -32,6 +32,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
@@ -126,6 +127,12 @@ public class AnnotationUtils {
         }
         if (a2 == null) {
             throw new BugInCF("Unexpected null second argument to areSameByName");
+        }
+
+        if (a1 instanceof CheckerFrameworkAnnotationMirror
+                && a2 instanceof CheckerFrameworkAnnotationMirror) {
+            return ((CheckerFrameworkAnnotationMirror) a1).annotationName
+                    == ((CheckerFrameworkAnnotationMirror) a2).annotationName;
         }
 
         return annotationName(a1).equals(annotationName(a2));
