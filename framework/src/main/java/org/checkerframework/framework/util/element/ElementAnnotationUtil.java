@@ -84,7 +84,7 @@ public class ElementAnnotationUtil {
      * @param type the type to annotate
      * @param annotations the annotations to add
      */
-    static void addAnnotationsFromElement(
+    static void addDeclarationAnnotationsFromElement(
             final AnnotatedTypeMirror type, final List<? extends AnnotationMirror> annotations) {
         AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
         if (innerType != type) {

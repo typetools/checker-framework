@@ -97,7 +97,8 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
     @Override
     public void extractAndApply() throws UnexpectedAnnotationLocationException {
         // Add declaration annotations to the local variable type
-        ElementAnnotationUtil.addAnnotationsFromElement(type, varSymbol.getAnnotationMirrors());
+        ElementAnnotationUtil.addDeclarationAnnotationsFromElement(
+                type, varSymbol.getAnnotationMirrors());
         super.extractAndApply();
     }
 }

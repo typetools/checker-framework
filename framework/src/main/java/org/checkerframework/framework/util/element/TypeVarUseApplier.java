@@ -110,9 +110,12 @@ public class TypeVarUseApplier {
     /**
      * Applies the bound annotations from the declaration of the type parameter and then applies the
      * explicit annotations written on the type variable.
+     *
+     * @throws UnexpectedAnnotationLocationException if invalid location for an annotation was
+     *     found.
      */
     public void extractAndApply() throws UnexpectedAnnotationLocationException {
-        ElementAnnotationUtil.addAnnotationsFromElement(
+        ElementAnnotationUtil.addDeclarationAnnotationsFromElement(
                 typeVariable, useElem.getAnnotationMirrors());
 
         // apply declaration annotations
