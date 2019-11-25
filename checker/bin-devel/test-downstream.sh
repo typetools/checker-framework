@@ -28,7 +28,6 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 ./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
 
 # Guava
-# Can't use `git-clone-related` here, since we want slightly different behavior.
 eval `/tmp/plume-scripts/ci-info typetools`
 REPO_URL=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetools guava`
 BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO_URL} ${CI_BRANCH} cf-master`
