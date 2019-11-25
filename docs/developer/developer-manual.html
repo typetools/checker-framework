@@ -39,6 +39,7 @@ including people who wish to edit its source code or make pull requests.
         <ul>
           <li><a href="#ci-failure">What to do if a Continuous Integration build fails</a></li>
         </ul></li>
+      <li><a href="#testing-optimizations">Testing optimizations</a></li>
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
       <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
       <li><a href="#Making_a_Checker_Framework_release">Making a Checker Framework release</a></li>
@@ -229,8 +230,10 @@ and add a brief description at the top of the changelog
 </p>
 
 <p>
-  To reduce iterations of code review, please follow
-  the <a href="#code-style">coding conventions</a>.
+To reduce iterations of code review, please follow
+the <a href="#code-style">coding conventions</a>.
+Also enable <a href="#ci">continuous integration</a> on your fork of the Checker
+Framework and ensure that it passes before you open a pull request.
 </p>
 
 <p>
@@ -325,6 +328,17 @@ This is usually because the CI service performed more tests than you ran locally
 First, examine the CI service's logs, which contain diagnostic output from the
 failing command.  You can determine which command was run from the logs, or
 from the CI configuration file (such as <code>azure-pipelines.yml</code>).
+</p>
+
+
+<h2 id="testing-optimizations">Testing optimizations</h2>
+
+<p>
+To test an optimization that should speed up type-checking, see
+the <code>test-daikon.sh</code> stage of the <code>daikon_jdk8</code> job
+of the Azure Pipelines CI job.  Compare the run time of this stage (or of
+the entire <code>daikon_jdk8</code> job) between the master branch and a
+branch with your improvements.
 </p>
 
 
