@@ -8,13 +8,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.Element;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * An {@link AnalysisResult} represents the result of a org.checkerframework.dataflow analysis by
@@ -316,10 +316,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
                         }
                         // This point should never be reached. If the block of 'node' is
                         // 'block', then 'node' must be part of the contents of 'block'.
-                        assert false;
-                        @SuppressWarnings("nullness") // dead
-                        @NonNull S fake = null;
-                        return fake;
+                        throw new BugInCF("Unexpected code");
                     }
 
                 case EXCEPTION_BLOCK:
@@ -339,10 +336,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
                 default:
                     // Only regular blocks and exceptional blocks can hold nodes.
-                    assert false;
-                    @SuppressWarnings("nullness") // dead
-                    @NonNull S fake = null;
-                    return fake;
+                    throw new BugInCF("Unexpected code");
             }
         } finally {
             analysis.currentNode = oldCurrentNode;
