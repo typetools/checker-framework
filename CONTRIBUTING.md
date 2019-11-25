@@ -22,10 +22,8 @@ bug, and we want to fix it.  Please report it.
 Please see the [pull requests](https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html#pull-requests) section of the Developer Manual.
 
 Do you want to contribute to the project, but you are not sure what issue
-to fix or what feature to add?  Do **not** ask us which issue to fix, nor
-search through the issue tracker looking for an issue.  Instead, use the
-tool in your daily work, and when you encounter a limitation that bothers
-you, fix that one.
+to fix or what feature to add?  Use the tool in your daily work, and when
+you encounter a limitation that bothers you, fix that one.
 
 
 ## License
