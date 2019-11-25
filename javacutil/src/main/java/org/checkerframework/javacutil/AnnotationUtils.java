@@ -32,6 +32,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
@@ -126,6 +127,12 @@ public class AnnotationUtils {
         }
         if (a2 == null) {
             throw new BugInCF("Unexpected null second argument to areSameByName");
+        }
+
+        if (a1 instanceof CheckerFrameworkAnnotationMirror
+                && a2 instanceof CheckerFrameworkAnnotationMirror) {
+            return ((CheckerFrameworkAnnotationMirror) a1).annotationName
+                    == ((CheckerFrameworkAnnotationMirror) a2).annotationName;
         }
 
         return annotationName(a1).equals(annotationName(a2));
@@ -830,8 +837,8 @@ public class AnnotationUtils {
      * @param elements an array of {@link ElementType} values
      * @param cls the annotation class being tested; used for diagnostic messages only
      * @return true iff the give array contains {@link ElementType#TYPE_USE}
-     * @throws BugInCF if the array contains both {@link ElementType#TYPE_USE} and something besides
-     *     {@link ElementType#TYPE_PARAMETER}
+     * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
+     *     something besides {@link ElementType#TYPE_PARAMETER}
      */
     public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
         // True if the array contains TYPE_USE
