@@ -1,3 +1,9 @@
+Version 3.0.1, December 1, 2019
+
+Implementation detials:
+ * Moved AnnotatedTypes#hasTypeQualifierElementTypes to AnnotationUtils.
+ * Deprecated AnnotatedTypes#isTypeAnnotation and AnnotatedTypes#hasTypeQualifierElementTypes.
+
 ---------------------------------------------------------------------------
 
 Version 3.0.0, November 1, 2019

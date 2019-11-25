@@ -556,7 +556,7 @@ public class LockAnnotatedTypeFactory
      * annotation in the given AnnotatedTypeMirror. Assumes atm is non-null and contains a
      * {@code @GuardSatisfied} annotation.
      *
-     * @param atm AnnotatedTypeMirror containing a GuardSatisfied annotation
+     * @param atm an AnnotatedTypeMirror containing a GuardSatisfied annotation
      * @return the index on the GuardSatisfied annotation
      */
     // package-private
@@ -568,7 +568,7 @@ public class LockAnnotatedTypeFactory
      * Returns the index (that is, the {@code value} element) on the given {@code @GuardSatisfied}
      * annotation. Assumes am is non-null and is a GuardSatisfied annotation.
      *
-     * @param am AnnotationMirror for a GuardSatisfied annotation
+     * @param am an AnnotationMirror for a GuardSatisfied annotation
      * @return the index on the GuardSatisfied annotation
      */
     // package-private
