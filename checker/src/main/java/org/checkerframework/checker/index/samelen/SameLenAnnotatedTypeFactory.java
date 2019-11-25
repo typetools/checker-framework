@@ -164,7 +164,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final class SameLenQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
-        /** @param factory MultiGraphFactory to use to construct this */
+        /** @param factory the MultiGraphFactory to use to construct this */
         public SameLenQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
         }

@@ -31,7 +31,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * A specialized checker for testing purposes. It compares an expression's annotated type to an
  * expected type.
  *
- * <p>The expected type is written in a stylized comment (starting with '///') in the same Java
+ * <p>The expected type is written in a stylized comment (starting with "///") in the same Java
  * source file. The comment appears either on the same line as the expression, or else by itself on
  * the line preceding the expression.
  *
