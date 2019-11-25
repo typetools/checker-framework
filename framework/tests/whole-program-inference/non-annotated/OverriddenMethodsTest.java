@@ -11,6 +11,11 @@ class OverriddenMethodsTestParent {
         // :: error: argument.type.incompatible
         foo(obj1, obj2);
     }
+
+    public void thud(Object obj1, Object obj2) {
+        // :: error: argument.type.incompatible
+        foo(obj1, obj2);
+    }
 }
 
 class OverriddenMethodsTestChild extends OverriddenMethodsTestParent {
