@@ -74,6 +74,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         // It would be nicer if this didn't decode the information from the Element and
         // instead also used the Tree. If this is implemented, then care needs to be taken to put
         // any alias declaration annotations in the correct place for return types that are arrays.
+        // This would be similar to
+        // org.checkerframework.framework.util.element.ElementAnnotationUtil.addDeclarationAnnotationsFromElement.
         ElementAnnotationApplier.apply(result, elt, f);
         return result;
     }
