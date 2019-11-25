@@ -2620,13 +2620,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Gets the declaration tree for the element, if the source is available.
-     *
-     * <p>TODO: would be nice to move this to InternalUtils/TreeUtils.
+     * Gets the declaration tree for the element, if it was defined somewhere in the current
+     * compilation unit.
      *
      * @param elt an element
      * @return the tree declaration of the element if found
      */
+    // TODO: would be nice to move this to InternalUtils/TreeUtils.
     public final Tree declarationFromElement(Element elt) {
         // if root is null, we cannot find any declaration
         if (root == null) {
