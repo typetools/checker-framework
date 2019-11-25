@@ -89,7 +89,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     protected final Set<Class<? extends Annotation>> initAnnos;
 
     /**
-     * String representation of all initialization annotations
+     * String representation of all initialization annotations.
      *
      * <p>{@link UnknownInitialization} {@link UnderInitialization} {@link Initialized} {@link
      * FBCBottom}
