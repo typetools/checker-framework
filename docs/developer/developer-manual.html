@@ -24,8 +24,8 @@ including people who wish to edit its source code or make pull requests.
 <!-- start toc.  do not edit; run html-update-toc instead -->
     <ul>
       <li><a href="#Directory_structure">Directory structure</a></li>
-      <li><a href="#Gradle_build_scripts">Gradle build scripts</a></li>
-      <li><a href="#Coding_style">Coding style</a></li>
+      <li><a href="#Build_tasks">Build tasks</a></li>
+      <li><a href="#Code_style">Code style</a></li>
       <li><a href="#IDE_configuration">IDE configuration</a>
         <ul>
           <li><a href="#Configure_Eclipse_to_edit_the_Checker_Framework">Configure Eclipse to edit the Checker Framework</a></li>
@@ -52,23 +52,33 @@ The <a href="https://github.com/typetools/checker-framework">checker-framework
 repository</a> contains several related projects:
 </p>
 
-<pre>
- framework     the framework that enables building pluggable type checkers
- checker       the type checkers provided with the Checker Framework
- javacutil     utilities for javac
- dataflow      a dataflow framework
-</pre>
+<dl>
+  <dt><code>framework</code></dt>
+  <dd>the framework that enables building pluggable type checkers</dd>
+
+  <dt><code>checker</code></dt>
+  <dd>the type checkers provided with the Checker Framework</dd>
+
+  <dt><code>javacutil</code></dt>
+  <dd>utilities for integrating with javac</dd>
+
+  <dt><code>dataflow</code></dt>
+  <dd>a dataflow framework that is used by the Checker Framework, <a href="https://errorprone.info">Error Prone</a>, <a href="https://github.com/uber/NullAway">NullAway</a>, and other tools</dd>
+</dl>
 
 <p>
 The repository also contains the following directories:
 </p>
-<pre>
- docs          documentation: manual, tutorial, examples, developer docs
- maven-artifacts  artifacts to be uploaded to Maven Central
-</pre>
+<dl>
+  <dt><code>docs</code></dt>
+  <dd>documentation: manual, tutorial, examples, developer docs</dd>
+
+  <dt><code>maven-artifacts</code></dt>
+  <dd>artifacts to be uploaded to Maven Central</dd>
+</dl>
 
 
-<h2 id="Gradle_build_scripts">Gradle build scripts</h2>
+<h2 id="Build_tasks">Build tasks</h2>
 
 <p>
 Full instructions for building the Checker Framework from sources appear in
@@ -77,9 +87,10 @@ Framework manual</a>. This section describes the build system (the Gradle build 
 </p>
 
 <p>
-Don't run the <code>gradle</code> command, which would use your local
-installation of gradle.  Instead, use the <code>gradlew</code> script in
-the <code>checker-framework</code> directory, also known as
+Don't run the <code>gradle</code> command, which would use whatever version
+of Gradle is installed on your computer.  Instead, use
+the <code>gradlew</code> script in the <code>checker-framework</code>
+directory, also known as
 the <a href="https://docs.gradle.org/current/userguide/gradle_wrapper.html">Gradle
 wrapper</a>.
 </p>
@@ -102,12 +113,13 @@ If you run a task from the main directory, then it will run that task in all
 subprojects with a task by that name. So, if you run <code>./gradlew
 allTests</code> that runs all tests everywhere. But <code>(cd
 framework &amp;&amp; ../gradlew allTests)</code> only runs tests in
-framework. Alternatively, running <code>:framework:allTests</code> from the
+the <code>framework</code> project.
+Alternatively, running <code>:framework:allTests</code> from the
 main directory or any subproject runs the <code>allTests</code> task only in the <code>framework</code> project.
 </p>
 
 
-<h2 id="Coding_style">Coding style</h2>
+<h2 id="Code_style">Code style</h2>
 
 <p>
 Code in this project follows the
@@ -125,12 +137,6 @@ can <a href="https://github.com/google/google-java-format#using-the-formatter">c
 your IDE</a> (Eclipse or IntelliJ) to use the formatting (don't forget the
 non-standard <code>-a</code> flag).
 </p>
-
-<!--
-<p>
-Code formatting is enforced by a Git pre-commit hook and by a continuous integration job.
-</p>
--->
 
 <p>
 We don't use <code>@author</code> Javadoc tags in code files.

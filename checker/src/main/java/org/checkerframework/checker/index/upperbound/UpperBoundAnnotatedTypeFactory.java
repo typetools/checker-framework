@@ -340,7 +340,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * the relationships within the qualifiers - especially subtyping relations.
      */
     protected final class UpperBoundQualifierHierarchy extends MultiGraphQualifierHierarchy {
-        /** @param factory MultiGraphFactory to use to construct this */
+        /** @param factory the MultiGraphFactory to use to construct this */
         public UpperBoundQualifierHierarchy(
                 MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);

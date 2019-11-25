@@ -3075,12 +3075,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
             // Retrieving annotations from stub files.
             Set<AnnotationMirror> stubAnnos = stubTypes.getDeclAnnotation(elt);
-            if (stubAnnos != null) {
-                results.addAll(stubAnnos);
-            } else {
-                stubAnnos = stubTypes.getDeclAnnotation(elt);
-                results.addAll(stubAnnos);
-            }
+            results.addAll(stubAnnos);
 
             if (elt.getKind() == ElementKind.METHOD) {
                 // Retrieve the annotations from the overridden method's element.
