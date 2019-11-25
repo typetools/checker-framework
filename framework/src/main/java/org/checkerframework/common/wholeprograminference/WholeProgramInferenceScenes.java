@@ -31,6 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -214,13 +215,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             // https://github.com/typetools/checker-framework/issues/682
             return;
         }
-        final MethodTree methodDefinitionTree = (MethodTree) atf.declarationFromElement(methodElt);
-        final ClassSymbol classSymbol;
-        if (methodDefinitionTree != null) {
-            classSymbol = getEnclosingClassSymbol(methodDefinitionTree);
-        } else {
-            classSymbol = getEnclosingClassSymbol(receiverTree);
-        }
+        final ClassSymbol classSymbol = (ClassSymbol) ElementUtils.enclosingClass(methodElt);
         if (classSymbol == null) {
             // TODO: Handle anonymous classes.
             // Also struggled to obtain the ClassTree from an anonymous class.
