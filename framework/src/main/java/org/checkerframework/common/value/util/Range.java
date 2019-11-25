@@ -122,6 +122,7 @@ public class Range {
      *
      * @param from the lower bound (inclusive)
      * @param to the upper bound (inclusive)
+     * @return newly created Range or EVERYTHING
      */
     private static Range createRangeOrEverything(long from, long to) {
         if (from <= to) {
@@ -343,12 +344,18 @@ public class Range {
         return BYTE_EVERYTHING;
     }
 
-    /** Returns true if the element is contained in this range. */
+    /** Returns true if the element is contained in this range.
+     * @param element the value to seek
+     * @return true or false
+     */
     public boolean contains(long element) {
         return from <= element && element <= to;
     }
 
-    /** Returns true if the element is contained in this range. */
+    /** Returns true if the element is contained in this range.
+     * @param other the range to seek 
+     * @return true or false
+     */
     public boolean contains(Range other) {
         return other.isWithin(from, to);
     }
@@ -1104,10 +1111,14 @@ public class Range {
         return from == to;
     }
 
-    /**
-     * Determines if this range is completely contained in the range specified by the given lower
-     * bound inclusive and upper bound inclusive.
-     */
+     /**
+      * Determines if this range is completely contained in the range specified by the given lower
+      * bound inclusive and upper bound inclusive.
+      * 
+      * @param lb lower bound
+      * @param ub upper bound
+      * @return true or false
+      */
     public boolean isWithin(long lb, long ub) {
         return lb <= from && to <= ub;
     }
