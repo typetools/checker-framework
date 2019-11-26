@@ -61,9 +61,9 @@ import scenelib.annotations.util.JVMNames;
  *
  * <ol>
  *   <li>The @Target annotation does not permit the annotation to be written at this location.
- *   <li>The inferred has the @InvisibleQualifier meta-annotation.
- *   <li>The resulting type would be defaulted or implicited &mdash; that is, if omitting it has the
- *       same effect as writing it.
+ *   <li>The inferred annotation has the @InvisibleQualifier meta-annotation.
+ *   <li>The inferred annotation would be the same annotation applied via defaulting &mdash; that
+ *       is, if omitting it has the same effect as writing it.
  * </ol>
  */
 //  TODO: We could add an option to update the type of explicitly annotated
