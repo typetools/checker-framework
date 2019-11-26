@@ -89,7 +89,6 @@ public class NumberUtils {
      *
      * <p>Made public as the need arose outside this package.
      *
-     *
      * @param type from TypeKind.
      * @return primitive data type.
      */
