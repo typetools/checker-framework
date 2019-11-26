@@ -531,7 +531,7 @@ public class PluginUtil {
      * Returns the major JRE version.
      *
      * <p>This is different from the version passed to the compiler via --release; use {@link
-     * #releaseValue(ProcessingEnvironment)} to get that version.
+     * #getReleaseValue(ProcessingEnvironment)} to get that version.
      *
      * <p>Extract the major version number from the "java.version" system property. Two possible
      * formats are considered. Up to Java 8, from a version string like `1.8.whatever`, this method
@@ -603,7 +603,7 @@ public class PluginUtil {
      * @param env the ProcessingEnvironment
      * @return the release value or null if none was passed
      */
-    public static @Nullable String releaseValue(ProcessingEnvironment env) {
+    public static @Nullable String getReleaseValue(ProcessingEnvironment env) {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         Options options = Options.instance(ctx);
         return options.get(Option.RELEASE);

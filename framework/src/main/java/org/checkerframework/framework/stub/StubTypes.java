@@ -78,7 +78,7 @@ public class StubTypes {
         this.typesFromStubFiles = new HashMap<>();
         this.declAnnosFromStubFiles = new HashMap<>();
         this.parsing = false;
-        String release = PluginUtil.releaseValue(factory.getProcessingEnv());
+        String release = PluginUtil.getReleaseValue(factory.getProcessingEnv());
         this.annotatedJdkVersion =
                 release != null ? release : String.valueOf(PluginUtil.getJreVersion());
 
