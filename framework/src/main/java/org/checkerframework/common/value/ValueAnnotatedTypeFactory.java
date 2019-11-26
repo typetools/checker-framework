@@ -2236,8 +2236,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Unboxes a type it needed all the way to a primitive integral.
      *
-     * @param type
-     * @return
+     * @param type TypeMirror to unbox.
+     * @return the TypeKind once unboxed.
      */
     private static TypeKind resolveToPrimitiveIntegralTypeKind(TypeMirror type) {
         TypeKind typeKind = NumberUtils.unBoxPrimitive(type);
@@ -2256,8 +2256,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * <p>TypeKind of INT: SHORT: BYTE: CHAR: LONG:
      *
-     * @param typeKind
-     * @return true or false
+     * @param typeKind the TypeKind to inspect.
+     * @return true or false.
      */
     private static boolean isPrimitiveIntegral(TypeKind typeKind) {
         switch (typeKind) {
