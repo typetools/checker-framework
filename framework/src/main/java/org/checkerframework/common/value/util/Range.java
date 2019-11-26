@@ -374,7 +374,7 @@ public class Range {
     }
 
     /**
-     * @param other
+     * @param other the range to compare.
      * @return the range with the lowest to and from values of this range and the passed range.
      */
     public Range min(Range other) {
@@ -382,7 +382,7 @@ public class Range {
     }
 
     /**
-     * @param other
+     * @param other the range to compare.
      * @return the range with the highest to and from values of this range and the passed range.
      */
     public Range max(Range other) {
