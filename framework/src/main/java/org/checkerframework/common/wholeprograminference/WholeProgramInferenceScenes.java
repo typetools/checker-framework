@@ -162,8 +162,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the parameter types of the method methodElt in the Scene of the receiverTree's
-     * enclosing class based on the arguments to the method.
+     * Updates the parameter types of the method methodElt in the Scene of the enclosing class based
+     * on the arguments to the method invocation.
      *
      * <p>For each method parameter in methodElt:
      *
@@ -229,7 +229,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /**
      * Updates the parameter type represented by lhs of the method methodTree in the Scene of the
-     * receiverTree's enclosing class based on assignments to the parameter inside the method body.
+     * enclosing class based on assignments to the parameter inside the method body.
      *
      * <ul>
      *   <li>If the Scene does not contain an annotated type for that parameter, then the type of
