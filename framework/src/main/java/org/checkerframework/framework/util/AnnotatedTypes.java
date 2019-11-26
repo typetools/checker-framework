@@ -313,6 +313,11 @@ public class AnnotatedTypes {
      * Element)} with more precise return type.
      *
      * @see #asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)
+     * @param types the Types instance to use
+     * @param atypeFactory the type factory to use
+     * @param t the receiver type
+     * @param elem the element that should be viewed as member of t
+     * @return the type of elem as member of t
      */
     public static AnnotatedExecutableType asMemberOf(
             Types types,
@@ -328,6 +333,13 @@ public class AnnotatedTypes {
      *
      * @see #asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element,
      *     AnnotatedTypeMirror)
+     * @param types the Types instance to use
+     * @param atypeFactory the type factory to use
+     * @param t the receiver type
+     * @param elem the element that should be viewed as member of t
+     * @param type unsubstituted type of member
+     * @return the type of member as member of of, with initial type memberType; can be an alias to
+     *     memberType
      */
     public static AnnotatedExecutableType asMemberOf(
             Types types,
