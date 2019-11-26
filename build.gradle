@@ -236,6 +236,7 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-Xlint:-processing',
                 ]
         options.compilerArgs += args
+
         if (isJava8) {
             options.compilerArgs += [
                 "-Xbootclasspath/p:${rootDir}/checker/dist/jdk8.jar",
@@ -244,7 +245,12 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 "-target",
                 "8"
                 ]
-        }
+        } else {
+            options.fork = true
+            options.forkOptions.jvmArgs += [
+                "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                ]
+       }
     }
 }
 
@@ -594,6 +600,7 @@ subprojects {
 
         // Add tasks to run various checkers on all the main source sets.
         createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness')
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'WorkingNullness', ['-AskipUses=com.sun.*', '-AskipDefs=org.checkerframework.checker.*|org.checkerframework.common.*|org.checkerframework.framework.*|org.checkerframework.dataflow.cfg.CFGBuilder'])
         createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
         // TODO: fix or suppress all not.interned warnings and remove the suppression here.
         createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-AsuppressWarnings=not.interned'])
@@ -757,7 +764,7 @@ subprojects {
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', type: GradleBuild, group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
-            tasks = ['checkPurity', 'checkInterning']
+            tasks = ['checkPurity', 'checkInterning', 'checkWorkingNullness']
             if (project.name.is('framework') || project.name.is('checker')) {
                 tasks += ['checkCompilerMessages', 'jtregTests']
             }

@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
@@ -938,7 +939,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(@Nullable Object o) {
             if (!(o instanceof AnnotationPair)) {
                 return false;
             }

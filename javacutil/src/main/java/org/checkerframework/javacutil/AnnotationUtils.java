@@ -167,6 +167,7 @@ public class AnnotationUtils {
         if (canonicalName == null) {
             // This method is faster than #areSameByName because of this cache.
             canonicalName = annoClass.getCanonicalName();
+            assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
             annotationClassNames.put(annoClass, canonicalName);
         }
         return areSameByName(am, canonicalName);
@@ -229,7 +230,7 @@ public class AnnotationUtils {
      * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
      *     to areSame; otherwise, {@code null}
      */
-    public static AnnotationMirror getSame(
+    public static @Nullable AnnotationMirror getSame(
             Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSame(an, anno)) {
@@ -260,7 +261,7 @@ public class AnnotationUtils {
      * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
      *     to areSameByClass; otherwise, {@code null}
      */
-    public static AnnotationMirror getAnnotationByClass(
+    public static @Nullable AnnotationMirror getAnnotationByClass(
             Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSameByClass(an, anno)) {
@@ -291,7 +292,7 @@ public class AnnotationUtils {
      * @return AnnotationMirror with the same name as {@code anno} iff c contains anno, according to
      *     areSameByName; otherwise, {@code null}
      */
-    public static AnnotationMirror getAnnotationByName(
+    public static @Nullable AnnotationMirror getAnnotationByName(
             Collection<? extends AnnotationMirror> c, String anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSameByName(an, anno)) {
@@ -323,7 +324,7 @@ public class AnnotationUtils {
      * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
      *     to areSameByName; otherwise, {@code null}
      */
-    public static AnnotationMirror getSameByName(
+    public static @Nullable AnnotationMirror getSameByName(
             Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSameByName(an, anno)) {
@@ -572,7 +573,9 @@ public class AnnotationUtils {
             //   @LTLengthOf(value={"a1","a2"}, offest={"0", "1"})
             //   @LTLengthOf(value={"a2","a1"}, offest={"0", "1"})
             for (int i = 0; i < list1.size(); i++) {
-                if (!sameAnnotationValueValue(list1.get(i), list2.get(i))) {
+                Object v1 = list1.get(i);
+                Object v2 = list2.get(i);
+                if (v1 == null || v2 == null || !sameAnnotationValueValue(v1, v2)) {
                     return false;
                 }
             }

@@ -243,10 +243,9 @@ public class TypeAnnotationUtils {
         public Attribute visitType(TypeMirror t, Void p) {
             if (t instanceof Type) {
                 return new Attribute.Class(javacTypes, (Type) t);
+            } else {
+                throw new BugInCF("Unexpected type of TypeMirror: " + t.getClass());
             }
-
-            assert false : "Unexpected type of TypeMirror: " + t.getClass();
-            return null;
         }
 
         @Override
@@ -257,9 +256,7 @@ public class TypeAnnotationUtils {
                     return new Attribute.Enum(sym.type, sym);
                 }
             }
-
-            assert false : "Unexpected type of VariableElement: " + c.getClass();
-            return null;
+            throw new BugInCF("Unexpected type of VariableElement: " + c.getClass());
         }
 
         @Override
@@ -283,8 +280,7 @@ public class TypeAnnotationUtils {
 
         @Override
         public Attribute visitUnknown(AnnotationValue av, Void p) {
-            assert false : "Unexpected type of AnnotationValue: " + av.getClass();
-            return null;
+            throw new BugInCF("Unexpected type of AnnotationValue: " + av.getClass());
         }
     }
 
@@ -535,9 +531,7 @@ public class TypeAnnotationUtils {
                 break;
             case UNKNOWN:
             default:
-                assert false : "Unexpected target type: " + tapos + " at " + tapos.type;
-                res = null;
-                break;
+                throw new BugInCF("Unexpected target type: " + tapos + " at " + tapos.type);
         }
         return res;
     }

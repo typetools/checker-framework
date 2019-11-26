@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
@@ -62,7 +63,7 @@ public abstract class TUConstraint {
     }
 
     @Override
-    public boolean equals(Object thatObject) {
+    public boolean equals(@Nullable Object thatObject) {
         if (this == thatObject) {
             return true;
         } // else
