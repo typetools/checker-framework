@@ -754,25 +754,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     Range range2 = getRange(a2);
                     return createArrayLenRangeAnnotation(range1.union(range2));
                 } else if (AnnotationUtils.areSameByClass(a1, IntVal.class)) {
-                    List<Long> a1Values = getIntValues(a1);
-                    List<Long> a2Values = getIntValues(a2);
                     List<Long> newValues = new ArrayList<>();
-                    newValues.addAll(a1Values);
-                    newValues.addAll(a2Values);
+                    newValues.addAll(getIntValues(a1));
+                    newValues.addAll(getIntValues(a2));
                     return createIntValAnnotation(newValues);
                 } else if (AnnotationUtils.areSameByClass(a1, ArrayLen.class)) {
-                    List<Integer> a1Values = getArrayLength(a1);
-                    List<Integer> a2Values = getArrayLength(a2);
                     List<Integer> newValues = new ArrayList<>();
-                    newValues.addAll(a1Values);
-                    newValues.addAll(a2Values);
+                    newValues.addAll(getArrayLength(a1));
+                    newValues.addAll(getArrayLength(a2));
                     return createArrayLenAnnotation(newValues);
                 } else if (AnnotationUtils.areSameByClass(a1, StringVal.class)) {
-                    List<String> a1Values = getStringValues(a1);
-                    List<String> a2Values = getStringValues(a2);
                     List<String> newValues = new ArrayList<>();
-                    newValues.addAll(a1Values);
-                    newValues.addAll(a2Values);
+                    newValues.addAll(getStringValues(a1));
+                    newValues.addAll(getStringValues(a2));
                     return createStringAnnotation(newValues);
                 } else {
                     List<Object> a1Values =
