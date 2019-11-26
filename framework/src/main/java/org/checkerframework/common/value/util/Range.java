@@ -373,12 +373,20 @@ public class Range {
         return createOrNothing(resultFrom, resultTo);
     }
 
-    /** @return the range with the lowest to and from values of this range and the passed range */
+    /** 
+     * 
+     * @param other
+     * @return the range with the lowest to and from values of this range and the passed range.
+     */
     public Range min(Range other) {
         return create(Math.min(this.from, other.from), Math.min(this.to, other.to));
     }
 
-    /** @return the range with the highest to and from values of this range and the passed range */
+    /** 
+     * 
+     * @param other
+     * @return the range with the highest to and from values of this range and the passed range.
+     */
     public Range max(Range other) {
         return create(Math.max(this.from, other.from), Math.max(this.to, other.to));
     }
@@ -1160,10 +1168,10 @@ public class Range {
      *
      * <p>Overflow and underflow here are any violations of {@code from<=to}.
      *
-     * @param from
-     * @param to
-     * @param underflow
-     * @return
+     * @param from given from value. 
+     * @param to given to value.
+     * @param underflow.
+     * @return a Range instance.
      */
     private static Range createOrElse(long from, long to, Range underflow) {
         if (from <= to) return new Range(from, to);
