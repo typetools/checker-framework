@@ -346,6 +346,7 @@ class Binaries {
         @StringVal({"anull", "bnull"}) String c4 = arg + n2;
         @StringVal({"aconst", "bconst"}) String c5 = arg + k;
         @StringVal({"aconst", "bconst"}) String c6 = arg + "const";
+        @StringVal({"a2147483647", "b2147483647"}) String c7 = arg + Integer.MAX_VALUE;
     }
 
     public void conditionalComparisions() {
