@@ -1931,28 +1931,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Whether an element is being type parameter substituted in {@code asMemberOf()}, i.e. {@link
-     * AnnotatedTypes#substituteTypeVariables(Types, AnnotatedTypeFactory, AnnotatedTypeMirror,
-     * Element, AnnotatedTypeMirror)} is called in {@link AnnotatedTypes#asMemberOf(Types,
-     * AnnotatedTypeFactory, AnnotatedTypeMirror, ExecutableElement)}
-     *
-     * @param elem an element
-     * @return true if being substituted in {@code asMemberOf()}, otherwise false.
-     */
-    private boolean shouldBeSubstituted(Element elem) {
-        switch (elem.getKind()) {
-            case PACKAGE:
-            case INSTANCE_INIT:
-            case OTHER:
-            case STATIC_INIT:
-            case TYPE_PARAMETER:
-                return false;
-            default:
-                return true;
-        }
-    }
-
-    /**
      * Determines the type of the invoked method based on the passed expression tree, executable
      * element, and receiver type.
      *
@@ -1966,11 +1944,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
         AnnotatedExecutableType memberType = getAnnotatedType(methodElt); // get unsubstituted type
-        if (shouldBeSubstituted(methodElt)) {
-            methodFromUsePreSubstitution(tree, memberType);
-        }
+        methodFromUsePreSubstitution(tree, memberType);
 
-        // memberType may replaced after asMemberOf(). Why poly not affected?
         AnnotatedExecutableType methodType =
                 AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt, memberType);
         List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
