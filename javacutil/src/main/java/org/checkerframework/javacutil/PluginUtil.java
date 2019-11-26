@@ -1,5 +1,9 @@
 package org.checkerframework.javacutil;
 
+import com.sun.tools.javac.main.Option;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Options;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -14,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.processing.ProcessingEnvironment;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * This file contains basic utility functions that should be reused to create a command-line call to
@@ -522,11 +528,16 @@ public class PluginUtil {
     }
 
     /**
-     * Extract the major version number from the Java.version. Two possible formats are considered.
-     * Up to Java 8, from a version string like `1.8.whatever`, this method extracts 8. Since Java
-     * 9, from a version string like `11.0.1`, this method extracts 11.
+     * Returns the major JRE version.
      *
-     * @return the major version number from the Java.version
+     * <p>This is different from the version passed to the compiler via --release; use {@link
+     * #getReleaseValue(ProcessingEnvironment)} to get that version.
+     *
+     * <p>Extract the major version number from the "java.version" system property. Two possible
+     * formats are considered. Up to Java 8, from a version string like `1.8.whatever`, this method
+     * extracts 8. Since Java 9, from a version string like `11.0.1`, this method extracts 11.
+     *
+     * @return the major version number from "java.version"
      */
     public static int getJreVersion() {
         final String jreVersionStr = System.getProperty("java.version");
@@ -584,5 +595,17 @@ public class PluginUtil {
     public static String getJdkJarName() {
         final String fileName = getJdkJarPrefix() + ".jar";
         return fileName;
+    }
+
+    /**
+     * Returns the release value passed to the compiler or null if release was not passed.
+     *
+     * @param env the ProcessingEnvironment
+     * @return the release value or null if none was passed
+     */
+    public static @Nullable String getReleaseValue(ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        Options options = Options.instance(ctx);
+        return options.get(Option.RELEASE);
     }
 }
