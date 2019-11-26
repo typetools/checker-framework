@@ -46,7 +46,7 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Create a UBQualifier from the given annotation, with an extra offset
+     * Create a UBQualifier from the given annotation, with an extra offset.
      *
      * @param am the annotation to turn into a UBQualifier
      * @param offset the extra offset; may be null
@@ -177,7 +177,7 @@ public abstract class UBQualifier {
      * an explanation of how node is added as an offset.
      *
      * @param node a Node
-     * @param factory AnnotatedTypeFactory
+     * @param factory an AnnotatedTypeFactory
      * @return a copy of this qualifier with node added as an offset
      */
     public UBQualifier plusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
@@ -712,7 +712,7 @@ public abstract class UBQualifier {
          * this object.
          *
          * @param node a Node
-         * @param factory AnnotatedTypeFactory
+         * @param factory an AnnotatedTypeFactory
          * @return a copy of this qualifier with node add as an offset
          */
         @Override
@@ -726,7 +726,7 @@ public abstract class UBQualifier {
          * in a copy of this object.
          *
          * @param node a Node
-         * @param factory AnnotatedTypeFactory
+         * @param factory an AnnotatedTypeFactory
          * @return a copy of this qualifier with node add as an offset
          */
         @Override

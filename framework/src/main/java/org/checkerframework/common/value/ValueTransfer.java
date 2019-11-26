@@ -520,7 +520,7 @@ public class ValueTransfer extends CFTransfer {
      */
     private List<Integer> calculateLengthAddition(
             List<Integer> leftLengths, List<Integer> rightLengths) {
-        ArrayList<Integer> result = new ArrayList<>();
+        List<Integer> result = new ArrayList<>(leftLengths.size() * rightLengths.size());
 
         for (int left : leftLengths) {
             for (int right : rightLengths) {
@@ -602,6 +602,7 @@ public class ValueTransfer extends CFTransfer {
                 }
             }
 
+            List<String> concatValues = new ArrayList<>(leftValues.size() * rightValues.size());
             for (String left : leftValues) {
                 for (String right : rightValues) {
                     concatValues.add(left + right);

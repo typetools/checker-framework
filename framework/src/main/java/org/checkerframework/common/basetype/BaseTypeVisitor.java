@@ -1896,7 +1896,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
-        if (castType.getKind() == TypeKind.DECLARED) {
+        final TypeKind castTypeKind = castType.getKind();
+        if (castTypeKind == TypeKind.DECLARED) {
             // Don't issue an error if the annotations are equivalent to the qualifier upper bound
             // of the type.
             AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType) castType;
@@ -1910,7 +1911,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (checker.hasOption("checkCastElementType")) {
             AnnotatedTypeMirror newCastType;
-            if (castType.getKind() == TypeKind.TYPEVAR) {
+            if (castTypeKind == TypeKind.TYPEVAR) {
                 newCastType = ((AnnotatedTypeVariable) castType).getUpperBound();
             } else {
                 newCastType = castType;
@@ -1942,8 +1943,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // TODO: the same number of arguments actually doesn't guarantee anything.
                     return false;
                 }
-            } else if (castType.getKind() == TypeKind.TYPEVAR
-                    && exprType.getKind() == TypeKind.TYPEVAR) {
+            } else if (castTypeKind == TypeKind.TYPEVAR && exprType.getKind() == TypeKind.TYPEVAR) {
                 // If both the cast type and the casted expression are type variables, then check
                 // the bounds.
                 Set<AnnotationMirror> lowerBoundAnnotationsCast =
@@ -1959,7 +1959,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 castType.getEffectiveAnnotations());
             }
             Set<AnnotationMirror> castAnnos;
-            if (castType.getKind() == TypeKind.TYPEVAR) {
+            if (castTypeKind == TypeKind.TYPEVAR) {
                 // If the cast type is a type var, but the expression is not, then check that the
                 // type of the expression is a subtype of the lower bound.
                 castAnnos =

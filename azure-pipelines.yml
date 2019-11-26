@@ -32,7 +32,7 @@ jobs:
   container: mdernst/cf-ubuntu-jdk8-plus:latest
   steps:
   - checkout: self
-    fetchDepth: 25
+    fetchDepth: 1000
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: misc_jdk11
@@ -41,7 +41,7 @@ jobs:
   container: mdernst/cf-ubuntu-jdk11-plus:latest
   steps:
   - checkout: self
-    fetchDepth: 25
+    fetchDepth: 1000
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: cf_inference_jdk8

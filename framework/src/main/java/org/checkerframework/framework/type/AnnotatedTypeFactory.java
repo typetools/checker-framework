@@ -437,10 +437,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Issue an error and abort if any of the support qualifiers has a @Target meta-annotation that
-     * contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
+     * @throws BugInCF If supportedQuals is empty or if any of the support qualifiers has a @Target
+     *     meta-annotation that contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({})
+     *     is allowed.)
      */
     private void checkSupportedQuals() {
+        if (supportedQuals.isEmpty()) {
+            // This is throwing a CF bug, but it could also be a bug in the checker rather than in
+            // the framework itself.
+            throw new BugInCF("Found no supported qualifiers.");
+        }
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
             // Check @Target values
             ElementType[] elements = annotationClass.getAnnotation(Target.class).value();
@@ -642,9 +648,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
             AnnotationMirror typeQualifierAnno =
                     AnnotationBuilder.fromClass(elements, typeQualifier);
-            if (typeQualifierAnno == null) {
-                throw new BugInCF("Cannot load annotation " + typeQualifier);
-            }
             factory.addQualifier(typeQualifierAnno);
             // Polymorphic qualifiers can't declare their supertypes.
             // An error is raised if one is present.
@@ -820,7 +823,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param explicitlyListedAnnotations a varargs array of explicitly listed annotation classes to
      *     be added to the returned set. For example, it is used frequently to add Bottom
      *     qualifiers.
-     * @return a mutable set of the loaded and listed annotation classes.
+     * @return a mutable set of the loaded and listed annotation classes
      */
     @SafeVarargs
     protected final Set<Class<? extends Annotation>> getBundledTypeQualifiers(
@@ -2116,12 +2119,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * newClassTree has a diamond operator. In that case, the annotations on the type arguments are
      * inferred using the assignment context and contain defaults.
      *
+     * <p>Also, fully annotates the enclosing type of the returned declared type.
+     *
      * <p>(Subclass beside {@link GenericAnnotatedTypeFactory} should not override this method.)
      *
      * @param newClassTree NewClassTree
      * @return AnnotatedDeclaredType
      */
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
+
+        AnnotatedDeclaredType enclosingType;
+        if (newClassTree.getEnclosingExpression() != null) {
+            enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
+        } else {
+            enclosingType = null;
+        }
         // Diamond trees that are not anonymous classes.
         if (TreeUtils.isDiamondTree(newClassTree) && newClassTree.getClassBody() == null) {
             AnnotatedDeclaredType type =
@@ -2149,6 +2161,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     (AnnotatedDeclaredType)
                             TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
             type.replaceAnnotations(fromTypeTree.getAnnotations());
+            type.setEnclosingType(enclosingType);
             return type;
         } else if (newClassTree.getClassBody() != null) {
             AnnotatedDeclaredType type =
@@ -2159,13 +2172,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             List<? extends AnnotationTree> annos =
                     newClassTree.getClassBody().getModifiers().getAnnotations();
             type.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
+            type.setEnclosingType(enclosingType);
             return type;
         } else {
             // If newClassTree does not create anonymous class,
             // newClassTree.getIdentifier includes the explicit annotations in this location:
             //   new @HERE Class()
-            return (AnnotatedDeclaredType)
-                    TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
+            AnnotatedDeclaredType type =
+                    (AnnotatedDeclaredType)
+                            TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
+            type.setEnclosingType(enclosingType);
+            return type;
         }
     }
 
@@ -3058,12 +3075,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
             // Retrieving annotations from stub files.
             Set<AnnotationMirror> stubAnnos = stubTypes.getDeclAnnotation(elt);
-            if (stubAnnos != null) {
-                results.addAll(stubAnnos);
-            } else {
-                stubAnnos = stubTypes.getDeclAnnotation(elt);
-                results.addAll(stubAnnos);
-            }
+            results.addAll(stubAnnos);
 
             if (elt.getKind() == ElementKind.METHOD) {
                 // Retrieve the annotations from the overridden method's element.
