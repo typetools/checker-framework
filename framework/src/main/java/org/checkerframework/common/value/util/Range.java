@@ -373,8 +373,7 @@ public class Range {
         return createOrNothing(resultFrom, resultTo);
     }
 
-    /** 
-     * 
+    /**
      * @param other
      * @return the range with the lowest to and from values of this range and the passed range.
      */
@@ -382,8 +381,7 @@ public class Range {
         return create(Math.min(this.from, other.from), Math.min(this.to, other.to));
     }
 
-    /** 
-     * 
+    /**
      * @param other
      * @return the range with the highest to and from values of this range and the passed range.
      */
@@ -1168,7 +1166,7 @@ public class Range {
      *
      * <p>Overflow and underflow here are any violations of {@code from<=to}.
      *
-     * @param from given from value. 
+     * @param from given from value.
      * @param to given to value.
      * @param underflow.
      * @return a Range instance.
