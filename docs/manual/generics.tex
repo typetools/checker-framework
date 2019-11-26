@@ -891,15 +891,17 @@ within the class that declares the type.
 \subsectionAndLabel{Using class qualifier parameters in method signatures}{class-qual-param-method}
 
 A polymorphic qualifier in a method signature has two different meanings.
-1.) If the receiver type has a qualifier parameter and is annotated with a polymorphic qualifier,
-then at a call site all polymorphic annotations are instantiated to
-the same qualifier as the type of the receiver expression of the method call.
-2.) If the receiver type does not have a qualifier parameter or if it is not annotated with a
-polymorphic annotation, then the polymorphic qualifiers are instantiated as explained in
-Section~\ref{method-qualifier-polymorphism}.
+\begin{enumerate}
+  \item If the receiver type has a qualifier parameter and is annotated with a polymorphic qualifier,
+  then at a call site all polymorphic annotations are instantiated to
+  the same qualifier as the type of the receiver expression of the method call.
+  \item If the receiver type does not have a qualifier parameter or if it is not annotated with a
+  polymorphic annotation, then the polymorphic qualifiers are instantiated as explained in
+  Section~\ref{method-qualifier-polymorphism}.
+\end{enumerate}
 
 In a class with a class qualifier parameter, a formal parameter type should
-sometimes have the same qualifier as the class qualifier parameter.  To express
+sometimes have the same qualifier as the class qualifier parameter. To express
 this, annotate both the receiver type and the parameter type with the
 polymorphic qualifier for the type system. For example,
 \begin{Verbatim}
