@@ -198,7 +198,12 @@ public class WholeProgramInferenceScenesHelper {
         modifiedScenes.clear();
     }
 
-    /** Returns the String representing the .jaif path of a class given its name. */
+    /**
+     * Returns the String representing the .jaif path of a class given its name.
+     *
+     * @param className the name of the class
+     * @return the path to the corresponding jaif file
+     */
     protected String getJaifPath(String className) {
         String jaifPath = JAIF_FILES_PATH + className + ".jaif";
         return jaifPath;

@@ -90,7 +90,18 @@ public final class SceneToStubWriter {
         printWriter.flush();
     }
 
-    /** Writes the annotations in <code>scene</code> to <code>out</code> in stub file format. */
+    /**
+     * Writes the annotations in <code>scene</code> to <code>out</code> in stub file format.
+     *
+     * @param scene the scene to write out
+     * @param basetypes a map from the description of ATypeElement_s to the TypeMirror_s that
+     *     represent their base Java types
+     * @param types a map from fully-qualified names to the TypeElement_s representing their
+     *     declarations
+     * @param enumNamesToEnumConstant a map from fully-qualified names to the enum constants defined
+     *     in that name. All keys are enums.
+     * @param out the Writer to output the result to
+     */
     public static void write(
             AScene scene,
             Map<String, TypeMirror> basetypes,
@@ -103,6 +114,16 @@ public final class SceneToStubWriter {
     /**
      * Writes the annotations in {@code scene}to the file {@code filename} in stub file format; see
      * {@link #write(AScene, Map, Map, Map, Writer)}.
+     *
+     * @param scene the scene to write out
+     * @param basetypes a map from the description of ATypeElement_s to the TypeMirror_s that
+     *     represent their base Java types
+     * @param types a map from fully-qualified names to the TypeElement_s representing their
+     *     declarations
+     * @param enumNamesToEnumConstant a map from fully-qualified names to the enum constants defined
+     *     in that name. All keys are enums.
+     * @param filename the path of the file to write to
+     * @throws IOException if the file doesn't exist
      */
     public static void write(
             AScene scene,
@@ -114,7 +135,12 @@ public final class SceneToStubWriter {
         write(scene, basetypes, types, enumNamesToEnumConstant, new FileWriter(filename));
     }
 
-    /** The part of a fully-qualified name that specifies the package. */
+    /**
+     * The part of a fully-qualified name that specifies the package.
+     *
+     * @param className the fully-qualified name of a class
+     * @return the part of the name referring to the package
+     */
     private static String packagePart(String className) {
         int lastdot = className.lastIndexOf('.');
         return (lastdot == -1) ? "" : className.substring(0, lastdot);
@@ -124,6 +150,9 @@ public final class SceneToStubWriter {
      * The part of a fully-qualified name that specifies the basename of the class. This method
      * replaces the $_s in the names of inner classes with ._s, so that they can be printed
      * correctly in stub files.
+     *
+     * @param className a fully-qualified name
+     * @return the part of the name representing the class' name without its package
      */
     private static String basenamePart(String className) {
         int lastdot = className.lastIndexOf('.');
@@ -136,6 +165,9 @@ public final class SceneToStubWriter {
      * same-named method in {@code IndexFileWriter}, with one modification: this version (correctly)
      * prints long literals with an L at the end, so that they are valid Java source code (if they
      * are larger than Integer.MAX_VALUE).
+     *
+     * @param aft the annotation in which we are printing
+     * @param o the value or values to print
      */
     private void printValue(AnnotationFieldType aft, Object o) {
         if (aft instanceof AnnotationAFT) {
@@ -176,7 +208,11 @@ public final class SceneToStubWriter {
         }
     }
 
-    /** Prints an annotation in Java source format. */
+    /**
+     * Prints an annotation in Java source format.
+     *
+     * @param the annotation to print
+     */
     private void printAnnotation(Annotation a) {
         printWriter.print("@" + a.def().name.substring(a.def().name.lastIndexOf('.') + 1));
         if (!a.fieldValues.isEmpty()) {
@@ -198,6 +234,8 @@ public final class SceneToStubWriter {
      * Prints all annotations in {@code annos}, separated by spaces. See {@link #printAnnotation}.
      * Internal JDK annotation such as jdk.Profile+Annotation contain "+", so ignore those when
      * printing. This code is mostly borrowed from {@code IndexFileWriter}.
+     *
+     * @param annos the annotations to print
      */
     private void printAnnotations(Collection<? extends Annotation> annos) {
         for (Annotation tla : annos) {
@@ -208,7 +246,11 @@ public final class SceneToStubWriter {
         }
     }
 
-    /** Finds and prints the annotations on the component type of an array, if there are any. */
+    /**
+     * Finds and prints the annotations on the component type of an array, if there are any.
+     *
+     * @param e the array type to print
+     */
     private void printArrayComponentTypeAnnotation(ATypeElement e) {
         for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
             InnerTypeLocation loc = ite.getKey();
@@ -225,10 +267,11 @@ public final class SceneToStubWriter {
      * practice, this should either be a field or a method parameters, since there should be no
      * local variable declarations in a stub.
      *
-     * <p>Takes two extra parameters beyond the AField: {@code fieldName} is the name to use for the
-     * declaration in the stub file. This doesn't matter for parameters, but must be correct for
-     * fields. {@code className} is the name of the enclosing class. This is only used for printing
-     * the type of an explicit receiver parameter (i.e. a parameter named "this").
+     * @param aField the field to print
+     * @param fieldName the name to use for the declaration in the stub file. This doesn't matter
+     *     for parameters, but must be correct for fields.
+     * @param className the name of the enclosing class. This is only used for printing the type of
+     *     an explicit receiver parameter (i.e. a parameter named "this").
      */
     private void printAField(AField aField, String fieldName, String className) {
         String basetype;
@@ -266,6 +309,8 @@ public final class SceneToStubWriter {
         /**
          * Constructs a new ImportDefCollector, which will run on the given AScene when its {@code
          * visit} method is called.
+         *
+         * @param scene the scene whose imported annotations should be printed
          */
         ImportDefCollector(AScene scene) throws DefException {
             super(scene);
@@ -274,6 +319,8 @@ public final class SceneToStubWriter {
         /**
          * Write an import statement for a given AnnotationDef. This is only called once per
          * annotation used in the scene.
+         *
+         * @param d the annotation definition to print an import for
          */
         @Override
         protected void visitAnnotationDef(AnnotationDef d) {
@@ -296,6 +343,7 @@ public final class SceneToStubWriter {
      * @param classname the fully-qualified name of the class in question, so that it can be printed
      *     as an enum if it is one
      * @param aClass the AClass representing the classname
+     * @return the number of inner classes
      */
     private int printClassDefinitions(String basename, String classname, AClass aClass) {
 
@@ -328,6 +376,8 @@ public final class SceneToStubWriter {
      * The implementation of {@link #write(AScene, Map, Map, Map, Writer)} and {@link #write(AScene,
      * Map, Map, Map, String)}. Prints imports, classes, method signatures, and fields; all with
      * appropriate annotations in stub file format.
+     *
+     * @param scene the scene to write
      */
     private void writeImpl(AScene scene) {
         // Write out all imports
@@ -451,6 +501,8 @@ public final class SceneToStubWriter {
     /**
      * Prints the type parameters of the class given by the fully-qualified name passes as {@code
      * classname}.
+     *
+     * @param classname the class for which type parameters should be printed
      */
     private void printTypeParameters(String classname) {
         TypeElement type = types.get(classname);
