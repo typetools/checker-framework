@@ -769,13 +769,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     newValues.addAll(getStringValues(a2));
                     return createStringAnnotation(newValues);
                 } else {
-                    List<Object> a1Values =
-                            AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
-                    List<Object> a2Values =
-                            AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
                     TreeSet<Object> newValues = new TreeSet<>();
-                    newValues.addAll(a1Values);
-                    newValues.addAll(a2Values);
+                    newValues.addAll(
+                            AnnotationUtils.getElementValueArray(a1, "value", Object.class, true));
+                    newValues.addAll(
+                            AnnotationUtils.getElementValueArray(a2, "value", Object.class, true));
 
                     if (newValues.isEmpty()) {
                         return BOTTOMVAL;
