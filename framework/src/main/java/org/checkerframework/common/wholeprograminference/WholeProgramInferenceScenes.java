@@ -31,6 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -116,6 +117,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ObjectCreationNode objectCreationNode,
             ExecutableElement constructorElt,
             AnnotatedTypeFactory atf) {
+
+        // do not infer types for code that isn't presented as source
+        if (ElementUtils.isElementFromByteCode(constructorElt)) {
+            return;
+        }
+
         ClassSymbol classSymbol = getEnclosingClassSymbol(objectCreationNode.getTree());
         if (classSymbol == null) {
             // TODO: Handle anonymous classes.
@@ -161,6 +168,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ExecutableElement methodElt,
             AnnotatedExecutableType overriddenMethod,
             AnnotatedTypeFactory atf) {
+
+        // do not infer types for code that isn't presented as source
+        if (ElementUtils.isElementFromByteCode(methodElt)) {
+            return;
+        }
+
         ClassSymbol classSymbol = getEnclosingClassSymbol(methodTree);
         String className = classSymbol.flatname.toString();
         String jaifPath = helper.getJaifPath(className);
@@ -206,6 +219,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             Tree receiverTree,
             ExecutableElement methodElt,
             AnnotatedTypeFactory atf) {
+
+        // do not infer types for code that isn't presented as source
+        if (ElementUtils.isElementFromByteCode(methodElt)) {
+            return;
+        }
+
         if (receiverTree == null) {
             // TODO: Method called from static context.
             // I struggled to obtain the ClassTree of a method called
@@ -297,6 +316,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ClassTree classTree,
             MethodTree methodTree,
             AnnotatedTypeFactory atf) {
+
+        // do not infer types for code that isn't presented as source
+        if (ElementUtils.isElementFromByteCode(lhs.getElement())) {
+            return;
+        }
+
         ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhs);
         // TODO: Anonymous classes
         // See Issue 682
@@ -361,6 +386,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ExecutableElement methodElt,
             AnnotatedExecutableType overriddenMethod,
             AnnotatedTypeFactory atf) {
+
+        // do not infer types for code that isn't presented as source
+        if (ElementUtils.isElementFromByteCode(methodElt)) {
+            return;
+        }
+
         ClassSymbol classSymbol = getEnclosingClassSymbol(methodTree);
         String className = classSymbol.flatname.toString();
         String jaifPath = helper.getJaifPath(className);
@@ -397,6 +428,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     @Override
     public void updateInferredFieldType(
             FieldAccessNode lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
+
+        // do not infer types for code that isn't presented as source
+        if (ElementUtils.isElementFromByteCode(lhs.getElement())) {
+            return;
+        }
+
         ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhs);
         // See Issue 682
         // https://github.com/typetools/checker-framework/issues/682
@@ -460,6 +497,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ClassSymbol classSymbol,
             MethodTree methodTree,
             AnnotatedTypeFactory atf) {
+
+        // do not infer types for code that isn't presented as source
+        if (methodTree == null
+                || ElementUtils.isElementFromByteCode(
+                        TreeUtils.elementFromDeclaration(methodTree))) {
+            return;
+        }
+
         // See Issue 682
         // https://github.com/typetools/checker-framework/issues/682
         if (classSymbol == null) { // TODO: Handle anonymous classes.

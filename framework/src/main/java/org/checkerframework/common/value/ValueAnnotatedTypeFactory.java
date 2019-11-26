@@ -458,7 +458,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     protected class ValueTypeAnnotator extends TypeAnnotator {
 
-        /** Construct a new ValueTypeAnnotator */
+        /** Construct a new ValueTypeAnnotator. */
         protected ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
@@ -504,10 +504,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
                 List<Long> values = getIntValues(anno);
                 if (values.size() > MAX_VALUES) {
-                    long annoMinVal = Collections.min(values);
-                    long annoMaxVal = Collections.max(values);
-                    atm.replaceAnnotation(
-                            createIntRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
+                    atm.replaceAnnotation(createIntRangeAnnotation(new Range(values)));
                 }
             } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
                 List<Integer> values = getArrayLength(anno);
@@ -516,10 +513,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (Collections.min(values) < 0) {
                     atm.replaceAnnotation(BOTTOMVAL);
                 } else if (values.size() > MAX_VALUES) {
-                    long annoMinVal = Collections.min(values);
-                    long annoMaxVal = Collections.max(values);
-                    atm.replaceAnnotation(
-                            createArrayLenRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
+                    atm.replaceAnnotation(createArrayLenRangeAnnotation(new Range(values)));
                 }
             } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
                 // Compute appropriate defaults for integral ranges.
@@ -578,7 +572,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The qualifier hierarchy for the Value type system. */
     private final class ValueQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
-        /** @param factory MultiGraphFactory to use to construct this */
+        /** @param factory the MultiGraphFactory to use to construct this */
         public ValueQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
         }
@@ -1357,8 +1351,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * @return The Range of the Math.min or Math.max method, or null if the argument is none of
-         *     these methods or their arguments are not annotated in ValueChecker hierarchy.
+         * @return the Range of the Math.min or Math.max method, or null if the argument is none of
+         *     these methods or their arguments are not annotated in ValueChecker hierarchy
          */
         private Range getRangeForMathMinMax(MethodInvocationTree tree) {
             if (getMethodIdentifier().isMathMin(tree, processingEnv)) {
@@ -1976,8 +1970,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createArrayLenRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
-        } else if (range.isLongEverything()
-                || !range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+        } else if (range.isLongEverything() || !range.isWithinInteger()) {
             return UNKNOWNVAL;
         } else {
             return createArrayLenRangeAnnotation(
