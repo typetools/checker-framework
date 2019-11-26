@@ -398,7 +398,7 @@ public class AnnotatedTypes {
             case OTHER:
             case STATIC_INIT:
             case TYPE_PARAMETER:
-                return atypeFactory.fromElement(elem);
+                return elemType;
             default:
                 AnnotatedTypeMirror res = asMemberOfImpl(types, atypeFactory, t, elem, elemType);
                 if (!ElementUtils.isStatic(elem)) {
