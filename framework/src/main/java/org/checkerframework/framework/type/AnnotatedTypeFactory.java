@@ -551,7 +551,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return qualifierUpperBounds;
     }
 
-    /** Returns the WholeProgramInference instance. */
+    /** @return the WholeProgramInference instance. */
     public WholeProgramInference getWholeProgramInference() {
         return wholeProgramInference;
     }
@@ -3245,6 +3245,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Whether or not the {@code annotatedTypeMirror} has an implicit qualifier parameter.
      *
      * @param annotatedTypeMirror AnnotatedTypeMirror to check
+     * @param top the top of the hierarchy to check
      * @return true if the type has a qualifier parameter
      */
     public boolean hasQualifierParameterInHierarchy(
@@ -3256,6 +3257,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Whether or not the {@code element} has an implicit qualifier parameter.
      *
      * @param element element to check
+     * @param top the top of the hierarchy to check
      * @return true if the type has a qualifier parameter
      */
     public boolean hasQualifierParameterInHierarchy(

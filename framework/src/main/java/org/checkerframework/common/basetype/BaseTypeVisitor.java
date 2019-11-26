@@ -390,6 +390,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>Issues an error if (@code classTree} extends or implements a class/interface that has a
      * qualifier parameter, but this class does not.
+     *
+     * @param classTree the ClassTree to check foor polymorphic fields
      */
     private void checkQualifierParam(ClassTree classTree) {
         Set<AnnotationMirror> polyWithOutQualiferParam = AnnotationUtils.createAnnotationSet();
@@ -2080,7 +2082,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param castType an invariant type
      * @param exprType type of the expressions that is cast may or may not be invariant
-     * @param top
+     * @param top the top qualifier of the hierarchy to check
      * @return whether or not casting the exprType to castType is legal.
      */
     private boolean isInvariantTypeCastSafe(

@@ -9,7 +9,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 /** Visitor for the {@link TaintingChecker}. */
 public class TaintingVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
-    /** Creates a {@link TaintingVisitor}. */
+    /**
+     * Creates a {@link TaintingVisitor}.
+     *
+     * @param checker the checker that uses this visitor
+     */
     public TaintingVisitor(BaseTypeChecker checker) {
         super(checker);
     }

@@ -56,6 +56,8 @@ public @interface HasQualifierParameter {
 
     /**
      * Class of the top qualifier for the hierarchy for which this class has a qualifier parameter.
+     *
+     * @return the value
      */
     Class<? extends Annotation>[] value();
 }
