@@ -422,7 +422,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      *
      * // The invocation of id will result in a type argument with primary annotations of @FBCBottom @Nullable
      * // but this is below the lower bound of T in the initialization hierarchy so instead replace
-     * //@FBCBottom with @Initialized
+     * // @FBCBottom with @Initialized
      *
      * // This should happen ONLY with supertype constraints because raising the primary annotation would still
      * // be valid for these constraints (since we just LUB the arguments involved) but would violate any

@@ -89,7 +89,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     protected final Set<Class<? extends Annotation>> initAnnos;
 
     /**
-     * String representation of all initialization annotations
+     * String representation of all initialization annotations.
      *
      * <p>{@link UnknownInitialization} {@link UnderInitialization} {@link Initialized} {@link
      * FBCBottom}
@@ -437,7 +437,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             List<? extends Tree> classMembers = enclosingClass.getMembers();
             TreePath searchPath = path;
             while (searchPath.getParentPath() != null
-                    && searchPath.getParentPath() != enclosingClass) {
+                    && searchPath.getParentPath().getLeaf() != enclosingClass) {
                 searchPath = searchPath.getParentPath();
                 if (classMembers.contains(searchPath.getLeaf())) {
                     return searchPath.getLeaf();

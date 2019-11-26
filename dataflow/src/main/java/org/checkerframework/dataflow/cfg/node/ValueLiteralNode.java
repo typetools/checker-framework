@@ -52,7 +52,7 @@ public abstract class ValueLiteralNode extends Node {
         ValueLiteralNode other = (ValueLiteralNode) obj;
         Object val = getValue();
         Object otherVal = other.getValue();
-        return ((val == null || otherVal == null) && val == otherVal) || val.equals(otherVal);
+        return Objects.equals(val, otherVal);
     }
 
     @Override

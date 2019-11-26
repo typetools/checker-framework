@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -980,20 +979,21 @@ public class AnnotatedTypes {
         return found;
     }
 
-    private static Map<TypeElement, Boolean> isTypeAnnotationCache = new IdentityHashMap<>();
-
+    /**
+     * Returns true if the given annotation mirror targets {@link ElementType#TYPE_USE}, false
+     * otherwise.
+     *
+     * @param anno the {@link AnnotationMirror}
+     * @param cls the annotation class being tested; used for diagnostic messages only
+     * @return true iff the give array contains {@link ElementType#TYPE_USE}
+     * @throws RuntimeException if the anno targets both {@link ElementType#TYPE_USE} and something
+     *     besides {@link ElementType#TYPE_PARAMETER}
+     * @deprecated Use {@link AnnotationUtils#hasTypeQualifierElementTypes(ElementType[], Class)}.
+     */
+    @Deprecated
     public static boolean isTypeAnnotation(AnnotationMirror anno, Class<?> cls) {
         TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();
-        if (isTypeAnnotationCache.containsKey(elem)) {
-            return isTypeAnnotationCache.get(elem);
-        }
-
-        // the annotation is a type annotation if it has the proper ElementTypes in the @Target
-        // meta-annotation
-        boolean result =
-                hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value(), cls);
-        isTypeAnnotationCache.put(elem, result);
-        return result;
+        return hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value(), cls);
     }
 
     /**
@@ -1004,29 +1004,11 @@ public class AnnotatedTypes {
      * @return true iff the give array contains {@link ElementType#TYPE_USE}
      * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
      *     something besides {@link ElementType#TYPE_PARAMETER}
+     * @deprecated use {@link AnnotationUtils#hasTypeQualifierElementTypes(ElementType[], Class)}.
      */
+    @Deprecated
     public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
-        // True if the array contains TYPE_USE
-        boolean hasTypeUse = false;
-        // Non-null if the array contains an element other than TYPE_USE or TYPE_PARAMETER
-        ElementType otherElementType = null;
-
-        for (ElementType element : elements) {
-            if (element == ElementType.TYPE_USE) {
-                hasTypeUse = true;
-            } else if (element != ElementType.TYPE_PARAMETER) {
-                otherElementType = element;
-            }
-            if (hasTypeUse && otherElementType != null) {
-                throw new BugInCF(
-                        "@Target meta-annotation should not contain both TYPE_USE and "
-                                + otherElementType
-                                + ", for annotation "
-                                + cls.getName());
-            }
-        }
-
-        return hasTypeUse;
+        return AnnotationUtils.hasTypeQualifierElementTypes(elements, cls);
     }
 
     private static String annotationClassName =

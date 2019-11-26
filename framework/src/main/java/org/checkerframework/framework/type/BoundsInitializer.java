@@ -691,11 +691,7 @@ public class BoundsInitializer {
                                 + currentStructure
                                 + "\n");
             } // else
-
-            final TypeVariableStructure toPop = (TypeVariableStructure) this.currentStructure;
-            if (toPop.typeVar != typeVar) {
-                this.currentStructure = toPop.parent;
-            }
+            this.currentStructure = ((TypeVariableStructure) this.currentStructure).parent;
         }
 
         public ReferenceMap createReferenceMap(final BoundStructure boundStruct) {
@@ -878,8 +874,9 @@ public class BoundsInitializer {
 
         /**
          * If this type variable is upper or lower bounded by another type variable (not a declared
-         * type or intersection) then this variable will contain the path to that type variable
-         * //TODO: Add link to explanation
+         * type or intersection) then this variable will contain the path to that type variable.
+         *
+         * <p>TODO: Add link to explanation
          *
          * <p>e.g. {@code T extends E} &rArr; The structure for T will have an
          * immediateBoundTypeVars = List(UpperBound) The BoundPaths here must exist in pathToTypeVar
@@ -1082,7 +1079,7 @@ public class BoundsInitializer {
             if (parentAtv.getLowerBoundField() != null) {
                 return parentAtv.getLowerBoundField();
             }
-            // else //TODO: I think this should never happen at this point, throw exception
+            // else // TODO: I think this should never happen at this point, throw exception
             return createAndSetLowerBound((AnnotatedTypeVariable) parent);
         }
 

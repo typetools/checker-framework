@@ -32,6 +32,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
@@ -126,6 +127,12 @@ public class AnnotationUtils {
         }
         if (a2 == null) {
             throw new BugInCF("Unexpected null second argument to areSameByName");
+        }
+
+        if (a1 instanceof CheckerFrameworkAnnotationMirror
+                && a2 instanceof CheckerFrameworkAnnotationMirror) {
+            return ((CheckerFrameworkAnnotationMirror) a1).annotationName
+                    == ((CheckerFrameworkAnnotationMirror) a2).annotationName;
         }
 
         return annotationName(a1).equals(annotationName(a2));
@@ -800,5 +807,60 @@ public class AnnotationUtils {
             annotationSet.addAll(TreeUtils.annotationsFromTypeAnnotationTrees(annotationTrees));
         }
         return annotationSet;
+    }
+
+    /**
+     * Returns true if anno is a declaration annotation. In other words, returns true if anno cannot
+     * be written on uses of types.
+     *
+     * @param anno the AnnotationMirror
+     * @return true if anno is a declaration annotation.
+     */
+    public static boolean isDeclarationAnnotation(AnnotationMirror anno) {
+        TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();
+        Target t = elem.getAnnotation(Target.class);
+        if (t == null) {
+            return true;
+        }
+
+        for (ElementType elementType : t.value()) {
+            if (elementType == ElementType.TYPE_USE) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns true if the given array contains {@link ElementType#TYPE_USE}, false otherwise.
+     *
+     * @param elements an array of {@link ElementType} values
+     * @param cls the annotation class being tested; used for diagnostic messages only
+     * @return true iff the give array contains {@link ElementType#TYPE_USE}
+     * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
+     *     something besides {@link ElementType#TYPE_PARAMETER}
+     */
+    public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
+        // True if the array contains TYPE_USE
+        boolean hasTypeUse = false;
+        // Non-null if the array contains an element other than TYPE_USE or TYPE_PARAMETER
+        ElementType otherElementType = null;
+
+        for (ElementType element : elements) {
+            if (element == ElementType.TYPE_USE) {
+                hasTypeUse = true;
+            } else if (element != ElementType.TYPE_PARAMETER) {
+                otherElementType = element;
+            }
+            if (hasTypeUse && otherElementType != null) {
+                throw new BugInCF(
+                        "@Target meta-annotation should not contain both TYPE_USE and "
+                                + otherElementType
+                                + ", for annotation "
+                                + cls.getName());
+            }
+        }
+
+        return hasTypeUse;
     }
 }
