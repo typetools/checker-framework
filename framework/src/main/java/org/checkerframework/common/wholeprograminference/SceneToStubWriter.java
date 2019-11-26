@@ -75,6 +75,15 @@ public final class SceneToStubWriter {
     /**
      * Private constructor that initializes the printWriter and copies over relevant inputs to the
      * fields in which they are stored.
+     *
+     * @param scene the scene to write out
+     * @param basetypes a map from the description of ATypeElement_s to the TypeMirror_s that
+     *     represent their base Java types
+     * @param types a map from fully-qualified names to the TypeElement_s representing their
+     *     declarations
+     * @param enumNamesToEnumConstants a map from fully-qualified names to the enum constants
+     *     defined in that name. All keys are enums.
+     * @param out the Writer to output the result to
      */
     private SceneToStubWriter(
             AScene scene,
@@ -98,17 +107,17 @@ public final class SceneToStubWriter {
      *     represent their base Java types
      * @param types a map from fully-qualified names to the TypeElement_s representing their
      *     declarations
-     * @param enumNamesToEnumConstant a map from fully-qualified names to the enum constants defined
-     *     in that name. All keys are enums.
+     * @param enumNamesToEnumConstants a map from fully-qualified names to the enum constants
+     *     defined in that name. All keys are enums.
      * @param out the Writer to output the result to
      */
     public static void write(
             AScene scene,
             Map<String, TypeMirror> basetypes,
             Map<String, TypeElement> types,
-            Map<String, List<VariableElement>> enumNamesToEnumConstant,
+            Map<String, List<VariableElement>> enumNamesToEnumConstants,
             Writer out) {
-        new SceneToStubWriter(scene, basetypes, types, enumNamesToEnumConstant, out);
+        new SceneToStubWriter(scene, basetypes, types, enumNamesToEnumConstants, out);
     }
 
     /**
@@ -211,7 +220,7 @@ public final class SceneToStubWriter {
     /**
      * Prints an annotation in Java source format.
      *
-     * @param the annotation to print
+     * @param a the annotation to print
      */
     private void printAnnotation(Annotation a) {
         printWriter.print("@" + a.def().name.substring(a.def().name.lastIndexOf('.') + 1));
@@ -311,6 +320,7 @@ public final class SceneToStubWriter {
          * visit} method is called.
          *
          * @param scene the scene whose imported annotations should be printed
+         * @throws DefException if the DefCollector does not succeed
          */
         ImportDefCollector(AScene scene) throws DefException {
             super(scene);
