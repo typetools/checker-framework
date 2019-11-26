@@ -578,8 +578,6 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftValues != null && rightValues != null) {
             // Both operands have known string values, compute set of results
-            List<String> concatValues = new ArrayList<>();
-
             if (!nonNullStringConcat) {
                 if (isNullable(leftOperand)) {
                     leftValues.add("null");
