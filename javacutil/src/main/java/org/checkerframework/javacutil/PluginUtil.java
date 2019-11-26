@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * This file contains basic utility functions that should be reused to create a command-line call to
@@ -596,8 +597,13 @@ public class PluginUtil {
         return fileName;
     }
 
-    /** Returns the release value passed to the compiler. */
-    public static String releaseValue(ProcessingEnvironment env) {
+    /**
+     * Returns the release value passed to the compiler or null if release was not passed.
+     *
+     * @param env the ProcessingEnvironment
+     * @return the release value or null if none was passed
+     */
+    public static @Nullable String releaseValue(ProcessingEnvironment env) {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         Options options = Options.instance(ctx);
         return options.get(Option.RELEASE);
