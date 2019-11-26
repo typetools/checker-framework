@@ -288,6 +288,8 @@ public class StubTypes {
     /**
      * Parses the outermost enclosing class of {@code e} if there exists a stub file for it and it
      * has not already been parsed.
+     *
+     * @param e element whose outermost enclosing class will be parsed.
      */
     private void parseEnclosingClass(Element e) {
         if (!shouldParseJdk) {
@@ -430,6 +432,8 @@ public class StubTypes {
     /**
      * Walk through the jdk directory and create a mapping, {@link #jdkStubFiles}, from file name to
      * the class contained with in it. Also, parses all package-info.java files.
+     *
+     * @param resourceURL the URL pointing to the JDK directory
      */
     private void prepJdkFromFile(URL resourceURL) {
         Path root;
@@ -464,7 +468,7 @@ public class StubTypes {
      * Walk through the jdk directory and create a mapping, {@link #jdkStubFilesJar}, from file name
      * to the class contained with in it. Also, parses all package-info.java files.
      *
-     * @param resourceURL
+     * @param resourceURL the URL pointing to the JDK directory
      */
     private void prepJdkFromJar(URL resourceURL) {
         JarURLConnection connection = getJarURLConnectionToJdk();
