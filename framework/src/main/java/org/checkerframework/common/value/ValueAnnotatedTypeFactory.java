@@ -26,7 +26,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -77,7 +76,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.checkerframework.javacutil.UserError;
 
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -337,54 +335,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (AnnotationUtils.hasElementValue(anno, "from")) {
             return AnnotationUtils.getElementValue(anno, "from", Long.class, false);
         }
-
-        long from;
         TypeMirror type = atm.getUnderlyingType();
-        switch (type.getKind()) {
-            case INT:
-                from = Integer.MIN_VALUE;
-                break;
-            case SHORT:
-                from = Short.MIN_VALUE;
-                break;
-            case BYTE:
-                from = Byte.MIN_VALUE;
-                break;
-            case CHAR:
-                from = Character.MIN_VALUE;
-                break;
-            case LONG:
-                from = Long.MIN_VALUE;
-                break;
-            case DECLARED:
-                String qualifiedName = TypesUtils.getQualifiedName((DeclaredType) type).toString();
-                switch (qualifiedName) {
-                    case "java.lang.Integer":
-                        from = Integer.MIN_VALUE;
-                        break;
-                    case "java.lang.Short":
-                        from = Short.MIN_VALUE;
-                        break;
-                    case "java.lang.Byte":
-                        from = Byte.MIN_VALUE;
-                        break;
-                    case "java.lang.Character":
-                        from = Character.MIN_VALUE;
-                        break;
-                    case "java.lang.Long":
-                        from = Long.MIN_VALUE;
-                        break;
-                    default:
-                        throw new UserError(
-                                "Illegal type \"@IntRange "
-                                        + qualifiedName
-                                        + "\". @IntRange can be applied to Java integral types.");
-                }
-                break;
-            default:
-                throw new BugInCF(anno.toString() + " on a type of kind " + type.getKind());
-        }
-        return from;
+        return Range.byPrimitiveTypeKind(resolveToPrimitiveIntegralTypeKind(type)).from;
     }
 
     /**
@@ -401,55 +353,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (AnnotationUtils.hasElementValue(anno, "to")) {
             return AnnotationUtils.getElementValue(anno, "to", Long.class, false);
         }
-
-        long to;
         TypeMirror type = atm.getUnderlyingType();
-        switch (type.getKind()) {
-            case INT:
-                to = Integer.MAX_VALUE;
-                break;
-            case SHORT:
-                to = Short.MAX_VALUE;
-                break;
-            case BYTE:
-                to = Byte.MAX_VALUE;
-                break;
-            case CHAR:
-                to = Character.MAX_VALUE;
-                break;
-            case LONG:
-                to = Long.MAX_VALUE;
-                break;
-            case DECLARED:
-                String qualifiedName = TypesUtils.getQualifiedName((DeclaredType) type).toString();
-                switch (qualifiedName) {
-                    case "java.lang.Integer":
-                        to = Integer.MAX_VALUE;
-                        break;
-                    case "java.lang.Short":
-                        to = Short.MAX_VALUE;
-                        break;
-                    case "java.lang.Byte":
-                        to = Byte.MAX_VALUE;
-                        break;
-                    case "java.lang.Character":
-                        to = Character.MAX_VALUE;
-                        break;
-                    case "java.lang.Long":
-                        to = Long.MAX_VALUE;
-                        break;
-                    default:
-                        throw new UserError(
-                                "Illegal type \"@IntRange "
-                                        + qualifiedName
-                                        + "\". @IntRange can be applied to Java integral types.");
-                }
-                break;
-            default:
-                throw new BugInCF(
-                        "Tried to apply a default to an IntRange annotation that was neither an integral primitive nor a declared type.");
-        }
-        return to;
+        return Range.byPrimitiveTypeKind(resolveToPrimitiveIntegralTypeKind(type)).to;
     }
 
     /**
@@ -2326,5 +2231,44 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return atm;
         }
         return null;
+    }
+
+    /**
+     * Unboxes a type it needed all the way to a primitive integral.
+     *
+     * @param type
+     * @return
+     */
+    private static TypeKind resolveToPrimitiveIntegralTypeKind(TypeMirror type) {
+        TypeKind typeKind = NumberUtils.unBoxPrimitive(type);
+        if (isPrimitiveIntegral(typeKind)) {
+            return typeKind;
+        }
+        throw new BugInCF(
+                type.toString()
+                        + " on a type of kind "
+                        + typeKind
+                        + " expected to be an integral.");
+    }
+
+    /**
+     * Self described.
+     *
+     * <p>TypeKind of INT: SHORT: BYTE: CHAR: LONG:
+     *
+     * @param typeKind
+     * @return true or false
+     */
+    private static boolean isPrimitiveIntegral(TypeKind typeKind) {
+        switch (typeKind) {
+            case INT:
+            case SHORT:
+            case BYTE:
+            case CHAR:
+            case LONG:
+                return true;
+            default:
+                return false;
+        }
     }
 }

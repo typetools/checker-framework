@@ -84,8 +84,18 @@ public class NumberUtils {
         }
     }
 
-    private static TypeKind unBoxPrimitive(TypeMirror type) {
-        if (type.getKind() == TypeKind.DECLARED) {
+    /**
+     * Easy unboxing of a type.
+     *
+     * <p>Made public as the need arose outside this package.
+     *
+     *
+     * @param type from TypeKind.
+     * @return primitive data type.
+     */
+    public static TypeKind unBoxPrimitive(TypeMirror type) {
+        final TypeKind typeKind = type.getKind();
+        if (typeKind == TypeKind.DECLARED) {
             String stringType = TypesUtils.getQualifiedName((DeclaredType) type).toString();
 
             switch (stringType) {
@@ -107,6 +117,6 @@ public class NumberUtils {
                     return TypeKind.SHORT;
             }
         }
-        return type.getKind();
+        return typeKind;
     }
 }

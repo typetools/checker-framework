@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import javax.lang.model.type.TypeKind;
 
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
@@ -1181,5 +1182,29 @@ public class Range {
         long longFrom = bigFrom.longValue();
         long longTo = bigTo.longValue();
         return createRangeOrEverything(longFrom, longTo);
+    }
+
+    /**
+     * Returns the instance of Range for the given Java language primitive.
+     *
+     * @param typeKind is a java.lang.TypeKind that isPrimitive() and integral.
+     * @return the matching range for that primitive type.
+     */
+    public static Range byPrimitiveTypeKind(TypeKind typeKind) {
+        assert typeKind.isPrimitive();
+        switch (typeKind) {
+            case INT:
+                return INT_EVERYTHING;
+            case SHORT:
+                return SHORT_EVERYTHING;
+            case BYTE:
+                return BYTE_EVERYTHING;
+            case CHAR:
+                return CHAR_EVERYTHING;
+            case LONG:
+                return LONG_EVERYTHING;
+            default:
+                throw new IllegalArgumentException("TypeKind " + typeKind + " is not mapped");
+        }
     }
 }
