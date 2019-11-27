@@ -28,7 +28,7 @@ public class SynchronizedNode extends Node {
     }
 
     @Override
-    public Tree getTree() {
+    public @Nullable Tree getTree() {
         return tree;
     }
 
@@ -55,16 +55,12 @@ public class SynchronizedNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof SynchronizedNode)) {
             return false;
         }
         SynchronizedNode other = (SynchronizedNode) obj;
-        if (tree == null && other.getTree() != null) {
-            return false;
-        }
-
-        return getTree().equals(other.getTree())
+        return Objects.equals(getTree(), other.getTree())
                 && getExpression().equals(other.getExpression())
                 && startOfBlock == other.startOfBlock;
     }

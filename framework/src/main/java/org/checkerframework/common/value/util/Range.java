@@ -6,7 +6,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
@@ -152,7 +154,7 @@ public class Range {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (obj instanceof Range) {
             return equalsRange((Range) obj);
         }

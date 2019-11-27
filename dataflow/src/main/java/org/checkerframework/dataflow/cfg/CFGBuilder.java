@@ -268,8 +268,8 @@ public class CFGBuilder {
     public static ControlFlowGraph build(
             CompilationUnitTree root,
             MethodTree tree,
-            ClassTree classTree,
-            ProcessingEnvironment env) {
+            @Nullable ClassTree classTree,
+            @Nullable ProcessingEnvironment env) {
         UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
         return build(root, underlyingAST, false, false, env);
     }
@@ -350,7 +350,7 @@ public class CFGBuilder {
 
         @Override
         public String toString() {
-            return "ExtendedNode(" + type + ")";
+            throw new BugInCF("DO NOT CALL ExtendedNode.toString(). Write your own.");
         }
     }
 
@@ -738,6 +738,8 @@ public class CFGBuilder {
         }
 
         @Override
+        @SuppressWarnings(
+                "keyfor:contracts.conditional.postcondition.not.satisfied") // get adds everything
         public boolean containsKey(Object key) {
             return true;
         }
@@ -1038,6 +1040,8 @@ public class CFGBuilder {
                     if (e.getSuccessor() == cur) {
                         return singleSuccessorHolder(e, cur);
                     } else {
+                        @SuppressWarnings(
+                                "keyfor:assignment.type.incompatible") // ignore keyfor type
                         Set<Entry<TypeMirror, Set<Block>>> entrySet =
                                 e.getExceptionalSuccessors().entrySet();
                         for (final Entry<TypeMirror, Set<Block>> entry : entrySet) {
