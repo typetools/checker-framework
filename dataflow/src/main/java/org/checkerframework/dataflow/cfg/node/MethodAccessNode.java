@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -27,6 +28,7 @@ public class MethodAccessNode extends Node {
         super(TreeUtils.typeOf(tree));
         assert TreeUtils.isMethodAccess(tree);
         this.tree = tree;
+        assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
         this.method = (ExecutableElement) TreeUtils.elementFromUse(tree);
         this.receiver = receiver;
     }
@@ -55,7 +57,7 @@ public class MethodAccessNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof MethodAccessNode)) {
             return false;
         }

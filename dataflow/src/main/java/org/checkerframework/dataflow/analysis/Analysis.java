@@ -19,6 +19,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -54,10 +55,10 @@ public class Analysis<
     /** The transfer function for regular nodes. */
     // TODO: make final. Currently, the transferFunction has a reference to the analysis, so it
     // can't be created until the Analysis is initialized.
-    protected T transferFunction;
+    protected @Nullable T transferFunction;
 
     /** The current control flow graph to perform the analysis on. */
-    protected ControlFlowGraph cfg;
+    protected @Nullable ControlFlowGraph cfg;
 
     /** The associated processing environment. */
     protected final ProcessingEnvironment env;
@@ -75,7 +76,7 @@ public class Analysis<
      * Number of times every block has been analyzed since the last time widening was applied. Null,
      * if maxCountBeforeWidening is -1 which implies widening isn't used for this analysis.
      */
-    protected final IdentityHashMap<Block, Integer> blockCount;
+    protected final @Nullable IdentityHashMap<Block, Integer> blockCount;
 
     /**
      * Number of times a block can be analyzed before widening. -1 implies that widening shouldn't
@@ -108,18 +109,19 @@ public class Analysis<
      *   !isRunning &rArr; (currentNode == null)
      * </pre>
      */
-    protected Node currentNode;
+    protected @Nullable Node currentNode;
 
     /**
      * The tree that is currently being looked at. The transfer function can set this tree to make
      * sure that calls to {@code getValue} will not return information for this given tree.
      */
-    protected Tree currentTree;
+    protected @Nullable Tree currentTree;
 
     /** The current transfer input when the analysis is running. */
-    protected TransferInput<A, S> currentInput;
+    protected @Nullable TransferInput<A, S> currentInput;
 
-    public Tree getCurrentTree() {
+    /** The tree that is currently being looked at. */
+    public @Nullable Tree getCurrentTree() {
         return currentTree;
     }
 
@@ -147,7 +149,7 @@ public class Analysis<
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      */
-    public Analysis(T transfer, int maxCountBeforeWidening, ProcessingEnvironment env) {
+    public Analysis(@Nullable T transfer, int maxCountBeforeWidening, ProcessingEnvironment env) {
         this.env = env;
         this.types = env.getTypeUtils();
         this.transferFunction = transfer;
@@ -162,7 +164,8 @@ public class Analysis<
         this.finalLocalValues = new HashMap<>();
     }
 
-    public T getTransferFunction() {
+    /** The current transfer function. */
+    public @Nullable T getTransferFunction() {
         return transferFunction;
     }
 
@@ -202,22 +205,25 @@ public class Analysis<
 
                     // apply transfer function to contents
                     TransferInput<A, S> inputBefore = getInputBefore(rb);
+                    assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
                     currentInput = inputBefore.copy();
                     TransferResult<A, S> transferResult = null;
                     Node lastNode = null;
                     boolean addToWorklistAgain = false;
                     for (Node n : rb.getContents()) {
+                        assert currentInput != null : "@AssumeAssertion(nullness): invariant";
                         transferResult = callTransferFunction(n, currentInput);
                         addToWorklistAgain |= updateNodeValues(n, transferResult);
                         currentInput = new TransferInput<>(n, this, transferResult);
                         lastNode = n;
                     }
+                    assert currentInput != null : "@AssumeAssertion(nullness): invariant";
                     // loop will run at least once, making transferResult non-null
 
                     // propagate store to successors
                     Block succ = rb.getSuccessor();
                     assert succ != null
-                            : "regular basic block without non-exceptional successor unexpected";
+                            : "@AssumeAssertion(nullness): regular basic block without non-exceptional successor unexpected";
                     propagateStoresTo(
                             succ, lastNode, currentInput, rb.getFlowRule(), addToWorklistAgain);
                     break;
@@ -229,6 +235,7 @@ public class Analysis<
 
                     // apply transfer function to content
                     TransferInput<A, S> inputBefore = getInputBefore(eb);
+                    assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
                     currentInput = inputBefore.copy();
                     Node node = eb.getNode();
                     TransferResult<A, S> transferResult = callTransferFunction(node, currentInput);
@@ -278,6 +285,7 @@ public class Analysis<
 
                     // get store before
                     TransferInput<A, S> inputBefore = getInputBefore(cb);
+                    assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
                     TransferInput<A, S> input = inputBefore.copy();
 
                     // propagate store to successor
@@ -296,7 +304,9 @@ public class Analysis<
                     SpecialBlock sb = (SpecialBlock) b;
                     Block succ = sb.getSuccessor();
                     if (succ != null) {
-                        propagateStoresTo(succ, null, getInputBefore(b), sb.getFlowRule(), false);
+                        TransferInput<A, S> input = getInputBefore(b);
+                        assert input != null : "@AssumeAssertion(nullness): invariant";
+                        propagateStoresTo(succ, null, input, sb.getFlowRule(), false);
                     }
                     break;
                 }
@@ -312,7 +322,7 @@ public class Analysis<
      */
     protected void propagateStoresTo(
             Block succ,
-            Node node,
+            @Nullable Node node,
             TransferInput<A, S> currentInput,
             Store.FlowRule flowRule,
             boolean addToWorklistAgain) {
@@ -396,7 +406,7 @@ public class Analysis<
      * Call the transfer function for node {@code node}, and set that node as current node first.
      */
     protected TransferResult<A, S> callTransferFunction(Node node, TransferInput<A, S> store) {
-
+        assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
         if (node.isLValue()) {
             // TODO: should the default behavior be to return either a regular
             // transfer result or a conditional transfer result (depending on
@@ -420,7 +430,10 @@ public class Analysis<
                 LocalVariableNode lhs = (LocalVariableNode) lhst;
                 Element elem = lhs.getElement();
                 if (ElementUtils.isEffectivelyFinal(elem)) {
-                    finalLocalValues.put(elem, transferResult.getResultValue());
+                    A resval = transferResult.getResultValue();
+                    if (resval != null) {
+                        finalLocalValues.put(elem, resval);
+                    }
                 }
             }
         }
@@ -467,6 +480,7 @@ public class Analysis<
         } else {
             // nothing to do
         }
+        assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
         S initialStore = transferFunction.initialStore(underlyingAST, parameters);
         Block entry = cfg.getEntryBlock();
         thenStores.put(entry, initialStore);
@@ -489,10 +503,11 @@ public class Analysis<
      * location.
      */
     protected void addStoreBefore(
-            Block b, Node node, S s, Store.Kind kind, boolean addBlockToWorklist) {
+            Block b, @Nullable Node node, S s, Store.Kind kind, boolean addBlockToWorklist) {
         S thenStore = getStoreBefore(b, Store.Kind.THEN);
         S elseStore = getStoreBefore(b, Store.Kind.ELSE);
         boolean shouldWiden = false;
+
         if (blockCount != null) {
             Integer count = blockCount.get(b);
             if (count == null) {
@@ -570,7 +585,8 @@ public class Analysis<
         }
     }
 
-    private S mergeStores(S newStore, S previousStore, boolean shouldWiden) {
+    /** Merge two stores, possibly widening the result. */
+    private S mergeStores(S newStore, @Nullable S previousStore, boolean shouldWiden) {
         if (previousStore == null) {
             return newStore;
         } else if (shouldWiden) {
@@ -615,6 +631,9 @@ public class Analysis<
             queue.clear();
         }
 
+        /** @see PriorityQueue#isEmpty */
+        @EnsuresNonNullIf(result = false, expression = "poll()")
+        @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied") // forwarded
         public boolean isEmpty() {
             return queue.isEmpty();
         }
@@ -627,7 +646,8 @@ public class Analysis<
             queue.add(block);
         }
 
-        public Block poll() {
+        /** @see PriorityQueue#poll */
+        public @Nullable Block poll() {
             return queue.poll();
         }
 
@@ -695,9 +715,9 @@ public class Analysis<
             // check that 'n' is a subnode of 'node'. Check immediate operands
             // first for efficiency.
             assert !n.isLValue() : "Did not expect an lvalue, but got " + n;
-            if (!(currentNode != n
-                    && (currentNode.getOperands().contains(n)
-                            || currentNode.getTransitiveOperands().contains(n)))) {
+            if (currentNode == n
+                    || (!currentNode.getOperands().contains(n)
+                            && !currentNode.getTransitiveOperands().contains(n))) {
                 return null;
             }
             return nodeValues.get(n);
@@ -750,7 +770,7 @@ public class Analysis<
      * Get the set of {@link Node}s for a given {@link Tree}. Returns null for trees that don't
      * produce a value.
      */
-    public Set<Node> getNodesForTree(Tree t) {
+    public @Nullable Set<Node> getNodesForTree(Tree t) {
         if (cfg == null) {
             return null;
         }
@@ -763,6 +783,9 @@ public class Analysis<
      * Node} in the CFG or null otherwise.
      */
     public @Nullable MethodTree getContainingMethod(Tree t) {
+        if (cfg == null) {
+            return null;
+        }
         MethodTree mt = cfg.getContainingMethod(t);
         return mt;
     }
@@ -772,11 +795,16 @@ public class Analysis<
      * Node} in the CFG or null otherwise.
      */
     public @Nullable ClassTree getContainingClass(Tree t) {
+        if (cfg == null) {
+            return null;
+        }
         ClassTree ct = cfg.getContainingClass(t);
         return ct;
     }
 
+    /** The transfer results for each return node in the CFG. */
     public List<Pair<ReturnNode, TransferResult<A, S>>> getReturnStatementStores() {
+        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         List<Pair<ReturnNode, TransferResult<A, S>>> result = new ArrayList<>();
         for (ReturnNode returnNode : cfg.getReturnNodes()) {
             TransferResult<A, S> store = storesAtReturnStatements.get(returnNode);
@@ -785,8 +813,13 @@ public class Analysis<
         return result;
     }
 
+    /**
+     * The result of running the analysis. This is only available once the analysis finished
+     * running.
+     */
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
+        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         return new AnalysisResult<>(
                 nodeValues,
                 inputs,
@@ -800,6 +833,7 @@ public class Analysis<
      *     method cannot exit through the regular exit block).
      */
     public @Nullable S getRegularExitStore() {
+        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
         if (inputs.containsKey(regularExitBlock)) {
             S regularExitStore = inputs.get(regularExitBlock).getRegularStore();
@@ -809,7 +843,9 @@ public class Analysis<
         }
     }
 
+    /** @return the exceptional exit store. */
     public S getExceptionalExitStore() {
+        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         S exceptionalExitStore = inputs.get(cfg.getExceptionalExitBlock()).getRegularStore();
         return exceptionalExitStore;
     }
