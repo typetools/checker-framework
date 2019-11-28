@@ -3,6 +3,7 @@
 
 import java.util.ArrayList;
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 
 class Issue2432b {
     void objectAsTypeArg() {
@@ -11,7 +12,13 @@ class Issue2432b {
         Object[] objarray = objs.toArray();
     }
 
-    // seems only object list would cause this problem:
+    void myClassAsTypeArg() {
+        MyClass<Object> objs = new MyClass<>();
+        Object[] objarray = objs.toArray();
+        // no error
+        Object[] objarray2 = objs.toArrayPoly();
+    }
+
     void stringAsTypeArg() {
         List<String> strs = new ArrayList<>();
         Object[] strarray = strs.toArray();
@@ -20,5 +27,16 @@ class Issue2432b {
     void listAsTypeArg() {
         List<List> lists = new ArrayList<>();
         Object[] listarray = lists.toArray();
+    }
+
+    private static class MyClass<MyTypeParam> {
+
+        Object[] toArray() {
+            return new Object[1];
+        }
+
+        @PolyNull Object[] toArrayPoly(MyClass<@PolyNull MyTypeParam> this) {
+            return new Object[1];
+        }
     }
 }
