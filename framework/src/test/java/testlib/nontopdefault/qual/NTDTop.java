@@ -13,7 +13,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @DefaultFor({
     TypeUseLocation.LOCAL_VARIABLE,
     TypeUseLocation.IMPLICIT_UPPER_BOUND,
-    TypeUseLocation.RECEIVER
+    TypeUseLocation.RECEIVER,
+    TypeUseLocation.CONSTRUCTOR_RESULT,
 })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
