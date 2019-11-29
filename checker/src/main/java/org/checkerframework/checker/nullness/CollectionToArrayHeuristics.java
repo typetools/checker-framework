@@ -46,7 +46,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>Additionally, when the lint option {@link NullnessChecker#LINT_TRUSTARRAYLENZERO} is provided,
  * field accesses where the field declaration has a {@code @ArrayLen(0)} annotation are considered
  * when determining whether a call to {@link Collection#toArray(Object[]) Collection.toArray(T[])}
- * will return an array with non-null components. . This trusts the {@code @ArrayLen(0)} annotation,
+ * will return an array with non-null components. This trusts the {@code @ArrayLen(0)} annotation,
  * but does not verify it. Run the Constant Value Checker to verify that annotation.
  *
  * <p>Note: The nullness of the returned array doesn't depend on the passed array nullness.
@@ -118,8 +118,8 @@ public class CollectionToArrayHeuristics {
      * {@code ArrayLen(0)} annotation.
      *
      * @param argument the expression tree
-     * @return true if the expression is a field access expression of which the declaration has a
-     *     {@code ArrayLen(0)} annotation
+     * @return true if the expression is a field access expression, where the field has declared
+     *     type {@code ArrayLen(0)}
      */
     private boolean isArrayLenZeroFieldAccess(ExpressionTree argument) {
         Element el = TreeUtils.elementFromUse(argument);
