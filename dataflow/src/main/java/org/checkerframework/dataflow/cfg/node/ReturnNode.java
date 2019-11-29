@@ -30,7 +30,9 @@ public class ReturnNode extends Node {
         super(types.getNoType(TypeKind.NONE));
         this.result = result;
         tree = t;
-        result.setAssignmentContext(new MethodReturnContext(methodTree));
+        if (result != null) {
+            result.setAssignmentContext(new MethodReturnContext(methodTree));
+        }
     }
 
     public ReturnNode(
@@ -42,10 +44,13 @@ public class ReturnNode extends Node {
         super(types.getNoType(TypeKind.NONE));
         this.result = result;
         tree = t;
-        result.setAssignmentContext(new LambdaReturnContext(methodSymbol));
+        if (result != null) {
+            result.setAssignmentContext(new LambdaReturnContext(methodSymbol));
+        }
     }
 
-    public Node getResult() {
+    /** The result of the return node, {@code null} otherwise. */
+    public @Nullable Node getResult() {
         return result;
     }
 
@@ -68,15 +73,12 @@ public class ReturnNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof ReturnNode)) {
             return false;
         }
         ReturnNode other = (ReturnNode) obj;
-        if ((result == null) != (other.result == null)) {
-            return false;
-        }
-        return (result == null || result.equals(other.result));
+        return Objects.equals(result, other.result);
     }
 
     @Override

@@ -2,7 +2,6 @@ package org.checkerframework.common.value;
 
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -48,13 +47,13 @@ public class ValueCheckerUtils {
             case ARRAY:
                 return getArrayClassObject(((ArrayType) type).getComponentType());
             case DECLARED:
-                String stringType = TypesUtils.getQualifiedName((DeclaredType) type).toString();
-                if (stringType.equals("<nulltype>")) {
+                String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+                if (typeString.equals("<nulltype>")) {
                     return Object.class;
                 }
 
                 try {
-                    return Class.forName(stringType);
+                    return Class.forName(typeString);
                 } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
                     return Object.class;
                 }
@@ -133,7 +132,7 @@ public class ValueCheckerUtils {
         for (Number value : values) {
             longValues.add(value.longValue());
         }
-        return new Range(Collections.min(longValues), Collections.max(longValues));
+        return new Range(longValues);
     }
 
     /**
@@ -319,7 +318,7 @@ public class ValueCheckerUtils {
             List<Long> values =
                     ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
             if (values != null) {
-                return new Range(Collections.min(values), Collections.max(values));
+                return new Range(values);
             } else {
                 return null;
             }

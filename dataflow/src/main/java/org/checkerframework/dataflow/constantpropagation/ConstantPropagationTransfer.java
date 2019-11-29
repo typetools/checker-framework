@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.constantpropagation;
 
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferFunction;
@@ -22,7 +23,7 @@ public class ConstantPropagationTransfer
 
     @Override
     public ConstantPropagationStore initialStore(
-            UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
+            UnderlyingAST underlyingAST, @Nullable List<LocalVariableNode> parameters) {
         ConstantPropagationStore store = new ConstantPropagationStore();
         return store;
     }

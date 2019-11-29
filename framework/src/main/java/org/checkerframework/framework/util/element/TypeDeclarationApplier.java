@@ -108,7 +108,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
         // "targeted" locations
         super.extractAndApply();
 
-        // Annotate raw types //TODO: ASK WERNER WHAT THIS MIGHT MEAN?  WHAT ACTUALLY GOES HERE?
+        // Annotate raw types // TODO: ASK WERNER WHAT THIS MIGHT MEAN?  WHAT ACTUALLY GOES HERE?
         type.addAnnotations(typeSymbol.getAnnotationMirrors());
 
         ElementAnnotationUtil.applyAllElementAnnotations(

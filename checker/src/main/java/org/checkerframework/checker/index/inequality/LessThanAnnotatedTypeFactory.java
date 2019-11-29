@@ -83,10 +83,11 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             List<String> subList = getLessThanExpressions(subAnno);
-            List<String> superList = getLessThanExpressions(superAnno);
             if (subList == null) {
                 return true;
-            } else if (superList == null) {
+            }
+            List<String> superList = getLessThanExpressions(superAnno);
+            if (superList == null) {
                 return false;
             }
 
