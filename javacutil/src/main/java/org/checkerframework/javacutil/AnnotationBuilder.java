@@ -76,6 +76,7 @@ public class AnnotationBuilder {
      * @param env the processing environment
      * @param anno the class of the annotation to build
      */
+    @SuppressWarnings("nullness") // getCanonicalName expected to be non-null
     public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
         this(env, anno.getCanonicalName());
     }
@@ -137,12 +138,14 @@ public class AnnotationBuilder {
      */
     public static AnnotationMirror fromClass(
             Elements elements, Class<? extends Annotation> aClass) {
-        AnnotationMirror res = fromName(elements, aClass.getCanonicalName());
+        String name = aClass.getCanonicalName();
+        assert name != null : "@AssumeAssertion(nullness): assumption";
+        AnnotationMirror res = fromName(elements, name);
         if (res == null) {
             throw new UserError(
                     "AnnotationBuilder: error: fromClass can't load Class %s%n"
                             + "ensure the class is on the compilation classpath",
-                    aClass.getCanonicalName());
+                    name);
         }
         return res;
     }
@@ -362,7 +365,9 @@ public class AnnotationBuilder {
             TypeMirror componentType = typeFromClass(clazz.getComponentType());
             return types.getArrayType(componentType);
         } else {
-            TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
+            String name = clazz.getCanonicalName();
+            assert name != null : "@AssumeAssertion(nullness): assumption";
+            TypeElement element = elements.getTypeElement(name);
             if (element == null) {
                 throw new BugInCF("Unrecognized class: " + clazz);
             }
@@ -474,8 +479,10 @@ public class AnnotationBuilder {
         return this;
     }
 
+    /** Find the VariableElement for the given enum. */
     private VariableElement findEnumElement(Enum<?> value) {
         String enumClass = value.getDeclaringClass().getCanonicalName();
+        assert enumClass != null : "@AssumeAssertion(nullness): assumption";
         TypeElement enumClassElt = elements.getTypeElement(enumClass);
         assert enumClassElt != null;
         for (Element enumElt : enumClassElt.getEnclosedElements()) {
@@ -539,7 +546,9 @@ public class AnnotationBuilder {
                 isSubtype = false;
             }
         } else {
-            found = elements.getTypeElement(givenValue.getClass().getCanonicalName()).asType();
+            String name = givenValue.getClass().getCanonicalName();
+            assert name != null : "@AssumeAssertion(nullness): assumption";
+            found = elements.getTypeElement(name).asType();
             isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
         }
         if (!isSubtype) {
@@ -565,11 +574,13 @@ public class AnnotationBuilder {
     /** Implementation of AnnotationMirror used by the Checker Framework. */
     /* default visibility to allow access from within package. */
     static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
-
-        private @Interned String toStringVal;
+        /** The interned toString value. */
+        private @Nullable @Interned String toStringVal;
+        /** The annotation type. */
         private final DeclaredType annotationType;
+        /** The element values. */
         private final Map<ExecutableElement, AnnotationValue> elementValues;
-
+        /** The annotation name. */
         // default visibility to allow access from within package.
         final @Interned String annotationName;
 
@@ -627,10 +638,14 @@ public class AnnotationBuilder {
         }
     }
 
+    /** Implementation of AnnotationValue used by the Checker Framework. */
     private static class CheckerFrameworkAnnotationValue implements AnnotationValue {
+        /** The value. */
         private final Object value;
-        private @Interned String toStringVal;
+        /** The interned value of toString. */
+        private @Nullable @Interned String toStringVal;
 
+        /** Create an annotation value. */
         CheckerFrameworkAnnotationValue(Object obj) {
             this.value = obj;
         }
@@ -661,7 +676,7 @@ public class AnnotationBuilder {
                         sb.append(", ");
                     }
                     isFirst = false;
-                    sb.append(o.toString());
+                    sb.append(Objects.toString(o));
                 }
                 sb.append('}');
                 toStringVal = sb.toString();
@@ -716,7 +731,7 @@ public class AnnotationBuilder {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             // System.out.printf("Calling CFAV.equals()%n");
             if (!(obj instanceof AnnotationValue)) {
                 return false;

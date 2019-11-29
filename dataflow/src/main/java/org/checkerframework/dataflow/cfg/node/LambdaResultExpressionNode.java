@@ -24,7 +24,7 @@ public class LambdaResultExpressionNode extends Node {
      * Returns the final node of the CFG corresponding to the lambda expression body (see {@link
      * #getTree()}).
      */
-    public Node getResult() {
+    public @Nullable Node getResult() {
         return result;
     }
 
@@ -51,17 +51,14 @@ public class LambdaResultExpressionNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         // No need to compare tree, since in a well-formed LambdaResultExpressionNode, result will
         // be the same only when tree is the same (this is similar to ReturnNode).
         if (!(obj instanceof LambdaResultExpressionNode)) {
             return false;
         }
         LambdaResultExpressionNode other = (LambdaResultExpressionNode) obj;
-        if ((result == null) != (other.result == null)) {
-            return false;
-        }
-        return (result == null || result.equals(other.result));
+        return Objects.equals(result, other.result);
     }
 
     @Override

@@ -201,8 +201,8 @@ public class WholeProgramInferenceScenesHelper {
     /**
      * Returns the String representing the .jaif path of a class given its name.
      *
-     * @param className the name of the class
-     * @return the path to the corresponding jaif file
+     * @param className the simple name of a class
+     * @return the path to the .jaif file
      */
     protected String getJaifPath(String className) {
         String jaifPath = JAIF_FILES_PATH + className + ".jaif";
@@ -210,8 +210,11 @@ public class WholeProgramInferenceScenesHelper {
     }
 
     /**
-     * Returns the Scene stored in a .jaif file path passed as input. If the file does not exist, an
-     * empty Scene is created.
+     * Reads a Scene from the given .jaif file, or returns an empty Scene if the file does not
+     * exist.
+     *
+     * @param jaifPath the .jaif file
+     * @return the Scene read from the file, or an empty Scene if the file does not exist
      */
     protected AScene getScene(String jaifPath) {
         AScene scene;

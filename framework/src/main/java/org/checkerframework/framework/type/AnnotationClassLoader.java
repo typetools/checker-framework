@@ -25,8 +25,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.UserError;
@@ -791,7 +791,7 @@ public class AnnotationClassLoader {
     protected boolean hasWellDefinedTargetMetaAnnotation(
             final Class<? extends Annotation> annoClass) {
         return annoClass.getAnnotation(Target.class) != null
-                && AnnotatedTypes.hasTypeQualifierElementTypes(
+                && AnnotationUtils.hasTypeQualifierElementTypes(
                         annoClass.getAnnotation(Target.class).value(), annoClass);
     }
 

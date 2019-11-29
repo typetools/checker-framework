@@ -32,6 +32,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
@@ -128,6 +129,12 @@ public class AnnotationUtils {
             throw new BugInCF("Unexpected null second argument to areSameByName");
         }
 
+        if (a1 instanceof CheckerFrameworkAnnotationMirror
+                && a2 instanceof CheckerFrameworkAnnotationMirror) {
+            return ((CheckerFrameworkAnnotationMirror) a1).annotationName
+                    == ((CheckerFrameworkAnnotationMirror) a2).annotationName;
+        }
+
         return annotationName(a1).equals(annotationName(a2));
     }
 
@@ -160,6 +167,7 @@ public class AnnotationUtils {
         if (canonicalName == null) {
             // This method is faster than #areSameByName because of this cache.
             canonicalName = annoClass.getCanonicalName();
+            assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
             annotationClassNames.put(annoClass, canonicalName);
         }
         return areSameByName(am, canonicalName);
@@ -222,7 +230,7 @@ public class AnnotationUtils {
      * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
      *     to areSame; otherwise, {@code null}
      */
-    public static AnnotationMirror getSame(
+    public static @Nullable AnnotationMirror getSame(
             Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSame(an, anno)) {
@@ -253,7 +261,7 @@ public class AnnotationUtils {
      * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
      *     to areSameByClass; otherwise, {@code null}
      */
-    public static AnnotationMirror getAnnotationByClass(
+    public static @Nullable AnnotationMirror getAnnotationByClass(
             Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSameByClass(an, anno)) {
@@ -284,7 +292,7 @@ public class AnnotationUtils {
      * @return AnnotationMirror with the same name as {@code anno} iff c contains anno, according to
      *     areSameByName; otherwise, {@code null}
      */
-    public static AnnotationMirror getAnnotationByName(
+    public static @Nullable AnnotationMirror getAnnotationByName(
             Collection<? extends AnnotationMirror> c, String anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSameByName(an, anno)) {
@@ -316,7 +324,7 @@ public class AnnotationUtils {
      * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
      *     to areSameByName; otherwise, {@code null}
      */
-    public static AnnotationMirror getSameByName(
+    public static @Nullable AnnotationMirror getSameByName(
             Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSameByName(an, anno)) {
@@ -565,7 +573,9 @@ public class AnnotationUtils {
             //   @LTLengthOf(value={"a1","a2"}, offest={"0", "1"})
             //   @LTLengthOf(value={"a2","a1"}, offest={"0", "1"})
             for (int i = 0; i < list1.size(); i++) {
-                if (!sameAnnotationValueValue(list1.get(i), list2.get(i))) {
+                Object v1 = list1.get(i);
+                Object v2 = list2.get(i);
+                if (v1 == null || v2 == null || !sameAnnotationValueValue(v1, v2)) {
                     return false;
                 }
             }
@@ -800,5 +810,60 @@ public class AnnotationUtils {
             annotationSet.addAll(TreeUtils.annotationsFromTypeAnnotationTrees(annotationTrees));
         }
         return annotationSet;
+    }
+
+    /**
+     * Returns true if anno is a declaration annotation. In other words, returns true if anno cannot
+     * be written on uses of types.
+     *
+     * @param anno the AnnotationMirror
+     * @return true if anno is a declaration annotation.
+     */
+    public static boolean isDeclarationAnnotation(AnnotationMirror anno) {
+        TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();
+        Target t = elem.getAnnotation(Target.class);
+        if (t == null) {
+            return true;
+        }
+
+        for (ElementType elementType : t.value()) {
+            if (elementType == ElementType.TYPE_USE) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns true if the given array contains {@link ElementType#TYPE_USE}, false otherwise.
+     *
+     * @param elements an array of {@link ElementType} values
+     * @param cls the annotation class being tested; used for diagnostic messages only
+     * @return true iff the give array contains {@link ElementType#TYPE_USE}
+     * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
+     *     something besides {@link ElementType#TYPE_PARAMETER}
+     */
+    public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
+        // True if the array contains TYPE_USE
+        boolean hasTypeUse = false;
+        // Non-null if the array contains an element other than TYPE_USE or TYPE_PARAMETER
+        ElementType otherElementType = null;
+
+        for (ElementType element : elements) {
+            if (element == ElementType.TYPE_USE) {
+                hasTypeUse = true;
+            } else if (element != ElementType.TYPE_PARAMETER) {
+                otherElementType = element;
+            }
+            if (hasTypeUse && otherElementType != null) {
+                throw new BugInCF(
+                        "@Target meta-annotation should not contain both TYPE_USE and "
+                                + otherElementType
+                                + ", for annotation "
+                                + cls.getName());
+            }
+        }
+
+        return hasTypeUse;
     }
 }
