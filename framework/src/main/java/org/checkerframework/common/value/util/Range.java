@@ -124,7 +124,7 @@ public class Range {
      *
      * @param from the lower bound (inclusive)
      * @param to the upper bound (inclusive)
-     * @return newly created Range or EVERYTHING
+     * @return newly-created Range or EVERYTHING
      */
     private static Range createRangeOrEverything(long from, long to) {
         if (from <= to) {
