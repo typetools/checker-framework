@@ -573,12 +573,12 @@ public class ValueTransfer extends CFTransfer {
         List<String> leftValues = getStringValues(leftOperand, p);
         List<String> rightValues = getStringValues(rightOperand, p);
 
-        boolean nullStringConcat =
-                atypefactory.getContext().getChecker().hasOption("nullStringsConcatenation");
+        boolean nonNullStringConcat =
+                atypefactory.getContext().getChecker().hasOption("nonNullStringsConcatenation");
 
         if (leftValues != null && rightValues != null) {
             // Both operands have known string values, compute set of results
-            if (nullStringConcat) {
+            if (!nonNullStringConcat) {
                 if (isNullable(leftOperand)) {
                     leftValues.add("null");
                 }
@@ -621,7 +621,7 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengths != null && rightLengths != null) {
             // Both operands have known lengths, compute set of result lengths
-            if (nullStringConcat) {
+            if (!nonNullStringConcat) {
                 if (isNullable(leftOperand)) {
                     leftLengths.add(4); // "null"
                 }
@@ -645,7 +645,7 @@ public class ValueTransfer extends CFTransfer {
 
         if (leftLengthRange != null && rightLengthRange != null) {
             // Both operands have a length from a known range, compute a range of result lengths
-            if (nullStringConcat) {
+            if (!nonNullStringConcat) {
                 if (isNullable(leftOperand)) {
                     leftLengthRange.union(new Range(4, 4)); // "null"
                 }
