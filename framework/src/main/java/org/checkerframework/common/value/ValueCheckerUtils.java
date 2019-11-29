@@ -47,13 +47,13 @@ public class ValueCheckerUtils {
             case ARRAY:
                 return getArrayClassObject(((ArrayType) type).getComponentType());
             case DECLARED:
-                String stringType = TypesUtils.getQualifiedName((DeclaredType) type).toString();
-                if (stringType.equals("<nulltype>")) {
+                String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+                if (typeString.equals("<nulltype>")) {
                     return Object.class;
                 }
 
                 try {
-                    return Class.forName(stringType);
+                    return Class.forName(typeString);
                 } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
                     return Object.class;
                 }

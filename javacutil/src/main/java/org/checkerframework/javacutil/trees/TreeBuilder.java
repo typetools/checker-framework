@@ -92,7 +92,8 @@ public class TreeBuilder {
             }
         }
 
-        assert iteratorMethod != null : "no iterator method declared for expression type";
+        assert iteratorMethod != null
+                : "@AssumeAssertion(nullness): no iterator method declared for expression type";
 
         Type.MethodType methodType = (Type.MethodType) iteratorMethod.asType();
         Symbol.TypeSymbol methodClass = methodType.asElement();
@@ -195,7 +196,8 @@ public class TreeBuilder {
             }
         }
 
-        assert nextMethod != null : "no next method declared for expression type";
+        assert nextMethod != null
+                : "@AssumeAssertion(nullness): no next method declared for expression type";
 
         Type.MethodType methodType = (Type.MethodType) nextMethod.asType();
         Symbol.TypeSymbol methodClass = methodType.asElement();
@@ -439,7 +441,8 @@ public class TreeBuilder {
             }
         }
 
-        assert valueOfMethod != null : "no valueOf method declared for boxed type";
+        assert valueOfMethod != null
+                : "@AssumeAssertion(nullness): no valueOf method declared for boxed type";
         return valueOfMethod;
     }
 
@@ -470,7 +473,8 @@ public class TreeBuilder {
             }
         }
 
-        assert primValueMethod != null : "no *Value method declared for boxed type";
+        assert primValueMethod != null
+                : "@AssumeAssertion(nullness): no *Value method declared for boxed type";
 
         Type.MethodType methodType = (Type.MethodType) primValueMethod.asType();
 

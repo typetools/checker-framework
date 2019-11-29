@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for a case in a switch statement. Although a case has no abstract value, it can imply
@@ -65,7 +66,7 @@ public class CaseNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof CaseNode)) {
             return false;
         }

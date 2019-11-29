@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** Represents upper and lower bounds, each an AnnotatedTypeMirror. */
 public class AnnotatedTypeParameterBounds {
@@ -41,7 +42,7 @@ public class AnnotatedTypeParameterBounds {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof AnnotatedTypeParameterBounds)) {
             return false;
         }

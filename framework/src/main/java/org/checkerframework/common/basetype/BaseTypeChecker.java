@@ -26,6 +26,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -617,7 +618,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(@Nullable Object o) {
             if (this == o) {
                 return true;
             }
