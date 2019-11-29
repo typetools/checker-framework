@@ -89,7 +89,7 @@ task testWPIStubs(type: Test) {
         // Always run the tests
         outputs.upToDateWhen { false }
 
-        // Show the found unexpected diagnostics and expected diagnostics not found.
+        // Show the found unexpected diagnostics and the expected diagnostics not found.
         exceptionFormat "full"
         events "passed", "skipped", "failed"
     }
@@ -103,7 +103,7 @@ task testWPIStubsValidate(type: Test) {
         // Always run the tests
         outputs.upToDateWhen { false }
 
-        // Show the found unexpected diagnostics and expected diagnostics not found.
+        // Show the found unexpected diagnostics and the expected diagnostics not found.
         exceptionFormat "full"
         events "passed", "skipped", "failed"
     }

@@ -751,8 +751,8 @@ Partially-annotated libraries
   Warn if a stub file entry is redundant with bytecode information; see
   Section~\ref{stub-using}.
 \item \<-AmergeStubsWithSource>
-  If both a stub file and a source file for a class are available,
-  use the greatest lower bound of the two. The default behavior (without this
+  If both a stub file and a source file for a class are available, use the
+  greatest lower bound of their annotations. The default behavior (without this
   flag) is to ignore types from the stub file if source is available. GLB is
   used to support using this flag in combination with \<-Ainfer=stubs>.
 % This item is repeated above:

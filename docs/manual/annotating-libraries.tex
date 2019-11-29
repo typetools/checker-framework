@@ -539,10 +539,19 @@ bytecode annotations.
 
 By default, a file being compiled takes precedence over a stub file:  if
 file \<A.java> is being compiled, then any stub for class \<A> is ignored.
-The command-line option \<-AmergeStubsWithSource> tells the checker to
-take the greatest lower bound of the type in the stub file and the type in
-the source code if both are available. Note that for type systems with defaults
-other than top (e.g. the Nullness Checker), this option should not be used.
+The command-line option \<-AmergeStubsWithSource> tells the checker to take
+the greatest lower bound (GLB) of the type in the stub file and the type in
+the source code if both are available.
+% Note for maintainers:
+% The choice of GLB is made for the convenience of whole-program inference.
+The GLB type may be smaller than (a subtype of) each of the given types.
+Suppose the two type annotations to be merged are \<@B> and \<@C>, for a
+field \<f>.  The GLB requires that every run-time value of \<f> is
+permitted by \<@B> \emph{and} is permitted by \<@C>.  The GLB type may
+prohibit some \<@B> values (those that are not also \<@C> values).
+%
+Do not use \<-AmergeStubsWithSource> if the default qualifier
+is other than top (e.g., the Nullness Checker).
 
 When a stub file is provided by the author of a checker, the stub file is used
 automatically, with no need for the user to supply a command-line option.
