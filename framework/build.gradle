@@ -109,8 +109,29 @@ task testWPIStubsValidate(type: Test) {
     }
 }
 
+// Common logic for copying and deleting whole-program inference tests,
+// to avoid duplication.
+void commonWPIlogic() {
+    // Copying all test files to another directory, removing all expected errors that should not
+    // occur after inserting inferred annotations from .jaif files.
+    copy {
+        from files('tests/whole-program-inference/non-annotated')
+        into file('tests/whole-program-inference/annotated')
+        filter { String line ->
+            line.contains('// :: error:') ? null : line
+        }
+    }
+    // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over
+    delete('tests/whole-program-inference/annotated/ExpectedErrors.java')
+    copy {
+        from file('tests/whole-program-inference/non-annotated/ExpectedErrors.java')
+        into file('tests/whole-program-inference/annotated')
+    }
+}
+
 // This task is similar to the wholeProgramInferenceTests task below, but it doesn't
-// run the insert-annotations-to-source tool.
+// run the insert-annotations-to-source tool. Instead, it tests the -Ainfer=stubs feature
+// and the -AmergeStubsWithSource feature to do WPI using stub files.
 task wholeProgramInferenceStubTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for whole-program inference using stub files'
     dependsOn(compileTestJava)
@@ -118,21 +139,7 @@ task wholeProgramInferenceStubTests(dependsOn: 'shadowJar', group: 'Verification
     outputs.upToDateWhen { false }
 
     doLast {
-        // Copying all test files to another directory, removing all expected errors that should not
-        // occur after inserting inferred annotations from .jaif files.
-        copy {
-            from files('tests/whole-program-inference/non-annotated')
-            into file('tests/whole-program-inference/annotated')
-            filter { String line ->
-                line.contains('// :: error:') ? null : line
-            }
-        }
-        // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over
-        delete('tests/whole-program-inference/annotated/ExpectedErrors.java')
-        copy {
-            from file('tests/whole-program-inference/non-annotated/ExpectedErrors.java')
-            into file('tests/whole-program-inference/annotated')
-        }
+        commonWPIlogic()
     }
     finalizedBy(testWPIStubsValidate)
 }
@@ -175,21 +182,7 @@ task wholeProgramInferenceTests(dependsOn: 'shadowJar', group: 'Verification') {
     outputs.upToDateWhen { false }
 
     doLast {
-        // Copying all test files to another directory, removing all expected errors that should not
-        // occur after inserting inferred annotations from .jaif files.
-        copy {
-            from files('tests/whole-program-inference/non-annotated')
-            into file('tests/whole-program-inference/annotated')
-            filter { String line ->
-                line.contains('// :: error:') ? null : line
-            }
-        }
-        // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over
-        delete('tests/whole-program-inference/annotated/ExpectedErrors.java')
-        copy {
-            from file('tests/whole-program-inference/non-annotated/ExpectedErrors.java')
-            into file('tests/whole-program-inference/annotated')
-        }
+        commonWPIlogic()
 
         // Inserting annotations from .jaif files in-place.
         List<File> jaifs = fileTree("${buildDir}/whole-program-inference/").matching {

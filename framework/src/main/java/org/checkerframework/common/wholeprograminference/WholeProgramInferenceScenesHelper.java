@@ -90,12 +90,13 @@ public class WholeProgramInferenceScenesHelper {
     private final Set<String> modifiedScenes = new HashSet<>();
 
     /**
-     * A map from the description of an ATypeElement to the corresponding TypeMirror.
+     * A map from the string representation of the {@code description} field of an ATypeElement to
+     * the corresponding TypeMirror.
      *
      * <p>AScene doesn't carry around the basetypes of annotated types, but this is needed to output
      * stub files, such as when outputting the parameters of a method. {@link
-     * #updateTypeElementFromATM} intercepts updates to ATypeElements that add annotations, and
-     * populates this map with their corresponding basetypes.
+     * #updateTypeElementFromATM} populates this map every time an annotation is added to an
+     * ATypeElement.
      *
      * <p>This is super hacky, because there is no guarantee that two ATypeElement objects won't
      * have the same description. In practice, I haven't observed any problems caused by this. The
