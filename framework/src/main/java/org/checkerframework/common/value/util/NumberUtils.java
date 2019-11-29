@@ -84,6 +84,13 @@ public class NumberUtils {
         }
     }
 
+    /**
+     * Given a primitive type, return it. Given a boxed primitive type, return the corresponding
+     * primitive type.
+     *
+     * @param type a primitive or boxed primitive type
+     * @return a primitive type
+     */
     private static TypeKind unBoxPrimitive(TypeMirror type) {
         if (type.getKind() == TypeKind.DECLARED) {
             String stringType = TypesUtils.getQualifiedName((DeclaredType) type).toString();
