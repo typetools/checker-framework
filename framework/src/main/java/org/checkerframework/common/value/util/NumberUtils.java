@@ -5,6 +5,7 @@ import java.util.List;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class NumberUtils {
@@ -15,7 +16,7 @@ public class NumberUtils {
         if (numbers == null) {
             return null;
         }
-        TypeKind typeKind = unBoxPrimitive(type);
+        TypeKind typeKind = unboxPrimitive(type);
         switch (typeKind) {
             case BYTE:
                 List<Byte> bytes = new ArrayList<>();
@@ -65,7 +66,7 @@ public class NumberUtils {
     }
 
     public static Range castRange(TypeMirror type, Range range) {
-        TypeKind typeKind = unBoxPrimitive(type);
+        TypeKind typeKind = unboxPrimitive(type);
         switch (typeKind) {
             case BYTE:
                 return range.byteRange();
@@ -91,7 +92,7 @@ public class NumberUtils {
      * @param type a primitive or boxed primitive type
      * @return a primitive type
      */
-    public static TypeKind unBoxPrimitive(TypeMirror type) {
+    public static TypeKind unboxPrimitive(TypeMirror type) {
         final TypeKind typeKind = type.getKind();
 
         if (typeKind.isPrimitive()) {

@@ -2240,7 +2240,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return the TypeKind once unboxed
      */
     private static TypeKind resolveToPrimitiveIntegralTypeKind(TypeMirror type) {
-        TypeKind typeKind = NumberUtils.unBoxPrimitive(type);
+        TypeKind typeKind = NumberUtils.unboxPrimitive(type);
         if (isPrimitiveIntegral(typeKind)) {
             return typeKind;
         }
