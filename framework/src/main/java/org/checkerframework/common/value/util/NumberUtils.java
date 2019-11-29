@@ -15,7 +15,7 @@ public class NumberUtils {
         if (numbers == null) {
             return null;
         }
-        TypeKind typeKind = unBoxPrimitive(type);
+        TypeKind typeKind = unboxPrimitive(type);
         switch (typeKind) {
             case BYTE:
                 List<Byte> bytes = new ArrayList<>();
@@ -65,7 +65,7 @@ public class NumberUtils {
     }
 
     public static Range castRange(TypeMirror type, Range range) {
-        TypeKind typeKind = unBoxPrimitive(type);
+        TypeKind typeKind = unboxPrimitive(type);
         switch (typeKind) {
             case BYTE:
                 return range.byteRange();
@@ -91,7 +91,7 @@ public class NumberUtils {
      * @param type a primitive or boxed primitive type
      * @return a primitive type
      */
-    private static TypeKind unBoxPrimitive(TypeMirror type) {
+    private static TypeKind unboxPrimitive(TypeMirror type) {
         if (type.getKind() == TypeKind.DECLARED) {
             String stringType = TypesUtils.getQualifiedName((DeclaredType) type).toString();
 
