@@ -1,6 +1,7 @@
 package org.checkerframework.javacutil;
 
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
@@ -40,7 +41,7 @@ public class Pair<V1, V2> {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (!(o instanceof Pair)) {
             return false;
         }

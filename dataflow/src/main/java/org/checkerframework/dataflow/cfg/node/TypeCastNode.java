@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for the cast operator:
@@ -32,11 +33,6 @@ public class TypeCastNode extends Node {
     }
 
     @Override
-    public TypeMirror getType() {
-        return type;
-    }
-
-    @Override
     public Tree getTree() {
         return tree;
     }
@@ -52,7 +48,7 @@ public class TypeCastNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof TypeCastNode)) {
             return false;
         }
