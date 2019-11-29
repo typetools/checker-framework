@@ -99,7 +99,8 @@ public class NumberUtils {
             return typeKind;
         }
 
-        switch (TypesUtils.getQualifiedName((DeclaredType) type).toString()) {
+        String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+        switch (typeString) {
             case "java.lang.Byte":
                 return TypeKind.BYTE;
             case "java.lang.Boolean":
