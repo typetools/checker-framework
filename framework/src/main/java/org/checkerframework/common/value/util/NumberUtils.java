@@ -64,6 +64,14 @@ public class NumberUtils {
         }
     }
 
+    /**
+     * Return a range that restricts the given range to the given type. That is, return the range
+     * resulting from casting a value with the given range.
+     *
+     * @param type the type for the cast; the result will be within it
+     * @param range the original range; the result will be within it
+     * @return the intersection of the given range and the possible values of the given type
+     */
     public static Range castRange(TypeMirror type, Range range) {
         TypeKind typeKind = unboxPrimitive(type);
         switch (typeKind) {
