@@ -93,9 +93,9 @@ public class NumberUtils {
      */
     private static TypeKind unboxPrimitive(TypeMirror type) {
         if (type.getKind() == TypeKind.DECLARED) {
-            String stringType = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+            String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
 
-            switch (stringType) {
+            switch (typeString) {
                 case "java.lang.Byte":
                     return TypeKind.BYTE;
                 case "java.lang.Boolean":
