@@ -487,25 +487,31 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 method.returnType, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.RETURN);
 
         // Now, update overridden methods based on the implementation we just saw.
-        // If the overridden method is abstract, then WPI cannot update it directly,
-        // so updating based on implementations makes sense (cf. how method parameters
-        // are updated).
+        // If the overridden method is abstract, then WPI cannot update it directly
+        // (because no calls directly resolve to it). This inference is similar to
+        // the inference procedure for method parameters: both are updated based
+        // only on the implementations (in this case) or call-sites (for method
+        // parameters) that are available to WPI.
         for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
                 overriddenMethods.entrySet()) {
+
+            AnnotatedDeclaredType superclassType = pair.getKey();
+            ExecutableElement superclassMethodDef = pair.getValue();
 
             AnnotatedExecutableType overriddenMethod =
                     AnnotatedTypes.asMemberOf(
                             atf.getProcessingEnv().getTypeUtils(),
                             atf,
-                            pair.getKey(),
-                            pair.getValue());
+                            superclassType,
+                            superclassMethodDef);
 
             if (overriddenMethod.getElement().getModifiers().contains(Modifier.ABSTRACT)) {
-                String superClassName = pair.getKey().getUnderlyingType().toString();
+                String superClassName = superclassType.getUnderlyingType().toString();
                 String superJaifPath = helper.getJaifPath(superClassName);
                 AClass superClazz = helper.getAClass(superClassName, superJaifPath);
                 AMethod superMethod =
-                        superClazz.methods.getVivify(JVMNames.getJVMMethodName(pair.getValue()));
+                        superClazz.methods.getVivify(
+                                JVMNames.getJVMMethodName(superclassMethodDef));
                 AnnotatedTypeMirror superLhsATM = overriddenMethod.getReturnType();
 
                 helper.updateAnnotationSetInScene(

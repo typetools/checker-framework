@@ -9,4 +9,9 @@ class MethodOverrideInSubtype extends MethodDefinedInSupertype {
     private @Sibling1 int getSibling1() {
         return 0;
     }
+
+    @java.lang.Override
+    public int shouldReturnParent() {
+        return getSibling1();
+    }
 }
