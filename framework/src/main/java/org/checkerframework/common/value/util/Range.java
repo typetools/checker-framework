@@ -146,6 +146,9 @@ public class Range {
 
     @Override
     public boolean equals(@Nullable Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof Range) {
             return equalsRange((Range) obj);
         }
@@ -1163,18 +1166,18 @@ public class Range {
     }
 
     /**
-     * Internal factory that handles creation of Range that may be in overflow or underflow as a
-     * result of an internal cast conversion.
+     * Creates a Range if {@code from<=to}; otherwise returns the given Range value.
      *
-     * <p>Overflow and underflow here are any violations of {@code from<=to}.
-     *
-     * @param from given from value.
-     * @param to given to value.
-     * @param underflow.
-     * @return a Range instance.
+     * @param from lower bound for the range
+     * @param to upper bound for the range
+     * @param underflow what to return if {@code from > to}
+     * @return a new Range [from..to], or {@code underflow}
      */
     private static Range createOrElse(long from, long to, Range underflow) {
-        if (from <= to) return new Range(from, to);
-        return underflow;
+        if (from <= to) {
+            return new Range(from, to);
+        } else {
+            return underflow;
+        }
     }
 }
