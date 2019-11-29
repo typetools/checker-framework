@@ -54,7 +54,7 @@ class RangeOrListOfValues {
      * <p>If reading from an {@link org.checkerframework.common.value.qual.IntRange} annotation,
      * {@link #convertLongsToInts(List)} should be called before calling this method.
      *
-     * @param newValues values to add.
+     * @param newValues values to add
      */
     public void addAll(List<Integer> newValues) {
         if (isRange) {

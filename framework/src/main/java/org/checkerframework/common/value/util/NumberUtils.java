@@ -85,37 +85,38 @@ public class NumberUtils {
     }
 
     /**
-     * Easy unboxing of a type.
+     * Given a primitive type, return it. Given a boxed primitive type, return the corresponding
+     * primitive type.
      *
-     * <p>Made public as the need arose outside this package.
-     *
-     * @param type from TypeKind.
-     * @return primitive data type.
+     * @param type a primitive or boxed primitive type
+     * @return a primitive type
      */
     public static TypeKind unBoxPrimitive(TypeMirror type) {
         final TypeKind typeKind = type.getKind();
-        if (typeKind == TypeKind.DECLARED) {
-            String stringType = TypesUtils.getQualifiedName((DeclaredType) type).toString();
 
-            switch (stringType) {
-                case "java.lang.Byte":
-                    return TypeKind.BYTE;
-                case "java.lang.Boolean":
-                    return TypeKind.BOOLEAN;
-                case "java.lang.Character":
-                    return TypeKind.CHAR;
-                case "java.lang.Double":
-                    return TypeKind.DOUBLE;
-                case "java.lang.Float":
-                    return TypeKind.FLOAT;
-                case "java.lang.Integer":
-                    return TypeKind.INT;
-                case "java.lang.Long":
-                    return TypeKind.LONG;
-                case "java.lang.Short":
-                    return TypeKind.SHORT;
-            }
+        if (typeKind.isPrimitive()) {
+            return typeKind;
         }
-        return typeKind;
+
+        switch (TypesUtils.getQualifiedName((DeclaredType) type).toString()) {
+            case "java.lang.Byte":
+                return TypeKind.BYTE;
+            case "java.lang.Boolean":
+                return TypeKind.BOOLEAN;
+            case "java.lang.Character":
+                return TypeKind.CHAR;
+            case "java.lang.Double":
+                return TypeKind.DOUBLE;
+            case "java.lang.Float":
+                return TypeKind.FLOAT;
+            case "java.lang.Integer":
+                return TypeKind.INT;
+            case "java.lang.Long":
+                return TypeKind.LONG;
+            case "java.lang.Short":
+                return TypeKind.SHORT;
+            default:
+                throw new BugInCF("Expected primitive wrapper, got " + type);
+        }
     }
 }

@@ -2234,30 +2234,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Unboxes a type it needed all the way to a primitive integral.
+     * Unboxes a type if needed all the way to a primitive integral.
      *
-     * @param type TypeMirror to unbox.
-     * @return the TypeKind once unboxed.
+     * @param type TypeMirror to unbox
+     * @return the TypeKind once unboxed
      */
     private static TypeKind resolveToPrimitiveIntegralTypeKind(TypeMirror type) {
         TypeKind typeKind = NumberUtils.unBoxPrimitive(type);
         if (isPrimitiveIntegral(typeKind)) {
             return typeKind;
         }
-        throw new BugInCF(
-                type.toString()
-                        + " on a type of kind "
-                        + typeKind
-                        + " expected to be an integral.");
+        throw new BugInCF(type.toString() + " expected to be an integral type.");
     }
 
     /**
-     * Self described.
+     * Return true if the argument is one of INT, SHORT, BYTE, CHAR, LONG.
      *
-     * <p>TypeKind of INT: SHORT: BYTE: CHAR: LONG:
-     *
-     * @param typeKind the TypeKind to inspect.
-     * @return true or false.
+     * @param typeKind the TypeKind to inspect
+     * @return true if the argument is a primitive integral type
      */
     private static boolean isPrimitiveIntegral(TypeKind typeKind) {
         switch (typeKind) {

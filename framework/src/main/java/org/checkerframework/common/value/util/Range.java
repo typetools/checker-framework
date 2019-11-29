@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -351,17 +350,17 @@ public class Range {
      * Returns true if the element is contained in this range.
      *
      * @param element the value to seek
-     * @return true or false
+     * @return true if {@code element} is in this range
      */
     public boolean contains(long element) {
         return from <= element && element <= to;
     }
 
     /**
-     * Returns true if the element is contained in this range.
+     * Returns true if the other range is contained in this range.
      *
-     * @param other the range to seek
-     * @return true or false
+     * @param other the range that might be within this one
+     * @return true if {@code other} is within this range
      */
     public boolean contains(Range other) {
         return other.isWithin(from, to);
@@ -1122,11 +1121,12 @@ public class Range {
      * Determines if this range is completely contained in the range specified by the given lower
      * bound inclusive and upper bound inclusive.
      *
-     * @param lb lower bound
-     * @param ub upper bound
-     * @return true or false
+     * @param lb lower bound for the range that might contain this one
+     * @param ub upper bound for the range that might contain this one
+     * @return true if this range is within the given bounds
      */
     public boolean isWithin(long lb, long ub) {
+        assert lb <= ub;
         return lb <= from && to <= ub;
     }
 
@@ -1187,13 +1187,12 @@ public class Range {
     }
 
     /**
-     * Returns the instance of Range for the given Java language primitive.
+     * Returns a Range representing all possible values for the given primitive type.
      *
      * @param typeKind is a java.lang.TypeKind that isPrimitive() and integral.
      * @return the matching range for that primitive type.
      */
     public static Range byPrimitiveTypeKind(TypeKind typeKind) {
-        assert typeKind.isPrimitive();
         switch (typeKind) {
             case INT:
                 return INT_EVERYTHING;
@@ -1206,7 +1205,7 @@ public class Range {
             case LONG:
                 return LONG_EVERYTHING;
             default:
-                throw new IllegalArgumentException("TypeKind " + typeKind + " is not mapped");
+                throw new IllegalArgumentException("byPrimitiveTypeKind(" + typeKind + ")");
         }
     }
 }
