@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -22,13 +23,18 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class MethodInvocationNode extends Node {
 
-    protected final MethodInvocationTree tree;
+    /** The tree for the method invocation. */
+    protected final @Nullable MethodInvocationTree tree;
+    /** The target of the method invocation. */
     protected final MethodAccessNode target;
+    /** The arguments of the method invocation. */
     protected final List<Node> arguments;
+    /** The tree path to the method invocation. */
     protected final TreePath treePath;
 
+    /** Create a MethodInvocationNode. */
     public MethodInvocationNode(
-            MethodInvocationTree tree,
+            @Nullable MethodInvocationTree tree,
             MethodAccessNode target,
             List<Node> arguments,
             TreePath treePath) {
@@ -67,7 +73,7 @@ public class MethodInvocationNode extends Node {
     }
 
     @Override
-    public MethodInvocationTree getTree() {
+    public @Nullable MethodInvocationTree getTree() {
         return tree;
     }
 
@@ -94,7 +100,7 @@ public class MethodInvocationNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof MethodInvocationNode)) {
             return false;
         }

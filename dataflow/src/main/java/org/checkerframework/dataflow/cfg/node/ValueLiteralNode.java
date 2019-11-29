@@ -23,9 +23,10 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public abstract class ValueLiteralNode extends Node {
 
+    /** The tree for the value literal. */
     protected final LiteralTree tree;
 
-    /** @return the value of the literal */
+    /** @return the value of the literal, null for the null literal */
     public abstract @Nullable Object getValue();
 
     public ValueLiteralNode(LiteralTree tree) {
@@ -45,7 +46,7 @@ public abstract class ValueLiteralNode extends Node {
 
     /** Compare the value of this nodes. */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof ValueLiteralNode)) {
             return false;
         }
@@ -58,7 +59,7 @@ public abstract class ValueLiteralNode extends Node {
     @Override
     public int hashCode() {
         // value might be null
-        return Objects.hashCode(getValue());
+        return Objects.hash(this.getClass(), getValue());
     }
 
     @Override
