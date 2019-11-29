@@ -102,7 +102,6 @@ public class NumberUtils {
      */
     public static TypeKind unboxPrimitive(TypeMirror type) {
         final TypeKind typeKind = type.getKind();
-
         if (typeKind.isPrimitive()) {
             return typeKind;
         }
