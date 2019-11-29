@@ -100,8 +100,8 @@ command-line option.)
 \item
   \label{nullness-lint-trustarraylenzero}%
   If you supply the \code{-Alint=trustArrayLenZero} command-line option, then
-  the checker trusts \refqualclass{common/value/qual}{ArrayLen} annotations with
-  length 0 when determining whether a call to \code{Collection.toArray} will
+  the checker trusts \refqualclasswithparams{common/value/qual}{ArrayLen}{0} annotations
+  when determining whether a call to \code{Collection.toArray} will
   return an array with non-null components.
   See Section~\ref{nullness-collection-toarray} for a discussion.
 
