@@ -120,7 +120,7 @@ public class JavaSource2CFGDOT {
                     String clas,
                     boolean pdf,
                     @Nullable Analysis<A, S, T> analysis) {
-        Entry<MethodTree, CompilationUnitTree> m =
+        Entry<@Nullable MethodTree, @Nullable CompilationUnitTree> m =
                 getMethodTreeAndCompilationUnit(inputFile, method, clas);
         generateDOTofCFG(
                 inputFile, outputDir, method, clas, pdf, analysis, m.getKey(), m.getValue());
@@ -134,11 +134,15 @@ public class JavaSource2CFGDOT {
                     String clas,
                     boolean pdf,
                     @Nullable Analysis<A, S, T> analysis,
-                    MethodTree m,
-                    CompilationUnitTree r) {
+                    @Nullable MethodTree m,
+                    @Nullable CompilationUnitTree r) {
         String fileName = new File(inputFile).getName();
         System.out.println("Working on " + fileName + "...");
 
+        if (r == null) {
+            printError("Compilation unit not found.");
+            System.exit(1);
+        }
         if (m == null) {
             printError("Method not found.");
             System.exit(1);
@@ -158,7 +162,8 @@ public class JavaSource2CFGDOT {
         Map<String, Object> res = viz.visualize(cfg, cfg.getEntryBlock(), analysis);
         viz.shutdown();
 
-        if (pdf) {
+        if (pdf && res != null) {
+            assert res.get("dotFileName") != null : "@AssumeAssertion(nullness): specification";
             producePDF((String) res.get("dotFileName"));
         }
     }
@@ -190,8 +195,8 @@ public class JavaSource2CFGDOT {
      */
     public static Entry<@Nullable MethodTree, @Nullable CompilationUnitTree>
             getMethodTreeAndCompilationUnit(String file, final String method, String clas) {
-        final MethodTree[] m = {null};
-        final CompilationUnitTree[] c = {null};
+        final @Nullable MethodTree[] m = {null};
+        final @Nullable CompilationUnitTree[] c = {null};
         BasicTypeProcessor typeProcessor =
                 new BasicTypeProcessor() {
                     @Override
@@ -241,19 +246,19 @@ public class JavaSource2CFGDOT {
         } finally {
             System.setErr(err);
         }
-        return new Entry<MethodTree, CompilationUnitTree>() {
+        return new Entry<@Nullable MethodTree, @Nullable CompilationUnitTree>() {
             @Override
-            public CompilationUnitTree setValue(CompilationUnitTree value) {
+            public @Nullable CompilationUnitTree setValue(@Nullable CompilationUnitTree value) {
                 return null;
             }
 
             @Override
-            public CompilationUnitTree getValue() {
+            public @Nullable CompilationUnitTree getValue() {
                 return c[0];
             }
 
             @Override
-            public MethodTree getKey() {
+            public @Nullable MethodTree getKey() {
                 return m[0];
             }
         };

@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -29,7 +30,7 @@ public abstract class AssignmentContext {
         }
 
         @Override
-        public Element getElementForType() {
+        public @Nullable Element getElementForType() {
             Tree tree = node.getTree();
             if (tree == null) {
                 return null;
@@ -44,7 +45,7 @@ public abstract class AssignmentContext {
         }
 
         @Override
-        public Tree getContextTree() {
+        public @Nullable Tree getContextTree() {
             return node.getTree();
         }
     }
@@ -66,7 +67,7 @@ public abstract class AssignmentContext {
         }
 
         @Override
-        public Tree getContextTree() {
+        public @Nullable Tree getContextTree() {
             // TODO: what is the right assignment context? We might not have
             // a tree for the invoked method.
             return null;
@@ -110,7 +111,7 @@ public abstract class AssignmentContext {
         }
 
         @Override
-        public Tree getContextTree() {
+        public @Nullable Tree getContextTree() {
             // TODO: what is the right assignment context? We might not have
             // a tree for the invoked method.
             return null;
@@ -118,7 +119,8 @@ public abstract class AssignmentContext {
     }
 
     /** Returns an {@link Element} that has the type of this assignment context. */
-    public abstract Element getElementForType();
+    public abstract @Nullable Element getElementForType();
 
-    public abstract Tree getContextTree();
+    /** Returns the context tree. */
+    public abstract @Nullable Tree getContextTree();
 }
