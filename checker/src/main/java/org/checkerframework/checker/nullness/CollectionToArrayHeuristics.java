@@ -1,18 +1,26 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
+import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -35,26 +43,48 @@ import org.checkerframework.javacutil.TreeUtils;
  *       </ol>
  * </ol>
  *
- * Note: The nullness of the returned array doesn't depend on the passed array nullness.
+ * <p>Additionally, when the lint option {@link NullnessChecker#LINT_TRUSTARRAYLENZERO} is provided,
+ * field accesses where the field declaration has a {@code @ArrayLen(0)} annotation are considered
+ * when determining whether a call to {@link Collection#toArray(Object[]) Collection.toArray(T[])}
+ * will return an array with non-null components. This trusts the {@code @ArrayLen(0)} annotation,
+ * but does not verify it. Run the Constant Value Checker to verify that annotation.
+ *
+ * <p>Note: The nullness of the returned array doesn't depend on the passed array nullness.
  */
 public class CollectionToArrayHeuristics {
+    /** The processing environment. */
     private final ProcessingEnvironment processingEnv;
+    /** The type factory. */
     private final NullnessAnnotatedTypeFactory atypeFactory;
 
+    /** The element for {@link Collection#toArray(Object[])}. */
     private final ExecutableElement collectionToArrayE;
+    /** The element for {@link Collection#size()}. */
     private final ExecutableElement size;
+    /** The type for {@link Collection}. */
     private final AnnotatedDeclaredType collectionType;
+    /** Whether to trust {@code @ArrayLen(0)} annotations. */
+    private final boolean trustArrayLenZero;
 
+    /** Create the heuristics for the given nullness checker and factory. */
     public CollectionToArrayHeuristics(
-            ProcessingEnvironment env, NullnessAnnotatedTypeFactory factory) {
-        this.processingEnv = env;
+            NullnessChecker checker, NullnessAnnotatedTypeFactory factory) {
+        this.processingEnv = checker.getProcessingEnvironment();
         this.atypeFactory = factory;
 
         this.collectionToArrayE =
-                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", env, "T[]");
-        this.size = TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
+                TreeUtils.getMethod(
+                        java.util.Collection.class.getName(), "toArray", processingEnv, "T[]");
+        this.size =
+                TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, processingEnv);
         this.collectionType =
-                factory.fromElement(env.getElementUtils().getTypeElement("java.util.Collection"));
+                factory.fromElement(
+                        processingEnv.getElementUtils().getTypeElement("java.util.Collection"));
+
+        this.trustArrayLenZero =
+                checker.getLintOption(
+                        NullnessChecker.LINT_TRUSTARRAYLENZERO,
+                        NullnessChecker.LINT_DEFAULT_TRUSTARRAYLENZERO);
     }
 
     /**
@@ -67,11 +97,13 @@ public class CollectionToArrayHeuristics {
     public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
         if (TreeUtils.isMethodInvocation(tree, collectionToArrayE, processingEnv)) {
             assert !tree.getArguments().isEmpty() : tree;
-            Tree argument = tree.getArguments().get(0);
-            boolean argIsArrayCreation =
-                    isHandledArrayCreation(argument, receiverName(tree.getMethodSelect()));
+            ExpressionTree argument = tree.getArguments().get(0);
             boolean receiverIsNonNull = isNonNullReceiver(tree);
-            setComponentNullness(receiverIsNonNull && argIsArrayCreation, method.getReturnType());
+            boolean argIsHandled =
+                    isHandledArrayCreation(argument, receiverName(tree.getMethodSelect()));
+            argIsHandled =
+                    argIsHandled || (trustArrayLenZero && isArrayLenZeroFieldAccess(argument));
+            setComponentNullness(receiverIsNonNull && argIsHandled, method.getReturnType());
 
             // TODO: We need a mechanism to prevent nullable collections
             // from inserting null elements into a nonnull arrays.
@@ -79,6 +111,35 @@ public class CollectionToArrayHeuristics {
                 setComponentNullness(false, method.getParameterTypes().get(0));
             }
         }
+    }
+
+    /**
+     * Determine whether the argument is a field access expression of which the declaration has a
+     * {@code ArrayLen(0)} annotation.
+     *
+     * @param argument the expression tree
+     * @return true if the expression is a field access expression, where the field has declared
+     *     type {@code ArrayLen(0)}
+     */
+    private boolean isArrayLenZeroFieldAccess(ExpressionTree argument) {
+        Element el = TreeUtils.elementFromUse(argument);
+        if (el != null && el.getKind().isField()) {
+            TypeMirror t = ElementUtils.getType(el);
+            if (t.getKind() == TypeKind.ARRAY) {
+                List<? extends AnnotationMirror> ams = t.getAnnotationMirrors();
+                for (AnnotationMirror am : ams) {
+                    if (AnnotationUtils.areSameByClass(am, ArrayLen.class)) {
+                        List<Integer> lens =
+                                AnnotationUtils.getElementValueArray(
+                                        am, "value", Integer.class, false);
+                        if (lens.size() == 1 && lens.get(0) == 0) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
