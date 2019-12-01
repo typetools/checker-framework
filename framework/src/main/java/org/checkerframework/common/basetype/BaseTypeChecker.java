@@ -634,8 +634,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     /**
      * Comparator for CheckerMessage objects. Sort by position at which the error will be printed,
-     * then by kind of message, and finally by the message string. If different checkers have
-     * different messages, sort the messages by the order in which the checkers run.
+     * then by kind of message, then by the message string, and finally by the order in which the
+     * checkers run.
      */
     private final class CheckerMessageComparator implements Comparator<CheckerMessage> {
         @Override
