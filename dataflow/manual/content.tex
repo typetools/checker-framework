@@ -1803,9 +1803,14 @@ For a given node \code{n}
 
 \end{itemize}
 
+The \code{AnnotatedTypeFactory} and helper classes need to be prepared to work
+even when dataflow analysis is not finished yet. Code should either check
+whether dataflow analysis is still in progress or handle possible null values.
+The factory should return conservative, flow-insensitive types if the analysis
+is still in progress.
 
 
-\subsection{The Checker-Framework Store and Dealing with Aliasing}
+\subsection{The Checker Framework Store and Dealing with Aliasing}
 
 \begin{workinprogress}
     Word of caution: The exact rules of what information is
