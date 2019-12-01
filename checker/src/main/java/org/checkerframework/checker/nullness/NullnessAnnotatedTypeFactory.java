@@ -3,7 +3,6 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
@@ -332,7 +331,6 @@ public class NullnessAnnotatedTypeFactory
         return new ListTypeAnnotator(
                 new PropagationTypeAnnotator(this),
                 defaultForTypeAnnotator,
-                new NullnessTypeAnnotator(this),
                 new CommitmentTypeAnnotator(this));
     }
 
@@ -344,8 +342,7 @@ public class NullnessAnnotatedTypeFactory
                 // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
                 new NullnessPropagationTreeAnnotator(this),
                 new LiteralTreeAnnotator(this),
-                new NullnessTreeAnnotator(this),
-                new CommitmentTreeAnnotator(this));
+                new NullnessTreeAnnotator(this));
     }
 
     /**
@@ -386,19 +383,13 @@ public class NullnessAnnotatedTypeFactory
         }
     }
 
-    protected class NullnessTreeAnnotator extends TreeAnnotator
-    /*extends InitializationAnnotatedTypeFactory<NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator*/ {
+    protected class NullnessTreeAnnotator
+            extends InitializationAnnotatedTypeFactory<
+                            NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>
+                    .CommitmentTreeAnnotator {
 
         public NullnessTreeAnnotator(NullnessAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
-        }
-
-        @Override
-        public Void visitMemberSelect(MemberSelectTree node, AnnotatedTypeMirror type) {
-
-            Element elt = TreeUtils.elementFromUse(node);
-            assert elt != null;
-            return null;
         }
 
         @Override
@@ -430,33 +421,32 @@ public class NullnessAnnotatedTypeFactory
             return null;
         }
 
-        // The result of a binary operation is always non-null.
         @Override
         public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+            // The result of a binary operation is always non-null.
             type.replaceAnnotation(NONNULL);
-            return null;
+            return super.visitBinary(node, type);
         }
 
-        // The result of a compound operation is always non-null.
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+            // The result of a compound operation is always non-null.
             type.replaceAnnotation(NONNULL);
-            // Commitment will run after for initialization defaults
-            return null;
+            return super.visitCompoundAssignment(node, type);
         }
 
-        // The result of a unary operation is always non-null.
         @Override
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
+            // The result of a unary operation is always non-null.
             type.replaceAnnotation(NONNULL);
-            return null;
+            return super.visitUnary(node, type);
         }
 
-        // The result of newly allocated structures is always non-null.
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror type) {
+            // The result of newly allocated structures is always non-null.
             type.replaceAnnotation(NONNULL);
-            return null;
+            return super.visitNewClass(node, type);
         }
 
         @Override
@@ -473,17 +463,7 @@ public class NullnessAnnotatedTypeFactory
             if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
                 componentType.replaceAnnotation(INITIALIZED);
             }
-            return null;
-        }
-    }
-
-    protected class NullnessTypeAnnotator
-            extends InitializationAnnotatedTypeFactory<
-                            NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>
-                    .CommitmentTypeAnnotator {
-
-        public NullnessTypeAnnotator(InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
-            super(atypeFactory);
+            return super.visitNewArray(node, type);
         }
     }
 
