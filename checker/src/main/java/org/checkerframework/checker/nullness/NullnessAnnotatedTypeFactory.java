@@ -383,11 +383,15 @@ public class NullnessAnnotatedTypeFactory
         }
     }
 
+    /**
+     * The NullnessTreeAnnotator extends the CommitmentTreeAnnotator and handles nullness aspects.
+     */
     protected class NullnessTreeAnnotator
             extends InitializationAnnotatedTypeFactory<
                             NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>
                     .CommitmentTreeAnnotator {
 
+        /** Create a NullnessTreeAnnotator. */
         public NullnessTreeAnnotator(NullnessAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
