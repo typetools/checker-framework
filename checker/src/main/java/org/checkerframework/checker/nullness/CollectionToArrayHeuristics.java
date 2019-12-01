@@ -44,10 +44,10 @@ import org.checkerframework.javacutil.TreeUtils;
  * </ol>
  *
  * <p>Additionally, when the lint option {@link NullnessChecker#LINT_TRUSTARRAYLENZERO} is provided,
- * field accesses where the field declaration has a {@code @ArrayLen(0)} annotation are considered
- * when determining whether a call to {@link Collection#toArray(Object[]) Collection.toArray(T[])}
- * will return an array with non-null components. This trusts the {@code @ArrayLen(0)} annotation,
- * but does not verify it. Run the Constant Value Checker to verify that annotation.
+ * a call to {@link Collection#toArray(Object[]) Collection.toArray(T[])} will return an array with
+ * non-null components if the argument is a field accesses where the field declaration has a
+ * {@code @ArrayLen(0)} annotation. This trusts the {@code @ArrayLen(0)} annotation, but does not
+ * verify it. Run the Constant Value Checker to verify that annotation.
  *
  * <p>Note: The nullness of the returned array doesn't depend on the passed array nullness.
  */
