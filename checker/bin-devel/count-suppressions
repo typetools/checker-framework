@@ -34,7 +34,7 @@ regex="$1"
 
 # If argument is a compound checker, make the regex match them all.
 if [ "$regex" = "nullness" ]; then
-    regex="\(nullness\|initialization\|rawness\|keyfor\)"
+    regex="\(nullness\|initialization\|keyfor\)"
 fi
 if [ "$regex" = "index" ]; then
     regex="\(index\|lessthan\|lowerbound\|samelen\|searchindex\|substringindex\|upperbound\)"

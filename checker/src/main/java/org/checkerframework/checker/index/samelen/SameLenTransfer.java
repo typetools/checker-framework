@@ -11,6 +11,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.SameLen;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -162,7 +163,7 @@ public class SameLenTransfer extends CFTransfer {
         if (currentPath == null) {
             return;
         }
-        for (String expr : IndexUtil.getValueOfAnnotationWithStringArgument(sameLenAnno)) {
+        for (String expr : ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno)) {
             Receiver recS;
             try {
                 recS = aTypeFactory.getReceiverFromJavaExpressionString(expr, currentPath);
@@ -287,7 +288,7 @@ public class SameLenTransfer extends CFTransfer {
                 continue;
             }
 
-            List<String> values = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
+            List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anm);
             for (String value : values) {
                 int otherParamIndex = paramNames.indexOf(value);
                 if (otherParamIndex == -1) {

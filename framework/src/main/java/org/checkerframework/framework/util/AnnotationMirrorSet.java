@@ -144,4 +144,9 @@ public class AnnotationMirrorSet implements Set<AnnotationMirror> {
         newSet.add(value);
         return newSet;
     }
+
+    @Override
+    public String toString() {
+        return shadowSet.toString();
+    }
 }

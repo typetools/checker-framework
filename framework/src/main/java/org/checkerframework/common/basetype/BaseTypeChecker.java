@@ -26,6 +26,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -65,8 +66,8 @@ import org.checkerframework.javacutil.UserError;
  *       hierarchy, mainly, subtyping rules
  *   <li>{@link TypeHierarchy}: to check subtyping rules between <b>annotated types</b> rather than
  *       qualifiers
- *   <li>{@link AnnotatedTypeFactory}: to construct qualified types enriched with implicit
- *       qualifiers according to the type system rules
+ *   <li>{@link AnnotatedTypeFactory}: to construct qualified types enriched with default qualifiers
+ *       according to the type system rules
  *   <li>{@link BaseTypeVisitor}: to visit the compiled Java files and check for violations of the
  *       type system rules
  * </ul>
@@ -354,7 +355,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     @SuppressWarnings("unchecked")
     public <T extends BaseTypeChecker> T getSubchecker(Class<T> checkerClass) {
         for (BaseTypeChecker checker : immediateSubcheckers) {
-            if (checker.getClass().equals(checkerClass)) {
+            if (checker.getClass() == checkerClass) {
                 return (T) checker;
             }
         }
@@ -595,7 +596,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(@Nullable Object o) {
             if (this == o) {
                 return true;
             }

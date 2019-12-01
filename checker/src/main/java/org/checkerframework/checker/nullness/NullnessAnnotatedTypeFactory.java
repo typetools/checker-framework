@@ -33,13 +33,10 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.NonRaw;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -123,7 +120,7 @@ public class NullnessAnnotatedTypeFactory
                     "org.eclipse.jgit.annotations.NonNull",
                     // https://github.com/JetBrains/intellij-community/blob/master/platform/annotations/java8/src/org/jetbrains/annotations/NotNull.java
                     "org.jetbrains.annotations.NotNull",
-                    // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
+                    // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/NonNull.java
                     "org.jmlspecs.annotation.NonNull",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
                     "org.netbeans.api.annotations.common.NonNull",
@@ -178,15 +175,14 @@ public class NullnessAnnotatedTypeFactory
                     "org.springframework.lang.Nullable");
 
     /** Creates NullnessAnnotatedTypeFactory. */
-    public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
-        super(checker, useFbc);
+    public NullnessAnnotatedTypeFactory(BaseTypeChecker checker) {
+        super(checker);
 
         Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
         tempNullnessAnnos.add(NonNull.class);
         tempNullnessAnnos.add(MonotonicNonNull.class);
         tempNullnessAnnos.add(Nullable.class);
         tempNullnessAnnos.add(PolyNull.class);
-        tempNullnessAnnos.add(PolyAll.class);
         nullnessAnnos = Collections.unmodifiableSet(tempNullnessAnnos);
 
         NONNULL_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NONNULL));
@@ -214,42 +210,22 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        // NullnessATF is used by both NullnessChecker and NullnessRawnessChecker, load the correct
-        // set of qualifiers here
-        AbstractNullnessChecker ckr = (AbstractNullnessChecker) checker;
-        // if useFbc is true, then it is the NullnessChecker
-        if (ckr.useFbc) {
-            return new LinkedHashSet<>(
-                    Arrays.asList(
-                            Nullable.class,
-                            MonotonicNonNull.class,
-                            NonNull.class,
-                            UnderInitialization.class,
-                            Initialized.class,
-                            UnknownInitialization.class,
-                            FBCBottom.class,
-                            PolyNull.class,
-                            PolyAll.class));
-        }
-        // otherwise, it is the NullnessRawnessChecker
-        else {
-            return new LinkedHashSet<>(
-                    Arrays.asList(
-                            Nullable.class,
-                            MonotonicNonNull.class,
-                            NonNull.class,
-                            NonRaw.class,
-                            Raw.class,
-                            // PolyRaw.class, //TODO: support PolyRaw in the future
-                            PolyNull.class,
-                            PolyAll.class));
-        }
+        return new LinkedHashSet<>(
+                Arrays.asList(
+                        Nullable.class,
+                        MonotonicNonNull.class,
+                        NonNull.class,
+                        UnderInitialization.class,
+                        Initialized.class,
+                        UnknownInitialization.class,
+                        FBCBottom.class,
+                        PolyNull.class));
     }
 
     /**
-     * For types of left-hand side of an assignment, this method replaces {@link PolyNull} or {@link
-     * PolyAll} with {@link Nullable} if the org.checkerframework.dataflow analysis has determined
-     * that this is allowed soundly. For example:
+     * For types of left-hand side of an assignment, this method replaces {@link PolyNull} with
+     * {@link Nullable} if the org.checkerframework.dataflow analysis has determined that this is
+     * allowed soundly. For example:
      *
      * <pre> @PolyNull String foo(@PolyNull String param) {
      *    if (param == null) {
@@ -265,7 +241,7 @@ public class NullnessAnnotatedTypeFactory
      * @param context tree used to get dataflow value
      */
     protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
-        if (lhsType.hasAnnotation(PolyNull.class) || lhsType.hasAnnotation(PolyAll.class)) {
+        if (lhsType.hasAnnotation(PolyNull.class)) {
             NullnessValue inferred = getInferredValueFor(context);
             if (inferred != null && inferred.isPolyNullNull) {
                 lhsType.replaceAnnotation(NULLABLE);
@@ -495,7 +471,7 @@ public class NullnessAnnotatedTypeFactory
             AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
             AnnotatedTypeMirror componentType = arrayType.getComponentType();
             if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
-                componentType.replaceAnnotation(COMMITTED);
+                componentType.replaceAnnotation(INITIALIZED);
             }
             return null;
         }

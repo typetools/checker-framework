@@ -1,8 +1,12 @@
+// Keep this file in sync with
+// ../../../../../tagletJdk11/java/org/checkerframework/taglet/ManualTaglet.java .
+
 package org.checkerframework.taglet;
 
 import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
 import java.util.Map;
+import java.util.StringJoiner;
 
 /**
  * A taglet for processing the {@code @checker_framework.manual} javadoc block tag, which inserts
@@ -101,13 +105,11 @@ public class ManualTaglet implements Taglet {
         if (tags.length == 0) {
             return "";
         }
-        StringBuilder sb = new StringBuilder();
+        StringJoiner sb = new StringJoiner(", ");
         for (Tag t : tags) {
-            String[] split = t.text().split(" ", 2);
-            if (t != tags[0]) {
-                sb.append(", ");
-            }
-            sb.append(formatLink(split));
+            String text = t.text();
+            String[] split = text.split(" ", 2);
+            sb.add(formatLink(split));
         }
         return formatHeader(sb.toString());
     }

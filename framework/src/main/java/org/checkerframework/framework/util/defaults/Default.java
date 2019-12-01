@@ -2,6 +2,7 @@ package org.checkerframework.framework.util.defaults;
 
 import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -33,12 +34,12 @@ public class Default implements Comparable<Default> {
     }
 
     @Override
-    public boolean equals(Object thatObj) {
+    public boolean equals(@Nullable Object thatObj) {
         if (thatObj == this) {
             return true;
         }
 
-        if (thatObj == null || !thatObj.getClass().equals(Default.class)) {
+        if (thatObj == null || thatObj.getClass() != Default.class) {
             return false;
         }
 

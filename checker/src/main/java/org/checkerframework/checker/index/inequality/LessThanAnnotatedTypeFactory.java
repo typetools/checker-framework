@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
 import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.LessThanBottom;
@@ -22,6 +21,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntRange;
@@ -83,10 +83,11 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             List<String> subList = getLessThanExpressions(subAnno);
-            List<String> superList = getLessThanExpressions(superAnno);
             if (subList == null) {
                 return true;
-            } else if (superList == null) {
+            }
+            List<String> superList = getLessThanExpressions(superAnno);
+            if (superList == null) {
                 return false;
             }
 
@@ -147,7 +148,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** @return {@code smaller < bigger}, using information from the Value Checker */
     public boolean isLessThanByValue(Tree smaller, String bigger, TreePath path) {
-        Long smallerValue = IndexUtil.getMinValue(smaller, getValueAnnotatedTypeFactory());
+        Long smallerValue = ValueCheckerUtils.getMinValue(smaller, getValueAnnotatedTypeFactory());
         if (smallerValue == null) {
             return false;
         }

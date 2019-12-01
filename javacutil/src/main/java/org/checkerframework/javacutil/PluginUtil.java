@@ -1,5 +1,9 @@
 package org.checkerframework.javacutil;
 
+import com.sun.tools.javac.main.Option;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Options;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,8 +16,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.processing.ProcessingEnvironment;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * This file contains basic utility functions that should be reused to create a command-line call to
@@ -155,7 +162,7 @@ public class PluginUtil {
             if (notFirst) {
                 sb.append(delimiter);
             }
-            sb.append(obj.toString());
+            sb.append(Objects.toString(obj));
             notFirst = true;
         }
 
@@ -388,11 +395,12 @@ public class PluginUtil {
         return "@" + fileArg.getAbsolutePath();
     }
 
+    /** Build a javac command. */
     // TODO: Perhaps unify this with CheckerMain as it violates DRY
     public static List<String> getCmd(
-            final String executable,
-            final File javacPath,
-            final File jdkPath,
+            final @Nullable String executable,
+            final @Nullable File javacPath,
+            final @Nullable File jdkPath,
             final File srcFofn,
             final String processors,
             final String checkerHome,
@@ -522,41 +530,49 @@ public class PluginUtil {
     }
 
     /**
-     * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever), or the
-     * whole version number if it is an integer.
+     * Returns the major JRE version.
      *
-     * @return the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever), or the
-     *     whole version number if it is an integer
+     * <p>This is different from the version passed to the compiler via --release; use {@link
+     * #getReleaseValue(ProcessingEnvironment)} to get that version.
+     *
+     * <p>Extract the major version number from the "java.version" system property. Two possible
+     * formats are considered. Up to Java 8, from a version string like `1.8.whatever`, this method
+     * extracts 8. Since Java 9, from a version string like `11.0.1`, this method extracts 11.
+     *
+     * @return the major version number from "java.version"
      */
-    public static double getJreVersion() {
+    public static int getJreVersion() {
         final String jreVersionStr = System.getProperty("java.version");
 
-        // 1.8.0
-        final Pattern versionPattern = Pattern.compile("^(\\d+\\.\\d+)\\..*$");
-        final Matcher versionMatcher = versionPattern.matcher(jreVersionStr);
+        final Pattern oldVersionPattern = Pattern.compile("^1\\.(\\d+)\\..*$");
+        final Matcher oldVersionMatcher = oldVersionPattern.matcher(jreVersionStr);
+        if (oldVersionMatcher.matches()) {
+            String v = oldVersionMatcher.group(1);
+            assert v != null : "@AssumeAssertion(nullness): inspection";
+            return Integer.parseInt(v);
+        }
+
+        // See http://openjdk.java.net/jeps/223
+        // We only care about the major version number.
+        final Pattern newVersionPattern = Pattern.compile("^(\\d+).*$");
+        final Matcher newVersionMatcher = newVersionPattern.matcher(jreVersionStr);
+        if (newVersionMatcher.matches()) {
+            String v = newVersionMatcher.group(1);
+            assert v != null : "@AssumeAssertion(nullness): inspection";
+            return Integer.parseInt(v);
+        }
 
         // For Early Access version of the JDK
         final Pattern eaVersionPattern = Pattern.compile("^(\\d+)-ea$");
         final Matcher eaVersionMatcher = eaVersionPattern.matcher(jreVersionStr);
-
-        // JDK 11 has java.version as just "11", not like "1.8.0"
-        try {
-            return Integer.parseInt(jreVersionStr);
-        } catch (NumberFormatException e) {
-            // Nothing to do; fall through to parse other types of version numbers
+        if (eaVersionMatcher.matches()) {
+            String v = eaVersionMatcher.group(1);
+            assert v != null : "@AssumeAssertion(nullness): inspection";
+            return Integer.parseInt(v);
         }
 
-        final double version;
-        if (versionMatcher.matches()) {
-            version = Double.parseDouble(versionMatcher.group(1));
-        } else if (eaVersionMatcher.matches()) {
-            version = Double.parseDouble("1." + eaVersionMatcher.group(1));
-        } else {
-            throw new RuntimeException(
-                    "Could not determine version from property java.version=" + jreVersionStr);
-        }
-
-        return version;
+        throw new RuntimeException(
+                "Could not determine version from property java.version=" + jreVersionStr);
     }
 
     /**
@@ -566,16 +582,13 @@ public class PluginUtil {
      * @return "jdk<em>X</em>" where X is the version of Java that is being run (e.g. 8, 9, ...)
      */
     public static String getJdkJarPrefix() {
-        final double jreVersion = getJreVersion();
+        final int jreVersion = getJreVersion();
         final String prefix;
-        if (jreVersion == 1.7) {
-            prefix = "jdk7";
-        } else if (jreVersion == 1.8) {
-            prefix = "jdk8";
-        } else if (jreVersion == 1.9) {
-            prefix = "jdk9";
-        } else {
+
+        if (jreVersion < 8) {
             throw new AssertionError("Unsupported JRE version: " + jreVersion);
+        } else {
+            prefix = "jdk" + jreVersion;
         }
 
         return prefix;
@@ -590,5 +603,17 @@ public class PluginUtil {
     public static String getJdkJarName() {
         final String fileName = getJdkJarPrefix() + ".jar";
         return fileName;
+    }
+
+    /**
+     * Returns the release value passed to the compiler or null if release was not passed.
+     *
+     * @param env the ProcessingEnvironment
+     * @return the release value or null if none was passed
+     */
+    public static @Nullable String getReleaseValue(ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        Options options = Options.instance(ctx);
+        return options.get(Option.RELEASE);
     }
 }

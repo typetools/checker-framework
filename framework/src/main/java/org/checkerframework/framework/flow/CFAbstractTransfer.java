@@ -1045,14 +1045,18 @@ public abstract class CFAbstractTransfer<
                 FlowExpressions.Receiver r =
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, localScope, false);
+                // "insertOrRefine" is called so that the postcondition information is added to any
+                // existing information rather than replacing it.  If the called method is not
+                // side-effect-free, then the values that might have been changed by the method call
+                // are removed from the store before this method is called.
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDTION) {
                     if (((ConditionalPostcondition) p).annoResult) {
-                        thenStore.insertValue(r, anno);
+                        thenStore.insertOrRefine(r, anno);
                     } else {
-                        elseStore.insertValue(r, anno);
+                        elseStore.insertOrRefine(r, anno);
                     }
                 } else {
-                    thenStore.insertValue(r, anno);
+                    thenStore.insertOrRefine(r, anno);
                 }
             } catch (FlowExpressionParseException e) {
                 Result result;

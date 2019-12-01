@@ -4,6 +4,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for the null literal.
@@ -14,9 +15,14 @@ import java.util.Collections;
  */
 public class NullLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new NullLiteralNode.
+     *
+     * @param t the tree for the literal value
+     */
     public NullLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.NULL_LITERAL);
+        assert t.getKind() == Tree.Kind.NULL_LITERAL;
     }
 
     @Override
@@ -30,7 +36,7 @@ public class NullLiteralNode extends ValueLiteralNode {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         // test that obj is a NullLiteralNode
         if (!(obj instanceof NullLiteralNode)) {
             return false;

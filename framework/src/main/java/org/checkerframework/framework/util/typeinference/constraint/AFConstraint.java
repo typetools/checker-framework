@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 
@@ -13,7 +14,7 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
  * TUConstraints during type argument inference.
  *
  * <p>Subclasses of AFConstraint represent the following types of constraints found in
- * (https://docs.oracle.com/javase/specs/jls/se10/html/jls-15.html#jls-15.12.2.7)
+ * (https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.12.2.7)
  *
  * <p>A 《 F and F 》 A both imply that A is convertible to F. F 《 A and A 》 F both imply that F is
  * convertible to A (this may happen due to wildcard/typevar bounds and recursive types) A = F
@@ -55,7 +56,7 @@ public abstract class AFConstraint {
     }
 
     @Override
-    public boolean equals(Object thatObject) {
+    public boolean equals(@Nullable Object thatObject) {
         if (this == thatObject) {
             return true;
         } // else

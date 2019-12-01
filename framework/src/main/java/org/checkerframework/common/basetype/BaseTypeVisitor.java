@@ -32,7 +32,8 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Symbol.*;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -1013,14 +1014,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
 
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
-        visitorState.setAssignmentContext(
-                Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
+        AnnotatedTypeMirror variableType;
+        if (getCurrentPath().getParentPath() != null
+                && getCurrentPath().getParentPath().getLeaf().getKind()
+                        == Tree.Kind.LAMBDA_EXPRESSION) {
+            // Calling getAnnotatedTypeLhs on a lambda parameter node is possibly expensive
+            // because caching is turned off.  This should be fixed by #979.
+            // See https://github.com/typetools/checker-framework/issues/2853 for an
+            // example.
+            variableType = atypeFactory.getAnnotatedType(node);
+        } else {
+            variableType = atypeFactory.getAnnotatedTypeLhs(node);
+        }
+        visitorState.setAssignmentContext(Pair.of(node, variableType));
 
         try {
             if (atypeFactory.getDependentTypesHelper() != null) {
-                atypeFactory
-                        .getDependentTypesHelper()
-                        .checkType(visitorState.getAssignmentContext().second, node);
+                atypeFactory.getDependentTypesHelper().checkType(variableType, node);
             }
             // If there's no assignment in this variable declaration, skip it.
             if (node.getInitializer() != null) {
@@ -1575,9 +1585,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
 
-        Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
-                atypeFactory.getFnInterfaceFromTree(node);
-        AnnotatedExecutableType functionType = result.second;
+        AnnotatedExecutableType functionType = atypeFactory.getFunctionTypeFromTree(node);
 
         if (node.getBody().getKind() != Tree.Kind.BLOCK) {
             // Check return type for single statement returns here.
@@ -1600,7 +1608,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     "lambda.param.type.incompatible");
         }
 
-        // TODO: Post conditions?
+        // TODO: Postconditions?
         // https://github.com/typetools/checker-framework/issues/801
 
         return super.visitLambdaExpression(node, p);
@@ -1641,9 +1649,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     ret = atypeFactory.getMethodReturnType(enclosingMethod, node);
                 }
             } else {
-                Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
-                        atypeFactory.getFnInterfaceFromTree((LambdaExpressionTree) enclosing);
-                ret = result.second.getReturnType();
+                AnnotatedExecutableType result =
+                        atypeFactory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
+                ret = result.getReturnType();
             }
 
             if (ret != null) {
@@ -1888,7 +1896,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
-        if (castType.getKind() == TypeKind.DECLARED) {
+        final TypeKind castTypeKind = castType.getKind();
+        if (castTypeKind == TypeKind.DECLARED) {
             // Don't issue an error if the annotations are equivalent to the qualifier upper bound
             // of the type.
             AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType) castType;
@@ -1902,7 +1911,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (checker.hasOption("checkCastElementType")) {
             AnnotatedTypeMirror newCastType;
-            if (castType.getKind() == TypeKind.TYPEVAR) {
+            if (castTypeKind == TypeKind.TYPEVAR) {
                 newCastType = ((AnnotatedTypeVariable) castType).getUpperBound();
             } else {
                 newCastType = castType;
@@ -1934,8 +1943,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // TODO: the same number of arguments actually doesn't guarantee anything.
                     return false;
                 }
-            } else if (castType.getKind() == TypeKind.TYPEVAR
-                    && exprType.getKind() == TypeKind.TYPEVAR) {
+            } else if (castTypeKind == TypeKind.TYPEVAR && exprType.getKind() == TypeKind.TYPEVAR) {
                 // If both the cast type and the casted expression are type variables, then check
                 // the bounds.
                 Set<AnnotationMirror> lowerBoundAnnotationsCast =
@@ -1951,7 +1959,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 castType.getEffectiveAnnotations());
             }
             Set<AnnotationMirror> castAnnos;
-            if (castType.getKind() == TypeKind.TYPEVAR) {
+            if (castTypeKind == TypeKind.TYPEVAR) {
                 // If the cast type is a type var, but the expression is not, then check that the
                 // type of the expression is a subtype of the lower bound.
                 castAnnos =
@@ -2712,15 +2720,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
-        if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv)
-                && !atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
-            checker.report(
-                    Result.failure(
-                            "method.invocation.invalid",
-                            TreeUtils.elementFromUse(node),
-                            treeReceiver.toString(),
-                            methodReceiver.toString()),
-                    node);
+        if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv)) {
+            commonAssignmentCheckStartDiagnostic(methodReceiver, treeReceiver, node);
+            boolean success =
+                    atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver);
+            commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, node);
+            if (!success) {
+                checker.report(
+                        Result.failure(
+                                "method.invocation.invalid",
+                                TreeUtils.elementFromUse(node),
+                                treeReceiver.toString(),
+                                methodReceiver.toString()),
+                        node);
+            }
         }
     }
 
@@ -2939,11 +2952,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected boolean checkMethodReferenceAsOverride(
             MemberReferenceTree memberReferenceTree, Void p) {
 
-        Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
+        Pair<AnnotatedTypeMirror, AnnotatedExecutableType> result =
                 atypeFactory.getFnInterfaceFromTree(memberReferenceTree);
         // The type to which the member reference is assigned -- also known as the target type of
         // the reference.
-        AnnotatedDeclaredType functionalInterface = result.first;
+        AnnotatedTypeMirror functionalInterface = result.first;
         // The type of the single method that is declared by the functional interface.
         AnnotatedExecutableType functionType = result.second;
 
@@ -3039,17 +3052,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             functionTypeReturnType = invocationReturnType;
         }
 
-        // Check the member reference as if invocationType overrides functionType.
-        OverrideChecker overrideChecker =
-                createOverrideChecker(
-                        memberReferenceTree,
-                        invocationType,
-                        enclosingType,
-                        invocationReturnType,
-                        functionType,
-                        functionalInterface,
-                        functionTypeReturnType);
-        return overrideChecker.checkOverride();
+        if (functionalInterface.getKind() == TypeKind.DECLARED) {
+            // Check the member reference as if invocationType overrides functionType.
+            OverrideChecker overrideChecker =
+                    createOverrideChecker(
+                            memberReferenceTree,
+                            invocationType,
+                            enclosingType,
+                            invocationReturnType,
+                            functionType,
+                            (AnnotatedDeclaredType) functionalInterface,
+                            functionTypeReturnType);
+            return overrideChecker.checkOverride();
+        } else {
+            // If the functionalInterface is not a declared type, it must be an uninferred wildcard.
+            // In that case, only return false if uninferred type arguments should not be ignored.
+            return !atypeFactory.ignoreUninferredTypeArguments;
+        }
     }
 
     /** Check if method reference type argument inference is required. Issue an error if it is. */
@@ -3218,7 +3237,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         private void checkPreAndPostConditions() {
             String msgKey = methodReference ? "methodref" : "override";
             if (methodReference) {
-                // TODO: Support post conditions and method references.
+                // TODO: Support postconditions and method references.
                 // The parse context always expects instance methods, but method references can be
                 // static.
                 return;
@@ -3446,7 +3465,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             List<AnnotatedTypeMirror> overriddenParams = overridden.getParameterTypes();
 
             // Fix up method reference parameters.
-            // See https://docs.oracle.com/javase/specs/jls/se10/html/jls-15.html#jls-15.13.1
+            // See https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.13.1
             if (methodReference) {
                 // The functional interface of an unbound member reference has an extra parameter
                 // (the receiver).
@@ -3956,6 +3975,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Check that the annotated JDK is being used.
     // **********************************************************************
 
+    /** True if method {@link checkForAnnotatedJdk} has been called. */
     private static boolean checkedJDK = false;
 
     // Not all subclasses call this -- only those that have an annotated JDK.
@@ -3965,56 +3985,53 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
         checkedJDK = true;
-        if (checker.hasOption("nocheckjdk")) {
+        if (PluginUtil.getJreVersion() != 8 || checker.hasOption("nocheckjdk")) {
             return;
         }
         TypeElement objectTE = elements.getTypeElement("java.lang.Object");
         List<? extends ExecutableElement> memberMethods =
                 ElementFilter.methodsIn(elements.getAllMembers(objectTE));
 
+        // Look for the @Nullness annotation in Object.equals(@Nullable Object).
+        // If it is found, the user is using the annotated JDK.
         for (ExecutableElement m : memberMethods) {
-            if (ElementUtils.isMethod(m, objectEquals, checker.getProcessingEnvironment())) {
-                // The Nullness JDK serves as a proxy for all annotated JDKs.
+            if (!ElementUtils.isMethod(m, objectEquals, checker.getProcessingEnvironment())) {
+                continue;
+            }
 
-                // Note that we cannot use the AnnotatedTypeMirrors from the
-                // Checker Framework, because those only return the annotations
-                // that are used by the current checker.
-                // That is, if this code is executed by something other than the
-                // Nullness Checker, we would not find the annotations.
-                // Therefore, we go to the Element and get all annotations on
-                // the parameter.
+            // We cannot use the AnnotatedTypeMirrors from the Checker Framework, because those only
+            // return the annotations that are used by the current checker.
 
-                // TODO: doing types.typeAnnotationOf(m.getParameters().get(0).asType(),
-                // Nullable.class) or types.typeAnnotationsOf(m.asType()) does not work any more. It
-                // should.
+            // That is, if this code is executed by something other than the Nullness Checker, we
+            // would not find the annotations.  Therefore, we go to the Element and get all
+            // annotations on the parameter.
 
-                boolean foundJDK = false;
-                for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
-                        ((com.sun.tools.javac.code.Symbol) m).getRawTypeAttributes()) {
-                    if (tc.position.type
-                                    == com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER
-                            && tc.position.parameter_index == 0
-                            &&
-                            // TODO: using .class would be nicer, but adds a circular dependency on
-                            // the "checker" project.
-                            // tc.type.toString().equals(org.checkerframework.checker.nullness.qual.Nullable.class.getName()) ) {
-                            tc.type
-                                    .toString()
-                                    .equals(
-                                            "org.checkerframework.checker.nullness.qual.Nullable")) {
-                        foundJDK = true;
-                    }
-                }
+            // TODO: doing types.typeAnnotationOf(m.getParameters().get(0).asType(),
+            // Nullable.class) or types.typeAnnotationsOf(m.asType()) does not work any more. It
+            // should.
 
-                if (!foundJDK) {
-                    String jdkJarName = PluginUtil.getJdkJarName();
-
-                    checker.message(
-                            Kind.WARNING,
-                            "You do not seem to be using the distributed annotated JDK.  To fix the problem, supply javac an argument like:  -Xbootclasspath/p:.../checker/dist/ .  Currently using: "
-                                    + jdkJarName);
+            for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
+                    ((com.sun.tools.javac.code.Symbol) m).getRawTypeAttributes()) {
+                if (tc.position.type == com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER
+                        && tc.position.parameter_index == 0
+                        &&
+                        // TODO: using .class would be nicer, but adds a circular dependency on
+                        // the "checker" project.
+                        // tc.type.toString().equals(org.checkerframework.checker.nullness.qual.Nullable.class.getName()) ) {
+                        tc.type
+                                .toString()
+                                .equals("org.checkerframework.checker.nullness.qual.Nullable")) {
+                    return;
                 }
             }
+
+            String jdkJarName = PluginUtil.getJdkJarName();
+            checker.message(
+                    Kind.WARNING,
+                    "You do not seem to be using the distributed annotated JDK. "
+                            + "To fix the problem, supply javac an argument like:  -Xbootclasspath/p:.../checker/dist/ . "
+                            + "Currently using: "
+                            + jdkJarName);
         }
     }
 }

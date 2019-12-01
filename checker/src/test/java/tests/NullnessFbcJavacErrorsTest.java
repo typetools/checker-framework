@@ -1,7 +1,7 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.checker.nullness.AbstractNullnessChecker;
+import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerFileTest;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -23,7 +23,7 @@ public class NullnessFbcJavacErrorsTest extends CheckerFrameworkPerFileTest {
                 "-Anomsgtext",
                 "-Xlint:deprecation",
                 "-Alint=forbidnonnullarraycomponents,"
-                        + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
+                        + NullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }
 
     @Parameters

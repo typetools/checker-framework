@@ -45,7 +45,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -78,7 +77,12 @@ public class NullnessVisitor
     /** The element for java.util.Collection.toArray(T). */
     private final ExecutableElement collectionToArray;
 
-    public NullnessVisitor(BaseTypeChecker checker, boolean useFbc) {
+    /**
+     * Create a new NullnessVisitor.
+     *
+     * @param checker the checker to which this visitor belongs
+     */
+    public NullnessVisitor(BaseTypeChecker checker) {
         super(checker);
 
         NONNULL = atypeFactory.NONNULL;
@@ -90,32 +94,25 @@ public class NullnessVisitor
         this.collectionSize =
                 TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
         this.collectionToArray =
-                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", 1, env);
+                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", env, "T[]");
     }
 
     @Override
     public NullnessAnnotatedTypeFactory createTypeFactory() {
-        // We need to directly access useFbc from the checker, because this method gets called
-        // by the superclass constructor and a field in this class would not be initialized
-        // yet. Oh the pain.
-        return new NullnessAnnotatedTypeFactory(
-                checker, ((AbstractNullnessChecker) checker).useFbc);
+        return new NullnessAnnotatedTypeFactory(checker);
     }
 
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-        // At most a single qualifier on a type, ignoring a possible PolyAll
-        // annotation.
+        // At most, a single qualifier on a type.
         boolean foundInit = false;
         boolean foundNonNull = false;
         Set<Class<? extends Annotation>> initQuals = atypeFactory.getInitializationAnnotations();
         Set<Class<? extends Annotation>> nonNullQuals = atypeFactory.getNullnessAnnotations();
 
         for (AnnotationMirror anno : useType.getAnnotations()) {
-            if (QualifierPolymorphism.isPolyAll(anno)) {
-                // ok.
-            } else if (containsSameByName(initQuals, anno)) {
+            if (containsSameByName(initQuals, anno)) {
                 if (foundInit) {
                     return false;
                 }
@@ -166,8 +163,8 @@ public class NullnessVisitor
             Element elem = TreeUtils.elementFromDeclaration((VariableTree) varTree);
             if (atypeFactory.fromElement(elem).hasEffectiveAnnotation(MONOTONIC_NONNULL)
                     && !checker.getLintOption(
-                            AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
-                            AbstractNullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
+                            NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
+                            NullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
                 return;
             }
         }
@@ -366,8 +363,8 @@ public class NullnessVisitor
 
         // respect command-line option
         if (!checker.getLintOption(
-                AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
-                AbstractNullnessChecker.LINT_DEFAULT_REDUNDANTNULLCOMPARISON)) {
+                NullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
+                NullnessChecker.LINT_DEFAULT_REDUNDANTNULLCOMPARISON)) {
             return;
         }
 

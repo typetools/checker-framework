@@ -15,8 +15,14 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
+import com.sun.tools.javac.code.Type.TypeVar;
+import com.sun.tools.javac.code.Type.WildcardType;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -54,19 +60,28 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         List<? extends AnnotationMirror> annos = TreeUtils.annotationsFromTree(node);
 
         if (type.getKind() == TypeKind.WILDCARD) {
+            // Work-around for https://github.com/eisop/checker-framework/issues/17
+            // For an annotated wildcard tree node, the type attached to the
+            // node is a WildcardType with a correct bound (set to the type
+            // variable which the wildcard instantiates). The underlying type is
+            // also a WildcardType but with a bound of null. Here we update the
+            // bound of the underlying WildcardType to be consistent.
+            WildcardType wildcardAttachedToNode = (WildcardType) TreeUtils.typeOf(node);
+            WildcardType underlyingWildcard = (WildcardType) type.getUnderlyingType();
+            underlyingWildcard.withTypeVar(wildcardAttachedToNode.bound);
+            // End of work-around
+
+            final AnnotatedWildcardType wctype = ((AnnotatedWildcardType) type);
             final ExpressionTree underlyingTree = node.getUnderlyingType();
 
             if (underlyingTree.getKind() == Kind.UNBOUNDED_WILDCARD) {
                 // primary annotations on unbounded wildcard types apply to both bounds
-                ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
-                ((AnnotatedWildcardType) type).getSuperBound().addMissingAnnotations(annos);
-
+                wctype.getExtendsBound().addAnnotations(annos);
+                wctype.getSuperBound().addAnnotations(annos);
             } else if (underlyingTree.getKind() == Kind.EXTENDS_WILDCARD) {
-                ((AnnotatedWildcardType) type).getSuperBound().addMissingAnnotations(annos);
-
+                wctype.getSuperBound().addAnnotations(annos);
             } else if (underlyingTree.getKind() == Kind.SUPER_WILDCARD) {
-                ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
-
+                wctype.getExtendsBound().addAnnotations(annos);
             } else {
                 throw new BugInCF(
                         "Unexpected kind for type.  node="
@@ -97,6 +112,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     public AnnotatedTypeMirror visitParameterizedType(
             ParameterizedTypeTree node, AnnotatedTypeFactory f) {
 
+        ClassSymbol baseType = (ClassSymbol) TreeUtils.elementFromTree(node.getType());
+        updateWildcardBounds(node.getTypeArguments(), baseType.getTypeParameters());
+
         List<AnnotatedTypeMirror> args = new ArrayList<>(node.getTypeArguments().size());
         for (Tree t : node.getTypeArguments()) {
             args.add(visit(t, f));
@@ -112,6 +130,51 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
             ((AnnotatedDeclaredType) result).setTypeArguments(args);
         }
         return result;
+    }
+
+    /**
+     * Work around a bug in javac 9 where sometimes the bound field is set to the transitive
+     * supertype's type parameter instead of the type parameter which the wildcard directly
+     * instantiates. See https://github.com/eisop/checker-framework/issues/18
+     *
+     * <p>Sets each wildcard type argument's bound from typeArgs to the corresponding type parameter
+     * from typeParams.
+     *
+     * <p>If typeArgs.size() == 0 the method does nothing and returns. Otherwise, typeArgs.size()
+     * has to be equal to typeParams.size().
+     *
+     * <p>For each wildcard type argument and corresponding type parameter, sets the
+     * WildcardType.bound field to the corresponding type parameter, if and only if the owners of
+     * the existing bound and the type parameter are different.
+     *
+     * <p>In scenarios where the bound's owner is the same, we don't want to replace a
+     * capture-converted bound in the wildcard type with a non-capture-converted bound given by the
+     * type parameter declaration.
+     */
+    private void updateWildcardBounds(
+            List<? extends Tree> typeArgs, List<TypeVariableSymbol> typeParams) {
+        if (typeArgs.size() == 0) {
+            // Nothing to do for empty type arguments.
+            return;
+        }
+        assert typeArgs.size() == typeParams.size();
+
+        Iterator<? extends Tree> typeArgsItr = typeArgs.iterator();
+        Iterator<TypeVariableSymbol> typeParamsItr = typeParams.iterator();
+        while (typeArgsItr.hasNext()) {
+            Tree typeArg = typeArgsItr.next();
+            TypeVariableSymbol typeParam = typeParamsItr.next();
+            if (typeArg instanceof WildcardTree) {
+                TypeVar typeVar = (TypeVar) typeParam.asType();
+                WildcardType wcType = (WildcardType) ((JCWildcard) typeArg).type;
+                if (wcType.bound != null
+                        && wcType.bound.tsym != null
+                        && typeVar.tsym != null
+                        && wcType.bound.tsym.owner != typeVar.tsym.owner) {
+                    wcType.withTypeVar(typeVar);
+                }
+            }
+        }
     }
 
     @Override

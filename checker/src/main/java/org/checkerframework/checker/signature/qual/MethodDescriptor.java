@@ -6,7 +6,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Represents a method descriptor (JVM representation of method signature) as defined in the <a
- * href="https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.3.3">Java Virtual
+ * href="https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.3.3">Java Virtual
  * Machine Specification, section 4.3.3</a>.
  *
  * <p>Example:

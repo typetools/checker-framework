@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for an equality check:
@@ -13,9 +14,16 @@ import java.util.Objects;
  */
 public class EqualToNode extends BinaryOperationNode {
 
+    /**
+     * Create a new EqualToNode object.
+     *
+     * @param tree the tree for this node
+     * @param left the first argument
+     * @param right the second argument
+     */
     public EqualToNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
-        assert tree.getKind().equals(Kind.EQUAL_TO);
+        assert tree.getKind() == Kind.EQUAL_TO;
     }
 
     @Override
@@ -29,7 +37,7 @@ public class EqualToNode extends BinaryOperationNode {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof EqualToNode)) {
             return false;
         }

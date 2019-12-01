@@ -18,17 +18,22 @@ env:
     - THIS_REPO=checker-framework
     - OS=ubuntu
   matrix:
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
-    - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=checker-framework-inference
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=plume-lib
-    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
+    - GROUP=all-tests JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=junit-tests JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=nonjunit-tests JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=jdk.jar JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=misc JDKVER=jdk8-plus BUILDJDK=downloadjdk
+    - GROUP=misc JDKVER=jdk11-plus BUILDJDK=downloadjdk
+    - GROUP=checker-framework-inference JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=plume-lib JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=plume-lib JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=downstream JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=downstream JDKVER=jdk11 BUILDJDK=downloadjdk
 
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
 before_script:
-- timeout 5m docker pull mdernst/$OS-for-cf-$JDKVER || true
+- timeout 5m docker pull mdernst/cf-$OS-$JDKVER || true
 
 # Using travis_wait here seems to cause the job to terminate after 1 minute
 # with no error (!).
@@ -52,7 +57,7 @@ script:
 - echo "TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG}"
 - echo "TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}"
 - >-
-  docker run -v $HOME/.gradle:/root/.gradle -v $HOME/.m2:/root/.m2 mdernst/$OS-for-cf-$JDKVER /bin/bash -c "true &&
+  docker run -v $HOME/.gradle:/root/.gradle -v $HOME/.m2:/root/.m2 mdernst/cf-$OS-$JDKVER /bin/bash -c "true &&
      if [ $TRAVIS_EVENT_TYPE = pull_request ] ; then
        git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO || git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO
        cd $THIS_REPO
@@ -70,12 +75,14 @@ script:
      export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
      java -version &&
      javac -version &&
-     export TRAVIS_REPO_SLUG=$TRAVIS_REPO_SLUG &&
+     export TRAVIS=$TRAVIS &&
+     export TRAVIS_BRANCH=${TRAVIS_BRANCH} &&
      export TRAVIS_BUILD_DIR=$TRAVIS_BUILD_DIR &&
      export TRAVIS_COMMIT_RANGE=$TRAVIS_COMMIT_RANGE &&
+     export TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST} &&
      export TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH} &&
      export TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG} &&
-     export TRAVIS_BRANCH=${TRAVIS_BRANCH} &&
+     export TRAVIS_REPO_SLUG=$TRAVIS_REPO_SLUG &&
      ./.travis-build.sh $GROUP $BUILDJDK"
 
 jobs:
@@ -103,9 +110,7 @@ jobs:
             fi
 
             if [[ "${SLUGOWNER}" == "typetools" ]]; then
-              sh trigger-travis.sh typetests daikon-typecheck $TRAVIS_ACCESS_TOKEN
               sh trigger-travis.sh typetests guava-typecheck $TRAVIS_ACCESS_TOKEN
-              sh trigger-travis.sh typetests plume-lib-typecheck $TRAVIS_ACCESS_TOKEN
             fi
           fi
 

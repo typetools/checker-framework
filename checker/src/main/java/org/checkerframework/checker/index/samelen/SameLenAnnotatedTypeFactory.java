@@ -1,6 +1,6 @@
 package org.checkerframework.checker.index.samelen;
 
-import static org.checkerframework.checker.index.IndexUtil.getValueOfAnnotationWithStringArgument;
+import static org.checkerframework.common.value.ValueCheckerUtils.getValueOfAnnotationWithStringArgument;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
@@ -28,7 +28,6 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -85,7 +84,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyLength.class, POLY);
 
         this.postInit();
@@ -131,7 +129,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (r != null) {
                     String varName = r.toString();
 
-                    List<String> exprs = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
+                    List<String> exprs = getValueOfAnnotationWithStringArgument(anm);
                     if (exprs.contains(varName)) {
                         exprs.remove(varName);
                     }
@@ -166,7 +164,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final class SameLenQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
-        /** @param factory MultiGraphFactory to use to construct this */
+        /** @param factory the MultiGraphFactory to use to construct this */
         public SameLenQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
         }

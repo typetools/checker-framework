@@ -1,7 +1,7 @@
 // Test case for Issue #801
 // https://github.com/typetools/checker-framework/issues/801
 // @skip-test
-// TODO: Enable post condition override checks for method references
+// TODO: Enable postcondition override checks for method references
 
 import org.checkerframework.checker.nullness.qual.*;
 

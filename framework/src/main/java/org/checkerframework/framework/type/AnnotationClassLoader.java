@@ -25,8 +25,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.UserError;
@@ -101,9 +101,10 @@ public class AnnotationClassLoader {
 
         // package name must use dots, this is later prepended to annotation
         // class names as we load the classes using the class loader
+        Package checkerPackage = checker.getClass().getPackage();
         packageName =
-                checker.getClass().getPackage() != null
-                        ? checker.getClass().getPackage().getName() + QUAL_PACKAGE_SUFFIX
+                checkerPackage != null && !checkerPackage.getName().isEmpty()
+                        ? checkerPackage.getName() + QUAL_PACKAGE_SUFFIX
                         : QUAL_PACKAGE_SUFFIX.substring(1);
 
         // the package name with dots replaced by slashes will be used to scan
@@ -417,7 +418,12 @@ public class AnnotationClassLoader {
      */
     private final @Nullable URLClassLoader getClassLoader() {
         ClassLoader result = InternalUtils.getClassLoaderForClass(checker.getClass());
-        return (@Nullable URLClassLoader) result;
+        if (result instanceof URLClassLoader) {
+            return (@Nullable URLClassLoader) result;
+        } else {
+            // Java 9+ use an internal classloader that doesn't support getting URLs. Ignore.
+            return null;
+        }
     }
 
     /** Debug Use: Displays all classpaths examined by the class loader. */
@@ -691,17 +697,13 @@ public class AnnotationClassLoader {
             final String fullyQualifiedClassName, boolean issueError) {
 
         // load the class
-        if (classLoader == null) {
-            throw new UserError(
-                    checker.getClass().getSimpleName()
-                            + ": no classloaders are available for use to load annotation class "
-                            + fullyQualifiedClassName
-                            + ".");
-        }
-
         Class<?> cls = null;
         try {
-            cls = Class.forName(fullyQualifiedClassName, true, classLoader);
+            if (classLoader != null) {
+                cls = Class.forName(fullyQualifiedClassName, true, classLoader);
+            } else {
+                cls = Class.forName(fullyQualifiedClassName);
+            }
         } catch (ClassNotFoundException e) {
             throw new UserError(
                     checker.getClass().getSimpleName()
@@ -789,7 +791,7 @@ public class AnnotationClassLoader {
     protected boolean hasWellDefinedTargetMetaAnnotation(
             final Class<? extends Annotation> annoClass) {
         return annoClass.getAnnotation(Target.class) != null
-                && AnnotatedTypes.hasTypeQualifierElementTypes(
+                && AnnotationUtils.hasTypeQualifierElementTypes(
                         annoClass.getAnnotation(Target.class).value(), annoClass);
     }
 
