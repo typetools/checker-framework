@@ -1,9 +1,10 @@
-New command-line option `-AnoNullStringsConcatenation` unsoundly assumes
-that every operand of a String concatenation is non-null.
-
 ---------------------------------------------------------------------------
 
-Version 3.0.1, December 1, 2019
+Version 3.0.1, December 2, 2019
+
+New command-line option for the Constant Value Checker
+`-AnoNullStringsConcatenation` unsoundly assumes that every operand of a String
+concatenation is non-null.
 
 Implementation detials:
  * Moved AnnotatedTypes#hasTypeQualifierElementTypes to AnnotationUtils.
