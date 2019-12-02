@@ -123,15 +123,16 @@ allprojects {
                 }
                 options.taglets 'org.checkerframework.taglet.ManualTaglet'
                 options.tagletPath(project(':framework-test').sourceSets."${tagletVersion}".output.classesDirs.getFiles() as File[])
-                // TODO: this doesn't work with JDK 11
-                options.links = isJava8 ? ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/'] : []
+
+                // We want to link to Java 9 documentation of the compiler classes since we use Java 9
+                // versions of those classes and Java 8 for everything else.  Because the compiler classes are not
+                // apart of the main documentation of Java 8, javadoc links to the Java 9 versions.
+                // TODO, this creates broken links to the com.sun.tools.javac package.
+                options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/9/docs/api/']
                 // This file is looked for by Javadoc.
                 file("${destinationDir}/resources/fonts/").mkdirs()
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
                 options.addStringOption('source', '8')
-                if (JavaVersion.current().isJava8Compatible()) {
-                    options.addStringOption('Xwerror', '-quiet')
-                }
             }
         }
 

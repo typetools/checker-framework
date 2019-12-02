@@ -6,9 +6,14 @@ New command-line option for the Constant Value Checker
 `-AnoNullStringsConcatenation` unsoundly assumes that every operand of a String
 concatenation is non-null.
 
-Implementation detials:
+Implementation details:
  * Moved AnnotatedTypes#hasTypeQualifierElementTypes to AnnotationUtils.
  * Deprecated AnnotatedTypes#isTypeAnnotation and AnnotatedTypes#hasTypeQualifierElementTypes.
+
+Closed issues:
+
+945, 1224, 2024, 2744, 2809, 2815, 2818, 2830, 2840, 2853, 2854, 2865, 2873,
+2874, 2878, 2880, 2886, 2888, 2900, 2905, 2919, 2923.
 
 ---------------------------------------------------------------------------
 
