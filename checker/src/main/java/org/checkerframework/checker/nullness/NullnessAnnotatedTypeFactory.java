@@ -391,7 +391,11 @@ public class NullnessAnnotatedTypeFactory
                             NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>
                     .CommitmentTreeAnnotator {
 
-        /** Create a NullnessTreeAnnotator. */
+        /**
+         * Create a NullnessTreeAnnotator.
+         *
+         * @param atypeFactory the type factory
+         */
         public NullnessTreeAnnotator(NullnessAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
