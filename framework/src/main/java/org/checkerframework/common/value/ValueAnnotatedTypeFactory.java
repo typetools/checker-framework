@@ -336,7 +336,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return AnnotationUtils.getElementValue(anno, "from", Long.class, false);
         }
         TypeMirror type = atm.getUnderlyingType();
-        return Range.byPrimitiveTypeKind(resolveToPrimitiveIntegralTypeKind(type)).from;
+        return Range.byPrimitiveTypeKind(toPrimitiveIntegralTypeKind(type)).from;
     }
 
     /**
@@ -354,7 +354,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return AnnotationUtils.getElementValue(anno, "to", Long.class, false);
         }
         TypeMirror type = atm.getUnderlyingType();
-        return Range.byPrimitiveTypeKind(resolveToPrimitiveIntegralTypeKind(type)).to;
+        return Range.byPrimitiveTypeKind(toPrimitiveIntegralTypeKind(type)).to;
     }
 
     /**
@@ -2234,12 +2234,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Unboxes a type if needed all the way to a primitive integral.
+     * Evaluates a given annotation to its primitive integral TypeKind equivalent.
      *
-     * @param type TypeMirror to unbox
-     * @return the TypeKind once unboxed
+     * @param type {@link #TypeKind} and {@link #isPrimitiveIntegral(TypeKind)}
+     * @return one of INT, SHORT, BYTE, CHAR, LONG
+     * @see {@link #isPrimitiveIntegral(TypeKind)}
      */
-    private static TypeKind resolveToPrimitiveIntegralTypeKind(TypeMirror type) {
+    private static final TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
         TypeKind typeKind = NumberUtils.unboxPrimitive(type);
         if (isPrimitiveIntegral(typeKind)) {
             return typeKind;
@@ -2253,7 +2254,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param typeKind the TypeKind to inspect
      * @return true if the argument is a primitive integral type
      */
-    private static boolean isPrimitiveIntegral(TypeKind typeKind) {
+    private static final boolean isPrimitiveIntegral(TypeKind typeKind) {
         switch (typeKind) {
             case INT:
             case SHORT:
