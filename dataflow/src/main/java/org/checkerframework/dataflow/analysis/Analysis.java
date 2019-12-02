@@ -18,7 +18,6 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -59,12 +58,6 @@ public class Analysis<
 
     /** The current control flow graph to perform the analysis on. */
     protected @Nullable ControlFlowGraph cfg;
-
-    /** The associated processing environment. */
-    protected final ProcessingEnvironment env;
-
-    /** Instance of the types utility. */
-    protected final Types types;
 
     /** Then stores before every basic block (assumed to be 'no information' if not present). */
     protected final IdentityHashMap<Block, S> thenStores;
@@ -134,24 +127,22 @@ public class Analysis<
      * flow graph. The transfer function is set later using {@code setTransferFunction}.
      */
     public Analysis(ProcessingEnvironment env) {
-        this(null, -1, env);
+        this(null, -1);
     }
 
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      */
-    public Analysis(T transfer, ProcessingEnvironment env) {
-        this(transfer, -1, env);
+    public Analysis(T transfer) {
+        this(transfer, -1);
     }
 
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      */
-    public Analysis(@Nullable T transfer, int maxCountBeforeWidening, ProcessingEnvironment env) {
-        this.env = env;
-        this.types = env.getTypeUtils();
+    public Analysis(@Nullable T transfer, int maxCountBeforeWidening) {
         this.transferFunction = transfer;
         this.maxCountBeforeWidening = maxCountBeforeWidening;
         this.thenStores = new IdentityHashMap<>();
@@ -167,14 +158,6 @@ public class Analysis<
     /** The current transfer function. */
     public @Nullable T getTransferFunction() {
         return transferFunction;
-    }
-
-    public Types getTypes() {
-        return types;
-    }
-
-    public ProcessingEnvironment getEnv() {
-        return env;
     }
 
     /** Perform the actual analysis. */
