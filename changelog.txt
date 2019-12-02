@@ -80,10 +80,13 @@ Removed meta-annotation @ImplicitFor:
    types).
  * Use the new meta-annotation @UpperBoundFor to specify a qualifier upper
    bound for certain types.
- * You can completely remove @ImplicitFor(typeNames =
-   Void.class, literals = LiteralKind.NULL) on bottom qualifiers.
-   @DefaultFor(types = Void.class) and @QualifierForLiterals(literals =
-   LiteralKind.NULL) are added to the bottom qualifier by default.
+ * You can completely remove
+     @ImplicitFor(typeNames = Void.class, literals = LiteralKind.NULL)
+   on bottom qualifiers.
+     @DefaultFor(types = Void.class)
+   and
+     @QualifierForLiterals(literals = LiteralKind.NULL)
+   are added to the bottom qualifier by default.
 
 Add @DefaultQualifierOnUse and @NoDefaultQualifierOnUse type declaration annotations
 
