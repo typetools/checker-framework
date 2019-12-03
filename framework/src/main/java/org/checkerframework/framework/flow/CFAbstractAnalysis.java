@@ -66,6 +66,14 @@ public abstract class CFAbstractAnalysis<
     /** Instance of the types utility. */
     protected final Types types;
 
+    /**
+     * Create a CFAbstractAnalysis.
+     *
+     * @param checker a checker that contains command-line arguments and other information
+     * @param factory an annotated type factory to introduce type and dataflow rules
+     * @param fieldValues initial abstract types for fields
+     * @param maxCountBeforeWidening number of times a block can be analyzed before widening
+     */
     public CFAbstractAnalysis(
             BaseTypeChecker checker,
             GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
