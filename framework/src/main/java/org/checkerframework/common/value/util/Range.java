@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
@@ -153,31 +154,31 @@ public class Range {
     }
 
     /**
+     * Creates a Range if {@code from<=to}; otherwise returns the given Range value.
+     *
+     * @param from lower bound for the range
+     * @param to upper bound for the range
+     * @param alternate what to return if {@code from > to}
+     * @return a new Range [from..to], or {@code alternate}
+     */
+    private static Range createOrElse(long from, long to, Range alternate) {
+        if (from <= to) {
+            return new Range(from, to);
+        } else {
+            return alternate;
+        }
+    }
+
+    /**
      * Returns a range with its bounds specified by two parameters, {@code from} and {@code to}. If
      * {@code from} is greater than {@code to}, returns {@link #NOTHING}.
      *
      * @param from the lower bound (inclusive)
      * @param to the upper bound (inclusive)
-     * @return newly created Range or EVERYTHING
+     * @return newly-created Range or NOTHING
      */
     private static Range createOrNothing(long from, long to) {
         return createOrElse(from, to, NOTHING);
-    }
-
-    /**
-     * Internal factory that handles creation of Range that may be in overflow or underflow as a
-     * result of an internal cast conversion.
-     *
-     * <p>Overflow and underflow here are any violations of {@code from<=to}.
-     *
-     * @param from given from value.
-     * @param to given to value.
-     * @param underflow.
-     * @return a Range instance.
-     */
-    private static Range createOrElse(long from, long to, Range underflow) {
-        if (from <= to) return new Range(from, to);
-        return underflow;
     }
 
     /**
@@ -199,7 +200,10 @@ public class Range {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof Range) {
             return equalsRange((Range) obj);
         }
@@ -375,17 +379,17 @@ public class Range {
      * Returns true if the element is contained in this range.
      *
      * @param element the value to seek
-     * @return true or false
+     * @return true if {@code element} is in this range
      */
     public boolean contains(long element) {
         return from <= element && element <= to;
     }
 
     /**
-     * Returns true if the element is contained in this range.
+     * Returns true if the other range is contained in this range.
      *
-     * @param other the range to seek
-     * @return true or false
+     * @param other the range that might be within this one
+     * @return true if {@code other} is within this range
      */
     public boolean contains(Range other) {
         return other.isWithin(from, to);
@@ -1151,11 +1155,12 @@ public class Range {
      * Determines if this range is completely contained in the range specified by the given lower
      * bound inclusive and upper bound inclusive.
      *
-     * @param lb lower bound
-     * @param ub upper bound
-     * @return true or false
+     * @param lb lower bound for the range that might contain this one
+     * @param ub upper bound for the range that might contain this one
+     * @return true if this range is within the given bounds
      */
     public boolean isWithin(long lb, long ub) {
+        assert lb <= ub;
         return lb <= from && to <= ub;
     }
 
