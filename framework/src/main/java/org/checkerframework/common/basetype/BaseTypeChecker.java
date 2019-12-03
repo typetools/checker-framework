@@ -112,7 +112,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * list before getSubcheckers() is called, thereby ensuring that this list is non-empty only for
      * one checker.
      */
-    private List<BaseTypeChecker> subcheckers = null;
+    private List<BaseTypeChecker> subcheckers;
 
     /**
      * The list of subcheckers that are direct dependencies of this checker. This list will be
