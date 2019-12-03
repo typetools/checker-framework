@@ -97,7 +97,7 @@ public class CFGVisualizeLauncher {
     }
 
     /**
-     * Generate DOT representation of CFG graph without analysis.
+     * Generate the DOT representation of the CFG for a method without analysis.
      *
      * @param inputFile java source input file
      * @param outputDir output directory
@@ -212,7 +212,7 @@ public class CFGVisualizeLauncher {
     }
 
     /**
-     * Invoke DOT to generate a PDF.
+     * Invoke "dot" command to generate a PDF.
      *
      * @param file name of the dot file
      */
