@@ -163,7 +163,7 @@ public class Range {
     private static Range createOrNothing(long from, long to) {
         return createOrElse(from, to, NOTHING);
     }
-    
+
     /**
      * Internal factory that handles creation of Range that may be in overflow or underflow as a
      * result of an internal cast conversion.
