@@ -127,12 +127,7 @@ public class ValueCheckerUtils {
         } else if (values.isEmpty()) {
             return Range.NOTHING;
         }
-        // The number elements in the values list should not exceed MAX_VALUES (10).
-        List<Long> longValues = new ArrayList<>();
-        for (Number value : values) {
-            longValues.add(value.longValue());
-        }
-        return new Range(longValues);
+        return Range.create(values);
     }
 
     /**
@@ -318,7 +313,7 @@ public class ValueCheckerUtils {
             List<Long> values =
                     ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
             if (values != null) {
-                return new Range(values);
+                return Range.create(values);
             } else {
                 return null;
             }

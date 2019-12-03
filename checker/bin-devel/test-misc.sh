@@ -25,6 +25,8 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
 
 # Documentation
+./gradlew javadoc --console=plain --warning-mode=all --no-daemon
+
 ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon
 make -C docs/manual all
 
