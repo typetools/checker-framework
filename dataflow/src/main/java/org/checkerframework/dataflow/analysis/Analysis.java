@@ -125,6 +125,8 @@ public class Analysis<
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph. The transfer function is set later using {@code setTransferFunction}.
+     *
+     * @param env the associated processing environment
      */
     public Analysis(ProcessingEnvironment env) {
         this(null, -1);
@@ -133,6 +135,8 @@ public class Analysis<
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
+     *
+     * @param transfer transfer function
      */
     public Analysis(T transfer) {
         this(transfer, -1);
@@ -141,6 +145,9 @@ public class Analysis<
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
+     *
+     * @param transfer transfer function
+     * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
     public Analysis(@Nullable T transfer, int maxCountBeforeWidening) {
         this.transferFunction = transfer;
@@ -160,7 +167,11 @@ public class Analysis<
         return transferFunction;
     }
 
-    /** Perform the actual analysis. */
+    /**
+     * Perform the actual analysis.
+     *
+     * @param cfg the control flow graph used to perform analysis
+     */
     public void performAnalysis(ControlFlowGraph cfg) {
         assert !isRunning;
         isRunning = true;
