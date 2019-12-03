@@ -489,7 +489,7 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean runErrorProne` and fix all errors
         //  * Uncomment "-Werror"
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.3'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.4'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -754,6 +754,8 @@ subprojects {
                     '-Xep:EqualsGetClass:OFF',
                     // Not a real problem
                     '-Xep:MixedMutabilityReturnType:OFF',
+                    // Don't want to add a dependency to ErrorProne.
+                    '-Xep:AnnotateFormatMethod:OFF',
                     // -Werror halts the build if Error Prone issues a warning, which ensures that
                     // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                     // stops as soon as it one warning, rather than outputting them all.

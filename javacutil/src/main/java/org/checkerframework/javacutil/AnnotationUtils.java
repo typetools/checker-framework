@@ -334,26 +334,24 @@ public class AnnotationUtils {
         return null;
     }
 
-    private static final Comparator<AnnotationMirror> ANNOTATION_ORDERING =
-            new Comparator<AnnotationMirror>() {
-                @Override
-                public int compare(AnnotationMirror a1, AnnotationMirror a2) {
-                    // AnnotationMirror.toString() prints the elements of an annotation in the
-                    // order in which they were written. So, use areSame to check for equality.
-                    if (AnnotationUtils.areSame(a1, a2)) {
-                        return 0;
-                    }
+    static class AnnotationComparator {
+        public static int compare(AnnotationMirror a1, AnnotationMirror a2) {
+            // AnnotationMirror.toString() prints the elements of an annotation in the
+            // order in which they were written. So, use areSame to check for equality.
+            if (AnnotationUtils.areSame(a1, a2)) {
+                return 0;
+            }
 
-                    String n1 = a1.toString();
-                    String n2 = a2.toString();
+            String n1 = a1.toString();
+            String n2 = a2.toString();
 
-                    // Because the AnnotationMirror.toString prints the annotation as it appears
-                    // in source code, the order in which annotations of the same class are
-                    // sorted may be confusing.  For example, it might order
-                    // @IntRange(from=1, to=MAX) before @IntRange(to=MAX,from=0).
-                    return n1.compareTo(n2);
-                }
-            };
+            // Because the AnnotationMirror.toString prints the annotation as it appears
+            // in source code, the order in which annotations of the same class are
+            // sorted may be confusing.  For example, it might order
+            // @IntRange(from=1, to=MAX) before @IntRange(to=MAX,from=0).
+            return n1.compareTo(n2);
+        }
+    }
 
     /**
      * Provide ordering for {@link AnnotationMirror} based on their fully qualified name. The
@@ -365,7 +363,7 @@ public class AnnotationUtils {
      * @return an ordering over AnnotationMirrors based on their name
      */
     public static Comparator<AnnotationMirror> annotationOrdering() {
-        return ANNOTATION_ORDERING;
+        return AnnotationComparator::compare;
     }
 
     /**

@@ -19,7 +19,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -528,13 +527,11 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /** Defines alphabetical sort ordering for qualifiers. */
-    private static final Comparator<Class<? extends Annotation>> QUALIFIER_SORT_ORDERING =
-            new Comparator<Class<? extends Annotation>>() {
-                @Override
-                public int compare(Class<? extends Annotation> a1, Class<? extends Annotation> a2) {
-                    return a1.getCanonicalName().compareTo(a2.getCanonicalName());
-                }
-            };
+    static class QualifierSortOrdering {
+        public static int compare(Class<? extends Annotation> a1, Class<? extends Annotation> a2) {
+            return a1.getCanonicalName().compareTo(a2.getCanonicalName());
+        }
+    }
 
     /**
      * Creates and returns a string containing the number of qualifiers and the canonical class
@@ -556,7 +553,7 @@ public abstract class GenericAnnotatedTypeFactory<
         // alphabetically
         List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>();
         sortedSupportedQuals.addAll(stq);
-        Collections.sort(sortedSupportedQuals, QUALIFIER_SORT_ORDERING);
+        Collections.sort(sortedSupportedQuals, QualifierSortOrdering::compare);
 
         // display the number of qualifiers as well as the names of each
         // qualifier.
