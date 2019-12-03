@@ -43,7 +43,7 @@ public class CharSequenceTest {
     // Tests concatenation of CharSequence and String
     void concat() {
         CharSequence a = "a";
-        @StringVal("ab") CharSequence ab = a + "b";
+        @StringVal({"nullb", "ab"}) CharSequence ab = a + "b";
         sink(ab, 2);
     }
 

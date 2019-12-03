@@ -203,7 +203,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         }
 
         if (node.getIdentifier().contentEquals("this")) {
-            // TODO: why don't we use getSelfType here?
+            // TODO: Both of these don't work.  See https://tinyurl.com/cfissue/2208
+            // return f.getSelfType(node.getExpression());
+            // return f.getSelfType(node);
             return f.getEnclosingType(
                     (TypeElement) TreeUtils.elementFromTree(node.getExpression()), node);
         } else {
