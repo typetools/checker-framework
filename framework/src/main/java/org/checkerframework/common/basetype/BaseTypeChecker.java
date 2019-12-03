@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -85,9 +84,7 @@ import org.checkerframework.javacutil.UserError;
 public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {
 
     /** Create a BaseTypeChecker. */
-    public BaseTypeChecker() {
-        checkerMessageComparator = new CheckerMessageComparator();
-    }
+    public BaseTypeChecker() {}
 
     @Override
     public void initChecker() {
@@ -103,7 +100,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         }
 
         if (!getSubcheckers().isEmpty()) {
-            messageStore = new TreeSet<>(checkerMessageComparator);
+            messageStore = new TreeSet<>(this::compareCheckerMessages);
         }
 
         super.initChecker();
@@ -121,7 +118,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * list before getSubcheckers() is called, thereby ensuring that this list is non-empty only for
      * one checker.
      */
-    private List<BaseTypeChecker> subcheckers;
+    private List<BaseTypeChecker> subcheckers = null;
 
     /**
      * The list of subcheckers that are direct dependencies of this checker. This list will be
@@ -134,9 +131,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     /** Supported options for this checker. */
     private Set<String> supportedOptions;
-
-    /** Comparator for CheckerMessage objects. */
-    private final CheckerMessageComparator checkerMessageComparator;
 
     /**
      * TreePathCacher to share between instances. Initialized either in instantiateSubcheckers or in
@@ -562,7 +556,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     /**
      * Prints error messages for this checker and all subcheckers such that the errors are ordered
-     * by line and column number and then by checker. (See checkerMessageComparator for more precise
+     * by line and column number and then by checker. (See compareCheckerMessages for more precise
      * order.)
      *
      * @param unit current compilation unit
@@ -636,50 +630,51 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * Comparator for CheckerMessage objects. Sort by position at which the error will be printed,
      * then by kind of message, then by the message string, and finally by the order in which the
      * checkers run.
+     *
+     * @param o1 the first message
+     * @param o2 the second message
+     * @return the ordering
      */
-    private final class CheckerMessageComparator implements Comparator<CheckerMessage> {
-        @Override
-        public int compare(CheckerMessage o1, CheckerMessage o2) {
-            int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
-            if (byPos != 0) {
-                return byPos;
-            }
+    private int compareCheckerMessages(CheckerMessage o1, CheckerMessage o2) {
+        int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
+        if (byPos != 0) {
+            return byPos;
+        }
 
-            int kind = o1.kind.compareTo(o2.kind);
-            if (kind != 0) {
-                return kind;
-            }
+        int kind = o1.kind.compareTo(o2.kind);
+        if (kind != 0) {
+            return kind;
+        }
 
-            int msgcmp = o1.message.compareTo(o2.message);
-            if (msgcmp == 0) {
-                // If the two messages are identical so far, it doesn't matter
-                // from which checker they came.
-                return 0;
-            }
+        int msgcmp = o1.message.compareTo(o2.message);
+        if (msgcmp == 0) {
+            // If the two messages are identical so far, it doesn't matter
+            // from which checker they came.
+            return 0;
+        }
 
-            List<BaseTypeChecker> subcheckers = BaseTypeChecker.this.getSubcheckers();
+        List<BaseTypeChecker> subcheckers = BaseTypeChecker.this.getSubcheckers();
 
-            // Sort by order in which the checkers are run. (All the subcheckers,
-            // followed by the checker.)
-            int o1Index = subcheckers.indexOf(o1.checker);
-            int o2Index = subcheckers.indexOf(o2.checker);
-            if (o1Index == o2Index) {
-                // If the two messages are from the same checker, sort by message.
-                return msgcmp;
-            }
-            if (o1Index == -1) {
-                o1Index = subcheckers.size();
-            }
-            if (o2Index == -1) {
-                o2Index = subcheckers.size();
-            }
-            int checkercmp = Integer.compare(o1Index, o2Index);
-            if (checkercmp == 0) {
-                // If it is the same checker, sort by message.
-                return msgcmp;
-            } else {
-                return checkercmp;
-            }
+        // Sort by order in which the checkers are run. (All the subcheckers,
+        // followed by the checker.)
+        int o1Index = subcheckers.indexOf(o1.checker);
+        int o2Index = subcheckers.indexOf(o2.checker);
+        if (o1Index == o2Index) {
+            // If the two messages are from the same checker, sort by message.
+            return msgcmp;
+        }
+        if (o1Index == -1) {
+            o1Index = subcheckers.size();
+        }
+        if (o2Index == -1) {
+            o2Index = subcheckers.size();
+        }
+        int checkercmp = Integer.compare(o1Index, o2Index);
+        if (checkercmp == 0) {
+            // If it is the same checker, sort by message.
+            return msgcmp;
+        } else {
+            return checkercmp;
         }
     }
 
