@@ -167,14 +167,6 @@ public class Range {
         } else {
             return alternate;
         }
-        long min = values.iterator().next().longValue();
-        long max = min;
-        for (Number value : values) {
-            long current = value.longValue();
-            if (min > current) min = current;
-            if (max < current) max = current;
-        }
-        return create(min, max);
     }
 
     /**
