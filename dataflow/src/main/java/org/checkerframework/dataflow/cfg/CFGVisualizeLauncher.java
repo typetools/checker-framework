@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Store;
@@ -100,8 +101,8 @@ public class CFGVisualizeLauncher {
      *
      * @param inputFile java source input file
      * @param outputDir output directory
-     * @param method method name to generate the CFG for
-     * @param clas target class name
+     * @param method name of the method to generate the CFG for
+     * @param clas name of the class which includes the method to generate the CFG for
      * @param pdf also generate a PDF
      * @param verbose show verbose information in CFG
      */
@@ -120,8 +121,8 @@ public class CFGVisualizeLauncher {
      *
      * @param inputFile java source input file
      * @param outputDir source output directory
-     * @param method method name to generate the CFG for
-     * @param clas target class name
+     * @param method name of the method to generate the CFG for
+     * @param clas name of the class which includes the method to generate the CFG for
      * @param pdf also generate a PDF
      * @param verbose show verbose information in CFG
      * @param analysis analysis to perform before the visualization (or {@code null} if no analysis
@@ -135,7 +136,7 @@ public class CFGVisualizeLauncher {
                     String clas,
                     boolean pdf,
                     boolean verbose,
-                    Analysis<V, S, T> analysis) {
+                    @Nullable Analysis<V, S, T> analysis) {
         ControlFlowGraph cfg = generateMethodCFG(inputFile, clas, method);
         if (analysis != null) {
             analysis.performAnalysis(cfg);
@@ -160,9 +161,9 @@ public class CFGVisualizeLauncher {
      * Generate the control flow graph of a method in a class.
      *
      * @param file java source input file
-     * @param clas target class name
-     * @param method method name to generate the CFG for
-     * @return the control flow graph of target method
+     * @param clas name of the class which includes the method to generate the CFG for
+     * @param method name of the method to generate the CFG for
+     * @return control flow graph of the specified method
      */
     protected ControlFlowGraph generateMethodCFG(String file, String clas, final String method) {
 
@@ -230,20 +231,21 @@ public class CFGVisualizeLauncher {
      * Generate the String representation of the CFG for a method.
      *
      * @param inputFile java source input file
-     * @param method method name to generate the CFG for
-     * @param clas class name
+     * @param method name of the method to generate the CFG for
+     * @param clas name of the class which includes the method to generate the CFG for
      * @param verbose show verbose information in CFG
      * @param analysis analysis to perform before the visualization (or {@code null} if no analysis
      *     is to be performed)
-     * @return map of String "stringGraph" and the String representation of CFG
+     * @return a map which includes a key "stringGraph" and the String representation of CFG as the
+     *     value
      */
     protected <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
-            Map<String, Object> generateStringOfCFG(
-                    String inputFile,
-                    String method,
-                    String clas,
-                    boolean verbose,
-                    Analysis<V, S, T> analysis) {
+            @Nullable Map<String, Object> generateStringOfCFG(
+            String inputFile,
+            String method,
+            String clas,
+            boolean verbose,
+            @Nullable Analysis<V, S, T> analysis) {
         ControlFlowGraph cfg = generateMethodCFG(inputFile, clas, method);
         if (analysis != null) {
             analysis.performAnalysis(cfg);
@@ -278,7 +280,7 @@ public class CFGVisualizeLauncher {
      *
      * @param string error message
      */
-    protected void printError(String string) {
+    protected void printError(@Nullable String string) {
         System.err.println("ERROR: " + string);
     }
 }
