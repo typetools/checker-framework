@@ -10,6 +10,7 @@ import org.checkerframework.javacutil.PluginUtil;
 @SuppressWarnings("serial")
 class DefaultSet extends TreeSet<Default> {
 
+    /** Creates a DefaultSet. */
     public DefaultSet() {
         super(Default::compareTo);
     }

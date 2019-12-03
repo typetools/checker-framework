@@ -334,23 +334,19 @@ public class AnnotationUtils {
         return null;
     }
 
-    static class AnnotationComparator {
-        public static int compare(AnnotationMirror a1, AnnotationMirror a2) {
-            // AnnotationMirror.toString() prints the elements of an annotation in the
-            // order in which they were written. So, use areSame to check for equality.
-            if (AnnotationUtils.areSame(a1, a2)) {
-                return 0;
-            }
-
-            String n1 = a1.toString();
-            String n2 = a2.toString();
-
-            // Because the AnnotationMirror.toString prints the annotation as it appears
-            // in source code, the order in which annotations of the same class are
-            // sorted may be confusing.  For example, it might order
-            // @IntRange(from=1, to=MAX) before @IntRange(to=MAX,from=0).
-            return n1.compareTo(n2);
-        }
+    /**
+     * Compares two annotation classes by lexicographically comparing their canonical names.
+     *
+     * @param a1 the first annotation class
+     * @param a2 the second annotation class
+     * @return the value {@code 0} if the name of the first class is equal to the name of the
+     *     second; a value less than {@code 0} if the name of the first class is lexicographically
+     *     less than the name of the second; and a value greater than {@code 0} if this name of the
+     *     first class is lexicographically greater than the name of the second.
+     */
+    public static int compareAnnotationClasses(
+            Class<? extends Annotation> a1, Class<? extends Annotation> a2) {
+        return a1.getCanonicalName().compareTo(a2.getCanonicalName());
     }
 
     /**
@@ -362,8 +358,37 @@ public class AnnotationUtils {
      *
      * @return an ordering over AnnotationMirrors based on their name
      */
+    public static int compareAnnotationMirrors(AnnotationMirror a1, AnnotationMirror a2) {
+        // AnnotationMirror.toString() prints the elements of an annotation in the
+        // order in which they were written. So, use areSame to check for equality.
+        if (AnnotationUtils.areSame(a1, a2)) {
+            return 0;
+        }
+
+        String n1 = a1.toString();
+        String n2 = a2.toString();
+
+        // Because the AnnotationMirror.toString prints the annotation as it appears
+        // in source code, the order in which annotations of the same class are
+        // sorted may be confusing.  For example, it might order
+        // @IntRange(from=1, to=MAX) before @IntRange(to=MAX,from=0).
+        return n1.compareTo(n2);
+    }
+
+    /**
+     * Provide ordering for {@link AnnotationMirror} based on their fully qualified name. The
+     * ordering ignores annotation values when ordering.
+     *
+     * <p>The ordering is meant to be used as {@link TreeSet} or {@link TreeMap} ordering. A {@link
+     * Set} should not contain two annotations that only differ in values.
+     *
+     * @return an ordering over AnnotationMirrors based on their name
+     * @deprecated Use the method reference {@code AnnotationUtils::compareAnnotationMirrors}
+     *     instead
+     */
+    @Deprecated
     public static Comparator<AnnotationMirror> annotationOrdering() {
-        return AnnotationComparator::compare;
+        return AnnotationUtils::compareAnnotationMirrors;
     }
 
     /**
@@ -376,7 +401,7 @@ public class AnnotationUtils {
      * @return a new map with {@link AnnotationMirror} as key
      */
     public static <V> Map<AnnotationMirror, V> createAnnotationMap() {
-        return new TreeMap<>(annotationOrdering());
+        return new TreeMap<>(AnnotationUtils::compareAnnotationMirrors);
     }
 
     /**
@@ -388,7 +413,7 @@ public class AnnotationUtils {
      * @return a new set to store {@link AnnotationMirror} as element
      */
     public static Set<AnnotationMirror> createAnnotationSet() {
-        return new TreeSet<>(annotationOrdering());
+        return new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
     }
 
     /**

@@ -526,13 +526,6 @@ public abstract class GenericAnnotatedTypeFactory<
         return new QualifierDefaults(elements, this);
     }
 
-    /** Defines alphabetical sort ordering for qualifiers. */
-    static class QualifierSortOrdering {
-        public static int compare(Class<? extends Annotation> a1, Class<? extends Annotation> a2) {
-            return a1.getCanonicalName().compareTo(a2.getCanonicalName());
-        }
-    }
-
     /**
      * Creates and returns a string containing the number of qualifiers and the canonical class
      * names of each qualifier that has been added to this checker's supported qualifier set. The
@@ -553,7 +546,7 @@ public abstract class GenericAnnotatedTypeFactory<
         // alphabetically
         List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>();
         sortedSupportedQuals.addAll(stq);
-        Collections.sort(sortedSupportedQuals, QualifierSortOrdering::compare);
+        Collections.sort(sortedSupportedQuals, AnnotationUtils::compareAnnotationClasses);
 
         // display the number of qualifiers as well as the names of each
         // qualifier.
