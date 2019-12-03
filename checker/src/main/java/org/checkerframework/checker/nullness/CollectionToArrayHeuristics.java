@@ -66,7 +66,12 @@ public class CollectionToArrayHeuristics {
     /** Whether to trust {@code @ArrayLen(0)} annotations. */
     private final boolean trustArrayLenZero;
 
-    /** Create the heuristics for the given nullness checker and factory. */
+    /**
+     * Create the heuristics for the given nullness checker and factory.
+     *
+     * @param checker the checker instance
+     * @param factory the factory instance
+     */
     public CollectionToArrayHeuristics(
             NullnessChecker checker, NullnessAnnotatedTypeFactory factory) {
         this.processingEnv = checker.getProcessingEnvironment();
