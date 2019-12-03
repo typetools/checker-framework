@@ -3046,6 +3046,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * files and declaration annotations from overridden methods).
      *
      * @param elt the element for which to determine annotations
+     * @return declaration annotations on this element
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
         Set<AnnotationMirror> cachedValue = cacheDeclAnnos.get(elt);
