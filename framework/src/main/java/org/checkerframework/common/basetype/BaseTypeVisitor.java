@@ -65,7 +65,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -3549,53 +3548,42 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
+        /**
+         * Returns true if the return type of the overridden method is a subtype of the return type
+         * of the overriding method.
+         *
+         * @return true if the return type is correct
+         */
         private boolean checkReturn() {
-            boolean success = true;
-            // Check the return value.
-            if ((overridingReturnType.getKind() != TypeKind.VOID)) {
-                final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
-                success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
-
-                // If both the overridden method have type variables as return types and both types
-                // were defined in their respective methods then, they can be covariant or invariant
-                // use super/subtypes for the overrides locations
-                if (!success) {
-                    success = testTypevarContainment(overridingReturnType, overriddenReturnType);
-
-                    // Sometimes when using a Java 8 compiler (not JSR308) the overridden return
-                    // type of a method reference becomes a captured type.  This leads to defaulting
-                    // that often makes the overriding return type invalid.  We ignore these.  This
-                    // happens in Issue403/Issue404 when running without the jsr308-langtools
-                    // compiler.
-                    if (!success && methodReference) {
-
-                        boolean isCaptureConverted =
-                                (overriddenReturnType.getKind() == TypeKind.TYPEVAR)
-                                        && TypesUtils.isCaptured(
-                                                (TypeVariable)
-                                                        overriddenReturnType.getUnderlyingType());
-
-                        if (methodReference && isCaptureConverted) {
-                            ExecutableElement overridenMethod = overridden.getElement();
-                            boolean isFunctionApply =
-                                    ElementUtils.isMethod(
-                                            overridenMethod,
-                                            functionApply,
-                                            atypeFactory.getProcessingEnv());
-                            if (isFunctionApply) {
-                                AnnotatedTypeMirror overridingUpperBound =
-                                        ((AnnotatedTypeVariable) overriddenReturnType)
-                                                .getUpperBound();
-                                success =
-                                        typeHierarchy.isSubtype(
-                                                overridingReturnType, overridingUpperBound);
-                            }
-                        }
-                    }
-                }
-
-                checkReturnMsg(success);
+            if ((overridingReturnType.getKind() == TypeKind.VOID)) {
+                // Nothing to check.
+                return true;
             }
+            final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
+            boolean success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
+            if (!success) {
+                // If both the overridden method have type variables as return types and both
+                // types were defined in their respective methods then, they can be covariant or
+                // invariant use super/subtypes for the overrides locations
+                success = testTypevarContainment(overridingReturnType, overriddenReturnType);
+            }
+
+            // Sometimes the overridden return type of a method reference becomes a captured
+            // type.  This leads to defaulting that often makes the overriding return type
+            // invalid.  We ignore these.  This happens in Issue403/Issue404.
+            if (!success
+                    && methodReference
+                    && TypesUtils.isCaptured(overriddenReturnType.getUnderlyingType())) {
+                if (ElementUtils.isMethod(
+                        overridden.getElement(), functionApply, atypeFactory.getProcessingEnv())) {
+                    success =
+                            typeHierarchy.isSubtype(
+                                    overridingReturnType,
+                                    ((AnnotatedTypeVariable) overriddenReturnType).getUpperBound());
+                }
+            }
+
+            checkReturnMsg(success);
             return success;
         }
 

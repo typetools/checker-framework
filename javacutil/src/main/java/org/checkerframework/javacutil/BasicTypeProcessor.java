@@ -4,6 +4,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import javax.lang.model.element.TypeElement;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 /**
  * Process the types in an AST in a trivial manner, with hooks for derived classes to actually do
@@ -11,7 +12,7 @@ import javax.lang.model.element.TypeElement;
  */
 public abstract class BasicTypeProcessor extends AbstractTypeProcessor {
     /** The source tree that's being scanned. */
-    protected CompilationUnitTree currentRoot;
+    protected @MonotonicNonNull CompilationUnitTree currentRoot;
 
     /**
      * Create a TreePathScanner at the given root.

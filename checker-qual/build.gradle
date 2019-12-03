@@ -1,12 +1,10 @@
 buildscript {
     repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+        mavenCentral()
     }
     dependencies {
         // Create OSGI bundles
-        classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:4.1.0"
+        classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:4.3.1"
     }
 }
 
