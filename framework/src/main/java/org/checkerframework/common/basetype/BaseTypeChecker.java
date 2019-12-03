@@ -83,9 +83,6 @@ import org.checkerframework.javacutil.UserError;
  */
 public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {
 
-    /** Create a BaseTypeChecker. */
-    public BaseTypeChecker() {}
-
     @Override
     public void initChecker() {
         // initialize all checkers and share options as necessary
