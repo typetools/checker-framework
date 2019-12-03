@@ -1,6 +1,7 @@
 package org.checkerframework.framework.qual;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
@@ -9,6 +10,7 @@ import java.lang.annotation.Target;
  * declaration should not be applied to unannotated uses of the type. Instead, another default
  * should be applied based on the location of the type or some other defaulting rule.
  */
+@Documented
 @Target(ElementType.TYPE)
 public @interface NoDefaultQualifierForUse {
     /** Top qualifier in hierarchies for which no default annotation for use should be applied. */
