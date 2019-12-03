@@ -492,8 +492,8 @@ public class AnnotationUtils {
         for (ExecutableElement meth :
                 ElementFilter.methodsIn(ad.getAnnotationType().asElement().getEnclosedElements())) {
             AnnotationValue defaultValue = meth.getDefaultValue();
-            if (defaultValue != null && !valMap.containsKey(meth)) {
-                valMap.put(meth, defaultValue);
+            if (defaultValue != null) {
+                valMap.putIfAbsent(meth, defaultValue);
             }
         }
         return valMap;

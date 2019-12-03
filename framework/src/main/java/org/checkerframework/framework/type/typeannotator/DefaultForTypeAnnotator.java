@@ -147,21 +147,21 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
             qname = type.getUnderlyingType().toString();
         }
 
-        if (qname != null && types.containsKey(qname)) {
+        if (qname != null) {
             Set<AnnotationMirror> fnd = types.get(qname);
-            type.addMissingAnnotations(fnd);
+            if (fnd != null) {
+                type.addMissingAnnotations(fnd);
+            }
         }
 
         // If the type's kind or class is in the appropriate map, annotate the
         // type.
-
-        if (typeKinds.containsKey(type.getKind())) {
-            Set<AnnotationMirror> fnd = typeKinds.get(type.getKind());
+        Set<AnnotationMirror> fnd;
+        if ((fnd = typeKinds.get(type.getKind())) != null) {
             type.addMissingAnnotations(fnd);
         } else if (!atmClasses.isEmpty()) {
             Class<? extends AnnotatedTypeMirror> t = type.getClass();
-            if (atmClasses.containsKey(t)) {
-                Set<AnnotationMirror> fnd = atmClasses.get(t);
+            if ((fnd = atmClasses.get(t)) != null) {
                 type.addMissingAnnotations(fnd);
             }
         }
