@@ -1185,10 +1185,10 @@ public class Range {
     /**
      * Returns a Range representing all possible values for the given primitive type.
      *
-     * @param typeKind is a java.lang.TypeKind that isPrimitive() and integral.
-     * @return the matching range for that primitive type.
+     * @param typeKind is java.lang.TypeKind of INT,SHORT,BYTE,CHAR,LONG
+     * @return the matching range for that primitive type
      */
-    public static Range byPrimitiveTypeKind(TypeKind typeKind) {
+    public static final Range create(TypeKind typeKind) {
         switch (typeKind) {
             case INT:
                 return INT_EVERYTHING;
@@ -1201,7 +1201,8 @@ public class Range {
             case LONG:
                 return LONG_EVERYTHING;
             default:
-                throw new IllegalArgumentException("byPrimitiveTypeKind(" + typeKind + ")");
+                throw new IllegalArgumentException(
+                        "create(" + typeKind + "), expected INT, SHORT, BYTE, CHAR, or LONG");
         }
     }
 }

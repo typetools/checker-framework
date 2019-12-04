@@ -336,7 +336,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return AnnotationUtils.getElementValue(anno, "from", Long.class, false);
         }
         TypeMirror type = atm.getUnderlyingType();
-        return Range.byPrimitiveTypeKind(toPrimitiveIntegralTypeKind(type)).from;
+        return Range.create(toPrimitiveIntegralTypeKind(type)).from;
     }
 
     /**
@@ -354,7 +354,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return AnnotationUtils.getElementValue(anno, "to", Long.class, false);
         }
         TypeMirror type = atm.getUnderlyingType();
-        return Range.byPrimitiveTypeKind(toPrimitiveIntegralTypeKind(type)).to;
+        return Range.create(toPrimitiveIntegralTypeKind(type)).to;
     }
 
     /**
