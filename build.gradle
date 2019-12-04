@@ -915,6 +915,7 @@ task releaseBuild {
     doFirst {
         release = true
     }
+    // Use finalizeBy rather than dependsOn so that release is set to true before any of the tasks are run.
     finalizedBy(buildAll)
 }
 
