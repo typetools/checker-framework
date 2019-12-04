@@ -20,16 +20,16 @@ sourceSets {
 }
 
 dependencies {
-    compile project(':framework')
-    compile project(':dataflow')
-    compile project(':javacutil')
-    compile project(':checker-qual')
+    implementation project(':framework')
+    implementation project(':dataflow')
+    implementation project(':javacutil')
+    implementation project(':checker-qual')
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile project(':framework-test')
-    testCompile sourceSets.testannotations.output
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation project(':framework-test')
+    testImplementation sourceSets.testannotations.output
 
-    testannotationsCompile project(':checker-qual')
+    testannotationsImplementation project(':checker-qual')
 }
 
 task cloneTypetoolsJdk() {
