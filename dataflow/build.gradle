@@ -1,4 +1,4 @@
 dependencies {
-    implementation project(':javacutil')
-    implementation project(':checker-qual')
+    compile project(':javacutil')
+    compile project(':checker-qual')
 }
