@@ -8,5 +8,5 @@ dependencies {
     // Keep version number in sync with ../maven-artifacts/release/javacutilReleasePom.xml .
     implementation 'org.plumelib:plume-util:1.0.10'
 
-    compileOnly project(':checker-qual')
+    implementation project(':checker-qual')
 }
