@@ -1188,7 +1188,7 @@ public class Range {
      * @param typeKind is java.lang.TypeKind of INT,SHORT,BYTE,CHAR,LONG
      * @return the matching range for that primitive type
      */
-    public static final Range create(TypeKind typeKind) {
+    public static Range create(TypeKind typeKind) {
         switch (typeKind) {
             case INT:
                 return INT_EVERYTHING;
