@@ -2234,12 +2234,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Evaluates a given annotation to its primitive integral TypeKind equivalent.
+     * Determine the primitive integral TypeKind for the given type.
      *
      * @param type {@link javax.lang.model.type.TypeKind}
      * @return one of INT, SHORT, BYTE, CHAR, LONG
      */
-    private static final TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
+    private static TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
         TypeKind typeKind = NumberUtils.unboxPrimitive(type);
         if (isPrimitiveIntegral(typeKind)) {
             return typeKind;
@@ -2253,7 +2253,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param typeKind the TypeKind to inspect
      * @return true if the argument is a primitive integral type
      */
-    private static final boolean isPrimitiveIntegral(TypeKind typeKind) {
+    private static boolean isPrimitiveIntegral(TypeKind typeKind) {
         switch (typeKind) {
             case INT:
             case SHORT:
