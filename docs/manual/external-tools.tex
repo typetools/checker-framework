@@ -604,7 +604,8 @@ required because the Checker Framework reflectively accesses private members of 
 If this option is missing, \<javac> may issue the following warning:
 \begin{Verbatim}
 WARNING: An illegal reflective access operation has occurred
-WARNING: Illegal reflective access by org.checkerframework.javacutil.Resolver (file:$CHECKERFRAMEWORK/checker/dist/checker.jar) to method com.sun.tools.javac.comp.Resolve.findMethod(com.sun.tools.javac.comp.Env,com.sun.tools.javac.code.Type,com.sun.tools.javac.util.Name,com.sun.tools.javac.util.List,com.sun.tools.javac.util.List,boolean,boolean)
+WARNING: Illegal reflective access by org.checkerframework.javacutil.Resolver
+  (file:$CHECKERFRAMEWORK/checker/dist/checker.jar) to method com.sun.tools.javac.comp.Resolve.findMethod(...)
 WARNING: Please consider reporting this to the maintainers of org.checkerframework.javacutil.Resolver
 WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
 WARNING: All illegal access operations will be denied in a future release
@@ -617,10 +618,10 @@ so you must do this even if you write no annotations in your code.
 
 \begin{Verbatim}
 javac \
--J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
--processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar \
---module-path $CHECKERFRAMEWORK/checker/dist/checker-qual.jar \
--processor org.checkerframework.checker.nullness.NullnessChecker
+  -J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
+  -processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar \
+  --module-path $CHECKERFRAMEWORK/checker/dist/checker-qual.jar \
+  -processor org.checkerframework.checker.nullness.NullnessChecker
 \end{Verbatim}
 
 \<checker-qual.jar> must be on the module path rather than the class path, but
