@@ -442,10 +442,11 @@ use the last one.
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
-   (Explanation for advanced users:  More generally, anywhere that you would use \<javac.jar>, you can substitute
-   \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>;
-   the result is to use the Checker
-   Framework compiler instead of the regular \<javac>.)
+  (Explanation for advanced users:
+  More generally, anywhere that you would use \<javac.jar>, you can substitute
+  \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>;
+  the result is to use the Checker
+  Framework compiler instead of the regular \<javac>.)
 
 \end{itemize}
 
@@ -656,7 +657,8 @@ Ant, but other build systems are similar.
 
 Add an Ant target as described in Section~\ref{ant-task}.  You can
 run the Ant target by executing the following steps
-(instructions copied from {\codesize\url{http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2FgettingStarted%2Fqs-84_run_ant.htm}}):
+(instructions copied from
+{\codesize\url{http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2FgettingStarted%2Fqs-84_run_ant.htm}}):
 
 \begin{enumerate}
 
@@ -690,7 +692,10 @@ this list.
 
 To eliminate the warnings:
 disable all ``Unhandled Token in @SuppressWarnings'' warnings in Eclipse.
-Look under the menu headings Java $\rightarrow$ Compiler $\rightarrow$ Errors/Warnings $\rightarrow$ Annotations $\rightarrow$ Unhandled Token in '@SuppressWarnings', and set it to ignore.
+Look under the menu headings
+``Java $\rightarrow$ Compiler $\rightarrow$ Errors/Warnings $\rightarrow$
+Annotations $\rightarrow$ Unhandled Token in '@SuppressWarnings',''
+and set it to ignore.
 
 
 \sectionAndLabel{Gradle}{gradle}
@@ -830,7 +835,8 @@ Therefore, you must run the Checker Framework in a postpass after the
 \<javac> that runs Lombok has completed.  Use the
 \href{https://projectlombok.org/features/delombok}{Delombok} tool
 (distributed with Lombok) to generate Java source code, then run the
-Checker Framework on that.  The \href{https://github.com/kelloggm/checkerframework-gradle-plugin}{Checker Framework}
+Checker Framework on that.  The
+\href{https://github.com/kelloggm/checkerframework-gradle-plugin}{Checker Framework}
 Gradle plugin does this for you automatically.
 
 
