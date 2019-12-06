@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.value.util.Range;
 import org.junit.Test;
 
