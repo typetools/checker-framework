@@ -336,11 +336,11 @@ public class AnnotationUtils {
 
     /**
      * Provide ordering for {@link AnnotationMirror}s. AnnotationMirrors are first compared by their
-     * fully qualified names, then by there element values, in ordered of the name of the element.
+     * fully qualified names, then by their element values, in ordered of the name of the element.
      *
      * @param a1 the first annotation
      * @param a2 the second annotation
-     * @return an ordering over AnnotationMirrors based on their name
+     * @return an ordering over AnnotationMirrors based on their name and values
      */
     public static int compareAnnotationMirrors(AnnotationMirror a1, AnnotationMirror a2) {
         if (!AnnotationUtils.areSameByName(a1, a2)) {
