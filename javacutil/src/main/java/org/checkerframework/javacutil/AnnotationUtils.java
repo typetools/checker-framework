@@ -335,21 +335,6 @@ public class AnnotationUtils {
     }
 
     /**
-     * Compares two annotation classes by lexicographically comparing their canonical names.
-     *
-     * @param a1 the first annotation class
-     * @param a2 the second annotation class
-     * @return the value {@code 0} if the name of the first class is equal to the name of the
-     *     second; a value less than {@code 0} if the name of the first class is lexicographically
-     *     less than the name of the second; and a value greater than {@code 0} if this name of the
-     *     first class is lexicographically greater than the name of the second.
-     */
-    public static int compareAnnotationClasses(
-            Class<? extends Annotation> a1, Class<? extends Annotation> a2) {
-        return a1.getCanonicalName().compareTo(a2.getCanonicalName());
-    }
-
-    /**
      * Provide ordering for {@link AnnotationMirror} based on their fully qualified name. The
      * ordering ignores annotation values when ordering.
      *

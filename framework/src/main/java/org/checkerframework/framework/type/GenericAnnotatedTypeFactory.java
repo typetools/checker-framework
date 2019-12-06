@@ -18,7 +18,7 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -544,9 +544,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
         // Create a list of the supported qualifiers and sort the list
         // alphabetically
-        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>();
-        sortedSupportedQuals.addAll(stq);
-        Collections.sort(sortedSupportedQuals, AnnotationUtils::compareAnnotationClasses);
+        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>(stq);
+        sortedSupportedQuals.sort(Comparator.comparing(Class::getCanonicalName));
 
         // display the number of qualifiers as well as the names of each
         // qualifier.
