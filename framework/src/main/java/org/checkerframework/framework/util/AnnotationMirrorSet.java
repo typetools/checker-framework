@@ -22,6 +22,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * method; therefore, the existing implementations of Set cannot be used.
  */
 public class AnnotationMirrorSet implements Set<AnnotationMirror> {
+
+    /** Backing set. */
     private Set<AnnotationMirror> shadowSet =
             new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
 
