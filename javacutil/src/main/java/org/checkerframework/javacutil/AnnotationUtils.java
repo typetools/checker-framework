@@ -334,26 +334,57 @@ public class AnnotationUtils {
         return null;
     }
 
-    private static final Comparator<AnnotationMirror> ANNOTATION_ORDERING =
-            new Comparator<AnnotationMirror>() {
-                @Override
-                public int compare(AnnotationMirror a1, AnnotationMirror a2) {
-                    // AnnotationMirror.toString() prints the elements of an annotation in the
-                    // order in which they were written. So, use areSame to check for equality.
-                    if (AnnotationUtils.areSame(a1, a2)) {
-                        return 0;
-                    }
+    /**
+     * Provide ordering for {@link AnnotationMirror}s. AnnotationMirrors are first compared by their
+     * fully qualified names, then by there element values, in ordered of the name of the element.
+     *
+     * @param a1 the first annotation
+     * @param a2 the second annotation
+     * @return an ordering over AnnotationMirrors based on their name
+     */
+    public static int compareAnnotationMirrors(AnnotationMirror a1, AnnotationMirror a2) {
+        if (!AnnotationUtils.areSameByName(a1, a2)) {
+            return annotationName(a1).compareTo(annotationName(a2));
+        }
+        // The annotations have the same name, so compare values.
+        Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = a1.getElementValues();
+        Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = a2.getElementValues();
+        Set<ExecutableElement> sortedElements =
+                new TreeSet<>(Comparator.comparing(ElementUtils::getSimpleName));
+        sortedElements.addAll(
+                ElementFilter.methodsIn(a1.getAnnotationType().asElement().getEnclosedElements()));
 
-                    String n1 = a1.toString();
-                    String n2 = a2.toString();
-
-                    // Because the AnnotationMirror.toString prints the annotation as it appears
-                    // in source code, the order in which annotations of the same class are
-                    // sorted may be confusing.  For example, it might order
-                    // @IntRange(from=1, to=MAX) before @IntRange(to=MAX,from=0).
-                    return n1.compareTo(n2);
-                }
-            };
+        for (ExecutableElement method : sortedElements) {
+            AnnotationValue value1 = vals1.get(method);
+            AnnotationValue value2 = vals2.get(method);
+            if (value1 == null) {
+                value1 = method.getDefaultValue();
+            }
+            if (value2 == null) {
+                value2 = method.getDefaultValue();
+            }
+            if (value1 == value2) {
+                continue;
+            } else if (value1 == null) {
+                return -1;
+            } else if (value2 == null) {
+                return 1;
+            }
+            int result;
+            if (value1.getValue().getClass() == value2.getValue().getClass()
+                    && value1 instanceof Comparable) {
+                @SuppressWarnings("unchecked") // call is checked above
+                int uncheckedResult = ((Comparable) value1.getValue()).compareTo(value2.getValue());
+                result = uncheckedResult;
+            } else {
+                result = value1.getValue().toString().compareTo(value2.getValue().toString());
+            }
+            if (result != 0) {
+                return result;
+            }
+        }
+        return 0;
+    }
 
     /**
      * Provide ordering for {@link AnnotationMirror} based on their fully qualified name. The
@@ -363,9 +394,12 @@ public class AnnotationUtils {
      * Set} should not contain two annotations that only differ in values.
      *
      * @return an ordering over AnnotationMirrors based on their name
+     * @deprecated Use the method reference {@code AnnotationUtils::compareAnnotationMirrors}
+     *     instead
      */
+    @Deprecated
     public static Comparator<AnnotationMirror> annotationOrdering() {
-        return ANNOTATION_ORDERING;
+        return AnnotationUtils::compareAnnotationMirrors;
     }
 
     /**
@@ -378,7 +412,7 @@ public class AnnotationUtils {
      * @return a new map with {@link AnnotationMirror} as key
      */
     public static <V> Map<AnnotationMirror, V> createAnnotationMap() {
-        return new TreeMap<>(annotationOrdering());
+        return new TreeMap<>(AnnotationUtils::compareAnnotationMirrors);
     }
 
     /**
@@ -390,7 +424,7 @@ public class AnnotationUtils {
      * @return a new set to store {@link AnnotationMirror} as element
      */
     public static Set<AnnotationMirror> createAnnotationSet() {
-        return new TreeSet<>(annotationOrdering());
+        return new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
     }
 
     /**
