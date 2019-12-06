@@ -356,6 +356,8 @@ public class AnnotationUtils {
      * <p>The ordering is meant to be used as {@link TreeSet} or {@link TreeMap} ordering. A {@link
      * Set} should not contain two annotations that only differ in values.
      *
+     * @param a1 the first annotation
+     * @param a2 the second annotation
      * @return an ordering over AnnotationMirrors based on their name
      */
     public static int compareAnnotationMirrors(AnnotationMirror a1, AnnotationMirror a2) {
