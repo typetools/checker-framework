@@ -111,7 +111,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * list before getSubcheckers() is called, thereby ensuring that this list is non-empty only for
      * one checker.
      */
-    private List<BaseTypeChecker> subcheckers = null;
+    private List<BaseTypeChecker> subcheckers;
 
     /**
      * The list of subcheckers that are direct dependencies of this checker. This list will be
@@ -563,7 +563,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * unit. If this checker has no subcheckers and is not a subchecker for any other checker, then
      * messageStore is null and messages will be printed as they are issued by this checker.
      */
-    private TreeSet<CheckerMessage> messageStore = null;
+    private TreeSet<CheckerMessage> messageStore;
 
     /**
      * If this is a compound checker or a subchecker of a compound checker, then the message is
