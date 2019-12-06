@@ -2236,7 +2236,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Determine the primitive integral TypeKind for the given type.
      *
-     * @param type {@link javax.lang.model.type.TypeKind}
+     * @param type the type to convert
      * @return one of INT, SHORT, BYTE, CHAR, LONG
      */
     private static TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
