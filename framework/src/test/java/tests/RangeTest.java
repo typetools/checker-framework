@@ -668,7 +668,7 @@ public class RangeTest {
         assertEquals(Range.NOTHING, Range.create(Collections.<Integer>emptyList()));
         assertTrue(Range.NOTHING == Range.create(Collections.<Integer>emptyList()));
     }
-    
+
     @Test
     public void testFactoryTypeKind() {
     	assertEquals(Range.BYTE_EVERYTHING, Range.create(TypeKind.BYTE));
@@ -677,9 +677,9 @@ public class RangeTest {
     	assertEquals(Range.CHAR_EVERYTHING, Range.create(TypeKind.CHAR));
     	assertEquals(Range.LONG_EVERYTHING, Range.create(TypeKind.LONG));
     }
-    
-    @Test(expected=IllegalArgumentException.class)    
+
+    @Test(expected=IllegalArgumentException.class)
     public void testFactoryTypeKindFailure() {
     	Range.create(TypeKind.FLOAT);
-    }    
+    }
 }
