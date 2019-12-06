@@ -346,6 +346,9 @@ public class AnnotationUtils {
         if (!AnnotationUtils.areSameByName(a1, a2)) {
             return annotationName(a1).compareTo(annotationName(a2));
         }
+        if (AnnotationUtils.areSame(a1, a2)) {
+            return 0;
+        }
         // The annotations have the same name, so compare values.
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = a1.getElementValues();
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = a2.getElementValues();
@@ -370,15 +373,7 @@ public class AnnotationUtils {
             } else if (value2 == null) {
                 return 1;
             }
-            int result;
-            if (value1.getValue().getClass() == value2.getValue().getClass()
-                    && value1 instanceof Comparable) {
-                @SuppressWarnings("unchecked") // call is checked above
-                int uncheckedResult = ((Comparable) value1.getValue()).compareTo(value2.getValue());
-                result = uncheckedResult;
-            } else {
-                result = value1.getValue().toString().compareTo(value2.getValue().toString());
-            }
+            int result = value1.getValue().toString().compareTo(value2.getValue().toString());
             if (result != 0) {
                 return result;
             }
