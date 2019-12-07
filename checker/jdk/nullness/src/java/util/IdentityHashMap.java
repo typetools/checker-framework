@@ -999,6 +999,7 @@ public class IdentityHashMap<K, V>
         public Iterator<K> iterator() {
             return new KeyIterator();
         }
+        @Pure
         public int size() {
             return size;
         }
@@ -1109,6 +1110,7 @@ public class IdentityHashMap<K, V>
         public Iterator<V> iterator() {
             return new ValueIterator();
         }
+        @Pure
         public int size() {
             return size;
         }
@@ -1230,6 +1232,7 @@ public class IdentityHashMap<K, V>
             Map.Entry<?,?> entry = (Map.Entry<?,?>)o;
             return removeMapping(entry.getKey(), entry.getValue());
         }
+        @Pure
         public int size() {
             return size;
         }

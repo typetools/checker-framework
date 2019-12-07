@@ -922,6 +922,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
     }
 
     final class KeySet extends AbstractSet<K> {
+        @Pure
         public final int size()                 { return size; }
         public final void clear()               { HashMap.this.clear(); }
         @SideEffectFree
@@ -972,6 +973,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
     }
 
     final class Values extends AbstractCollection<V> {
+        @Pure
         public final int size()                 { return size; }
         public final void clear()               { HashMap.this.clear(); }
         @SideEffectFree
@@ -1020,6 +1022,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
     }
 
     final class EntrySet extends AbstractSet<Map.Entry<K,V>> {
+        @Pure
         public final int size()                 { return size; }
         public final void clear()               { HashMap.this.clear(); }
         @SideEffectFree
