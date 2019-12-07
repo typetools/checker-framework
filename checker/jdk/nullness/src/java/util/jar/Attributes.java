@@ -194,6 +194,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
      * @return true if this Map maps one or more attribute names to
      *         the specified value
      */
+    @Pure
     public boolean containsValue(Object value) {
         return map.containsValue(value);
     }
@@ -204,6 +205,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
      * @param name the attribute name
      * @return true if this Map contains the specified attribute name
      */
+    @Pure
     @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(Object name) {
         return map.containsKey(name);
@@ -242,6 +244,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
     /**
      * Returns true if this Map contains no attributes.
      */
+    @Pure
     public boolean isEmpty() {
         return map.isEmpty();
     }
@@ -264,6 +267,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
      * Returns a Collection view of the attribute name-value mappings
      * contained in this Map.
      */
+    @SideEffectFree
     public Set<Map.Entry<Object,Object>> entrySet() {
         return map.entrySet();
     }

@@ -266,6 +266,7 @@ public interface NavigableMap<K, V> extends SortedMap<K,V> {
      *
      * @return a reverse order view of this map
      */
+    @SideEffectFree
     NavigableMap<K,V> descendingMap();
 
     /**
@@ -282,6 +283,7 @@ public interface NavigableMap<K, V> extends SortedMap<K,V> {
      *
      * @return a navigable set view of the keys in this map
      */
+    @SideEffectFree
     NavigableSet<@KeyFor("this") K> navigableKeySet();
 
     /**
@@ -298,6 +300,7 @@ public interface NavigableMap<K, V> extends SortedMap<K,V> {
      *
      * @return a reverse order navigable set view of the keys in this map
      */
+    @SideEffectFree
     NavigableSet<@KeyFor("this") K> descendingKeySet();
 
     /**
@@ -334,6 +337,7 @@ public interface NavigableMap<K, V> extends SortedMap<K,V> {
      *         range, and {@code fromKey} or {@code toKey} lies
      *         outside the bounds of the range
      */
+    @SideEffectFree
     NavigableMap<K,V> subMap(K fromKey, boolean fromInclusive,
                              K toKey,   boolean toInclusive);
 
@@ -364,6 +368,7 @@ public interface NavigableMap<K, V> extends SortedMap<K,V> {
      *         restricted range, and {@code toKey} lies outside the
      *         bounds of the range
      */
+    @SideEffectFree
     NavigableMap<K,V> headMap(K toKey, boolean inclusive);
 
     /**
@@ -393,6 +398,7 @@ public interface NavigableMap<K, V> extends SortedMap<K,V> {
      *         restricted range, and {@code fromKey} lies outside the
      *         bounds of the range
      */
+    @SideEffectFree
     NavigableMap<K,V> tailMap(K fromKey, boolean inclusive);
 
     /**
@@ -404,6 +410,7 @@ public interface NavigableMap<K, V> extends SortedMap<K,V> {
      * @throws NullPointerException     {@inheritDoc}
      * @throws IllegalArgumentException {@inheritDoc}
      */
+    @SideEffectFree
     SortedMap<K,V> subMap(K fromKey, K toKey);
 
     /**
@@ -415,6 +422,7 @@ public interface NavigableMap<K, V> extends SortedMap<K,V> {
      * @throws NullPointerException     {@inheritDoc}
      * @throws IllegalArgumentException {@inheritDoc}
      */
+    @SideEffectFree
     SortedMap<K,V> headMap(K toKey);
 
     /**
@@ -426,5 +434,6 @@ public interface NavigableMap<K, V> extends SortedMap<K,V> {
      * @throws NullPointerException     {@inheritDoc}
      * @throws IllegalArgumentException {@inheritDoc}
      */
+    @SideEffectFree
     SortedMap<K,V> tailMap(K fromKey);
 }
