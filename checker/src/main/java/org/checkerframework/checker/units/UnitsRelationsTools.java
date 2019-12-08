@@ -164,7 +164,7 @@ public class UnitsRelationsTools {
      * Removes the prefix value from an Annotation, by constructing and returning a copy of its base
      * SI unit's Annotation.
      *
-     * @param elements the Element Utilities from a checker's processing environment, typically
+     * @param elementUtils the Element Utilities from a checker's processing environment, typically
      *     obtained by calling env.getElementUtils() in init() of a Units Relations implementation
      * @param unitsAnnotation an AnnotationMirror representing a Units Annotation
      * @return the base SI Unit's AnnotationMirror, or null if the base SI Unit cannot be
@@ -189,7 +189,7 @@ public class UnitsRelationsTools {
      * Removes the Prefix value from an Annotated Type, by constructing and returning a copy of the
      * Annotated Type without the prefix.
      *
-     * @param elements the Element Utilities from a checker's processing environment, typically
+     * @param elementUtils the Element Utilities from a checker's processing environment, typically
      *     obtained by calling env.getElementUtils() in init() of a Units Relations implementation
      * @param annoType an AnnotatedTypeMirror representing a Units Annotated Type
      * @return a copy of the Annotated Type without the prefix

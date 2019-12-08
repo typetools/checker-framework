@@ -152,7 +152,7 @@ public class QualifierDefaults {
     }
 
     /**
-     * @param elements interface to Element data in the current processing environment
+     * @param elementUtils interface to Element data in the current processing environment
      * @param atypeFactory an annotation factory, used to get annotations by name
      */
     public QualifierDefaults(Elements elementUtils, AnnotatedTypeFactory atypeFactory) {

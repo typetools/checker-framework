@@ -132,7 +132,7 @@ public class AnnotationBuilder {
      * from this method is not desired. This method is provided as a convenience to create an
      * AnnotationMirror from scratch in a checker's code.
      *
-     * @param elements the element utilities to use
+     * @param elementUtils the element utilities to use
      * @param aClass the annotation class
      * @return an {@link AnnotationMirror} of type given type
      */
