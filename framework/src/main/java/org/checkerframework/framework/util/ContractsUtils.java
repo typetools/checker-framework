@@ -26,7 +26,6 @@ import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -368,21 +367,16 @@ public class ContractsUtils {
                 }
             }
             return result;
-        } else if (annoValue.get(0) instanceof AnnotationValue) {
+        } else {
             // Check for a single contract
             Set<Postcondition> result = new LinkedHashSet<>();
             AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
             if (postcondAnno != null) {
-                List<String> expressions = new ArrayList<>();
                 for (AnnotationValue a : annoValue) {
                     result.add(new Postcondition((String) a.getValue(), postcondAnno, anno));
                 }
             }
             return result;
-        } else {
-            throw new BugInCF(
-                    "getPostConditionAnnotations(%n    anno=%s,%n    metaAnno=%s):%n  unexpected value %s [%s]",
-                    anno, metaAnno, annoValue.get(0), annoValue.get(0).getClass());
         }
     }
 
