@@ -17,6 +17,6 @@ public class SubtypingAnnotationClassLoader extends AnnotationClassLoader {
     @Override
     protected boolean hasWellDefinedTargetMetaAnnotation(Class<? extends Annotation> annoClass) {
         return super.hasWellDefinedTargetMetaAnnotation(annoClass)
-                || annoClass.equals(Unqualified.class);
+                || annoClass == Unqualified.class;
     }
 }

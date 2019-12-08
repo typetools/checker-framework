@@ -5,6 +5,7 @@ import com.sun.source.tree.Tree.Kind;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -24,7 +25,7 @@ public class TernaryExpressionNode extends Node {
     public TernaryExpressionNode(
             ConditionalExpressionTree tree, Node condition, Node thenOperand, Node elseOperand) {
         super(TreeUtils.typeOf(tree));
-        assert tree.getKind().equals(Kind.CONDITIONAL_EXPRESSION);
+        assert tree.getKind() == Kind.CONDITIONAL_EXPRESSION;
         this.tree = tree;
         this.condition = condition;
         this.thenOperand = thenOperand;
@@ -65,7 +66,7 @@ public class TernaryExpressionNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof TernaryExpressionNode)) {
             return false;
         }

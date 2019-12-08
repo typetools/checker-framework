@@ -226,7 +226,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      *
      * @param typeOfSubtraction type of node
      * @param node subtraction node that has typeOfSubtraction
-     * @param in TransferInput
+     * @param in a TransferInput
      * @param store location to store the refined type
      */
     private void propagateToSubtractionOperands(
@@ -251,7 +251,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * @param typeOfAddition type of {@code operand + other}
      * @param operand the Node to refine
      * @param other the Node added to {@code operand}
-     * @param in TransferInput
+     * @param in a TransferInput
      * @param store location to store the refined types
      */
     private void propagateToAdditionOperand(

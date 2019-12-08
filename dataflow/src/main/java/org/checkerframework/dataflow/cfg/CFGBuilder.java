@@ -268,8 +268,8 @@ public class CFGBuilder {
     public static ControlFlowGraph build(
             CompilationUnitTree root,
             MethodTree tree,
-            ClassTree classTree,
-            ProcessingEnvironment env) {
+            @Nullable ClassTree classTree,
+            @Nullable ProcessingEnvironment env) {
         UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
         return build(root, underlyingAST, false, false, env);
     }
@@ -350,7 +350,7 @@ public class CFGBuilder {
 
         @Override
         public String toString() {
-            return "ExtendedNode(" + type + ")";
+            throw new BugInCF("DO NOT CALL ExtendedNode.toString(). Write your own.");
         }
     }
 
@@ -738,6 +738,8 @@ public class CFGBuilder {
         }
 
         @Override
+        @SuppressWarnings(
+                "keyfor:contracts.conditional.postcondition.not.satisfied") // get adds everything
         public boolean containsKey(Object key) {
             return true;
         }
@@ -1038,6 +1040,8 @@ public class CFGBuilder {
                     if (e.getSuccessor() == cur) {
                         return singleSuccessorHolder(e, cur);
                     } else {
+                        @SuppressWarnings(
+                                "keyfor:assignment.type.incompatible") // ignore keyfor type
                         Set<Entry<TypeMirror, Set<Block>>> entrySet =
                                 e.getExceptionalSuccessors().entrySet();
                         for (final Entry<TypeMirror, Set<Block>> entry : entrySet) {
@@ -2704,12 +2708,11 @@ public class CFGBuilder {
          * <p>Note 2: Visits the receiver and adds all necessary blocks to the CFG.
          *
          * @param tree the field access tree containing the receiver
-         * @param classTree the ClassTree enclosing the field access
          * @return the receiver of the field access
          */
         private Node getReceiver(ExpressionTree tree) {
             assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
-            if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+            if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
                 MemberSelectTree mtree = (MemberSelectTree) tree;
                 return scan(mtree.getExpression(), null);
             } else {
@@ -4682,8 +4685,8 @@ public class CFGBuilder {
         /**
          * Create assignment node which represent increment or decrement.
          *
-         * @param target Target tree for assignment node. If it's null, corresponding assignment
-         *     tree will be generated.
+         * @param target tree for assignment node. If it's null, corresponding assignment tree will
+         *     be generated.
          * @param expr expression node to be incremented or decremented
          * @param isIncrement true when it's increment
          * @return assignment node for corresponding increment or decrement

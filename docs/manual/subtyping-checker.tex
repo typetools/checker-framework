@@ -64,13 +64,17 @@ using a colon-no-space-separated notation. For example:
 
 \end{itemize}
 
+
+\subsectionAndLabel{Compiling your qualifiers and your project}{subtyping-compiling}
+
 The annotations listed in \code{-Aquals} or \code{-AqualDirs} must be accessible to
 the compiler during compilation in the classpath.  In other words, they must
 already be compiled (and, typically, be on the javac classpath)
 before you run the Subtyping Checker with \code{javac}.  It
 is not sufficient to supply their source files on the command line.
 
-\medskip
+
+\subsectionAndLabel{Suppressing warnings from the Subtyping Checker}{subtyping-suppressing}
 
 To suppress a warning issued by the Subtyping Checker, use a
 \sunjavadocanno{java.base/java/lang/SuppressWarnings.html}{SuppressWarnings}

@@ -74,6 +74,7 @@ public final class Byte extends Number implements Comparable<Byte> {
      * @return the string representation of the specified {@code byte}
      * @see java.lang.Integer#toString(int)
      */
+    @SideEffectFree
     public static String toString(byte b) {
         return Integer.toString((int)b, 10);
     }

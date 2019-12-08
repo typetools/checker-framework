@@ -44,7 +44,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Create the type factory. */
     public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        if (this.getClass().equals(AliasingAnnotatedTypeFactory.class)) {
+        if (this.getClass() == AliasingAnnotatedTypeFactory.class) {
             this.postInit();
         }
     }
@@ -55,7 +55,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // type qualifier anymore.
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll(MaybeLeaked.class);
+        return getBundledTypeQualifiers(MaybeLeaked.class);
     }
 
     @Override

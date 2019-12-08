@@ -32,6 +32,9 @@ public class AnnotationConverter {
     /**
      * Converts an {@link javax.lang.model.element.AnnotationMirror} into an {@link
      * scenelib.annotations.Annotation}.
+     *
+     * @param am the AnnotationMirror
+     * @return the Annotation
      */
     protected static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
         AnnotationDef def =
@@ -78,6 +81,10 @@ public class AnnotationConverter {
     /**
      * Converts an {@link scenelib.annotations.Annotation} into an {@link
      * javax.lang.model.element.AnnotationMirror}.
+     *
+     * @param anno the Annotation
+     * @param processingEnv the ProcessingEnvironment
+     * @return the AnnotationMirror
      */
     protected static AnnotationMirror annotationToAnnotationMirror(
             Annotation anno, ProcessingEnvironment processingEnv) {

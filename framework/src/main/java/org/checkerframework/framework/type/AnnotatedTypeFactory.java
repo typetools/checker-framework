@@ -66,7 +66,6 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.InheritedAnnotation;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.Result;
@@ -206,8 +205,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private final Set<Class<? extends Annotation>> supportedQuals;
 
-    /** Parsers stub files and stores annotations from stub files. */
-    private final StubTypes stubTypes;
+    /** Parses stub files and stores annotations from stub files. */
+    public final StubTypes stubTypes;
 
     /**
      * A cache used to store elements whose declaration annotations have already been stored by
@@ -438,19 +437,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Issue an error and abort if any of the support qualifiers has a @Target meta-annotation that
-     * contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
+     * @throws BugInCF If supportedQuals is empty or if any of the support qualifiers has a @Target
+     *     meta-annotation that contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({})
+     *     is allowed.)
      */
     private void checkSupportedQuals() {
-        boolean hasPolyAll = false;
-        boolean hasPolymorphicQualifier = false;
+        if (supportedQuals.isEmpty()) {
+            // This is throwing a CF bug, but it could also be a bug in the checker rather than in
+            // the framework itself.
+            throw new BugInCF("Found no supported qualifiers.");
+        }
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
             // Check @Target values
             ElementType[] elements = annotationClass.getAnnotation(Target.class).value();
             List<ElementType> otherElementTypes = new ArrayList<>();
             for (ElementType element : elements) {
-                if (!(element.equals(ElementType.TYPE_USE)
-                        || element.equals(ElementType.TYPE_PARAMETER))) {
+                if (!(element == ElementType.TYPE_USE || element == ElementType.TYPE_PARAMETER)) {
                     // if there's an ElementType with an enumerated value of something other
                     // than TYPE_USE or TYPE_PARAMETER then it isn't a valid qualifier
                     otherElementTypes.add(element);
@@ -474,20 +476,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 buf.append(".");
                 throw new BugInCF(buf.toString());
             }
-            // Check for PolyAll
-            if (annotationClass.equals(PolyAll.class)) {
-                hasPolyAll = true;
-            } else if (annotationClass.getAnnotation(PolymorphicQualifier.class) != null) {
-                hasPolymorphicQualifier = true;
-            }
-        }
-
-        if (hasPolyAll && !hasPolymorphicQualifier) {
-            throw new BugInCF(
-                    "Checker added @PolyAll to list of supported qualifiers, but "
-                            + "the checker does not have a polymorphic qualifier.  Either remove "
-                            + "@PolyAll from the list of supported qualifiers or add a polymorphic "
-                            + "qualifier.");
         }
     }
 
@@ -547,7 +535,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         initializeReflectionResolution();
 
-        if (this.getClass().equals(AnnotatedTypeFactory.class)) {
+        if (this.getClass() == AnnotatedTypeFactory.class) {
             this.parseStubFiles();
         }
     }
@@ -660,9 +648,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
             AnnotationMirror typeQualifierAnno =
                     AnnotationBuilder.fromClass(elements, typeQualifier);
-            if (typeQualifierAnno == null) {
-                throw new BugInCF("Cannot load annotation " + typeQualifier);
-            }
             factory.addQualifier(typeQualifierAnno);
             // Polymorphic qualifiers can't declare their supertypes.
             // An error is raised if one is present.
@@ -781,14 +766,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>Subclasses should not call this method; they should call {@link
      * #getSupportedTypeQualifiers} instead.
      *
-     * <p>By default, a checker supports {@link PolyAll}, and all annotations located in a
-     * subdirectory called {@literal qual} that's located in the same directory as the checker. Note
-     * that only annotations defined with the {@code @Target({ElementType.TYPE_USE})}
-     * meta-annotation (and optionally with the additional value of {@code
-     * ElementType.TYPE_PARAMETER}, but no other {@code ElementType} values) are automatically
-     * considered as supported annotations.
-     *
-     * <p>To not support {@link PolyAll}, see examples below.
+     * <p>By default, a checker supports all annotations located in a subdirectory called {@literal
+     * qual} that's located in the same directory as the checker. Note that only annotations defined
+     * with the {@code @Target({ElementType.TYPE_USE})} meta-annotation (and optionally with the
+     * additional value of {@code ElementType.TYPE_PARAMETER}, but no other {@code ElementType}
+     * values) are automatically considered as supported annotations.
      *
      * <p>To support a different set of annotations than those in the {@literal qual} subdirectory,
      * or that have other {@code ElementType} values, see examples below.
@@ -796,41 +778,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>In total, there are 5 ways to indicate annotations that are supported by a checker:
      *
      * <ol>
-     *   <li>Only support annotations located in a checker's {@literal qual} directory, and {@link
-     *       PolyAll}:
+     *   <li>Only support annotations located in a checker's {@literal qual} directory:
      *       <p>This is the default behavior. Simply place those annotations within the {@literal
      *       qual} directory.
-     *   <li>Support annotations located in a checker's {@literal qual} directory, but without
-     *       {@link PolyAll}:
-     *       <p>Place those annotations within the {@literal qual} directory, and override {@link
-     *       #createSupportedTypeQualifiers()} by calling {@link
-     *       #getBundledTypeQualifiersWithPolyAll(Class...)} with no parameters passed in. Code
-     *       example:
-     *       <pre>
-     * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-     *      return getBundledTypeQualifiersWithoutPolyAll();
-     *  } }
-     * </pre>
-     *   <li>Support annotations located in a checker's {@literal qual} directory, {@link PolyAll},
-     *       and a list of other annotations:
-     *       <p>Place those annotations within the {@literal qual} directory, and override {@link
-     *       #createSupportedTypeQualifiers()} by calling {@link
-     *       #getBundledTypeQualifiersWithPolyAll(Class...)} with a varargs parameter list of the
-     *       other annotations. Code example:
-     *       <pre>
-     * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-     *      return getBundledTypeQualifiersWithPolyAll(Regex.class, PartialRegex.class, RegexBottom.class, UnknownRegex.class);
-     *  } }
-     * </pre>
      *   <li>Support annotations located in a checker's {@literal qual} directory and a list of
-     *       other annotations, but without supporting {@link PolyAll}:
+     *       other annotations:
      *       <p>Place those annotations within the {@literal qual} directory, and override {@link
      *       #createSupportedTypeQualifiers()} by calling {@link
-     *       #getBundledTypeQualifiersWithoutPolyAll(Class...)} with a varargs parameter list of the
-     *       other annotations. Code example:
+     *       #getBundledTypeQualifiers(Class...)} with a varargs parameter list of the other
+     *       annotations. Code example:
      *       <pre>
      * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-     *      return getBundledTypeQualifiersWithoutPolyAll(UnknownFormat.class, FormatBottom.class);
+     *      return getBundledTypeQualifiers(Regex.class, PartialRegex.class, RegexBottom.class, UnknownRegex.class);
      *  } }
      * </pre>
      *   <li>Supporting only annotations that are explicitly listed: Override {@link
@@ -843,21 +802,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *  } }
      * </pre>
      *       The set of qualifiers returned by {@link #createSupportedTypeQualifiers()} must be a
-     *       fresh, mutable set. The methods {@link
-     *       #getBundledTypeQualifiersWithoutPolyAll(Class...)} and {@link
-     *       #getBundledTypeQualifiersWithPolyAll(Class...)} each must return a fresh, mutable set
+     *       fresh, mutable set. The methods {@link #getBundledTypeQualifiers(Class...)} must return
+     *       a fresh, mutable set
      * </ol>
      *
      * @return the type qualifiers supported this processor, or an empty set if none
      */
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithPolyAll();
+        return getBundledTypeQualifiers();
     }
 
     /**
-     * Loads all annotations contained in the qual directory of a checker via reflection, and adds
-     * {@link PolyAll}, if a polymorphic type qualifier exists, and an explicit array of annotations
-     * to the set of annotation classes.
+     * Loads all annotations contained in the qual directory of a checker via reflection; if a
+     * polymorphic type qualifier exists, and an explicit array of annotations to the set of
+     * annotation classes.
      *
      * <p>This method can be called in the overridden versions of {@link
      * #createSupportedTypeQualifiers()} in each checker.
@@ -865,41 +823,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param explicitlyListedAnnotations a varargs array of explicitly listed annotation classes to
      *     be added to the returned set. For example, it is used frequently to add Bottom
      *     qualifiers.
-     * @return a mutable set of the loaded and listed annotation classes, as well as {@link
-     *     PolyAll}.
+     * @return a mutable set of the loaded and listed annotation classes
      */
     @SafeVarargs
-    protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithPolyAll(
-            Class<? extends Annotation>... explicitlyListedAnnotations) {
-        Set<Class<? extends Annotation>> annotations =
-                getBundledTypeQualifiersWithoutPolyAll(explicitlyListedAnnotations);
-        boolean addPolyAll = false;
-        for (Class<? extends Annotation> annotationClass : annotations) {
-            if (annotationClass.getAnnotation(PolymorphicQualifier.class) != null) {
-                addPolyAll = true;
-                break;
-            }
-        }
-        if (addPolyAll) {
-            annotations.add(PolyAll.class);
-        }
-        return annotations;
-    }
-
-    /**
-     * Loads all annotations contained in the qual directory of a checker via reflection, and an
-     * explicit list of annotations to the set of annotation classes.
-     *
-     * <p>This method can be called in the overridden versions of {@link
-     * #createSupportedTypeQualifiers()} in each checker.
-     *
-     * @param explicitlyListedAnnotations a varargs array of explicitly listed annotation classes to
-     *     be added to the returned set. For example, it is used frequently to add Bottom
-     *     qualifiers.
-     * @return a mutable set of the loaded, and listed annotation classes
-     */
-    @SafeVarargs
-    protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithoutPolyAll(
+    protected final Set<Class<? extends Annotation>> getBundledTypeQualifiers(
             Class<? extends Annotation>... explicitlyListedAnnotations) {
         return loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
     }
@@ -1286,7 +1213,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         AnnotatedTypeMirror result = TypeFromTree.fromExpression(this, tree);
 
-        if (shouldCache) {
+        if (shouldCache && tree.getKind() != Tree.Kind.NEW_CLASS) {
+            // Don't cache the type of object creations, because incorrect
+            // annotations would be cached during dataflow analysis.
+            // See Issue #602.
             fromExpressionTreeCache.put(tree, result.deepCopy());
         }
         return result;
@@ -2189,12 +2119,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * newClassTree has a diamond operator. In that case, the annotations on the type arguments are
      * inferred using the assignment context and contain defaults.
      *
+     * <p>Also, fully annotates the enclosing type of the returned declared type.
+     *
      * <p>(Subclass beside {@link GenericAnnotatedTypeFactory} should not override this method.)
      *
      * @param newClassTree NewClassTree
      * @return AnnotatedDeclaredType
      */
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
+
+        AnnotatedDeclaredType enclosingType;
+        if (newClassTree.getEnclosingExpression() != null) {
+            enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
+        } else {
+            enclosingType = null;
+        }
         // Diamond trees that are not anonymous classes.
         if (TreeUtils.isDiamondTree(newClassTree) && newClassTree.getClassBody() == null) {
             AnnotatedDeclaredType type =
@@ -2222,6 +2161,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     (AnnotatedDeclaredType)
                             TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
             type.replaceAnnotations(fromTypeTree.getAnnotations());
+            type.setEnclosingType(enclosingType);
             return type;
         } else if (newClassTree.getClassBody() != null) {
             AnnotatedDeclaredType type =
@@ -2232,13 +2172,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             List<? extends AnnotationTree> annos =
                     newClassTree.getClassBody().getModifiers().getAnnotations();
             type.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
+            type.setEnclosingType(enclosingType);
             return type;
         } else {
             // If newClassTree does not create anonymous class,
             // newClassTree.getIdentifier includes the explicit annotations in this location:
             //   new @HERE Class()
-            return (AnnotatedDeclaredType)
-                    TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
+            AnnotatedDeclaredType type =
+                    (AnnotatedDeclaredType)
+                            TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
+            type.setEnclosingType(enclosingType);
+            return type;
         }
     }
 
@@ -3131,12 +3075,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
             // Retrieving annotations from stub files.
             Set<AnnotationMirror> stubAnnos = stubTypes.getDeclAnnotation(elt);
-            if (stubAnnos != null) {
-                results.addAll(stubAnnos);
-            } else {
-                stubAnnos = stubTypes.getDeclAnnotation(elt);
-                results.addAll(stubAnnos);
-            }
+            results.addAll(stubAnnos);
 
             if (elt.getKind() == ElementKind.METHOD) {
                 // Retrieve the annotations from the overridden method's element.

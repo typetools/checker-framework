@@ -10,6 +10,7 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Names;
 import java.util.StringTokenizer;
 import javax.annotation.processing.ProcessingEnvironment;
+import org.checkerframework.javacutil.Pair;
 
 /**
  * A Utility class for parsing Java expression snippets, and converting them to proper Javac AST
@@ -32,12 +33,17 @@ import javax.annotation.processing.ProcessingEnvironment;
  * <p>It's implemented via a Recursive-Descend parser.
  */
 public class TreeParser {
+    /** Valid delimiters. */
     private static final String DELIMS = ".[](),";
-    private static final String SENTINAL = "";
+    /** A sentinel value. */
+    private static final String SENTINEL = "";
 
+    /** The TreeMaker instance. */
     private final TreeMaker maker;
+    /** The names instance. */
     private final Names names;
 
+    /** Create a TreeParser. */
     public TreeParser(ProcessingEnvironment env) {
         Context context = ((JavacProcessingEnvironment) env).getContext();
         maker = TreeMaker.instance(context);
@@ -51,11 +57,11 @@ public class TreeParser {
      * @return the AST corresponding to the snippet
      */
     public ExpressionTree parseTree(String s) {
-        tokenizer = new StringTokenizer(s, DELIMS, true);
-        token = tokenizer.nextToken();
+        StringTokenizer tokenizer = new StringTokenizer(s, DELIMS, true);
+        String token = tokenizer.nextToken();
 
         try {
-            return parseExpression();
+            return parseExpression(tokenizer, token).first;
         } catch (Exception e) {
             throw new ParseError(e);
         } finally {
@@ -64,15 +70,13 @@ public class TreeParser {
         }
     }
 
-    StringTokenizer tokenizer = null;
-    String token = null;
-
-    private String nextToken() {
-        token = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : SENTINAL;
-        return token;
+    /** The next token from the tokenizer, or the {@code SENTINEL} if none is available. */
+    private String nextToken(StringTokenizer tokenizer) {
+        return tokenizer.hasMoreTokens() ? tokenizer.nextToken() : SENTINEL;
     }
 
-    JCExpression fromToken(String token) {
+    /** The parsed expression tree for the given token. */
+    private JCExpression fromToken(String token) {
         // Optimization
         if ("true".equals(token)) {
             return maker.Literal(true);
@@ -97,43 +101,59 @@ public class TreeParser {
         return maker.Literal(value);
     }
 
-    JCExpression parseExpression() {
+    /**
+     * Parse an expression.
+     *
+     * @param tokenizer the tokenizer
+     * @param token the first token
+     * @return a pair of a parsed expression and the next token
+     */
+    private Pair<JCExpression, String> parseExpression(StringTokenizer tokenizer, String token) {
         JCExpression tree = fromToken(token);
 
         while (tokenizer.hasMoreTokens()) {
-            String delim = nextToken();
+            String delim = nextToken(tokenizer);
+            token = delim;
             if (".".equals(delim)) {
-                nextToken();
+                token = nextToken(tokenizer);
                 tree = maker.Select(tree, names.fromString(token));
             } else if ("(".equals(delim)) {
-                nextToken();
+                token = nextToken(tokenizer);
                 ListBuffer<JCExpression> args = new ListBuffer<>();
                 while (!")".equals(token)) {
-                    JCExpression arg = parseExpression();
+                    Pair<JCExpression, String> p = parseExpression(tokenizer, token);
+                    JCExpression arg = p.first;
+                    token = p.second;
                     args.append(arg);
                     if (",".equals(token)) {
-                        nextToken();
+                        token = nextToken(tokenizer);
                     }
                 }
                 // For now, handle empty args only
-                assert ")".equals(token);
+                assert ")".equals(token) : "Unexpected token: " + token;
                 tree = maker.Apply(List.nil(), tree, args.toList());
             } else if ("[".equals(token)) {
-                nextToken();
-                JCExpression index = parseExpression();
-                assert "]".equals(token);
+                token = nextToken(tokenizer);
+                Pair<JCExpression, String> p = parseExpression(tokenizer, token);
+                JCExpression index = p.first;
+                token = p.second;
+                assert "]".equals(token) : "Unexpected token: " + token;
                 tree = maker.Indexed(tree, index);
             } else {
-                return tree;
+                return Pair.of(tree, token);
             }
+            assert tokenizer != null : "@AssumeAssertion(nullness): side effects";
         }
 
-        return tree;
+        return Pair.of(tree, token);
     }
 
+    /** An internal error. */
     private static class ParseError extends RuntimeException {
+        /** The serial version UID. */
         private static final long serialVersionUID = 1887754619522101929L;
 
+        /** Create a ParseError. */
         ParseError(Throwable cause) {
             super(cause);
         }

@@ -220,7 +220,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.11.1.zip}
+  \url{https://checkerframework.org/checker-framework-3.0.1.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -608,9 +608,11 @@ use the stub file \<checker/resources/javadoc.astub> by using \<-Astubs=checker.
 You can pass command-line arguments to a checker via javac's standard \<-A>
 option (``\<A>'' stands for ``annotation'').  All of the distributed
 checkers support the following command-line options.
+Each checker may support additional command-line options; see the checker's
+documentation.
 
 % This list should be kept in sync with file
-% framework/src/org/checkerframework/framework/source/SourceChecker.java
+% framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java
 
 Unsound checking: ignore some errors
 \begin{itemize}
@@ -624,10 +626,6 @@ Unsound checking: ignore some errors
   Suppress all errors and warnings within the definition of a given class
   --- or everywhere except within the definition of a given class.  See
   Section~\ref{askipdefs}.
-\item \<-AignoreRawTypeArguments>
-  Ignore subtype tests for type arguments that were inferred for a raw
-  type.  If possible, it is better to write the type arguments.  See
-  Section~\ref{generics-raw-types}.
 \item \<-AassumeSideEffectFree>
   Unsoundly assume that every method is side-effect-free; see
   Section~\ref{type-refinement-purity}.
@@ -689,6 +687,10 @@ More sound (strict) checking: enable errors that are disabled by default
   Passing this option uses a conservative value instead.
   See \href{https://github.com/typetools/checker-framework/issues/979}{Issue
   979}.
+\item \<-AignoreRawTypeArguments=false>
+  Do not ignore subtype tests for type arguments that were inferred for a
+  raw type. Must also use \<-AconservativeUninferredTypeArguments>.  See
+  Section~\ref{generics-raw-types}.
 \end{itemize}
 
 Type-checking modes:  enable/disable functionality
@@ -739,9 +741,10 @@ Partially-annotated libraries
   Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
 \item \<-AstubWarnIfNotFoundIgnoresClasses>
   Don't warn about missing classes (only methods and fields) even when \<-AwarnIfNotFound> is true.
-\item \<-AstubWarnIfOverwritesBytecode>
-  Warn if a stub file entry overwrite bytecode information; see
-  Section~\ref{stub-using}.
+%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
+% \item \<-AstubWarnIfOverwritesBytecode>
+%   Warn if a stub file entry overwrite bytecode information; see
+%   Section~\ref{stub-using}.
 \item \<-AstubWarnIfRedundantWithBytecode>
   Warn if a stub file entry is redundant with bytecode information; see
   Section~\ref{stub-using}.

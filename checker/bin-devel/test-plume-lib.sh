@@ -19,6 +19,7 @@ if [[ "${GROUPARG}" == "options" ]]; then PACKAGES=(${GROUPARG}); fi
 if [[ "${GROUPARG}" == "plume-util" ]]; then PACKAGES=(${GROUPARG}); fi
 if [[ "${GROUPARG}" == "require-javadoc" ]]; then PACKAGES=(${GROUPARG}); fi
 if [[ "${GROUPARG}" == "signature-util" ]]; then PACKAGES=(${GROUPARG}); fi
+if [[ "${GROUPARG}" == "allJdk11" ]]; then PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable lookup multi-version-control options plume-util); fi
 if [[ "${GROUPARG}" == "all" ]] || [[ "${GROUPARG}" == "" ]]; then echo "GROUPARG is all or empty"; PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable lookup multi-version-control options plume-util require-javadoc); fi
 if [ -z ${PACKAGES+x} ]; then
   echo "Bad group argument '${GROUPARG}'"
@@ -29,7 +30,6 @@ echo "PACKAGES=${PACKAGES}"
 
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
   || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-eval `/tmp/plume-scripts/ci-info typetools`
 
 echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
@@ -43,7 +43,7 @@ else
   JSR308="$(cd "$CHECKERFRAMEWORK/.." && pwd -P)"
   (cd $JSR308 && git clone https://github.com/typetools/checker-framework.git) || (cd $JSR308 && git clone https://github.com/typetools/checker-framework.git)
 fi
-# This also builds annotation-tools and jsr308-langtools
+# This also builds annotation-tools
 (cd $CHECKERFRAMEWORK && ./checker/bin-devel/build.sh downloadjdk)
 
 echo "PACKAGES=${PACKAGES}"

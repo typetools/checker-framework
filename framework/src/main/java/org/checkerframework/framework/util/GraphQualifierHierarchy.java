@@ -78,8 +78,6 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     public boolean isSubtype(
             Collection<? extends AnnotationMirror> rhs,
             Collection<? extends AnnotationMirror> lhs) {
-        rhs = replacePolyAll(rhs);
-        lhs = replacePolyAll(lhs);
         if (lhs.isEmpty() || rhs.isEmpty()) {
             throw new BugInCF(
                     "GraphQualifierHierarchy: Empty annotations in lhs: "

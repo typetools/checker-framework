@@ -65,7 +65,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -1014,14 +1013,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
 
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
-        visitorState.setAssignmentContext(
-                Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
+        AnnotatedTypeMirror variableType;
+        if (getCurrentPath().getParentPath() != null
+                && getCurrentPath().getParentPath().getLeaf().getKind()
+                        == Tree.Kind.LAMBDA_EXPRESSION) {
+            // Calling getAnnotatedTypeLhs on a lambda parameter node is possibly expensive
+            // because caching is turned off.  This should be fixed by #979.
+            // See https://github.com/typetools/checker-framework/issues/2853 for an
+            // example.
+            variableType = atypeFactory.getAnnotatedType(node);
+        } else {
+            variableType = atypeFactory.getAnnotatedTypeLhs(node);
+        }
+        visitorState.setAssignmentContext(Pair.of(node, variableType));
 
         try {
             if (atypeFactory.getDependentTypesHelper() != null) {
-                atypeFactory
-                        .getDependentTypesHelper()
-                        .checkType(atypeFactory.getAnnotatedTypeLhs(node), node);
+                atypeFactory.getDependentTypesHelper().checkType(variableType, node);
             }
             // If there's no assignment in this variable declaration, skip it.
             if (node.getInitializer() != null) {
@@ -1887,7 +1895,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
-        if (castType.getKind() == TypeKind.DECLARED) {
+        final TypeKind castTypeKind = castType.getKind();
+        if (castTypeKind == TypeKind.DECLARED) {
             // Don't issue an error if the annotations are equivalent to the qualifier upper bound
             // of the type.
             AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType) castType;
@@ -1901,7 +1910,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (checker.hasOption("checkCastElementType")) {
             AnnotatedTypeMirror newCastType;
-            if (castType.getKind() == TypeKind.TYPEVAR) {
+            if (castTypeKind == TypeKind.TYPEVAR) {
                 newCastType = ((AnnotatedTypeVariable) castType).getUpperBound();
             } else {
                 newCastType = castType;
@@ -1933,8 +1942,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // TODO: the same number of arguments actually doesn't guarantee anything.
                     return false;
                 }
-            } else if (castType.getKind() == TypeKind.TYPEVAR
-                    && exprType.getKind() == TypeKind.TYPEVAR) {
+            } else if (castTypeKind == TypeKind.TYPEVAR && exprType.getKind() == TypeKind.TYPEVAR) {
                 // If both the cast type and the casted expression are type variables, then check
                 // the bounds.
                 Set<AnnotationMirror> lowerBoundAnnotationsCast =
@@ -1950,7 +1958,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 castType.getEffectiveAnnotations());
             }
             Set<AnnotationMirror> castAnnos;
-            if (castType.getKind() == TypeKind.TYPEVAR) {
+            if (castTypeKind == TypeKind.TYPEVAR) {
                 // If the cast type is a type var, but the expression is not, then check that the
                 // type of the expression is a subtype of the lower bound.
                 castAnnos =
@@ -3540,53 +3548,42 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
+        /**
+         * Returns true if the return type of the overridden method is a subtype of the return type
+         * of the overriding method.
+         *
+         * @return true if the return type is correct
+         */
         private boolean checkReturn() {
-            boolean success = true;
-            // Check the return value.
-            if ((overridingReturnType.getKind() != TypeKind.VOID)) {
-                final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
-                success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
-
-                // If both the overridden method have type variables as return types and both types
-                // were defined in their respective methods then, they can be covariant or invariant
-                // use super/subtypes for the overrides locations
-                if (!success) {
-                    success = testTypevarContainment(overridingReturnType, overriddenReturnType);
-
-                    // Sometimes when using a Java 8 compiler (not JSR308) the overridden return
-                    // type of a method reference becomes a captured type.  This leads to defaulting
-                    // that often makes the overriding return type invalid.  We ignore these.  This
-                    // happens in Issue403/Issue404 when running without the jsr308-langtools
-                    // compiler.
-                    if (!success && methodReference) {
-
-                        boolean isCaptureConverted =
-                                (overriddenReturnType.getKind() == TypeKind.TYPEVAR)
-                                        && TypesUtils.isCaptured(
-                                                (TypeVariable)
-                                                        overriddenReturnType.getUnderlyingType());
-
-                        if (methodReference && isCaptureConverted) {
-                            ExecutableElement overridenMethod = overridden.getElement();
-                            boolean isFunctionApply =
-                                    ElementUtils.isMethod(
-                                            overridenMethod,
-                                            functionApply,
-                                            atypeFactory.getProcessingEnv());
-                            if (isFunctionApply) {
-                                AnnotatedTypeMirror overridingUpperBound =
-                                        ((AnnotatedTypeVariable) overriddenReturnType)
-                                                .getUpperBound();
-                                success =
-                                        typeHierarchy.isSubtype(
-                                                overridingReturnType, overridingUpperBound);
-                            }
-                        }
-                    }
-                }
-
-                checkReturnMsg(success);
+            if ((overridingReturnType.getKind() == TypeKind.VOID)) {
+                // Nothing to check.
+                return true;
             }
+            final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
+            boolean success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
+            if (!success) {
+                // If both the overridden method have type variables as return types and both
+                // types were defined in their respective methods then, they can be covariant or
+                // invariant use super/subtypes for the overrides locations
+                success = testTypevarContainment(overridingReturnType, overriddenReturnType);
+            }
+
+            // Sometimes the overridden return type of a method reference becomes a captured
+            // type.  This leads to defaulting that often makes the overriding return type
+            // invalid.  We ignore these.  This happens in Issue403/Issue404.
+            if (!success
+                    && methodReference
+                    && TypesUtils.isCaptured(overriddenReturnType.getUnderlyingType())) {
+                if (ElementUtils.isMethod(
+                        overridden.getElement(), functionApply, atypeFactory.getProcessingEnv())) {
+                    success =
+                            typeHierarchy.isSubtype(
+                                    overridingReturnType,
+                                    ((AnnotatedTypeVariable) overriddenReturnType).getUpperBound());
+                }
+            }
+
+            checkReturnMsg(success);
             return success;
         }
 

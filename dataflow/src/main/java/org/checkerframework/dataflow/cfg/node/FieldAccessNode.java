@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -34,10 +35,14 @@ public class FieldAccessNode extends Node {
         this.field = TreeUtils.getFieldName(tree);
 
         if (tree instanceof MemberSelectTree) {
-            this.element = (VariableElement) TreeUtils.elementFromUse((MemberSelectTree) tree);
+            MemberSelectTree mstree = (MemberSelectTree) tree;
+            assert TreeUtils.isUseOfElement(mstree) : "@AssumeAssertion(nullness): tree kind";
+            this.element = (VariableElement) TreeUtils.elementFromUse(mstree);
         } else {
             assert tree instanceof IdentifierTree;
-            this.element = (VariableElement) TreeUtils.elementFromUse((IdentifierTree) tree);
+            IdentifierTree itree = (IdentifierTree) tree;
+            assert TreeUtils.isUseOfElement(itree) : "@AssumeAssertion(nullness): tree kind";
+            this.element = (VariableElement) TreeUtils.elementFromUse(itree);
         }
     }
 
@@ -82,7 +87,7 @@ public class FieldAccessNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof FieldAccessNode)) {
             return false;
         }

@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for the floating-point remainder:
@@ -29,7 +30,7 @@ public class FloatingRemainderNode extends BinaryOperationNode {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof FloatingRemainderNode)) {
             return false;
         }

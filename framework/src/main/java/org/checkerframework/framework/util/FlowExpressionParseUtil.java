@@ -214,7 +214,7 @@ public class FlowExpressionParseUtil {
             return new ValueLiteral(stringTM, expr.asString());
         }
 
-        /** @return The receiver, {@link FlowExpressionContext#receiver}, of the context. */
+        /** @return the receiver, {@link FlowExpressionContext#receiver}, of the context */
         @Override
         public Receiver visit(ThisExpr n, FlowExpressionContext context) {
             if (context.receiver != null && !context.receiver.containsUnknown()) {
@@ -224,7 +224,7 @@ public class FlowExpressionParseUtil {
             return new ThisReference(context.receiver == null ? null : context.receiver.getType());
         }
 
-        /** @return The receiver of the superclass of the context. */
+        /** @return the receiver of the superclass of the context */
         @Override
         public Receiver visit(SuperExpr n, FlowExpressionContext context) {
             // super literal
@@ -252,7 +252,7 @@ public class FlowExpressionParseUtil {
             return expr.getInner().accept(this, context);
         }
 
-        /** @return The receiver of an array access. */
+        /** @return the receiver of an array access */
         @Override
         public Receiver visit(ArrayAccessExpr expr, FlowExpressionContext context) {
             Receiver array = expr.getName().accept(this, context);
@@ -628,8 +628,8 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * @param s A String that starts with PARAMETER_REPLACEMENT
-         * @return The receiver of the parameter passed
+         * @param s a String that starts with PARAMETER_REPLACEMENT
+         * @return the receiver of the parameter passed
          */
         private static Receiver getParameterReceiver(String s, FlowExpressionContext context) {
             if (context.arguments == null) {
