@@ -106,14 +106,14 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
     public void run(String[] args) {
         ProcessingEnvironment env = JavacProcessingEnvironment.instance(new Context());
-        Elements elements = env.getElementUtils();
+        Elements elementUtils = env.getElementUtils();
 
         // TODO: Instead of using a GeneralAnnotatedTypeFactory, just use standard javac classes
         // to print explicit annotations.
         AnnotatedTypeFactory atypeFactory = new GeneralAnnotatedTypeFactory(this);
 
         for (String className : args) {
-            TypeElement typeElt = elements.getTypeElement(className);
+            TypeElement typeElt = elementUtils.getTypeElement(className);
             printClassType(typeElt, atypeFactory);
         }
     }

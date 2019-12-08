@@ -130,7 +130,7 @@ public class StubParser {
 
     private final ProcessingEnvironment processingEnv;
     private final AnnotatedTypeFactory atypeFactory;
-    private final Elements elements;
+    private final Elements elementUtils;
 
     /**
      * The set of annotations found in the stub file. Keys are simple (unqualified) names. (This may
@@ -196,7 +196,7 @@ public class StubParser {
         this.filename = filename;
         this.atypeFactory = atypeFactory;
         this.processingEnv = processingEnv;
-        this.elements = processingEnv.getElementUtils();
+        this.elementUtils = processingEnv.getElementUtils();
 
         Map<String, String> options = processingEnv.getOptions();
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
@@ -207,7 +207,7 @@ public class StubParser {
                         && atypeFactory.shouldWarnIfStubRedundantWithBytecode();
         this.debugStubParser = options.containsKey("stubDebug");
 
-        this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
+        this.fromStubFile = AnnotationBuilder.fromClass(elementUtils, FromStubFile.class);
 
         this.atypes = atypes;
         this.declAnnos = declAnnos;
@@ -235,7 +235,7 @@ public class StubParser {
         for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
                 AnnotationMirror anno =
-                        AnnotationBuilder.fromName(elements, typeElm.getQualifiedName());
+                        AnnotationBuilder.fromName(elementUtils, typeElm.getQualifiedName());
                 putNoOverride(result, typeElm.getSimpleName().toString(), anno);
             }
         }
@@ -307,7 +307,7 @@ public class StubParser {
                 } else {
                     // A single (non-wildcard) import
 
-                    final TypeElement importType = elements.getTypeElement(imported);
+                    final TypeElement importType = elementUtils.getTypeElement(imported);
                     if (importType == null && !importDecl.isStatic()) {
                         // Class or nested class (according to JSL), but we can't resolve
 
@@ -329,7 +329,7 @@ public class StubParser {
                             // Don't use findFieldElement(enclType, fieldName), because we don't
                             // want a warning, imported might be a method.
                             for (VariableElement field :
-                                    ElementUtils.getAllFieldsIn(enclType, elements)) {
+                                    ElementUtils.getAllFieldsIn(enclType, elementUtils)) {
                                 // field.getSimpleName() is a CharSequence, not a String
                                 if (fieldName.equals(field.getSimpleName().toString())) {
                                     importedConstants.add(imported);
@@ -340,7 +340,7 @@ public class StubParser {
                     } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
                         // Single annotation or nested annotation
 
-                        AnnotationMirror anno = AnnotationBuilder.fromName(elements, imported);
+                        AnnotationMirror anno = AnnotationBuilder.fromName(elementUtils, imported);
                         if (anno != null) {
                             Element annoElt = anno.getAnnotationType().asElement();
                             putNoOverride(result, annoElt.getSimpleName().toString(), anno);
@@ -511,7 +511,7 @@ public class StubParser {
         assert (packDecl != null);
         String packageName = packDecl.getNameAsString();
         parseState = new FqName(packageName, null);
-        Element elem = elements.getPackageElement(packageName);
+        Element elem = elementUtils.getPackageElement(packageName);
         // If the element lookup fails, it's because we have an annotation for a
         // package that isn't on the classpath, which is fine.
         if (elem != null) {
@@ -533,7 +533,7 @@ public class StubParser {
                 (outertypeName == null ? "" : outertypeName + ".") + typeDecl.getNameAsString();
         parseState = new FqName(parseState.packageName, innerName);
         String fqTypeName = parseState.toString();
-        TypeElement typeElt = elements.getTypeElement(fqTypeName);
+        TypeElement typeElt = elementUtils.getTypeElement(fqTypeName);
         if (typeElt == null) {
             if (debugStubParser
                     || (!hasNoStubParserWarning(typeDecl.getAnnotations())
@@ -1453,7 +1453,7 @@ public class StubParser {
      * @return field element in typeElt with the provided name or null if field element is not found
      */
     private VariableElement findFieldElement(TypeElement typeElt, String fieldName) {
-        for (VariableElement field : ElementUtils.getAllFieldsIn(typeElt, elements)) {
+        for (VariableElement field : ElementUtils.getAllFieldsIn(typeElt, elementUtils)) {
             // field.getSimpleName() is a CharSequence, not a String
             if (fieldName.equals(field.getSimpleName().toString())) {
                 return field;
@@ -1474,7 +1474,7 @@ public class StubParser {
      * cache in importedTypes.
      */
     private TypeElement getTypeElementOrNull(String name) {
-        TypeElement typeElement = elements.getTypeElement(name);
+        TypeElement typeElement = elementUtils.getTypeElement(name);
         if (typeElement != null) {
             importedTypes.put(name, typeElement);
         }
@@ -1487,7 +1487,7 @@ public class StubParser {
      * found.
      */
     private TypeElement getTypeElement(String typeName, String... msg) {
-        TypeElement classElement = elements.getTypeElement(typeName);
+        TypeElement classElement = elementUtils.getTypeElement(typeName);
         if (classElement == null) {
             if (msg.length == 0) {
                 stubWarnNotFound("Type not found: " + typeName);
@@ -1499,7 +1499,7 @@ public class StubParser {
     }
 
     private PackageElement findPackage(String packageName) {
-        PackageElement packageElement = elements.getPackageElement(packageName);
+        PackageElement packageElement = elementUtils.getPackageElement(packageName);
         if (packageElement == null) {
             stubWarnNotFound("Imported package not found: " + packageName);
         }
@@ -1851,7 +1851,7 @@ public class StubParser {
         if (findVariableElementFieldCache.containsKey(faexpr)) {
             return findVariableElementFieldCache.get(faexpr);
         }
-        TypeElement rcvElt = elements.getTypeElement(faexpr.getScope().toString());
+        TypeElement rcvElt = elementUtils.getTypeElement(faexpr.getScope().toString());
         if (rcvElt == null) {
             // Search importedConstants for full annotation name.
             for (String imp : importedConstants) {
@@ -1865,7 +1865,7 @@ public class StubParser {
                         fullAnnotation.append('.');
                     }
                     fullAnnotation.append(faexpr.getScope().toString());
-                    rcvElt = elements.getTypeElement(fullAnnotation);
+                    rcvElt = elementUtils.getTypeElement(fullAnnotation);
                     break;
                 }
             }

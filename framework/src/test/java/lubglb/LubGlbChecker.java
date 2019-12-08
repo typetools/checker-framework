@@ -32,15 +32,15 @@ public class LubGlbChecker extends BaseTypeChecker {
     public void initChecker() {
         super.initChecker();
 
-        Elements elements = processingEnv.getElementUtils();
+        Elements elementUtils = processingEnv.getElementUtils();
 
-        A = AnnotationBuilder.fromClass(elements, A.class);
-        B = AnnotationBuilder.fromClass(elements, B.class);
-        C = AnnotationBuilder.fromClass(elements, C.class);
-        D = AnnotationBuilder.fromClass(elements, D.class);
-        E = AnnotationBuilder.fromClass(elements, E.class);
-        F = AnnotationBuilder.fromClass(elements, F.class);
-        POLY = AnnotationBuilder.fromClass(elements, Poly.class);
+        A = AnnotationBuilder.fromClass(elementUtils, A.class);
+        B = AnnotationBuilder.fromClass(elementUtils, B.class);
+        C = AnnotationBuilder.fromClass(elementUtils, C.class);
+        D = AnnotationBuilder.fromClass(elementUtils, D.class);
+        E = AnnotationBuilder.fromClass(elementUtils, E.class);
+        F = AnnotationBuilder.fromClass(elementUtils, F.class);
+        POLY = AnnotationBuilder.fromClass(elementUtils, Poly.class);
 
         QualifierHierarchy qh =
                 ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();

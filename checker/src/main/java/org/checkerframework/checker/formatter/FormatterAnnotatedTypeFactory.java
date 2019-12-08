@@ -34,15 +34,16 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The @{@link UnknownFormat} annotation. */
     protected final AnnotationMirror UNKNOWNFORMAT =
-            AnnotationBuilder.fromClass(elements, UnknownFormat.class);
+            AnnotationBuilder.fromClass(elementUtils, UnknownFormat.class);
     /** The @{@link Format} annotation. */
-    protected final AnnotationMirror FORMAT = AnnotationBuilder.fromClass(elements, Format.class);
+    protected final AnnotationMirror FORMAT =
+            AnnotationBuilder.fromClass(elementUtils, Format.class);
     /** The @{@link InvalidFormat} annotation. */
     protected final AnnotationMirror INVALIDFORMAT =
-            AnnotationBuilder.fromClass(elements, InvalidFormat.class);
+            AnnotationBuilder.fromClass(elementUtils, InvalidFormat.class);
     /** The @{@link FormatBottom} annotation. */
     protected final AnnotationMirror FORMATBOTTOM =
-            AnnotationBuilder.fromClass(elements, FormatBottom.class);
+            AnnotationBuilder.fromClass(elementUtils, FormatBottom.class);
 
     /** Syntax tree utilities. */
     protected final FormatterTreeUtil treeUtil = new FormatterTreeUtil(checker);

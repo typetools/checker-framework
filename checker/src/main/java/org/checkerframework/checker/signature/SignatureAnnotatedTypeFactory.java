@@ -32,16 +32,16 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The {@literal @}{@link SignatureUnknown} annotation. */
     protected final AnnotationMirror SIGNATURE_UNKNOWN =
-            AnnotationBuilder.fromClass(elements, SignatureUnknown.class);
+            AnnotationBuilder.fromClass(elementUtils, SignatureUnknown.class);
     /** The {@literal @}{@link BinaryName} annotation. */
     protected final AnnotationMirror BINARY_NAME =
-            AnnotationBuilder.fromClass(elements, BinaryName.class);
+            AnnotationBuilder.fromClass(elementUtils, BinaryName.class);
     /** The {@literal @}{@link InternalForm} annotation. */
     protected final AnnotationMirror INTERNAL_FORM =
-            AnnotationBuilder.fromClass(elements, InternalForm.class);
+            AnnotationBuilder.fromClass(elementUtils, InternalForm.class);
     /** The {@literal @}{@link DotSeparatedIdentifiers} annotation. */
     protected final AnnotationMirror DOT_SEPARATED_IDENTIFIERS =
-            AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class);
+            AnnotationBuilder.fromClass(elementUtils, DotSeparatedIdentifiers.class);
 
     /** The {@link String#replace(char, char)} method. */
     private final ExecutableElement replaceCharChar =

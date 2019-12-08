@@ -550,7 +550,7 @@ public abstract class AnnotatedTypeMirror {
      * @param a the class of the annotation to add
      */
     public void addAnnotation(Class<? extends Annotation> a) {
-        AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elementUtils, a);
         addAnnotation(anno);
     }
 
@@ -620,7 +620,7 @@ public abstract class AnnotatedTypeMirror {
      * @return true if the annotation was removed, false if the type's annotations were unchanged
      */
     public boolean removeAnnotation(Class<? extends Annotation> a) {
-        AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elementUtils, a);
         if (!atypeFactory.isSupportedQualifier(anno)) {
             throw new BugInCF(
                     "AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
@@ -762,7 +762,7 @@ public abstract class AnnotatedTypeMirror {
     protected static AnnotatedDeclaredType createTypeOfObject(AnnotatedTypeFactory atypeFactory) {
         AnnotatedDeclaredType objectType =
                 atypeFactory.fromElement(
-                        atypeFactory.elements.getTypeElement(Object.class.getCanonicalName()));
+                        atypeFactory.elementUtils.getTypeElement(Object.class.getCanonicalName()));
         objectType.declaration = false;
         return objectType;
     }

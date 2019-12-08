@@ -27,7 +27,7 @@ public final class ReflectionTestAnnotatedTypeFactory extends BaseAnnotatedTypeF
     @Override
     public TreeAnnotator createTreeAnnotator() {
         LiteralTreeAnnotator literalTreeAnnotator = new LiteralTreeAnnotator(this);
-        AnnotationMirror bottom = AnnotationBuilder.fromClass(elements, ReflectBottom.class);
+        AnnotationMirror bottom = AnnotationBuilder.fromClass(elementUtils, ReflectBottom.class);
         literalTreeAnnotator.addLiteralKind(LiteralKind.INT, bottom);
         literalTreeAnnotator.addStandardLiteralQualifiers();
 
@@ -36,7 +36,7 @@ public final class ReflectionTestAnnotatedTypeFactory extends BaseAnnotatedTypeF
 
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        AnnotationMirror bottom = AnnotationBuilder.fromClass(elements, ReflectBottom.class);
+        AnnotationMirror bottom = AnnotationBuilder.fromClass(elementUtils, ReflectBottom.class);
         return new GraphQualifierHierarchy(factory, bottom);
     }
 }

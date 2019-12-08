@@ -34,19 +34,19 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The @SignednessGlb annotation. */
     private final AnnotationMirror SIGNEDNESS_GLB =
-            AnnotationBuilder.fromClass(elements, SignednessGlb.class);
+            AnnotationBuilder.fromClass(elementUtils, SignednessGlb.class);
     /** The @Signed annotation. */
-    private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
+    private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elementUtils, Signed.class);
     /** The @UnknownSignedness annotation. */
     private final AnnotationMirror UNKNOWN_SIGNEDNESS =
-            AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
+            AnnotationBuilder.fromClass(elementUtils, UnknownSignedness.class);
 
     /** The @NonNegative annotation of the Index Checker, as represented by the Value Checker. */
     private final AnnotationMirror INT_RANGE_FROM_NON_NEGATIVE =
-            AnnotationBuilder.fromClass(elements, IntRangeFromNonNegative.class);
+            AnnotationBuilder.fromClass(elementUtils, IntRangeFromNonNegative.class);
     /** The @Positive annotation of the Index Checker, as represented by the Value Checker. */
     private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
-            AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
+            AnnotationBuilder.fromClass(elementUtils, IntRangeFromPositive.class);
 
     ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
 
@@ -168,7 +168,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             case SHORT:
             case INT:
             case LONG:
-                QualifierDefaults defaults = new QualifierDefaults(elements, this);
+                QualifierDefaults defaults = new QualifierDefaults(elementUtils, this);
                 defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
                 defaults.annotate(tree, type);
                 break;

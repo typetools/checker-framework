@@ -24,9 +24,9 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public FenumAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        FENUM_BOTTOM = AnnotationBuilder.fromClass(elements, FenumBottom.class);
-        FENUM = AnnotationBuilder.fromClass(elements, Fenum.class);
-        FENUM_UNQUALIFIED = AnnotationBuilder.fromClass(elements, FenumUnqualified.class);
+        FENUM_BOTTOM = AnnotationBuilder.fromClass(elementUtils, FenumBottom.class);
+        FENUM = AnnotationBuilder.fromClass(elementUtils, Fenum.class);
+        FENUM_UNQUALIFIED = AnnotationBuilder.fromClass(elementUtils, FenumUnqualified.class);
 
         this.postInit();
     }

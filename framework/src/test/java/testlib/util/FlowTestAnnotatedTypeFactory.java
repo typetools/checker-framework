@@ -22,8 +22,8 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public FlowTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
-        VALUE = AnnotationBuilder.fromClass(elements, Value.class);
-        BOTTOM = AnnotationBuilder.fromClass(elements, Bottom.class);
+        VALUE = AnnotationBuilder.fromClass(elementUtils, Value.class);
+        BOTTOM = AnnotationBuilder.fromClass(elementUtils, Bottom.class);
 
         this.postInit();
     }
@@ -31,7 +31,7 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected void addCheckedCodeDefaults(QualifierDefaults defs) {
         defs.addCheckedCodeDefault(BOTTOM, TypeUseLocation.LOWER_BOUND);
-        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elements, Unqualified.class);
+        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elementUtils, Unqualified.class);
         defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
     }
 

@@ -110,7 +110,8 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
                 final TypeUseLocation[] locations = defaultFor.value();
-                defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
+                defs.addCheckedCodeDefaults(
+                        AnnotationBuilder.fromClass(elementUtils, qual), locations);
                 foundOtherwise =
                         foundOtherwise
                                 || Arrays.asList(locations).contains(TypeUseLocation.OTHERWISE);
@@ -118,12 +119,12 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defs.addCheckedCodeDefault(
-                        AnnotationBuilder.fromClass(elements, qual), TypeUseLocation.OTHERWISE);
+                        AnnotationBuilder.fromClass(elementUtils, qual), TypeUseLocation.OTHERWISE);
                 foundOtherwise = true;
             }
         }
         // If Unqualified is a supported qualifier, make it the default.
-        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elements, Unqualified.class);
+        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elementUtils, Unqualified.class);
         if (!foundOtherwise && this.isSupportedQualifier(unqualified)) {
             defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
         }

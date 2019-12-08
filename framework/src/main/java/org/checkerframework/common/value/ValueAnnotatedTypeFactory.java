@@ -113,14 +113,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The top type for this hierarchy. */
     protected final AnnotationMirror UNKNOWNVAL =
-            AnnotationBuilder.fromClass(elements, UnknownVal.class);
+            AnnotationBuilder.fromClass(elementUtils, UnknownVal.class);
 
     /** The bottom type for this hierarchy. */
     protected final AnnotationMirror BOTTOMVAL =
-            AnnotationBuilder.fromClass(elements, BottomVal.class);
+            AnnotationBuilder.fromClass(elementUtils, BottomVal.class);
 
     /** The canonical @{@link PolyValue} annotation. */
-    public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyValue.class);
+    public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elementUtils, PolyValue.class);
 
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;

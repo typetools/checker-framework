@@ -82,7 +82,7 @@ public class ElementUtils {
      * @return the parent package element or {@code null}
      */
     public static @Nullable PackageElement parentPackage(
-            final PackageElement elem, final Elements e) {
+            final PackageElement elem, final Elements elementUtils) {
         // The following might do the same thing:
         //   ((Symbol) elt).owner;
         // TODO: verify and see whether the change is worth it.
@@ -90,7 +90,7 @@ public class ElementUtils {
         String fqn = fqnstart;
         if (fqn != null && !fqn.isEmpty() && fqn.contains(".")) {
             fqn = fqn.substring(0, fqn.lastIndexOf('.'));
-            return e.getPackageElement(fqn);
+            return elementUtils.getPackageElement(fqn);
         }
         return null;
     }
@@ -398,7 +398,7 @@ public class ElementUtils {
      * <p>TODO: can we learn from the implementation of
      * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
      */
-    public static List<TypeElement> getSuperTypes(TypeElement type, Elements elements) {
+    public static List<TypeElement> getSuperTypes(TypeElement type, Elements elementUtils) {
 
         List<TypeElement> superelems = new ArrayList<>();
         if (type == null) {
@@ -443,7 +443,7 @@ public class ElementUtils {
         }
 
         // Include java.lang.Object as implicit superclass for all classes and interfaces.
-        TypeElement jlobject = elements.getTypeElement("java.lang.Object");
+        TypeElement jlobject = elementUtils.getTypeElement("java.lang.Object");
         if (!superelems.contains(jlobject)) {
             superelems.add(jlobject);
         }
@@ -456,10 +456,10 @@ public class ElementUtils {
      * use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own
      * getSuperTypes?
      */
-    public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
+    public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elementUtils) {
         List<VariableElement> fields = new ArrayList<>();
         fields.addAll(ElementFilter.fieldsIn(type.getEnclosedElements()));
-        List<TypeElement> alltypes = getSuperTypes(type, elements);
+        List<TypeElement> alltypes = getSuperTypes(type, elementUtils);
         for (TypeElement atype : alltypes) {
             fields.addAll(ElementFilter.fieldsIn(atype.getEnclosedElements()));
         }
@@ -471,11 +471,11 @@ public class ElementUtils {
      * constructors will be returned. TODO: should this use
      * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
      */
-    public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
+    public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elementUtils) {
         List<ExecutableElement> meths = new ArrayList<>();
         meths.addAll(ElementFilter.methodsIn(type.getEnclosedElements()));
 
-        List<TypeElement> alltypes = getSuperTypes(type, elements);
+        List<TypeElement> alltypes = getSuperTypes(type, elementUtils);
         for (TypeElement atype : alltypes) {
             meths.addAll(ElementFilter.methodsIn(atype.getEnclosedElements()));
         }

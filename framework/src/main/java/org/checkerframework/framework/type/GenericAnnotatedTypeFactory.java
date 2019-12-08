@@ -523,7 +523,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * override this method to provide a different {@code QualifierDefault} implementation.
      */
     protected QualifierDefaults createQualifierDefaults() {
-        return new QualifierDefaults(elements, this);
+        return new QualifierDefaults(elementUtils, this);
     }
 
     /**
@@ -578,12 +578,13 @@ public abstract class GenericAnnotatedTypeFactory<
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
                 final TypeUseLocation[] locations = defaultFor.value();
-                defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
+                defs.addCheckedCodeDefaults(
+                        AnnotationBuilder.fromClass(elementUtils, qual), locations);
             }
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defs.addCheckedCodeDefault(
-                        AnnotationBuilder.fromClass(elements, qual), TypeUseLocation.OTHERWISE);
+                        AnnotationBuilder.fromClass(elementUtils, qual), TypeUseLocation.OTHERWISE);
             }
         }
     }
@@ -627,13 +628,13 @@ public abstract class GenericAnnotatedTypeFactory<
             if (defaultInUncheckedCodeFor != null) {
                 final TypeUseLocation[] locations = defaultInUncheckedCodeFor.value();
                 defs.addUncheckedCodeDefaults(
-                        AnnotationBuilder.fromClass(elements, annotation), locations);
+                        AnnotationBuilder.fromClass(elementUtils, annotation), locations);
             }
 
             if (annotation.getAnnotation(DefaultQualifierInHierarchyInUncheckedCode.class)
                     != null) {
                 defs.addUncheckedCodeDefault(
-                        AnnotationBuilder.fromClass(elements, annotation),
+                        AnnotationBuilder.fromClass(elementUtils, annotation),
                         TypeUseLocation.OTHERWISE);
             }
         }

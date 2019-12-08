@@ -149,7 +149,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final ProcessingEnvironment processingEnv;
 
     /** Utility class for working with {@link Element}s. */
-    protected final Elements elements;
+    protected final Elements elementUtils;
 
     /** Utility class for working with {@link TypeMirror}s. */
     public final Types types;
@@ -251,7 +251,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
          * @param canonical the canonical annotation
          * @param copyElements whether elements should be copied over when translating to the
          *     canonical annotation
-         * @param ignorableElements elements that should not be copied over
+         * @param ignorableElements elementUtils that should not be copied over
          */
         Alias(
                 String aliasName,
@@ -389,7 +389,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // this.root = root;
         this.checker = checker;
         this.trees = Trees.instance(processingEnv);
-        this.elements = processingEnv.getElementUtils();
+        this.elementUtils = processingEnv.getElementUtils();
         this.types = processingEnv.getTypeUtils();
         this.visitorState = new VisitorState();
 
@@ -518,20 +518,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 org.jmlspecs.annotation.Pure.class,
                 org.checkerframework.dataflow.qual.Pure.class,
                 AnnotationBuilder.fromClass(
-                        elements, org.checkerframework.dataflow.qual.Pure.class));
+                        elementUtils, org.checkerframework.dataflow.qual.Pure.class));
 
         addInheritedAnnotation(
                 AnnotationBuilder.fromClass(
-                        elements, org.checkerframework.dataflow.qual.Pure.class));
+                        elementUtils, org.checkerframework.dataflow.qual.Pure.class));
         addInheritedAnnotation(
                 AnnotationBuilder.fromClass(
-                        elements, org.checkerframework.dataflow.qual.SideEffectFree.class));
+                        elementUtils, org.checkerframework.dataflow.qual.SideEffectFree.class));
         addInheritedAnnotation(
                 AnnotationBuilder.fromClass(
-                        elements, org.checkerframework.dataflow.qual.Deterministic.class));
+                        elementUtils, org.checkerframework.dataflow.qual.Deterministic.class));
         addInheritedAnnotation(
                 AnnotationBuilder.fromClass(
-                        elements, org.checkerframework.dataflow.qual.TerminatesExecution.class));
+                        elementUtils,
+                        org.checkerframework.dataflow.qual.TerminatesExecution.class));
 
         initializeReflectionResolution();
 
@@ -628,7 +629,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         MultiGraphQualifierHierarchy.MultiGraphFactory factory =
                 this.createQualifierHierarchyFactory();
 
-        return createQualifierHierarchy(elements, supportedTypeQualifiers, factory);
+        return createQualifierHierarchy(elementUtils, supportedTypeQualifiers, factory);
     }
 
     /**
@@ -641,13 +642,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return an annotation relation tree representing the supported qualifiers
      */
     protected static QualifierHierarchy createQualifierHierarchy(
-            Elements elements,
+            Elements elementUtils,
             Set<Class<? extends Annotation>> supportedTypeQualifiers,
             MultiGraphFactory factory) {
 
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
             AnnotationMirror typeQualifierAnno =
-                    AnnotationBuilder.fromClass(elements, typeQualifier);
+                    AnnotationBuilder.fromClass(elementUtils, typeQualifier);
             factory.addQualifier(typeQualifierAnno);
             // Polymorphic qualifiers can't declare their supertypes.
             // An error is raised if one is present.
@@ -676,7 +677,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (!supportedTypeQualifiers.contains(superQualifier)) {
                     continue;
                 }
-                AnnotationMirror superAnno = AnnotationBuilder.fromClass(elements, superQualifier);
+                AnnotationMirror superAnno =
+                        AnnotationBuilder.fromClass(elementUtils, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
@@ -953,7 +955,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     @Override
     public AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target) {
-        AnnotationMirror mirror = AnnotationBuilder.fromClass(elements, target);
+        AnnotationMirror mirror = AnnotationBuilder.fromClass(elementUtils, target);
         if (isSupportedQualifier(mirror)) {
             AnnotatedTypeMirror atm = getAnnotatedType(tree);
             return atm.getAnnotation(target);
@@ -1402,7 +1404,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         for (Name name : classes) {
             // Calling AnnotationBuilder.fromName (which ignores elements/fields) is acceptable
             // because @FieldInvariant does not handle classes with elements/fields.
-            qualifiers.add(AnnotationBuilder.fromName(elements, name));
+            qualifiers.add(AnnotationBuilder.fromName(elementUtils, name));
         }
         if (qualifiers.size() == 1) {
             while (fields.size() > qualifiers.size()) {
@@ -2300,7 +2302,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // See Issue #715
     // https://github.com/typetools/checker-framework/issues/715
     public AnnotatedDeclaredType getStringType(AnnotatedTypeMirror type) {
-        TypeMirror stringTypeMirror = TypesUtils.typeFromClass(String.class, types, elements);
+        TypeMirror stringTypeMirror = TypesUtils.typeFromClass(String.class, types, elementUtils);
         AnnotatedDeclaredType stringATM =
                 (AnnotatedDeclaredType)
                         AnnotatedTypeMirror.createType(
@@ -3055,7 +3057,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
         // Retrieving the annotations from the element.
-        List<? extends AnnotationMirror> fromEle = elements.getAllAnnotationMirrors(elt);
+        List<? extends AnnotationMirror> fromEle = elementUtils.getAllAnnotationMirrors(elt);
         for (AnnotationMirror annotation : fromEle) {
             try {
                 results.add(annotation);
@@ -3099,7 +3101,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private void inheritOverriddenDeclAnnos(ExecutableElement elt, Set<AnnotationMirror> results) {
         Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
-                AnnotatedTypes.overriddenMethods(elements, this, elt);
+                AnnotatedTypes.overriddenMethods(elementUtils, this, elt);
 
         if (overriddenMethods != null) {
             for (ExecutableElement superElt : overriddenMethods.values()) {
@@ -3684,7 +3686,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** Accessor for the element utilities. */
     public Elements getElementUtils() {
-        return this.elements;
+        return this.elementUtils;
     }
 
     /** Accessor for the tree utilities. */

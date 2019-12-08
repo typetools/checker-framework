@@ -18,8 +18,8 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
     public FlowExpressionAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        TOP = AnnotationBuilder.fromClass(elements, FETop.class);
-        BOTTOM = AnnotationBuilder.fromClass(elements, FEBot.class);
+        TOP = AnnotationBuilder.fromClass(elementUtils, FETop.class);
+        BOTTOM = AnnotationBuilder.fromClass(elementUtils, FEBot.class);
         postInit();
     }
 

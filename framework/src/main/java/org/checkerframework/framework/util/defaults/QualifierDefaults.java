@@ -77,7 +77,7 @@ public class QualifierDefaults {
      */
     private boolean applyToTypeVar = false;
 
-    private final Elements elements;
+    private final Elements elementUtils;
     private final AnnotatedTypeFactory atypeFactory;
     private final List<String> upstreamCheckerNames;
 
@@ -155,8 +155,8 @@ public class QualifierDefaults {
      * @param elements interface to Element data in the current processing environment
      * @param atypeFactory an annotation factory, used to get annotations by name
      */
-    public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
-        this.elements = elements;
+    public QualifierDefaults(Elements elementUtils, AnnotatedTypeFactory atypeFactory) {
+        this.elementUtils = elementUtils;
         this.atypeFactory = atypeFactory;
         this.upstreamCheckerNames =
                 atypeFactory.getContext().getChecker().getUpstreamCheckerNames();
@@ -492,7 +492,7 @@ public class QualifierDefaults {
     private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
         @SuppressWarnings("unchecked")
         Name cls = AnnotationUtils.getElementValueClassName(dq, "value", false);
-        AnnotationMirror anno = AnnotationBuilder.fromName(elements, cls);
+        AnnotationMirror anno = AnnotationBuilder.fromName(elementUtils, cls);
 
         if (anno == null) {
             return null;
@@ -550,7 +550,7 @@ public class QualifierDefaults {
             if (elt.getKind() == ElementKind.PACKAGE) {
                 // elt.getEnclosingElement() on a package is null; therefore,
                 // use the dedicated method.
-                parent = ElementUtils.parentPackage((PackageElement) elt, elements);
+                parent = ElementUtils.parentPackage((PackageElement) elt, elementUtils);
             } else {
                 parent = elt.getEnclosingElement();
             }
@@ -609,7 +609,7 @@ public class QualifierDefaults {
 
         Element parent;
         if (elt.getKind() == ElementKind.PACKAGE) {
-            parent = ElementUtils.parentPackage((PackageElement) elt, elements);
+            parent = ElementUtils.parentPackage((PackageElement) elt, elementUtils);
         } else {
             parent = elt.getEnclosingElement();
         }

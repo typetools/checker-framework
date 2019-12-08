@@ -62,7 +62,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public KeyLookupTreeAnnotator(
                 BaseAnnotatedTypeFactory atf, Class<? extends Annotation> annot) {
             super(atf);
-            theAnnot = AnnotationBuilder.fromClass(elements, annot);
+            theAnnot = AnnotationBuilder.fromClass(elementUtils, annot);
         }
 
         @Override

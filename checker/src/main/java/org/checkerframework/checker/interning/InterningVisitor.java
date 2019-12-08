@@ -65,10 +65,11 @@ import org.checkerframework.javacutil.TypesUtils;
 public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTypeFactory> {
 
     /** The @Interned annotation. */
-    private final AnnotationMirror INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
+    private final AnnotationMirror INTERNED =
+            AnnotationBuilder.fromClass(elementUtils, Interned.class);
     /** The @InternedDistinct annotation. */
     private final AnnotationMirror INTERNED_DISTINCT =
-            AnnotationBuilder.fromClass(elements, InternedDistinct.class);
+            AnnotationBuilder.fromClass(elementUtils, InternedDistinct.class);
     /**
      * The declared type of which the equality tests should be tested, if the user explicitly passed
      * one. The user can pass the class name via the {@code -Acheckclass=...} option. Null if no
@@ -859,12 +860,13 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     private boolean overrides(ExecutableElement e, Class<?> clazz, String method) {
 
         // Get the element named by "clazz".
-        TypeElement clazzElt = elements.getTypeElement(clazz.getCanonicalName());
+        TypeElement clazzElt = elementUtils.getTypeElement(clazz.getCanonicalName());
         assert clazzElt != null;
 
         // Check all of the methods in the class for name matches and overriding.
         for (ExecutableElement elt : ElementFilter.methodsIn(clazzElt.getEnclosedElements())) {
-            if (elt.getSimpleName().contentEquals(method) && elements.overrides(e, elt, clazzElt)) {
+            if (elt.getSimpleName().contentEquals(method)
+                    && elementUtils.overrides(e, elt, clazzElt)) {
                 return true;
             }
         }
@@ -879,7 +881,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return null;
         }
 
-        TypeElement classElt = elements.getTypeElement(className);
+        TypeElement classElt = elementUtils.getTypeElement(className);
         if (classElt == null) {
             return null;
         }

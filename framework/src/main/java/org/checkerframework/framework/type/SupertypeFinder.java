@@ -189,7 +189,8 @@ class SupertypeFinder {
 
             if (typeElement.getKind() == ElementKind.ANNOTATION_TYPE) {
                 TypeElement jlaElement =
-                        atypeFactory.elements.getTypeElement(Annotation.class.getCanonicalName());
+                        atypeFactory.elementUtils.getTypeElement(
+                                Annotation.class.getCanonicalName());
                 AnnotatedDeclaredType jlaAnnotation = atypeFactory.fromElement(jlaElement);
                 jlaAnnotation.addAnnotations(type.getAnnotations());
                 supertypes.add(jlaAnnotation);
@@ -344,19 +345,21 @@ class SupertypeFinder {
         public List<AnnotatedTypeMirror> visitArray(AnnotatedArrayType type, Void p) {
             List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
             Set<AnnotationMirror> annotations = type.getAnnotations();
-            Elements elements = atypeFactory.elements;
+            Elements elementUtils = atypeFactory.elementUtils;
             final AnnotatedTypeMirror objectType =
-                    atypeFactory.getAnnotatedType(elements.getTypeElement("java.lang.Object"));
+                    atypeFactory.getAnnotatedType(elementUtils.getTypeElement("java.lang.Object"));
             objectType.addAnnotations(annotations);
             superTypes.add(objectType);
 
             final AnnotatedTypeMirror cloneableType =
-                    atypeFactory.getAnnotatedType(elements.getTypeElement("java.lang.Cloneable"));
+                    atypeFactory.getAnnotatedType(
+                            elementUtils.getTypeElement("java.lang.Cloneable"));
             cloneableType.addAnnotations(annotations);
             superTypes.add(cloneableType);
 
             final AnnotatedTypeMirror serializableType =
-                    atypeFactory.getAnnotatedType(elements.getTypeElement("java.io.Serializable"));
+                    atypeFactory.getAnnotatedType(
+                            elementUtils.getTypeElement("java.io.Serializable"));
             serializableType.addAnnotations(annotations);
             superTypes.add(serializableType);
 

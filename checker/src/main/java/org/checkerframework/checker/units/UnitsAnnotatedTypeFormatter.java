@@ -14,7 +14,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
     protected final BaseTypeChecker checker;
-    protected final Elements elements;
+    protected final Elements elementUtils;
 
     public UnitsAnnotatedTypeFormatter(BaseTypeChecker checker) {
         // Utilize the Default Type Formatter, but force it to print out Invisible Qualifiers
@@ -28,13 +28,13 @@ public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
                         true));
 
         this.checker = checker;
-        this.elements = checker.getElementUtils();
+        this.elementUtils = checker.getElementUtils();
     }
 
     protected static class UnitsFormattingVisitor
             extends DefaultAnnotatedTypeFormatter.FormattingVisitor {
         protected final BaseTypeChecker checker;
-        protected final Elements elements;
+        protected final Elements elementUtils;
 
         public UnitsFormattingVisitor(
                 BaseTypeChecker checker,
@@ -44,18 +44,18 @@ public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
 
             super(annoFormatter, printVerboseGenerics, defaultInvisiblesSetting);
             this.checker = checker;
-            this.elements = checker.getElementUtils();
+            this.elementUtils = checker.getElementUtils();
         }
     }
 
     /** Format the error printout of any units qualifier that uses Prefix.one. */
     protected static class UnitsAnnotationFormatter extends DefaultAnnotationFormatter {
         protected final BaseTypeChecker checker;
-        protected final Elements elements;
+        protected final Elements elementUtils;
 
         public UnitsAnnotationFormatter(BaseTypeChecker checker) {
             this.checker = checker;
-            this.elements = checker.getElementUtils();
+            this.elementUtils = checker.getElementUtils();
         }
 
         @Override
@@ -68,7 +68,7 @@ public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
             // Prefix.one if it does
             for (AnnotationMirror anno : annos) {
                 if (UnitsRelationsTools.getPrefix(anno) == Prefix.one) {
-                    anno = UnitsRelationsTools.removePrefix(elements, anno);
+                    anno = UnitsRelationsTools.removePrefix(elementUtils, anno);
                 }
                 // add to set
                 trimmedAnnoSet.add(anno);

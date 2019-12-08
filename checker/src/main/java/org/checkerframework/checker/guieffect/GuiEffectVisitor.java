@@ -179,7 +179,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
     @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
-        return Collections.singleton(AnnotationBuilder.fromClass(elements, AlwaysSafe.class));
+        return Collections.singleton(AnnotationBuilder.fromClass(elementUtils, AlwaysSafe.class));
     }
 
     @Override
@@ -292,7 +292,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 boolean overridesPolymorphic = false;
                 Map<AnnotatedTypeMirror.AnnotatedDeclaredType, ExecutableElement>
                         overriddenMethods =
-                                AnnotatedTypes.overriddenMethods(elements, atypeFactory, callerElt);
+                                AnnotatedTypes.overriddenMethods(
+                                        elementUtils, atypeFactory, callerElt);
                 for (Map.Entry<AnnotatedTypeMirror.AnnotatedDeclaredType, ExecutableElement> pair :
                         overriddenMethods.entrySet()) {
                     AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType = pair.getKey();

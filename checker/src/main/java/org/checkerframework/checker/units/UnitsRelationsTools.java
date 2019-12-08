@@ -171,7 +171,7 @@ public class UnitsRelationsTools {
      *     constructed
      */
     public static @Nullable AnnotationMirror removePrefix(
-            final Elements elements, final AnnotationMirror unitsAnnotation) {
+            final Elements elementUtils, final AnnotationMirror unitsAnnotation) {
         if (hasNoPrefix(unitsAnnotation)) {
             // Optimization, though the else case would also work.
             return unitsAnnotation;
@@ -181,7 +181,7 @@ public class UnitsRelationsTools {
             // TODO: refine sensitivity of removal for extension units, in case extension
             // Annotations have more than just Prefix in its values.
             return AnnotationBuilder.fromName(
-                    elements, unitsAnnotation.getAnnotationType().toString());
+                    elementUtils, unitsAnnotation.getAnnotationType().toString());
         }
     }
 
@@ -195,7 +195,7 @@ public class UnitsRelationsTools {
      * @return a copy of the Annotated Type without the prefix
      */
     public static AnnotatedTypeMirror removePrefix(
-            final Elements elements, final AnnotatedTypeMirror annoType) {
+            final Elements elementUtils, final AnnotatedTypeMirror annoType) {
         // deep copy the Annotated Type Mirror without any of the Annotations
         AnnotatedTypeMirror result = annoType.deepCopy(false);
 
@@ -206,7 +206,7 @@ public class UnitsRelationsTools {
         // does
         for (AnnotationMirror anno : annos) {
             // try to clean the Annotation Mirror of the Prefix
-            AnnotationMirror cleanedMirror = removePrefix(elements, anno);
+            AnnotationMirror cleanedMirror = removePrefix(elementUtils, anno);
             // if successful, add the cleaned annotation to the deep copy
             if (cleanedMirror != null) {
                 result.addAnnotation(cleanedMirror);

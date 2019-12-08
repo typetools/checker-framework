@@ -38,9 +38,9 @@ import org.checkerframework.javacutil.TreeUtils;
 
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror METHODVAL_BOTTOM =
-            AnnotationBuilder.fromClass(elements, MethodValBottom.class);
+            AnnotationBuilder.fromClass(elementUtils, MethodValBottom.class);
     private final AnnotationMirror UNKNOWN_METHOD =
-            AnnotationBuilder.fromClass(elements, UnknownMethod.class);
+            AnnotationBuilder.fromClass(elementUtils, UnknownMethod.class);
 
     private static final int UNKNOWN_PARAM_LENGTH = -1;
 

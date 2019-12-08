@@ -107,11 +107,12 @@ public abstract class InitializationAnnotatedTypeFactory<
     public InitializationAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
-        INITIALIZED = AnnotationBuilder.fromClass(elements, Initialized.class);
-        UNDER_INITALIZATION = AnnotationBuilder.fromClass(elements, UnderInitialization.class);
-        NOT_ONLY_INITIALIZED = AnnotationBuilder.fromClass(elements, NotOnlyInitialized.class);
-        FBCBOTTOM = AnnotationBuilder.fromClass(elements, FBCBottom.class);
-        UNKNOWN_INITIALIZATION = AnnotationBuilder.fromClass(elements, UnknownInitialization.class);
+        INITIALIZED = AnnotationBuilder.fromClass(elementUtils, Initialized.class);
+        UNDER_INITALIZATION = AnnotationBuilder.fromClass(elementUtils, UnderInitialization.class);
+        NOT_ONLY_INITIALIZED = AnnotationBuilder.fromClass(elementUtils, NotOnlyInitialized.class);
+        FBCBOTTOM = AnnotationBuilder.fromClass(elementUtils, FBCBottom.class);
+        UNKNOWN_INITIALIZATION =
+                AnnotationBuilder.fromClass(elementUtils, UnknownInitialization.class);
 
         Set<Class<? extends Annotation>> tempInitAnnos = new LinkedHashSet<>(4);
         tempInitAnnos.add(UnderInitialization.class);

@@ -31,11 +31,14 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         super.initChecker();
         FormatterTreeUtil treeUtil = new FormatterTreeUtil(this);
 
-        Elements elements = getElementUtils();
-        AnnotationMirror UNKNOWNFORMAT = AnnotationBuilder.fromClass(elements, UnknownFormat.class);
-        AnnotationMirror FORMAT = AnnotationBuilder.fromClass(elements, Format.class);
-        AnnotationMirror INVALIDFORMAT = AnnotationBuilder.fromClass(elements, InvalidFormat.class);
-        AnnotationMirror FORMATBOTTOM = AnnotationBuilder.fromClass(elements, FormatBottom.class);
+        Elements elementUtils = getElementUtils();
+        AnnotationMirror UNKNOWNFORMAT =
+                AnnotationBuilder.fromClass(elementUtils, UnknownFormat.class);
+        AnnotationMirror FORMAT = AnnotationBuilder.fromClass(elementUtils, Format.class);
+        AnnotationMirror INVALIDFORMAT =
+                AnnotationBuilder.fromClass(elementUtils, InvalidFormat.class);
+        AnnotationMirror FORMATBOTTOM =
+                AnnotationBuilder.fromClass(elementUtils, FormatBottom.class);
 
         AnnotationBuilder builder =
                 new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());

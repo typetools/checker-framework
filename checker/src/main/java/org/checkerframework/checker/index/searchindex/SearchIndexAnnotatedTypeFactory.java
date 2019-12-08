@@ -31,10 +31,10 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The @{@link SearchIndexUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
-            AnnotationBuilder.fromClass(elements, SearchIndexUnknown.class);
+            AnnotationBuilder.fromClass(elementUtils, SearchIndexUnknown.class);
     /** The @{@link SearchIndexBottom} annotation. */
     public final AnnotationMirror BOTTOM =
-            AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
+            AnnotationBuilder.fromClass(elementUtils, SearchIndexBottom.class);
 
     /** Create a new SearchIndexAnnotatedTypeFactory. */
     public SearchIndexAnnotatedTypeFactory(BaseTypeChecker checker) {

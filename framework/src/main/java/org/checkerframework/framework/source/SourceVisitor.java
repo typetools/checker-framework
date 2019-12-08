@@ -27,7 +27,7 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
     protected final Trees trees;
 
     /** The {@link Elements} helper to use when scanning. */
-    protected final Elements elements;
+    protected final Elements elementUtils;
 
     /** The {@link Types} helper to use when scanning. */
     protected final Types types;
@@ -51,7 +51,7 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
         ProcessingEnvironment env = checker.getProcessingEnvironment();
 
         this.trees = Trees.instance(env);
-        this.elements = env.getElementUtils();
+        this.elementUtils = env.getElementUtils();
         this.types = env.getTypeUtils();
 
         this.treesWithSuppressWarnings = new ArrayList<>();

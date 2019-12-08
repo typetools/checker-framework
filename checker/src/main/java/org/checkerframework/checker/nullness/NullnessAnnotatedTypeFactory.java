@@ -67,16 +67,17 @@ public class NullnessAnnotatedTypeFactory
                 NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
 
     /** The @{@link NonNull} annotation. */
-    protected final AnnotationMirror NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
+    protected final AnnotationMirror NONNULL =
+            AnnotationBuilder.fromClass(elementUtils, NonNull.class);
     /** The @{@link Nullable} annotation. */
     protected final AnnotationMirror NULLABLE =
-            AnnotationBuilder.fromClass(elements, Nullable.class);
+            AnnotationBuilder.fromClass(elementUtils, Nullable.class);
     /** The @{@link PolyNull} annotation. */
     protected final AnnotationMirror POLYNULL =
-            AnnotationBuilder.fromClass(elements, PolyNull.class);
+            AnnotationBuilder.fromClass(elementUtils, PolyNull.class);
     /** The @{@link MonotonicNonNull} annotation. */
     protected final AnnotationMirror MONOTONIC_NONNULL =
-            AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
+            AnnotationBuilder.fromClass(elementUtils, MonotonicNonNull.class);
 
     /** Handles invocations of {@link java.lang.System#getProperty(String)}. */
     protected final SystemGetPropertyHandler systemGetPropertyHandler;

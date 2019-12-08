@@ -58,8 +58,8 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public TestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
-        Elements elements = processingEnv.getElementUtils();
-        BOTTOM = AnnotationBuilder.fromClass(elements, Bottom.class);
+        Elements elementUtils = processingEnv.getElementUtils();
+        BOTTOM = AnnotationBuilder.fromClass(elementUtils, Bottom.class);
 
         this.postInit();
     }
@@ -67,7 +67,7 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected void addCheckedCodeDefaults(QualifierDefaults defs) {
         defs.addCheckedCodeDefault(BOTTOM, TypeUseLocation.LOWER_BOUND);
-        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elements, Unqualified.class);
+        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elementUtils, Unqualified.class);
         defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
     }
 

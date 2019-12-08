@@ -25,7 +25,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
     /** SI units. */
     protected AnnotationMirror m, km, mm, m2, km2, mm2, s, h, mPERs, kmPERh, mPERs2;
     /** The Element Utilities from the Units Checker's processing environment. */
-    protected Elements elements;
+    protected Elements elementUtils;
 
     /**
      * Constructs various AnnotationMirrors representing specific checker-framework provided Units
@@ -33,7 +33,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
      */
     @Override
     public UnitsRelations init(ProcessingEnvironment env) {
-        elements = env.getElementUtils();
+        elementUtils = env.getElementUtils();
 
         m = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, m.class);
         km = UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(env, m.class, Prefix.kilo);

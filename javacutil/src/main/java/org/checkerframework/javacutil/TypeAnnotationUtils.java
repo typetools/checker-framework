@@ -160,7 +160,7 @@ public class TypeAnnotationUtils {
     private static class AttributeCreator implements AnnotationValueVisitor<Attribute, Void> {
         private final ProcessingEnvironment processingEnv;
         private final Types modelTypes;
-        private final Elements elements;
+        private final Elements elementUtils;
         private final com.sun.tools.javac.code.Types javacTypes;
 
         private final ExecutableElement meth;
@@ -168,7 +168,7 @@ public class TypeAnnotationUtils {
         public AttributeCreator(ProcessingEnvironment env, ExecutableElement meth) {
             this.processingEnv = env;
             Context context = ((JavacProcessingEnvironment) env).getContext();
-            this.elements = env.getElementUtils();
+            this.elementUtils = env.getElementUtils();
             this.modelTypes = env.getTypeUtils();
             this.javacTypes = com.sun.tools.javac.code.Types.instance(context);
 
@@ -235,7 +235,7 @@ public class TypeAnnotationUtils {
 
         @Override
         public Attribute visitString(String s, Void p) {
-            TypeMirror stringType = elements.getTypeElement("java.lang.String").asType();
+            TypeMirror stringType = elementUtils.getTypeElement("java.lang.String").asType();
             return new Attribute.Constant((Type) stringType, s);
         }
 

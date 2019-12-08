@@ -40,13 +40,14 @@ public class KeyForAnnotatedTypeFactory
                 KeyForValue, KeyForStore, KeyForTransfer, KeyForAnalysis> {
 
     /** The @{@link KeyFor} annotation. */
-    protected final AnnotationMirror KEYFOR = AnnotationBuilder.fromClass(elements, KeyFor.class);
+    protected final AnnotationMirror KEYFOR =
+            AnnotationBuilder.fromClass(elementUtils, KeyFor.class);
     /** The @{@link UnknownKeyFor} annotation. */
     protected final AnnotationMirror UNKNOWNKEYFOR =
-            AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
+            AnnotationBuilder.fromClass(elementUtils, UnknownKeyFor.class);
     /** The @{@link KeyForBottom} annotation. */
     protected final AnnotationMirror KEYFORBOTTOM =
-            AnnotationBuilder.fromClass(elements, KeyForBottom.class);
+            AnnotationBuilder.fromClass(elementUtils, KeyForBottom.class);
 
     /** The Map.containsKey method. */
     private final ExecutableElement mapContainsKey =

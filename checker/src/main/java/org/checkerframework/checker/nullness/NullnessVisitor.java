@@ -88,7 +88,7 @@ public class NullnessVisitor
         NONNULL = atypeFactory.NONNULL;
         NULLABLE = atypeFactory.NULLABLE;
         MONOTONIC_NONNULL = atypeFactory.MONOTONIC_NONNULL;
-        stringType = elements.getTypeElement("java.lang.String").asType();
+        stringType = elementUtils.getTypeElement("java.lang.String").asType();
 
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.collectionSize =

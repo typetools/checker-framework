@@ -74,16 +74,16 @@ import org.checkerframework.javacutil.TreeUtils;
 public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The @{@link Regex} annotation. */
-    protected final AnnotationMirror REGEX = AnnotationBuilder.fromClass(elements, Regex.class);
+    protected final AnnotationMirror REGEX = AnnotationBuilder.fromClass(elementUtils, Regex.class);
     /** The @{@link RegexBottom} annotation. */
     protected final AnnotationMirror REGEXBOTTOM =
-            AnnotationBuilder.fromClass(elements, RegexBottom.class);
+            AnnotationBuilder.fromClass(elementUtils, RegexBottom.class);
     /** The @{@link PartialRegex} annotation. */
     protected final AnnotationMirror PARTIALREGEX =
-            AnnotationBuilder.fromClass(elements, PartialRegex.class);
+            AnnotationBuilder.fromClass(elementUtils, PartialRegex.class);
     /** The @{@link PolyRegex} annotation. */
     protected final AnnotationMirror POLYREGEX =
-            AnnotationBuilder.fromClass(elements, PolyRegex.class);
+            AnnotationBuilder.fromClass(elementUtils, PolyRegex.class);
 
     /** The method that returns the value element of a {@code @Regex} annotation. */
     protected final ExecutableElement regexValueElement =
@@ -385,7 +385,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     type.replaceAnnotation(createRegexAnnotation(regexCount));
                 } else if (bottomAnno != null) {
                     type.replaceAnnotation(
-                            AnnotationBuilder.fromClass(elements, RegexBottom.class));
+                            AnnotationBuilder.fromClass(elementUtils, RegexBottom.class));
                 }
             }
             return super.visitMethodInvocation(tree, type);

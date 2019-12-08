@@ -30,7 +30,7 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
      */
     public DefaultQualifierPolymorphism(ProcessingEnvironment env, AnnotatedTypeFactory factory) {
         super(env, factory);
-        Elements elements = env.getElementUtils();
+        Elements elementUtils = env.getElementUtils();
         AnnotationMirrorMap<AnnotationMirror> polyQuals = new AnnotationMirrorMap<>();
         AnnotationMirrorSet topsSeen = new AnnotationMirrorSet();
         for (AnnotationMirror aam : qualHierarchy.getTypeQualifiers()) {
@@ -50,7 +50,7 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
                 }
                 ttreetop = topQuals.iterator().next();
             } else {
-                AnnotationMirror ttree = AnnotationBuilder.fromName(elements, plval);
+                AnnotationMirror ttree = AnnotationBuilder.fromName(elementUtils, plval);
                 ttreetop = qualHierarchy.getTopAnnotation(ttree);
             }
             if (topsSeen.contains(ttreetop)) {

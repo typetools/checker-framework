@@ -125,7 +125,7 @@ public class AnnotatedTypes {
             final AnnotatedTypeMirror subtype,
             final T supertype) {
         final Types types = atypeFactory.getProcessingEnv().getTypeUtils();
-        final Elements elements = atypeFactory.getProcessingEnv().getElementUtils();
+        final Elements elementUtils = atypeFactory.getProcessingEnv().getElementUtils();
 
         if (subtype.getKind() == TypeKind.NULL) {
             // Make a copy of the supertype so that if supertype is a composite type, the
@@ -150,7 +150,7 @@ public class AnnotatedTypes {
         // @1 Enum<E extends @2 Enum<E>>
         if (asSuperType != null
                 && AnnotatedTypes.isEnum(asSuperType)
-                && AnnotatedTypes.isDeclarationOfJavaLangEnum(types, elements, supertype)) {
+                && AnnotatedTypes.isDeclarationOfJavaLangEnum(types, elementUtils, supertype)) {
             final AnnotatedDeclaredType resultAtd = ((AnnotatedDeclaredType) supertype).deepCopy();
             resultAtd.clearAnnotations();
             resultAtd.addAnnotations(asSuperType.getAnnotations());
@@ -614,11 +614,11 @@ public class AnnotatedTypes {
      *     method overrides
      */
     public static Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods(
-            Elements elements, AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
+            Elements elementUtils, AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
         final TypeElement elem = (TypeElement) method.getEnclosingElement();
         final AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(elem);
         final Collection<AnnotatedDeclaredType> supertypes = getSuperTypes(type);
-        return overriddenMethods(elements, method, supertypes);
+        return overriddenMethods(elementUtils, method, supertypes);
     }
 
     /**
@@ -633,7 +633,7 @@ public class AnnotatedTypes {
      *     method} overrides among {@code supertypes}
      */
     public static Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods(
-            Elements elements,
+            Elements elementUtils,
             ExecutableElement method,
             Collection<AnnotatedDeclaredType> supertypes) {
 
@@ -646,7 +646,7 @@ public class AnnotatedTypes {
             // it overrides the given method.
             for (ExecutableElement supermethod :
                     ElementFilter.methodsIn(superElement.getEnclosedElements())) {
-                if (elements.overrides(method, supermethod, superElement)) {
+                if (elementUtils.overrides(method, supermethod, superElement)) {
                     overrides.put(supertype, supermethod);
                     break;
                 }
@@ -1053,9 +1053,10 @@ public class AnnotatedTypes {
     }
 
     public static boolean isDeclarationOfJavaLangEnum(
-            final Types types, final Elements elements, final AnnotatedTypeMirror typeMirror) {
+            final Types types, final Elements elementUtils, final AnnotatedTypeMirror typeMirror) {
         if (isEnum(typeMirror)) {
-            return elements.getTypeElement("java.lang.Enum")
+            return elementUtils
+                    .getTypeElement("java.lang.Enum")
                     .equals(((AnnotatedDeclaredType) typeMirror).getUnderlyingType().asElement());
         }
 
@@ -1081,7 +1082,7 @@ public class AnnotatedTypes {
      *     "overrides" the other)
      */
     public static boolean areCorrespondingTypeVariables(
-            Elements elements, AnnotatedTypeVariable type1, AnnotatedTypeVariable type2) {
+            Elements elementUtils, AnnotatedTypeVariable type1, AnnotatedTypeVariable type2) {
         final TypeParameterElement type1ParamElem =
                 (TypeParameterElement) type1.getUnderlyingType().asElement();
         final TypeParameterElement type2ParamElem =
@@ -1098,8 +1099,8 @@ public class AnnotatedTypes {
             final TypeElement type2Class = (TypeElement) type2Executable.getEnclosingElement();
 
             boolean methodIsOverriden =
-                    elements.overrides(type1Executable, type2Executable, type1Class)
-                            || elements.overrides(type2Executable, type1Executable, type2Class);
+                    elementUtils.overrides(type1Executable, type2Executable, type1Class)
+                            || elementUtils.overrides(type2Executable, type1Executable, type2Class);
             if (methodIsOverriden) {
                 boolean haveSameIndex =
                         type1Executable.getTypeParameters().indexOf(type1ParamElem)

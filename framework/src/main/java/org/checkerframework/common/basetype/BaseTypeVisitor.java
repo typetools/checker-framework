@@ -195,7 +195,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /** The @java.lang.annotation.Target annotation. */
     protected final AnnotationMirror TARGET =
-            AnnotationBuilder.fromClass(elements, java.lang.annotation.Target.class);
+            AnnotationBuilder.fromClass(elementUtils, java.lang.annotation.Target.class);
 
     /** The {@code value} element/field of the @java.lang.annotation.Target annotation. */
     protected final ExecutableElement targetValueElement;
@@ -225,7 +225,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.objectEquals = TreeUtils.getMethod("java.lang.Object", "equals", 1, env);
         this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
         this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
-        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        this.vectorType = atypeFactory.fromElement(elementUtils.getTypeElement("java.util.Vector"));
         targetValueElement =
                 TreeUtils.getMethod(java.lang.annotation.Target.class.getName(), "value", 0, env);
 
@@ -665,7 +665,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             // Find which method this overrides!
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
-                    AnnotatedTypes.overriddenMethods(elements, atypeFactory, methodElement);
+                    AnnotatedTypes.overriddenMethods(elementUtils, atypeFactory, methodElement);
             for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
                     overriddenMethods.entrySet()) {
                 AnnotatedDeclaredType overriddenType = pair.getKey();
@@ -2839,7 +2839,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             final AnnotatedTypeVariable innerAtv = (AnnotatedTypeVariable) inner;
             final AnnotatedTypeVariable outerAtv = (AnnotatedTypeVariable) outer;
 
-            if (AnnotatedTypes.areCorrespondingTypeVariables(elements, innerAtv, outerAtv)) {
+            if (AnnotatedTypes.areCorrespondingTypeVariables(elementUtils, innerAtv, outerAtv)) {
                 final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
                 return typeHierarchy.isSubtype(innerAtv.getUpperBound(), outerAtv.getUpperBound())
                         && typeHierarchy.isSubtype(
@@ -3976,9 +3976,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (PluginUtil.getJreVersion() != 8 || checker.hasOption("nocheckjdk")) {
             return;
         }
-        TypeElement objectTE = elements.getTypeElement("java.lang.Object");
+        TypeElement objectTE = elementUtils.getTypeElement("java.lang.Object");
         List<? extends ExecutableElement> memberMethods =
-                ElementFilter.methodsIn(elements.getAllMembers(objectTE));
+                ElementFilter.methodsIn(elementUtils.getAllMembers(objectTE));
 
         // Look for the @Nullness annotation in Object.equals(@Nullable Object).
         // If it is found, the user is using the annotated JDK.

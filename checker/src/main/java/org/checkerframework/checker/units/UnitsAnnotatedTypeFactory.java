@@ -51,11 +51,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             unitsRelationsAnnoClass = org.checkerframework.checker.units.qual.UnitsRelations.class;
 
     protected final AnnotationMirror mixedUnits =
-            AnnotationBuilder.fromClass(elements, MixedUnits.class);
+            AnnotationBuilder.fromClass(elementUtils, MixedUnits.class);
     protected final AnnotationMirror TOP =
-            AnnotationBuilder.fromClass(elements, UnknownUnits.class);
+            AnnotationBuilder.fromClass(elementUtils, UnknownUnits.class);
     protected final AnnotationMirror BOTTOM =
-            AnnotationBuilder.fromClass(elements, UnitsBottom.class);
+            AnnotationBuilder.fromClass(elementUtils, UnitsBottom.class);
 
     /**
      * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
@@ -292,7 +292,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param qual the qualifier to investigate
      */
     private void addUnitsRelations(Class<? extends Annotation> qual) {
-        AnnotationMirror am = AnnotationBuilder.fromClass(elements, qual);
+        AnnotationMirror am = AnnotationBuilder.fromClass(elementUtils, qual);
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
@@ -381,10 +381,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             // Remove Prefix.one
             if (UnitsRelationsTools.getPrefix(lht) == Prefix.one) {
-                lht = UnitsRelationsTools.removePrefix(elements, lht);
+                lht = UnitsRelationsTools.removePrefix(elementUtils, lht);
             }
             if (UnitsRelationsTools.getPrefix(rht) == Prefix.one) {
-                rht = UnitsRelationsTools.removePrefix(elements, rht);
+                rht = UnitsRelationsTools.removePrefix(elementUtils, rht);
             }
 
             AnnotationMirror bestres = null;
@@ -504,7 +504,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new UnitsQualifierHierarchy(
-                factory, AnnotationBuilder.fromClass(elements, UnitsBottom.class));
+                factory, AnnotationBuilder.fromClass(elementUtils, UnitsBottom.class));
     }
 
     /** Qualifier Hierarchy for the Units Checker. */
@@ -586,6 +586,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     private AnnotationMirror removePrefix(AnnotationMirror anno) {
-        return UnitsRelationsTools.removePrefix(elements, anno);
+        return UnitsRelationsTools.removePrefix(elementUtils, anno);
     }
 }

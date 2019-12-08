@@ -71,12 +71,13 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The @{@link SameLenUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
-            AnnotationBuilder.fromClass(elements, SameLenUnknown.class);
+            AnnotationBuilder.fromClass(elementUtils, SameLenUnknown.class);
     /** The @{@link SameLenBottom} annotation. */
     private final AnnotationMirror BOTTOM =
-            AnnotationBuilder.fromClass(elements, SameLenBottom.class);
+            AnnotationBuilder.fromClass(elementUtils, SameLenBottom.class);
     /** The @{@link PolySameLen} annotation. */
-    private final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolySameLen.class);
+    private final AnnotationMirror POLY =
+            AnnotationBuilder.fromClass(elementUtils, PolySameLen.class);
 
     private final IndexMethodIdentifier imf = new IndexMethodIdentifier(this);
 

@@ -83,25 +83,25 @@ public class LockAnnotatedTypeFactory
 
     /** The @{@link LockHeld} annotation. */
     protected final AnnotationMirror LOCKHELD =
-            AnnotationBuilder.fromClass(elements, LockHeld.class);
+            AnnotationBuilder.fromClass(elementUtils, LockHeld.class);
     /** The @{@link LockPossiblyHeld} annotation. */
     protected final AnnotationMirror LOCKPOSSIBLYHELD =
-            AnnotationBuilder.fromClass(elements, LockPossiblyHeld.class);
+            AnnotationBuilder.fromClass(elementUtils, LockPossiblyHeld.class);
     /** The @{@link SideEffectFree} annotation. */
     protected final AnnotationMirror SIDEEFFECTFREE =
-            AnnotationBuilder.fromClass(elements, SideEffectFree.class);
+            AnnotationBuilder.fromClass(elementUtils, SideEffectFree.class);
     /** The @{@link GuardedByUnknown} annotation. */
     protected final AnnotationMirror GUARDEDBYUNKNOWN =
-            AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
+            AnnotationBuilder.fromClass(elementUtils, GuardedByUnknown.class);
     /** The @{@link GuardedByBottom} annotation. */
     protected final AnnotationMirror GUARDEDBY =
             createGuardedByAnnotationMirror(new ArrayList<String>());
     /** The @{@link GuardedByBottom} annotation. */
     protected final AnnotationMirror GUARDEDBYBOTTOM =
-            AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
+            AnnotationBuilder.fromClass(elementUtils, GuardedByBottom.class);
     /** The @{@link GuardSatisfied} annotation. */
     protected final AnnotationMirror GUARDSATISFIED =
-            AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
+            AnnotationBuilder.fromClass(elementUtils, GuardSatisfied.class);
 
     /** The net.jcip.annotations.GuardedBy annotation, or null if not on the classpath. */
     protected final Class<? extends Annotation> jcipGuardedBy;

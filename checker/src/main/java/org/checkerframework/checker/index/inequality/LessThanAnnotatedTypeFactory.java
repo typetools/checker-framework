@@ -39,9 +39,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror BOTTOM =
-            AnnotationBuilder.fromClass(elements, LessThanBottom.class);
+            AnnotationBuilder.fromClass(elementUtils, LessThanBottom.class);
     public final AnnotationMirror UNKNOWN =
-            AnnotationBuilder.fromClass(elements, LessThanUnknown.class);
+            AnnotationBuilder.fromClass(elementUtils, LessThanUnknown.class);
 
     public LessThanAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);

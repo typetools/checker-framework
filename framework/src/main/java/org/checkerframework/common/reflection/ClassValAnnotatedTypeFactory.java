@@ -43,7 +43,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror CLASSVAL_TOP =
-            AnnotationBuilder.fromClass(elements, UnknownClass.class);
+            AnnotationBuilder.fromClass(elementUtils, UnknownClass.class);
 
     /**
      * Create a new ClassValAnnotatedTypeFactory.

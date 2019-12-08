@@ -54,7 +54,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 public class AnnotationBuilder {
 
-    private final Elements elements;
+    private final Elements elementUtils;
     private final Types types;
 
     private final TypeElement annotationElt;
@@ -89,9 +89,9 @@ public class AnnotationBuilder {
      * @param name the name of the annotation to build
      */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
-        this.elements = env.getElementUtils();
+        this.elementUtils = env.getElementUtils();
         this.types = env.getTypeUtils();
-        this.annotationElt = elements.getTypeElement(name);
+        this.annotationElt = elementUtils.getTypeElement(name);
         if (annotationElt == null) {
             throw new UserError("Could not find annotation: " + name + ". Is it on the classpath?");
         }
@@ -108,7 +108,7 @@ public class AnnotationBuilder {
      * @param annotation the annotation to copy
      */
     public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
-        this.elements = env.getElementUtils();
+        this.elementUtils = env.getElementUtils();
         this.types = env.getTypeUtils();
 
         this.annotationType = annotation.getAnnotationType();
@@ -137,10 +137,10 @@ public class AnnotationBuilder {
      * @return an {@link AnnotationMirror} of type given type
      */
     public static AnnotationMirror fromClass(
-            Elements elements, Class<? extends Annotation> aClass) {
+            Elements elementUtils, Class<? extends Annotation> aClass) {
         String name = aClass.getCanonicalName();
         assert name != null : "@AssumeAssertion(nullness): assumption";
-        AnnotationMirror res = fromName(elements, name);
+        AnnotationMirror res = fromName(elementUtils, name);
         if (res == null) {
             throw new UserError(
                     "AnnotationBuilder: error: fromClass can't load Class %s%n"
@@ -158,17 +158,17 @@ public class AnnotationBuilder {
      *
      * <p>This method returns null if the annotation corresponding to the name could not be loaded.
      *
-     * @param elements the element utilities to use
+     * @param elementUtils the element utilities to use
      * @param name the name of the annotation to create
      * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't
      *     be loaded
      */
-    public static @Nullable AnnotationMirror fromName(Elements elements, CharSequence name) {
+    public static @Nullable AnnotationMirror fromName(Elements elementUtils, CharSequence name) {
         AnnotationMirror res = annotationsFromNames.get(name);
         if (res != null) {
             return res;
         }
-        final TypeElement annoElt = elements.getTypeElement(name);
+        final TypeElement annoElt = elementUtils.getTypeElement(name);
         if (annoElt == null) {
             return null;
         }
@@ -367,7 +367,7 @@ public class AnnotationBuilder {
         } else {
             String name = clazz.getCanonicalName();
             assert name != null : "@AssumeAssertion(nullness): assumption";
-            TypeElement element = elements.getTypeElement(name);
+            TypeElement element = elementUtils.getTypeElement(name);
             if (element == null) {
                 throw new BugInCF("Unrecognized class: " + clazz);
             }
@@ -483,7 +483,7 @@ public class AnnotationBuilder {
     private VariableElement findEnumElement(Enum<?> value) {
         String enumClass = value.getDeclaringClass().getCanonicalName();
         assert enumClass != null : "@AssumeAssertion(nullness): assumption";
-        TypeElement enumClassElt = elements.getTypeElement(enumClass);
+        TypeElement enumClassElt = elementUtils.getTypeElement(enumClass);
         assert enumClassElt != null;
         for (Element enumElt : enumClassElt.getEnclosedElements()) {
             if (enumElt.getSimpleName().contentEquals(value.name())) {
@@ -548,7 +548,7 @@ public class AnnotationBuilder {
         } else {
             String name = givenValue.getClass().getCanonicalName();
             assert name != null : "@AssumeAssertion(nullness): assumption";
-            found = elements.getTypeElement(name).asType();
+            found = elementUtils.getTypeElement(name).asType();
             isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
         }
         if (!isSubtype) {

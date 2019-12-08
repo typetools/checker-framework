@@ -32,7 +32,7 @@ public class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public TestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.postInit();
-        H1S2 = AnnotationBuilder.fromClass(elements, testchecker.quals.H1S2.class);
+        H1S2 = AnnotationBuilder.fromClass(elementUtils, testchecker.quals.H1S2.class);
     }
 
     @Override

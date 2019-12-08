@@ -89,20 +89,20 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The canonical @{@link GTENegativeOne} annotation. */
     public final AnnotationMirror GTEN1 =
-            AnnotationBuilder.fromClass(elements, GTENegativeOne.class);
+            AnnotationBuilder.fromClass(elementUtils, GTENegativeOne.class);
     /** The canonical @{@link NonNegative} annotation. */
-    public final AnnotationMirror NN = AnnotationBuilder.fromClass(elements, NonNegative.class);
+    public final AnnotationMirror NN = AnnotationBuilder.fromClass(elementUtils, NonNegative.class);
     /** The canonical @{@link Positive} annotation. */
-    public final AnnotationMirror POS = AnnotationBuilder.fromClass(elements, Positive.class);
+    public final AnnotationMirror POS = AnnotationBuilder.fromClass(elementUtils, Positive.class);
     /** The bottom annotation. */
     public final AnnotationMirror BOTTOM =
-            AnnotationBuilder.fromClass(elements, LowerBoundBottom.class);
+            AnnotationBuilder.fromClass(elementUtils, LowerBoundBottom.class);
     /** The canonical @{@link LowerBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
-            AnnotationBuilder.fromClass(elements, LowerBoundUnknown.class);
+            AnnotationBuilder.fromClass(elementUtils, LowerBoundUnknown.class);
     /** The canonical @{@link PolyLowerBound} annotation. */
     public final AnnotationMirror POLY =
-            AnnotationBuilder.fromClass(elements, PolyLowerBound.class);
+            AnnotationBuilder.fromClass(elementUtils, PolyLowerBound.class);
 
     private final IndexMethodIdentifier imf;
 

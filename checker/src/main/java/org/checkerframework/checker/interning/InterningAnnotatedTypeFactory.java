@@ -56,9 +56,9 @@ import org.checkerframework.javacutil.TreeUtils;
 public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The {@link UnknownInterned} annotation. */
-    final AnnotationMirror TOP = AnnotationBuilder.fromClass(elements, UnknownInterned.class);
+    final AnnotationMirror TOP = AnnotationBuilder.fromClass(elementUtils, UnknownInterned.class);
     /** The {@link Interned} annotation. */
-    final AnnotationMirror INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
+    final AnnotationMirror INTERNED = AnnotationBuilder.fromClass(elementUtils, Interned.class);
 
     /**
      * Creates a new {@link InterningAnnotatedTypeFactory} that operates on a particular AST.

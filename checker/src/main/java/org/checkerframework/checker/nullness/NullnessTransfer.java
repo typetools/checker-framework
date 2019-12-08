@@ -85,17 +85,18 @@ public class NullnessTransfer
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
         this.nullnessTypeFactory = analysis.getTypeFactory();
-        Elements elements = nullnessTypeFactory.getElementUtils();
+        Elements elementUtils = nullnessTypeFactory.getElementUtils();
         this.keyForTypeFactory =
                 ((BaseTypeChecker) nullnessTypeFactory.getContext().getChecker())
                         .getTypeFactoryOfSubchecker(KeyForSubchecker.class);
-        NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
-        NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
+        NONNULL = AnnotationBuilder.fromClass(elementUtils, NonNull.class);
+        NULLABLE = AnnotationBuilder.fromClass(elementUtils, Nullable.class);
 
         MAP_TYPE =
                 (AnnotatedDeclaredType)
                         AnnotatedTypeMirror.createType(
-                                TypesUtils.typeFromClass(Map.class, analysis.getTypes(), elements),
+                                TypesUtils.typeFromClass(
+                                        Map.class, analysis.getTypes(), elementUtils),
                                 nullnessTypeFactory,
                                 false);
     }

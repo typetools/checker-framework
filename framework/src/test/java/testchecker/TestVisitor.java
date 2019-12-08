@@ -34,7 +34,7 @@ public class TestVisitor extends BaseTypeVisitor<TestAnnotatedTypeFactory> {
 
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Tree p) {
-            AnnotationMirror h1Invalid = AnnotationBuilder.fromClass(elements, H1Invalid.class);
+            AnnotationMirror h1Invalid = AnnotationBuilder.fromClass(elementUtils, H1Invalid.class);
             if (AnnotatedTypes.containsModifier(type, h1Invalid)) {
                 checker.report(
                         Result.failure(

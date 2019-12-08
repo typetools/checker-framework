@@ -95,7 +95,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
                     ExecutableElement ex = (ExecutableElement) e;
-                    boolean overrides = elements.overrides(overrider, ex, overriderClass);
+                    boolean overrides = elementUtils.overrides(overrider, ex, overriderClass);
                     if (overrides) {
                         return ex;
                     }
@@ -381,7 +381,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         // Check if this an @UI anonymous class or lambda due to inference, or an expression
         // containing such class/lambda
         if (isDirectlyMarkedUIThroughInference(tree)) {
-            typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
+            typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elementUtils, UI.class));
         } else if (tree.getKind() == Tree.Kind.PARENTHESIZED) {
             ParenthesizedTree parenthesizedTree = (ParenthesizedTree) tree;
             return this.getAnnotatedType(parenthesizedTree.getExpression());
@@ -396,7 +396,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                             && this.getAnnotatedType(cet.getFalseExpression())
                                     .hasAnnotation(UI.class));
             if (isTrueOperandUI || isFalseOperandUI) {
-                typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
+                typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elementUtils, UI.class));
             }
         }
         // TODO: Do we need to support other expression here?
@@ -682,7 +682,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = methType.getReceiverType();
             if (receiverType != null
                     && !receiverType.isAnnotatedInHierarchy(
-                            AnnotationBuilder.fromClass(elements, UI.class))) {
+                            AnnotationBuilder.fromClass(elementUtils, UI.class))) {
                 receiverType.addAnnotation(
                         isPolymorphicType(cls)
                                 ? PolyUI.class

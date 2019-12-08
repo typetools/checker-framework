@@ -46,7 +46,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * TreeMaker.
  */
 public class TreeBuilder {
-    protected final Elements elements;
+    protected final Elements elementUtils;
     protected final Types modelTypes;
     protected final com.sun.tools.javac.code.Types javacTypes;
     protected final TreeMaker maker;
@@ -57,7 +57,7 @@ public class TreeBuilder {
     public TreeBuilder(ProcessingEnvironment env) {
         this.env = env;
         Context context = ((JavacProcessingEnvironment) env).getContext();
-        elements = env.getElementUtils();
+        elementUtils = env.getElementUtils();
         modelTypes = env.getTypeUtils();
         javacTypes = com.sun.tools.javac.code.Types.instance(context);
         maker = TreeMaker.instance(context);
@@ -82,7 +82,7 @@ public class TreeBuilder {
         Symbol.MethodSymbol iteratorMethod = null;
 
         for (ExecutableElement method :
-                ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
+                ElementFilter.methodsIn(elementUtils.getAllMembers(exprElement))) {
             Name methodName = method.getSimpleName();
 
             if (method.getParameters().isEmpty()) {
@@ -150,7 +150,7 @@ public class TreeBuilder {
         Symbol.MethodSymbol hasNextMethod = null;
 
         for (ExecutableElement method :
-                ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
+                ElementFilter.methodsIn(elementUtils.getAllMembers(exprElement))) {
             Name methodName = method.getSimpleName();
 
             if (method.getParameters().isEmpty()) {
@@ -186,7 +186,7 @@ public class TreeBuilder {
         Symbol.MethodSymbol nextMethod = null;
 
         for (ExecutableElement method :
-                ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
+                ElementFilter.methodsIn(elementUtils.getAllMembers(exprElement))) {
             Name methodName = method.getSimpleName();
 
             if (method.getParameters().isEmpty()) {
@@ -465,7 +465,7 @@ public class TreeBuilder {
         Symbol.MethodSymbol primValueMethod = null;
 
         for (ExecutableElement method :
-                ElementFilter.methodsIn(elements.getAllMembers(boxedElement))) {
+                ElementFilter.methodsIn(elementUtils.getAllMembers(boxedElement))) {
             Name methodName = method.getSimpleName();
 
             if (methodName.contentEquals(primValueName) && method.getParameters().isEmpty()) {

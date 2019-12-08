@@ -103,13 +103,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The @{@link UpperBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
-            AnnotationBuilder.fromClass(elements, UpperBoundUnknown.class);
+            AnnotationBuilder.fromClass(elementUtils, UpperBoundUnknown.class);
     /** The @{@link UpperBoundBottom} annotation. */
     public final AnnotationMirror BOTTOM =
-            AnnotationBuilder.fromClass(elements, UpperBoundBottom.class);
+            AnnotationBuilder.fromClass(elementUtils, UpperBoundBottom.class);
     /** The @{@link PolyUpperBound} annotation. */
     public final AnnotationMirror POLY =
-            AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
+            AnnotationBuilder.fromClass(elementUtils, PolyUpperBound.class);
 
     private final IndexMethodIdentifier imf;
 

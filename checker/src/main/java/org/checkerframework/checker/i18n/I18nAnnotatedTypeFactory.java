@@ -40,7 +40,7 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private class I18nTreeAnnotator extends TreeAnnotator {
         /** The @{@link Localized} annotation. */
         private final AnnotationMirror LOCALIZED =
-                AnnotationBuilder.fromClass(elements, Localized.class);
+                AnnotationBuilder.fromClass(elementUtils, Localized.class);
 
         public I18nTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);

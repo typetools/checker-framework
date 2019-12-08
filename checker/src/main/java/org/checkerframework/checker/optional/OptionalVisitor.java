@@ -59,7 +59,8 @@ public class OptionalVisitor
     /** Create an OptionalVisitor. */
     public OptionalVisitor(BaseTypeChecker checker) {
         super(checker);
-        collectionType = types.erasure(TypesUtils.typeFromClass(Collection.class, types, elements));
+        collectionType =
+                types.erasure(TypesUtils.typeFromClass(Collection.class, types, elementUtils));
 
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         optionalGet = TreeUtils.getMethod("java.util.Optional", "get", 0, env);

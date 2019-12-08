@@ -376,7 +376,7 @@ public final class TypesUtils {
     }
 
     /** Returns the {@link TypeMirror} for a given {@link Class}. */
-    public static TypeMirror typeFromClass(Class<?> clazz, Types types, Elements elements) {
+    public static TypeMirror typeFromClass(Class<?> clazz, Types types, Elements elementUtils) {
         if (clazz == void.class) {
             return types.getNoType(TypeKind.VOID);
         } else if (clazz.isPrimitive()) {
@@ -384,12 +384,12 @@ public final class TypesUtils {
             TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
             return types.getPrimitiveType(primitiveKind);
         } else if (clazz.isArray()) {
-            TypeMirror componentType = typeFromClass(clazz.getComponentType(), types, elements);
+            TypeMirror componentType = typeFromClass(clazz.getComponentType(), types, elementUtils);
             return types.getArrayType(componentType);
         } else {
             String name = clazz.getCanonicalName();
             assert name != null : "@AssumeAssertion(nullness): assumption";
-            TypeElement element = elements.getTypeElement(name);
+            TypeElement element = elementUtils.getTypeElement(name);
             if (element == null) {
                 throw new BugInCF("Unrecognized class: " + clazz);
             }
@@ -532,8 +532,8 @@ public final class TypesUtils {
             Type bound = (Type) wc1.getExtendsBound();
             if (bound == null) {
                 // Implicit upper bound of java.lang.Object
-                Elements elements = processingEnv.getElementUtils();
-                return elements.getTypeElement("java.lang.Object").asType();
+                Elements elementUtils = processingEnv.getElementUtils();
+                return elementUtils.getTypeElement("java.lang.Object").asType();
             }
             t1 = bound;
         }
@@ -542,8 +542,8 @@ public final class TypesUtils {
             Type bound = (Type) wc2.getExtendsBound();
             if (bound == null) {
                 // Implicit upper bound of java.lang.Object
-                Elements elements = processingEnv.getElementUtils();
-                return elements.getTypeElement("java.lang.Object").asType();
+                Elements elementUtils = processingEnv.getElementUtils();
+                return elementUtils.getTypeElement("java.lang.Object").asType();
             }
             t2 = bound;
         }
@@ -558,8 +558,8 @@ public final class TypesUtils {
             } else if (types.isAssignable(t2, t1)) {
                 return t1;
             } else {
-                Elements elements = processingEnv.getElementUtils();
-                return elements.getTypeElement("java.lang.Object").asType();
+                Elements elementUtils = processingEnv.getElementUtils();
+                return elementUtils.getTypeElement("java.lang.Object").asType();
             }
         }
         return types.lub(t1, t2);
