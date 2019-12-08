@@ -1,6 +1,7 @@
-Version ?.?.?, ??? ?, 2019
+Version 3.1.0, ??? ?, 2019
 
-Postcondition annotations such as @EnsuresNonNull and @EnsuresNonNullIf are repeatable.
+All postcondition annotations are repeatable (e.g., `@EnsuresNonNull`,
+`@EnsuresNonNullIf`, ...).
 
 Renamed wrapper annotations (which users should not write):
  * `@DefaultQualifiers` => `@DefaultQualifier.List`
