@@ -340,8 +340,8 @@ public class ContractsUtils {
      * Add multiple postcondition annotations or a single postcondition annotation present on the
      * method in a set and returns them.
      *
-     * @param anno wrapper annotation of multiple postcondition annotations, or a single post
-     *     condition annotation on the method
+     * @param anno wrapper annotation of multiple postcondition annotations, or a single
+     *     postcondition annotation on the method
      * @param metaAnno used to return the annotation mirror as specified by the element in this
      *     meta-annotation
      */
@@ -384,8 +384,8 @@ public class ContractsUtils {
             return result;
         } else {
             throw new BugInCF(
-                    "Unexpected value %s [%s] in %s",
-                    annoValue.get(0), annoValue.get(0).getClass(), anno);
+                    "getPostConditionAnnotations(%s, %s): unexpected value %s [%s]",
+                    anno, metaAnno, annoValue.get(0), annoValue.get(0).getClass());
         }
     }
 
