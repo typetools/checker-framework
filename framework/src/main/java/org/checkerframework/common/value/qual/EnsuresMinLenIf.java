@@ -50,7 +50,7 @@ public @interface EnsuresMinLenIf {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @InheritedAnnotation
-    public @interface List {
+    @interface List {
         /** The repeatable annotations. */
         EnsuresMinLenIf[] value();
     }

@@ -23,7 +23,6 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.QualifierArgument;
 import org.checkerframework.framework.qual.RequiresQualifier;
-import org.checkerframework.framework.qual.RequiresQualifiers;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -248,12 +247,12 @@ public class ContractsUtils {
         result.addAll(getPrecondition(requiresQualifier));
 
         // Check for a wrapper around contract annotations.
-        AnnotationMirror requiresQualifiers =
-                factory.getDeclAnnotation(element, RequiresQualifiers.class);
-        if (requiresQualifiers != null) {
+        AnnotationMirror requiresQualifierListAnno =
+                factory.getDeclAnnotation(element, RequiresQualifier.List.class);
+        if (requiresQualifierListAnno != null) {
             List<AnnotationMirror> requiresQualifierList =
                     AnnotationUtils.getElementValueArray(
-                            requiresQualifiers, "value", AnnotationMirror.class, false);
+                            requiresQualifierListAnno, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : requiresQualifierList) {
                 result.addAll(getPrecondition(a));
             }

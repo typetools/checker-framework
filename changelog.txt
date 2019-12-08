@@ -7,7 +7,7 @@ Renamed wrapper annotations (which users should not write):
  * `@DefaultQualifiers` => `@DefaultQualifier.List`
  * `@EnsuresQualifiersIf` => `@EnsuresQualifierIf.List`
  * `@EnsuresQualifiers` => `@EnsuresQualifier.List`
- * `@RequiresQualifiers` => `@RequiresQualifier`.List
+ * `@RequiresQualifiers` => `@RequiresQualifier.List`
 
 ---------------------------------------------------------------------------
 
