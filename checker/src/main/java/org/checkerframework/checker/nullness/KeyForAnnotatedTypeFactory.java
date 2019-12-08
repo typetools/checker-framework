@@ -48,6 +48,7 @@ public class KeyForAnnotatedTypeFactory
     protected final AnnotationMirror KEYFORBOTTOM =
             AnnotationBuilder.fromClass(elements, KeyForBottom.class);
 
+    /** The canonical name of the KeyFor class. */
     protected final String KEYFOR_NAME = KeyFor.class.getCanonicalName();
 
     /** The Map.containsKey method. */
