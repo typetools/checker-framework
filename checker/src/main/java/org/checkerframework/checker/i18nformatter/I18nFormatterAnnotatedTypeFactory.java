@@ -50,16 +50,25 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
             AnnotationBuilder.fromClass(elements, I18nUnknownFormat.class);
     /** The @{@link I18nFormat} annotation. */
     protected final AnnotationMirror I18NFORMAT =
-            AnnotationBuilder.fromClass(elements, I18nFormat.class);
+            AnnotationBuilder.fromClass(
+                    elements,
+                    I18nFormat.class,
+                    AnnotationBuilder.elementNamesValues("value", new I18nConversionCategory[0]));
     /** The @{@link I18nInvalidFormat} annotation. */
     protected final AnnotationMirror I18NINVALIDFORMAT =
-            AnnotationBuilder.fromClass(elements, I18nInvalidFormat.class);
+            AnnotationBuilder.fromClass(
+                    elements,
+                    I18nInvalidFormat.class,
+                    AnnotationBuilder.elementNamesValues("value", "dummy"));
     /** The @{@link I18nFormatBottom} annotation. */
     protected final AnnotationMirror I18NFORMATBOTTOM =
             AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
     /** The @{@link I18nFormatFor} annotation. */
     protected final AnnotationMirror I18NFORMATFOR =
-            AnnotationBuilder.fromClass(elements, I18nFormatFor.class);
+            AnnotationBuilder.fromClass(
+                    elements,
+                    I18nFormatFor.class,
+                    AnnotationBuilder.elementNamesValues("value", "dummy"));
 
     /** Map from a translation file key to its value in the file. */
     public final Map<String, String> translations = Collections.unmodifiableMap(buildLookup());

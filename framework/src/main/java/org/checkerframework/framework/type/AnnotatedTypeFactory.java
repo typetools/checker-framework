@@ -647,7 +647,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
             AnnotationMirror typeQualifierAnno =
-                    AnnotationBuilder.fromClass(elements, typeQualifier);
+                    AnnotationBuilder.fromClassNonsense(elements, typeQualifier);
             factory.addQualifier(typeQualifierAnno);
             // Polymorphic qualifiers can't declare their supertypes.
             // An error is raised if one is present.
@@ -676,7 +676,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (!supportedTypeQualifiers.contains(superQualifier)) {
                     continue;
                 }
-                AnnotationMirror superAnno = AnnotationBuilder.fromClass(elements, superQualifier);
+                AnnotationMirror superAnno =
+                        AnnotationBuilder.fromClassNonsense(elements, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
@@ -953,7 +954,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     @Override
     public AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target) {
-        AnnotationMirror mirror = AnnotationBuilder.fromClass(elements, target);
+        AnnotationMirror mirror = AnnotationBuilder.fromClassNonsense(elements, target);
         if (isSupportedQualifier(mirror)) {
             AnnotatedTypeMirror atm = getAnnotatedType(tree);
             return atm.getAnnotation(target);

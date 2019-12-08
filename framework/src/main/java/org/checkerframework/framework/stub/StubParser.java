@@ -235,7 +235,7 @@ public class StubParser {
         for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
                 AnnotationMirror anno =
-                        AnnotationBuilder.fromName(elements, typeElm.getQualifiedName());
+                        AnnotationBuilder.fromNameNonsense(elements, typeElm.getQualifiedName());
                 putNoOverride(result, typeElm.getSimpleName().toString(), anno);
             }
         }

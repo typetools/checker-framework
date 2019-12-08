@@ -40,7 +40,11 @@ public class KeyForAnnotatedTypeFactory
                 KeyForValue, KeyForStore, KeyForTransfer, KeyForAnalysis> {
 
     /** The @{@link KeyFor} annotation. */
-    protected final AnnotationMirror KEYFOR = AnnotationBuilder.fromClass(elements, KeyFor.class);
+    protected final AnnotationMirror KEYFOR =
+            AnnotationBuilder.fromClass(
+                    elements,
+                    KeyFor.class,
+                    AnnotationBuilder.elementNamesValues("value", new String[0]));
     /** The @{@link UnknownKeyFor} annotation. */
     protected final AnnotationMirror UNKNOWNKEYFOR =
             AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);

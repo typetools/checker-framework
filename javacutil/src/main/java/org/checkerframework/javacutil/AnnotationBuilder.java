@@ -54,7 +54,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 public class AnnotationBuilder {
 
-    private final Elements elements;
+    private final Elements elementUtils;
     private final Types types;
 
     private final TypeElement annotationElt;
@@ -89,9 +89,9 @@ public class AnnotationBuilder {
      * @param name the name of the annotation to build
      */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
-        this.elements = env.getElementUtils();
+        this.elementUtils = env.getElementUtils();
         this.types = env.getTypeUtils();
-        this.annotationElt = elements.getTypeElement(name);
+        this.annotationElt = elementUtils.getTypeElement(name);
         if (annotationElt == null) {
             throw new UserError("Could not find annotation: " + name + ". Is it on the classpath?");
         }
@@ -108,7 +108,7 @@ public class AnnotationBuilder {
      * @param annotation the annotation to copy
      */
     public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
-        this.elements = env.getElementUtils();
+        this.elementUtils = env.getElementUtils();
         this.types = env.getTypeUtils();
 
         this.annotationType = annotation.getAnnotationType();
@@ -120,23 +120,98 @@ public class AnnotationBuilder {
     }
 
     /**
-     * Creates an {@link AnnotationMirror} given by a particular annotation class. getElementValues
-     * on the result returns default values. If any element does not have a default, this method
-     * throws an exception.
+     * Creates a mapping between element/field names and values.
+     *
+     * @param elementName the name of an element/field to initialize
+     * @param elementValue the initial value for the element/field
+     * @return a mappnig from the element name to the element value
+     */
+    public static Map<String, AnnotationValue> elementNamesValues(
+            String elementName, Object elementValue) {
+        return Collections.singletonMap(elementName, createValue(elementValue));
+    }
+
+    /**
+     * Creates an {@link AnnotationMirror} that uses default values for elements/fields.
+     * getElementValues on the result returns default values. If any element does not have a
+     * default, this method throws an exception.
      *
      * <p>Most clients should use {@link #fromName}, using a Name created by the compiler. This
      * method is provided as a convenience to create an AnnotationMirror from scratch in a checker's
      * code.
      *
-     * @param elements the element utilities to use
+     * @param elementUtils the element utilities to use
      * @param aClass the annotation class
-     * @return an {@link AnnotationMirror} of type given type
+     * @return an {@link AnnotationMirror} of the given type
      */
     public static AnnotationMirror fromClass(
-            Elements elements, Class<? extends Annotation> aClass) {
+            Elements elementUtils, Class<? extends Annotation> aClass) {
+        return fromClass(elementUtils, aClass, Collections.emptyMap(), false);
+    }
+
+    // TODO: Find and remove all uses of this method.  Then I might not need any of the
+    // `noWarn` formal parameters in this file.
+    /**
+     * Creates an {@link AnnotationMirror} that lacks some elements/fields. DO NOT USE! Prefer to
+     * create proper {@code AnnoattionMirror}s by passing in an element-to-value mapping.
+     *
+     * @param elementUtils the element utilities to use
+     * @param aClass the annotation class
+     * @return an {@link AnnotationMirror} of the given type
+     */
+    public static AnnotationMirror fromClassNonsense(
+            Elements elementUtils, Class<? extends Annotation> aClass) {
+        return fromClass(elementUtils, aClass, Collections.emptyMap(), true);
+    }
+
+    /**
+     * Creates an {@link AnnotationMirror} given by a particular annotation class and a
+     * name-to-value mapping for the elements/fields.
+     *
+     * <p>For other elements, getElementValues on the result returns default values. If any such
+     * element does not have a default, this method throws an exception.
+     *
+     * <p>Most clients should use {@link #fromName}, using a Name created by the compiler. This
+     * method is provided as a convenience to create an AnnotationMirror from scratch in a checker's
+     * code.
+     *
+     * @param elementUtils the element utilities to use
+     * @param aClass the annotation class
+     * @param elementNamesValues the values for the annotation's elements/fields
+     * @return an {@link AnnotationMirror} of given type
+     */
+    public static AnnotationMirror fromClass(
+            Elements elementUtils,
+            Class<? extends Annotation> aClass,
+            Map<String, AnnotationValue> elementNamesValues) {
+        return fromClass(elementUtils, aClass, elementNamesValues, false);
+    }
+
+    /**
+     * Creates an {@link AnnotationMirror} given by a particular annotation class and a
+     * name-to-value mapping for the elements/fields.
+     *
+     * <p>For other elements, getElementValues on the result returns default values. If any such
+     * element does not have a default, this method throws an exception.
+     *
+     * <p>Most clients should use {@link #fromName}, using a Name created by the compiler. This
+     * method is provided as a convenience to create an AnnotationMirror from scratch in a checker's
+     * code.
+     *
+     * @param elementUtils the element utilities to use
+     * @param aClass the annotation class
+     * @param elementNamesValues the values for the annotation's elements/fields
+     * @param noWarn if true, don't warn when some elements/fields are missing
+     * @return an {@link AnnotationMirror} of the given type
+     */
+    private static AnnotationMirror fromClass(
+            Elements elementUtils,
+            Class<? extends Annotation> aClass,
+            Map<String, AnnotationValue> elementNamesValues,
+            boolean noWarn) {
         String name = aClass.getCanonicalName();
         assert name != null : "@AssumeAssertion(nullness): assumption";
-        AnnotationMirror res = fromName(elements, name);
+        AnnotationMirror res = fromName(elementUtils, name, elementNamesValues, noWarn);
         if (res == null) {
             throw new UserError(
                     "AnnotationBuilder: error: fromClass can't load Class %s%n"
@@ -153,17 +228,77 @@ public class AnnotationBuilder {
      *
      * <p>This method returns null if the annotation corresponding to the name could not be loaded.
      *
-     * @param elements the element utilities to use
+     * @param elementUtils the element utilities to use
      * @param name the name of the annotation to create
      * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't
      *     be loaded
      */
-    public static @Nullable AnnotationMirror fromName(Elements elements, CharSequence name) {
+    public static @Nullable AnnotationMirror fromName(Elements elementUtils, CharSequence name) {
+        return fromName(elementUtils, name, new HashMap<>());
+    }
+
+    // TODO: Find and remove all uses of this method.  Then I might not need any of the
+    // `noWarn` formal parameters in this file.
+    /**
+     * Creates an {@link AnnotationMirror} that lacks some elements/fields. DO NOT USE! Prefer to
+     * create proper {@code AnnoattionMirror}s by passing in an element-to-value mapping.
+     *
+     * @param elementUtils the element utilities to use
+     * @param name the name of the annotation to create
+     * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't
+     *     be loaded
+     */
+    public static @Nullable AnnotationMirror fromNameNonsense(
+            Elements elementUtils, CharSequence name) {
+        return fromName(elementUtils, name, new HashMap<>(), true);
+    }
+
+    /**
+     * Creates an {@link AnnotationMirror} given by a particular fully-qualified name and
+     * element/field values. If any element is not specified by the {@code elementValues} argument,
+     * the default value is used. If any such element does not have a default, this method throws an
+     * exception.
+     *
+     * <p>This method returns null if the annotation corresponding to the name could not be loaded.
+     *
+     * @param elementUtils the element utilities to use
+     * @param name the name of the annotation to create
+     * @param elementNamesValues the values for the annotation's elements/fields
+     * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't
+     *     be loaded
+     */
+    public static @Nullable AnnotationMirror fromName(
+            Elements elementUtils,
+            CharSequence name,
+            Map<String, AnnotationValue> elementNamesValues) {
+        return fromName(elementUtils, name, elementNamesValues, false);
+    }
+
+    /**
+     * Creates an {@link AnnotationMirror} given by a particular fully-qualified name and
+     * element/field values. If any element is not specified by the {@code elementValues} argument,
+     * the default value is used. If any such element does not have a default, this method throws an
+     * exception.
+     *
+     * <p>This method returns null if the annotation corresponding to the name could not be loaded.
+     *
+     * @param elementUtils the element utilities to use
+     * @param name the name of the annotation to create
+     * @param elementNamesValues the values for the annotation's elements/fields
+     * @param noWarn if true, don't warn when some elements/fields are missing
+     * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't
+     *     be loaded
+     */
+    public static @Nullable AnnotationMirror fromName(
+            Elements elementUtils,
+            CharSequence name,
+            Map<String, AnnotationValue> elementNamesValues,
+            boolean noWarn) {
         AnnotationMirror res = annotationsFromNames.get(name);
         if (res != null) {
             return res;
         }
-        final TypeElement annoElt = elements.getTypeElement(name);
+        final TypeElement annoElt = elementUtils.getTypeElement(name);
         if (annoElt == null) {
             return null;
         }
@@ -179,13 +314,21 @@ public class AnnotationBuilder {
         Map<ExecutableElement, AnnotationValue> elementValues = new LinkedHashMap<>();
         for (ExecutableElement annoElement :
                 ElementFilter.methodsIn(annoElt.getEnclosedElements())) {
-            AnnotationValue elementDefault = annoElement.getDefaultValue();
-            if (elementDefault == null) {
-                throw new BugInCF(
-                        "AnnotationMirror.fromName: no default value for element %s of %s",
-                        annoElement, name);
+            AnnotationValue elementValue =
+                    elementNamesValues.get(annoElement.getSimpleName().toString());
+            if (elementValue == null) {
+                elementValue = annoElement.getDefaultValue();
             }
-            elementValues.put(annoElement, elementDefault);
+            if (elementValue == null) {
+                if (noWarn) {
+                    continue;
+                } else {
+                    throw new BugInCF(
+                            "AnnotationBuilder.fromName: no default value for element %s of %s",
+                            annoElement, name);
+                }
+            }
+            elementValues.put(annoElement, elementValue);
         }
 
         AnnotationMirror result = new CheckerFrameworkAnnotationMirror(annoType, elementValues);
@@ -374,7 +517,7 @@ public class AnnotationBuilder {
         } else {
             String name = clazz.getCanonicalName();
             assert name != null : "@AssumeAssertion(nullness): assumption";
-            TypeElement element = elements.getTypeElement(name);
+            TypeElement element = elementUtils.getTypeElement(name);
             if (element == null) {
                 throw new BugInCF("Unrecognized class: " + clazz);
             }
@@ -490,7 +633,7 @@ public class AnnotationBuilder {
     private VariableElement findEnumElement(Enum<?> value) {
         String enumClass = value.getDeclaringClass().getCanonicalName();
         assert enumClass != null : "@AssumeAssertion(nullness): assumption";
-        TypeElement enumClassElt = elements.getTypeElement(enumClass);
+        TypeElement enumClassElt = elementUtils.getTypeElement(enumClass);
         assert enumClassElt != null;
         for (Element enumElt : enumClassElt.getEnclosedElements()) {
             if (enumElt.getSimpleName().contentEquals(value.name())) {
@@ -555,7 +698,7 @@ public class AnnotationBuilder {
         } else {
             String name = givenValue.getClass().getCanonicalName();
             assert name != null : "@AssumeAssertion(nullness): assumption";
-            found = elements.getTypeElement(name).asType();
+            found = elementUtils.getTypeElement(name).asType();
             isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
         }
         if (!isSubtype) {
@@ -574,7 +717,12 @@ public class AnnotationBuilder {
         }
     }
 
-    private AnnotationValue createValue(final Object obj) {
+    /**
+     * Create an AnnotationValue -- a value for an annotation element/field.
+     *
+     * @param obj the value to be stored in an annotation element/field
+     */
+    private static AnnotationValue createValue(final Object obj) {
         return new CheckerFrameworkAnnotationValue(obj);
     }
 
