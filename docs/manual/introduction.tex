@@ -818,7 +818,10 @@ checker is an ``annotation processor''.
 
 \begin{itemize}
 \item \<-processor> Names the checker to be
-  run; see Section~\ref{running}. Please note that when multiple checkers are provided, they will run in order, and when a checker detects any error, all subsequent checkers will not run even if errors of those types exist.
+  run; see Section~\ref{running}. When providing multiple checkers, please
+  beware of the bahavior of javac that the checkers will be run in order, and
+  when a checker detects any error, all subsequent checkers will not run even
+  if errors of those types might exist.
 \item \<-processorpath> Indicates where to search for the
   checker; should also contain any qualifiers used by the Subtyping
   Checker; see Section~\ref{subtyping-example}
