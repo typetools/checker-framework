@@ -337,8 +337,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Add multiple postcondition annotations or a single postcondition annotation present on the
-     * method in a set and returns them.
+     * Returns multiple postcondition annotations or a single postcondition annotation present on
+     * the method.
      *
      * @param anno wrapper annotation of multiple postcondition annotations, or a single
      *     postcondition annotation on the method
@@ -368,23 +368,20 @@ public class ContractsUtils {
                 }
             }
             return result;
-        } else if (annoValue.get(0) instanceof Attribute.Constant) {
+        } else if (annoValue.get(0) instanceof AnnotationValue) {
             // Check for a single contract
             Set<Postcondition> result = new LinkedHashSet<>();
-            List<String> expressions = new ArrayList<>();
-            for (AnnotationValue a : annoValue) {
-                expressions.add((String) a.getValue());
-            }
             AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
             if (postcondAnno != null) {
-                for (String expr : expressions) {
-                    result.add(new Postcondition(expr, postcondAnno, anno));
+                List<String> expressions = new ArrayList<>();
+                for (AnnotationValue a : annoValue) {
+                    result.add(new Postcondition((String) a.getValue(), postcondAnno, anno));
                 }
             }
             return result;
         } else {
             throw new BugInCF(
-                    "getPostConditionAnnotations(%s, %s): unexpected value %s [%s]",
+                    "getPostConditionAnnotations(%n    anno=%s,%n    metaAnno=%s):%n  unexpected value %s [%s]",
                     anno, metaAnno, annoValue.get(0), annoValue.get(0).getClass());
         }
     }
