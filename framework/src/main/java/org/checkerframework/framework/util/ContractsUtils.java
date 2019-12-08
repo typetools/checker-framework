@@ -346,7 +346,7 @@ public class ContractsUtils {
      * Returns the postconditions expressed by the given annotation.
      *
      * @param ensuresQualifier an {@link EnsuresQualifier}, or null
-     * @return the postconditions expostssed by the given annotation, or the empty set if the
+     * @return the postconditions expressed by the given annotation, or the empty set if the
      *     argument is null
      */
     private Set<Postcondition> getPostcondition(AnnotationMirror ensuresQualifier) {
