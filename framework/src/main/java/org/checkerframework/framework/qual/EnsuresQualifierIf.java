@@ -70,4 +70,19 @@ public @interface EnsuresQualifierIf {
         /** The repeatable annotations. */
         EnsuresQualifierIf[] value();
     }
+
+    /**
+     * A wrapper annotation that makes the {@link EnsuresQualifierIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresQualifierIf} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @InheritedAnnotation
+    @interface List {
+        /** The repeatable annotations. */
+        EnsuresQualifierIf[] value();
+    }
 }
