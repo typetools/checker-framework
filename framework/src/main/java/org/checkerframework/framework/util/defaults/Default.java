@@ -26,10 +26,11 @@ public class Default implements Comparable<Default> {
     @Override
     public int compareTo(Default other) {
         int locationOrder = location.compareTo(other.location);
-        if (locationOrder != 0) {
+        if (locationOrder == 0) {
+            return AnnotationUtils.compareAnnotationMirrors(anno, other.anno);
+        } else {
             return locationOrder;
         }
-        return AnnotationUtils.compareAnnotationMirrors(anno, other.anno);
     }
 
     @Override

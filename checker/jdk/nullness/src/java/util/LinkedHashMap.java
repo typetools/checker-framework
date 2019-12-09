@@ -541,6 +541,7 @@ public class LinkedHashMap<K, V>
     }
 
     final class LinkedKeySet extends AbstractSet<K> {
+        @Pure
         public final int size()                 { return size; }
         public final void clear()               { LinkedHashMap.this.clear(); }
         @SideEffectFree
@@ -592,6 +593,7 @@ public class LinkedHashMap<K, V>
     }
 
     final class LinkedValues extends AbstractCollection<V> {
+        @Pure
         public final int size()                 { return size; }
         public final void clear()               { LinkedHashMap.this.clear(); }
         @SideEffectFree
@@ -641,6 +643,7 @@ public class LinkedHashMap<K, V>
     }
 
     final class LinkedEntrySet extends AbstractSet<Map.Entry<K,V>> {
+        @Pure
         public final int size()                 { return size; }
         public final void clear()               { LinkedHashMap.this.clear(); }
         @SideEffectFree

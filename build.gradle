@@ -489,7 +489,7 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean runErrorProne` and fix all errors
         //  * Uncomment "-Werror"
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.3'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.4'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -754,6 +754,8 @@ subprojects {
                     '-Xep:EqualsGetClass:OFF',
                     // Not a real problem
                     '-Xep:MixedMutabilityReturnType:OFF',
+                    // Don't want to add a dependency to ErrorProne.
+                    '-Xep:AnnotateFormatMethod:OFF',
                     // -Werror halts the build if Error Prone issues a warning, which ensures that
                     // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                     // stops as soon as it one warning, rather than outputting them all.
@@ -763,29 +765,29 @@ subprojects {
         }
 
         // Create a nonJunitTests task per project
-        tasks.create(name: 'nonJunitTests', type: GradleBuild, group: 'Verification') {
+        tasks.create(name: 'nonJunitTests', group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
-            tasks = ['checkPurity', 'checkInterning', 'checkWorkingNullness']
+            dependsOn('checkPurity', 'checkInterning', 'checkWorkingNullness')
             if (project.name.is('framework') || project.name.is('checker')) {
-                tasks += ['checkCompilerMessages', 'jtregTests']
+                dependsOn('checkCompilerMessages', 'jtregTests')
             }
             if (project.name.is('framework')) {
-                tasks += ['wholeProgramInferenceTests', 'loaderTests']
+                dependsOn('wholeProgramInferenceTests', 'loaderTests')
             }
 
             if (project.name.is('checker')) {
                 if (!isJava8) {
-                    tasks += ['jtregJdk11Tests']
+                    dependsOn('jtregJdk11Tests')
                 }
-                tasks += ['nullnessExtraTests', 'commandLineTests', 'tutorialTests']
+                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests')
             }
         }
 
         // Create an allTests task per project
-        tasks.create(name: 'allTests', type: GradleBuild, group: 'Verification') {
+        tasks.create(name: 'allTests', group: 'Verification') {
             description 'Run all Checker Framework tests'
-	    // The 'test' target is just the JUnit tests.
-            tasks = ['nonJunitTests', 'test']
+            // The 'test' target is just the JUnit tests.
+            dependsOn('nonJunitTests', 'test')
         }
 
         task javadocPrivate(dependsOn: javadoc) {
@@ -899,20 +901,32 @@ task checkBasicStyle(group: 'Format') {
         }
     }
 }
-
-task releaseBuild(type: GradleBuild) {
-    description 'Build everything required for a release'
-    startParameter = new StartParameter()
-    startParameter.setProjectProperties(release: true)
-    // This downloads rather than builds the jdk8.jar because that's what is used in the CI tests.
-    tasks = ['clean', 'assemble', 'sourcesJar', 'javadocJar', 'allJavadoc', 'framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar']
+assemble.mustRunAfter(clean)
+task buildAll {
+    description 'Build all jar files, including source and javadoc jars'
+    dependsOn(clean, assemble, allJavadoc)
+    subprojects { Project subproject ->
+        dependsOn("${subproject.name}:javadocJar")
+        dependsOn("${subproject.name}:sourcesJar")
+    }
+    dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar')
 }
 
-task releaseAndTest(type: GradleBuild, dependsOn: 'releaseBuild') {
+task releaseBuild {
+    description 'Build everything required for a release'
+    doFirst {
+        release = true
+    }
+    // Use finalizedBy rather than dependsOn so that release is set to true before any of the tasks are run.
+    finalizedBy(buildAll)
+}
+
+task releaseAndTest {
     description 'Build everything required for a release and run allTests'
-    startParameter = new StartParameter()
-    startParameter.setProjectProperties(release: true)
-    tasks = ['allTests']
+    dependsOn(releaseBuild)
+    subprojects { Project subproject ->
+        dependsOn("${subproject.name}:allTests")
+    }
 }
 
 // Don't create an empty checker-framework-VERSION.jar
