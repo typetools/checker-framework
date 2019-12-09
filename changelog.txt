@@ -1,3 +1,10 @@
+Version 3.1.0
+
+The `elements` field has been renamed to `elementUtils` in classes
+`SourceVisitor`, `AnnotatedTypeFactory`, `CFGTranslationPhaseOne`, and
+`TreeBuilder`.  Client code that uses these fields must change; this may
+include type-checkers.
+
 ---------------------------------------------------------------------------
 
 Version 3.0.1, December 2, 2019
