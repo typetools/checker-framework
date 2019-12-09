@@ -823,7 +823,11 @@ checker is an ``annotation processor''.
 
 \begin{itemize}
 \item \<-processor> Names the checker to be
-  run; see Section~\ref{running}
+  run; see Sections~\ref{running} and~\ref{shorthand-for-checkers}.
+  May be a comma-separated list of multiple cehckers.  Note that javac
+  stops processing an indeterminate time after detecting an error.  When
+  providing multiple checkers, if one checker detects any error, subsequent
+  checkers may not run.
 \item \<-processorpath> Indicates where to search for the
   checker; should also contain any qualifiers used by the Subtyping
   Checker; see Section~\ref{subtyping-example}
@@ -881,7 +885,7 @@ annotation processing including all pluggable type-checking.
 %% errors for unannotated code, and that would be irritating.  So, leave it
 %% up to the user to enable auto-discovery.  1.
 
-\subsectionAndLabel{Shorthand for built-in checkers }{shorthand-for-checkers}
+\subsectionAndLabel{Shorthand for built-in checkers}{shorthand-for-checkers}
 
 % TODO: this feature only works for our javac script, not when using
 % the standard javac. Should this be explained?
