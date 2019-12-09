@@ -2,5 +2,5 @@ CompatTest.java:6: error: [assignment.type.incompatible] incompatible types in a
         @NonNull Object o = Lib.maybeGetObject();
                                               ^
   found   : @Initialized @Nullable Object
-  required: @UnknownInitialization @NonNull Object
+  required: @UnknownInitialization(java.lang.Object.class) @NonNull Object
 1 error
