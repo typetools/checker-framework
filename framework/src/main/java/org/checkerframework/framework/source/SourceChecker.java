@@ -15,8 +15,10 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.net.URL;
@@ -244,6 +246,9 @@ import org.checkerframework.javacutil.UserError;
 
     /// Amount of detail in messages
 
+    // Print info about git repository from which the Checker Framework was compiled
+    "printGitProperties",
+
     // Whether to print @InvisibleQualifier marked annotations
     // org.checkerframework.framework.type.AnnotatedTypeMirror.toString()
     "printAllQualifiers",
@@ -346,6 +351,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
     // to override.
+
+    /** True if the git.properties file has been printed. */
+    static boolean gitPropertiesPrinted = false;
 
     /** The @SuppressWarnings key that will suppress warnings for all checkers. */
     public static final String SUPPRESS_ALL_KEY = "all";
@@ -468,6 +476,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     String.format(
                             "The Checker Framework must be run under at least JDK 8.  You are using version %d.",
                             jreVersion));
+        }
+
+        if (hasOption("printGitProperties")) {
+            printGitProperties();
         }
     }
 
@@ -2291,5 +2303,24 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     @Override
     public final SourceVersion getSupportedSourceVersion() {
         return SourceVersion.latest();
+    }
+
+    /** Print information about the git repository from which the Checker Framework was compiled. */
+    void printGitProperties() {
+        if (gitPropertiesPrinted) {
+            return;
+        }
+        gitPropertiesPrinted = true;
+
+        InputStream in = getClass().getResourceAsStream("/git.properties");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        String line;
+        try {
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            System.out.println("IOException while reading git.properties: " + e.getMessage());
+        }
     }
 }
