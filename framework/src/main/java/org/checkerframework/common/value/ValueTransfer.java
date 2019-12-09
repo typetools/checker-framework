@@ -102,7 +102,7 @@ public class ValueTransfer extends CFTransfer {
 
         int upperLength = Math.max(fromLength, toLength);
 
-        return new Range(lowerLength, upperLength);
+        return Range.create(lowerLength, upperLength);
     }
 
     /** Returns a range of possible lengths for {@code subNode}, as casted to a String. */
@@ -131,13 +131,13 @@ public class ValueTransfer extends CFTransfer {
             return getIntRangeStringLengthRange(subNode, p);
         } else if (subNodeTypeKind == TypeKind.INT) {
             // ints are between 1 and 11 characters long
-            return new Range(1, 11);
+            return Range.create(1, 11);
         } else if (subNodeTypeKind == TypeKind.LONG) {
             // longs are between 1 and 20 characters long
-            return new Range(1, 20);
+            return Range.create(1, 20);
         }
 
-        return new Range(0, Integer.MAX_VALUE);
+        return Range.create(0, Integer.MAX_VALUE);
     }
 
     /**
@@ -178,10 +178,10 @@ public class ValueTransfer extends CFTransfer {
             return ValueCheckerUtils.getValuesFromRange(lengthRange, Integer.class);
         } else if (subNodeTypeKind == TypeKind.BYTE) {
             // bytes are between 1 and 4 characters long
-            return ValueCheckerUtils.getValuesFromRange(new Range(1, 4), Integer.class);
+            return ValueCheckerUtils.getValuesFromRange(Range.create(1, 4), Integer.class);
         } else if (subNodeTypeKind == TypeKind.SHORT) {
             // shorts are between 1 and 6 characters long
-            return ValueCheckerUtils.getValuesFromRange(new Range(1, 6), Integer.class);
+            return ValueCheckerUtils.getValuesFromRange(Range.create(1, 6), Integer.class);
         } else {
             return null;
         }
@@ -647,10 +647,10 @@ public class ValueTransfer extends CFTransfer {
             // Both operands have a length from a known range, compute a range of result lengths
             if (!nonNullStringConcat) {
                 if (isNullable(leftOperand)) {
-                    leftLengthRange.union(new Range(4, 4)); // "null"
+                    leftLengthRange.union(Range.create(4, 4)); // "null"
                 }
                 if (isNullable(rightOperand)) {
-                    rightLengthRange.union(new Range(4, 4)); // "null"
+                    rightLengthRange.union(Range.create(4, 4)); // "null"
                 }
             }
             Range concatLengthRange =
