@@ -71,7 +71,7 @@ public class ContractsUtils {
      *
      * @see Precondition
      * @see Postcondition
-     * @see ConditionalPostcondtion
+     * @see ConditionalPostcondition
      */
     public abstract static class Contract {
 
@@ -246,7 +246,7 @@ public class ContractsUtils {
      * Returns all the contracts on {@code methodElement}.
      *
      * @param methodElement the method or constructor whose contracts to retrieve
-     * @returns the contracts on {@code methodElement}
+     * @return the contracts on {@code methodElement}
      */
     public List<Contract> getContracts(ExecutableElement methodElement) {
         List<Contract> contracts = new ArrayList<>();
@@ -258,7 +258,12 @@ public class ContractsUtils {
 
     /// Precondition methods (keep in sync with other two types)
 
-    /** Returns the preconditions on {@code methodElement}. */
+    /**
+     * Returns the preconditions on {@code methodElement}.
+     *
+     * @param methodElement the method or contract whose preconditions to return
+     * @return the preconditions on {@code methodElement}
+     */
     public Set<Precondition> getPreconditions(ExecutableElement methodElement) {
         Set<Precondition> result = new LinkedHashSet<>();
         // Check for a single contract annotation.
@@ -326,7 +331,12 @@ public class ContractsUtils {
 
     /// Postcondition methods (keep in sync with other two types)
 
-    /** Returns the unconditional postconditions on {@code methodElement}. */
+    /**
+     * Returns the unconditional postconditions on {@code methodElement}.
+     *
+     * @param methodElement the method or contract whose postconditions to return
+     * @return the postconditions on {@code methodElement}
+     */
     public Set<Postcondition> getPostconditions(ExecutableElement methodElement) {
         Set<Postcondition> result = new LinkedHashSet<>();
         // Check for a single contract annotation.
@@ -394,7 +404,12 @@ public class ContractsUtils {
 
     /// Conditional postcondition methods (keep in sync with other two types)
 
-    /** Returns the conditional postconditions on {@code methodElement}. */
+    /**
+     * Returns the conditional postconditions on {@code methodElement}.
+     *
+     * @param methodElement the method or contract whose unconditional postconditions to return
+     * @return the unconditional postconditions on {@code methodElement}
+     */
     public Set<ConditionalPostcondition> getConditionalPostconditions(
             ExecutableElement methodElement) {
         Set<ConditionalPostcondition> result = new LinkedHashSet<>();
@@ -471,8 +486,11 @@ public class ContractsUtils {
     /// Helper methods
 
     /**
-     * Returns the annotation mirror as specified by the "qualifier" element in {@code
+     * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
      * contractAnno}. May return null.
+     *
+     * @param contractAnno a pre- or post-condition annotation
+     * @return the type annotation specified in {@code contractAnno.qualifier}
      */
     private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
             AnnotationMirror contractAnno) {
@@ -480,8 +498,12 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns the annotation mirror as specified by the "qualifier" element in {@code
+     * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
      * contractAnno}, with arguments taken from {@code argumentAnno}. May return null.
+     *
+     * @param contractAnno a pre- or post-condition annotation
+     * @param argumentAnno supplies the elements/fields in the return value
+     * @return the type annotation specified in {@code contractAnno.qualifier}
      */
     private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
             AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
