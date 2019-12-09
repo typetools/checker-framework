@@ -441,21 +441,6 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns true if the given AnnotationMirror has an element named {@code value}.
-     *
-     * @param anno the AnnotationMirror whose fields to search
-     * @return true if {@code anno} has an element named {@code value}
-     */
-    private boolean hasValueElement(AnnotationMirror anno) {
-        for (ExecutableElement elem : anno.getElementValues().keySet()) {
-            if (elem.getSimpleName().contentEquals("value")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Add multiple conditional postcondition annotations or a single conditional postcondition
      * annotation present on the method in a set and returns them.
      *
@@ -642,4 +627,21 @@ public class ContractsUtils {
                 makeArgumentRenaming(argumentAnno.getAnnotationType().asElement());
         return getAnnotationMirrorOfQualifier(contractAnno, argumentAnno, argumentRenaming);
     }
+
+    /**
+     * Returns true if the given AnnotationMirror has an element named {@code value}.
+     *
+     * @param anno the AnnotationMirror whose fields to search
+     * @return true if {@code anno} has an element named {@code value}
+     */
+    /*
+    private boolean hasValueElement(AnnotationMirror anno) {
+        for (ExecutableElement elem : anno.getElementValues().keySet()) {
+            if (elem.getSimpleName().contentEquals("value")) {
+                return true;
+            }
+        }
+        return false;
+    }
+    */
 }
