@@ -200,24 +200,24 @@ public class ContractsUtils {
          * {@code foo} is guaranteed to be {@code @NonNull} after a call to {@code method()} if that
          * call returns {@code false}.
          */
-        public final boolean resultValue;
+        public final boolean annoResult;
 
         /**
          * Create a new conditional postcondition.
          *
          * @param expression the Java expression that should have a type qualifier
-         * @param resultValue whether the condition is the method returning true or false
+         * @param annoResult whether the condition is the method returning true or false
          * @param annotation the type qualifier that {@code expression} should have
          * @param contractAnnotation the postcondition annotation that the programmer wrote; used
          *     for diagnostic messages
          */
         public ConditionalPostcondition(
                 String expression,
-                boolean resultValue,
+                boolean annoResult,
                 AnnotationMirror annotation,
                 AnnotationMirror contractAnnotation) {
             super(expression, annotation, contractAnnotation, Kind.CONDITIONALPOSTCONDTION);
-            this.resultValue = resultValue;
+            this.annoResult = annoResult;
         }
 
         @Override
@@ -233,12 +233,12 @@ public class ContractsUtils {
             }
 
             ConditionalPostcondition that = (ConditionalPostcondition) o;
-            return resultValue == that.resultValue;
+            return annoResult == that.annoResult;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(super.hashCode(), resultValue);
+            return Objects.hash(super.hashCode(), annoResult);
         }
     }
 
@@ -444,10 +444,10 @@ public class ContractsUtils {
             }
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "expression", String.class, false);
-            boolean resultValue =
+            boolean annoResult =
                     AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
             for (String expr : expressions) {
-                result.add(new ConditionalPostcondition(expr, resultValue, postcondAnno, anno));
+                result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno, anno));
             }
         }
         return result;
@@ -473,12 +473,12 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         ensuresQualifierIf, "expression", String.class, false);
-        boolean resultValue =
+        boolean annoResult =
                 AnnotationUtils.getElementValue(ensuresQualifierIf, "result", Boolean.class, false);
         for (String expr : expressions) {
             result.add(
                     new ConditionalPostcondition(
-                            expr, resultValue, postcondAnno, ensuresQualifierIf));
+                            expr, annoResult, postcondAnno, ensuresQualifierIf));
         }
         return result;
     }
