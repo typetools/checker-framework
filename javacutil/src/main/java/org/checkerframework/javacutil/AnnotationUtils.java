@@ -336,7 +336,7 @@ public class AnnotationUtils {
 
     /**
      * Provide ordering for {@link AnnotationMirror}s. AnnotationMirrors are first compared by their
-     * fully qualified names, then by their element values, in ordered of the name of the element.
+     * fully-qualified names, then by their element values in order of the name of the element.
      *
      * @param a1 the first annotation
      * @param a2 the second annotation
@@ -357,23 +357,16 @@ public class AnnotationUtils {
         sortedElements.addAll(
                 ElementFilter.methodsIn(a1.getAnnotationType().asElement().getEnclosedElements()));
 
-        for (ExecutableElement method : sortedElements) {
-            AnnotationValue value1 = vals1.get(method);
-            AnnotationValue value2 = vals2.get(method);
-            if (value1 == null) {
-                value1 = method.getDefaultValue();
+        for (ExecutableElement meth : sortedElements) {
+            AnnotationValue aval1 = vals1.get(meth);
+            AnnotationValue aval2 = vals2.get(meth);
+            if (aval1 == null) {
+                aval1 = meth.getDefaultValue();
             }
-            if (value2 == null) {
-                value2 = method.getDefaultValue();
+            if (aval2 == null) {
+                aval2 = meth.getDefaultValue();
             }
-            if (value1 == value2) {
-                continue;
-            } else if (value1 == null) {
-                return -1;
-            } else if (value2 == null) {
-                return 1;
-            }
-            int result = value1.getValue().toString().compareTo(value2.getValue().toString());
+            int result = compareAnnotationValue(aval1, aval2);
             if (result != 0) {
                 return result;
             }
@@ -381,6 +374,82 @@ public class AnnotationUtils {
         return 0;
     }
 
+    /**
+     * Return 0 iff the two AnnotationValue objects are the same.
+     *
+     * @param av1 the first AnnotationValue to compare
+     * @param av2 the second AnnotationValue to compare
+     * @return 0 if if the two annotation values are the same
+     */
+    private static int compareAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
+        if (av1 == av2) {
+            return 0;
+        } else if (av1 == null) {
+            return -1;
+        } else if (av2 == null) {
+            return 1;
+        }
+        return compareAnnotationValueValue(av1.getValue(), av2.getValue());
+    }
+
+    /**
+     * Return 0 if the two annotation values are the same.
+     *
+     * @param val1 a value returned by {@code AnnotationValue.getValue()}
+     * @param val2 a value returned by {@code AnnotationValue.getValue()}
+     */
+    private static int compareAnnotationValueValue(Object val1, Object val2) {
+        if (val1 == val2) {
+            return 0;
+        } else if (val1 == null) {
+            return -1;
+        } else if (val2 == null) {
+            return 1;
+        }
+        // Can't use deepEquals() to compare val1 and val2, because they might have mismatched
+        // AnnotationValue vs. CheckerFrameworkAnnotationValue, and AnnotationValue doesn't override
+        // equals().  So, write my own version of deepEquals().
+        if ((val1 instanceof List<?>) && (val2 instanceof List<?>)) {
+            List<?> list1 = (List<?>) val1;
+            List<?> list2 = (List<?>) val2;
+            if (list1.size() != list2.size()) {
+                return list1.size() - list2.size();
+            }
+            // Don't compare setwise, because order can matter. These mean different things:
+            //   @LTLengthOf(value={"a1","a2"}, offest={"0", "1"})
+            //   @LTLengthOf(value={"a2","a1"}, offest={"0", "1"})
+            for (int i = 0; i < list1.size(); i++) {
+                Object v1 = list1.get(i);
+                Object v2 = list2.get(i);
+                int result = compareAnnotationValueValue(v1, v2);
+                if (result != 0) {
+                    return result;
+                }
+            }
+            return 0;
+        } else if ((val1 instanceof AnnotationMirror) && (val2 instanceof AnnotationMirror)) {
+            return compareAnnotationMirrors((AnnotationMirror) val1, (AnnotationMirror) val2);
+        } else if ((val1 instanceof AnnotationValue) && (val2 instanceof AnnotationValue)) {
+            // This case occurs because of the recursive call when comparing arrays of
+            // annotation values.
+            return compareAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
+        }
+
+        if ((val1 instanceof Type.ClassType) && (val2 instanceof Type.ClassType)) {
+            // Type.ClassType does not override equals
+            if (TypesUtils.areSameDeclaredTypes((Type.ClassType) val1, (Type.ClassType) val2)) {
+                return 0;
+            }
+        }
+        if (Objects.equals(val1, val2)) {
+            return 0;
+        }
+        int result = val1.toString().compareTo(val2.toString());
+        if (result == 0) {
+            result = -1;
+        }
+        return result;
+    }
     /**
      * Provide ordering for {@link AnnotationMirror} based on their fully qualified name. The
      * ordering ignores annotation values when ordering.
@@ -554,7 +623,7 @@ public class AnnotationUtils {
             if (aval2 == null) {
                 aval2 = meth.getDefaultValue();
             }
-            if (!sameAnnotationValue(aval1, aval2)) {
+            if (0 != compareAnnotationValue(aval1, aval2)) {
                 return false;
             }
         }
@@ -571,56 +640,7 @@ public class AnnotationUtils {
      * @return true if if the two annotation values are the same
      */
     public static boolean sameAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
-        if (av1 == av2) {
-            return true;
-        }
-        if (av1 == null || av2 == null) {
-            return false;
-        }
-        return sameAnnotationValueValue(av1.getValue(), av2.getValue());
-    }
-
-    /**
-     * Return true if the two annotation values are the same. The arguments to this method are
-     * values that are returned by {@code AnnotationValue.getValue()}.
-     */
-    private static boolean sameAnnotationValueValue(Object val1, Object val2) {
-        if (val1 == val2) {
-            return true;
-        }
-
-        // Can't use deepEquals() to compare val1 and val2, because they might have mismatched
-        // AnnotationValue vs. CheckerFrameworkAnnotationValue, and AnnotationValue doesn't override
-        // equals().  So, write my own version of deepEquals().
-        if ((val1 instanceof List<?>) && (val2 instanceof List<?>)) {
-            List<?> list1 = (List<?>) val1;
-            List<?> list2 = (List<?>) val2;
-            if (list1.size() != list2.size()) {
-                return false;
-            }
-            // Don't compare setwise, because order can matter. These mean different things:
-            //   @LTLengthOf(value={"a1","a2"}, offest={"0", "1"})
-            //   @LTLengthOf(value={"a2","a1"}, offest={"0", "1"})
-            for (int i = 0; i < list1.size(); i++) {
-                Object v1 = list1.get(i);
-                Object v2 = list2.get(i);
-                if (v1 == null || v2 == null || !sameAnnotationValueValue(v1, v2)) {
-                    return false;
-                }
-            }
-            return true;
-        } else if ((val1 instanceof AnnotationMirror) && (val2 instanceof AnnotationMirror)) {
-            return areSame((AnnotationMirror) val1, (AnnotationMirror) val2);
-        } else if ((val1 instanceof AnnotationValue) && (val2 instanceof AnnotationValue)) {
-            // This case occurs because of the recursive call when comparing arrays of
-            // annotation values.
-            return sameAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
-        } else if ((val1 instanceof Type.ClassType) && (val2 instanceof Type.ClassType)) {
-            // Type.ClassType does not override equals
-            return TypesUtils.areSameDeclaredTypes((Type.ClassType) val1, (Type.ClassType) val2);
-        } else {
-            return Objects.equals(val1, val2);
-        }
+        return compareAnnotationValue(av1, av2) != 0;
     }
 
     /**
