@@ -346,9 +346,7 @@ public class AnnotationUtils {
         if (!AnnotationUtils.areSameByName(a1, a2)) {
             return annotationName(a1).compareTo(annotationName(a2));
         }
-        if (AnnotationUtils.sameElementValues(a1, a2)) {
-            return 0;
-        }
+
         // The annotations have the same name, but different values, so compare values.
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = a1.getElementValues();
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = a2.getElementValues();
