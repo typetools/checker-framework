@@ -43,7 +43,10 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationBuilder.elementNamesValues("value", new ConversionCategory[0]));
     /** The @{@link InvalidFormat} annotation. */
     protected final AnnotationMirror INVALIDFORMAT =
-            AnnotationBuilder.fromClass(elements, InvalidFormat.class);
+            AnnotationBuilder.fromClass(
+                    elements,
+                    InvalidFormat.class,
+                    AnnotationBuilder.elementNamesValues("value", "dummy"));
     /** The @{@link FormatBottom} annotation. */
     protected final AnnotationMirror FORMATBOTTOM =
             AnnotationBuilder.fromClass(elements, FormatBottom.class);
