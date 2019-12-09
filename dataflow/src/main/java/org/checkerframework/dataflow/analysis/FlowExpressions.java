@@ -162,7 +162,12 @@ public class FlowExpressions {
             receiver = new ArrayCreation(an.getType(), dimensions, initializers);
         } else if (receiverNode instanceof MethodInvocationNode) {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
-            ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn.getTree());
+            MethodInvocationTree t = mn.getTree();
+            if (t == null) {
+                throw new BugInCF("Unexpected null tree for node: " + mn);
+            }
+            assert TreeUtils.isUseOfElement(t) : "@AssumeAssertion(nullness): tree kind";
+            ExecutableElement invokedMethod = TreeUtils.elementFromUse(t);
 
             if (allowNonDeterministic || PurityUtils.isDeterministic(provider, invokedMethod)) {
                 List<Receiver> parameters = new ArrayList<>();
@@ -244,6 +249,7 @@ public class FlowExpressions {
                 break;
             case METHOD_INVOCATION:
                 MethodInvocationTree mn = (MethodInvocationTree) receiverTree;
+                assert TreeUtils.isUseOfElement(mn) : "@AssumeAssertion(nullness): tree kind";
                 ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
                 if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterministic) {
                     List<Receiver> parameters = new ArrayList<>();
@@ -278,6 +284,8 @@ public class FlowExpressions {
                     receiver = new ThisReference(typeOfId);
                     break;
                 }
+                assert TreeUtils.isUseOfElement(identifierTree)
+                        : "@AssumeAssertion(nullness): tree kind";
                 Element ele = TreeUtils.elementFromUse(identifierTree);
                 switch (ele.getKind()) {
                     case LOCAL_VARIABLE:
@@ -362,6 +370,7 @@ public class FlowExpressions {
         if (TreeUtils.isClassLiteral(memberSelectTree)) {
             return new ClassName(expressionType);
         }
+        assert TreeUtils.isUseOfElement(memberSelectTree) : "@AssumeAssertion(nullness): tree kind";
         Element ele = TreeUtils.elementFromUse(memberSelectTree);
         switch (ele.getKind()) {
             case METHOD:
@@ -389,9 +398,9 @@ public class FlowExpressions {
      * @param annotationProvider annotationProvider
      * @param path TreePath that is enclosed by the method
      * @return list of Receiver objects for the formal parameters of the method in which path is
-     *     enclosed
+     *     enclosed, {@code null} otherwise
      */
-    public static List<Receiver> getParametersOfEnclosingMethod(
+    public static @Nullable List<Receiver> getParametersOfEnclosingMethod(
             AnnotationProvider annotationProvider, TreePath path) {
         MethodTree methodTree = TreeUtils.enclosingMethod(path);
         if (methodTree == null) {
@@ -516,7 +525,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof FieldAccess)) {
                 return false;
             }
@@ -583,7 +592,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             return obj instanceof ThisReference;
         }
 
@@ -636,7 +645,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof ClassName)) {
                 return false;
             }
@@ -686,7 +695,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             return obj == this;
         }
 
@@ -735,7 +744,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof LocalVariable)) {
                 return false;
             }
@@ -800,15 +809,29 @@ public class FlowExpressions {
         }
     }
 
+    /** FlowExpression.Receiver for literals. */
     public static class ValueLiteral extends Receiver {
 
-        protected final Object value;
+        /** The value of the literal. */
+        protected final @Nullable Object value;
 
+        /**
+         * Creates a ValueLiteral from the node with the given type.
+         *
+         * @param type type of the literal
+         * @param node the literal represents by this {@link ValueLiteral}
+         */
         public ValueLiteral(TypeMirror type, ValueLiteralNode node) {
             super(type);
             value = node.getValue();
         }
 
+        /**
+         * Creates a ValueLiteral where the value is {@code value} that has the given type.
+         *
+         * @param type type of the literal
+         * @param value the literal value
+         */
         public ValueLiteral(TypeMirror type, Object value) {
             super(type);
             this.value = value;
@@ -830,7 +853,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof ValueLiteral)) {
                 return false;
             }
@@ -846,6 +869,7 @@ public class FlowExpressions {
             if (TypesUtils.isString(type)) {
                 return "\"" + value + "\"";
             } else if (type.getKind() == TypeKind.LONG) {
+                assert value != null : "@AssumeAssertion(nullness): invariant";
                 return value.toString() + "L";
             }
             return value == null ? "null" : value.toString();
@@ -866,7 +890,8 @@ public class FlowExpressions {
             return false; // not modifiable
         }
 
-        public Object getValue() {
+        /** @return the value of this literal */
+        public @Nullable Object getValue() {
             return value;
         }
     }
@@ -986,7 +1011,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof MethodCall)) {
                 return false;
             }
@@ -1101,7 +1126,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof ArrayAccess)) {
                 return false;
             }
@@ -1131,7 +1156,7 @@ public class FlowExpressions {
         /**
          * List of dimensions expressions. {code null} means that there is no dimension expression.
          */
-        protected final List<@Nullable Receiver> dimensions;
+        protected final List<? extends @Nullable Receiver> dimensions;
         /** List of initializers. */
         protected final List<Receiver> initializers;
 
@@ -1144,13 +1169,16 @@ public class FlowExpressions {
          * @param initializers list of initializer expressions
          */
         public ArrayCreation(
-                TypeMirror type, List<@Nullable Receiver> dimensions, List<Receiver> initializers) {
+                TypeMirror type,
+                List<? extends @Nullable Receiver> dimensions,
+                List<Receiver> initializers) {
             super(type);
             this.dimensions = dimensions;
             this.initializers = initializers;
         }
 
-        public List<Receiver> getDimensions() {
+        /** @return a list of receivers representing the dimension of this array creation */
+        public List<? extends @Nullable Receiver> getDimensions() {
             return dimensions;
         }
 
@@ -1189,7 +1217,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof ArrayCreation)) {
                 return false;
             }

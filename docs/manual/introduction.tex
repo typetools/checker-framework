@@ -220,7 +220,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.0.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.0.1.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -782,9 +782,9 @@ Progress tracing; see Section~\ref{creating-debugging-options-progress}.
 Output the compiler command-line arguments to a file.  Useful when the
 command line is generated and executed by a tool, such as a build system.
 This produces a standalone command line that can be executed independently
-of the tool that generated it can make it easier to reproduce, report, and
-debug issues.  For example, the command line can be modified to enable
-attaching a debugger.
+of the tool that generated it (such as a build system).
+That command line makes it easier to reproduce, report, and debug issues.
+For example, the command line can be modified to enable attaching a debugger.
 See Section~\ref{creating-debugging-options-output-args}.
 
 \item
@@ -799,6 +799,11 @@ See Section~\ref{creating-debugging-options-output-args}.
  \<-AatfDoNotCache>,
  \<-AatfCacheSize>
 Miscellaneous debugging options; see Section~\ref{creating-debugging-options-misc}.
+
+\item
+ \<-AprintGitProperties>
+Print information about the git repository from which the Checker Framework
+was compiled.
 
 \end{itemize}
 

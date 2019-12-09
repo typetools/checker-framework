@@ -4416,7 +4416,9 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
          * the mappings from the map backing this view.
          */
         public final void clear()      { map.clear(); }
+        @Pure
         public final int size()        { return map.size(); }
+        @Pure
         public final boolean isEmpty() { return map.isEmpty(); }
 
         // implementations below rely on concrete classes supplying these

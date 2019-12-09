@@ -4,6 +4,7 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 // This class exists to break a circular dependency between the dataflow framework and
 // type-checkers.
@@ -19,7 +20,7 @@ public interface AnnotationProvider {
      * @return an annotation mirror of class {@code anno} on {@code elt}, or an equivalent one, or
      *     null if none exists on {@code anno}
      */
-    AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno);
+    @Nullable AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno);
 
     /**
      * Return the annotation on {@code tree} that is in the hierarchy that contains the qualifier
@@ -29,5 +30,5 @@ public interface AnnotationProvider {
      * @param target the class of the annotation
      * @return the annotation on {@code tree} that has the class {@code target}, or null
      */
-    AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target);
+    @Nullable AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target);
 }

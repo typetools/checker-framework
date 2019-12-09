@@ -35,8 +35,8 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
         this.exceptionalStores = exceptionalStores;
     }
 
-    /** @return the abstract value produced by the transfer function */
-    public A getResultValue() {
+    /** @return the abstract value produced by the transfer function, {@code null} otherwise */
+    public @Nullable A getResultValue() {
         return resultValue;
     }
 
@@ -75,10 +75,10 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
     }
 
     /**
-     * @return a Map of {@link TypeMirror} to {@link Store}
+     * @return a Map of {@link TypeMirror} to {@link Store}, {@code null} otherwise
      * @see TransferResult#getExceptionalStore(TypeMirror)
      */
-    public Map<TypeMirror, S> getExceptionalStores() {
+    public @Nullable Map<TypeMirror, S> getExceptionalStores() {
         return exceptionalStores;
     }
 

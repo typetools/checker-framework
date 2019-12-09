@@ -15,7 +15,7 @@ public class NumberUtils {
         if (numbers == null) {
             return null;
         }
-        TypeKind typeKind = unBoxPrimitive(type);
+        TypeKind typeKind = unboxPrimitive(type);
         switch (typeKind) {
             case BYTE:
                 List<Byte> bytes = new ArrayList<>();
@@ -64,8 +64,16 @@ public class NumberUtils {
         }
     }
 
+    /**
+     * Return a range that restricts the given range to the given type. That is, return the range
+     * resulting from casting a value with the given range.
+     *
+     * @param type the type for the cast; the result will be within it
+     * @param range the original range; the result will be within it
+     * @return the intersection of the given range and the possible values of the given type
+     */
     public static Range castRange(TypeMirror type, Range range) {
-        TypeKind typeKind = unBoxPrimitive(type);
+        TypeKind typeKind = unboxPrimitive(type);
         switch (typeKind) {
             case BYTE:
                 return range.byteRange();
@@ -84,11 +92,18 @@ public class NumberUtils {
         }
     }
 
-    private static TypeKind unBoxPrimitive(TypeMirror type) {
+    /**
+     * Given a primitive type, return it. Given a boxed primitive type, return the corresponding
+     * primitive type.
+     *
+     * @param type a primitive or boxed primitive type
+     * @return a primitive type
+     */
+    private static TypeKind unboxPrimitive(TypeMirror type) {
         if (type.getKind() == TypeKind.DECLARED) {
-            String stringType = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+            String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
 
-            switch (stringType) {
+            switch (typeString) {
                 case "java.lang.Byte":
                     return TypeKind.BYTE;
                 case "java.lang.Boolean":

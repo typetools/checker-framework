@@ -47,13 +47,13 @@ public class ValueCheckerUtils {
             case ARRAY:
                 return getArrayClassObject(((ArrayType) type).getComponentType());
             case DECLARED:
-                String stringType = TypesUtils.getQualifiedName((DeclaredType) type).toString();
-                if (stringType.equals("<nulltype>")) {
+                String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+                if (typeString.equals("<nulltype>")) {
                     return Object.class;
                 }
 
                 try {
-                    return Class.forName(stringType);
+                    return Class.forName(typeString);
                 } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
                     return Object.class;
                 }
@@ -127,12 +127,7 @@ public class ValueCheckerUtils {
         } else if (values.isEmpty()) {
             return Range.NOTHING;
         }
-        // The number elements in the values list should not exceed MAX_VALUES (10).
-        List<Long> longValues = new ArrayList<>();
-        for (Number value : values) {
-            longValues.add(value.longValue());
-        }
-        return new Range(longValues);
+        return Range.create(values);
     }
 
     /**
@@ -318,7 +313,7 @@ public class ValueCheckerUtils {
             List<Long> values =
                     ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
             if (values != null) {
-                return new Range(values);
+                return Range.create(values);
             } else {
                 return null;
             }

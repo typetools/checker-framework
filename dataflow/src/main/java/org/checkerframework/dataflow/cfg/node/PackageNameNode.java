@@ -29,6 +29,7 @@ public class PackageNameNode extends Node {
     public PackageNameNode(IdentifierTree tree) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
+        assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
         this.element = TreeUtils.elementFromUse(tree);
         this.parent = null;
     }
@@ -36,6 +37,7 @@ public class PackageNameNode extends Node {
     public PackageNameNode(MemberSelectTree tree, PackageNameNode parent) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
+        assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
         this.element = TreeUtils.elementFromUse(tree);
         this.parent = parent;
     }
@@ -44,7 +46,8 @@ public class PackageNameNode extends Node {
         return element;
     }
 
-    public PackageNameNode getParent() {
+    /** The package name node for the parent package, {@code null} otherwise. */
+    public @Nullable PackageNameNode getParent() {
         return parent;
     }
 
@@ -64,16 +67,13 @@ public class PackageNameNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof PackageNameNode)) {
             return false;
         }
         PackageNameNode other = (PackageNameNode) obj;
-        if (getParent() == null) {
-            return other.getParent() == null && getElement().equals(other.getElement());
-        } else {
-            return getParent().equals(other.getParent()) && getElement().equals(other.getElement());
-        }
+        return Objects.equals(getParent(), other.getParent())
+                && getElement().equals(other.getElement());
     }
 
     @Override

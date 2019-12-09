@@ -84,7 +84,7 @@ public class ObjectCreationNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof ObjectCreationNode)) {
             return false;
         }
