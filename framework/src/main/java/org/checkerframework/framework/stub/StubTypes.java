@@ -378,7 +378,7 @@ public class StubTypes {
         } catch (IOException e) {
             throw new BugInCF("cannot open the Jar file " + connection.getEntryName(), e);
         } catch (BugInCF e) {
-            throw new BugInCF("Exception while parsing " + jarEntryName, e);
+            throw new BugInCF("Exception while parsing " + jarEntryName + ": " + e.getMessage(), e);
         } finally {
             parsing = false;
         }
