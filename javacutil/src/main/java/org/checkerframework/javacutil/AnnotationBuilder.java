@@ -291,7 +291,7 @@ public class AnnotationBuilder {
      * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't
      *     be loaded
      */
-    public static @Nullable AnnotationMirror fromName(
+    private static @Nullable AnnotationMirror fromName(
             Elements elementUtils,
             CharSequence name,
             Map<String, AnnotationValue> elementNamesValues,
@@ -318,15 +318,12 @@ public class AnnotationBuilder {
                 ElementFilter.methodsIn(annoElt.getEnclosedElements())) {
             AnnotationValue elementValue =
                     elementNamesValues.get(annoElement.getSimpleName().toString());
-            if (elementValue == null) {
-                elementValue = annoElement.getDefaultValue();
-            }
-            if (elementValue == null) {
+            if (elementValue == null && annoElement.getDefaultValue() == null) {
                 if (noWarn) {
                     continue;
                 } else {
                     throw new BugInCF(
-                            "AnnotationBuilder.fromName: no default value for element %s of %s",
+                            "AnnotationBuilder.fromName: no value for element %s of %s",
                             annoElement, name);
                 }
             }
