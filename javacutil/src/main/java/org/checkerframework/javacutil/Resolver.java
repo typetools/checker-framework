@@ -24,6 +24,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -406,7 +407,7 @@ public class Resolver {
             throw new BugInCF(
                     String.format(
                             "Unexpected Reflection error in wrapInvocation(%s, %s, %s)",
-                            receiver, method, args),
+                            receiver, method, Arrays.toString(args)),
                     e);
         }
     }

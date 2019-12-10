@@ -334,26 +334,33 @@ public class AnnotationUtils {
         return null;
     }
 
-    private static final Comparator<AnnotationMirror> ANNOTATION_ORDERING =
-            new Comparator<AnnotationMirror>() {
-                @Override
-                public int compare(AnnotationMirror a1, AnnotationMirror a2) {
-                    // AnnotationMirror.toString() prints the elements of an annotation in the
-                    // order in which they were written. So, use areSame to check for equality.
-                    if (AnnotationUtils.areSame(a1, a2)) {
-                        return 0;
-                    }
+    /**
+     * Provide ordering for {@link AnnotationMirror} based on their fully qualified name. The
+     * ordering ignores annotation values when ordering.
+     *
+     * <p>The ordering is meant to be used as {@link TreeSet} or {@link TreeMap} ordering. A {@link
+     * Set} should not contain two annotations that only differ in values.
+     *
+     * @param a1 the first annotation
+     * @param a2 the second annotation
+     * @return an ordering over AnnotationMirrors based on their name
+     */
+    public static int compareAnnotationMirrors(AnnotationMirror a1, AnnotationMirror a2) {
+        // AnnotationMirror.toString() prints the elements of an annotation in the
+        // order in which they were written. So, use areSame to check for equality.
+        if (AnnotationUtils.areSame(a1, a2)) {
+            return 0;
+        }
 
-                    String n1 = a1.toString();
-                    String n2 = a2.toString();
+        String n1 = a1.toString();
+        String n2 = a2.toString();
 
-                    // Because the AnnotationMirror.toString prints the annotation as it appears
-                    // in source code, the order in which annotations of the same class are
-                    // sorted may be confusing.  For example, it might order
-                    // @IntRange(from=1, to=MAX) before @IntRange(to=MAX,from=0).
-                    return n1.compareTo(n2);
-                }
-            };
+        // Because the AnnotationMirror.toString prints the annotation as it appears
+        // in source code, the order in which annotations of the same class are
+        // sorted may be confusing.  For example, it might order
+        // @IntRange(from=1, to=MAX) before @IntRange(to=MAX,from=0).
+        return n1.compareTo(n2);
+    }
 
     /**
      * Provide ordering for {@link AnnotationMirror} based on their fully qualified name. The
@@ -363,9 +370,12 @@ public class AnnotationUtils {
      * Set} should not contain two annotations that only differ in values.
      *
      * @return an ordering over AnnotationMirrors based on their name
+     * @deprecated Use the method reference {@code AnnotationUtils::compareAnnotationMirrors}
+     *     instead
      */
+    @Deprecated
     public static Comparator<AnnotationMirror> annotationOrdering() {
-        return ANNOTATION_ORDERING;
+        return AnnotationUtils::compareAnnotationMirrors;
     }
 
     /**
@@ -378,7 +388,7 @@ public class AnnotationUtils {
      * @return a new map with {@link AnnotationMirror} as key
      */
     public static <V> Map<AnnotationMirror, V> createAnnotationMap() {
-        return new TreeMap<>(annotationOrdering());
+        return new TreeMap<>(AnnotationUtils::compareAnnotationMirrors);
     }
 
     /**
@@ -390,7 +400,7 @@ public class AnnotationUtils {
      * @return a new set to store {@link AnnotationMirror} as element
      */
     public static Set<AnnotationMirror> createAnnotationSet() {
-        return new TreeSet<>(annotationOrdering());
+        return new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
     }
 
     /**
