@@ -584,7 +584,7 @@ However, the declarative mechanism is sufficient for most type systems.
 \subsectionAndLabel{Procedurally defining the qualifier hierarchy}{creating-procedural-hierarchy}
 
 While the declarative syntax suffices for many cases, more complex
-type hierarchies can be expressed by overriding, in your subclass of \refclass{common/basetype}{BaseTypeVisitor},
+type hierarchies can be expressed by overriding, in your subclass of \refclass{common/basetype}{BaseAnnotatedTypeFactory},
 either \refmethodterse{framework/type}{AnnotatedTypeFactory}{createQualifierHierarchy}{--} or \refmethodterse{framework/type}{AnnotatedTypeFactory}{createTypeHierarchy}{--} (typically
 only one of these needs to be overridden).
 For more details, see the Javadoc of those methods and of the classes
