@@ -30,13 +30,13 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon
 make -C docs/manual all
 
-# This comes last, in case we wish to ignore it
-# if [ "$CI_IS_PR" == "true" ] ; then
+# The ci-lint-diff tests come last, in case we wish to ignore them
+echo /tmp/plume-scripts/ci-info --debug
+/tmp/plume-scripts/ci-info --debug
+echo end of /tmp/plume-scripts/ci-info --debug
+
 (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
 /tmp/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt
 
 (./gradlew javadocDoclintAll --console=plain --warning-mode=all --no-daemon > /tmp/warnings-jda.txt 2>&1) || true
-echo /tmp/plume-scripts/ci-info --debug
-/tmp/plume-scripts/ci-info --debug
-echo end of /tmp/plume-scripts/ci-info --debug
 /tmp/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt
