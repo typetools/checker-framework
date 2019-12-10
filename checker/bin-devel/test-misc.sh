@@ -32,8 +32,8 @@ make -C docs/manual all
 
 # This comes last, in case we wish to ignore it
 
-/tmp/plume-scripts/ci-lint-diff --debug
-echo "End of /tmp/plume-scripts/ci-lint-diff --debug"
+/tmp/plume-scripts/ci-info --debug
+echo "End of /tmp/plume-scripts/ci-info --debug"
 
 (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
 /tmp/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt
