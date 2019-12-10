@@ -27,7 +27,6 @@ import com.sun.source.tree.WildcardTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -203,7 +202,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         }
 
         if (node.getIdentifier().contentEquals("this")) {
-            // TODO: why don't we use getSelfType here?
+            // TODO: Both of these don't work.  See https://tinyurl.com/cfissue/2208
+            // return f.getSelfType(node.getExpression());
+            // return f.getSelfType(node);
             return f.getEnclosingType(
                     (TypeElement) TreeUtils.elementFromTree(node.getExpression()), node);
         } else {
@@ -307,12 +308,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // contains explicit annotations.
         AnnotatedDeclaredType type = f.fromNewClass(node);
 
-        // Enum constructors lead to trouble.
-        // TODO: is there more to check? Can one annotate them?
-        if (isNewEnum(type)) {
-            return type;
-        }
-
         // Add annotations that are on the constructor declaration.
         AnnotatedExecutableType ex = f.constructorFromUse(node).executableType;
         type.addMissingAnnotations(ex.getReturnType().getAnnotations());
@@ -325,10 +320,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             MethodInvocationTree node, AnnotatedTypeFactory f) {
         AnnotatedExecutableType ex = f.methodFromUse(node).executableType;
         return ex.getReturnType().asUse();
-    }
-
-    private boolean isNewEnum(AnnotatedDeclaredType type) {
-        return type.getUnderlyingType().asElement().getKind() == ElementKind.ENUM;
     }
 
     @Override

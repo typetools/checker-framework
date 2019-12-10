@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -22,14 +23,19 @@ import org.checkerframework.javacutil.TreeUtils;
 // TODO: don't use for parameters, as they don't have a tree
 public class LocalVariableNode extends Node {
 
+    /** The tree for the local variable. */
     protected final Tree tree;
-    protected final Node receiver;
 
+    /** The receiver node for the local variable, {@code null} otherwise. */
+    protected final @Nullable Node receiver;
+
+    /** Create a new local variable node for the given tree. */
     public LocalVariableNode(Tree t) {
         this(t, null);
     }
 
-    public LocalVariableNode(Tree t, Node receiver) {
+    /** Create a new local variable node for the given tree and receiver. */
+    public LocalVariableNode(Tree t, @Nullable Node receiver) {
         super(TreeUtils.typeOf(t));
         // IdentifierTree for normal uses of the local variable or parameter,
         // and VariableTree for the translation of an initializer block
@@ -42,7 +48,9 @@ public class LocalVariableNode extends Node {
     public Element getElement() {
         Element el;
         if (tree instanceof IdentifierTree) {
-            el = TreeUtils.elementFromUse((IdentifierTree) tree);
+            IdentifierTree itree = (IdentifierTree) tree;
+            assert TreeUtils.isUseOfElement(itree) : "@AssumeAssertion(nullness): tree kind";
+            el = TreeUtils.elementFromUse(itree);
         } else {
             assert tree instanceof VariableTree;
             el = TreeUtils.elementFromDeclaration((VariableTree) tree);
@@ -50,7 +58,8 @@ public class LocalVariableNode extends Node {
         return el;
     }
 
-    public Node getReceiver() {
+    /** The receiver node for the local variable, {@code null} otherwise. */
+    public @Nullable Node getReceiver() {
         return receiver;
     }
 
@@ -77,7 +86,7 @@ public class LocalVariableNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof LocalVariableNode)) {
             return false;
         }

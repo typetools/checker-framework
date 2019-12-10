@@ -220,7 +220,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.0.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.0.1.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -608,6 +608,8 @@ use the stub file \<checker/resources/javadoc.astub> by using \<-Astubs=checker.
 You can pass command-line arguments to a checker via javac's standard \<-A>
 option (``\<A>'' stands for ``annotation'').  All of the distributed
 checkers support the following command-line options.
+Each checker may support additional command-line options; see the checker's
+documentation.
 
 % This list should be kept in sync with file
 % framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java
@@ -739,9 +741,10 @@ Partially-annotated libraries
   Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
 \item \<-AstubWarnIfNotFoundIgnoresClasses>
   Don't warn about missing classes (only methods and fields) even when \<-AwarnIfNotFound> is true.
-\item \<-AstubWarnIfOverwritesBytecode>
-  Warn if a stub file entry overwrite bytecode information; see
-  Section~\ref{stub-using}.
+%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
+% \item \<-AstubWarnIfOverwritesBytecode>
+%   Warn if a stub file entry overwrite bytecode information; see
+%   Section~\ref{stub-using}.
 \item \<-AstubWarnIfRedundantWithBytecode>
   Warn if a stub file entry is redundant with bytecode information; see
   Section~\ref{stub-using}.
@@ -779,9 +782,9 @@ Progress tracing; see Section~\ref{creating-debugging-options-progress}.
 Output the compiler command-line arguments to a file.  Useful when the
 command line is generated and executed by a tool, such as a build system.
 This produces a standalone command line that can be executed independently
-of the tool that generated it can make it easier to reproduce, report, and
-debug issues.  For example, the command line can be modified to enable
-attaching a debugger.
+of the tool that generated it (such as a build system).
+That command line makes it easier to reproduce, report, and debug issues.
+For example, the command line can be modified to enable attaching a debugger.
 See Section~\ref{creating-debugging-options-output-args}.
 
 \item
@@ -796,6 +799,11 @@ See Section~\ref{creating-debugging-options-output-args}.
  \<-AatfDoNotCache>,
  \<-AatfCacheSize>
 Miscellaneous debugging options; see Section~\ref{creating-debugging-options-misc}.
+
+\item
+ \<-AprintGitProperties>
+Print information about the git repository from which the Checker Framework
+was compiled.
 
 \end{itemize}
 
@@ -815,7 +823,11 @@ checker is an ``annotation processor''.
 
 \begin{itemize}
 \item \<-processor> Names the checker to be
-  run; see Section~\ref{running}
+  run; see Sections~\ref{running} and~\ref{shorthand-for-checkers}.
+  May be a comma-separated list of multiple cehckers.  Note that javac
+  stops processing an indeterminate time after detecting an error.  When
+  providing multiple checkers, if one checker detects any error, subsequent
+  checkers may not run.
 \item \<-processorpath> Indicates where to search for the
   checker; should also contain any qualifiers used by the Subtyping
   Checker; see Section~\ref{subtyping-example}
@@ -873,7 +885,7 @@ annotation processing including all pluggable type-checking.
 %% errors for unannotated code, and that would be irritating.  So, leave it
 %% up to the user to enable auto-discovery.  1.
 
-\subsectionAndLabel{Shorthand for built-in checkers }{shorthand-for-checkers}
+\subsectionAndLabel{Shorthand for built-in checkers}{shorthand-for-checkers}
 
 % TODO: this feature only works for our javac script, not when using
 % the standard javac. Should this be explained?

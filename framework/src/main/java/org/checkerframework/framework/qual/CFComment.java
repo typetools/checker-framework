@@ -16,7 +16,7 @@ import java.lang.annotation.RetentionPolicy;
  *  public class MyClass {
  *   {@literal @}CFComment({"nullness: non-null return type is more specific than in superclass",
  *                "signedness: comment related to Signedness type system"})
- *    public String myMethod(){ ... }
+ *    public String myMethod() { ... }
  * }
  * </code></pre>
  *

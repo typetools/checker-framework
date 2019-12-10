@@ -653,6 +653,7 @@ class SubList<E> extends AbstractList<E> {
         return l.get(index+offset);
     }
 
+    @Pure
     public int size() {
         checkForComodification();
         return size;

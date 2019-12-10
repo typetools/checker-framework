@@ -4,6 +4,7 @@ import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -49,7 +50,7 @@ public class VariableDeclarationNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof VariableDeclarationNode)) {
             return false;
         }
