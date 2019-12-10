@@ -36,4 +36,7 @@ make -C docs/manual all
 /tmp/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt
 
 (./gradlew javadocDoclintAll --console=plain --warning-mode=all --no-daemon > /tmp/warnings-jda.txt 2>&1) || true
+echo /tmp/plume-scripts/ci-info --debug
+/tmp/plume-scripts/ci-info --debug
+echo end of /tmp/plume-scripts/ci-info --debug
 /tmp/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt
