@@ -295,12 +295,12 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Test that the demos are working as expected.'
     doLast {
         if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
-            File demosDir = new File(projectDir, '../../checker-framework-demos');
+            File demosDir = new File(projectDir, '../../checker-framework.demos');
             if (!demosDir.exists()) {
                 exec {
                     workingDir file(demosDir.toString() + '/../')
                     executable 'git'
-                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git', 'checker-framework-demos']
+                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git']
                 }
             } else {
                 exec {
