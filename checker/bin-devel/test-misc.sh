@@ -30,9 +30,6 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon
 make -C docs/manual all
 
-# This comes last, in case we wish to ignore it
-# if [ "$CI_IS_PR" == "true" ] ; then
-
 /tmp/plume-scripts/ci-info --debug
 echo "end of /tmp/plume-scripts/ci-info --debug"
 
