@@ -309,12 +309,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // contains explicit annotations.
         AnnotatedDeclaredType type = f.fromNewClass(node);
 
-        // Enum constructors lead to trouble.
-        // TODO: is there more to check? Can one annotate them?
-        if (isNewEnum(type)) {
-            return type;
-        }
-
         // Add annotations that are on the constructor declaration.
         AnnotatedExecutableType ex = f.constructorFromUse(node).executableType;
         type.addMissingAnnotations(ex.getReturnType().getAnnotations());
@@ -327,10 +321,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             MethodInvocationTree node, AnnotatedTypeFactory f) {
         AnnotatedExecutableType ex = f.methodFromUse(node).executableType;
         return ex.getReturnType().asUse();
-    }
-
-    private boolean isNewEnum(AnnotatedDeclaredType type) {
-        return type.getUnderlyingType().asElement().getKind() == ElementKind.ENUM;
     }
 
     @Override
