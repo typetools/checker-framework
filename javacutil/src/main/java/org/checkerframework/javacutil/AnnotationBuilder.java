@@ -155,7 +155,7 @@ public class AnnotationBuilder {
     // `noWarn` formal parameters in this file.
     /**
      * Creates an {@link AnnotationMirror} that lacks some elements/fields. DO NOT USE! Prefer to
-     * create proper {@code AnnoattionMirror}s by passing in an element-to-value mapping.
+     * create proper {@code AnnotationMirror}s by passing in an element-to-value mapping.
      *
      * @param elementUtils the element utilities to use
      * @param aClass the annotation class
@@ -243,7 +243,7 @@ public class AnnotationBuilder {
     // `noWarn` formal parameters in this file.
     /**
      * Creates an {@link AnnotationMirror} that lacks some elements/fields. DO NOT USE! Prefer to
-     * create proper {@code AnnoattionMirror}s by passing in an element-to-value mapping.
+     * create proper {@code AnnotationMirror}s by passing in an element-to-value mapping.
      *
      * @param elementUtils the element utilities to use
      * @param name the name of the annotation to create
