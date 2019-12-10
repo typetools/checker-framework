@@ -46,6 +46,7 @@ import com.github.javaparser.ast.type.WildcardType;
 import java.io.InputStream;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -1158,9 +1159,8 @@ public class StubParser {
         if (isJdkAsStub) {
             return;
         }
-        Set<AnnotationMirror> singletonFromStubFile = new HashSet<>();
-        singletonFromStubFile.add(fromStubFile);
-        putOrAddToMap(declAnnos, ElementUtils.getVerboseName(elt), singletonFromStubFile);
+        putOrAddToMap(
+                declAnnos, ElementUtils.getVerboseName(elt), Collections.singleton(fromStubFile));
     }
 
     private void annotateTypeParameters(
