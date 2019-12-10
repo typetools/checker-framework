@@ -11,6 +11,11 @@ Renamed wrapper annotations (which users should not write):
 
 ---------------------------------------------------------------------------
 
+Command-line option -AprintGitProperties prints information about the git
+repository from which the Checker Framework was compiled.
+
+---------------------------------------------------------------------------
+
 Version 3.0.1, December 2, 2019
 
 New command-line option for the Constant Value Checker
