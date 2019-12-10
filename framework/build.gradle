@@ -16,15 +16,15 @@ sourceSets {
 }
 
 dependencies {
-    compile project(':dataflow')
-    compile project(':javacutil')
-    compile files("${stubparserJar}")
-    compile files("${afuJar}")
-    compileOnly project(':checker-qual')
+    implementation project(':dataflow')
+    implementation project(':javacutil')
+    implementation files("${stubparserJar}")
+    implementation files("${afuJar}")
+    implementation project(':checker-qual')
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile project(':framework-test')
-    testCompile sourceSets.testannotations.output
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation project(':framework-test')
+    testImplementation sourceSets.testannotations.output
 }
 
 task checkDependencies() {
