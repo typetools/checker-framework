@@ -734,7 +734,7 @@ public class StubParser {
             // StubParser parses all annotations in type annotation position as type annotations
             recordDeclAnnotation(elt, ((MethodDeclaration) decl).getType().getAnnotations());
         }
-        recordFromStubFileDeclAnnotation(elt);
+        recordDeclAnnotationFromStubFile(elt);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
         AnnotatedExecutableType origMethodType;
@@ -879,22 +879,6 @@ public class StubParser {
             // type variables, but doesn't hurt in other cases.
             atype.clearAnnotations();
         }
-    }
-
-    /**
-     * Adds the declaration annotation {@code @FromStubFile} to the given element, unless we are
-     * parsing the JDK as a stub file.
-     */
-    private void recordFromStubFileDeclAnnotation(Element elt) {
-        if (isJdkAsStub) {
-            return;
-        }
-        Set<AnnotationMirror> annos = declAnnos.get(ElementUtils.getVerboseName(elt));
-        if (annos == null) {
-            annos = AnnotationUtils.createAnnotationSet();
-            putOrAddToMap(declAnnos, ElementUtils.getVerboseName(elt), annos);
-        }
-        annos.add(fromStubFile);
     }
 
     /**
@@ -1064,7 +1048,7 @@ public class StubParser {
             // and might refer to types that are not accessible.
             return;
         }
-        recordFromStubFileDeclAnnotation(elt);
+        recordDeclAnnotationFromStubFile(elt);
         recordDeclAnnotation(elt, decl.getAnnotations());
         // StubParser parses all annotations in type annotation position as type annotations
         recordDeclAnnotation(elt, decl.getElementType().getAnnotations());
@@ -1088,7 +1072,7 @@ public class StubParser {
      * constant.
      */
     private void processEnumConstant(EnumConstantDeclaration decl, VariableElement elt) {
-        recordFromStubFileDeclAnnotation(elt);
+        recordDeclAnnotationFromStubFile(elt);
         recordDeclAnnotation(elt, decl.getAnnotations());
         AnnotatedTypeMirror enumConstType = atypeFactory.fromElement(elt);
         annotate(enumConstType, decl.getAnnotations());
@@ -1165,6 +1149,18 @@ public class StubParser {
         }
         String key = ElementUtils.getVerboseName(elt);
         putOrAddToMap(declAnnos, key, annos);
+    }
+
+    /**
+     * Adds the declaration annotation {@code @FromStubFile} to the given element, unless we are
+     * parsing the JDK as a stub file.
+     */
+    private void recordDeclAnnotationFromStubFile(Element elt) {
+        if (isJdkAsStub) {
+            return;
+        }
+        putOrAddToMap(
+                declAnnos, ElementUtils.getVerboseName(elt), Collections.singleton(fromStubFile));
     }
 
     private void annotateTypeParameters(
