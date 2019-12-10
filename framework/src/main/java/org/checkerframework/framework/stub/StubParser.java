@@ -1922,7 +1922,7 @@ public class StubParser {
         if (map.containsKey(key)) {
             map.get(key).addAll(annos);
         } else {
-            map.put(key, annos);
+            map.put(key, new HashSet<>(annos));
         }
     }
 
