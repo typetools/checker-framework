@@ -24,7 +24,7 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 ##  * daikon-typecheck is run as a separate CI project
 
 # Checker Framework demos
-/tmp/plume-scripts/git-clone-related typetools checker-framework.demos ../checker-framework-demos
+/tmp/plume-scripts/git-clone-related typetools checker-framework.demos
 ./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
 
 # Guava
