@@ -638,19 +638,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * supportedTypeQualifiers}. The current implementation returns an instance of {@code
      * GraphQualifierHierarchy}.
      *
-     * @param elementUtils the element utilities to use
+     * @param elements the element utilities to use
      * @param supportedTypeQualifiers the type qualifiers for this type system
      * @param factory the type factory for this type system
      * @return an annotation relation tree representing the supported qualifiers
      */
     protected static QualifierHierarchy createQualifierHierarchy(
-            Elements elementUtils,
+            Elements elements,
             Set<Class<? extends Annotation>> supportedTypeQualifiers,
             MultiGraphFactory factory) {
 
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
             AnnotationMirror typeQualifierAnno =
-                    AnnotationBuilder.fromClassNonsense(elementUtils, typeQualifier);
+                    AnnotationBuilder.fromClassNonsense(elements, typeQualifier);
             factory.addQualifier(typeQualifierAnno);
             // Polymorphic qualifiers can't declare their supertypes.
             // An error is raised if one is present.
@@ -680,7 +680,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     continue;
                 }
                 AnnotationMirror superAnno =
-                        AnnotationBuilder.fromClassNonsense(elementUtils, superQualifier);
+                        AnnotationBuilder.fromClassNonsense(elements, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
