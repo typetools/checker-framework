@@ -423,8 +423,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param retNode the node that contains the expression returned
      * @param classSymbol the symbol of the class that contains the method
      * @param methodTree the tree of the method whose return type may be updated
-     * @param overriddenMethods the methods that the given method return overrides indexed by the
-     *     annotated type of the super class in which each method is defined
+     * @param overriddenMethods the methods that the given method return overrides, each indexed by
+     *     the annotated type of the class that defines it
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used to update the method's return type
      */
