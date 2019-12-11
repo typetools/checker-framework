@@ -81,19 +81,25 @@ import org.checkerframework.javacutil.UserError;
 
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    public static final String UNKNOWN_STRING = "org.checkerframework.common.value.qual.UnknownVal";
-    public static final String BOTTOMVAL_STRING =
-            "org.checkerframework.common.value.qual.BottomVal";
-    public static final String POLY_STRING = "org.checkerframework.common.value.qual.PolyValue";
-    public static final String INTRANGE_STRING = "org.checkerframework.common.value.qual.IntRange";
-    public static final String ARRAYLENRANGE_STRING =
+    /** Fully-qualified class name of {@link UnknownVal} */
+    public static final String UNKNOWN_NAME = "org.checkerframework.common.value.qual.UnknownVal";
+    /** Fully-qualified class name of {@link BottomVal} */
+    public static final String BOTTOMVAL_NAME = "org.checkerframework.common.value.qual.BottomVal";
+    /** Fully-qualified class name of {@link PolyValue} */
+    public static final String POLY_NAME = "org.checkerframework.common.value.qual.PolyValue";
+    /** Fully-qualified class name of {@link ArrayLen} */
+    public static final String ARRAYLEN_NAME = "org.checkerframework.common.value.qual.ArrayLen";
+    /** Fully-qualified class name of {@link DoubleVal} */
+    public static final String DOUBLEVAL_NAME = "org.checkerframework.common.value.qual.DoubleVal";
+    /** Fully-qualified class name of {@link IntVal} */
+    public static final String INTVAL_NAME = "org.checkerframework.common.value.qual.IntVal";
+    /** Fully-qualified class name of {@link StringVal} */
+    public static final String STRINGVAL_NAME = "org.checkerframework.common.value.qual.StringVal";
+    /** Fully-qualified class name of {@link ArrayLenRange} */
+    public static final String ARRAYLENRANGE_NAME =
             "org.checkerframework.common.value.qual.ArrayLenRange";
-    public static final String DOUBLEVAL_STRING =
-            "org.checkerframework.common.value.qual.DoubleVal";
-    public static final String INTVAL_STRING = "org.checkerframework.common.value.qual.IntVal";
-    public static final String ARRAYLEN_STRING = "org.checkerframework.common.value.qual.ArrayLen";
-    public static final String STRINGVAL_STRING =
-            "org.checkerframework.common.value.qual.StringVal";
+    /** Fully-qualified class name of {@link IntRange} */
+    public static final String INTRANGE_NAME = "org.checkerframework.common.value.qual.IntRange";
 
     /** The maximum number of values allowed in an annotation's array. */
     protected static final int MAX_VALUES = 10;
@@ -759,31 +765,31 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (qual1.equals(qual2)) {
                 // If both are the same type, determine the type and merge
                 switch (qual1) {
-                    case INTRANGE_STRING:
+                    case INTRANGE_NAME:
                         // special handling for IntRange
                         Range intrange1 = getRange(a1);
                         Range intrange2 = getRange(a2);
                         return createIntRangeAnnotation(intrange1.union(intrange2));
-                    case ARRAYLENRANGE_STRING:
+                    case ARRAYLENRANGE_NAME:
                         // special handling for ArrayLenRange
                         Range range1 = getRange(a1);
                         Range range2 = getRange(a2);
                         return createArrayLenRangeAnnotation(range1.union(range2));
-                    case INTVAL_STRING:
+                    case INTVAL_NAME:
                         List<Long> a1Values = getIntValues(a1);
                         List<Long> a2Values = getIntValues(a2);
                         List<Long> newValues = new ArrayList<>();
                         newValues.addAll(a1Values);
                         newValues.addAll(a2Values);
                         return createIntValAnnotation(newValues);
-                    case ARRAYLEN_STRING:
+                    case ARRAYLEN_NAME:
                         List<Integer> al1Values = getArrayLength(a1);
                         List<Integer> al2Values = getArrayLength(a2);
                         List<Integer> newValuesAL = new ArrayList<>();
                         newValuesAL.addAll(al1Values);
                         newValuesAL.addAll(al2Values);
                         return createArrayLenAnnotation(newValuesAL);
-                    case STRINGVAL_STRING:
+                    case STRINGVAL_NAME:
                         List<String> string1Values = getStringValues(a1);
                         List<String> string2Values = getStringValues(a2);
                         List<String> newStringValues = new ArrayList<>();
@@ -828,22 +834,22 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationMirror doubleValAnno = null;
 
             switch (qual1) {
-                case ARRAYLEN_STRING:
+                case ARRAYLEN_NAME:
                     arrayLenAnno = a1;
                     break;
-                case ARRAYLENRANGE_STRING:
+                case ARRAYLENRANGE_NAME:
                     arrayLenRangeAnno = a1;
                     break;
-                case STRINGVAL_STRING:
+                case STRINGVAL_NAME:
                     stringValAnno = a1;
                     break;
-                case INTVAL_STRING:
+                case INTVAL_NAME:
                     intValAnno = a1;
                     break;
-                case INTRANGE_STRING:
+                case INTRANGE_NAME:
                     intRangeAnno = a1;
                     break;
-                case DOUBLEVAL_STRING:
+                case DOUBLEVAL_NAME:
                     doubleValAnno = a1;
                     break;
                 default:
@@ -851,22 +857,22 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             switch (qual2) {
-                case ARRAYLEN_STRING:
+                case ARRAYLEN_NAME:
                     arrayLenAnno = a2;
                     break;
-                case ARRAYLENRANGE_STRING:
+                case ARRAYLENRANGE_NAME:
                     arrayLenRangeAnno = a2;
                     break;
-                case STRINGVAL_STRING:
+                case STRINGVAL_NAME:
                     stringValAnno = a2;
                     break;
-                case INTVAL_STRING:
+                case INTVAL_NAME:
                     intValAnno = a2;
                     break;
-                case INTRANGE_STRING:
+                case INTRANGE_NAME:
                     intRangeAnno = a2;
                     break;
-                case DOUBLEVAL_STRING:
+                case DOUBLEVAL_NAME:
                     doubleValAnno = a2;
                     break;
                 default:
@@ -926,21 +932,21 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             subAnno = convertSpecialIntRangeToStandardIntRange(subAnno);
             superAnno = convertSpecialIntRangeToStandardIntRange(superAnno);
             String subQual = AnnotationUtils.annotationName(subAnno);
-            if (subQual.equals(UNKNOWN_STRING)) {
+            if (subQual.equals(UNKNOWN_NAME)) {
                 superAnno = convertToUnknown(superAnno);
             }
             String superQual = AnnotationUtils.annotationName(superAnno);
-            if (superQual.equals(UNKNOWN_STRING) || subQual.equals(BOTTOMVAL_STRING)) {
+            if (superQual.equals(UNKNOWN_NAME) || subQual.equals(BOTTOMVAL_NAME)) {
                 return true;
-            } else if (superQual.equals(BOTTOMVAL_STRING) || subQual.equals(UNKNOWN_STRING)) {
+            } else if (superQual.equals(BOTTOMVAL_NAME) || subQual.equals(UNKNOWN_NAME)) {
                 return false;
-            } else if (superQual.equals(POLY_STRING)) {
-                return subQual.equals(POLY_STRING);
-            } else if (subQual.equals(POLY_STRING)) {
+            } else if (superQual.equals(POLY_NAME)) {
+                return subQual.equals(POLY_NAME);
+            } else if (subQual.equals(POLY_NAME)) {
                 return false;
             } else if (superQual.equals(subQual)) {
                 // Same type, so might be subtype
-                if (subQual.equals(INTRANGE_STRING) || subQual.equals(ARRAYLENRANGE_STRING)) {
+                if (subQual.equals(INTRANGE_NAME) || subQual.equals(ARRAYLENRANGE_NAME)) {
                     // Special case for range-based annotations
                     Range superRange = getRange(superAnno);
                     Range subRange = getRange(subAnno);
@@ -957,18 +963,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             switch (superQual + subQual) {
-                case DOUBLEVAL_STRING + INTVAL_STRING:
+                case DOUBLEVAL_NAME + INTVAL_NAME:
                     List<Double> subDValues = convertLongListToDoubleList(getIntValues(subAnno));
                     List<Double> superDValues = getDoubleValues(superAnno);
                     return superDValues.containsAll(subDValues);
-                case INTRANGE_STRING + INTVAL_STRING:
-                case ARRAYLENRANGE_STRING + ARRAYLEN_STRING:
+                case INTRANGE_NAME + INTVAL_NAME:
+                case ARRAYLENRANGE_NAME + ARRAYLEN_NAME:
                     List<Long> subValues = getArrayLenOrIntValue(subAnno);
                     Range superRange = getRange(superAnno);
                     long subMinVal = Collections.min(subValues);
                     long subMaxVal = Collections.max(subValues);
                     return subMinVal >= superRange.from && subMaxVal <= superRange.to;
-                case DOUBLEVAL_STRING + INTRANGE_STRING:
+                case DOUBLEVAL_NAME + INTRANGE_NAME:
                     Range subRange = getRange(subAnno);
                     if (subRange.isWiderThan(MAX_VALUES)) {
                         return false;
@@ -977,8 +983,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     List<Double> subDoublValues =
                             ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
                     return superValues.containsAll(subDoublValues);
-                case INTVAL_STRING + INTRANGE_STRING:
-                case ARRAYLEN_STRING + ARRAYLENRANGE_STRING:
+                case INTVAL_NAME + INTRANGE_NAME:
+                case ARRAYLEN_NAME + ARRAYLENRANGE_NAME:
                     Range subArrayRange = getRange(subAnno);
                     if (subArrayRange.isWiderThan(MAX_VALUES)) {
                         return false;
@@ -987,12 +993,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     List<Long> subLValues =
                             ValueCheckerUtils.getValuesFromRange(subArrayRange, Long.class);
                     return superLValues.containsAll(subLValues);
-                case STRINGVAL_STRING + ARRAYLENRANGE_STRING:
-                case STRINGVAL_STRING + ARRAYLEN_STRING:
+                case STRINGVAL_NAME + ARRAYLENRANGE_NAME:
+                case STRINGVAL_NAME + ARRAYLEN_NAME:
                     // Allow @ArrayLen(0) to be converted to @StringVal("")
                     List<String> superSValues = getStringValues(superAnno);
                     return superSValues.contains("") && getMaxLenValue(subAnno) == 0;
-                case ARRAYLEN_STRING + STRINGVAL_STRING:
+                case ARRAYLEN_NAME + STRINGVAL_NAME:
                     // StringVal is a subtype of ArrayLen, if all the strings have one of the
                     // correct lengths
                     List<String> subSValues = getStringValues(subAnno);
@@ -1004,7 +1010,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         }
                     }
                     return true;
-                case ARRAYLENRANGE_STRING + STRINGVAL_STRING:
+                case ARRAYLENRANGE_NAME + STRINGVAL_NAME:
                     // StringVal is a subtype of ArrayLenRange, if all the strings have a length
                     // in the range.
                     List<String> subStringValues = getStringValues(subAnno);
