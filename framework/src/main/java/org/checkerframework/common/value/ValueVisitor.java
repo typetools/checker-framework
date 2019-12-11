@@ -160,8 +160,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             case ValueAnnotatedTypeFactory.INTRANGE_NAME:
                 // If there are 2 arguments, issue an error if from.greater.than.to.
                 // If there are fewer than 2 arguments, we needn't worry about this problem because
-                // the
-                // other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE accordingly.
+                // the other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE
+                // accordingly.
                 if (args.size() == 2) {
                     long from = getElementValue(anno, "from", Long.class, true);
                     long to = getElementValue(anno, "to", Long.class, true);
