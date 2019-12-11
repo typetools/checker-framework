@@ -1718,7 +1718,7 @@ public class StubParser {
             case LONG:
                 return number.longValue() * scalefactor;
             case CHAR:
-                // It's not possible for `number` to be negative when `expectedkind` is a CHAR and
+                // It's not possible for `number` to be negative when `expectedkind` is a CHAR, and
                 // casting a negative value to char is illegal.
                 if (negate) {
                     throw new BugInCF(
