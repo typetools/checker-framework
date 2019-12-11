@@ -396,7 +396,7 @@ public class AnnotationUtils {
      * @param val1 a value returned by {@code AnnotationValue.getValue()}
      * @param val2 a value returned by {@code AnnotationValue.getValue()}
      */
-    private static int compareAnnotationValueValue(Object val1, Object val2) {
+    private static int compareAnnotationValueValue(@Nullable Object val1, @Nullable Object val2) {
         if (val1 == val2) {
             return 0;
         } else if (val1 == null) {
