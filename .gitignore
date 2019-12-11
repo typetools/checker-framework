@@ -42,6 +42,7 @@ checker/jdk/**/*.class
 checker/build-temp
 checker/bin-devel/.run-google-java-format
 checker/bin-devel/.plume-scripts
+checker/src/main/resources/git.properties
 
 # manual files
 bib

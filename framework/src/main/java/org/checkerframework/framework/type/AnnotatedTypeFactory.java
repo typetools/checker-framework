@@ -638,7 +638,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * supportedTypeQualifiers}. The current implementation returns an instance of {@code
      * GraphQualifierHierarchy}.
      *
-     * @param elementUtils the element utilities to use
+     * @param elements the element utilities to use
      * @param supportedTypeQualifiers the type qualifiers for this type system
      * @param factory the type factory for this type system
      * @return an annotation relation tree representing the supported qualifiers
