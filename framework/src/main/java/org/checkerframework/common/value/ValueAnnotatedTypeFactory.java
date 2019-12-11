@@ -81,6 +81,19 @@ import org.checkerframework.javacutil.UserError;
 
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+    public static final String UNKNOWN_STRING = "org.checkerframework.common.value.qual.UnknownVal";
+    public static final String BOTTOMVAL_STRING =
+            "org.checkerframework.common.value.qual.BottomVal";
+    public static final String POLY_STRING = "org.checkerframework.common.value.qual.PolyValue";
+    public static final String INTRANGE_STRING = "org.checkerframework.common.value.qual.IntRange";
+    public static final String ARRAYLENRANGE_STRING =
+            "org.checkerframework.common.value.qual.ArrayLenRange";
+    public static final String DOUBLEVAL_STRING =
+            "org.checkerframework.common.value.qual.DoubleVal";
+    public static final String INTVAL_STRING = "org.checkerframework.common.value.qual.IntVal";
+    public static final String ARRAYLEN_STRING = "org.checkerframework.common.value.qual.ArrayLen";
+    public static final String STRINGVAL_STRING =
+            "org.checkerframework.common.value.qual.StringVal";
 
     /** The maximum number of values allowed in an annotation's array. */
     protected static final int MAX_VALUES = 10;
@@ -740,86 +753,127 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (isSubtype(a2, a1)) {
                 return a1;
             }
+            String qual1 = AnnotationUtils.annotationName(a1);
+            String qual2 = AnnotationUtils.annotationName(a2);
 
-            if (AnnotationUtils.areSameByName(a1, a2)) {
+            if (qual1.equals(qual2)) {
                 // If both are the same type, determine the type and merge
-                if (AnnotationUtils.areSameByClass(a1, IntRange.class)) {
-                    // special handling for IntRange
-                    Range range1 = getRange(a1);
-                    Range range2 = getRange(a2);
-                    return createIntRangeAnnotation(range1.union(range2));
-                } else if (AnnotationUtils.areSameByClass(a1, ArrayLenRange.class)) {
-                    // special handling for ArrayLenRange
-                    Range range1 = getRange(a1);
-                    Range range2 = getRange(a2);
-                    return createArrayLenRangeAnnotation(range1.union(range2));
-                } else if (AnnotationUtils.areSameByClass(a1, IntVal.class)) {
-                    List<Long> a1Values = getIntValues(a1);
-                    List<Long> a2Values = getIntValues(a2);
-                    List<Long> newValues = new ArrayList<>();
-                    newValues.addAll(a1Values);
-                    newValues.addAll(a2Values);
-                    return createIntValAnnotation(newValues);
-                } else if (AnnotationUtils.areSameByClass(a1, ArrayLen.class)) {
-                    List<Integer> a1Values = getArrayLength(a1);
-                    List<Integer> a2Values = getArrayLength(a2);
-                    List<Integer> newValues = new ArrayList<>();
-                    newValues.addAll(a1Values);
-                    newValues.addAll(a2Values);
-                    return createArrayLenAnnotation(newValues);
-                } else if (AnnotationUtils.areSameByClass(a1, StringVal.class)) {
-                    List<String> a1Values = getStringValues(a1);
-                    List<String> a2Values = getStringValues(a2);
-                    List<String> newValues = new ArrayList<>();
-                    newValues.addAll(a1Values);
-                    newValues.addAll(a2Values);
-                    return createStringAnnotation(newValues);
-                } else {
-                    List<Object> a1Values =
-                            AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
-                    List<Object> a2Values =
-                            AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                    TreeSet<Object> newValues = new TreeSet<>();
-                    newValues.addAll(a1Values);
-                    newValues.addAll(a2Values);
+                switch (qual1) {
+                    case INTRANGE_STRING:
+                        // special handling for IntRange
+                        Range intrange1 = getRange(a1);
+                        Range intrange2 = getRange(a2);
+                        return createIntRangeAnnotation(intrange1.union(intrange2));
+                    case ARRAYLENRANGE_STRING:
+                        // special handling for ArrayLenRange
+                        Range range1 = getRange(a1);
+                        Range range2 = getRange(a2);
+                        return createArrayLenRangeAnnotation(range1.union(range2));
+                    case INTVAL_STRING:
+                        List<Long> a1Values = getIntValues(a1);
+                        List<Long> a2Values = getIntValues(a2);
+                        List<Long> newValues = new ArrayList<>();
+                        newValues.addAll(a1Values);
+                        newValues.addAll(a2Values);
+                        return createIntValAnnotation(newValues);
+                    case ARRAYLEN_STRING:
+                        List<Integer> al1Values = getArrayLength(a1);
+                        List<Integer> al2Values = getArrayLength(a2);
+                        List<Integer> newValuesAL = new ArrayList<>();
+                        newValuesAL.addAll(al1Values);
+                        newValuesAL.addAll(al2Values);
+                        return createArrayLenAnnotation(newValuesAL);
+                    case STRINGVAL_STRING:
+                        List<String> string1Values = getStringValues(a1);
+                        List<String> string2Values = getStringValues(a2);
+                        List<String> newStringValues = new ArrayList<>();
+                        newStringValues.addAll(string1Values);
+                        newStringValues.addAll(string2Values);
+                        return createStringAnnotation(newStringValues);
+                    default:
+                        List<Object> object1Values =
+                                AnnotationUtils.getElementValueArray(
+                                        a1, "value", Object.class, true);
+                        List<Object> object2Values =
+                                AnnotationUtils.getElementValueArray(
+                                        a2, "value", Object.class, true);
+                        TreeSet<Object> newObjectValues = new TreeSet<>();
+                        newObjectValues.addAll(object1Values);
+                        newObjectValues.addAll(object2Values);
 
-                    if (newValues.isEmpty()) {
-                        return BOTTOMVAL;
-                    }
-                    if (newValues.size() > MAX_VALUES) {
-                        return UNKNOWNVAL;
-                    }
-                    AnnotationBuilder builder =
-                            new AnnotationBuilder(processingEnv, a1.getAnnotationType().toString());
-                    List<Object> valuesList = new ArrayList<>(newValues);
-                    builder.setValue("value", valuesList);
-                    return builder.build();
+                        if (newObjectValues.isEmpty()) {
+                            return BOTTOMVAL;
+                        }
+                        if (newObjectValues.size() > MAX_VALUES) {
+                            return UNKNOWNVAL;
+                        }
+                        AnnotationBuilder builder =
+                                new AnnotationBuilder(
+                                        processingEnv, a1.getAnnotationType().toString());
+                        List<Object> valuesList = new ArrayList<>(newObjectValues);
+                        builder.setValue("value", valuesList);
+                        return builder.build();
                 }
             }
 
             // Special handling for dealing with the lub of an ArrayLenRange and an ArrayLen
             // or a StringVal with one of them.
-
+            // Each of these variables is an annotation of the given type, or is null if neither of
+            // the arguments to leastUpperBound is of the given types.
             AnnotationMirror arrayLenAnno = null;
             AnnotationMirror arrayLenRangeAnno = null;
             AnnotationMirror stringValAnno = null;
+            AnnotationMirror intValAnno = null;
+            AnnotationMirror intRangeAnno = null;
+            AnnotationMirror doubleValAnno = null;
 
-            if (AnnotationUtils.areSameByClass(a1, ArrayLen.class)) {
-                arrayLenAnno = a1;
-            } else if (AnnotationUtils.areSameByClass(a2, ArrayLen.class)) {
-                arrayLenAnno = a2;
-            }
-            if (AnnotationUtils.areSameByClass(a1, ArrayLenRange.class)) {
-                arrayLenRangeAnno = a1;
-            } else if (AnnotationUtils.areSameByClass(a2, ArrayLenRange.class)) {
-                arrayLenRangeAnno = a2;
-            }
-            if (AnnotationUtils.areSameByClass(a1, StringVal.class)) {
-                stringValAnno = a1;
-            } else if (AnnotationUtils.areSameByClass(a2, StringVal.class)) {
-                stringValAnno = a2;
+            switch (qual1) {
+                case ARRAYLEN_STRING:
+                    arrayLenAnno = a1;
+                    break;
+                case ARRAYLENRANGE_STRING:
+                    arrayLenRangeAnno = a1;
+                    break;
+                case STRINGVAL_STRING:
+                    stringValAnno = a1;
+                    break;
+                case INTVAL_STRING:
+                    intValAnno = a1;
+                    break;
+                case INTRANGE_STRING:
+                    intRangeAnno = a1;
+                    break;
+                case DOUBLEVAL_STRING:
+                    doubleValAnno = a1;
+                    break;
+                default:
+                    // Do nothing
             }
 
+            switch (qual2) {
+                case ARRAYLEN_STRING:
+                    arrayLenAnno = a2;
+                    break;
+                case ARRAYLENRANGE_STRING:
+                    arrayLenRangeAnno = a2;
+                    break;
+                case STRINGVAL_STRING:
+                    stringValAnno = a2;
+                    break;
+                case INTVAL_STRING:
+                    intValAnno = a2;
+                    break;
+                case INTRANGE_STRING:
+                    intRangeAnno = a2;
+                    break;
+                case DOUBLEVAL_STRING:
+                    doubleValAnno = a2;
+                    break;
+                default:
+                    // Do nothing
+            }
+            // Special handling for dealing with the lub of an ArrayLenRange and an ArrayLen
+            // or a StringVal with one of them.
             if (arrayLenAnno != null && arrayLenRangeAnno != null) {
                 return leastUpperBound(
                         arrayLenRangeAnno, convertArrayLenToArrayLenRange(arrayLenAnno));
@@ -835,27 +889,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // because some values can be implicitly cast as others. For example, if a1 and a2 are
             // both in {DoubleVal, IntVal} then they will be converted upwards: IntVal -> DoubleVal
             // to arrive at a common annotation type.
-
-            // Each of these variables is an annotation of the given type, or is null if neither of
-            // the arguments to leastUpperBound is of the given types.
-            AnnotationMirror intValAnno = null;
-            AnnotationMirror intRangeAnno = null;
-            AnnotationMirror doubleValAnno = null;
-            if (AnnotationUtils.areSameByClass(a1, IntVal.class)) {
-                intValAnno = a1;
-            } else if (AnnotationUtils.areSameByClass(a2, IntVal.class)) {
-                intValAnno = a2;
-            }
-            if (AnnotationUtils.areSameByClass(a1, DoubleVal.class)) {
-                doubleValAnno = a1;
-            } else if (AnnotationUtils.areSameByClass(a2, DoubleVal.class)) {
-                doubleValAnno = a2;
-            }
-            if (AnnotationUtils.areSameByClass(a1, IntRange.class)) {
-                intRangeAnno = a1;
-            } else if (AnnotationUtils.areSameByClass(a2, IntRange.class)) {
-                intRangeAnno = a2;
-            }
 
             if (doubleValAnno != null) {
                 if (intRangeAnno != null) {
@@ -890,27 +923,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-
             subAnno = convertSpecialIntRangeToStandardIntRange(subAnno);
             superAnno = convertSpecialIntRangeToStandardIntRange(superAnno);
-            if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)) {
+            String subQual = AnnotationUtils.annotationName(subAnno);
+            if (subQual.equals(UNKNOWN_STRING)) {
                 superAnno = convertToUnknown(superAnno);
             }
-
-            if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)) {
+            String superQual = AnnotationUtils.annotationName(superAnno);
+            if (superQual.equals(UNKNOWN_STRING) || subQual.equals(BOTTOMVAL_STRING)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(superAnno, BottomVal.class)) {
+            } else if (superQual.equals(BOTTOMVAL_STRING) || subQual.equals(UNKNOWN_STRING)) {
                 return false;
-            } else if (AnnotationUtils.areSameByClass(subAnno, PolyValue.class)) {
-                return AnnotationUtils.areSameByClass(superAnno, PolyValue.class);
-            } else if (AnnotationUtils.areSameByClass(superAnno, PolyValue.class)) {
-                return AnnotationUtils.areSameByClass(subAnno, PolyValue.class);
-            } else if (AnnotationUtils.areSameByName(superAnno, subAnno)) {
+            } else if (superQual.equals(POLY_STRING)) {
+                return subQual.equals(POLY_STRING);
+            } else if (subQual.equals(POLY_STRING)) {
+                return false;
+            } else if (superQual.equals(subQual)) {
                 // Same type, so might be subtype
-                if (AnnotationUtils.areSameByClass(subAnno, IntRange.class)
-                        || AnnotationUtils.areSameByClass(subAnno, ArrayLenRange.class)) {
+                if (subQual.equals(INTRANGE_STRING) || subQual.equals(ARRAYLENRANGE_STRING)) {
                     // Special case for range-based annotations
                     Range superRange = getRange(superAnno);
                     Range subRange = getRange(subAnno);
@@ -924,75 +954,69 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     subAnno, "value", Object.class, true);
                     return superValues.containsAll(subValues);
                 }
-            } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
-                    && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
-                List<Double> subValues = convertLongListToDoubleList(getIntValues(subAnno));
-                List<Double> superValues = getDoubleValues(superAnno);
-                return superValues.containsAll(subValues);
-            } else if ((AnnotationUtils.areSameByClass(superAnno, IntRange.class)
-                            && AnnotationUtils.areSameByClass(subAnno, IntVal.class))
-                    || (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
-                            && AnnotationUtils.areSameByClass(subAnno, ArrayLen.class))) {
-                List<Long> subValues = getArrayLenOrIntValue(subAnno);
-                Range superRange = getRange(superAnno);
-                long subMinVal = Collections.min(subValues);
-                long subMaxVal = Collections.max(subValues);
-                return subMinVal >= superRange.from && subMaxVal <= superRange.to;
-            } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
-                    && AnnotationUtils.areSameByClass(subAnno, IntRange.class)) {
-                Range subRange = getRange(subAnno);
-                if (subRange.isWiderThan(MAX_VALUES)) {
-                    return false;
-                }
-                List<Double> superValues = getDoubleValues(superAnno);
-                List<Double> subValues =
-                        ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
-                return superValues.containsAll(subValues);
-            } else if ((AnnotationUtils.areSameByClass(superAnno, IntVal.class)
-                            && AnnotationUtils.areSameByClass(subAnno, IntRange.class))
-                    || (AnnotationUtils.areSameByClass(superAnno, ArrayLen.class)
-                            && AnnotationUtils.areSameByClass(subAnno, ArrayLenRange.class))) {
-                Range subRange = getRange(subAnno);
-                if (subRange.isWiderThan(MAX_VALUES)) {
-                    return false;
-                }
-                List<Long> superValues = getArrayLenOrIntValue(superAnno);
-                List<Long> subValues = ValueCheckerUtils.getValuesFromRange(subRange, Long.class);
-                return superValues.containsAll(subValues);
-            } else if (AnnotationUtils.areSameByClass(superAnno, StringVal.class)
-                    && (AnnotationUtils.areSameByClass(subAnno, ArrayLen.class)
-                            || AnnotationUtils.areSameByClass(subAnno, ArrayLenRange.class))) {
+            }
 
-                // Allow @ArrayLen(0) to be converted to @StringVal("")
-                List<String> superValues = getStringValues(superAnno);
-                return superValues.contains("") && getMaxLenValue(subAnno) == 0;
-            } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLen.class)
-                    && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
-                // StringVal is a subtype of ArrayLen, if all the strings have one of the correct
-                // lengths
-                List<String> subValues = getStringValues(subAnno);
-                List<Integer> superValues = getArrayLength(superAnno);
-
-                for (String value : subValues) {
-                    if (!superValues.contains(value.length())) {
+            switch (superQual + subQual) {
+                case DOUBLEVAL_STRING + INTVAL_STRING:
+                    List<Double> subDValues = convertLongListToDoubleList(getIntValues(subAnno));
+                    List<Double> superDValues = getDoubleValues(superAnno);
+                    return superDValues.containsAll(subDValues);
+                case INTRANGE_STRING + INTVAL_STRING:
+                case ARRAYLENRANGE_STRING + ARRAYLEN_STRING:
+                    List<Long> subValues = getArrayLenOrIntValue(subAnno);
+                    Range superRange = getRange(superAnno);
+                    long subMinVal = Collections.min(subValues);
+                    long subMaxVal = Collections.max(subValues);
+                    return subMinVal >= superRange.from && subMaxVal <= superRange.to;
+                case DOUBLEVAL_STRING + INTRANGE_STRING:
+                    Range subRange = getRange(subAnno);
+                    if (subRange.isWiderThan(MAX_VALUES)) {
                         return false;
                     }
-                }
-                return true;
-            } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
-                    && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
-                // StringVal is a subtype of ArrayLenRange, if all the strings have a length in the
-                // range.
-                List<String> subValues = getStringValues(subAnno);
-                Range superRange = getRange(superAnno);
-                for (String value : subValues) {
-                    if (!superRange.contains(value.length())) {
+                    List<Double> superValues = getDoubleValues(superAnno);
+                    List<Double> subDoublValues =
+                            ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
+                    return superValues.containsAll(subDoublValues);
+                case INTVAL_STRING + INTRANGE_STRING:
+                case ARRAYLEN_STRING + ARRAYLENRANGE_STRING:
+                    Range subArrayRange = getRange(subAnno);
+                    if (subArrayRange.isWiderThan(MAX_VALUES)) {
                         return false;
                     }
-                }
-                return true;
-            } else {
-                return false;
+                    List<Long> superLValues = getArrayLenOrIntValue(superAnno);
+                    List<Long> subLValues =
+                            ValueCheckerUtils.getValuesFromRange(subArrayRange, Long.class);
+                    return superLValues.containsAll(subLValues);
+                case STRINGVAL_STRING + ARRAYLENRANGE_STRING:
+                case STRINGVAL_STRING + ARRAYLEN_STRING:
+                    // Allow @ArrayLen(0) to be converted to @StringVal("")
+                    List<String> superSValues = getStringValues(superAnno);
+                    return superSValues.contains("") && getMaxLenValue(subAnno) == 0;
+                case ARRAYLEN_STRING + STRINGVAL_STRING:
+                    // StringVal is a subtype of ArrayLen, if all the strings have one of the
+                    // correct lengths
+                    List<String> subSValues = getStringValues(subAnno);
+                    List<Integer> superIValues = getArrayLength(superAnno);
+
+                    for (String value : subSValues) {
+                        if (!superIValues.contains(value.length())) {
+                            return false;
+                        }
+                    }
+                    return true;
+                case ARRAYLENRANGE_STRING + STRINGVAL_STRING:
+                    // StringVal is a subtype of ArrayLenRange, if all the strings have a length
+                    // in the range.
+                    List<String> subStringValues = getStringValues(subAnno);
+                    Range superArrayRange = getRange(superAnno);
+                    for (String value : subStringValues) {
+                        if (!superArrayRange.contains(value.length())) {
+                            return false;
+                        }
+                    }
+                    return true;
+                default:
+                    return false;
             }
         }
     }
