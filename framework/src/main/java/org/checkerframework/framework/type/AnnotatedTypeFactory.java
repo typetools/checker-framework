@@ -87,6 +87,7 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.SimpleHierarchy;
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
@@ -682,6 +683,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         QualifierHierarchy hierarchy = factory.build();
+
+        new SimpleHierarchy().create(supportedTypeQualifiers);
 
         if (!hierarchy.isValid()) {
             throw new BugInCF(

@@ -746,13 +746,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         outset.addAll(inset);
 
         for (AnnotationMirror a1 : inset) {
-            Iterator<AnnotationMirror> outit = outset.iterator();
-            while (outit.hasNext()) {
-                AnnotationMirror a2 = outit.next();
-                if (a1 != a2 && isSubtype(a1, a2)) {
-                    outit.remove();
-                }
-            }
+            outset.removeIf(a2 -> a1 != a2 && isSubtype(a1, a2));
         }
         return outset;
     }
