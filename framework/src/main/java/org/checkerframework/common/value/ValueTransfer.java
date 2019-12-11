@@ -15,7 +15,6 @@ import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
-import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
@@ -296,15 +295,19 @@ public class ValueTransfer extends CFTransfer {
 
     private List<? extends Number> getNumericalValues(Node subNode, AnnotationMirror valueAnno) {
 
-        if (valueAnno == null || AnnotationUtils.areSameByClass(valueAnno, UnknownVal.class)) {
+        if (valueAnno == null
+                || AnnotationUtils.areSameByName(
+                        valueAnno, ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
             return null;
-        } else if (AnnotationUtils.areSameByClass(valueAnno, BottomVal.class)) {
+        } else if (AnnotationUtils.areSameByName(
+                valueAnno, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
             return new ArrayList<>();
         }
         List<? extends Number> values;
-        if (AnnotationUtils.areSameByClass(valueAnno, IntVal.class)) {
+        if (AnnotationUtils.areSameByName(valueAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)) {
             values = ValueAnnotatedTypeFactory.getIntValues(valueAnno);
-        } else if (AnnotationUtils.areSameByClass(valueAnno, DoubleVal.class)) {
+        } else if (AnnotationUtils.areSameByName(
+                valueAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
             values = ValueAnnotatedTypeFactory.getDoubleValues(valueAnno);
         } else {
             return null;
@@ -320,17 +323,18 @@ public class ValueTransfer extends CFTransfer {
 
     private Range getIntRangeFromAnnotation(Node node, AnnotationMirror val) {
         Range range;
-        if (val == null || AnnotationUtils.areSameByClass(val, UnknownVal.class)) {
+        if (val == null
+                || AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
             range = Range.EVERYTHING;
         } else if (atypefactory.isIntRange(val)) {
             range = ValueAnnotatedTypeFactory.getRange(val);
-        } else if (AnnotationUtils.areSameByClass(val, IntVal.class)) {
+        } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.INTVAL_NAME)) {
             List<Long> values = ValueAnnotatedTypeFactory.getIntValues(val);
             range = ValueCheckerUtils.getRangeFromValues(values);
-        } else if (AnnotationUtils.areSameByClass(val, DoubleVal.class)) {
+        } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
             List<Double> values = ValueAnnotatedTypeFactory.getDoubleValues(val);
             range = ValueCheckerUtils.getRangeFromValues(values);
-        } else if (AnnotationUtils.areSameByClass(val, BottomVal.class)) {
+        } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
             return Range.NOTHING;
         } else {
             range = Range.EVERYTHING;
@@ -346,7 +350,7 @@ public class ValueTransfer extends CFTransfer {
 
     /** Returns true if this node is annotated with {@code @UnknownVal}. */
     private boolean isIntegralUnknownVal(Node node, AnnotationMirror anno) {
-        return AnnotationUtils.areSameByClass(anno, UnknownVal.class)
+        return AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.UNKNOWN_NAME)
                 && TypesUtils.isIntegral(node.getType());
     }
 
@@ -467,7 +471,7 @@ public class ValueTransfer extends CFTransfer {
         if (lengthAnno == null) {
             return;
         }
-        if (AnnotationUtils.areSameByClass(lengthAnno, BottomVal.class)) {
+        if (AnnotationUtils.areSameByName(lengthAnno, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
             // If the length is bottom, then this is dead code, so the receiver type
             // should also be bottom.
             Receiver receiver = FlowExpressions.internalReprOf(atypefactory, receiverNode);
@@ -478,7 +482,8 @@ public class ValueTransfer extends CFTransfer {
         RangeOrListOfValues rolv;
         if (atypefactory.isIntRange(lengthAnno)) {
             rolv = new RangeOrListOfValues(ValueAnnotatedTypeFactory.getRange(lengthAnno));
-        } else if (AnnotationUtils.areSameByClass(lengthAnno, IntVal.class)) {
+        } else if (AnnotationUtils.areSameByName(
+                lengthAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)) {
             List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
             rolv = new RangeOrListOfValues(RangeOrListOfValues.convertLongsToInts(lengthValues));
         } else {
