@@ -1724,7 +1724,7 @@ public class StubParser {
                     throw new BugInCF(
                             String.format(
                                     "convert(%s, %s, %s): can't negate a char",
-                                    number, expectedkind, negate));
+                                    number, expectedKind, negate));
                 }
                 return (char) number.intValue();
             case FLOAT:
