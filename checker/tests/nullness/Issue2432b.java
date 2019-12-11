@@ -32,11 +32,11 @@ class Issue2432b {
     private static class MyClass<MyTypeParam> {
 
         Object[] toArray() {
-            return new Object[]{new Object()};
+            return new Object[] {new Object()};
         }
 
         @PolyNull Object[] toArrayPoly(MyClass<@PolyNull MyTypeParam> this) {
-            return new Object[]{new Object()};
+            return new Object[] {new Object()};
         }
     }
 }

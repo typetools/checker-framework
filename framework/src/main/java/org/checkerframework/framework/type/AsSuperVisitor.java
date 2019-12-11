@@ -371,6 +371,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         // setUpperBound() may have a side effect on parameter "type" when the upper bound of
         // "superType" equals to "type" (referencing the same object: changes will be shared)
         // copy before visiting to avoid
+        // without fix, this would fail:
+        // https://github.com/typetools/checker-framework/blob/ed340b2dfa1e51bbc0a7313f22638179d15bf2df/checker/tests/nullness/Issue2432b.java
         AnnotatedTypeMirror typeCopy = type.deepCopy();
         AnnotatedTypeMirror upperBound = visit(typeCopy, superType.getUpperBound(), p).asUse();
         superType.setUpperBound(upperBound);
