@@ -33,27 +33,27 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
         super.initChecker();
         I18nFormatterTreeUtil treeUtil = new I18nFormatterTreeUtil(this);
 
-        Elements elementUtils = getElementUtils();
+        Elements elements = getElementUtils();
         AnnotationMirror I18NUNKNOWNFORMAT =
-                AnnotationBuilder.fromClass(elementUtils, I18nUnknownFormat.class);
+                AnnotationBuilder.fromClass(elements, I18nUnknownFormat.class);
         AnnotationMirror I18NFORMAT =
                 AnnotationBuilder.fromClass(
-                        elementUtils,
+                        elements,
                         I18nFormat.class,
                         AnnotationBuilder.elementNamesValues(
                                 "value", new I18nConversionCategory[0]));
         AnnotationMirror I18NINVALIDFORMAT =
                 AnnotationBuilder.fromClass(
-                        elementUtils,
+                        elements,
                         I18nInvalidFormat.class,
                         AnnotationBuilder.elementNamesValues("value", "dummy"));
         AnnotationMirror I18NFORMATFOR =
                 AnnotationBuilder.fromClass(
-                        elementUtils,
+                        elements,
                         I18nFormatFor.class,
                         AnnotationBuilder.elementNamesValues("value", "dummy"));
         AnnotationMirror I18NFORMATBOTTOM =
-                AnnotationBuilder.fromClass(elementUtils, I18nFormatBottom.class);
+                AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
 
         AnnotationBuilder builder =
                 new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());

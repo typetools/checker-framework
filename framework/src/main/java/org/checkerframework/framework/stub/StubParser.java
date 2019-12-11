@@ -222,18 +222,18 @@ public class StubParser {
      * All annotations defined in the package (but not those nested within classes in the package).
      * Keys are simple names.
      */
-    private Map<String, AnnotationMirror> annosInPackage(PackageElement packageElement) {
-        return createImportedAnnotationsMap(
+    private Map<String, AnnotationMirror> annosInPackageNonsense(PackageElement packageElement) {
+        return createImportedAnnotationsMapNonsense(
                 ElementFilter.typesIn(packageElement.getEnclosedElements()));
     }
 
     /** All annotations declared (directly) within a class. Keys are simple names. */
-    private Map<String, AnnotationMirror> annosInType(TypeElement typeElement) {
-        return createImportedAnnotationsMap(
+    private Map<String, AnnotationMirror> annosInTypeNonsense(TypeElement typeElement) {
+        return createImportedAnnotationsMapNonsense(
                 ElementFilter.typesIn(typeElement.getEnclosedElements()));
     }
 
-    private Map<String, AnnotationMirror> createImportedAnnotationsMap(
+    private Map<String, AnnotationMirror> createImportedAnnotationsMapNonsense(
             List<TypeElement> typeElements) {
         Map<String, AnnotationMirror> result = new HashMap<>();
         for (TypeElement typeElm : typeElements) {
@@ -275,7 +275,7 @@ public class StubParser {
      *
      * @see #allStubAnnotations
      */
-    private Map<String, AnnotationMirror> getAllStubAnnotations() {
+    private Map<String, AnnotationMirror> getAllStubAnnotationsNonsense() {
         Map<String, AnnotationMirror> result = new HashMap<>();
 
         assert !stubUnit.getCompilationUnits().isEmpty();
@@ -295,7 +295,7 @@ public class StubParser {
                         if (element != null) {
                             // Find nested annotations
                             // Find compile time constant fields, or values of an enum
-                            putAllNew(result, annosInType(element));
+                            putAllNew(result, annosInTypeNonsense(element));
                             importedConstants.addAll(getImportableMembers(element));
                             addEnclosingTypesToImportedTypes(element);
                         }
@@ -304,7 +304,7 @@ public class StubParser {
                         // Wildcard import of members of a package
                         PackageElement element = findPackage(imported);
                         if (element != null) {
-                            putAllNew(result, annosInPackage(element));
+                            putAllNew(result, annosInPackageNonsense(element));
                             addEnclosingTypesToImportedTypes(element);
                         }
                     }
@@ -472,14 +472,14 @@ public class StubParser {
 
         // getAllStubAnnotations() also modifies importedConstants and importedTypes. This should
         // be refactored to be nicer.
-        allStubAnnotations = getAllStubAnnotations();
+        allStubAnnotations = getAllStubAnnotationsNonsense();
         if (allStubAnnotations.isEmpty()) {
             stubWarnNotFound(
                     String.format(
                             "No supported annotations found! This likely means stub file %s doesn't import them correctly.",
                             filename));
         }
-        allStubAnnotations.putAll(annosInPackage(findPackage("java.lang")));
+        allStubAnnotations.putAll(annosInPackageNonsense(findPackage("java.lang")));
     }
 
     /** Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. */
