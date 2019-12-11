@@ -1546,7 +1546,7 @@ public class StubParser {
                 for (MemberValuePair mvp : pairs) {
                     String member = mvp.getNameAsString();
                     Expression exp = mvp.getValue();
-                    boolean success = handleExpr(builder, member, exp);
+                    boolean success = builderAddElement(builder, member, exp);
                     if (!success) {
                         stubWarn(
                                 "Annotation expression, %s, could not be processed for annotation: %s. ",
@@ -1560,7 +1560,7 @@ public class StubParser {
             SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr) annotation;
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
             Expression valexpr = sglanno.getMemberValue();
-            boolean success = handleExpr(builder, "value", valexpr);
+            boolean success = builderAddElement(builder, "value", valexpr);
             if (!success) {
                 stubWarn(
                         "Annotation expression, %s, could not be processed for annotation: %s. ",
@@ -1718,8 +1718,14 @@ public class StubParser {
             case LONG:
                 return number.longValue() * scalefactor;
             case CHAR:
-                /* char is not multiplied by the scale factor since it's not possible for `number` to be negative
-                when `expectedkind` is a CHAR and casting a negative value to char is illegal */
+                // It's not possible for `number` to be negative when `expectedkind` is a CHAR, and
+                // casting a negative value to char is illegal.
+                if (negate) {
+                    throw new BugInCF(
+                            String.format(
+                                    "convert(%s, %s, %s): can't negate a char",
+                                    number, expectedKind, negate));
+                }
                 return (char) number.intValue();
             case FLOAT:
                 return number.floatValue() * scalefactor;
@@ -1733,9 +1739,12 @@ public class StubParser {
     /**
      * Adds an annotation element (argument) to {@code builder}. The element is a Java expression.
      *
+     * @param builder the builder to side-effect
+     * @param name the element name
+     * @param expr the element value
      * @return true if the expression was parsed and added to {@code builder}, false otherwise
      */
-    private boolean handleExpr(AnnotationBuilder builder, String name, Expression expr) {
+    private boolean builderAddElement(AnnotationBuilder builder, String name, Expression expr) {
         ExecutableElement var = builder.findElement(name);
         TypeMirror expected = var.getReturnType();
         TypeKind valueKind;
@@ -1783,6 +1792,10 @@ public class StubParser {
     /**
      * Cast to non-array values so that correct the correct AnnotationBuilder#setValue method is
      * called. (Different types of values are handled differently.)
+     *
+     * @param builder the builder to side-effect
+     * @param name the element name
+     * @param value the element value
      */
     private void builderSetValue(AnnotationBuilder builder, String name, Object value) {
         if (value instanceof Boolean) {
