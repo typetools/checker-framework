@@ -467,14 +467,12 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 
 The annotations should be placed within a directory called \<qual>, and
 \<qual> should be placed in the same directory as your checker's source file.
-
-For example, the Nullness Checker's source file is located at
-\<.../nullness/NullnessChecker.java>. The \<@NonNull> qualifier is defined in
-file \<.../nullness/qual/NonNull.java>.
-
 The Checker Framework automatically treats any annotation that
 is declared in the \<qual> package as a type qualifier.
 (See Section \ref{creating-indicating-supported-annotations} for more details.)
+For example, the Nullness Checker's source file is located at
+\<.../nullness/NullnessChecker.java>. The \<@NonNull> qualifier is defined in
+file \<.../nullness/qual/NonNull.java>.
 
 % \noindent
 % The \<@Target({ElementType.TYPE\_USE})> meta-annotation
@@ -489,16 +487,14 @@ is declared in the \<qual> package as a type qualifier.
 Your type system should include a top qualifier and a bottom qualifier
 (Section~\ref{creating-bottom-and-top-qualifier}).
 The top qualifier is conventionally named \<\emph{CheckerName}Unknown>.
-
-You should also define a
+Most type systems should also include a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{qualifier-polymorphism}).
 
-The Javadoc of every type qualifier should include a precise English
-description and an example use of the qualifier.
-
 Choose good names for the qualifiers, because users will write these in
 their source code.
+The Javadoc of every type qualifier should include a precise English
+description and an example use of the qualifier.
 
 
 \subsectionAndLabel{Declaratively defining the qualifier hierarchy}{creating-declarative-hierarchy}
@@ -588,7 +584,7 @@ However, the declarative mechanism is sufficient for most type systems.
 \subsectionAndLabel{Procedurally defining the qualifier hierarchy}{creating-procedural-hierarchy}
 
 While the declarative syntax suffices for many cases, more complex
-type hierarchies can be expressed by overriding, in your subclass of \refclass{common/basetype}{BaseTypeVisitor},
+type hierarchies can be expressed by overriding, in your subclass of \refclass{common/basetype}{BaseAnnotatedTypeFactory},
 either \refmethodterse{framework/type}{AnnotatedTypeFactory}{createQualifierHierarchy}{--} or \refmethodterse{framework/type}{AnnotatedTypeFactory}{createTypeHierarchy}{--} (typically
 only one of these needs to be overridden).
 For more details, see the Javadoc of those methods and of the classes
