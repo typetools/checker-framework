@@ -140,7 +140,7 @@ public class StubParser {
      *
      * @see #getAllStubAnnotations
      */
-    private Map<String, AnnotationMirror> allStubAnnotations;
+    private Map<String, TypeElement> allStubAnnotations;
 
     /**
      * A list of the fully-qualified names of enum constants and static fields with constant values
@@ -222,25 +222,22 @@ public class StubParser {
      * All annotations defined in the package (but not those nested within classes in the package).
      * Keys are simple names.
      */
-    private Map<String, AnnotationMirror> annosInPackage(PackageElement packageElement) {
+    private Map<String, TypeElement> annosInPackage(PackageElement packageElement) {
         return createImportedAnnotationsMap(
                 ElementFilter.typesIn(packageElement.getEnclosedElements()));
     }
 
     /** All annotations declared (directly) within a class. Keys are simple names. */
-    private Map<String, AnnotationMirror> annosInType(TypeElement typeElement) {
+    private Map<String, TypeElement> annosInType(TypeElement typeElement) {
         return createImportedAnnotationsMap(
                 ElementFilter.typesIn(typeElement.getEnclosedElements()));
     }
 
-    private Map<String, AnnotationMirror> createImportedAnnotationsMap(
-            List<TypeElement> typeElements) {
-        Map<String, AnnotationMirror> result = new HashMap<>();
+    private Map<String, TypeElement> createImportedAnnotationsMap(List<TypeElement> typeElements) {
+        Map<String, TypeElement> result = new HashMap<>();
         for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
-                AnnotationMirror anno =
-                        AnnotationBuilder.fromName(elements, typeElm.getQualifiedName());
-                putNoOverride(result, typeElm.getSimpleName().toString(), anno);
+                putNoOverride(result, typeElm.getSimpleName().toString(), typeElm);
             }
         }
         return result;
@@ -275,8 +272,8 @@ public class StubParser {
      *
      * @see #allStubAnnotations
      */
-    private Map<String, AnnotationMirror> getAllStubAnnotations() {
-        Map<String, AnnotationMirror> result = new HashMap<>();
+    private Map<String, TypeElement> getAllStubAnnotations() {
+        Map<String, TypeElement> result = new HashMap<>();
 
         assert !stubUnit.getCompilationUnits().isEmpty();
         CompilationUnit cu = stubUnit.getCompilationUnits().get(0);
@@ -346,10 +343,10 @@ public class StubParser {
 
                         AnnotationMirror anno = AnnotationBuilder.fromName(elements, imported);
                         if (anno != null) {
-                            Element annoElt = anno.getAnnotationType().asElement();
-                            putNoOverride(result, annoElt.getSimpleName().toString(), anno);
-                            importedTypes.put(
-                                    annoElt.getSimpleName().toString(), (TypeElement) annoElt);
+                            TypeElement annoElt =
+                                    (TypeElement) anno.getAnnotationType().asElement();
+                            putNoOverride(result, annoElt.getSimpleName().toString(), annoElt);
+                            importedTypes.put(annoElt.getSimpleName().toString(), annoElt);
                         } else {
                             stubWarnNotFound("Could not load import: " + imported);
                         }
@@ -1130,11 +1127,14 @@ public class StubParser {
      * @param a set of annotations that may be applicable to elt
      */
     private void recordDeclAnnotation(Element elt, List<AnnotationExpr> annotations) {
+        System.out.printf("recordDeclAnnotation(%s, %s)%n", elt, annotations);
         if (annotations == null) {
             return;
         }
         Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
         for (AnnotationExpr annotation : annotations) {
+            System.out.printf(
+                    "AnnotationExpr annotation = %s [%s]%n", annotation, annotation.getClass());
             AnnotationMirror annoMirror = getAnnotation(annotation, allStubAnnotations);
             if (annoMirror != null) {
                 // The @Target annotation on `annotation`/`annoMirror`
@@ -1529,18 +1529,22 @@ public class StubParser {
      * supported by the checker or if some error occurred while converting it.
      */
     private AnnotationMirror getAnnotation(
-            AnnotationExpr annotation, Map<String, AnnotationMirror> allStubAnnotations) {
+            AnnotationExpr annotation, Map<String, TypeElement> allStubAnnotations) {
         String annoName = annotation.getNameAsString();
-        AnnotationMirror annoMirror = allStubAnnotations.get(annoName);
-        if (annoMirror == null) {
+        System.out.printf(
+                "%s %s %s%n", annotation, annotation.getNameAsString(), annotation.getName());
+        TypeElement annoTypeElm = allStubAnnotations.get(annoName);
+        if (annoTypeElm == null) {
             // Not a supported qualifier -> ignore
             return null;
         }
         if (annotation instanceof MarkerAnnotationExpr) {
-            return annoMirror;
+            return AnnotationBuilder.fromName(elements, annoName);
         } else if (annotation instanceof NormalAnnotationExpr) {
             NormalAnnotationExpr nrmanno = (NormalAnnotationExpr) annotation;
-            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
+            // PROBLEM:  This name might be simple rather than fully-qualified.
+            // Example: @DefaultQualifier.  So, look in the imports to resolve it?
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoName);
             List<MemberValuePair> pairs = nrmanno.getPairs();
             if (pairs != null) {
                 for (MemberValuePair mvp : pairs) {
@@ -1558,7 +1562,7 @@ public class StubParser {
             return builder.build();
         } else if (annotation instanceof SingleMemberAnnotationExpr) {
             SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr) annotation;
-            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoName);
             Expression valexpr = sglanno.getMemberValue();
             boolean success = handleExpr(builder, "value", valexpr);
             if (!success) {

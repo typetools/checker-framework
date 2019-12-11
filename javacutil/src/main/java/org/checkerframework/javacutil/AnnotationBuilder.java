@@ -88,13 +88,15 @@ public class AnnotationBuilder {
      * they can be added later).
      *
      * @param env the processing environment
-     * @param name the name of the annotation to build
+     * @param name the fully-qualified name of the annotation to build
      */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
         this.annotationElt = elements.getTypeElement(name);
         if (annotationElt == null) {
+            new UserError("Could not find annotation: " + name + ". Is it on the classpath?")
+                    .printStackTrace();
             throw new UserError("Could not find annotation: " + name + ". Is it on the classpath?");
         }
         assert annotationElt.getKind() == ElementKind.ANNOTATION_TYPE;
