@@ -45,11 +45,18 @@ public class AnnotationUtils {
     // TODO: hack to clear out static state.
     public static void clear() {
         AnnotationBuilder.clear();
+        annotationClassNames.clear();
     }
 
     // **********************************************************************
     // Factory Methods to create instances of AnnotationMirror
     // **********************************************************************
+
+    private static final int ANNOTATION_CACHE_SIZE = 500;
+
+    /** Maps classes representing AnnotationMirrors to their names. */
+    private static final Map<Class<? extends Annotation>, String> annotationClassNames =
+            Collections.synchronizedMap(CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE));
 
     // **********************************************************************
     // Helper methods to handle annotations.  mainly workaround
@@ -135,6 +142,8 @@ public class AnnotationUtils {
      * Checks that the annotation {@code am} has the name {@code aname} (a fully-qualified type
      * name). Values are ignored.
      *
+     * <p>(Use {@link #areSameByClass} instead of this method when possible. It is faster.)
+     *
      * @param am the AnnotationMirror whose name to compare
      * @param aname the string to compare
      * @return true if aname is the name of am
@@ -146,13 +155,22 @@ public class AnnotationUtils {
     /**
      * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
      *
+     * <p>(Use this method rather than {@link #areSameByName} when possible. This method is faster.)
+     *
      * @param am the AnnotationMirror whose class to compare
      * @param annoClass the class to compare
      * @return true if annoclass is the class of am
      */
     public static boolean areSameByClass(
             AnnotationMirror am, Class<? extends Annotation> annoClass) {
-        return areSameByName(am, annoClass.getCanonicalName());
+        String canonicalName = annotationClassNames.get(annoClass);
+        if (canonicalName == null) {
+            // This method is faster than #areSameByName because of this cache.
+            canonicalName = annoClass.getCanonicalName();
+            assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
+            annotationClassNames.put(annoClass, canonicalName);
+        }
+        return areSameByName(am, canonicalName);
     }
 
     /**
