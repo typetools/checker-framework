@@ -24,7 +24,8 @@ if [ ! -z "$CHANGED_JAVA_FILES" ]; then
     if [ "$BRANCH" = "master" ]; then
         ./gradlew getPlumeScripts -q
         (./gradlew requireJavadocPrivate > /tmp/warnings.txt 2>&1) || true
-        checker/bin-devel/.plume-scripts/ci-lint-diff /tmp/warnings.txt
+        git diff --staged > /tmp/diff.txt
+        checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings.txt
     fi
 fi
 
