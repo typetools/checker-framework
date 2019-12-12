@@ -164,8 +164,11 @@ public class SimpleHierarchy extends QualifierHierarchy {
         private QualifierClass top;
         private QualifierClass bottom;
 
+        private boolean hasElements;
+
         QualifierClass(Class<? extends Annotation> clazz, @Nullable AnnotationMirror anno) {
             this.clazz = clazz;
+            this.hasElements = clazz.getDeclaredMethods().length != 0;
             this.name = clazz.getCanonicalName().intern();
             isPoly = false;
             superTypes = null;
@@ -259,6 +262,16 @@ public class SimpleHierarchy extends QualifierHierarchy {
             throw new UserError(
                     "Number of tops not equal to number of bottoms: Tops: [%s] Bottoms: [%s]",
                     PluginUtil.join(", ", tops), PluginUtil.join(", ", bottoms));
+        }
+        for (QualifierClass bot : bottoms) {
+            if (bot.hasElements) {
+                throw new UserError("Bottom has elements: %s", bot);
+            }
+        }
+        for (QualifierClass top : tops) {
+            if (top.hasElements) {
+                throw new UserError("Top has elements: %s", top);
+            }
         }
     }
 
