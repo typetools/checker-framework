@@ -524,20 +524,12 @@ then the annotation from the last declaration is used.
 % The Checker Framework automatically imports all the stub files named
 % \code{library.astub} found in the classpath.
 
-If both bytecode and a stub file provide information for the same
-element, the stub file information is used. In particular, an
-un-annotated type variable in a stub file is used instead of
-annotations on a type variable in bytecode.
-This feature allows stub files to change the effective annotations in
-all possible situations.
-%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
-% Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
-% warning whenever a stub file overwrites bytecode annotations.
-Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get
-a warning whenever a stub file specification is redundant with
-bytecode annotations.
+There are three possible sources of information for a given
+element: source files, stub files, and bytecode files.
+Usually source files take precedence over the other two,
+and stub files take precedence over bytecode.
 
-By default, a source file being compiled takes precedence over a stub file:  if
+By default, if
 file \<A.java> is being compiled, then any stub for class \<A> is ignored.
 The command-line option \<-AmergeStubsWithSource> tells the checker to take
 the greatest lower bound (GLB) of the type in the stub file and the type in
@@ -552,6 +544,17 @@ prohibit some \<@B> values (those that are not also \<@C> values).
 %
 Do not use \<-AmergeStubsWithSource> if the default qualifier
 is other than top (e.g., the Nullness Checker).
+
+An un-annotated type variable in a stub file is used instead of
+annotations on a type variable in bytecode.
+This feature allows stub files to change the effective annotations in
+all possible situations.
+%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
+% Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
+% warning whenever a stub file overwrites bytecode annotations.
+Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get
+a warning whenever a stub file specification is redundant with
+bytecode annotations.
 
 When a stub file is provided by the author of a checker, the stub file is used
 automatically, with no need for the user to supply a command-line option.
