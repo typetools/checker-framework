@@ -53,6 +53,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -641,11 +642,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @return an annotation relation tree representing the supported qualifiers
      */
-    protected static QualifierHierarchy createQualifierHierarchy(
+    protected QualifierHierarchy createQualifierHierarchy(
             Elements elements,
             Set<Class<? extends Annotation>> supportedTypeQualifiers,
             MultiGraphFactory factory) {
 
+        try {
+            new SimpleHierarchy(supportedTypeQualifiers, elements);
+        } catch (BugInCF | UserError e) {
+            checker.message(Kind.NOTE, "Error creating hierarchy: %s", e.getMessage());
+        }
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
             AnnotationMirror typeQualifierAnno =
                     AnnotationBuilder.fromClass(elements, typeQualifier);
@@ -683,8 +689,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         QualifierHierarchy hierarchy = factory.build();
-
-        new SimpleHierarchy().create(supportedTypeQualifiers);
 
         if (!hierarchy.isValid()) {
             throw new BugInCF(

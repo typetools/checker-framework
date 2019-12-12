@@ -3,7 +3,6 @@ package org.checkerframework.framework.util;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
@@ -38,7 +37,9 @@ public class SimpleHierarchy extends QualifierHierarchy {
     private final Map<QualifierClass, AnnotationMirror> bottomAnnotations = new TreeMap<>();
     private Elements elements;
 
-    public SimpleHierarchy(Collection<Class<? extends Annotation>> qualifierClasses) {
+    public SimpleHierarchy(
+            Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+        this.elements = elements;
         initialize(qualifierClasses);
     }
 
@@ -119,6 +120,7 @@ public class SimpleHierarchy extends QualifierHierarchy {
             return a1;
         }
         QualifierClass lub = lubs.get(new QualifierClassPair(qual1, qual2));
+        return null;
     }
 
     @Override
@@ -348,8 +350,7 @@ public class SimpleHierarchy extends QualifierHierarchy {
     private void initializeBottomsAndSuperTypesAndTop() {
         bottoms.addAll(directSuperMap.keySet());
         for (QualifierClass qualifierClass : directSuperMap.keySet()) {
-            qualifierClass.superTypes =
-                    Collections.unmodifiableSet(findAllTheSupers(qualifierClass));
+            qualifierClass.superTypes = findAllTheSupers(qualifierClass);
             bottoms.removeAll(qualifierClass.superTypes);
             if (qualifierClass.superTypes.isEmpty()) {
                 qualifierClass.top = qualifierClass;
@@ -361,6 +362,16 @@ public class SimpleHierarchy extends QualifierHierarchy {
             }
             if (qualifierClass.top == null) {
                 throw new UserError("Qualifier isn't in hierarchy: %s", qualifierClass);
+            }
+        }
+        for (QualifierClass poly : polymorphicQualifiers) {
+            poly.superTypes = new TreeSet<>();
+            poly.superTypes.add(poly.top);
+            for (QualifierClass bot : bottoms) {
+                if (bot.top == poly.top) {
+                    poly.bottom = bot;
+                    bot.superTypes.add(poly);
+                }
             }
         }
 
@@ -415,6 +426,9 @@ public class SimpleHierarchy extends QualifierHierarchy {
     private void initializeLubs() {
         for (QualifierClass qual1 : qualifierClassMap.values()) {
             for (QualifierClass qual2 : qualifierClassMap.values()) {
+                if (qual1.top != qual2.top) {
+                    continue;
+                }
                 QualifierClass lub = findLub(qual1, qual2);
                 QualifierClassPair pair = new QualifierClassPair(qual1, qual2);
                 QualifierClass otherLub = lubs.get(pair);
@@ -447,7 +461,11 @@ public class SimpleHierarchy extends QualifierHierarchy {
                     "Not exactly 1 lub for %s and %s. Found lubs: [%s].",
                     qual1, qual2, PluginUtil.join(", ", lubs));
         }
-        return lubs.iterator().next();
+        QualifierClass lub = lubs.iterator().next();
+        if (lub.isPoly && !qual1.isPoly && !qual2.isPoly) {
+            return lub.top;
+        }
+        return lub;
     }
 
     /** Remove all supertypes of elements contained in the set. */
