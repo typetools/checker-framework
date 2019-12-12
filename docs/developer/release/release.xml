@@ -105,6 +105,9 @@
                        match="checker-qual-${release.version.regexp}{0,1}" replace="checker-qual-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="/${release.version.regexp}{0,1}/jar" replace="/${release.ver}/jar"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
@@ -201,6 +204,10 @@
 
         <!-- examples -->
         <update file="${cf.docs.examples}/MavenExample/pom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${cf.docs.examples}/MavenExampleJDK11/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 

@@ -972,6 +972,7 @@ public final class String
      *
      * @since      JDK1.1
      */
+    @SideEffectFree
     public byte[] getBytes() {
         return StringCoding.encode(value, 0, value.length);
     }
@@ -2721,6 +2722,7 @@ public final class String
      * @return  the {@code String}, converted to lowercase.
      * @see     java.lang.String#toLowerCase(Locale)
      */
+    @SideEffectFree
     public String toLowerCase() {
         return toLowerCase(Locale.getDefault());
     }
@@ -2885,6 +2887,7 @@ public final class String
      * @return  the {@code String}, converted to uppercase.
      * @see     java.lang.String#toUpperCase(Locale)
      */
+    @SideEffectFree
     public String toUpperCase() {
         return toUpperCase(Locale.getDefault());
     }

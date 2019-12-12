@@ -2,7 +2,7 @@ ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = '5619df3e6f0cf8599f809cf98ca89bffdaabadc6'
+    jdkShaHash = '54dceee1857209c0f6f90fe9ef9f45655e26642b'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -20,16 +20,16 @@ sourceSets {
 }
 
 dependencies {
-    compile project(':framework')
-    compile project(':dataflow')
-    compile project(':javacutil')
-    compile project(':checker-qual')
+    implementation project(':framework')
+    implementation project(':dataflow')
+    implementation project(':javacutil')
+    implementation project(':checker-qual')
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile project(':framework-test')
-    testCompile sourceSets.testannotations.output
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation project(':framework-test')
+    testImplementation sourceSets.testannotations.output
 
-    testannotationsCompile project(':checker-qual')
+    testannotationsImplementation project(':checker-qual')
 }
 
 task cloneTypetoolsJdk() {
@@ -295,12 +295,12 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Test that the demos are working as expected.'
     doLast {
         if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
-            File demosDir = new File(projectDir, '../../checker-framework-demos');
+            File demosDir = new File(projectDir, '../../checker-framework.demos');
             if (!demosDir.exists()) {
                 exec {
                     workingDir file(demosDir.toString() + '/../')
                     executable 'git'
-                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git', 'checker-framework-demos']
+                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git']
                 }
             } else {
                 exec {

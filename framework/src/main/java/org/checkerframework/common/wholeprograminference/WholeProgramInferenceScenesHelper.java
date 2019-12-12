@@ -254,9 +254,9 @@ public class WholeProgramInferenceScenesHelper {
      *
      * <ul>
      *   <li>If there was no previous annotation for that location, then the updated set will be the
-     *       annotations in newATM.
+     *       annotations in rhsATM.
      *   <li>If there was a previous annotation, the updated set will be the LUB between the
-     *       previous annotation and newATM.
+     *       previous annotation and rhsATM.
      * </ul>
      *
      * @param type ATypeElement of the Scene which will be modified
