@@ -622,7 +622,7 @@ public class AnnotationUtils {
             if (aval2 == null) {
                 aval2 = meth.getDefaultValue();
             }
-            if (sameAnnotationValue(aval1, aval2)) {
+            if (!sameAnnotationValue(aval1, aval2)) {
                 return false;
             }
         }
