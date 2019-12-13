@@ -166,11 +166,9 @@ public class QualifierPolymorphismUtil {
         } else if (treeIndex + 1 >= method.getParameterTypes().size() && methodElt.isVarArgs()) {
             AnnotatedTypeMirror varArgType =
                     method.getParameterTypes().get(method.getParameterTypes().size() - 1);
-            List<AnnotatedTypeMirror> declaredParamsAnnoMirror =
-                    atypeFactory.getAnnotatedType(methodElt).getParameterTypes();
-            AnnotatedTypeMirror declaredVarArg =
-                    declaredParamsAnnoMirror.get(declaredParamsAnnoMirror.size() - 1);
-            if (declaredVarArg.equals(varArgType)) {
+            List<AnnotatedTypeMirror> params =
+                    AnnotatedTypes.expandVarArgs(atypeFactory, method, arguments);
+            if (params.get(params.size() - 1).equals(varArgType)) {
                 return varArgType;
             }
             paramType = ((AnnotatedArrayType) varArgType).getComponentType();
