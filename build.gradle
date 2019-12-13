@@ -778,7 +778,7 @@ subprojects {
                 dependsOn('checkCompilerMessages', 'jtregTests')
             }
             if (project.name.is('framework')) {
-                dependsOn('wholeProgramInferenceTests', 'wholeProgramInferenceStubsTest', 'loaderTests')
+                dependsOn('wholeProgramInferenceTests', 'wholeProgramInferenceStubTests', 'loaderTests')
             }
 
             if (project.name.is('checker')) {
