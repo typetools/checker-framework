@@ -59,13 +59,6 @@ public abstract class QualifierHierarchy {
     public abstract Set<? extends AnnotationMirror> getBottomAnnotations();
 
     /**
-     * @param start any qualifier from the type hierarchy
-     * @return the polymorphic qualifier for that hierarchy or {@code null} if there is no
-     *     polymorphic qualifier in that hierarchy
-     */
-    public abstract AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start);
-
-    /**
      * Returns all type qualifiers in this type qualifier hierarchy.
      *
      * @return the fully qualified name represented in this hierarchy

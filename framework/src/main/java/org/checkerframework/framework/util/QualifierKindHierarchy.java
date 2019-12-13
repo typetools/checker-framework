@@ -10,7 +10,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import javax.lang.model.util.Elements;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -18,8 +17,9 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.UserError;
 
+/** NO AnnotationMirrors allowed in this class. */
 public class QualifierKindHierarchy {
-    @Interned private static class QualifierKind implements Comparable<QualifierKind> {
+    @Interned static class QualifierKind implements Comparable<QualifierKind> {
         private final @Interned String name;
         private final Class<? extends Annotation> clazz;
         private boolean isPoly;
@@ -48,7 +48,7 @@ public class QualifierKindHierarchy {
             return name;
         }
 
-        public Class<? extends Annotation> getClazz() {
+        public Class<? extends Annotation> getAnnotationClass() {
             return clazz;
         }
 
@@ -62,6 +62,14 @@ public class QualifierKindHierarchy {
 
         public QualifierKind getTop() {
             return top;
+        }
+
+        public QualifierKind getBottom() {
+            return bottom;
+        }
+
+        public boolean isHasElements() {
+            return hasElements;
         }
 
         @Override
@@ -89,15 +97,14 @@ public class QualifierKindHierarchy {
     private final Map<@Interned String, QualifierKind> qualifierKindMap = new TreeMap<>();
 
     private final Map<QualifierKind, Set<QualifierKind>> directSuperMap = new TreeMap<>();
+    /** Top -> Poly */
+    private final Map<QualifierKind, QualifierKind> polyMap = new TreeMap<>();
+
     private final Set<QualifierKind> tops = new TreeSet<>();
     private final Set<QualifierKind> bottoms = new TreeSet<>();
     private final Map<QualifierClassPair, QualifierKind> lubs = new HashMap<>();
 
-    private final Elements elements;
-
-    public QualifierKindHierarchy(
-            Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-        this.elements = elements;
+    public QualifierKindHierarchy(Collection<Class<? extends Annotation>> qualifierClasses) {
         initialize(qualifierClasses);
     }
 
@@ -177,7 +184,7 @@ public class QualifierKindHierarchy {
      */
     private void initializePolymorphicQualifiers() {
         for (QualifierKind qualifierKind : qualifierKindMap.values()) {
-            Class<? extends Annotation> clazz = qualifierKind.getClazz();
+            Class<? extends Annotation> clazz = qualifierKind.getAnnotationClass();
             PolymorphicQualifier polyMetAnno = clazz.getAnnotation(PolymorphicQualifier.class);
             if (polyMetAnno != null) {
                 qualifierKind.isPoly = true;
@@ -197,6 +204,7 @@ public class QualifierKindHierarchy {
                             "The polymorphic qualifier, %s, specified a top annotation class that is not a supported qualifier. Found: %s.",
                             qualifierKind, topName);
                 }
+                polyMap.put(qualifierKind.top, qualifierKind);
             }
         }
     }
@@ -407,5 +415,25 @@ public class QualifierKindHierarchy {
             result = 31 * result + qual2.hashCode();
             return result;
         }
+    }
+
+    public Set<QualifierKind> getTops() {
+        return tops;
+    }
+
+    public Set<QualifierKind> getBottoms() {
+        return bottoms;
+    }
+
+    public Map<QualifierClassPair, QualifierKind> getLubs() {
+        return lubs;
+    }
+
+    public Map<String, QualifierKind> getQualifierKindMap() {
+        return qualifierKindMap;
+    }
+
+    public Map<QualifierKind, QualifierKind> getPolyMap() {
+        return polyMap;
     }
 }
