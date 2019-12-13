@@ -159,6 +159,13 @@ task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
     }
 }
 
+task cleanJdk(type: Exec){
+    description 'Runs \'make clean\' in checker/jdk directory.'
+    workingDir "${projectDir}/jdk"
+    executable 'make'
+    args = ["clean"]
+}
+
 task updateJdk() {
     description 'Downloads or builds jdk8.jar and copies into checker/dist'
     if (jdkShaHash.is('local')) {
@@ -247,6 +254,7 @@ artifacts {
 }
 
 clean {
+    dependsOn cleanJdk
     delete "${projectDir}/dist"
 }
 
