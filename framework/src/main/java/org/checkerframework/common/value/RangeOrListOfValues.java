@@ -53,11 +53,12 @@ class RangeOrListOfValues {
      *
      * <p>If reading from an {@link org.checkerframework.common.value.qual.IntRange} annotation,
      * {@link #convertLongsToInts(List)} should be called before calling this method.
+     *
+     * @param newValues values to add
      */
     public void addAll(List<Integer> newValues) {
         if (isRange) {
-            Range newValueRange = new Range(newValues);
-            range = range.union(newValueRange);
+            range = range.union(Range.create(newValues));
         } else {
             for (Integer i : newValues) {
                 if (!values.contains(i)) {
@@ -107,7 +108,7 @@ class RangeOrListOfValues {
     public void convertToRange() {
         if (!isRange) {
             isRange = true;
-            range = new Range(values);
+            range = Range.create(values);
             values = null;
         }
     }

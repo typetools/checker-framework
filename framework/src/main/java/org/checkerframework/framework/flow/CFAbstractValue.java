@@ -137,7 +137,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof CFAbstractValue)) {
             return false;
         }

@@ -25,6 +25,7 @@ including people who wish to edit its source code or make pull requests.
     <ul>
       <li><a href="#Directory_structure">Directory structure</a></li>
       <li><a href="#Build_tasks">Build tasks</a></li>
+      <li><a href="#tests">Testing the Checker Framework</a></li>
       <li><a href="#Code_style">Code style</a></li>
       <li><a href="#IDE_configuration">IDE configuration</a>
         <ul>
@@ -38,6 +39,7 @@ including people who wish to edit its source code or make pull requests.
         <ul>
           <li><a href="#ci-failure">What to do if a Continuous Integration build fails</a></li>
         </ul></li>
+      <li><a href="#testing-optimizations">Testing optimizations</a></li>
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
       <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
       <li><a href="#Making_a_Checker_Framework_release">Making a Checker Framework release</a></li>
@@ -119,6 +121,14 @@ main directory or any subproject runs the <code>allTests</code> task only in the
 </p>
 
 
+<h2 id="tests">Testing the Checker Framework</h2>
+
+<p>
+For writing new test cases, see file
+[`checker/tests/README`](https://raw.githubusercontent.com/typetools/checker-framework/master/checker/tests/README).
+</p>
+
+
 <h2 id="Code_style">Code style</h2>
 
 <p>
@@ -146,6 +156,10 @@ Authorship (and who has made changes recently) can be obtained from the
 version control system, such as by running <code>git annotate <em>filename</em></code>.
 </p>
 
+<p>
+  Every class, method, and field (even private ones) must have a
+  descriptive Javadoc comment.
+</p>
 
 
 <h2 id="IDE_configuration">IDE configuration</h2>
@@ -190,7 +204,7 @@ If Eclipse reports any errors, ensure you followed the instructions for
 
 <p>
 Each pull request should address a single concern, rather than (say)
-addressing multiple concerns such as fixing a bug, adding a feature, and
+addressing multiple concerns such as fixing a bug, adding a feature, <em>and</em>
 changing formatting.  Focusing each pull request on a single concern makes
 the commit easier to understand and review.  It also makes the commit
 history (after the pull request is merged) easier to understand and (if
@@ -198,31 +212,47 @@ necessary) revert.
 </p>
 
 <p>
-Don't forget to update the changelog if you make changes that are worthy of
-telling developers about.  This makes it much easier for someone to make a
-release.
+The pull request title should clearly explain the change.  It will be used
+as the commit message for your change.  If the pull request fixes an issue
+in the issue tracker, its title should end with "; fixes #NNN" where NNN is
+the fixed issue.
 </p>
 
 <p>
-Work on a branch if you are going to submit a pull request.
-This enables others to make changes directly to your branch when that
-is more efficient than leaving comments in a pull request.
+  Your pull request (whether it is a bug fix or a new feature) should
+  include tests that fail before your change and pass afterward.
+</p>
+
+<p>
+If you make a user-visible change, update the manual (or add a new section)
+and add a brief description at the top of the changelog
+(file <code>changelog.txt</code>).
+</p>
+
+<p>
+To reduce iterations of code review, please follow
+the <a href="#code-style">coding conventions</a>.
+Also enable <a href="#ci">continuous integration</a> on your fork of the Checker
+Framework and ensure that it passes before you open a pull request.
+</p>
+
+<p>
+  It is good style to create a branch (in your fork of the Checker
+  Framework GitHub repository) for each independent change.  Do not make
+  changes to your <code>master</code> branch.
+</p>
+
+<p>
+If you make related changes in the <code>checker-framework</code>
+and <code>checker-framework-inference</code> repositories, use the <em>same
+branch name</em> for each.  The continuous integration framework will find
+and use that branch when running tests.
 </p>
 
 <p>
 Also
 see <a href="https://homes.cs.washington.edu/~mernst/advice/github-pull-request.html">Michael
-    Ernst's advice about creating GitHub pull requests</a>.
-</p>
-
-<p>
-When there are related changes in the <code>checker-framework</code>
-and <code>checker-framework-inference</code> repositories, use the same
-branch name for each.  The continuous integration framework uses a branch
-of the same name when possible.  If you use different branch names
-in <code>checker-framework</code>
-and <code>checker-framework-inference</code>, then the continuous
-integration tests for both will fail and may mask problems.
+Ernst's advice about creating GitHub pull requests</a>.
 </p>
 
 
@@ -260,7 +290,7 @@ Pipelines, CircleCI, and/or Travis CI on each push to GitHub.
   To enable Travis CI continuous integration for your fork:
 </p>
 <ul>
-  <li>Browse to travis-ci.com</li>
+  <li>Browse to <a href="https://travis-ci.com/">travis-ci.com</a></li>
   <li>Click the downarrow for the dropdown, near your face in the upper right corner</li>
   <li>Click settings</li>
   <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
@@ -277,7 +307,7 @@ Pipelines, CircleCI, and/or Travis CI on each push to GitHub.
   <li>Click "create project"</li>
   <li>At the left, click the blue rocket labeled "pipelines"</li>
   <li>Click "new pipeline"</li>
-  <li>Cilck "GitHub"
+  <li>Click "GitHub"
       (You might need to authorize the app on GitHub.)</li>
   <li>Click "Select a repository"</li>
   <li>Choose <em>MYUSERID</em>/checker-framework</li>
@@ -298,6 +328,21 @@ This is usually because the CI service performed more tests than you ran locally
 First, examine the CI service's logs, which contain diagnostic output from the
 failing command.  You can determine which command was run from the logs, or
 from the CI configuration file (such as <code>azure-pipelines.yml</code>).
+</p>
+
+
+<h2 id="testing-optimizations">Testing optimizations</h2>
+
+<p>
+To test an optimization that should speed up type-checking, see
+the <code>test-daikon.sh</code> stage of the <code>daikon_jdk8</code> job
+of the Azure Pipelines CI job.  Compare the run time of this stage (or of
+the entire <code>daikon_jdk8</code> job) between the master branch and a
+branch with your improvements.
+</p>
+
+<p>
+You can also compare run times of the Checker Framework test suite.
 </p>
 
 
@@ -354,7 +399,7 @@ See a separate document about the
 </body>
 </html>
 
-<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre
+<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre NullAway CircleCI travis ci downarrow dropdown MYUSERID
  -->
 <!--  LocalWords:  subproject personalblog changelog
  -->

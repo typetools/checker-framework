@@ -164,8 +164,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Returns true if subtype {@literal <:} supertype, but only for the hierarchy of which {@code
-     * top} is the top.
+     * Returns true if {@code subtype <: supertype}, but only for the hierarchy of which {@code top}
+     * is the top.
      *
      * @param subtype expected subtype
      * @param supertype expected supertype
