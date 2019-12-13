@@ -25,10 +25,10 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
     public DefaultQualifierPolymorphism(ProcessingEnvironment env, AnnotatedTypeFactory factory) {
         super(env, factory);
 
-        for (AnnotationMirror aam : qualHierarchy.getTopAnnotations()) {
-            AnnotationMirror poly = qualHierarchy.getPolymorphicAnnotation(aam);
+        for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+            AnnotationMirror poly = qualHierarchy.getPolymorphicAnnotation(top);
             if (poly != null) {
-                polyQuals.put(aam, poly);
+                polyQuals.put(poly, top);
             }
         }
     }
