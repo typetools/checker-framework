@@ -77,7 +77,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         /** Create a factory. */
         public MultiGraphFactory(AnnotatedTypeFactory atypeFactory) {
             this.supertypesDirect = AnnotationUtils.createAnnotationMap();
-            this.polyQualifiers = new HashMap<>();
+            this.polyQualifiers = AnnotationUtils.createAnnotationMap();
             this.atypeFactory = atypeFactory;
         }
 
