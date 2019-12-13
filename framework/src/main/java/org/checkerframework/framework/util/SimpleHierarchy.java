@@ -85,6 +85,11 @@ public class SimpleHierarchy extends QualifierHierarchy {
     }
 
     @Override
+    public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
+        return null;
+    }
+
+    @Override
     public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
         return bottomsMap.get(kind.getBottom());
