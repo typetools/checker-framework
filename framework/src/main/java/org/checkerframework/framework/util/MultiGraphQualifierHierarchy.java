@@ -319,17 +319,14 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
         AnnotationMirror top = getTopAnnotation(start);
         for (AnnotationMirror key : polyQualifiers.keySet()) {
-            if (key != null && AnnotationUtils.areSame(key, top)) {
+            if (key != null
+                    && (AnnotationUtils.areSame(key, top)
+                            || AnnotationUtils.areSame(key, polymorphicQualifier))) {
                 return polyQualifiers.get(key);
             }
         }
-
-        if (AnnotationUtils.containsSame(polyQualifiers.keySet(), polymorphicQualifier)) {
-            return polyQualifiers.get(polymorphicQualifier);
-        } else {
-            // No polymorphic qualifier exists for that hierarchy.
-            return null;
-        }
+        // No polymorphic qualifier exists for that hierarchy.
+        return null;
     }
 
     @Override
