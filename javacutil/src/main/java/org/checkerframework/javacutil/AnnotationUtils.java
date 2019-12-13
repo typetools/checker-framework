@@ -448,6 +448,7 @@ public class AnnotationUtils {
         }
         return result;
     }
+
     /**
      * Provide ordering for {@link AnnotationMirror} based on their fully qualified name. The
      * ordering ignores annotation values when ordering.
@@ -621,7 +622,7 @@ public class AnnotationUtils {
             if (aval2 == null) {
                 aval2 = meth.getDefaultValue();
             }
-            if (0 != compareAnnotationValue(aval1, aval2)) {
+            if (sameAnnotationValue(aval1, aval2)) {
                 return false;
             }
         }
@@ -638,7 +639,7 @@ public class AnnotationUtils {
      * @return true if if the two annotation values are the same
      */
     public static boolean sameAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
-        return compareAnnotationValue(av1, av2) != 0;
+        return compareAnnotationValue(av1, av2) == 0;
     }
 
     /**
