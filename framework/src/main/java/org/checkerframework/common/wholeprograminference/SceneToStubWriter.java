@@ -32,14 +32,14 @@ import scenelib.annotations.field.ClassTokenAFT;
 import scenelib.annotations.util.Strings;
 
 /**
- * SceneToStubWriter provides two static methods named {@code write} that write a given {@link
- * AScene} to a given {@link Writer}, {@link #write(AScene, Map, Map, Map, Writer)}, or filename,
- * {@link #write(AScene, Map, Map, Map, Writer)}, in stub file format. This class is the equivalent
- * of {@code IndexFileWriter} from the Annotation File Utilities, but outputs the results in the
- * stub file format instead of jaif format.
+ * SceneToStubWriter provides two static methods named {@code write} that write a {@link AScene} in
+ * stub file format, to a {@link Writer} {@link #write(AScene, Map, Map, Map, Writer)}, or to a file
+ * {@link #write(AScene, Map, Map, Map, Writer)}. This class is the equivalent of {@code
+ * IndexFileWriter} from the Annotation File Utilities, but outputs the results in the stub file
+ * format instead of jaif format.
  *
  * <p>You can use this writer instead of {@code IndexFileWriter} by passing the {@code
- * -Ainfer=stubs} command-line argument..
+ * -Ainfer=stubs} command-line argument.
  */
 public final class SceneToStubWriter {
 
@@ -50,16 +50,16 @@ public final class SceneToStubWriter {
     private final PrintWriter printWriter;
 
     /**
-     * A map from the descriptions of ATypeElement_s to the corresponding base Java types, since
-     * AScene_s don't carry that information. See the comment on the {@code basetypes} field of
-     * {@link WholeProgramInferenceScenesHelper} for more information.
+     * A map from the {@code description} field of an ATypeElement to the corresponding base Java
+     * types, since AScene_s don't carry that information. See the comment on the {@code basetypes}
+     * field of {@link WholeProgramInferenceScenesHelper} for more information.
      */
     private Map<String, TypeMirror> basetypes;
 
     /**
      * A map from fully-qualified class names to the TypeElement that represents them. Computed by
-     * {@link WholeProgramInferenceScenes}. Used to output the correct names of generic parameters
-     * to classes, which the stub format requires.
+     * {@link WholeProgramInferenceScenes}. Used to output the names of generic parameters to
+     * classes.
      */
     private Map<String, TypeElement> types;
 
@@ -67,33 +67,32 @@ public final class SceneToStubWriter {
      * Map from the fully-qualified name of each enum to its list of enum constants.
      *
      * <p>The stub parser can't parse an enum that's labeled "class", but {@link AClass} doesn't
-     * specify if a class is an enum. So track which classes are enums. In addition, enums constants
+     * specify if a class is an enum. So track which classes are enums. In addition, enum constants
      * need to be present in the stub file.
      */
-    private Map<String, List<VariableElement>> enumNamesToEnumConstants;
+    private Map<String, List<VariableElement>> enumConstants;
 
     /**
-     * Private constructor that initializes the printWriter and copies over relevant inputs to the
-     * fields in which they are stored.
+     * Create a new SceneToStubWriter.
      *
      * @param scene the scene to write out
      * @param basetypes a map from the description of ATypeElement_s to the TypeMirror_s that
      *     represent their base Java types
      * @param types a map from fully-qualified names to the TypeElement_s representing their
      *     declarations
-     * @param enumNamesToEnumConstants a map from fully-qualified names to the enum constants
-     *     defined in that name. All keys are enums.
-     * @param out the Writer to output the result to
+     * @param enumConstants a map from fully-qualified enum names to the enum constants defined in
+     *     that name
+     * @param out the Writer to output the stub file to
      */
     private SceneToStubWriter(
             AScene scene,
             Map<String, TypeMirror> basetypes,
             Map<String, TypeElement> types,
-            Map<String, List<VariableElement>> enumNamesToEnumConstants,
+            Map<String, List<VariableElement>> enumConstants,
             Writer out) {
         this.basetypes = basetypes;
         this.types = types;
-        this.enumNamesToEnumConstants = enumNamesToEnumConstants;
+        this.enumConstants = enumConstants;
         printWriter = new PrintWriter(out);
         writeImpl(scene);
         printWriter.flush();
@@ -107,21 +106,21 @@ public final class SceneToStubWriter {
      *     represent their base Java types
      * @param types a map from fully-qualified names to the TypeElement_s representing their
      *     declarations
-     * @param enumNamesToEnumConstants a map from fully-qualified names to the enum constants
-     *     defined in that name. All keys are enums.
+     * @param enumConstants a map from fully-qualified enum names to the enum constants defined in
+     *     that name
      * @param out the Writer to output the result to
      */
     public static void write(
             AScene scene,
             Map<String, TypeMirror> basetypes,
             Map<String, TypeElement> types,
-            Map<String, List<VariableElement>> enumNamesToEnumConstants,
+            Map<String, List<VariableElement>> enumConstants,
             Writer out) {
-        new SceneToStubWriter(scene, basetypes, types, enumNamesToEnumConstants, out);
+        new SceneToStubWriter(scene, basetypes, types, enumConstants, out);
     }
 
     /**
-     * Writes the annotations in {@code scene}to the file {@code filename} in stub file format; see
+     * Writes the annotations in {@code scene} to the file {@code filename} in stub file format; see
      * {@link #write(AScene, Map, Map, Map, Writer)}.
      *
      * @param scene the scene to write out
@@ -129,8 +128,8 @@ public final class SceneToStubWriter {
      *     represent their base Java types
      * @param types a map from fully-qualified names to the TypeElement_s representing their
      *     declarations
-     * @param enumNamesToEnumConstant a map from fully-qualified names to the enum constants defined
-     *     in that name. All keys are enums.
+     * @param enumNamesToEnumConstant a map from fully-qualified enum names to the enum constants
+     *     defined in that name
      * @param filename the path of the file to write to
      * @throws IOException if the file doesn't exist
      */
@@ -256,7 +255,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Finds and prints the annotations on the component type of an array, if there are any.
+     * Prints the annotations on the component type of an array, if there are any.
      *
      * @param e the array type to print
      */
@@ -272,7 +271,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Prints the stub representation of an AField, which represents any variable declaration. In
+     * Prints the stub representation of an AField, which represents a variable declaration. In
      * practice, this should either be a field or a method parameters, since there should be no
      * local variable declarations in a stub.
      *
@@ -309,7 +308,7 @@ public final class SceneToStubWriter {
     /**
      * Writes out an import statement for each annotation used in an {@link AScene}.
      *
-     * <p>{@code DefCollector} is a facility in the annotation file utilities for determining which
+     * <p>{@code DefCollector} is a facility in the Annotation File Utilities for determining which
      * annotations are used in a given AScene. Here, we use that construct to write out the proper
      * import statements into a stub file.
      */
@@ -341,19 +340,19 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * For a given class, this prints out the hierarchy of outer classes, and returns the number of
-     * curly braces to close with. The classes are printing with appropriate opening curly braces,
-     * in standard Java style. This routine does not attempt to indent them correctly.
+     * For a given class, this prints the hierarchy of outer classes, and returns the number of
+     * curly braces to close with. The classes are printed with appropriate opening curly braces, in
+     * standard Java style. This routine does not attempt to indent them correctly.
      *
      * <p>When an inner class is present in an AScene, its name is something like "Outer.Inner".
      * Writing a stub file with that name would be useless to the stub parser, which expects inner
      * classes to be properly nested.
      *
-     * @param basename the name of the class without the package, in Outer$Inner form
+     * @param basename the simple name of the class (without the package), in Outer$Inner form
      * @param classname the fully-qualified name of the class in question, so that it can be printed
      *     as an enum if it is one
      * @param aClass the AClass representing the classname
-     * @return the number of inner classes
+     * @return the number of outer classes within which this class is nested
      */
     private int printClassDefinitions(String basename, String classname, AClass aClass) {
 
@@ -366,7 +365,7 @@ public final class SceneToStubWriter {
 
         // Enums cannot be nested within non-classes,
         // so only print as an enum if the leaf has been reached.
-        if (enumNamesToEnumConstants.containsKey(classname) && "".equals(rest)) {
+        if (enumConstants.containsKey(classname) && "".equals(rest)) {
             printWriter.print("enum");
         } else {
             printWriter.print("class ");
@@ -384,8 +383,8 @@ public final class SceneToStubWriter {
 
     /**
      * The implementation of {@link #write(AScene, Map, Map, Map, Writer)} and {@link #write(AScene,
-     * Map, Map, Map, String)}. Prints imports, classes, method signatures, and fields; all with
-     * appropriate annotations in stub file format.
+     * Map, Map, Map, String)}. Prints imports, classes, method signatures, and fields in stub file
+     * format, all with appropriate annotations.
      *
      * @param scene the scene to write
      */
@@ -409,21 +408,19 @@ public final class SceneToStubWriter {
                 printWriter.println("package " + pkg + ";");
             }
             String basename = basenamePart(classname);
+            if ("package-info".equals(basename) || "module-info".equals(basename)) {
+                continue;
+            }
+
             // At this point, we no longer care about the distinction between packages
             // and inner classes, so we should replace the $ in the definition of any
             // inner classes with a ., so that they are printed correctly in stub files.
             classname = classname.replace('$', '.');
 
-            int curlyCount = 1;
+            int curlyCount = 1 + printClassDefinitions(basename, classname, aClass);
 
-            if ("package-info".equals(basename) || "module-info".equals(basename)) {
-                continue;
-            } else {
-                curlyCount += printClassDefinitions(basename, classname, aClass);
-            }
-
-            // print fields, but not for enums (that causes the stub parser to reject the stub)
-            if (!enumNamesToEnumConstants.containsKey(classname)) {
+            // print fields or enum constants
+            if (!enumConstants.containsKey(classname)) {
                 for (Map.Entry<String, AField> fieldEntry : aClass.fields.entrySet()) {
                     String fieldName = fieldEntry.getKey();
                     AField aField = fieldEntry.getValue();
@@ -434,7 +431,7 @@ public final class SceneToStubWriter {
                 }
             } else {
                 // for enums, instead of printing fields print the enum constants
-                List<VariableElement> enumConstants = enumNamesToEnumConstants.get(classname);
+                List<VariableElement> enumConstants = enumConstants.get(classname);
                 boolean first = true;
                 for (VariableElement enumConstant : enumConstants) {
                     if (!first) {
@@ -465,7 +462,7 @@ public final class SceneToStubWriter {
                                     ? basename.substring(basename.lastIndexOf('.') + 1)
                                     : basename;
                 } else {
-                    // only add a return type if this isn't a constructor
+                    // This isn't a constructor, so add a return type.
                     if (basetypes.containsKey(aMethod.returnType.description.toString())) {
                         printWriter.print(basetypes.get(aMethod.returnType.description.toString()));
                     } else {
@@ -478,9 +475,7 @@ public final class SceneToStubWriter {
                 boolean firstParam = true;
                 if (!aMethod.receiver.type.tlAnnotationsHere.isEmpty()
                         || !aMethod.receiver.type.innerTypes.isEmpty()) {
-                    // Only output the receiver if there is something to
-                    // say.  This is a bit inconsistent with the return
-                    // type, but so be it.
+                    // Only output the receiver if it has an annotation.
                     printAField(aMethod.receiver, "this", classname);
                     firstParam = false;
                 }
@@ -509,10 +504,9 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Prints the type parameters of the class given by the fully-qualified name passes as {@code
-     * classname}.
+     * Prints the type parameters of the given class, enclosed in {@code <...>}.
      *
-     * @param classname the class for which type parameters should be printed
+     * @param classname a fully-qualified class name
      */
     private void printTypeParameters(String classname) {
         TypeElement type = types.get(classname);
