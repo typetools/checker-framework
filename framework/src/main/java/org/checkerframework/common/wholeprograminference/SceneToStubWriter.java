@@ -39,7 +39,7 @@ import scenelib.annotations.util.Strings;
  * stub file format instead of jaif format.
  *
  * <p>You can use this writer instead of {@code IndexFileWriter} by passing the {@code
- * -Ainfer=stubs}.
+ * -Ainfer=stubs} command-line argument..
  */
 public final class SceneToStubWriter {
 
