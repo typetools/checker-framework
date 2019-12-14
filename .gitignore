@@ -84,6 +84,7 @@ docs/examples/lombok/Out.txt
 docs/examples/lombok/.gradle/
 docs/examples/lombok/lombok.config
 docs/manual/manual.html-e
+docs/tmpapi/
 
 # dataflow manual
 dataflow/manual/dataflow.aux

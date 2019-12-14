@@ -55,6 +55,11 @@ ext {
     localRepo = ".git"
 }
 
+if (!JavaVersion.current().isJava8() && !JavaVersion.current().isJava11()) {
+    throw new RuntimeException("The Checker Framework should only be built with JDK 8 or JDK 11." +
+            " Found version " + JavaVersion.current().majorVersion);
+}
+
 task setLocalRepo(type:Exec) {
     commandLine 'git', 'worktree', 'list'
     standardOutput = new ByteArrayOutputStream()
