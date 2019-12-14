@@ -1127,14 +1127,11 @@ public class StubParser {
      * @param a set of annotations that may be applicable to elt
      */
     private void recordDeclAnnotation(Element elt, List<AnnotationExpr> annotations) {
-        // System.out.printf("recordDeclAnnotation(%s, %s)%n", elt, annotations);
         if (annotations == null) {
             return;
         }
         Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
         for (AnnotationExpr annotation : annotations) {
-            // System.out.printf(
-            //         "AnnotationExpr annotation = %s [%s]%n", annotation, annotation.getClass());
             AnnotationMirror annoMirror = getAnnotation(annotation, allStubAnnotations);
             if (annoMirror != null) {
                 // The @Target annotation on `annotation`/`annoMirror`
@@ -1531,13 +1528,13 @@ public class StubParser {
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, TypeElement> allStubAnnotations) {
         String annoName = annotation.getNameAsString();
-        // System.out.printf(
-        //         "%s %s %s%n", annotation, annotation.getNameAsString(), annotation.getName());
         TypeElement annoTypeElm = allStubAnnotations.get(annoName);
         if (annoTypeElm == null) {
             // Not a supported qualifier -> ignore
             return null;
         }
+        annoName = annoTypeElm.getQualifiedName().toString();
+
         if (annotation instanceof MarkerAnnotationExpr) {
             return AnnotationBuilder.fromName(elements, annoName);
         } else if (annotation instanceof NormalAnnotationExpr) {
