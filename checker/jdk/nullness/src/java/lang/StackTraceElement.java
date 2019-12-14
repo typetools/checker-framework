@@ -14,6 +14,8 @@ public final class StackTraceElement implements java.io.Serializable {
   public String getMethodName() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isNativeMethod() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure
+  @EnsuresNonNullIf(expression="#1", result=true)
+  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
 }

@@ -21,7 +21,9 @@ public final class Constructor<T> extends AccessibleObject implements GenericDec
     public Type[] getGenericParameterTypes() { throw new RuntimeException("skeleton method"); }
     public Class<?>[] getExceptionTypes() { throw new RuntimeException("skeleton method"); }
     public Type[] getGenericExceptionTypes() { throw new RuntimeException("skeleton method"); }
-    @Pure public boolean equals(@Nullable Object arg0) { throw new RuntimeException("skeleton method"); }
+    @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
+    public boolean equals(@Nullable Object arg0) { throw new RuntimeException("skeleton method"); }
     @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
     @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
     public String toGenericString() { throw new RuntimeException("skeleton method"); }
