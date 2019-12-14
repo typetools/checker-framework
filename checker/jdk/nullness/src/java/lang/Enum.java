@@ -31,10 +31,11 @@ import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.initialization.qual.UnknownInitialization;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * This is the common base class of all Java language enumeration types.
