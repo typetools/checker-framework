@@ -22,24 +22,25 @@ public final class Field extends AccessibleObject implements Member {
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toGenericString() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public @Nullable Object get(@UnknownInitialization Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean getBoolean(@UnknownInitialization Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  @Pure public byte getByte(@UnknownInitialization Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  @Pure public char getChar(@UnknownInitialization Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  @Pure public short getShort(@UnknownInitialization Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  @Pure public int getInt(@UnknownInitialization Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  @Pure public long getLong(@UnknownInitialization Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  @Pure public float getFloat(@UnknownInitialization Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  @Pure public double getDouble(@UnknownInitialization Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  public void set(@UnknownInitialization Object obj, Object value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  public void setBoolean(@UnknownInitialization Object obj, boolean value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  public void setByte(@UnknownInitialization Object obj, byte value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  public void setChar(@UnknownInitialization Object obj, char value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  public void setShort(@UnknownInitialization Object obj, short value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  public void setInt(@UnknownInitialization Object obj, int value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  public void setLong(@UnknownInitialization Object obj, long value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  public void setFloat(@UnknownInitialization Object obj, float value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  public void setDouble(@UnknownInitialization Object obj, double value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  // These Object formal parameters can be null if the field is static.
+  @SideEffectFree public @Nullable Object get(@UnknownInitialization @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean getBoolean(@UnknownInitialization @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  @Pure public byte getByte(@UnknownInitialization @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  @Pure public char getChar(@UnknownInitialization @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  @Pure public short getShort(@UnknownInitialization @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  @Pure public int getInt(@UnknownInitialization @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  @Pure public long getLong(@UnknownInitialization @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  @Pure public float getFloat(@UnknownInitialization @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  @Pure public double getDouble(@UnknownInitialization @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  public void set(@UnknownInitialization @Nullable Object obj, @Nullable Object value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  public void setBoolean(@UnknownInitialization @Nullable Object obj, boolean value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  public void setByte(@UnknownInitialization @Nullable Object obj, byte value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  public void setChar(@UnknownInitialization @Nullable Object obj, char value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  public void setShort(@UnknownInitialization @Nullable Object obj, short value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  public void setInt(@UnknownInitialization @Nullable Object obj, int value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  public void setLong(@UnknownInitialization @Nullable Object obj, long value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  public void setFloat(@UnknownInitialization @Nullable Object obj, float value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  public void setDouble(@UnknownInitialization @Nullable Object obj, double value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public <T extends java.lang.annotation.Annotation> @Nullable T getAnnotation(Class<@NonNull T> obj) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public java.lang.annotation.Annotation[] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
 }
