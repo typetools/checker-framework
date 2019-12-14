@@ -20,16 +20,16 @@ sourceSets {
 }
 
 dependencies {
-    compile project(':framework')
-    compile project(':dataflow')
-    compile project(':javacutil')
-    compile project(':checker-qual')
+    implementation project(':framework')
+    implementation project(':dataflow')
+    implementation project(':javacutil')
+    implementation project(':checker-qual')
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile project(':framework-test')
-    testCompile sourceSets.testannotations.output
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation project(':framework-test')
+    testImplementation sourceSets.testannotations.output
 
-    testannotationsCompile project(':checker-qual')
+    testannotationsImplementation project(':checker-qual')
 }
 
 task cloneTypetoolsJdk() {
@@ -159,6 +159,13 @@ task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
     }
 }
 
+task cleanJdk(type: Exec){
+    description 'Runs \'make clean\' in checker/jdk directory.'
+    workingDir "${projectDir}/jdk"
+    executable 'make'
+    args = ["clean"]
+}
+
 task updateJdk() {
     description 'Downloads or builds jdk8.jar and copies into checker/dist'
     if (jdkShaHash.is('local')) {
@@ -247,6 +254,7 @@ artifacts {
 }
 
 clean {
+    dependsOn cleanJdk
     delete "${projectDir}/dist"
 }
 
@@ -295,12 +303,12 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Test that the demos are working as expected.'
     doLast {
         if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
-            File demosDir = new File(projectDir, '../../checker-framework-demos');
+            File demosDir = new File(projectDir, '../../checker-framework.demos');
             if (!demosDir.exists()) {
                 exec {
                     workingDir file(demosDir.toString() + '/../')
                     executable 'git'
-                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git', 'checker-framework-demos']
+                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git']
                 }
             } else {
                 exec {

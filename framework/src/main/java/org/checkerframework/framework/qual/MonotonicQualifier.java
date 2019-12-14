@@ -1,6 +1,7 @@
 package org.checkerframework.framework.qual;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,6 +35,7 @@ import java.lang.annotation.Target;
  * <p>Note that variables of a monotonic type can be re-assigned arbitrarily often, but only with
  * expressions of the target type.
  */
+@Documented
 @Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MonotonicQualifier {
