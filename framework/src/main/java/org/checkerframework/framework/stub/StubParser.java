@@ -1539,8 +1539,6 @@ public class StubParser {
             return AnnotationBuilder.fromName(elements, annoName);
         } else if (annotation instanceof NormalAnnotationExpr) {
             NormalAnnotationExpr nrmanno = (NormalAnnotationExpr) annotation;
-            // PROBLEM:  This name might be simple rather than fully-qualified.
-            // Example: @DefaultQualifier.  So, look in the imports to resolve it?
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoName);
             List<MemberValuePair> pairs = nrmanno.getPairs();
             if (pairs != null) {

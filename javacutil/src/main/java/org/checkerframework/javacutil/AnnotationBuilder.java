@@ -95,8 +95,6 @@ public class AnnotationBuilder {
         this.types = env.getTypeUtils();
         this.annotationElt = elements.getTypeElement(name);
         if (annotationElt == null) {
-            new UserError("Could not find annotation: " + name + ". Is it on the classpath?")
-                    .printStackTrace();
             throw new UserError("Could not find annotation: " + name + ". Is it on the classpath?");
         }
         assert annotationElt.getKind() == ElementKind.ANNOTATION_TYPE;
