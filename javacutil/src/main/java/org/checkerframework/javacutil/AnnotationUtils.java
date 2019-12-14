@@ -710,7 +710,19 @@ public class AnnotationUtils {
         List<AnnotationValue> la = getElementValue(anno, elementName, List.class, useDefaults);
         List<T> result = new ArrayList<>(la.size());
         for (AnnotationValue a : la) {
-            result.add(expectedType.cast(a.getValue()));
+            try {
+                result.add(expectedType.cast(a.getValue()));
+            } catch (Throwable t) {
+                String err1 =
+                        String.format(
+                                "getElementValueArray(anno=%s, elementName=%s, expectedType=%s, useDefaults=%s)",
+                                anno, elementName, expectedType, useDefaults);
+                String err2 =
+                        String.format(
+                                "Error in cast: expectedType=%s a=%s a.getValue()=%s%n",
+                                expectedType, a, a.getValue());
+                throw new BugInCF(err1 + "; " + err2, t);
+            }
         }
         return result;
     }
