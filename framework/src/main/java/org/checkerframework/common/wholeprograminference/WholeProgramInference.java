@@ -54,7 +54,7 @@ public interface WholeProgramInference {
      * Updates the parameter types of the method {@code methodElt} based on the arguments in the
      * method invocation {@code methodInvNode}.
      *
-     * <p>For each method parameter in methodElt:
+     * <p>For each formal parameter in methodElt (including the receiver):
      *
      * <ul>
      *   <li>If there is no stored annotated type for that parameter, then use the type of the
@@ -80,7 +80,7 @@ public interface WholeProgramInference {
      * Updates the parameter types (including the receiver) of the method {@code methodTree} based
      * on the parameter types of the overridden method {@code overriddenMethod}.
      *
-     * <p>For each method parameter in methodElt:
+     * <p>For each formal parameter in methodElt:
      *
      * <ul>
      *   <li>If there is no stored annotated type for that parameter, then use the type of the

@@ -34,7 +34,8 @@ import scenelib.annotations.util.JVMNames;
  * org.checkerframework.common.wholeprograminference.WholeProgramInference} that uses a storage
  * class ({@link
  * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage}) that
- * manipulates .jaif files to perform whole-program inference.
+ * manipulates {@link scenelib.annotations.el.AScene}s to perform whole-program inference, and
+ * writes them out to a .jaif file at the end.
  *
  * <p>Calling an update* method replaces the currently-stored type for an element in a {@link
  * scenelib.annotations.el.AScene}, if any, by the LUB of it and the update method's argument.
