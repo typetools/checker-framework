@@ -362,7 +362,7 @@ public class StubParser {
                     }
                 }
             } catch (AssertionError error) {
-                stubWarnNotFound("" + error);
+                stubWarnNotFound(error.toString());
             }
         }
         return result;
