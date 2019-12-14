@@ -362,13 +362,9 @@ public abstract class AnnotatedTypeMirror {
         List<? extends AnnotationMirror> typeAnnotations =
                 this.getUnderlyingType().getAnnotationMirrors();
 
-        Set<? extends AnnotationMirror> validAnnotations =
-                atypeFactory.getQualifierHierarchy().getTypeQualifiers();
         for (AnnotationMirror explicitAnno : typeAnnotations) {
-            for (AnnotationMirror validAnno : validAnnotations) {
-                if (AnnotationUtils.areSameByName(explicitAnno, validAnno)) {
-                    explicitAnnotations.add(explicitAnno);
-                }
+            if (atypeFactory.isSupportedQualifier(explicitAnno)) {
+                explicitAnnotations.add(explicitAnno);
             }
         }
 
