@@ -4,22 +4,15 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
-import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import com.sun.tools.javac.code.Type.ClassType;
 import java.util.List;
 import java.util.Map;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -32,8 +25,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AClass;
@@ -74,9 +65,9 @@ import scenelib.annotations.util.JVMNames;
  *
  * <ol>
  *   <li>The @Target annotation does not permit the annotation to be written at this location.
- *   <li>The inferred has the @InvisibleQualifier meta-annotation.
- *   <li>The resulting type would be defaulted or implicited &mdash; that is, if omitting it has the
- *       same effect as writing it.
+ *   <li>The inferred annotation has the @InvisibleQualifier meta-annotation.
+ *   <li>The inferred annotation would be the same annotation applied via defaulting &mdash; that
+ *       is, if omitting it has the same effect as writing it.
  * </ol>
  */
 //  TODO: We could add an option to update the type of explicitly annotated
@@ -126,15 +117,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        ClassSymbol classSymbol = getEnclosingClassSymbol(objectCreationNode.getTree());
-        if (classSymbol == null) {
-            // TODO: Handle anonymous classes.
-            // See Issue 682
-            // https://github.com/typetools/checker-framework/issues/682
-            return;
-        }
-
-        String className = classSymbol.flatname.toString();
+        String className = getEnclosingClassName(constructorElt);
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(constructorElt);
@@ -177,8 +160,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        ClassSymbol classSymbol = getEnclosingClassSymbol(methodTree);
-        String className = classSymbol.flatname.toString();
+        String className = getEnclosingClassName(methodElt);
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(methodElt);
@@ -196,8 +178,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the parameter types of the method methodElt in the Scene of the receiverTree's
-     * enclosing class based on the arguments to the method.
+     * Updates the parameter types of the method methodElt in the Scene of the enclosing class based
+     * on the arguments to the method invocation.
      *
      * <p>For each method parameter in methodElt:
      *
@@ -228,32 +210,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        if (receiverTree == null) {
-            // TODO: Method called from static context.
-            // I struggled to obtain the ClassTree of a method called
-            // from a static context and currently I'm ignoring it.
-            // See Issue 682
-            // https://github.com/typetools/checker-framework/issues/682
-            return;
-        }
-        ClassSymbol classSymbol = getEnclosingClassSymbol(receiverTree);
-        if (classSymbol == null) {
-            // TODO: Handle anonymous classes.
-            // Also struggled to obtain the ClassTree from an anonymous class.
-            // Ignoring it for now.
-            // See Issue 682
-            // https://github.com/typetools/checker-framework/issues/682
-            return;
-        }
-        // TODO: We must handle cases where the method is declared on a superclass.
-        // Currently we are ignoring them. See ElementUtils#getSuperTypes.
-        // See Issue 682
-        // https://github.com/typetools/checker-framework/issues/682
-        if (!classSymbol.getEnclosedElements().contains((Symbol) methodElt)) {
-            return;
-        }
-
-        String className = classSymbol.flatname.toString();
+        String className = getEnclosingClassName(methodElt);
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
 
@@ -294,7 +251,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /**
      * Updates the parameter type represented by lhs of the method methodTree in the Scene of the
-     * receiverTree's enclosing class based on assignments to the parameter inside the method body.
+     * enclosing class based on assignments to the parameter inside the method body.
      *
      * <ul>
      *   <li>If the Scene does not contain an annotated type for that parameter, then the type of
@@ -325,15 +282,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhs);
-        // TODO: Anonymous classes
-        // See Issue 682
-        // https://github.com/typetools/checker-framework/issues/682
-        if (classSymbol == null) {
-            return;
-        }
-
-        String className = classSymbol.flatname.toString();
+        String className = getEnclosingClassName(lhs);
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(methodTree);
@@ -395,8 +344,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        ClassSymbol classSymbol = getEnclosingClassSymbol(methodTree);
-        String className = classSymbol.flatname.toString();
+        String className = getEnclosingClassName(methodElt);
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(methodElt);
@@ -437,35 +385,17 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhs);
-        // See Issue 682
-        // https://github.com/typetools/checker-framework/issues/682
-        if (classSymbol == null) {
-            return; // TODO: Handle anonymous classes.
-        }
-
-        // TODO: We must handle cases where the field is declared on a superclass.
-        // Currently we are ignoring them. See ElementUtils#getSuperTypes.
-        // See Issue 682
-        // https://github.com/typetools/checker-framework/issues/682
-        if (!classSymbol.getEnclosedElements().contains((Symbol) lhs.getElement())) {
+        // If the inferred field has a declaration annotation with the
+        // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
+        if (atf.getDeclAnnotation(lhs.getElement(), IgnoreInWholeProgramInference.class) != null
+                || atf.getDeclAnnotationWithMetaAnnotation(
+                                        lhs.getElement(), IgnoreInWholeProgramInference.class)
+                                .size()
+                        > 0) {
             return;
         }
 
-        // If the inferred field has a declaration annotation with the
-        // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
-        for (AnnotationMirror declAnno :
-                atf.getDeclAnnotations(TreeUtils.elementFromTree(lhs.getTree()))) {
-            if (AnnotationUtils.areSameByClass(declAnno, IgnoreInWholeProgramInference.class)) {
-                return;
-            }
-            Element elt = declAnno.getAnnotationType().asElement();
-            if (elt.getAnnotation(IgnoreInWholeProgramInference.class) != null) {
-                return;
-            }
-        }
-
-        String className = classSymbol.flatname.toString();
+        String className = getEnclosingClassName(lhs.getElement());
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
 
@@ -493,8 +423,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param retNode the node that contains the expression returned
      * @param classSymbol the symbol of the class that contains the method
      * @param methodTree the tree of the method whose return type may be updated
-     * @param overriddenMethods the methods that the given method return overrides indexed by the
-     *     annotated type of the super class in which each method is defined
+     * @param overriddenMethods the methods that the given method return overrides, each indexed by
+     *     the annotated type of the class that defines it
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used to update the method's return type
      */
@@ -577,43 +507,34 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Returns the ClassSymbol of the class encapsulating the node n passed as parameter.
+     * Returns the "flatname" of the class enclosing {@code localVariableNode}
      *
-     * <p>If the receiver of field is an instance of "this", the implementation obtains the
-     * ClassSymbol by using classTree. Otherwise, the ClassSymbol is from the field's receiver.
+     * @param localVariableNode the {@link LocalVariableNode}
+     * @return the "flatname" of the class enclosing {@code localVariableNode}
      */
-    // TODO: These methods below could be moved somewhere else.
-    private ClassSymbol getEnclosingClassSymbol(ClassTree classTree, Node field) {
-        Node receiverNode = null;
-        if (field instanceof FieldAccessNode) {
-            receiverNode = ((FieldAccessNode) field).getReceiver();
-        } else if (field instanceof LocalVariableNode) {
-            receiverNode = ((LocalVariableNode) field).getReceiver();
-        } else {
-            throw new BugInCF("Unexpected type: " + field.getClass());
-        }
-        if ((receiverNode == null || receiverNode instanceof ImplicitThisLiteralNode)
-                && classTree != null) {
-            return (ClassSymbol) TreeUtils.elementFromTree(classTree);
-        }
-        TypeMirror type = receiverNode.getType();
-        if (type instanceof ClassType) {
-            TypeSymbol tsym = ((ClassType) type).asElement();
-            return tsym.enclClass();
-        }
-        return getEnclosingClassSymbol(receiverNode.getTree());
+    private String getEnclosingClassName(LocalVariableNode localVariableNode) {
+        return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
+                .flatName()
+                .toString();
     }
 
-    /** Returns the ClassSymbol of the class encapsulating tree passed as parameter. */
-    private ClassSymbol getEnclosingClassSymbol(Tree tree) {
-        Element symbol = TreeUtils.elementFromTree(tree);
-        if (symbol instanceof ClassSymbol) {
-            return (ClassSymbol) symbol;
-        } else if (symbol instanceof VarSymbol) {
-            return ((VarSymbol) symbol).asType().asElement().enclClass();
-        } else if (symbol instanceof MethodSymbol) {
-            return ((MethodSymbol) symbol).enclClass();
-        }
-        return null;
+    /**
+     * Returns the "flatname" of the class enclosing {@code executableElement}
+     *
+     * @param executableElement the ExecutableElement
+     * @return the "flatname" of the class enclosing {@code executableElement}
+     */
+    private String getEnclosingClassName(ExecutableElement executableElement) {
+        return ((MethodSymbol) executableElement).enclClass().flatName().toString();
+    }
+
+    /**
+     * Returns the "flatname" of the class enclosing {@code variableElement}
+     *
+     * @param variableElement the VariableElement
+     * @return the "flatname" of the class enclosing {@code variableElement}
+     */
+    private String getEnclosingClassName(VariableElement variableElement) {
+        return ((VarSymbol) variableElement).enclClass().flatName().toString();
     }
 }

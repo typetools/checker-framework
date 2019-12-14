@@ -220,7 +220,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.0.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.0.1.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -782,9 +782,9 @@ Progress tracing; see Section~\ref{creating-debugging-options-progress}.
 Output the compiler command-line arguments to a file.  Useful when the
 command line is generated and executed by a tool, such as a build system.
 This produces a standalone command line that can be executed independently
-of the tool that generated it can make it easier to reproduce, report, and
-debug issues.  For example, the command line can be modified to enable
-attaching a debugger.
+of the tool that generated it (such as a build system).
+That command line makes it easier to reproduce, report, and debug issues.
+For example, the command line can be modified to enable attaching a debugger.
 See Section~\ref{creating-debugging-options-output-args}.
 
 \item
@@ -799,6 +799,11 @@ See Section~\ref{creating-debugging-options-output-args}.
  \<-AatfDoNotCache>,
  \<-AatfCacheSize>
 Miscellaneous debugging options; see Section~\ref{creating-debugging-options-misc}.
+
+\item
+ \<-AprintGitProperties>
+Print information about the git repository from which the Checker Framework
+was compiled.
 
 \end{itemize}
 
@@ -818,7 +823,11 @@ checker is an ``annotation processor''.
 
 \begin{itemize}
 \item \<-processor> Names the checker to be
-  run; see Section~\ref{running}
+  run; see Sections~\ref{running} and~\ref{shorthand-for-checkers}.
+  May be a comma-separated list of multiple cehckers.  Note that javac
+  stops processing an indeterminate time after detecting an error.  When
+  providing multiple checkers, if one checker detects any error, subsequent
+  checkers may not run.
 \item \<-processorpath> Indicates where to search for the
   checker; should also contain any qualifiers used by the Subtyping
   Checker; see Section~\ref{subtyping-example}
@@ -876,7 +885,7 @@ annotation processing including all pluggable type-checking.
 %% errors for unannotated code, and that would be irritating.  So, leave it
 %% up to the user to enable auto-discovery.  1.
 
-\subsectionAndLabel{Shorthand for built-in checkers }{shorthand-for-checkers}
+\subsectionAndLabel{Shorthand for built-in checkers}{shorthand-for-checkers}
 
 % TODO: this feature only works for our javac script, not when using
 % the standard javac. Should this be explained?

@@ -380,10 +380,12 @@ public abstract class AbstractMap<K, V> implements Map<K,V> {
                     };
                 }
 
+                @Pure
                 public int size() {
                     return AbstractMap.this.size();
                 }
 
+                @Pure
                 public boolean isEmpty() {
                     return AbstractMap.this.isEmpty();
                 }
@@ -438,10 +440,12 @@ public abstract class AbstractMap<K, V> implements Map<K,V> {
                     };
                 }
 
+                @Pure
                 public int size() {
                     return AbstractMap.this.size();
                 }
 
+                @Pure
                 public boolean isEmpty() {
                     return AbstractMap.this.isEmpty();
                 }

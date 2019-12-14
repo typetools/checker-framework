@@ -504,7 +504,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
                 List<Long> values = getIntValues(anno);
                 if (values.size() > MAX_VALUES) {
-                    atm.replaceAnnotation(createIntRangeAnnotation(new Range(values)));
+                    atm.replaceAnnotation(createIntRangeAnnotation(Range.create(values)));
                 }
             } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
                 List<Integer> values = getArrayLength(anno);
@@ -513,7 +513,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (Collections.min(values) < 0) {
                     atm.replaceAnnotation(BOTTOMVAL);
                 } else if (values.size() > MAX_VALUES) {
-                    atm.replaceAnnotation(createArrayLenRangeAnnotation(new Range(values)));
+                    atm.replaceAnnotation(createArrayLenRangeAnnotation(Range.create(values)));
                 }
             } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
                 // Compute appropriate defaults for integral ranges.
@@ -681,13 +681,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // should use the lower bound of the new range and a MAX_VALUE.
             if ((newRange.from >= oldRange.from && newRange.to >= oldRange.to)) {
                 if (lubRange.to < Byte.MAX_VALUE) {
-                    return new Range(newRange.from, Byte.MAX_VALUE);
+                    return Range.create(newRange.from, Byte.MAX_VALUE);
                 } else if (lubRange.to < Short.MAX_VALUE) {
-                    return new Range(newRange.from, Short.MAX_VALUE);
+                    return Range.create(newRange.from, Short.MAX_VALUE);
                 } else if (lubRange.to < Integer.MAX_VALUE) {
-                    return new Range(newRange.from, Integer.MAX_VALUE);
+                    return Range.create(newRange.from, Integer.MAX_VALUE);
                 } else {
-                    return new Range(newRange.from, Long.MAX_VALUE);
+                    return Range.create(newRange.from, Long.MAX_VALUE);
                 }
             }
 
@@ -695,13 +695,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // should use a MIN_VALUE and the upper bound of the new range.
             if ((newRange.from <= oldRange.from && newRange.to <= oldRange.to)) {
                 if (lubRange.from > Byte.MIN_VALUE) {
-                    return new Range(Byte.MIN_VALUE, newRange.to);
+                    return Range.create(Byte.MIN_VALUE, newRange.to);
                 } else if (lubRange.from > Short.MIN_VALUE) {
-                    return new Range(Short.MIN_VALUE, newRange.to);
+                    return Range.create(Short.MIN_VALUE, newRange.to);
                 } else if (lubRange.from > Integer.MIN_VALUE) {
-                    return new Range(Integer.MIN_VALUE, newRange.to);
+                    return Range.create(Integer.MIN_VALUE, newRange.to);
                 } else {
-                    return new Range(Long.MIN_VALUE, newRange.to);
+                    return Range.create(Long.MIN_VALUE, newRange.to);
                 }
             }
 
@@ -2019,13 +2019,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRangeFromPositive.class)) {
-            return new Range(1, Integer.MAX_VALUE);
+            return Range.create(1, Integer.MAX_VALUE);
         }
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRangeFromNonNegative.class)) {
-            return new Range(0, Integer.MAX_VALUE);
+            return Range.create(0, Integer.MAX_VALUE);
         }
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRangeFromGTENegativeOne.class)) {
-            return new Range(-1, Integer.MAX_VALUE);
+            return Range.create(-1, Integer.MAX_VALUE);
         }
 
         if (AnnotationUtils.areSameByClass(rangeAnno, IntVal.class)) {
@@ -2034,13 +2034,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRange.class)) {
-            return new Range(
+            return Range.create(
                     AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true),
                     AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true));
         }
 
         if (AnnotationUtils.areSameByClass(rangeAnno, ArrayLenRange.class)) {
-            return new Range(
+            return Range.create(
                     AnnotationUtils.getElementValue(rangeAnno, "from", Integer.class, true),
                     AnnotationUtils.getElementValue(rangeAnno, "to", Integer.class, true));
         }
