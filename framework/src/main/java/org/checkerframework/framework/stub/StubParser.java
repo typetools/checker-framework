@@ -222,24 +222,24 @@ public class StubParser {
      * All annotations defined in the package (but not those nested within classes in the package).
      * Keys are simple names.
      */
-    private Map<String, AnnotationMirror> annosInPackageNonsense(PackageElement packageElement) {
-        return createImportedAnnotationsMapNonsense(
+    private Map<String, AnnotationMirror> annosInPackage(PackageElement packageElement) {
+        return createImportedAnnotationsMap(
                 ElementFilter.typesIn(packageElement.getEnclosedElements()));
     }
 
     /** All annotations declared (directly) within a class. Keys are simple names. */
-    private Map<String, AnnotationMirror> annosInTypeNonsense(TypeElement typeElement) {
-        return createImportedAnnotationsMapNonsense(
+    private Map<String, AnnotationMirror> annosInType(TypeElement typeElement) {
+        return createImportedAnnotationsMap(
                 ElementFilter.typesIn(typeElement.getEnclosedElements()));
     }
 
-    private Map<String, AnnotationMirror> createImportedAnnotationsMapNonsense(
+    private Map<String, AnnotationMirror> createImportedAnnotationsMap(
             List<TypeElement> typeElements) {
         Map<String, AnnotationMirror> result = new HashMap<>();
         for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
                 AnnotationMirror anno =
-                        AnnotationBuilder.fromNameNonsense(elements, typeElm.getQualifiedName());
+                        AnnotationBuilder.fromName(elements, typeElm.getQualifiedName());
                 putNoOverride(result, typeElm.getSimpleName().toString(), anno);
             }
         }
@@ -275,7 +275,7 @@ public class StubParser {
      *
      * @see #allStubAnnotations
      */
-    private Map<String, AnnotationMirror> getAllStubAnnotationsNonsense() {
+    private Map<String, AnnotationMirror> getAllStubAnnotations() {
         Map<String, AnnotationMirror> result = new HashMap<>();
 
         assert !stubUnit.getCompilationUnits().isEmpty();
@@ -295,7 +295,7 @@ public class StubParser {
                         if (element != null) {
                             // Find nested annotations
                             // Find compile time constant fields, or values of an enum
-                            putAllNew(result, annosInTypeNonsense(element));
+                            putAllNew(result, annosInType(element));
                             importedConstants.addAll(getImportableMembers(element));
                             addEnclosingTypesToImportedTypes(element);
                         }
@@ -304,7 +304,7 @@ public class StubParser {
                         // Wildcard import of members of a package
                         PackageElement element = findPackage(imported);
                         if (element != null) {
-                            putAllNew(result, annosInPackageNonsense(element));
+                            putAllNew(result, annosInPackage(element));
                             addEnclosingTypesToImportedTypes(element);
                         }
                     }
@@ -344,8 +344,7 @@ public class StubParser {
                     } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
                         // Single annotation or nested annotation
 
-                        AnnotationMirror anno =
-                                AnnotationBuilder.fromNameNonsense(elements, imported);
+                        AnnotationMirror anno = AnnotationBuilder.fromName(elements, imported);
                         if (anno != null) {
                             Element annoElt = anno.getAnnotationType().asElement();
                             putNoOverride(result, annoElt.getSimpleName().toString(), anno);
@@ -472,14 +471,14 @@ public class StubParser {
 
         // getAllStubAnnotations() also modifies importedConstants and importedTypes. This should
         // be refactored to be nicer.
-        allStubAnnotations = getAllStubAnnotationsNonsense();
+        allStubAnnotations = getAllStubAnnotations();
         if (allStubAnnotations.isEmpty()) {
             stubWarnNotFound(
                     String.format(
                             "No supported annotations found! This likely means stub file %s doesn't import them correctly.",
                             filename));
         }
-        allStubAnnotations.putAll(annosInPackageNonsense(findPackage("java.lang")));
+        allStubAnnotations.putAll(annosInPackage(findPackage("java.lang")));
     }
 
     /** Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. */
