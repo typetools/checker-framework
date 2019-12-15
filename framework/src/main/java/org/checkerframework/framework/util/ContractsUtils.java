@@ -131,41 +131,6 @@ public class ContractsUtils {
         return result;
     }
 
-    /**
-     * Returns the contracts expressed by the given annotation.
-     *
-     * @param contractAnnotation a {@link RequiresQualifier}, or null
-     * @return the contracts expressed by the given annotation, or the empty set if the argument is
-     *     null
-     */
-    private Set<Contract> getPrecondition(AnnotationMirror contractAnnotation) {
-        if (contractAnnotation == null) {
-            return Collections.emptySet();
-        }
-        AnnotationMirror enforcedQualifier =
-                getQualifierEnforcedByContractAnnotation(contractAnnotation);
-        if (enforcedQualifier == null) {
-            return Collections.emptySet();
-        }
-        Set<Contract> result = new LinkedHashSet<>();
-        List<String> expressions =
-                AnnotationUtils.getElementValueArray(
-                        contractAnnotation, "expression", String.class, false);
-        Boolean annoResult =
-                AnnotationUtils.getElementValueOrNull(
-                        contractAnnotation, "result", Boolean.class, false);
-        for (String expr : expressions) {
-            result.add(
-                    Contract.create(
-                            Contract.Kind.PRECONDITION,
-                            expr,
-                            enforcedQualifier,
-                            contractAnnotation,
-                            annoResult));
-        }
-        return result;
-    }
-
     /// Postcondition methods (keep in sync with other two types)
 
     /**
