@@ -27,8 +27,6 @@ import org.checkerframework.framework.qual.QualifierArgument;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.RequiresQualifiers;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.util.Contract.Postcondition;
-import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
@@ -86,26 +84,26 @@ public class ContractsUtils {
     /// Precondition methods (keep in sync with other two types)
 
     /**
-     * Returns the preconditions on {@code methodElement}.
+     * Returns the contracts on {@code methodElement}.
      *
-     * @param methodElement the method or contract whose preconditions to return
-     * @return the preconditions on {@code methodElement}
+     * @param methodElement the method whose contracts to return
+     * @return the contracts on {@code methodElement}
      */
     public Set<Contract> getPreconditions(ExecutableElement methodElement) {
         Set<Contract> result = new LinkedHashSet<>();
         // Check for a single contract annotation.
-        AnnotationMirror requiresQualifier =
+        AnnotationMirror frameworkContractAnno =
                 factory.getDeclAnnotation(methodElement, RequiresQualifier.class);
-        result.addAll(getContract(PRECONDITION, requiresQualifier));
+        result.addAll(getContract(PRECONDITION, frameworkContractAnno));
 
         // Check for a wrapper around contract annotations.
-        AnnotationMirror requiresQualifiers =
+        AnnotationMirror frameworkContractAnnos =
                 factory.getDeclAnnotation(methodElement, RequiresQualifiers.class);
-        if (requiresQualifiers != null) {
-            List<AnnotationMirror> requiresQualifierList =
+        if (frameworkContractAnnos != null) {
+            List<AnnotationMirror> frameworkContractAnnoList =
                     AnnotationUtils.getElementValueArray(
-                            requiresQualifiers, "value", AnnotationMirror.class, false);
-            for (AnnotationMirror a : requiresQualifierList) {
+                            frameworkContractAnnos, "value", AnnotationMirror.class, false);
+            for (AnnotationMirror a : frameworkContractAnnoList) {
                 result.addAll(getContract(PRECONDITION, a));
             }
         }
@@ -117,15 +115,18 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror contractAnno = r.second;
-            AnnotationMirror precondAnno =
+            AnnotationMirror enforcedQualifier =
                     getQualifierEnforcedByContractAnnotation(contractAnno, anno);
-            if (precondAnno == null) {
+            if (enforcedQualifier == null) {
                 continue;
             }
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+            Boolean annoResult =
+                    AnnotationUtils.getElementValueOrNull(anno, "result", Boolean.class, false);
             for (String expr : expressions) {
-                result.add(new Precondition(expr, precondAnno, anno));
+                result.add(
+                        Contract.create(PRECONDITION, expr, enforcedQualifier, anno, annoResult));
             }
         }
         return result;
@@ -134,26 +135,26 @@ public class ContractsUtils {
     /// Postcondition methods (keep in sync with other two types)
 
     /**
-     * Returns the unconditional postconditions on {@code methodElement}.
+     * Returns the contracts on {@code methodElement}.
      *
-     * @param methodElement the method or contract whose postconditions to return
-     * @return the postconditions on {@code methodElement}
+     * @param methodElement the method whose contracts to return
+     * @return the contracts on {@code methodElement}
      */
     public Set<Contract> getPostconditions(ExecutableElement methodElement) {
         Set<Contract> result = new LinkedHashSet<>();
         // Check for a single contract annotation.
-        AnnotationMirror ensuresQualifier =
+        AnnotationMirror frameworkContractAnno =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifier.class);
-        result.addAll(getContract(POSTCONDITION, ensuresQualifier));
+        result.addAll(getContract(POSTCONDITION, frameworkContractAnno));
 
         // Check for a wrapper around contract annotations.
-        AnnotationMirror ensuresQualifiers =
+        AnnotationMirror frameworkContractAnnos =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifiers.class);
-        if (ensuresQualifiers != null) {
-            List<AnnotationMirror> ensuresQualifiersList =
+        if (frameworkContractAnnos != null) {
+            List<AnnotationMirror> frameworkContractAnnoList =
                     AnnotationUtils.getElementValueArray(
-                            ensuresQualifiers, "value", AnnotationMirror.class, false);
-            for (AnnotationMirror a : ensuresQualifiersList) {
+                            frameworkContractAnnos, "value", AnnotationMirror.class, false);
+            for (AnnotationMirror a : frameworkContractAnnoList) {
                 result.addAll(getContract(POSTCONDITION, a));
             }
         }
@@ -165,15 +166,18 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror contractAnno = r.second;
-            AnnotationMirror postcondAnno =
+            AnnotationMirror enforcedQualifier =
                     getQualifierEnforcedByContractAnnotation(contractAnno, anno);
-            if (postcondAnno == null) {
+            if (enforcedQualifier == null) {
                 continue;
             }
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+            Boolean annoResult =
+                    AnnotationUtils.getElementValueOrNull(anno, "result", Boolean.class, false);
             for (String expr : expressions) {
-                result.add(new Postcondition(expr, postcondAnno, anno));
+                result.add(
+                        Contract.create(POSTCONDITION, expr, enforcedQualifier, anno, annoResult));
             }
         }
         return result;
@@ -182,26 +186,26 @@ public class ContractsUtils {
     /// Conditional postcondition methods (keep in sync with other two types)
 
     /**
-     * Returns the conditional postconditions on {@code methodElement}.
+     * Returns the contracts on {@code methodElement}.
      *
-     * @param methodElement the method or contract whose unconditional postconditions to return
-     * @return the unconditional postconditions on {@code methodElement}
+     * @param methodElement the method whose contracts to return
+     * @return the contracts on {@code methodElement}
      */
     public Set<Contract> getConditionalPostconditions(ExecutableElement methodElement) {
         Set<Contract> result = new LinkedHashSet<>();
         // Check for a single contract annotation.
-        AnnotationMirror ensuresQualifierIf =
+        AnnotationMirror frameworkContractAnno =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifierIf.class);
-        result.addAll(getContract(CONDITIONALPOSTCONDITION, ensuresQualifierIf));
+        result.addAll(getContract(CONDITIONALPOSTCONDITION, frameworkContractAnno));
 
         // Check for a wrapper around contract annotations.
-        AnnotationMirror ensuresQualifiersIf =
+        AnnotationMirror frameworkContractAnnos =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifiersIf.class);
-        if (ensuresQualifiersIf != null) {
-            List<AnnotationMirror> ensuresQualifiersIfList =
+        if (frameworkContractAnnos != null) {
+            List<AnnotationMirror> frameworkContractAnnoList =
                     AnnotationUtils.getElementValueArray(
-                            ensuresQualifiersIf, "value", AnnotationMirror.class, false);
-            for (AnnotationMirror a : ensuresQualifiersIfList) {
+                            frameworkContractAnnos, "value", AnnotationMirror.class, false);
+            for (AnnotationMirror a : frameworkContractAnnoList) {
                 result.addAll(getContract(CONDITIONALPOSTCONDITION, a));
             }
         }
@@ -213,21 +217,21 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror contractAnno = r.second;
-            AnnotationMirror postcondAnno =
+            AnnotationMirror enforcedQualifier =
                     getQualifierEnforcedByContractAnnotation(contractAnno, anno);
-            if (postcondAnno == null) {
+            if (enforcedQualifier == null) {
                 continue;
             }
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "expression", String.class, false);
-            boolean annoResult =
-                    AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
+            Boolean annoResult =
+                    AnnotationUtils.getElementValueOrNull(anno, "result", Boolean.class, false);
             for (String expr : expressions) {
                 result.add(
                         Contract.create(
-                                Contract.Kind.CONDITIONALPOSTCONDITION,
+                                CONDITIONALPOSTCONDITION,
                                 expr,
-                                postcondAnno,
+                                enforcedQualifier,
                                 anno,
                                 annoResult));
             }
