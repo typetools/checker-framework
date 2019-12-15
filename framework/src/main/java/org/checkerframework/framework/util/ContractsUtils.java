@@ -1,19 +1,21 @@
 package org.checkerframework.framework.util;
 
+import static org.checkerframework.framework.util.Contract.Kind.CONDITIONALPOSTCONDITION;
+import static org.checkerframework.framework.util.Contract.Kind.POSTCONDITION;
+import static org.checkerframework.framework.util.Contract.Kind.PRECONDITION;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -25,9 +27,10 @@ import org.checkerframework.framework.qual.QualifierArgument;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.RequiresQualifiers;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.Contract.Postcondition;
+import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -67,216 +70,6 @@ public class ContractsUtils {
     }
 
     /**
-     * A contract represents an annotation on an expression, along with the kind: precondition,
-     * postcondition, or conditional postcondition.
-     *
-     * @see Precondition
-     * @see Postcondition
-     * @see ConditionalPostcondition
-     */
-    public abstract static class Contract {
-
-        public enum Kind {
-            PRECONDITION("precondition"),
-            POSTCONDITION("postcondition"),
-            CONDITIONALPOSTCONDITION("conditional.postcondition");
-            public final String errorKey;
-
-            Kind(String errorKey) {
-                this.errorKey = errorKey;
-            }
-        }
-
-        /**
-         * The expression for which the condition must hold, such as {@code "foo"} in
-         * {@code @RequiresNonNull("foo")}.
-         *
-         * <p>An annotation like {@code @RequiresNonNull({"a", "b", "c"})} would be represented by
-         * multiple Contracts.
-         */
-        public final String expression;
-
-        /** The annotation that must be on the type of expression, according to this contract. */
-        public final AnnotationMirror annotation;
-
-        /** The annotation that expressed this contract; used for diagnostic messages. */
-        public final AnnotationMirror contractAnnotation;
-
-        // This is redundant with the contract's class  and is not used in this file, but the field
-        // is used by clients.
-        /** The kind of contract: precondition, postcondition, or conditional postcondition. */
-        public final Kind kind;
-
-        /**
-         * Creates a new Contract.
-         *
-         * @param kind precondition, postcondition, or conditional postcondition
-         * @param expression the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expression} should have
-         * @param contractAnnotation the pre- or post-condition annotation that the programmer
-         *     wrote; used for diagnostic messages
-         */
-        public Contract(
-                Kind kind,
-                String expression,
-                AnnotationMirror annotation,
-                AnnotationMirror contractAnnotation) {
-            this.expression = expression;
-            this.annotation = annotation;
-            this.contractAnnotation = contractAnnotation;
-            this.kind = kind;
-        }
-
-        /**
-         * Creates a new Contract.
-         *
-         * @param expression the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expression} should have
-         * @param contractAnnotation the pre- or post-condition annotation that the programmer
-         *     wrote; used for diagnostic messages
-         * @param kind precondition, postcondition, or conditional postcondition
-         * @param ensuresQualifierIf the ensuresQualifierIf field, for a conditional postcondition
-         */
-        public static Contract create(
-                Kind kind,
-                String expression,
-                AnnotationMirror annotation,
-                AnnotationMirror contractAnnotation,
-                Boolean ensuresQualifierIf) {
-            if ((ensuresQualifierIf != null) != (kind == Kind.CONDITIONALPOSTCONDITION)) {
-                throw new BugInCF(
-                        "Mismatch: ensuresQualifierIf=%s, kind=%s", ensuresQualifierIf, kind);
-            }
-            switch (kind) {
-                case PRECONDITION:
-                    return new Precondition(expression, annotation, contractAnnotation);
-                case POSTCONDITION:
-                    return new Postcondition(expression, annotation, contractAnnotation);
-                case CONDITIONALPOSTCONDITION:
-                    return new ConditionalPostcondition(
-                            expression, annotation, contractAnnotation, ensuresQualifierIf);
-                default:
-                    throw new BugInCF("Unrecognized kind: " + kind);
-            }
-        }
-
-        // Note that equality requires exact match of the run-time class and that it ignores the
-        // `contractAnnotation` field.
-        @Override
-        public boolean equals(@Nullable Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            Contract contract = (Contract) o;
-
-            return kind == contract.kind
-                    && Objects.equals(expression, contract.expression)
-                    && Objects.equals(annotation, contract.annotation);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(kind, expression, annotation);
-        }
-    }
-
-    /** A precondition contract. */
-    public static class Precondition extends Contract {
-        /**
-         * Create a precondition contract.
-         *
-         * @param expression the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expression} should have
-         * @param contractAnnotation the precondition annotation that the programmer wrote; used for
-         *     diagnostic messages
-         */
-        public Precondition(
-                String expression,
-                AnnotationMirror annotation,
-                AnnotationMirror contractAnnotation) {
-            super(Kind.PRECONDITION, expression, annotation, contractAnnotation);
-        }
-    }
-
-    /** A postcondition contract. */
-    public static class Postcondition extends Contract {
-        /**
-         * Create a postcondition contract.
-         *
-         * @param expression the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expression} should have
-         * @param contractAnnotation the postcondition annotation that the programmer wrote; used
-         *     for diagnostic messages
-         */
-        public Postcondition(
-                String expression,
-                AnnotationMirror annotation,
-                AnnotationMirror contractAnnotation) {
-            super(Kind.POSTCONDITION, expression, annotation, contractAnnotation);
-        }
-    }
-
-    /**
-     * Represents a conditional postcondition that must be verified by {@code BaseTypeVisitor} or
-     * one of its subclasses. Automatically extracted from annotations with meta-annotation
-     * {@code @ConditionalPostconditionAnnotation}, such as {@code EnsuresNonNullIf}.
-     */
-    public static class ConditionalPostcondition extends Contract {
-
-        /**
-         * The return value for the annotated method that ensures that the conditional postcondition
-         * holds. For example, given<br>
-         * {@code @EnsuresNonNullIf(expression="foo", result=false) boolean method()}<br>
-         * {@code foo} is guaranteed to be {@code @NonNull} after a call to {@code method()} if that
-         * call returns {@code false}.
-         */
-        public final boolean annoResult;
-
-        /**
-         * Create a new conditional postcondition.
-         *
-         * @param expression the Java expression that should have a type qualifier
-         * @param annotation the type qualifier that {@code expression} should have
-         * @param contractAnnotation the postcondition annotation that the programmer wrote; used
-         *     for diagnostic messages
-         * @param annoResult whether the condition is the method returning true or false
-         */
-        public ConditionalPostcondition(
-                String expression,
-                AnnotationMirror annotation,
-                AnnotationMirror contractAnnotation,
-                boolean annoResult) {
-            super(Kind.CONDITIONALPOSTCONDITION, expression, annotation, contractAnnotation);
-            this.annoResult = annoResult;
-        }
-
-        @Override
-        public boolean equals(@Nullable Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            if (!super.equals(o)) {
-                return false;
-            }
-
-            ConditionalPostcondition that = (ConditionalPostcondition) o;
-            return annoResult == that.annoResult;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(super.hashCode(), annoResult);
-        }
-    }
-
-    /**
      * Returns all the contracts on {@code methodElement}.
      *
      * @param methodElement the method or constructor whose contracts to retrieve
@@ -303,7 +96,7 @@ public class ContractsUtils {
         // Check for a single contract annotation.
         AnnotationMirror requiresQualifier =
                 factory.getDeclAnnotation(methodElement, RequiresQualifier.class);
-        result.addAll(getPrecondition(requiresQualifier));
+        result.addAll(getContract(PRECONDITION, requiresQualifier));
 
         // Check for a wrapper around contract annotations.
         AnnotationMirror requiresQualifiers =
@@ -313,7 +106,7 @@ public class ContractsUtils {
                     AnnotationUtils.getElementValueArray(
                             requiresQualifiers, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : requiresQualifierList) {
-                result.addAll(getPrecondition(a));
+                result.addAll(getContract(PRECONDITION, a));
             }
         }
 
@@ -386,7 +179,7 @@ public class ContractsUtils {
         // Check for a single contract annotation.
         AnnotationMirror ensuresQualifier =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifier.class);
-        result.addAll(getPostcondition(ensuresQualifier));
+        result.addAll(getContract(POSTCONDITION, ensuresQualifier));
 
         // Check for a wrapper around contract annotations.
         AnnotationMirror ensuresQualifiers =
@@ -396,7 +189,7 @@ public class ContractsUtils {
                     AnnotationUtils.getElementValueArray(
                             ensuresQualifiers, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : ensuresQualifiersList) {
-                result.addAll(getPostcondition(a));
+                result.addAll(getContract(POSTCONDITION, a));
             }
         }
 
@@ -421,41 +214,6 @@ public class ContractsUtils {
         return result;
     }
 
-    /**
-     * Returns the contracts expressed by the given annotation.
-     *
-     * @param contractAnnotation a {@link EnsuresQualifier}, or null
-     * @return the contracts expressed by the given annotation, or the empty set if the argument is
-     *     null
-     */
-    private Set<Contract> getPostcondition(AnnotationMirror contractAnnotation) {
-        if (contractAnnotation == null) {
-            return Collections.emptySet();
-        }
-        AnnotationMirror enforcedQualifier =
-                getQualifierEnforcedByContractAnnotation(contractAnnotation);
-        if (enforcedQualifier == null) {
-            return Collections.emptySet();
-        }
-        Set<Contract> result = new LinkedHashSet<>();
-        List<String> expressions =
-                AnnotationUtils.getElementValueArray(
-                        contractAnnotation, "expression", String.class, false);
-        Boolean annoResult =
-                AnnotationUtils.getElementValueOrNull(
-                        contractAnnotation, "result", Boolean.class, false);
-        for (String expr : expressions) {
-            result.add(
-                    Contract.create(
-                            Contract.Kind.POSTCONDITION,
-                            expr,
-                            enforcedQualifier,
-                            contractAnnotation,
-                            annoResult));
-        }
-        return result;
-    }
-
     /// Conditional postcondition methods (keep in sync with other two types)
 
     /**
@@ -469,7 +227,7 @@ public class ContractsUtils {
         // Check for a single contract annotation.
         AnnotationMirror ensuresQualifierIf =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifierIf.class);
-        result.addAll(getConditionalPostcondition(ensuresQualifierIf));
+        result.addAll(getContract(CONDITIONALPOSTCONDITION, ensuresQualifierIf));
 
         // Check for a wrapper around contract annotations.
         AnnotationMirror ensuresQualifiersIf =
@@ -479,7 +237,7 @@ public class ContractsUtils {
                     AnnotationUtils.getElementValueArray(
                             ensuresQualifiersIf, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : ensuresQualifiersIfList) {
-                result.addAll(getConditionalPostcondition(a));
+                result.addAll(getContract(CONDITIONALPOSTCONDITION, a));
             }
         }
 
@@ -512,42 +270,39 @@ public class ContractsUtils {
         return result;
     }
 
+    /// Helper methods
+
     /**
-     * Returns the conditional postconditions expressed by the given annotation.
+     * Returns the contracts expressed by the given framework contract annotation.
      *
-     * @param ensuresQualifierIf an {@link EnsuresQualifierIf}, or null
-     * @return the postconditions expressed by the given annotation, or the empty set if the
-     *     argument is null
+     * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, {@link
+     *     EnsuresQualifierIf}, or null
+     * @param kind the kind of {@code contractAnnotation}
+     * @return the contracts expressed by the given annotation, or the empty set if the argument is
+     *     null
      */
-    private Set<Contract> getConditionalPostcondition(AnnotationMirror ensuresQualifierIf) {
-        if (ensuresQualifierIf == null) {
+    private Set<Contract> getContract(Contract.Kind kind, AnnotationMirror contractAnnotation) {
+        if (contractAnnotation == null) {
             return Collections.emptySet();
         }
-        AnnotationMirror postcondAnno =
-                getQualifierEnforcedByContractAnnotation(ensuresQualifierIf);
-        if (postcondAnno == null) {
+        AnnotationMirror enforcedQualifier =
+                getQualifierEnforcedByContractAnnotation(contractAnnotation);
+        if (enforcedQualifier == null) {
             return Collections.emptySet();
         }
         Set<Contract> result = new LinkedHashSet<>();
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
-                        ensuresQualifierIf, "expression", String.class, false);
+                        contractAnnotation, "expression", String.class, false);
         Boolean annoResult =
                 AnnotationUtils.getElementValueOrNull(
-                        ensuresQualifierIf, "result", Boolean.class, false);
+                        contractAnnotation, "result", Boolean.class, false);
         for (String expr : expressions) {
             result.add(
-                    Contract.create(
-                            Contract.Kind.CONDITIONALPOSTCONDITION,
-                            expr,
-                            postcondAnno,
-                            ensuresQualifierIf,
-                            annoResult));
+                    Contract.create(kind, expr, enforcedQualifier, contractAnnotation, annoResult));
         }
         return result;
     }
-
-    /// Helper methods
 
     /**
      * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
