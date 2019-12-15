@@ -803,10 +803,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             if (expr != null && !abstractMethod) {
                 switch (contract.kind) {
-                    case POSTCONDTION:
+                    case POSTCONDITION:
                         checkPostcondition(node, annotation, contract.contractAnnotation, expr);
                         break;
-                    case CONDITIONALPOSTCONDTION:
+                    case CONDITIONALPOSTCONDITION:
                         checkConditionalPostcondition(
                                 node,
                                 annotation,
@@ -3278,10 +3278,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     premsg);
 
             // Check conditional postconditions
-            Set<ConditionalPostcondition> superCPost =
+            Set<Contract> superCPost =
                     contracts.getConditionalPostconditions(overridden.getElement());
-            Set<ConditionalPostcondition> subCPost =
-                    contracts.getConditionalPostconditions(overrider.getElement());
+            Set<Contract> subCPost = contracts.getConditionalPostconditions(overrider.getElement());
             // consider only 'true' postconditions
             Set<Postcondition> superCPostTrue = filterConditionalPostconditions(superCPost, true);
             Set<Postcondition> subCPostTrue = filterConditionalPostconditions(subCPost, true);
@@ -3642,11 +3641,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * then the following {@code @EnsuresNonNullIf} conditional postcondition would match:<br>
      * {@code @EnsuresNonNullIf(expression="#1", result=true)}<br>
      * {@code boolean equals(@Nullable Object o)}
+     *
+     * @param conditionalPostconditions each is a ConditionalPostcondition
+     * @param b the value required for the {@code result} element
+     * @return all the given conditional postconditions whose {@code result} is {@code b}
      */
     private Set<Postcondition> filterConditionalPostconditions(
-            Set<ConditionalPostcondition> conditionalPostconditions, boolean b) {
+            Set<Contract> conditionalPostconditions, boolean b) {
         Set<Postcondition> result = new LinkedHashSet<>();
-        for (ConditionalPostcondition p : conditionalPostconditions) {
+        for (Contract c : conditionalPostconditions) {
+            ConditionalPostcondition p = (ConditionalPostcondition) c;
             if (p.annoResult == b) {
                 result.add(new Postcondition(p.expression, p.annotation, p.contractAnnotation));
             }
