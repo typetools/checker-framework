@@ -460,9 +460,10 @@ see  Section~\ref{type-refinement}.
 \sectionAndLabel{Running a checker}{running}
 
 To run a checker plugin, run the compiler \code{javac} as usual,
-but pass the \code{-processor \emph{plugin\_class}} command-line
-option.
-A concrete example (using the Nullness Checker) is:
+but either pass the \code{-processor \emph{plugin\_class}} command-line
+option, or use auto-discovery as described in
+Section~\ref{checker-auto-discovery}.
+A concrete example of using \code{-processor} to run the Nullness Checker is:
 
 \begin{Verbatim}
   javac -processor nullness MyFile.java
