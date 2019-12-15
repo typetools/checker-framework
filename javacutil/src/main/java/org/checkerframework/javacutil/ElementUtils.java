@@ -79,9 +79,10 @@ public class ElementUtils {
      * itself again.
      *
      * @param elem the package to start from
-     * @return the parent package element
+     * @return the parent package element or {@code null}
      */
-    public static PackageElement parentPackage(final PackageElement elem, final Elements e) {
+    public static @Nullable PackageElement parentPackage(
+            final PackageElement elem, final Elements e) {
         // The following might do the same thing:
         //   ((Symbol) elt).owner;
         // TODO: verify and see whether the change is worth it.
@@ -166,12 +167,16 @@ public class ElementUtils {
 
     /** Returns a verbose name that identifies the element. */
     public static String getVerboseName(Element elt) {
+        Name n = getQualifiedClassName(elt);
+        if (n == null) {
+            return "Unexpected element: " + elt;
+        }
         if (elt.getKind() == ElementKind.PACKAGE
                 || elt.getKind().isClass()
                 || elt.getKind().isInterface()) {
-            return getQualifiedClassName(elt).toString();
+            return n.toString();
         } else {
-            return getQualifiedClassName(elt) + "." + elt;
+            return n + "." + elt;
         }
     }
 
@@ -214,7 +219,7 @@ public class ElementUtils {
                     return type.toString();
                 }
         }
-        throw new BugInCF("ElementUtils: unhandled type: " + type);
+        throw new BugInCF("ElementUtils: unhandled type kind: %s, type: %s", type.getKind(), type);
     }
 
     /**
@@ -227,7 +232,7 @@ public class ElementUtils {
         return element.getQualifiedName().contentEquals("java.lang.Object");
     }
 
-    /** Returns true if the element is a constant time reference. */
+    /** Returns true if the element is a reference to a compile-time constant. */
     public static boolean isCompileTimeConstant(Element elt) {
         return elt != null
                 && (elt.getKind() == ElementKind.FIELD
@@ -276,8 +281,8 @@ public class ElementUtils {
         return isElementFromByteCodeHelper(elt.getEnclosingElement());
     }
 
-    /** Returns the field of the class. */
-    public static VariableElement findFieldInType(TypeElement type, String name) {
+    /** Returns the field of the class or {@code null} if not found. */
+    public static @Nullable VariableElement findFieldInType(TypeElement type, String name) {
         for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (field.getSimpleName().contentEquals(name)) {
                 return field;
@@ -350,9 +355,9 @@ public class ElementUtils {
             return;
         }
         TypeElement elt = TypesUtils.getTypeElement(type);
-
+        assert elt != null : "@AssumeAssertion(nullness): assumption";
         Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
-        for (VariableElement field : new HashSet<>(fieldElts)) {
+        for (VariableElement field : new HashSet<VariableElement>(fieldElts)) {
             if (!field.getModifiers().contains(Modifier.PRIVATE)) {
                 notFound.remove(field.getSimpleName().toString());
             } else {
@@ -366,10 +371,10 @@ public class ElementUtils {
         }
     }
 
+    /** @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError" */
     public static boolean isError(Element element) {
-        return element.getClass()
-                .getName()
-                .equals("com.sun.tools.javac.comp.Resolve$SymbolNotFoundError");
+        return element.getClass().getName()
+                == "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError";
     }
 
     /**

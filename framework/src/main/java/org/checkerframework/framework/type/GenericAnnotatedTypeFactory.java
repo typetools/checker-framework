@@ -18,7 +18,6 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -527,15 +526,6 @@ public abstract class GenericAnnotatedTypeFactory<
         return new QualifierDefaults(elements, this);
     }
 
-    /** Defines alphabetical sort ordering for qualifiers. */
-    private static final Comparator<Class<? extends Annotation>> QUALIFIER_SORT_ORDERING =
-            new Comparator<Class<? extends Annotation>>() {
-                @Override
-                public int compare(Class<? extends Annotation> a1, Class<? extends Annotation> a2) {
-                    return a1.getCanonicalName().compareTo(a2.getCanonicalName());
-                }
-            };
-
     /**
      * Creates and returns a string containing the number of qualifiers and the canonical class
      * names of each qualifier that has been added to this checker's supported qualifier set. The
@@ -554,9 +544,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
         // Create a list of the supported qualifiers and sort the list
         // alphabetically
-        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>();
-        sortedSupportedQuals.addAll(stq);
-        Collections.sort(sortedSupportedQuals, QUALIFIER_SORT_ORDERING);
+        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>(stq);
+        sortedSupportedQuals.sort(Comparator.comparing(Class::getCanonicalName));
 
         // display the number of qualifiers as well as the names of each
         // qualifier.
@@ -1026,7 +1015,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
         for (Node node : nodes) {
-            if (node.getClass().equals(kind)) {
+            if (node.getClass() == kind) {
                 return kind.cast(node);
             }
         }
@@ -1473,8 +1462,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Like {#addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding implementations
-     * typically simply pass the boolean to calls to super.
+     * Like {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding
+     * implementations typically simply pass the boolean to calls to super.
      */
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
@@ -1554,6 +1543,15 @@ public abstract class GenericAnnotatedTypeFactory<
         applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
     }
 
+    /**
+     * To add annotations to the type of method or constructor parameters, add a {@link
+     * TypeAnnotator} using {@link #createTypeAnnotator()} and see the comment in {@link
+     * TypeAnnotator#visitExecutable(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType,
+     * Void)}.
+     *
+     * @param elt an element
+     * @param type the type obtained from {@code elt}
+     */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         addAnnotationsFromDefaultQualifierForUse(elt, type);
@@ -1667,13 +1665,15 @@ public abstract class GenericAnnotatedTypeFactory<
         return null;
     }
 
-    /* A simple utility method to determine a short checker name to be
-     * used by CFG visualizations.
+    /**
+     * A simple utility method to determine a short checker name to be used by CFG visualizations.
      */
     private String getCheckerName() {
         String checkerName = checker.getClass().getSimpleName();
-        if (checkerName.endsWith("Checker") || checkerName.endsWith("checker")) {
-            checkerName = checkerName.substring(0, checkerName.length() - "checker".length());
+        if (checkerName.endsWith("Checker")) {
+            checkerName = checkerName.substring(0, checkerName.length() - "Checker".length());
+        } else if (checkerName.endsWith("Subchecker")) {
+            checkerName = checkerName.substring(0, checkerName.length() - "Subchecker".length());
         }
         return checkerName;
     }

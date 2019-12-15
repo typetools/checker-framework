@@ -183,7 +183,7 @@ public final class Result {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof DiagMessage)) {
                 return false;
             }

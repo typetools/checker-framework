@@ -1,5 +1,6 @@
 package org.checkerframework.framework.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -16,7 +17,7 @@ import java.lang.annotation.RetentionPolicy;
  *  public class MyClass {
  *   {@literal @}CFComment({"nullness: non-null return type is more specific than in superclass",
  *                "signedness: comment related to Signedness type system"})
- *    public String myMethod(){ ... }
+ *    public String myMethod() { ... }
  * }
  * </code></pre>
  *
@@ -24,6 +25,7 @@ import java.lang.annotation.RetentionPolicy;
  * to which the comment applies (e.g., local variable rather than method, and method rather than
  * class).
  */
+@Documented
 @Retention(RetentionPolicy.SOURCE)
 public @interface CFComment {
     /**

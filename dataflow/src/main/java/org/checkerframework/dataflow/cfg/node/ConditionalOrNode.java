@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for a conditional or expression:
@@ -13,9 +14,16 @@ import java.util.Objects;
  */
 public class ConditionalOrNode extends BinaryOperationNode {
 
+    /**
+     * Create a new ConditionalOrNode.
+     *
+     * @param tree the conditional-or tree for this node
+     * @param left the first argument
+     * @param right the second argument
+     */
     public ConditionalOrNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
-        assert tree.getKind().equals(Kind.CONDITIONAL_OR);
+        assert tree.getKind() == Kind.CONDITIONAL_OR;
     }
 
     @Override
@@ -29,7 +37,7 @@ public class ConditionalOrNode extends BinaryOperationNode {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof ConditionalOrNode)) {
             return false;
         }

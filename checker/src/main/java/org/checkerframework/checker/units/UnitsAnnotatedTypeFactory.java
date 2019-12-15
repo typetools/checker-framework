@@ -162,7 +162,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         // get all the loaded annotations
-        Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiersWithPolyAll();
+        Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiers();
 
         // load all the external units
         loadAllExternalUnits();
@@ -518,7 +518,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             if (AnnotationUtils.areSameByName(superAnno, subAnno)) {
-                return AnnotationUtils.areSame(superAnno, subAnno);
+                return AnnotationUtils.sameElementValues(superAnno, subAnno);
             }
             superAnno = removePrefix(superAnno);
             subAnno = removePrefix(subAnno);
@@ -550,7 +550,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // have worse performance?
             if (AnnotationUtils.areSameByName(a1, a2)) {
                 // and if they have the same Prefix, it means it is the same unit
-                if (AnnotationUtils.areSame(a1, a2)) {
+                if (AnnotationUtils.sameElementValues(a1, a2)) {
                     // return the unit
                     result = a1;
                 }

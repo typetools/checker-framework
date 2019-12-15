@@ -10,6 +10,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -35,6 +36,9 @@ public class PurityUtils {
     /** Is the method {@code tree} deterministic? */
     public static boolean isDeterministic(AnnotationProvider provider, MethodTree tree) {
         Element methodElement = TreeUtils.elementFromTree(tree);
+        if (methodElement == null) {
+            throw new BugInCF("Could not find element for tree: " + tree);
+        }
         return isDeterministic(provider, methodElement);
     }
 
@@ -47,6 +51,9 @@ public class PurityUtils {
     /** Is the method {@code tree} side-effect-free? */
     public static boolean isSideEffectFree(AnnotationProvider provider, MethodTree tree) {
         Element methodElement = TreeUtils.elementFromTree(tree);
+        if (methodElement == null) {
+            throw new BugInCF("Could not find element for tree: " + tree);
+        }
         return isSideEffectFree(provider, methodElement);
     }
 
@@ -59,6 +66,9 @@ public class PurityUtils {
     /** @return the types of purity of the method {@code tree}. */
     public static List<Pure.Kind> getPurityKinds(AnnotationProvider provider, MethodTree tree) {
         Element methodElement = TreeUtils.elementFromTree(tree);
+        if (methodElement == null) {
+            throw new BugInCF("Could not find element for tree: " + tree);
+        }
         return getPurityKinds(provider, methodElement);
     }
 

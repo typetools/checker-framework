@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.constantpropagation;
 
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 
@@ -9,7 +10,7 @@ public class Constant implements AbstractValue<Constant> {
     /** What kind of abstract value is this? */
     protected Type type;
 
-    /** The value of this abstract value (or null) */
+    /** The value of this abstract value (or null). */
     protected @Nullable Integer value;
 
     public enum Type {
@@ -18,30 +19,37 @@ public class Constant implements AbstractValue<Constant> {
         BOTTOM,
     }
 
+    /** Create a constant for {@code type}. */
     public Constant(Type type) {
-        assert !type.equals(Type.CONSTANT);
+        assert type != Type.CONSTANT;
         this.type = type;
     }
 
+    /** Create a constant for {@code value}. */
     public Constant(Integer value) {
         this.type = Type.CONSTANT;
         this.value = value;
     }
 
+    /** @return whether or not the constant is TOP. */
     public boolean isTop() {
-        return type.equals(Type.TOP);
+        return type == Type.TOP;
     }
 
+    /** @return whether or not the constant is BOTTOM. */
     public boolean isBottom() {
-        return type.equals(Type.BOTTOM);
+        return type == Type.BOTTOM;
     }
 
+    /** @return whether or not the constant is CONSTANT. */
+    @EnsuresNonNullIf(result = true, expression = "value")
     public boolean isConstant() {
-        return type.equals(Type.CONSTANT);
+        return type == Type.CONSTANT && value != null;
     }
 
+    /** @return the value. */
     public Integer getValue() {
-        assert isConstant();
+        assert isConstant() : "@AssumeAssertion(nullness): inspection";
         return value;
     }
 
@@ -70,7 +78,7 @@ public class Constant implements AbstractValue<Constant> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof Constant)) {
             return false;
         }
@@ -91,6 +99,7 @@ public class Constant implements AbstractValue<Constant> {
             case BOTTOM:
                 return "-";
             case CONSTANT:
+                assert isConstant() : "@AssumeAssertion(nullness)";
                 return value.toString();
         }
         assert false;

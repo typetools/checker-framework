@@ -131,7 +131,7 @@ public class CheckerMain {
             assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
         } else {
             // TODO: once the jdk11 jars exist, check for them.
-            assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar));
+            assertFilesExist(Arrays.asList(checkerJar, checkerQualJar));
         }
     }
 
@@ -151,9 +151,19 @@ public class CheckerMain {
         return new ArrayList<>(Arrays.asList(javacJar.getAbsolutePath()));
     }
 
+    /**
+     * Returns the compilation bootclasspath from {@code argsList} and appends {@code jdkJar} if
+     * using Java 8.
+     *
+     * @param argsList args to add
+     * @return the compilation bootclasspath from {@code argsList} and appends {@code jdkJar} if
+     *     using Java 8
+     */
     protected List<String> createCompilationBootclasspath(final List<String> argsList) {
         final List<String> extractedBcp = extractBootClassPath(argsList);
-        extractedBcp.add(0, jdkJar.getAbsolutePath());
+        if (PluginUtil.getJreVersion() == 8) {
+            extractedBcp.add(0, jdkJar.getAbsolutePath());
+        }
 
         return extractedBcp;
     }
@@ -395,24 +405,9 @@ public class CheckerMain {
         } else {
             args.addAll(
                     Arrays.asList(
+                            "--illegal-access=warn",
                             "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                            "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"));
+                            "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
         }
 
         args.add("-classpath");

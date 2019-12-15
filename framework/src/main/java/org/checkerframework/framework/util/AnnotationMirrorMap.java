@@ -28,7 +28,7 @@ public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
 
     /** Default constructor. */
     public AnnotationMirrorMap() {
-        this.shadowMap = new TreeMap<>(AnnotationUtils.annotationOrdering());
+        this.shadowMap = new TreeMap<>(AnnotationUtils::compareAnnotationMirrors);
     }
 
     /**
@@ -122,5 +122,10 @@ public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
     @Override
     public Set<Entry<AnnotationMirror, V>> entrySet() {
         return shadowMap.entrySet();
+    }
+
+    @Override
+    public String toString() {
+        return shadowMap.toString();
     }
 }

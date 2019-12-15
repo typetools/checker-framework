@@ -55,7 +55,7 @@ public abstract class AbstractCFGVisualizer<
         this.verbose =
                 verb != null
                         && (verb instanceof String
-                                ? Boolean.getBoolean((String) verb)
+                                ? Boolean.parseBoolean((String) verb)
                                 : (boolean) verb);
     }
 
@@ -195,10 +195,15 @@ public abstract class AbstractCFGVisualizer<
             if (verbose) {
                 Node lastNode = getLastNode(bb);
                 if (lastNode != null) {
+                    S store = analysis.getResult().getStoreAfter(lastNode);
                     StringBuilder sbStore = new StringBuilder();
                     sbStore.append(escapeString).append("~~~~~~~~~").append(escapeString);
                     sbStore.append("After: ");
-                    sbStore.append(visualizeStore(analysis.getResult().getStoreAfter(lastNode)));
+                    if (store != null) {
+                        sbStore.append(visualizeStore(store));
+                    } else {
+                        sbStore.append("null store");
+                    }
                     sbBlock.append(sbStore);
                 }
             }
@@ -265,7 +270,7 @@ public abstract class AbstractCFGVisualizer<
                 : "analysis should be non-null when visualizing the transfer input of a block.";
 
         TransferInput<A, S> input = analysis.getInput(bb);
-        assert input != null;
+        assert input != null : "@AssumeAssertion(nullness): well-behaved analysis";
 
         StringBuilder sbStore = new StringBuilder();
 
@@ -312,7 +317,7 @@ public abstract class AbstractCFGVisualizer<
      * @param bb the block
      * @return the last node of this block or {@code null}
      */
-    protected Node getLastNode(Block bb) {
+    protected @Nullable Node getLastNode(Block bb) {
         switch (bb.getType()) {
             case REGULAR_BLOCK:
                 List<Node> blockContents = ((RegularBlock) bb).getContents();

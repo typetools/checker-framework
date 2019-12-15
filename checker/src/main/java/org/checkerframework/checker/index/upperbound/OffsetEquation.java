@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
@@ -61,7 +62,7 @@ public class OffsetEquation {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) {
             return true;
         }
@@ -250,7 +251,7 @@ public class OffsetEquation {
      * Evaluates an offset term. If the term is an integer constant, returns its value. Otherwise,
      * returns null.
      *
-     * @param factory AnnotatedTypeFactory used to access elements annotations. It can be null.
+     * @param factory the AnnotatedTypeFactory used to access elements annotations. It can be null.
      */
     private Integer evalConstantTerm(Receiver termReceiver, BaseAnnotatedTypeFactory factory) {
         if (termReceiver instanceof FlowExpressions.ValueLiteral) {
@@ -291,7 +292,7 @@ public class OffsetEquation {
      * Terms that evaluate to a integer constant are removed from the list, and the constants are
      * added to or subtracted from the intValue field.
      *
-     * @param factory AnnotatedTypeFactory used for annotation accessing. It can be null.
+     * @param factory the AnnotatedTypeFactory used for annotation accessing. It can be null.
      */
     private void standardizeAndViewpointAdaptExpressions(
             List<String> terms,
@@ -323,10 +324,10 @@ public class OffsetEquation {
     /**
      * Standardizes and viewpoint-adapts the string terms based us the supplied context.
      *
-     * @param context FlowExpressionContext
+     * @param context a FlowExpressionContext
      * @param scope local scope
      * @param useLocalScope whether or not local scope is used
-     * @param factory AnnotatedTypeFactory used for annotation accessing. It can be null.
+     * @param factory an AnnotatedTypeFactory used for annotation accessing. It can be null.
      * @throws FlowExpressionParseException if any term isn't able to be parsed this exception is
      *     thrown. If this happens, no string terms are changed.
      */
@@ -346,7 +347,7 @@ public class OffsetEquation {
     /**
      * Standardizes and viewpoint-adapts the string terms based us the supplied context.
      *
-     * @param context FlowExpressionContext
+     * @param context a FlowExpressionContext
      * @param scope local scope
      * @param useLocalScope whether or not local scope is used
      * @throws FlowExpressionParseException if any term isn't able to be parsed this exception is
@@ -502,7 +503,7 @@ public class OffsetEquation {
      * <p>Otherwise, null is returned.
      *
      * @param node the Node from which to create an offset equation
-     * @param factory AnnotationTypeFactory
+     * @param factory an AnnotationTypeFactory
      * @param op '+' or '-'
      * @return an offset equation from value of known or null if the value isn't known
      */
@@ -535,7 +536,7 @@ public class OffsetEquation {
      * the returned equation. If op is '-' then it is a subtracted term.
      *
      * @param node the Node from which to create an offset equation
-     * @param factory AnnotationTypeFactory
+     * @param factory an AnnotationTypeFactory
      * @param op '+' or '-'
      * @return an offset equation from the Node
      */
