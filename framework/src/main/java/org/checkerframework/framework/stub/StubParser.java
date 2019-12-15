@@ -88,7 +88,7 @@ import org.checkerframework.javacutil.Pair;
  * ProcessingEnvironment, Map, Map)}, which side-effects its last two arguments.
  *
  * <p>The constructor acts in two parts. First, it calls the Stub Parser to parse a stub file. Then,
- * itis walks the Stub Parser's AST to create/collect types and declaration annotations.
+ * it walks the Stub Parser's AST to create/collect types and declaration annotations.
  */
 public class StubParser {
 
