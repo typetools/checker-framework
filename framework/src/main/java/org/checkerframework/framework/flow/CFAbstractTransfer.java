@@ -69,7 +69,6 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
 import org.checkerframework.framework.util.ContractsUtils.Contract;
-import org.checkerframework.framework.util.ContractsUtils.Postcondition;
 import org.checkerframework.framework.util.ContractsUtils.Precondition;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -515,9 +514,10 @@ public abstract class CFAbstractTransfer<
             ExecutableElement methodElement) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         FlowExpressionContext flowExprContext = null;
-        Set<Precondition> preconditions = contracts.getPreconditions(methodElement);
+        Set<Contract> preconditions = contracts.getPreconditions(methodElement);
 
-        for (Precondition p : preconditions) {
+        for (Contract c : preconditions) {
+            Precondition p = (Precondition) c;
             String expression = p.expression;
             AnnotationMirror annotation = p.annotation;
 
@@ -998,7 +998,7 @@ public abstract class CFAbstractTransfer<
     protected void processPostconditions(
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        Set<Postcondition> postconditions = contracts.getPostconditions(methodElement);
+        Set<Contract> postconditions = contracts.getPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(n, tree, store, null, postconditions);
     }
 

@@ -1405,7 +1405,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param tree the Tree immediately prior to which the preconditions must hold true
      * @param preconditions the preconditions to be checked
      */
-    protected void checkPreconditions(MethodInvocationTree tree, Set<Precondition> preconditions) {
+    protected void checkPreconditions(MethodInvocationTree tree, Set<Contract> preconditions) {
         // This check is needed for the GUI effects and Units Checkers tests to pass.
         // TODO: Remove this check and investigate the root cause.
         if (preconditions.isEmpty()) {
@@ -1419,7 +1419,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        for (Precondition p : preconditions) {
+        for (Contract c : preconditions) {
+            Precondition p = (Precondition) c;
             String expression = p.expression;
             AnnotationMirror anno = p.annotation;
 
@@ -3244,8 +3245,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             // Check postconditions
             ContractsUtils contracts = ContractsUtils.getInstance(atypeFactory);
-            Set<Postcondition> superPost = contracts.getPostconditions(overridden.getElement());
-            Set<Postcondition> subPost = contracts.getPostconditions(overrider.getElement());
+            Set<Contract> superPost = contracts.getPostconditions(overridden.getElement());
+            Set<Contract> subPost = contracts.getPostconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPost2 =
                     resolveContracts(superPost, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPost2 = resolveContracts(subPost, overrider);
@@ -3261,8 +3262,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     postmsg);
 
             // Check preconditions
-            Set<Precondition> superPre = contracts.getPreconditions(overridden.getElement());
-            Set<Precondition> subPre = contracts.getPreconditions(overrider.getElement());
+            Set<Contract> superPre = contracts.getPreconditions(overridden.getElement());
+            Set<Contract> subPre = contracts.getPreconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPre2 =
                     resolveContracts(superPre, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPre2 = resolveContracts(subPre, overrider);
