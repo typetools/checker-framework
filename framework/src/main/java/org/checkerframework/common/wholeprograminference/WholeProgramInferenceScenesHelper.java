@@ -146,7 +146,7 @@ public class WholeProgramInferenceScenesHelper {
                                 + e.getMessage(),
                         e);
             } catch (DefException e) {
-                throw new BugInCF(e.getMessage(), e);
+                throw new BugInCF(e);
             }
         }
         modifiedScenes.clear();
