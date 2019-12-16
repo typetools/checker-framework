@@ -1711,7 +1711,7 @@ public class StubParser {
      * {@code @Anno(1)}
      *
      * To properly build @Anno, the IntegerLiteralExpr "1" must be converted from an int to a long.
-     * */
+     */
     private Object convert(Number number, TypeKind expectedKind) {
         return convert(number, expectedKind, false);
     }
