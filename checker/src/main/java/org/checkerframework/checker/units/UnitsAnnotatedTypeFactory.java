@@ -198,7 +198,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Loads and processes a single external units qualifier. */
+    /**
+     * Loads and processes a single external units qualifier.
+     *
+     * @param annoName the name of a units qualifier
+     */
     private void loadExternalUnit(@BinaryName String annoName) {
         // loadExternalAnnotationClass() returns null for alias units
         Class<? extends Annotation> loadedClass = loader.loadExternalAnnotationClass(annoName);
