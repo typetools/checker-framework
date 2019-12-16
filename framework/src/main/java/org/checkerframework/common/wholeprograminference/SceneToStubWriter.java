@@ -387,7 +387,7 @@ public final class SceneToStubWriter {
         // Enums cannot be nested within non-classes,
         // so only print as an enum if the leaf has been reached.
         if (enumConstants.containsKey(classname) && "".equals(rest)) {
-            printWriter.print("enum");
+            printWriter.print("enum ");
         } else {
             printWriter.print("class ");
         }
