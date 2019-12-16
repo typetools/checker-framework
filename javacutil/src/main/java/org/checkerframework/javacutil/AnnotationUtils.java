@@ -755,7 +755,7 @@ public class AnnotationUtils {
      * @param useDefaults whether to apply default values to the element
      * @return the name of the class that is referenced by element with the given name
      */
-    public static Name getElementValueClassName(
+    public static @DotSeparatedIdentifiers Name getElementValueClassName(
             AnnotationMirror anno, CharSequence elementName, boolean useDefaults) {
         Type.ClassType ct = getElementValue(anno, elementName, Type.ClassType.class, useDefaults);
         // TODO:  Is it a problem that this returns the type parameters too?  Should I cut them off?

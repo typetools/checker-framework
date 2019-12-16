@@ -15,6 +15,8 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.UserError;
+import org.plumelib.reflection.Signatures;
 
 public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -53,6 +55,10 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // load individually named qualifiers
         if (qualNames != null) {
             for (String qualName : qualNames.split(",")) {
+                if (!Signatures.isBinaryName(qualName)) {
+                    throw new UserError(
+                            "Malformed qualifier \"%s\" in -Aquals=%s", qualName, qualNames);
+                }
                 qualSet.add(loader.loadExternalAnnotationClass(qualName));
             }
         }

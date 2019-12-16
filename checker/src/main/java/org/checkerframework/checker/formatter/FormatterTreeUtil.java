@@ -26,6 +26,7 @@ import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -450,8 +451,11 @@ public class FormatterTreeUtil {
                                             public Class<? extends Object> visitType(
                                                     TypeElement e, Class<Void> v) {
                                                 try {
-                                                    return Class.forName(
-                                                            e.getQualifiedName().toString());
+                                                    @SuppressWarnings(
+                                                            "signature") // Name.toString should be
+                                                    // @PolySignature
+                                                    @BinaryName String cname = e.getQualifiedName().toString();
+                                                    return Class.forName(cname);
                                                 } catch (ClassNotFoundException e1) {
                                                     return null; // the lookup should work for all
                                                     // the classes we care about

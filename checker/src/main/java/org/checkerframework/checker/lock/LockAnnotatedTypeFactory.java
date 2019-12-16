@@ -29,7 +29,7 @@ import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -138,7 +138,7 @@ public class LockAnnotatedTypeFactory
      */
     @SuppressWarnings("unchecked") // cast to generic type
     private Class<? extends Annotation> classForNameOrNull(
-            @FullyQualifiedName String annotationClassName) {
+            @ClassGetName String annotationClassName) {
         try {
             return (Class<? extends Annotation>) Class.forName(annotationClassName);
         } catch (Exception e) {

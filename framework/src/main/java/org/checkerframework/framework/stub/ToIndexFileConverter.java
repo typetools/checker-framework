@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 import scenelib.annotations.Annotation;
@@ -676,7 +677,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      * @param className
      * @return {@link Class} object corresponding to className, or null if none found
      */
-    private static Class<?> loadClass(String className) {
+    private static Class<?> loadClass(@ClassGetName String className) {
         assert className != null;
         try {
             return Class.forName(className, false, null);

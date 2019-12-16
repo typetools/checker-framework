@@ -24,6 +24,7 @@ dependencies {
     implementation project(':dataflow')
     implementation project(':javacutil')
     implementation project(':checker-qual')
+    implementation 'org.plumelib:reflection-util:0.1.2'
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation project(':framework-test')

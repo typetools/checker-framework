@@ -616,6 +616,7 @@ subprojects {
         createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
         // TODO: fix or suppress all not.interned warnings and remove the suppression here.
         createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-AsuppressWarnings=not.interned'])
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.signature.SignatureChecker', 'Signature')
 
         // Add jtregTests to framework and checker modules
         if (project.name.is('framework') || project.name.is('checker')) {

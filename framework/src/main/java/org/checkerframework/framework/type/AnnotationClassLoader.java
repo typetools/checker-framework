@@ -24,6 +24,8 @@ import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -589,7 +591,7 @@ public class AnnotationClassLoader {
      *     by {@link #isSupportedAnnotationClass(Class)}
      */
     public final @Nullable Class<? extends Annotation> loadExternalAnnotationClass(
-            final String annoName) {
+            final @BinaryName String annoName) {
         return loadAnnotationClass(annoName, true);
     }
 
@@ -694,7 +696,7 @@ public class AnnotationClassLoader {
      *     annotation is not supported by a checker, null is returned.
      */
     protected final @Nullable Class<? extends Annotation> loadAnnotationClass(
-            final String fullyQualifiedClassName, boolean issueError) {
+            final @ClassGetName String fullyQualifiedClassName, boolean issueError) {
 
         // load the class
         Class<?> cls = null;
@@ -760,7 +762,7 @@ public class AnnotationClassLoader {
      * @see #loadAnnotationClass(String, boolean)
      */
     protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
-            final @Nullable Set<String> fullyQualifiedAnnoNames) {
+            final @Nullable Set<@BinaryName String> fullyQualifiedAnnoNames) {
         Set<Class<? extends Annotation>> loadedClasses = new LinkedHashSet<>();
 
         if (fullyQualifiedAnnoNames != null && !fullyQualifiedAnnoNames.isEmpty()) {

@@ -30,6 +30,7 @@ import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nMakeFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
@@ -497,8 +498,11 @@ public class I18nFormatterTreeUtil {
                                             public Class<? extends Object> visitType(
                                                     TypeElement e, Class<Void> v) {
                                                 try {
-                                                    return Class.forName(
-                                                            e.getQualifiedName().toString());
+                                                    @SuppressWarnings(
+                                                            "signature") // Name.toString should be
+                                                    // @PolySignature
+                                                    @BinaryName String cname = e.getQualifiedName().toString();
+                                                    return Class.forName(cname);
                                                 } catch (ClassNotFoundException e1) {
                                                     return null; // the lookup should work for all
                                                     // the classes we care about

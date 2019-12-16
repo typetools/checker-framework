@@ -26,6 +26,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -203,14 +204,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         Class<?> checkerClass = this.getClass();
 
         while (checkerClass != BaseTypeChecker.class) {
-            final String classToLoad =
-                    checkerClass
-                            .getName()
-                            .replace("Checker", "Visitor")
-                            .replace("Subchecker", "Visitor");
             BaseTypeVisitor<?> result =
                     invokeConstructorFor(
-                            classToLoad,
+                            BaseTypeChecker.getRelatedClassName(checkerClass, "Visitor"),
                             new Class<?>[] {BaseTypeChecker.class},
                             new Object[] {this});
             if (result != null) {
@@ -221,6 +217,23 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         // If a visitor couldn't be loaded reflectively, return the default.
         return new BaseTypeVisitor<BaseAnnotatedTypeFactory>(this);
+    }
+
+    /**
+     * Returns the name of a class related to a given one, by replacing "Checker" or "Subchecker" by
+     * {@code replacement}.
+     *
+     * @param checkerClass the checker class
+     * @praam replacement the string to replace "Checker" or "Subchecker" by
+     * @return the name of the related class
+     */
+    @SuppressWarnings("signature") // string manipulation of @ClassGetName string
+    public static @ClassGetName String getRelatedClassName(
+            Class<?> checkerClass, String replacement) {
+        return checkerClass
+                .getName()
+                .replace("Checker", replacement)
+                .replace("Subchecker", replacement);
     }
 
     // **********************************************************************
@@ -255,7 +268,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      *     not exist
      */
     @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"}) // Intentional abuse
-    public static <T> T invokeConstructorFor(String name, Class<?>[] paramTypes, Object[] args) {
+    public static <T> T invokeConstructorFor(
+            @ClassGetName String name, Class<?>[] paramTypes, Object[] args) {
 
         // Load the class.
         Class<T> cls = null;

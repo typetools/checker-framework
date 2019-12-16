@@ -29,6 +29,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -1498,7 +1499,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Element e = TreeUtils.elementFromTree(tree.getExpression());
                 if (e != null) {
                     String classname = ElementUtils.getQualifiedClassName(e).toString();
-                    String fieldName = tree.getIdentifier().toString();
+                    @BinaryName String fieldName = tree.getIdentifier().toString();
                     value = evaluator.evaluateStaticFieldAccess(classname, fieldName, tree);
                     if (value != null) {
                         type.replaceAnnotation(

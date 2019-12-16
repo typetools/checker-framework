@@ -20,6 +20,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.AbstractElementVisitor7;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -69,7 +70,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     private SourceChecker checker;
 
     ///////// Initialization /////////////
-    private void init(ProcessingEnvironment env, String checkerName) {
+    private void init(ProcessingEnvironment env, @ClassGetName String checkerName) {
         if (checkerName != null) {
             try {
                 Class<?> checkerClass = Class.forName(checkerName);

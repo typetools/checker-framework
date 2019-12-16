@@ -23,6 +23,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.plumelib.reflection.Signatures;
 
 /**
  * This AnnotatedTypeFactory adds PropertyKey annotations to String literals that contain values
@@ -206,6 +207,11 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Set<String> result = new HashSet<>();
 
         for (String bundleName : namesArr) {
+            if (!Signatures.isBinaryName(bundleName)) {
+                System.err.println(
+                        "Malformed resource bundle: <" + bundleName + "> should be a binary name.");
+                continue;
+            }
             ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
             if (bundle == null) {
                 checker.message(
