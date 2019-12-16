@@ -264,12 +264,9 @@ public final class SceneToStubWriter {
     private void printAnnotations(Collection<? extends Annotation> annos) {
         for (Annotation tla : annos) {
             if (!tla.def.name.contains("+")) {
-                printWriter.print(' ');
                 printAnnotation(tla);
+                printWriter.print(' ');
             }
-        }
-        if (!annos.isEmpty()) {
-            printWriter.print(' ');
         }
     }
 
