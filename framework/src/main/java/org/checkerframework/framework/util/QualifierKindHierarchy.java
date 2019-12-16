@@ -56,6 +56,14 @@ public class QualifierKindHierarchy {
             return isPoly;
         }
 
+        public boolean isTop() {
+            return this.top == this;
+        }
+
+        public boolean isBottom() {
+            return this.bottom == this;
+        }
+
         public Set<QualifierKind> getSuperTypes() {
             return superTypes;
         }

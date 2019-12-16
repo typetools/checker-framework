@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
@@ -15,50 +14,45 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
-/** All qualifiers must be represented by annotations with out elements. */
-public class SimpleHierarchy extends QualifierHierarchy {
+/** Qualifiers may be represented by annotations with out elements. */
+public abstract class ComplexHierarchy extends QualifierHierarchy {
     private Elements elements;
     protected final QualifierKindHierarchy qualifierKindHierarchy;
+    protected final Map<QualifierKind, AnnotationMirror> topsMap;
     protected final Set<AnnotationMirror> tops;
+    protected final Map<QualifierKind, AnnotationMirror> bottomsMap;
     protected final Set<AnnotationMirror> bottoms;
-    protected final Map<QualifierKind, AnnotationMirror> qualifiers;
 
-    public SimpleHierarchy(
+    public ComplexHierarchy(
             Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
         this.elements = elements;
         this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);
 
-        this.qualifiers = createQualifiers();
-        this.tops = createTops();
-        this.bottoms = createBottoms();
-    }
-
-    protected Map<QualifierKind, AnnotationMirror> createQualifiers() {
-        Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
-        for (QualifierKind kind : qualifierKindHierarchy.getQualifierKindMap().values()) {
-            quals.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
-        }
-        return Collections.unmodifiableMap(quals);
-    }
-
-    protected Set<AnnotationMirror> createTops() {
+        this.topsMap = Collections.unmodifiableMap(createTops());
         Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
-        for (Entry<QualifierKind, AnnotationMirror> entry : qualifiers.entrySet()) {
-            if (entry.getKey().isTop()) {
-                tops.add(entry.getValue());
-            }
-        }
-        return Collections.unmodifiableSet(tops);
+        tops.addAll(topsMap.values());
+        this.tops = Collections.unmodifiableSet(tops);
+
+        this.bottomsMap = Collections.unmodifiableMap(createBottoms());
+        Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
+        bottoms.addAll(bottomsMap.values());
+        this.bottoms = Collections.unmodifiableSet(bottoms);
     }
 
-    protected Set<AnnotationMirror> createBottoms() {
-        Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
-        for (Entry<QualifierKind, AnnotationMirror> entry : qualifiers.entrySet()) {
-            if (entry.getKey().isBottom()) {
-                bottoms.add(entry.getValue());
-            }
+    protected Map<QualifierKind, AnnotationMirror> createTops() {
+        Map<QualifierKind, AnnotationMirror> topsMap = new TreeMap<>();
+        for (QualifierKind kind : qualifierKindHierarchy.getTops()) {
+            topsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
         }
-        return Collections.unmodifiableSet(bottoms);
+        return topsMap;
+    }
+
+    protected Map<QualifierKind, AnnotationMirror> createBottoms() {
+        Map<QualifierKind, AnnotationMirror> bottomsMap = new TreeMap<>();
+        for (QualifierKind kind : qualifierKindHierarchy.getBottoms()) {
+            bottomsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
+        }
+        return bottomsMap;
     }
 
     protected QualifierKindHierarchy createQualifierKindHierarchy(
@@ -83,7 +77,7 @@ public class SimpleHierarchy extends QualifierHierarchy {
     @Override
     public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
-        return qualifiers.get(kind.getTop());
+        return topsMap.get(kind.getTop());
     }
 
     @Override
@@ -99,7 +93,7 @@ public class SimpleHierarchy extends QualifierHierarchy {
     @Override
     public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
-        return qualifiers.get(kind.getBottom());
+        return bottomsMap.get(kind.getBottom());
     }
 
     @Override
