@@ -77,8 +77,8 @@ public class ContractsUtils {
 
         public enum Kind {
             PRECONDITION("precondition"),
-            POSTCONDTION("postcondition"),
-            CONDITIONALPOSTCONDTION("conditional.postcondition");
+            POSTCONDITION("postcondition"),
+            CONDITIONALPOSTCONDITION("conditional.postcondition");
             public final String errorKey;
 
             Kind(String errorKey) {
@@ -189,7 +189,7 @@ public class ContractsUtils {
                 String expression,
                 AnnotationMirror annotation,
                 AnnotationMirror contractAnnotation) {
-            super(expression, annotation, contractAnnotation, Kind.POSTCONDTION);
+            super(expression, annotation, contractAnnotation, Kind.POSTCONDITION);
         }
     }
 
@@ -223,7 +223,7 @@ public class ContractsUtils {
                 boolean annoResult,
                 AnnotationMirror annotation,
                 AnnotationMirror contractAnnotation) {
-            super(expression, annotation, contractAnnotation, Kind.CONDITIONALPOSTCONDTION);
+            super(expression, annotation, contractAnnotation, Kind.CONDITIONALPOSTCONDITION);
             this.annoResult = annoResult;
         }
 
