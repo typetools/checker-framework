@@ -113,8 +113,8 @@ public final class SceneToStubWriter {
     public static void write(
             AScene scene,
             Map<String, TypeMirror> basetypes,
-            Map<String, TypeElement> types,
-            Map<String, List<VariableElement>> enumConstants,
+            Map<@FullyQualifiedName String, TypeElement> types,
+            Map<@FullyQualifiedName String, List<VariableElement>> enumConstants,
             Writer out) {
         SceneToStubWriter writer =
                 new SceneToStubWriter(scene, basetypes, types, enumConstants, out);
@@ -138,8 +138,8 @@ public final class SceneToStubWriter {
     public static void write(
             AScene scene,
             Map<String, TypeMirror> basetypes,
-            Map<String, TypeElement> types,
-            Map<String, List<VariableElement>> enumNamesToEnumConstant,
+            Map<@FullyQualifiedName String, TypeElement> types,
+            Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstant,
             String filename)
             throws IOException {
         write(scene, basetypes, types, enumNamesToEnumConstant, new FileWriter(filename));
@@ -268,6 +268,9 @@ public final class SceneToStubWriter {
                 printAnnotation(tla);
             }
         }
+        if (!annos.isEmpty()) {
+            printWriter.print(' ');
+        }
     }
 
     /**
@@ -281,7 +284,6 @@ public final class SceneToStubWriter {
             AElement it = ite.getValue();
             if (loc.location.contains(TypePathEntry.ARRAY)) {
                 printAnnotations(it.tlAnnotationsHere);
-                printWriter.append(' ');
             }
         }
     }
@@ -315,7 +317,6 @@ public final class SceneToStubWriter {
             basetype = "[]";
         }
         printAnnotations(aField.type.tlAnnotationsHere);
-        printWriter.print(" ");
         printWriter.print(basetype);
         printWriter.print(" ");
         printWriter.print(fieldName);
@@ -391,7 +392,7 @@ public final class SceneToStubWriter {
             printWriter.print("class ");
         }
         printAnnotations(aClass.tlAnnotationsHere);
-        printWriter.print(" " + nameToPrint);
+        printWriter.print(nameToPrint);
         printTypeParameters(classname);
         printWriter.println(" {");
         if ("".equals(rest)) {
@@ -472,7 +473,6 @@ public final class SceneToStubWriter {
                 printWriter.println();
                 printWriter.print(INDENT);
                 printAnnotations(aMethod.returnType.tlAnnotationsHere);
-                printWriter.print(" ");
                 String methodName =
                         aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
                 // Use Java syntax for constructors.
