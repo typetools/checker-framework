@@ -31,10 +31,11 @@ import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.initialization.qual.UnknownInitialization;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * This is the common base class of all Java language enumeration types.
@@ -145,7 +146,9 @@ public abstract class Enum<E extends Enum<E>>
      * @return  true if the specified object is equal to this
      *          enum constant.
      */
-    @Pure public final boolean equals(@Nullable Object other) {
+    @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
+    public final boolean equals(@Nullable Object other) {
         return this==other;
     }
 
