@@ -169,7 +169,7 @@ public class ReflectiveEvaluator {
             @DotSeparatedIdentifiers Name clazz =
                     TypesUtils.getQualifiedName((DeclaredType) ele.getEnclosingElement().asType());
             List<Class<?>> paramClzz = getParameterClasses(ele);
-            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Class.toString
             Class<?> clzz = Class.forName(clazz.toString());
             Method method =
                     clzz.getMethod(

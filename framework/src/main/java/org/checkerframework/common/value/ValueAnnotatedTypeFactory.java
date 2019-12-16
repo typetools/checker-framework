@@ -1501,7 +1501,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (e != null) {
                     @SuppressWarnings("signature") // TODO: check
                     @BinaryName String classname = ElementUtils.getQualifiedClassName(e).toString();
-                    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658
+                    @SuppressWarnings(
+                            "signature") // https://tinyurl.com/cfissue/658 for Name.toString()
                     @Identifier String fieldName = tree.getIdentifier().toString();
                     value = evaluator.evaluateStaticFieldAccess(classname, fieldName, tree);
                     if (value != null) {

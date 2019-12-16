@@ -116,7 +116,7 @@ public class AnnotationConverter {
             }
             Type elemType = ((ArrayType) ((Array) defaultValue).type).elemtype;
             try {
-                @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658
+                @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658: Type.toString
                 @ClassGetName String elemTypeName = elemType.toString();
                 return new ArrayAFT(BasicAFT.forType(Class.forName(elemTypeName)));
             } catch (ClassNotFoundException e) {

@@ -5,7 +5,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 
 /** @checker_framework.manual #signature-checker Signature Checker */
-// Don't use @RelevantJavaTypes.  Any object can be annotated, which propagates through its
+// Don't use @RelevantJavaTypes.  Any object can be annotated, which should propagate through its
 // toString().
 // @RelevantJavaTypes(CharSequence.class)
 @StubFiles({"javac.astub", "javaparser.astub"})

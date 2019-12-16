@@ -26,6 +26,7 @@ import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -628,7 +629,9 @@ public class AnnotationClassLoader {
      *     its sub-directories
      */
     private final Set<@BinaryName String> getAnnotationNamesFromDirectory(
-            final String packageName, final File rootDirectory, final File currentDirectory) {
+            final @Nullable @DotSeparatedIdentifiers String packageName,
+            final File rootDirectory,
+            final File currentDirectory) {
         Set<@BinaryName String> results = new LinkedHashSet<>();
 
         // Full path to root directory
@@ -646,6 +649,8 @@ public class AnnotationClassLoader {
                 });
         for (File file : directoryContents) {
             if (file.isFile()) {
+                // TODO: simplify all this string manipulation.
+
                 // Full file name, including path to file
                 String fullFileName = file.getAbsolutePath();
                 // Simple file name
@@ -671,7 +676,6 @@ public class AnnotationClassLoader {
                 }
 
                 // Fully qualified annotation class name
-                @SuppressWarnings("signature") // string manipulation (adding packages)
                 @BinaryName String fullyQualifiedAnnoName =
                         Signatures.addPackage(
                                 packageName, Signatures.addPackage(qualPackage, annotationName));

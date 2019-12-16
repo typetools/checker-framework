@@ -48,7 +48,7 @@ public class ValueCheckerUtils {
             case ARRAY:
                 return getArrayClassObject(((ArrayType) type).getComponentType());
             case DECLARED:
-                @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658
+                @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
                 @DotSeparatedIdentifiers String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
                 if (typeString.equals("<nulltype>")) {
                     return Object.class;

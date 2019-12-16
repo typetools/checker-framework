@@ -619,7 +619,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      * @return fully qualified name of class that {@code className} identifies in the current
      *     context, or null if resolution fails
      */
-    @SuppressWarnings("signature") // reflection-util 0.1.2 has wrong signature for addPackage
     private @BinaryName String resolve(@BinaryName String className) {
         @BinaryName String qualifiedName;
         Class<?> resolved = null;
