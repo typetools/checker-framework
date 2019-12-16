@@ -20,7 +20,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.AbstractElementVisitor7;
-import org.checkerframework.checker.signature.qual.ClassGetName;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -30,6 +31,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.UserError;
+import org.plumelib.reflection.Signatures;
 
 /**
  * Outputs the method signatures of a class with fully annotated types.
@@ -70,7 +73,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     private SourceChecker checker;
 
     ///////// Initialization /////////////
-    private void init(ProcessingEnvironment env, @ClassGetName String checkerName) {
+    private void init(ProcessingEnvironment env, @Nullable @BinaryName String checkerName) {
         if (checkerName != null) {
             try {
                 Class<?> checkerClass = Class.forName(checkerName);
@@ -102,6 +105,9 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     public void typeProcessingStart() {
         super.typeProcessingStart();
         String checkerName = processingEnv.getOptions().get("checker");
+        if (!Signatures.isClassGetName(checkerName)) {
+            throw new UserError("Malformed checker name \"%s\"", checkerName);
+        }
         init(processingEnv, checkerName);
     }
 
@@ -313,9 +319,12 @@ public class SignaturePrinter extends AbstractTypeProcessor {
         }
 
         // process arguments
-        String checkerName = "";
+        String checkerName = null;
         if (args[0].startsWith(CHECKER_ARG)) {
             checkerName = args[0].substring(CHECKER_ARG.length());
+            if (!Signatures.isClassGetName(checkerName)) {
+                throw new UserError("Bad checker name \"%s\"", checkerName);
+            }
         }
 
         // Setup compiler environment

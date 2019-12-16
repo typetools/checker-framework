@@ -13,6 +13,7 @@ import javax.lang.model.element.Name;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.units.qual.MixedUnits;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.UnitsBottom;
@@ -272,7 +273,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
-    private @Nullable Name getBaseUnitAnno(AnnotationMirror anno) {
+    private @Nullable @DotSeparatedIdentifiers Name getBaseUnitAnno(AnnotationMirror anno) {
         // loop through the meta annotations of the annotation, look for UnitsMultiple
         for (AnnotationMirror metaAnno :
                 anno.getAnnotationType().asElement().getAnnotationMirrors()) {
@@ -307,7 +308,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         AnnotationUtils.getElementValueClassName(ama, "value", true).toString();
                 if (!Signatures.isClassGetName(theclassname)) {
                     throw new UserError(
-                            "Malformed class name \"%s\" should be in ClassGetName format in annotation %s");
+                            "Malformed class name \"%s\" should be in ClassGetName format in annotation %s",
+                            theclassname, ama);
                 }
                 Class<?> valueElement;
                 try {

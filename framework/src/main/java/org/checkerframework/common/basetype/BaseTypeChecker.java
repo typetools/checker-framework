@@ -295,10 +295,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                     throw ue;
                 }
                 throw new BugInCF(
-                        "InvocationTargetException when invoking constructor for class "
-                                + name
-                                + "; Underlying cause: "
-                                + err,
+                        String.format(
+                                "InvocationTargetException when invoking constructor for class %s on args %s; Underlying cause: %s",
+                                name, Arrays.toString(args), err),
                         t);
             } else {
                 throw new BugInCF(

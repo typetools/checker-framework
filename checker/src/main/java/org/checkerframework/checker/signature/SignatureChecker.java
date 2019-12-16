@@ -8,7 +8,7 @@ import org.checkerframework.framework.qual.StubFiles;
 // Don't use @RelevantJavaTypes.  Any object can be annotated, which propagates through its
 // toString().
 // @RelevantJavaTypes(CharSequence.class)
-@StubFiles("javac.astub")
+@StubFiles({"javac.astub", "javaparser.astub"})
 public final class SignatureChecker extends BaseTypeChecker {
 
     // This method is needed only under MacOS, perhaps as a result of the

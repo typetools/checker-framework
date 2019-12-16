@@ -32,6 +32,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */

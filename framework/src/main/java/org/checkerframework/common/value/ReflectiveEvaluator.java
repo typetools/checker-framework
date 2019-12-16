@@ -18,6 +18,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.ClassGetName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.ElementUtils;
@@ -165,9 +166,10 @@ public class ReflectiveEvaluator {
     private Method getMethodObject(MethodInvocationTree tree) {
         try {
             ExecutableElement ele = TreeUtils.elementFromUse(tree);
-            Name clazz =
+            @DotSeparatedIdentifiers Name clazz =
                     TypesUtils.getQualifiedName((DeclaredType) ele.getEnclosingElement().asType());
             List<Class<?>> paramClzz = getParameterClasses(ele);
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658
             Class<?> clzz = Class.forName(clazz.toString());
             Method method =
                     clzz.getMethod(
