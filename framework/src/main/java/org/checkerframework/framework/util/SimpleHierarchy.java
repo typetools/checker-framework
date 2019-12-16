@@ -14,6 +14,7 @@ import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.UserError;
 
 /** All qualifiers must be represented by annotations with out elements. */
 public class SimpleHierarchy extends QualifierHierarchy {
@@ -21,14 +22,19 @@ public class SimpleHierarchy extends QualifierHierarchy {
     protected final QualifierKindHierarchy qualifierKindHierarchy;
     protected final Set<AnnotationMirror> tops;
     protected final Set<AnnotationMirror> bottoms;
-    protected final Map<QualifierKind, AnnotationMirror> qualifiers;
+    protected final Map<QualifierKind, AnnotationMirror> qualifierMap;
+    protected final Set<? extends AnnotationMirror> qualifiers;
 
     public SimpleHierarchy(
             Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
         this.elements = elements;
         this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);
 
-        this.qualifiers = createQualifiers();
+        this.qualifierMap = createQualifiers();
+        Set<AnnotationMirror> qualifiers = AnnotationUtils.createAnnotationSet();
+        qualifiers.addAll(qualifierMap.values());
+        this.qualifiers = Collections.unmodifiableSet(qualifiers);
+
         this.tops = createTops();
         this.bottoms = createBottoms();
     }
@@ -36,6 +42,11 @@ public class SimpleHierarchy extends QualifierHierarchy {
     protected Map<QualifierKind, AnnotationMirror> createQualifiers() {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getQualifierKindMap().values()) {
+            if (kind.isHasElements()) {
+                throw new UserError(
+                        "SimpleHierarchy cannot be used with annotations that have elements. Found %s: ",
+                        kind);
+            }
             quals.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
         }
         return Collections.unmodifiableMap(quals);
@@ -43,7 +54,7 @@ public class SimpleHierarchy extends QualifierHierarchy {
 
     protected Set<AnnotationMirror> createTops() {
         Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
-        for (Entry<QualifierKind, AnnotationMirror> entry : qualifiers.entrySet()) {
+        for (Entry<QualifierKind, AnnotationMirror> entry : qualifierMap.entrySet()) {
             if (entry.getKey().isTop()) {
                 tops.add(entry.getValue());
             }
@@ -53,7 +64,7 @@ public class SimpleHierarchy extends QualifierHierarchy {
 
     protected Set<AnnotationMirror> createBottoms() {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
-        for (Entry<QualifierKind, AnnotationMirror> entry : qualifiers.entrySet()) {
+        for (Entry<QualifierKind, AnnotationMirror> entry : qualifierMap.entrySet()) {
             if (entry.getKey().isBottom()) {
                 bottoms.add(entry.getValue());
             }
@@ -66,13 +77,32 @@ public class SimpleHierarchy extends QualifierHierarchy {
         return new QualifierKindHierarchy(qualifierClasses);
     }
 
-    private QualifierKind getQualifierKind(AnnotationMirror anno) {
+    protected QualifierKind getQualifierKind(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
         QualifierKind kind = qualifierKindHierarchy.getQualifierKindMap().get(name);
         if (name == null) {
             throw new BugInCF("Annotation not in hierarchy: %s", anno);
         }
         return kind;
+    }
+
+    @Override
+    public AnnotationMirror findAnnotationInHierarchy(
+            Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
+        return findAnnotationInSameHierarchy(annos, top);
+    }
+
+    @Override
+    public AnnotationMirror findAnnotationInSameHierarchy(
+            Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
+        QualifierKind kind = getQualifierKind(annotationMirror);
+        for (AnnotationMirror anno : annos) {
+            QualifierKind annoKind = getQualifierKind(anno);
+            if (annoKind.areInSameHierarchy(kind)) {
+                return anno;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -83,7 +113,7 @@ public class SimpleHierarchy extends QualifierHierarchy {
     @Override
     public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
-        return qualifiers.get(kind.getTop());
+        return qualifierMap.get(kind.getTop());
     }
 
     @Override
@@ -92,63 +122,113 @@ public class SimpleHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-        return null;
+    public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
+        QualifierKind kind = getQualifierKind(start);
+        return qualifierMap.get(kind.getBottom());
     }
 
     @Override
-    public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
+    public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
-        return qualifiers.get(kind.getBottom());
+        QualifierKind poly = qualifierKindHierarchy.getPolyMap().get(kind);
+        return qualifierMap.get(poly);
     }
 
     @Override
     public Set<? extends AnnotationMirror> getTypeQualifiers() {
-        return null;
+        return qualifiers;
     }
 
     @Override
-    public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-        return false;
+    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+        QualifierKind subKind = getQualifierKind(subAnno);
+        QualifierKind superKind = getQualifierKind(superAnno);
+        return subKind.isSubtype(superKind);
     }
 
     @Override
     public boolean isSubtype(
-            Collection<? extends AnnotationMirror> rhs,
-            Collection<? extends AnnotationMirror> lhs) {
-        return false;
+            Collection<? extends AnnotationMirror> subAnnos,
+            Collection<? extends AnnotationMirror> superAnnos) {
+        int isSubtypeCount = 0;
+        for (AnnotationMirror subAnno : subAnnos) {
+            QualifierKind subKind = getQualifierKind(subAnno);
+            for (AnnotationMirror superAnno : superAnnos) {
+                QualifierKind superKind = getQualifierKind(superAnno);
+                if (subKind.areInSameHierarchy(superKind)) {
+                    if (subKind.isSubtype(superKind)) {
+                        isSubtypeCount++;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+        return isSubtypeCount == superAnnos.size();
     }
 
     @Override
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-        return null;
+        QualifierKind qual1 = getQualifierKind(a1);
+        QualifierKind qual2 = getQualifierKind(a2);
+        QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
+        return qualifierMap.get(lub);
     }
 
     @Override
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-        return null;
+        QualifierKind qual1 = getQualifierKind(a1);
+        QualifierKind qual2 = getQualifierKind(a2);
+        QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);
+        return qualifierMap.get(glb);
     }
 
     @Override
     public boolean isSubtypeTypeVariable(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-        return false;
+        if (superAnno == null) {
+            // [] is a supertype of any qualifier, and [] <: []
+            return true;
+        }
+        if (subAnno == null) {
+            // [] is a subtype of no qualifier (only [])
+            return false;
+        }
+        return isSubtype(subAnno, superAnno);
     }
 
     @Override
     public boolean isSubtypeTypeVariable(
             Collection<? extends AnnotationMirror> subAnnos,
             Collection<? extends AnnotationMirror> superAnnos) {
-        return false;
+        int isSubtypeCount = 0;
+        for (AnnotationMirror subAnno : subAnnos) {
+            QualifierKind subKind = getQualifierKind(subAnno);
+            for (AnnotationMirror superAnno : superAnnos) {
+                QualifierKind superKind = getQualifierKind(superAnno);
+                if (subKind.areInSameHierarchy(superKind)) {
+                    if (subKind.isSubtype(superKind)) {
+                        isSubtypeCount++;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+        return isSubtypeCount == subAnnos.size();
     }
 
     @Override
     public AnnotationMirror leastUpperBoundTypeVariable(AnnotationMirror a1, AnnotationMirror a2) {
-        return null;
+        if (a1 == null || a2 == null) {
+            // [] is a supertype of any qualifier, and [] <: []
+            return null;
+        }
+        return leastUpperBound(a1, a2);
     }
 
     @Override
     public AnnotationMirror greatestLowerBoundTypeVariable(
             AnnotationMirror a1, AnnotationMirror a2) {
-        return null;
+        throw new RuntimeException("Not implemented");
     }
 }

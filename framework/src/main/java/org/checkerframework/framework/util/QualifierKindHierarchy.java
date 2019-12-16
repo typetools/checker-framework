@@ -80,6 +80,10 @@ public class QualifierKindHierarchy {
             return hasElements;
         }
 
+        public boolean areInSameHierarchy(QualifierKind other) {
+            return this.top == other.top;
+        }
+
         @Override
         public int compareTo(QualifierKind o) {
             return this.name.compareTo(o.name);
@@ -111,6 +115,7 @@ public class QualifierKindHierarchy {
     private final Set<QualifierKind> tops = new TreeSet<>();
     private final Set<QualifierKind> bottoms = new TreeSet<>();
     private final Map<QualifierClassPair, QualifierKind> lubs = new HashMap<>();
+    private final Map<QualifierClassPair, QualifierKind> glbs = new HashMap<>();
 
     public QualifierKindHierarchy(Collection<Class<? extends Annotation>> qualifierClasses) {
         initialize(qualifierClasses);
@@ -124,6 +129,7 @@ public class QualifierKindHierarchy {
         initializePolymorphicQualifiers();
         initializeQualifierKinds();
         initializeLubs();
+        initializeGlbs();
 
         for (QualifierKind qualifierKind : qualifierKindMap.values()) {
             boolean isPoly = qualifierKind.isPoly;
@@ -258,8 +264,8 @@ public class QualifierKindHierarchy {
     /** Initializes bottoms. (Requires directSuperMap to be initialized.) */
     private void initializeBottoms() {
         bottoms.addAll(directSuperMap.keySet());
-        for (QualifierKind qualifierKind : directSuperMap.keySet()) {
-            bottoms.removeAll(qualifierKind.superTypes);
+        for (Set<QualifierKind> superKinds : directSuperMap.values()) {
+            bottoms.removeAll(superKinds);
         }
     }
 
@@ -273,6 +279,14 @@ public class QualifierKindHierarchy {
      */
     private void initializeQualifierKinds() {
         for (QualifierKind qualifierKind : qualifierKindMap.values()) {
+            if (qualifierKind.isPoly) {
+                qualifierKind.superTypes = new TreeSet<>();
+                qualifierKind.superTypes.add(qualifierKind.top);
+            } else {
+                qualifierKind.superTypes = findAllTheSupers(qualifierKind);
+            }
+        }
+        for (QualifierKind qualifierKind : qualifierKindMap.values()) {
             for (QualifierKind top : tops) {
                 if (qualifierKind.isSubtype(top)) {
                     if (qualifierKind.top != null && qualifierKind.top != top) {
@@ -283,6 +297,8 @@ public class QualifierKindHierarchy {
                     qualifierKind.top = top;
                 }
             }
+        }
+        for (QualifierKind qualifierKind : qualifierKindMap.values()) {
             for (QualifierKind bot : bottoms) {
                 if (bot.top == qualifierKind.top) {
                     if (qualifierKind.bottom != null && qualifierKind.top != bot) {
@@ -291,25 +307,13 @@ public class QualifierKindHierarchy {
                                 qualifierKind, bot, qualifierKind.bottom);
                     }
                     qualifierKind.bottom = bot;
+                    if (qualifierKind.isPoly) {
+                        bot.superTypes.add(qualifierKind);
+                    }
                 }
             }
             if (qualifierKind.top == null) {
                 throw new UserError("Qualifier isn't in hierarchy: %s", qualifierKind);
-            }
-        }
-
-        for (QualifierKind bot : bottoms) {
-            for (QualifierKind qualifierKind : bot.superTypes) {
-                qualifierKind.bottom = bot;
-            }
-        }
-        for (QualifierKind qualifierKind : qualifierKindMap.values()) {
-            if (qualifierKind.isPoly) {
-                qualifierKind.superTypes = new TreeSet<>();
-                qualifierKind.superTypes.add(qualifierKind.top);
-                qualifierKind.bottom.superTypes.add(qualifierKind);
-            } else {
-                qualifierKind.superTypes = findAllTheSupers(qualifierKind);
             }
         }
     }
@@ -389,6 +393,60 @@ public class QualifierKindHierarchy {
         return lowestQualifiers;
     }
 
+    private void initializeGlbs() {
+        for (QualifierKind qual1 : qualifierKindMap.values()) {
+            for (QualifierKind qual2 : qualifierKindMap.values()) {
+                if (qual1.top != qual2.top) {
+                    continue;
+                }
+                QualifierKind glb = findGlb(qual1, qual2);
+                QualifierClassPair pair = new QualifierClassPair(qual1, qual2);
+                QualifierKind otherGlb = glbs.get(pair);
+                if (otherGlb != null) {
+                    if (otherGlb != glb) {
+                        throw new BugInCF(
+                                "Multiple glbs for qualifiers %s and %s. Found lubs %s and %s",
+                                qual1, qual2, glb, otherGlb);
+                    }
+                } else {
+                    glbs.put(pair, glb);
+                }
+            }
+        }
+    }
+
+    private QualifierKind findGlb(QualifierKind qual1, QualifierKind qual2) {
+        if (qual1 == qual2) {
+            return qual1;
+        } else if (qual1.isSubtype(qual2)) {
+            return qual1;
+        } else if (qual2.isSubtype(qual1)) {
+            return qual2;
+        }
+        Set<QualifierKind> allSuperTypes = new TreeSet<>(qual1.superTypes);
+        allSuperTypes.retainAll(qual2.superTypes);
+        Set<QualifierKind> glbs = findHighestQualifiers(allSuperTypes);
+        if (glbs.size() != 1) {
+            throw new BugInCF(
+                    "Not exactly 1 glb for %s and %s. Found glb: [%s].",
+                    qual1, qual2, PluginUtil.join(", ", glbs));
+        }
+        QualifierKind lub = glbs.iterator().next();
+        if (lub.isPoly && !qual1.isPoly && !qual2.isPoly) {
+            return lub.bottom;
+        }
+        return lub;
+    }
+
+    /** Remove all supertypes of elements contained in the set. */
+    private Set<QualifierKind> findHighestQualifiers(Set<QualifierKind> qualifierKinds) {
+        Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
+        for (QualifierKind a1 : qualifierKinds) {
+            lowestQualifiers.removeIf(a2 -> a1 != a2 && a1.isSubtype(a2));
+        }
+        return lowestQualifiers;
+    }
+
     private static class QualifierClassPair {
         private final QualifierKind qual1;
         private final QualifierKind qual2;
@@ -433,8 +491,12 @@ public class QualifierKindHierarchy {
         return bottoms;
     }
 
-    public Map<QualifierClassPair, QualifierKind> getLubs() {
-        return lubs;
+    public QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2) {
+        return lubs.get(new QualifierClassPair(q1, q2));
+    }
+
+    public QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2) {
+        return glbs.get(new QualifierClassPair(q1, q2));
     }
 
     public Map<String, QualifierKind> getQualifierKindMap() {
