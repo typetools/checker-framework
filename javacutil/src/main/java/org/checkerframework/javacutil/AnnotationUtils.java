@@ -723,7 +723,7 @@ public class AnnotationUtils {
      * @param useDefaults whether to apply default values to the element
      * @return the value of the element with the given name, or null
      */
-    public static <T> T getElementValueOrNull(
+    public static <T> @Nullable T getElementValueOrNull(
             AnnotationMirror anno,
             CharSequence elementName,
             Class<T> expectedType,

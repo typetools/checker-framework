@@ -1,8 +1,21 @@
 package org.checkerframework.framework.util;
 
+import java.lang.annotation.Annotation;
 import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
+import org.checkerframework.framework.qual.EnsuresQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
+import org.checkerframework.framework.qual.EnsuresQualifiers;
+import org.checkerframework.framework.qual.EnsuresQualifiersIf;
+import org.checkerframework.framework.qual.PostconditionAnnotation;
+import org.checkerframework.framework.qual.PreconditionAnnotation;
+import org.checkerframework.framework.qual.RequiresQualifier;
+import org.checkerframework.framework.qual.RequiresQualifiers;
+import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
+import org.checkerframework.framework.util.Contract.Postcondition;
+import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -64,6 +77,7 @@ public abstract class Contract {
      *     used for diagnostic messages
      * @param kind precondition, postcondition, or conditional postcondition
      * @param ensuresQualifierIf the ensuresQualifierIf field, for a conditional postcondition
+     * @return a new contract
      */
     public static Contract create(
             Kind kind,
@@ -131,21 +145,63 @@ public abstract class Contract {
     /** Enumerates the kinds of contracts. */
     public enum Kind {
         /** A precondition. */
-        PRECONDITION("precondition"),
+        PRECONDITION(
+                "precondition",
+                PreconditionAnnotation.class,
+                RequiresQualifier.class,
+                RequiresQualifiers.class,
+                "value"),
         /** A postcondition. */
-        POSTCONDITION("postcondition"),
+        POSTCONDITION(
+                "postcondition",
+                PostconditionAnnotation.class,
+                EnsuresQualifier.class,
+                EnsuresQualifiers.class,
+                "value"),
         /** A conditional postcondition. */
-        CONDITIONALPOSTCONDITION("conditional.postcondition");
+        CONDITIONALPOSTCONDITION(
+                "conditional.postcondition",
+                ConditionalPostconditionAnnotation.class,
+                EnsuresQualifierIf.class,
+                EnsuresQualifiersIf.class,
+                "expression");
         /** Used for constructing error messages. */
         public final String errorKey;
+
+        /** The meta-annotation identifying annotations of this kind. */
+        public final Class<? extends Annotation> metaAnnotation;
+        /** The built-in framework qualifier for this contract. */
+        public final Class<? extends Annotation> frameworkContractClass;
+        /** The built-in framework qualifier for repeated occurrences of this contract. */
+        public final Class<? extends Annotation> frameworkContractsClass;
+        /**
+         * The name of the element that contains the Java expressions on which a contract is
+         * enforced.
+         */
+        public final String expressionElementName;
 
         /**
          * Create a new Kind.
          *
          * @param errorKey used for constructing error messages
+         * @param metaAnnotation the meta-annotation identifying annotations of this kind
+         * @param frameworkContractClass the built-in framework qualifier for this contract
+         * @param frameworkContractsClass the built-in framework qualifier for repeated occurrences
+         *     of this contract
+         * @param expressionElementName the name of the element that contains the Java expressions
+         *     on which a contract is enforced
          */
-        Kind(String errorKey) {
+        Kind(
+                String errorKey,
+                Class<? extends Annotation> metaAnnotation,
+                Class<? extends Annotation> frameworkContractClass,
+                Class<? extends Annotation> frameworkContractsClass,
+                String expressionElementName) {
             this.errorKey = errorKey;
+            this.metaAnnotation = metaAnnotation;
+            this.frameworkContractClass = frameworkContractClass;
+            this.frameworkContractsClass = frameworkContractsClass;
+            this.expressionElementName = expressionElementName;
         }
     }
 
