@@ -88,7 +88,7 @@ public class AnnotationBuilder {
      * they can be added later).
      *
      * @param env the processing environment
-     * @param name the name of the annotation to build
+     * @param name the fully-qualified name of the annotation to build
      */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
