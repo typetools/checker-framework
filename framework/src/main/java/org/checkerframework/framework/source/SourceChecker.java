@@ -353,7 +353,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     // to override.
 
     /** True if the git.properties file has been printed. */
-    static boolean gitPropertiesPrinted = false;
+    private static boolean gitPropertiesPrinted = false;
 
     /** The @SuppressWarnings key that will suppress warnings for all checkers. */
     public static final String SUPPRESS_ALL_KEY = "all";
@@ -2312,10 +2312,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
         gitPropertiesPrinted = true;
 
-        InputStream in = getClass().getResourceAsStream("/git.properties");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String line;
-        try {
+        try (InputStream in = getClass().getResourceAsStream("/git.properties");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in)); ) {
+            String line;
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
             }
