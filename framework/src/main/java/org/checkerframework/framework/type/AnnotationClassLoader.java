@@ -27,6 +27,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -61,10 +62,10 @@ public class AnnotationClassLoader {
     private final BaseTypeChecker checker;
 
     // For loading from a source package directory
-    private final String packageName;
+    private final @DotSeparatedIdentifiers String packageName;
     private final String packageNameWithSlashes;
-    private final List<String> fullyQualifiedPackageNameSegments;
-    private static final String QUAL_PACKAGE_SUFFIX = ".qual";
+    private final List<@Identifier String> fullyQualifiedPackageNameSegments;
+    private static final String QUAL_PACKAGE = "qual";
 
     // For loading from a Jar file
     private static final String JAR_SUFFIX = ".jar";
@@ -99,6 +100,7 @@ public class AnnotationClassLoader {
      *
      * @param checker a {@link BaseTypeChecker} or its subclass
      */
+    @SuppressWarnings("signature") // TODO
     public AnnotationClassLoader(final BaseTypeChecker checker) {
         this.checker = checker;
         processingEnv = checker.getProcessingEnvironment();
@@ -108,8 +110,8 @@ public class AnnotationClassLoader {
         Package checkerPackage = checker.getClass().getPackage();
         packageName =
                 checkerPackage != null && !checkerPackage.getName().isEmpty()
-                        ? checkerPackage.getName() + QUAL_PACKAGE_SUFFIX
-                        : QUAL_PACKAGE_SUFFIX.substring(1);
+                        ? checkerPackage.getName() + DOT + QUAL_PACKAGE
+                        : QUAL_PACKAGE;
 
         // the package name with dots replaced by slashes will be used to scan
         // file directories
@@ -521,8 +523,7 @@ public class AnnotationClassLoader {
 
             // open up the directory
             File packageDir = new File(resourceURL.getFile());
-            annotationNames =
-                    getAnnotationNamesFromDirectory(packageName + DOT, packageDir, packageDir);
+            annotationNames = getAnnotationNamesFromDirectory(packageName, packageDir, packageDir);
         } else {
             // We do not support a resource URL with any other protocols, so create an empty set.
             annotationNames = Collections.emptySet();
@@ -611,7 +612,7 @@ public class AnnotationClassLoader {
             final String dirName) {
         File rootDirectory = new File(dirName);
         Set<@BinaryName String> annoNames =
-                getAnnotationNamesFromDirectory("", rootDirectory, rootDirectory);
+                getAnnotationNamesFromDirectory(null, rootDirectory, rootDirectory);
         return loadAnnotationClasses(annoNames);
     }
 
@@ -628,6 +629,7 @@ public class AnnotationClassLoader {
      * @return a set fully qualified annotation class name, for annotations in the root directory or
      *     its sub-directories
      */
+    @SuppressWarnings("signature") // TODO
     private final Set<@BinaryName String> getAnnotationNamesFromDirectory(
             final @Nullable @DotSeparatedIdentifiers String packageName,
             final File rootDirectory,
@@ -668,9 +670,9 @@ public class AnnotationClassLoader {
                             filePath.substring(rootPath.length() + 1, filePath.length())
                                     .replace(SLASH, DOT);
                 }
-                // Annotation name, which is the same as the file name but with
-                // file extension removed
-                String annotationName = fileName;
+                // Simple annotation name, which is the same as the file name (without directory)
+                // but with file extension removed
+                @BinaryName String annotationName = fileName;
                 if (fileName.lastIndexOf(DOT) != -1) {
                     annotationName = fileName.substring(0, fileName.lastIndexOf(DOT));
                 }
