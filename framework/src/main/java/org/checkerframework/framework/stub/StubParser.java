@@ -233,7 +233,7 @@ public class StubParser {
     /**
      * All annotations declared (directly) within a class. Keys are simple names.
      *
-     * @param packageElement a type
+     * @param typeElement a type
      * @return a map from annotation name to TypeElement
      */
     private Map<String, TypeElement> annosInType(TypeElement typeElement) {
@@ -1537,7 +1537,7 @@ public class StubParser {
      *
      * @param annotation syntax tree for an annotation
      * @param allStubAnnotations map from simple nawe to annotation definition
-     * @param the AnnotationMirror for the annotation
+     * @return the AnnotationMirror for the annotation
      */
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, TypeElement> allStubAnnotations) {
