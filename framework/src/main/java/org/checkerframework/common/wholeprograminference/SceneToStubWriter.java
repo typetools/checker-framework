@@ -52,8 +52,8 @@ public final class SceneToStubWriter {
     private final PrintWriter printWriter;
 
     /**
-     * A map from the {@code description} field of an ATypeElement to the corresponding base Java
-     * types, since {@code AScene}s don't carry that information. See the comment on the {@code
+     * A map from the {@code description} field of an ATypeElement to the corresponding unqualified
+     * Java types, since {@code AScene}s don't carry that information. See the comment on the {@code
      * basetypes} field of {@link WholeProgramInferenceScenesHelper} for more information.
      */
     private Map<String, TypeMirror> basetypes;
@@ -287,8 +287,9 @@ public final class SceneToStubWriter {
 
     /**
      * Prints the stub representation of an AField, which represents a variable declaration. In
-     * practice, this should either be a field or a method parameters, since there should be no
-     * local variable declarations in a stub.
+     * practice, {@code aField} should represent either a field declaration or a formal parameter of
+     * a method, because stub files should not contain local variable declarations. It is the
+     * responsibility of each caller of this method to ensure that is true.
      *
      * @param aField the field to print
      * @param fieldName the name to use for the declaration in the stub file. This doesn't matter
@@ -303,7 +304,9 @@ public final class SceneToStubWriter {
         } else if (basetypes.containsKey(aField.type.description.toString())) {
             basetype = basetypes.get(aField.type.description.toString()).toString();
         } else {
-            basetype = "TODOTYPE";
+            throw new BugInCF(
+                    "SceneToStubWriter: could not find the base type for this variable declaration: "
+                            + aField);
         }
 
         if (basetype.contains("[")) {
