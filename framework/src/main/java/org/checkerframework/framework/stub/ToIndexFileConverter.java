@@ -104,6 +104,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      * @param importDecls AST nodes for import declarations
      * @param scene scene for visitor methods to fill in
      */
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
     public ToIndexFileConverter(
             @Nullable PackageDeclaration pkgDecl,
             List<ImportDeclaration> importDecls,
@@ -548,9 +549,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                 new GenericVisitorAdapter<String, Void>() {
                     @Override
                     public String visit(ClassOrInterfaceType type, Void v) {
+                        @SuppressWarnings(
+                                "signature") // https://tinyurl.com/cfissue/658 for getNameAsString
                         @FullyQualifiedName String typeName = type.getNameAsString();
-                        // TODO FIXME: resolve requires a @BinaryName, but this passes a
-                        // @FullyQualifiedName
+                        @SuppressWarnings(
+                                "signature") // TODO FIXME BUG: resolve requires a @BinaryName, but
+                        // this passes a @FullyQualifiedName!
                         String name = resolve(typeName);
                         if (name == null) {
                             // could be defined in the same stub file

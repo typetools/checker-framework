@@ -105,7 +105,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     public void typeProcessingStart() {
         super.typeProcessingStart();
         String checkerName = processingEnv.getOptions().get("checker");
-        if (!Signatures.isClassGetName(checkerName)) {
+        if (!Signatures.isBinaryName(checkerName)) {
             throw new UserError("Malformed checker name \"%s\"", checkerName);
         }
         init(processingEnv, checkerName);
@@ -322,7 +322,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
         String checkerName = null;
         if (args[0].startsWith(CHECKER_ARG)) {
             checkerName = args[0].substring(CHECKER_ARG.length());
-            if (!Signatures.isClassGetName(checkerName)) {
+            if (!Signatures.isBinaryName(checkerName)) {
                 throw new UserError("Bad checker name \"%s\"", checkerName);
             }
         }

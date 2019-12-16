@@ -550,6 +550,7 @@ public class AnnotationClassLoader {
      * @param jar the JarFile containing the annotation class files
      * @return a set of fully qualified class names of the annotations
      */
+    @SuppressWarnings("signature") // remove when using reflection-util 0.2.0
     private final Set<@BinaryName String> getBundledAnnotationNamesFromJar(final JarFile jar) {
         Set<@BinaryName String> annos = new LinkedHashSet<>();
 
@@ -565,8 +566,8 @@ public class AnnotationClassLoader {
                 continue;
             }
 
-            // Can use Signatures.classfilenameToBinaryName(je.getName()), but in reflection-util
-            // 0.1.2 it returns just a basename rather than a full BinaryName.
+            // TODO: In reflection-util 0.2.0, use
+            // Signatures.classfilenameToBinaryName(je.getName()).
             // Get rid of the .class suffix.
             String className = je.getName().substring(0, je.getName().lastIndexOf('.'));
             // Convert path notation to class notation.
