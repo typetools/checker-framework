@@ -388,7 +388,7 @@ public class QualifierKindHierarchy {
     private Set<QualifierKind> findLowestQualifiers(Set<QualifierKind> qualifierKinds) {
         Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
-            lowestQualifiers.removeIf(a2 -> a1 != a2 && a2.isSubtype(a1));
+            lowestQualifiers.removeIf(a2 -> a1 != a2 && a1.isSubtype(a2));
         }
         return lowestQualifiers;
     }
@@ -423,9 +423,13 @@ public class QualifierKindHierarchy {
         } else if (qual2.isSubtype(qual1)) {
             return qual2;
         }
-        Set<QualifierKind> allSuperTypes = new TreeSet<>(qual1.superTypes);
-        allSuperTypes.retainAll(qual2.superTypes);
-        Set<QualifierKind> glbs = findHighestQualifiers(allSuperTypes);
+        Set<QualifierKind> allSubTypes = new TreeSet<>();
+        for (QualifierKind qualifierKind : qualifierKindMap.values()) {
+            if (qualifierKind.isSubtype(qual1) && qualifierKind.isSubtype(qual2)) {
+                allSubTypes.add(qualifierKind);
+            }
+        }
+        Set<QualifierKind> glbs = findHighestQualifiers(allSubTypes);
         if (glbs.size() != 1) {
             throw new BugInCF(
                     "Not exactly 1 glb for %s and %s. Found glb: [%s].",
@@ -442,7 +446,7 @@ public class QualifierKindHierarchy {
     private Set<QualifierKind> findHighestQualifiers(Set<QualifierKind> qualifierKinds) {
         Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
-            lowestQualifiers.removeIf(a2 -> a1 != a2 && a1.isSubtype(a2));
+            lowestQualifiers.removeIf(a2 -> a1 != a2 && a2.isSubtype(a1));
         }
         return lowestQualifiers;
     }

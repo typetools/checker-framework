@@ -691,6 +691,7 @@ subprojects {
         // Configure JUnit tests
         tasks.withType(Test) {
             if (isJava8) {
+//                jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
                 jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
             } else {
                 // Without this, the test throw "java.lang.OutOfMemoryError: Java heap space"
