@@ -53,7 +53,6 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -85,7 +84,6 @@ import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.SimpleHierarchy;
@@ -610,7 +608,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * necessary.
      */
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new GraphQualifierHierarchy(factory, null);
+        return new SimpleHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
     /**
@@ -650,11 +648,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Set<Class<? extends Annotation>> supportedTypeQualifiers,
             MultiGraphFactory factory) {
 
-        try {
-            new SimpleHierarchy(supportedTypeQualifiers, elements);
-        } catch (BugInCF | UserError e) {
-            checker.message(Kind.NOTE, "Error creating hierarchy: %s", e.getMessage());
-        }
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
             AnnotationMirror typeQualifierAnno =
                     AnnotationBuilder.fromClass(elements, typeQualifier);

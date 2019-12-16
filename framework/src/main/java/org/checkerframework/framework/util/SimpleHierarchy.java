@@ -131,6 +131,9 @@ public class SimpleHierarchy extends QualifierHierarchy {
     public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
         QualifierKind poly = qualifierKindHierarchy.getPolyMap().get(kind);
+        if (poly == null) {
+            return null;
+        }
         return qualifierMap.get(poly);
     }
 
