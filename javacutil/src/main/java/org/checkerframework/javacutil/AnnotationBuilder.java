@@ -58,8 +58,11 @@ public class AnnotationBuilder {
     /** The type utilities to use. */
     private final Types types;
 
+    /** The type element of the annotation. */
     private final TypeElement annotationElt;
+    /** The type of the annotation. */
     private final DeclaredType annotationType;
+    /** A mapping from element to AnnotationValue. */
     private final Map<ExecutableElement, AnnotationValue> elementValues;
 
     /**
@@ -79,7 +82,7 @@ public class AnnotationBuilder {
      * they can be added later).
      *
      * @param env the processing environment
-     * @param name the name of the annotation to build
+     * @param name the fully-qualified name of the annotation to build
      */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
@@ -174,6 +177,7 @@ public class AnnotationBuilder {
         return result;
     }
 
+    /** Whether or not {@link #build()} has been called. */
     private boolean wasBuilt = false;
 
     private void assertNotBuilt() {
