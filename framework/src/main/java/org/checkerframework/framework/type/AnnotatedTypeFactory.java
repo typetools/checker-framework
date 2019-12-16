@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -204,6 +205,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * using this field directly, as it may not have been initialized.
      */
     private final Set<Class<? extends Annotation>> supportedQuals;
+
+    /**
+     * To cache the supported type qualifier names. call {@link #getSupportedTypeQualifierNames()}
+     * instead of using this field directly, as it may not have been initialized.
+     */
+    private final Set<String> supportedQualNames;
 
     /** Parses stub files and stores annotations from stub files. */
     public final StubTypes stubTypes;
@@ -394,6 +401,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.visitorState = new VisitorState();
 
         this.supportedQuals = new HashSet<>();
+        this.supportedQualNames = new TreeSet<>();
         this.stubTypes = new StubTypes(this);
 
         this.cacheDeclAnnos = new HashMap<>();
@@ -910,6 +918,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return Collections.unmodifiableSet(supportedQuals);
     }
 
+    /**
+     * Returns an immutable set of the type qualifiers supported by this checker.
+     *
+     * <p>Subclasses cannot override this method; they should override {@link
+     * #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
+     *
+     * @see #createSupportedTypeQualifiers()
+     * @return an immutable set of the supported type qualifiers, or an empty set if no qualifiers
+     *     are supported
+     */
+    public final Set<String> getSupportedTypeQualifierNames() {
+        if (this.supportedQualNames.isEmpty()) {
+            for (Class<?> clazz : getSupportedTypeQualifiers()) {
+                supportedQualNames.add(clazz.getCanonicalName());
+            }
+        }
+        return Collections.unmodifiableSet(supportedQualNames);
+    }
+
     // **********************************************************************
     // Factories for annotated types that account for default qualifiers
     // **********************************************************************
@@ -949,15 +976,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return type;
     }
 
-    /**
-     * Return the annotation on {@code tree} that is in the hierarchy that contains the qualifier
-     * {@code target}. Returns null if none exists, or if {@code target} is not a supported
-     * qualifier.
-     */
     @Override
-    public AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target) {
-        AnnotationMirror mirror = AnnotationBuilder.fromClass(elements, target);
-        if (isSupportedQualifier(mirror)) {
+    public @Nullable AnnotationMirror getAnnotationMirror(
+            Tree tree, Class<? extends Annotation> target) {
+        if (isSupportedQualifier(target)) {
             AnnotatedTypeMirror atm = getAnnotatedType(tree);
             return atm.getAnnotation(target);
         }
@@ -2401,8 +2423,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (a == null) {
             return false;
         }
-        return AnnotationUtils.containsSameByName(
-                this.getQualifierHierarchy().getTypeQualifiers(), a);
+        return isSupportedQualifier(AnnotationUtils.annotationName(a));
+    }
+
+    /**
+     * Determines whether the given class is a part of the type system under which this type factory
+     * operates.
+     *
+     * @param className annotation class
+     * @return true if that class is a type qualifier in the type system under which this type
+     *     factory operates, false otherwise
+     */
+    public boolean isSupportedQualifier(Class<? extends Annotation> className) {
+        return isSupportedQualifier(className.getCanonicalName());
+    }
+
+    /**
+     * Determines whether the given class name is a part of the type system under which this type
+     * factory operates.
+     *
+     * @param className fully-qualified annotation class name
+     * @return true if that class name is a type qualifier in the type system under which this type
+     *     factory operates, false otherwise
+     */
+    public boolean isSupportedQualifier(String className) {
+        return getSupportedTypeQualifierNames().contains(className);
     }
 
     /**

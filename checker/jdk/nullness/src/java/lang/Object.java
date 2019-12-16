@@ -8,7 +8,9 @@ import org.checkerframework.checker.initialization.qual.*;
 
 public class Object {
   public Object() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure
+  @EnsuresNonNullIf(expression="#1", result=true)
+  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   // toString() is @SideEffectFree rather than @Pure because it returns a string
   // that differs according to ==, and @Deterministic requires that the results of
   // two calls of the method are ==.

@@ -1,6 +1,6 @@
 // Test case for Issue 1046:
 // https://github.com/typetools/checker-framework/issues/1046
-// Addtional test case: checker/tests/nullness/java8/Issue1046.java
+// Additional test case: checker/tests/nullness/java8/Issue1046.java
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;

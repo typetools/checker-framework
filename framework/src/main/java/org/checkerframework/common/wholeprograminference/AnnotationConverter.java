@@ -117,7 +117,7 @@ public class AnnotationConverter {
             try {
                 return new ArrayAFT(BasicAFT.forType(Class.forName(elemType.toString())));
             } catch (ClassNotFoundException e) {
-                throw new BugInCF(e.getMessage());
+                throw new BugInCF(e);
             }
         } else if (value instanceof Boolean) {
             return BasicAFT.forType(boolean.class);
