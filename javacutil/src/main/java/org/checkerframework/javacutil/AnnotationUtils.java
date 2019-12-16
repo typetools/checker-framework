@@ -142,8 +142,6 @@ public class AnnotationUtils {
      * Checks that the annotation {@code am} has the name {@code aname} (a fully-qualified type
      * name). Values are ignored.
      *
-     * <p>(Use {@link #areSameByClass} instead of this method when possible. It is faster.)
-     *
      * @param am the AnnotationMirror whose name to compare
      * @param aname the string to compare
      * @return true if aname is the name of am
@@ -155,8 +153,6 @@ public class AnnotationUtils {
     /**
      * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
      *
-     * <p>(Use this method rather than {@link #areSameByName} when possible. This method is faster.)
-     *
      * @param am the AnnotationMirror whose class to compare
      * @param annoClass the class to compare
      * @return true if annoclass is the class of am
@@ -165,7 +161,6 @@ public class AnnotationUtils {
             AnnotationMirror am, Class<? extends Annotation> annoClass) {
         String canonicalName = annotationClassNames.get(annoClass);
         if (canonicalName == null) {
-            // This method is faster than #areSameByName because of this cache.
             canonicalName = annoClass.getCanonicalName();
             assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
             annotationClassNames.put(annoClass, canonicalName);
