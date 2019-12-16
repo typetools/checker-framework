@@ -59,8 +59,11 @@ public class AnnotationBuilder {
     /** The type utilities to use. */
     private final Types types;
 
+    /** The type element of the annotation. * */
     private final TypeElement annotationElt;
+    /** The type of the annotation.* */
     private final DeclaredType annotationType;
+    /** A mapping from element to AnnotationValue. * */
     private final Map<ExecutableElement, AnnotationValue> elementValues;
 
     /**
@@ -193,6 +196,7 @@ public class AnnotationBuilder {
         annotationsFromNames.clear();
     }
 
+    /** Whether or not {@link #build()} has been called. * */
     private boolean wasBuilt = false;
 
     private void assertNotBuilt() {

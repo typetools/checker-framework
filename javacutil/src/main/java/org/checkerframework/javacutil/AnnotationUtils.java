@@ -42,6 +42,7 @@ public class AnnotationUtils {
         throw new AssertionError("Class AnnotationUtils cannot be instantiated.");
     }
 
+    /** Clear the static caches. */
     // TODO: hack to clear out static state.
     public static void clear() {
         AnnotationBuilder.clear();
