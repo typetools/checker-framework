@@ -251,7 +251,7 @@ public class QualifierKindHierarchy {
     }
 
     /** Initializes tops. (Requires directSuperMap to be initialized.) */
-    private void initializeTops() {
+    protected void initializeTops() {
         for (Entry<QualifierKind, Set<QualifierKind>> entry : directSuperMap.entrySet()) {
             QualifierKind qualifierKind = entry.getKey();
             if (entry.getValue().size() == 0) {
@@ -262,7 +262,7 @@ public class QualifierKindHierarchy {
     }
 
     /** Initializes bottoms. (Requires directSuperMap to be initialized.) */
-    private void initializeBottoms() {
+    protected void initializeBottoms() {
         bottoms.addAll(directSuperMap.keySet());
         for (Set<QualifierKind> superKinds : directSuperMap.values()) {
             bottoms.removeAll(superKinds);

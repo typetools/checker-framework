@@ -138,6 +138,7 @@ public class SimpleHierarchy extends QualifierHierarchy {
     }
 
     @Override
+    @Deprecated
     public Set<? extends AnnotationMirror> getTypeQualifiers() {
         return qualifiers;
     }

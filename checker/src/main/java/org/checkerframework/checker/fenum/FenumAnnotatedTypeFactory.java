@@ -1,8 +1,10 @@
 package org.checkerframework.checker.fenum;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.fenum.qual.Fenum;
 import org.checkerframework.checker.fenum.qual.FenumBottom;
 import org.checkerframework.checker.fenum.qual.FenumTop;
@@ -11,10 +13,13 @@ import org.checkerframework.checker.fenum.qual.PolyFenum;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
+import org.checkerframework.framework.util.ComplexHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierKindHierarchy;
+import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 
 public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -71,36 +76,71 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new FenumQualifierHierarchy(factory);
+        return new FenumQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
-    protected class FenumQualifierHierarchy extends GraphQualifierHierarchy {
+    protected class FenumQualifierHierarchy extends ComplexHierarchy {
+        private final QualifierKind FENUM_KIND;
 
-        /* The user is expected to introduce additional fenum annotations.
-         * These annotations are declared to be subtypes of FenumTop, using the
-         * @SubtypeOf annotation.
-         * However, there is no way to declare that it is a supertype of Bottom.
-         * Therefore, we use the constructor of GraphQualifierHierarchy that allows
-         * us to set a dedicated bottom qualifier.
-         */
-        public FenumQualifierHierarchy(MultiGraphFactory factory) {
-            super(factory, FENUM_BOTTOM);
+        public FenumQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
+            this.FENUM_KIND =
+                    this.qualifierKindHierarchy
+                            .getQualifierKindMap()
+                            .get(Fenum.class.getCanonicalName());
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameByName(superAnno, FENUM)
-                    && AnnotationUtils.areSameByName(subAnno, FENUM)) {
-                return AnnotationUtils.areSame(superAnno, subAnno);
+        protected QualifierKindHierarchy createQualifierKindHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses) {
+            return new QualifierKindHierarchy(qualifierClasses) {
+                @Override
+                protected void initializeBottoms() {
+                    this.bottoms.add(FENUM_BOTTOM);
+                }
+            };
+        }
+
+        @Override
+        protected boolean isSubtype(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            return AnnotationUtils.areSame(subAnno, superAnno);
+        }
+
+        @Override
+        protected AnnotationMirror leastUpperBound(
+                AnnotationMirror a1,
+                QualifierKind qual1,
+                AnnotationMirror a2,
+                QualifierKind qual2) {
+            if (qual1 == FENUM_KIND && qual2 == FENUM_KIND) {
+                return FENUM_UNQUALIFIED;
+            } else if (qual1 == FENUM_KIND) {
+                return a1;
+            } else if (qual2 == FENUM_KIND) {
+                return a2;
             }
-            // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameByName(superAnno, FENUM)) {
-                superAnno = FENUM;
+            throw new BugInCF("Unexpected QualifierKinds %s %s", qual1, qual2);
+        }
+
+        @Override
+        protected AnnotationMirror greatestLowerBound(
+                AnnotationMirror a1,
+                QualifierKind qual1,
+                AnnotationMirror a2,
+                QualifierKind qual2) {
+            if (qual1 == FENUM_KIND && qual2 == FENUM_KIND) {
+                return FENUM_BOTTOM;
+            } else if (qual1 == FENUM_KIND) {
+                return a2;
+            } else if (qual2 == FENUM_KIND) {
+                return a1;
             }
-            if (AnnotationUtils.areSameByName(subAnno, FENUM)) {
-                subAnno = FENUM;
-            }
-            return super.isSubtype(subAnno, superAnno);
+            throw new BugInCF("Unexpected QualifierKinds %s %s", qual1, qual2);
         }
     }
 }

@@ -43,6 +43,10 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
 
     @Override
     public boolean isValid() {
+        for (AnnotationMirror top : tops) {
+            // This throws an error if poly is a qualifier that has an element.
+            getPolymorphicAnnotation(top);
+        }
         return true;
     }
 
@@ -104,7 +108,18 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
 
     @Override
     public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-        return null;
+        QualifierKind kind = getQualifierKind(start);
+        QualifierKind poly = qualifierKindHierarchy.getPolyMap().get(kind);
+        if (poly == null) {
+            return null;
+        }
+        if (qualifierMap.containsKey(poly)) {
+            return qualifierMap.get(poly);
+        } else {
+            throw new BugInCF(
+                    "Poly has an element. Override ComplexHierarchy#getPolymorphicAnnotation. Poly: %s",
+                    poly);
+        }
     }
 
     @Override
@@ -114,6 +129,7 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
     }
 
     @Override
+    @Deprecated
     public Set<? extends AnnotationMirror> getTypeQualifiers() {
         return null;
     }
@@ -233,6 +249,14 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
     @Override
     public AnnotationMirror greatestLowerBoundTypeVariable(
             AnnotationMirror a1, AnnotationMirror a2) {
-        throw new RuntimeException("Not implemented");
+        if (a1 == null) {
+            // [] is a supertype of any qualifier, and [] <: []
+            return a2;
+        }
+        if (a2 == null) {
+            // [] is a supertype of any qualifier, and [] <: []
+            return a1;
+        }
+        return greatestLowerBound(a1, a2);
     }
 }

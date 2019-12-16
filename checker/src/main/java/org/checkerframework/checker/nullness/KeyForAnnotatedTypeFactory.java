@@ -222,7 +222,6 @@ public class KeyForAnnotatedTypeFactory
             if (subKind == KEYFOR_KIND && superKind == KEYFOR_KIND) {
                 List<String> lhsValues = extractValues(superAnno);
                 List<String> rhsValues = extractValues(subAnno);
-
                 return rhsValues.containsAll(lhsValues);
             }
             return subKind.isSubtype(superKind);
@@ -240,6 +239,10 @@ public class KeyForAnnotatedTypeFactory
                 LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
                 set.retainAll(a2Values);
                 return createKeyForAnnotationMirrorWithValue(set);
+            } else if (qual1 == KEYFOR_KIND) {
+                return a1;
+            } else if (qual2 == KEYFOR_KIND) {
+                return a2;
             }
             throw new BugInCF("Unexpected QualifierKinds %s %s", qual1, qual2);
         }
@@ -257,6 +260,10 @@ public class KeyForAnnotatedTypeFactory
                 LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
                 set.addAll(a2Values);
                 return createKeyForAnnotationMirrorWithValue(set);
+            } else if (qual1 == KEYFOR_KIND) {
+                return a1;
+            } else if (qual2 == KEYFOR_KIND) {
+                return a2;
             }
             throw new BugInCF("Unexpected QualifierKinds %s %s", qual1, qual2);
         }
