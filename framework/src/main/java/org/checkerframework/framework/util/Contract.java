@@ -19,8 +19,8 @@ import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * A contract represents an annotation on an expression, along with the kind: precondition,
- * postcondition, or conditional postcondition.
+ * A contract represents an annotation on an expression. It is a precondition, postcondition, or
+ * conditional postcondition.
  *
  * @see Precondition
  * @see Postcondition
