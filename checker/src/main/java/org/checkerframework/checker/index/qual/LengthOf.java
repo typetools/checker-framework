@@ -1,6 +1,9 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
@@ -20,6 +23,8 @@ import java.lang.annotation.Target;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
 // Has target of METHOD so that it is stored as a declaration annotation and SameLen Checker can
 // read it.
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER, ElementType.METHOD})

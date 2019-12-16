@@ -3,6 +3,8 @@ package org.checkerframework.framework.qual;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
@@ -11,6 +13,7 @@ import java.lang.annotation.Target;
  * should be applied based on the location of the type or some other defaulting rule.
  */
 @Documented
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface NoDefaultQualifierForUse {
     /** Top qualifier in hierarchies for which no default annotation for use should be applied. */

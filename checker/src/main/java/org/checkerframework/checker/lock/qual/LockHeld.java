@@ -1,6 +1,5 @@
 package org.checkerframework.checker.lock.qual;
 
-import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -19,7 +18,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @SubtypeOf(LockPossiblyHeld.class) // This is the bottom type in this hierarchy
 @InvisibleQualifier
-@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
 public @interface LockHeld {}

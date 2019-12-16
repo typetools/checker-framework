@@ -1,6 +1,5 @@
 package org.checkerframework.checker.i18n.qual;
 
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,7 +16,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
-@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface UnknownLocalizableKey {}
