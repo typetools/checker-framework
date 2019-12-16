@@ -12,6 +12,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
@@ -61,7 +63,7 @@ public final class SceneToStubWriter {
      * {@link WholeProgramInferenceScenes}. Used to output the names of generic parameters to
      * classes.
      */
-    private Map<String, TypeElement> types;
+    private Map<@FullyQualifiedName String, TypeElement> types;
 
     /**
      * Map from the fully-qualified name of each enum to its list of enum constants.
@@ -70,7 +72,7 @@ public final class SceneToStubWriter {
      * specify if a class is an enum. So track which classes are enums. In addition, enum constants
      * need to be present in the stub file.
      */
-    private Map<String, List<VariableElement>> enumConstants;
+    private Map<@FullyQualifiedName String, List<VariableElement>> enumConstants;
 
     /**
      * Create a new SceneToStubWriter.
@@ -87,15 +89,13 @@ public final class SceneToStubWriter {
     private SceneToStubWriter(
             AScene scene,
             Map<String, TypeMirror> basetypes,
-            Map<String, TypeElement> types,
-            Map<String, List<VariableElement>> enumConstants,
+            Map<@FullyQualifiedName String, TypeElement> types,
+            Map<@FullyQualifiedName String, List<VariableElement>> enumConstants,
             Writer out) {
         this.basetypes = basetypes;
         this.types = types;
         this.enumConstants = enumConstants;
         printWriter = new PrintWriter(out);
-        writeImpl(scene);
-        printWriter.flush();
     }
 
     /**
@@ -116,7 +116,9 @@ public final class SceneToStubWriter {
             Map<String, TypeElement> types,
             Map<String, List<VariableElement>> enumConstants,
             Writer out) {
-        new SceneToStubWriter(scene, basetypes, types, enumConstants, out);
+        SceneToStubWriter writer =
+                new SceneToStubWriter(scene, basetypes, types, enumConstants, out);
+        writer.writeImpl(scene);
     }
 
     /**
@@ -144,28 +146,40 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * The part of a fully-qualified name that specifies the package.
+     * The part of a binary name that specifies the package.
      *
-     * @param className the fully-qualified name of a class
+     * @param className the binary name of a class
      * @return the part of the name referring to the package
      */
-    private static String packagePart(String className) {
+    private static String packagePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
         return (lastdot == -1) ? "" : className.substring(0, lastdot);
     }
 
     /**
-     * The part of a fully-qualified name that specifies the basename of the class. This method
-     * replaces the {@code $}s in the names of inner classes with {@code .}s, so that they can be
-     * printed correctly in stub files.
+     * The part of a binary name that specifies the basename of the class. This method replaces the
+     * {@code $}s in the names of inner classes with {@code .}s, so that they can be printed
+     * correctly in stub files.
      *
      * @param className a fully-qualified name
      * @return the part of the name representing the class's name without its package
      */
-    private static String basenamePart(String className) {
+    private static @FullyQualifiedName String basenamePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
         String result = (lastdot == -1) ? className : className.substring(lastdot + 1);
         return result.replace('$', '.');
+    }
+
+    /**
+     * Converts a binary name of a Java class (i.e. using the $ syntax for Outer$Inner) to the
+     * fully-qualified name (i.e. using a dot to separate inner classes, instead).
+     *
+     * @param binaryName the binary name of a Java class
+     * @return the fully-qualified name of that Java class
+     */
+    private static @FullyQualifiedName String convertBinaryToFullyQualified(
+            @BinaryName String binaryName) {
+        return binaryName.replace('$', '.');
     }
 
     /**
@@ -350,13 +364,17 @@ public final class SceneToStubWriter {
      * Writing a stub file with that name would be useless to the stub parser, which expects inner
      * classes to be properly nested.
      *
-     * @param basename the simple name of the class (without the package), in Outer$Inner form
+     * @param basename the simple name of the class (without the package), fully-qualified form
+     *     (that is, without any {@code $}s)
      * @param classname the fully-qualified name of the class in question, so that it can be printed
      *     as an enum if it is one
      * @param aClass the AClass representing the classname
      * @return the number of outer classes within which this class is nested
      */
-    private int printClassDefinitions(String basename, String classname, AClass aClass) {
+    private int printClassDefinitions(
+            @FullyQualifiedName String basename,
+            @FullyQualifiedName String classname,
+            AClass aClass) {
 
         String nameToPrint = basename;
         String rest = "";
@@ -417,23 +435,24 @@ public final class SceneToStubWriter {
             // At this point, we no longer care about the distinction between packages
             // and inner classes, so we should replace the $ in the definition of any
             // inner classes with a ., so that they are printed correctly in stub files.
-            classname = classname.replace('$', '.');
+            String fullyQualifiedClassname = convertBinaryToFullyQualified(classname);
 
-            int curlyCount = 1 + printClassDefinitions(basename, classname, aClass);
+            int curlyCount = 1 + printClassDefinitions(basename, fullyQualifiedClassname, aClass);
 
             // print fields or enum constants
-            if (!enumConstants.containsKey(classname)) {
+            if (!enumConstants.containsKey(fullyQualifiedClassname)) {
                 for (Map.Entry<String, AField> fieldEntry : aClass.fields.entrySet()) {
                     String fieldName = fieldEntry.getKey();
                     AField aField = fieldEntry.getValue();
                     printWriter.println();
                     printWriter.print(INDENT);
-                    printAField(aField, fieldName, classname);
+                    printAField(aField, fieldName, fullyQualifiedClassname);
                     printWriter.println(";");
                 }
             } else {
                 // for enums, instead of printing fields print the enum constants
-                List<VariableElement> enumConstants = this.enumConstants.get(classname);
+                List<VariableElement> enumConstants =
+                        this.enumConstants.get(fullyQualifiedClassname);
                 boolean first = true;
                 for (VariableElement enumConstant : enumConstants) {
                     if (!first) {
@@ -478,7 +497,7 @@ public final class SceneToStubWriter {
                 if (!aMethod.receiver.type.tlAnnotationsHere.isEmpty()
                         || !aMethod.receiver.type.innerTypes.isEmpty()) {
                     // Only output the receiver if it has an annotation.
-                    printAField(aMethod.receiver, "this", classname);
+                    printAField(aMethod.receiver, "this", fullyQualifiedClassname);
                     firstParam = false;
                 }
                 for (Integer index : aMethod.parameters.keySet()) {
@@ -494,7 +513,7 @@ public final class SceneToStubWriter {
                     // TODO: use the actual parse tree of the method
                     // to figure out the real parameter names, and then thread them
                     // through to here.
-                    printAField(param, "param" + index, classname);
+                    printAField(param, "param" + index, fullyQualifiedClassname);
                     firstParam = false;
                 }
                 printWriter.println(");");
@@ -503,6 +522,7 @@ public final class SceneToStubWriter {
                 printWriter.println("}");
             }
         }
+        printWriter.flush();
     }
 
     /**
