@@ -51,8 +51,8 @@ public final class SceneToStubWriter {
 
     /**
      * A map from the {@code description} field of an ATypeElement to the corresponding base Java
-     * types, since AScene_s don't carry that information. See the comment on the {@code basetypes}
-     * field of {@link WholeProgramInferenceScenesHelper} for more information.
+     * types, since {@code AScene}s don't carry that information. See the comment on the {@code
+     * basetypes} field of {@link WholeProgramInferenceScenesHelper} for more information.
      */
     private Map<String, TypeMirror> basetypes;
 
@@ -76,9 +76,9 @@ public final class SceneToStubWriter {
      * Create a new SceneToStubWriter.
      *
      * @param scene the scene to write out
-     * @param basetypes a map from the description of ATypeElement_s to the TypeMirror_s that
-     *     represent their base Java types
-     * @param types a map from fully-qualified names to the TypeElement_s representing their
+     * @param basetypes a map from the description of {@code ATypeElement}s to the {@code
+     *     TypeMirror}s that represent their base Java types
+     * @param types a map from fully-qualified names to the {@code TypeElement}s representing their
      *     declarations
      * @param enumConstants a map from fully-qualified enum names to the enum constants defined in
      *     that name
@@ -99,12 +99,12 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Writes the annotations in <code>scene</code> to <code>out</code> in stub file format.
+     * Writes the annotations in {@code scene} to {@code out} in stub file format.
      *
      * @param scene the scene to write out
-     * @param basetypes a map from the description of ATypeElement_s to the TypeMirror_s that
-     *     represent their base Java types
-     * @param types a map from fully-qualified names to the TypeElement_s representing their
+     * @param basetypes a map from the description of {@code ATypeElement}s to the {@code
+     *     TypeMirror}s that represent their base Java types
+     * @param types a map from fully-qualified names to the {@code ATypeElement}s representing their
      *     declarations
      * @param enumConstants a map from fully-qualified enum names to the enum constants defined in
      *     that name
@@ -124,9 +124,9 @@ public final class SceneToStubWriter {
      * {@link #write(AScene, Map, Map, Map, Writer)}.
      *
      * @param scene the scene to write out
-     * @param basetypes a map from the description of ATypeElement_s to the TypeMirror_s that
-     *     represent their base Java types
-     * @param types a map from fully-qualified names to the TypeElement_s representing their
+     * @param basetypes a map from the description of {@code ATypeElement}s to the {@code
+     *     TypeMirror}s that represent their base Java types
+     * @param types a map from fully-qualified names to the {@code ATypeElement}s representing their
      *     declarations
      * @param enumNamesToEnumConstant a map from fully-qualified enum names to the enum constants
      *     defined in that name
@@ -156,11 +156,11 @@ public final class SceneToStubWriter {
 
     /**
      * The part of a fully-qualified name that specifies the basename of the class. This method
-     * replaces the $_s in the names of inner classes with ._s, so that they can be printed
-     * correctly in stub files.
+     * replaces the {@code $}s in the names of inner classes with {@code .}s, so that they can be
+     * printed correctly in stub files.
      *
      * @param className a fully-qualified name
-     * @return the part of the name representing the class' name without its package
+     * @return the part of the name representing the class's name without its package
      */
     private static String basenamePart(String className) {
         int lastdot = className.lastIndexOf('.');
