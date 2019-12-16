@@ -77,7 +77,6 @@ public final class SceneToStubWriter {
     /**
      * Create a new SceneToStubWriter.
      *
-     * @param scene the scene to write out
      * @param basetypes a map from the description of {@code ATypeElement}s to the {@code
      *     TypeMirror}s that represent their base Java types
      * @param types a map from fully-qualified names to the {@code TypeElement}s representing their
@@ -87,7 +86,6 @@ public final class SceneToStubWriter {
      * @param out the Writer to output the stub file to
      */
     private SceneToStubWriter(
-            AScene scene,
             Map<String, TypeMirror> basetypes,
             Map<@FullyQualifiedName String, TypeElement> types,
             Map<@FullyQualifiedName String, List<VariableElement>> enumConstants,
@@ -116,8 +114,7 @@ public final class SceneToStubWriter {
             Map<@FullyQualifiedName String, TypeElement> types,
             Map<@FullyQualifiedName String, List<VariableElement>> enumConstants,
             Writer out) {
-        SceneToStubWriter writer =
-                new SceneToStubWriter(scene, basetypes, types, enumConstants, out);
+        SceneToStubWriter writer = new SceneToStubWriter(basetypes, types, enumConstants, out);
         writer.writeImpl(scene);
     }
 
