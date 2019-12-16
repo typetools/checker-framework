@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -204,6 +205,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * using this field directly, as it may not have been initialized.
      */
     private final Set<Class<? extends Annotation>> supportedQuals;
+
+    /**
+     * To cache the supported type qualifier names. call {@link #getSupportedTypeQualifierNames()}
+     * ()} instead of using this field directly, as it may not have been initialized.
+     */
+    private final Set<String> supportedQualNames;
 
     /** Parses stub files and stores annotations from stub files. */
     public final StubTypes stubTypes;
@@ -394,6 +401,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.visitorState = new VisitorState();
 
         this.supportedQuals = new HashSet<>();
+        this.supportedQualNames = new TreeSet<>();
         this.stubTypes = new StubTypes(this);
 
         this.cacheDeclAnnos = new HashMap<>();
@@ -908,6 +916,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             checkSupportedQuals();
         }
         return Collections.unmodifiableSet(supportedQuals);
+    }
+
+    /**
+     * Returns an immutable set of the type qualifiers supported by this checker.
+     *
+     * <p>Subclasses cannot override this method; they should override {@link
+     * #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
+     *
+     * @see #createSupportedTypeQualifiers()
+     * @return an immutable set of the supported type qualifiers, or an empty set if no qualifiers
+     *     are supported
+     */
+    public final Set<String> getSupportedTypeQualifierNames() {
+        if (this.supportedQualNames.isEmpty()) {
+            for (Class<?> clazz : getSupportedTypeQualifiers()) {
+                supportedQualNames.add(clazz.getCanonicalName());
+            }
+        }
+        return Collections.unmodifiableSet(supportedQualNames);
     }
 
     // **********************************************************************
@@ -2396,8 +2423,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (a == null) {
             return false;
         }
-        return AnnotationUtils.containsSameByName(
-                this.getQualifierHierarchy().getTypeQualifiers(), a);
+        return isSupportedQualifier(AnnotationUtils.annotationName(a));
     }
 
     /**
@@ -2421,8 +2447,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     factory operates, false otherwise
      */
     public boolean isSupportedQualifier(String className) {
-        return AnnotationUtils.containsSameByName(
-                this.getQualifierHierarchy().getTypeQualifiers(), className);
+        return getSupportedTypeQualifierNames().contains(className);
     }
 
     /**
