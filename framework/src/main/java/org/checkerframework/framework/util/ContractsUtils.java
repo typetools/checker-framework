@@ -66,47 +66,47 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns all the contracts on {@code methodElement}.
+     * Returns all the contracts on method or contstructor {@code executableElement}.
      *
-     * @param methodElement the method or constructor whose contracts to retrieve
-     * @return the contracts on {@code methodElement}
+     * @param executableElement the method or constructor whose contracts to retrieve
+     * @return the contracts on {@code executableElement}
      */
-    public List<Contract> getContracts(ExecutableElement methodElement) {
+    public List<Contract> getContracts(ExecutableElement executableElement) {
         List<Contract> contracts = new ArrayList<>();
-        contracts.addAll(getPreconditions(methodElement));
-        contracts.addAll(getPostconditions(methodElement));
-        contracts.addAll(getConditionalPostconditions(methodElement));
+        contracts.addAll(getPreconditions(executableElement));
+        contracts.addAll(getPostconditions(executableElement));
+        contracts.addAll(getConditionalPostconditions(executableElement));
         return contracts;
     }
 
     /// Precondition methods (keep in sync with other two types)
 
     /**
-     * Returns the contracts on {@code methodElement}.
+     * Returns the contracts on method or constructor {@code executableElement}.
      *
-     * @param methodElement the method whose contracts to return
-     * @return the contracts on {@code methodElement}
+     * @param executableElement the method whose contracts to return
+     * @return the contracts on {@code executableElement}
      */
-    public Set<Contract> getPreconditions(ExecutableElement methodElement) {
-        return getContracts(methodElement, PRECONDITION);
+    public Set<Contract> getPreconditions(ExecutableElement executableElement) {
+        return getContracts(executableElement, PRECONDITION);
     }
 
     /// Postcondition methods (keep in sync with other two types)
 
     /**
-     * Returns the contracts on {@code methodElement}.
+     * Returns the contracts on {@code executableElement}.
      *
-     * @param methodElement the method whose contracts to return
-     * @return the contracts on {@code methodElement}
+     * @param executableElement the method whose contracts to return
+     * @return the contracts on {@code executableElement}
      */
-    public Set<Contract> getPostconditions(ExecutableElement methodElement) {
-        return getContracts(methodElement, POSTCONDITION);
+    public Set<Contract> getPostconditions(ExecutableElement executableElement) {
+        return getContracts(executableElement, POSTCONDITION);
     }
 
     /// Conditional postcondition methods (keep in sync with other two types)
 
     /**
-     * Returns the contracts on {@code methodElement}.
+     * Returns the contracts on method {@code methodElement}.
      *
      * @param methodElement the method whose contracts to return
      * @return the contracts on {@code methodElement}
@@ -150,21 +150,22 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns the contracts on {@code methodElement}.
+     * Returns the contracts on method or constructor {@code executableElement}.
      *
-     * @param methodElement the method whose contracts to return
-     * @return the contracts on {@code methodElement}
+     * @param executableElement the method whose contracts to return
+     * @param the kind of contracts to retrieve
+     * @return the contracts on {@code executableElement}
      */
-    public Set<Contract> getContracts(ExecutableElement methodElement, Kind kind) {
+    public Set<Contract> getContracts(ExecutableElement executableElement, Kind kind) {
         Set<Contract> result = new LinkedHashSet<>();
         // Check for a single contract annotation.
         AnnotationMirror frameworkContractAnno =
-                factory.getDeclAnnotation(methodElement, kind.frameworkContractClass);
+                factory.getDeclAnnotation(executableElement, kind.frameworkContractClass);
         result.addAll(getContract(kind, frameworkContractAnno));
 
         // Check for a wrapper around contract annotations.
         AnnotationMirror frameworkContractAnnos =
-                factory.getDeclAnnotation(methodElement, kind.frameworkContractsClass);
+                factory.getDeclAnnotation(executableElement, kind.frameworkContractsClass);
         if (frameworkContractAnnos != null) {
             List<AnnotationMirror> frameworkContractAnnoList =
                     AnnotationUtils.getElementValueArray(
@@ -176,7 +177,7 @@ public class ContractsUtils {
 
         // Check for type-system specific annotations.
         List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
-                factory.getDeclAnnotationWithMetaAnnotation(methodElement, kind.metaAnnotation);
+                factory.getDeclAnnotationWithMetaAnnotation(executableElement, kind.metaAnnotation);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror contractAnno = r.second;
