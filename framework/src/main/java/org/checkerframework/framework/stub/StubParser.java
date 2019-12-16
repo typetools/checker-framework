@@ -241,6 +241,12 @@ public class StubParser {
                 ElementFilter.typesIn(typeElement.getEnclosedElements()));
     }
 
+    /**
+     * All annotations declared within any of the given elements.
+     *
+     * @param typeElements the elements whose annotations to retrieve
+     * @return a map from annotation name to TypeElement
+     */
     private Map<String, TypeElement> createImportedAnnotationsMap(List<TypeElement> typeElements) {
         Map<String, TypeElement> result = new HashMap<>();
         for (TypeElement typeElm : typeElements) {
