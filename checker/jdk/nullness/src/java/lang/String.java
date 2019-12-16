@@ -992,8 +992,8 @@ public final class String
      * @see  #compareTo(String)
      * @see  #equalsIgnoreCase(String)
      */
-    @EnsuresNonNullIf(expression="#1", result=true)
     @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object anObject) {
         if (this == anObject) {
             return true;
@@ -1124,8 +1124,8 @@ public final class String
      *
      * @see  #equals(Object)
      */
-    @EnsuresNonNullIf(expression="#1", result=true)
     @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equalsIgnoreCase(@Nullable String anotherString) {
         return (this == anotherString) ? true
                 : (anotherString != null)

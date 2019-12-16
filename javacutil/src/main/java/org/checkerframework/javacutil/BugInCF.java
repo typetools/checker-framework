@@ -28,8 +28,9 @@ public class BugInCF extends RuntimeException {
     /**
      * Constructs a new CheckerError with the specified cause.
      *
-     * @param cause the cause; its detail message will be used
+     * @param cause the cause; its detail message will be used and must be non-null
      */
+    @SuppressWarnings("nullness")
     public BugInCF(Throwable cause) {
         this(cause.getMessage(), new Throwable());
     }

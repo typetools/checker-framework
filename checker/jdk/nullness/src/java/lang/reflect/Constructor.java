@@ -1,11 +1,13 @@
 package java.lang.reflect;
 
-import org.checkerframework.framework.qual.Covariant;
 import java.lang.annotation.Annotation;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
+
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.Covariant;
 
 // The type argument to Constructor is meaningless.
 // Constructor<@NonNull String> and Constructor<@Nullable String> have the same
@@ -21,7 +23,9 @@ public final class Constructor<T> extends AccessibleObject implements GenericDec
     public Type[] getGenericParameterTypes() { throw new RuntimeException("skeleton method"); }
     public Class<?>[] getExceptionTypes() { throw new RuntimeException("skeleton method"); }
     public Type[] getGenericExceptionTypes() { throw new RuntimeException("skeleton method"); }
-    @Pure public boolean equals(@Nullable Object arg0) { throw new RuntimeException("skeleton method"); }
+    @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
+    public boolean equals(@Nullable Object arg0) { throw new RuntimeException("skeleton method"); }
     @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
     @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
     public String toGenericString() { throw new RuntimeException("skeleton method"); }
