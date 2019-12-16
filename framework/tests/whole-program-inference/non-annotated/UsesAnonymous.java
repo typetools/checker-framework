@@ -1,4 +1,6 @@
-import testlib.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.Sibling2;
+import testlib.wholeprograminference.qual.Top;
+import testlib.wholeprograminference.qual.WholeProgramInferenceBottom;
 
 class UsesAnonymous {
     void method() {
