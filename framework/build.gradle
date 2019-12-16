@@ -140,6 +140,13 @@ task wholeProgramInferenceStubTests(dependsOn: 'shadowJar', group: 'Verification
 
     doLast {
         commonWPIlogic()
+        // The stub file format doesn't support annotations on anonymous inner classes, so
+        // this test also expects errors on UsesAnonymous.java.
+        delete('tests/whole-program-inference/annotated/UsesAnonymous.java')
+        copy {
+            from file('tests/whole-program-inference/non-annotated/UsesAnonymous.java')
+            into file('tests/whole-program-inference/annotated')
+        }
     }
     finalizedBy(testWPIStubsValidate)
 }
