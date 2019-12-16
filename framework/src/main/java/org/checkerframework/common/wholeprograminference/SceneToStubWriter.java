@@ -120,8 +120,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Writes the annotations in {@code scene} to the file {@code filename} in stub file format; see
-     * {@link #write(AScene, Map, Map, Map, Writer)}.
+     * Writes the annotations in {@code scene} to the file {@code filename} in stub file format.
      *
      * @param scene the scene to write out
      * @param basetypes a map from the description of {@code ATypeElement}s to the {@code
@@ -132,6 +131,7 @@ public final class SceneToStubWriter {
      *     defined in that name
      * @param filename the path of the file to write to
      * @throws IOException if the file doesn't exist
+     * @see #write(AScene, Map, Map, Map, Writer)
      */
     public static void write(
             AScene scene,
@@ -239,11 +239,13 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Prints all annotations in {@code annos}, separated by spaces. See {@link #printAnnotation}.
-     * Internal JDK annotation such as jdk.Profile+Annotation contain "+", so ignore those when
+     * Prints all annotations in {@code annos}, separated by spaces.
+     *
+     * <p>Internal JDK annotation such as jdk.Profile+Annotation contain "+", so ignore those when
      * printing. This code is mostly borrowed from {@code IndexFileWriter}.
      *
      * @param annos the annotations to print
+     * @see #printAnnotation(Annotation)
      */
     private void printAnnotations(Collection<? extends Annotation> annos) {
         for (Annotation tla : annos) {
