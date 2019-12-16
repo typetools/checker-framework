@@ -19,7 +19,7 @@ import org.checkerframework.javacutil.UserError;
 
 /** NO AnnotationMirrors allowed in this class. */
 public class QualifierKindHierarchy {
-    @Interned static class QualifierKind implements Comparable<QualifierKind> {
+    @Interned public static class QualifierKind implements Comparable<QualifierKind> {
         private final @Interned String name;
         private final Class<? extends Annotation> clazz;
         private boolean isPoly;
@@ -76,7 +76,7 @@ public class QualifierKindHierarchy {
             return bottom;
         }
 
-        public boolean isHasElements() {
+        public boolean hasElements() {
             return hasElements;
         }
 
@@ -98,7 +98,7 @@ public class QualifierKindHierarchy {
             return split[split.length - 1];
         }
 
-        boolean isSubtype(QualifierKind superQual) {
+        public boolean isSubtype(QualifierKind superQual) {
             return this == superQual || superTypes.contains(superQual);
         }
     }

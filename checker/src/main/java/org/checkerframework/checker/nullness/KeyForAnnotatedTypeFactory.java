@@ -15,6 +15,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
@@ -29,10 +30,12 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
+import org.checkerframework.framework.util.ComplexHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class KeyForAnnotatedTypeFactory
@@ -185,13 +188,16 @@ public class KeyForAnnotatedTypeFactory
 
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new KeyForQualifierHierarchy(factory);
+        return new KeyForQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
-    private final class KeyForQualifierHierarchy extends GraphQualifierHierarchy {
+    private final class KeyForQualifierHierarchy extends ComplexHierarchy {
+        private final QualifierKind KEYFOR_KIND;
 
-        public KeyForQualifierHierarchy(MultiGraphFactory factory) {
-            super(factory, KEYFORBOTTOM);
+        public KeyForQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
+            this.KEYFOR_KIND = qualifierKindHierarchy.getQualifierKindMap().get(KEYFOR_NAME);
         }
 
         private List<String> extractValues(AnnotationMirror anno) {
@@ -208,83 +214,51 @@ public class KeyForAnnotatedTypeFactory
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameByName(superAnno, KEYFOR_NAME)
-                    && AnnotationUtils.areSameByName(subAnno, KEYFOR_NAME)) {
+        protected boolean isSubtype(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            if (subKind == KEYFOR_KIND && superKind == KEYFOR_KIND) {
                 List<String> lhsValues = extractValues(superAnno);
                 List<String> rhsValues = extractValues(subAnno);
 
                 return rhsValues.containsAll(lhsValues);
             }
-            // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameByName(superAnno, KEYFOR_NAME)) {
-                superAnno = KEYFOR;
-            }
-            if (AnnotationUtils.areSameByName(subAnno, KEYFOR_NAME)) {
-                subAnno = KEYFOR;
-            }
-            // TODO: the erased TypeMirror will be used.  Can we store that already here?
-            return super.isSubtype(subAnno, superAnno);
+            return subKind.isSubtype(superKind);
         }
 
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.areSameByName(a1, UNKNOWNKEYFOR)) {
-                return a1;
-            } else if (AnnotationUtils.areSameByName(a2, UNKNOWNKEYFOR)) {
-                return a2;
-            } else if (AnnotationUtils.areSameByName(a1, KEYFORBOTTOM)) {
-                return a2;
-            } else if (AnnotationUtils.areSameByName(a2, KEYFORBOTTOM)) {
-                return a1;
-            } else if (AnnotationUtils.areSameByName(a1, KEYFOR)
-                    && AnnotationUtils.areSameByName(a2, KEYFOR)) {
+        protected AnnotationMirror leastUpperBound(
+                AnnotationMirror a1,
+                QualifierKind qual1,
+                AnnotationMirror a2,
+                QualifierKind qual2) {
+            if (qual1 == KEYFOR_KIND && qual2 == KEYFOR_KIND) {
                 List<String> a1Values = extractValues(a1);
                 List<String> a2Values = extractValues(a2);
                 LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
                 set.retainAll(a2Values);
                 return createKeyForAnnotationMirrorWithValue(set);
             }
-            // a1 or a2 is @PolyKeyFor.
-            // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameByName(a1, KEYFOR)) {
-                a1 = KEYFOR;
-            }
-            if (AnnotationUtils.areSameByName(a2, KEYFOR)) {
-                a2 = KEYFOR;
-            }
-            // Let super handle @PolyKeyFor.
-            return super.leastUpperBound(a1, a2);
+            throw new BugInCF("Unexpected QualifierKinds %s %s", qual1, qual2);
         }
 
         @Override
-        public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.areSameByName(a1, UNKNOWNKEYFOR)) {
-                return a2;
-            } else if (AnnotationUtils.areSameByName(a2, UNKNOWNKEYFOR)) {
-                return a1;
-            } else if (AnnotationUtils.areSameByName(a1, KEYFORBOTTOM)) {
-                return a1;
-            } else if (AnnotationUtils.areSameByName(a2, KEYFORBOTTOM)) {
-                return a2;
-            } else if (AnnotationUtils.areSameByName(a1, KEYFOR)
-                    && AnnotationUtils.areSameByName(a2, KEYFOR)) {
+        protected AnnotationMirror greatestLowerBound(
+                AnnotationMirror a1,
+                QualifierKind qual1,
+                AnnotationMirror a2,
+                QualifierKind qual2) {
+            if (qual1 == KEYFOR_KIND && qual2 == KEYFOR_KIND) {
+
                 List<String> a1Values = extractValues(a1);
                 List<String> a2Values = extractValues(a2);
                 LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
                 set.addAll(a2Values);
                 return createKeyForAnnotationMirrorWithValue(set);
             }
-            // a1 or a2 is @PolyKeyFor.
-            // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameByName(a1, KEYFOR)) {
-                a1 = KEYFOR;
-            }
-            if (AnnotationUtils.areSameByName(a2, KEYFOR)) {
-                a2 = KEYFOR;
-            }
-            // Let super handle @PolyKeyFor.
-            return super.greatestLowerBound(a1, a2);
+            throw new BugInCF("Unexpected QualifierKinds %s %s", qual1, qual2);
         }
     }
 

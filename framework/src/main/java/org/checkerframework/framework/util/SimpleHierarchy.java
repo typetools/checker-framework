@@ -42,7 +42,7 @@ public class SimpleHierarchy extends QualifierHierarchy {
     protected Map<QualifierKind, AnnotationMirror> createQualifiers() {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getQualifierKindMap().values()) {
-            if (kind.isHasElements()) {
+            if (kind.hasElements()) {
                 throw new UserError(
                         "SimpleHierarchy cannot be used with annotations that have elements. Found %s: ",
                         kind);
