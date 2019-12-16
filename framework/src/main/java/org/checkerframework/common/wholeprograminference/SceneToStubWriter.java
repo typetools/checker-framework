@@ -480,9 +480,14 @@ public final class SceneToStubWriter {
                                     ? basename.substring(basename.lastIndexOf('.') + 1)
                                     : basename;
                 } else {
-                    // This isn't a constructor, so add a return type.
-                    if (basetypes.containsKey(aMethod.returnType.description.toString())) {
-                        printWriter.print(basetypes.get(aMethod.returnType.description.toString()));
+                    // This isn't a constructor, so add a return type if one is available.
+                    // Note that the stub file format doesn't require this to be correct,
+                    // so it would be acceptable to print "java.lang.Object" for every
+                    // method. A better type is printed if one is available to improve
+                    // the readability of the resulting stub file.
+                    String descriptionString = aMethod.returnType.description.toString();
+                    if (basetypes.containsKey(descriptionString)) {
+                        printWriter.print(basetypes.get(descriptionString));
                     } else {
                         printWriter.print("java.lang.Object");
                     }
