@@ -3,6 +3,9 @@
 Command-line option -AprintGitProperties prints information about the git
 repository from which the Checker Framework was compiled.
 
+Implementation details:
+ * Deprecated MultiGraphQualifierHierarchy#getTypeQualifiers.
+
 ---------------------------------------------------------------------------
 
 Version 3.0.1, December 2, 2019
