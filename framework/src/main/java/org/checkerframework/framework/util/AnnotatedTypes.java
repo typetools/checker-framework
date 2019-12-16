@@ -571,7 +571,7 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Returns all the super types of the given declared type.
+     * Returns all the supertypes (direct or indirect) of the given declared type.
      *
      * @param type a declared type
      * @return all the supertypes of the given type
@@ -606,12 +606,10 @@ public class AnnotatedTypes {
     }
 
     /**
-     * A utility method that takes a Method element and returns a set of all elements that this
-     * method overrides (as {@link ExecutableElement}s).
+     * Given a method, return the methods that it overrides.
      *
      * @param method the overriding method
-     * @return an unmodifiable set of {@link ExecutableElement}s representing the elements that
-     *     method overrides
+     * @return a map from types to methods that {@code method} overrides
      */
     public static Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods(
             Elements elements, AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
@@ -622,15 +620,13 @@ public class AnnotatedTypes {
     }
 
     /**
-     * A utility method that takes the element for a method and the set of all supertypes of the
-     * method's containing class and returns the set of all elements that method overrides (as
-     * {@link ExecutableElement}s).
+     * Given a method and all supertypes (recursively) of the method's containing class, returns the
+     * methods that the method overrides.
      *
      * @param method the overriding method
      * @param supertypes the set of supertypes to check for methods that are overridden by {@code
      *     method}
-     * @return an unmodified set of {@link ExecutableElement}s representing the elements that {@code
-     *     method} overrides among {@code supertypes}
+     * @return a map from types to methods that {@code method} overrides
      */
     public static Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods(
             Elements elements,

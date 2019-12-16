@@ -54,7 +54,9 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 public class AnnotationBuilder {
 
+    /** The element utilities to use. */
     private final Elements elements;
+    /** The type utilities to use. */
     private final Types types;
 
     private final TypeElement annotationElt;
@@ -134,7 +136,7 @@ public class AnnotationBuilder {
      *
      * @param elements the element utilities to use
      * @param aClass the annotation class
-     * @return an {@link AnnotationMirror} of type given type
+     * @return an {@link AnnotationMirror} of the given type
      */
     public static AnnotationMirror fromClass(
             Elements elements, Class<? extends Annotation> aClass) {
@@ -567,7 +569,13 @@ public class AnnotationBuilder {
         }
     }
 
-    private AnnotationValue createValue(final Object obj) {
+    /**
+     * Create an AnnotationValue -- a value for an annotation element/field.
+     *
+     * @param obj the value to be stored in an annotation element/field
+     * @return an AnnotationValue for the given Java value
+     */
+    private static AnnotationValue createValue(final Object obj) {
         return new CheckerFrameworkAnnotationValue(obj);
     }
 
