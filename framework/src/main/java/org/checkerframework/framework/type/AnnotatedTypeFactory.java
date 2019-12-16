@@ -208,7 +208,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * To cache the supported type qualifier names. call {@link #getSupportedTypeQualifierNames()}
-     * ()} instead of using this field directly, as it may not have been initialized.
+     * instead of using this field directly, as it may not have been initialized.
      */
     private final Set<String> supportedQualNames;
 
