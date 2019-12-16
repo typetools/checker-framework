@@ -457,9 +457,10 @@ see  Section~\ref{type-refinement}.
 \sectionAndLabel{Running a checker}{running}
 
 To run a checker plugin, run the compiler \code{javac} as usual,
-but pass the \code{-processor \emph{plugin\_class}} command-line
-option.
-A concrete example (using the Nullness Checker) is:
+but either pass the \code{-processor \emph{plugin\_class}} command-line
+option, or use auto-discovery as described in
+Section~\ref{checker-auto-discovery}.
+A concrete example of using \code{-processor} to run the Nullness Checker is:
 
 \begin{Verbatim}
   javac -processor nullness MyFile.java
@@ -1500,23 +1501,25 @@ same methodology in different words.
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
 % LocalWords:  callees Xmx unconfuse fenum propkey forName jsr308 Djsr308
 % LocalWords:  bootclasspath AonlyUses AskipDefs AonlyDefs AcheckPurityAnnotations
-%  LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext
-%  LocalWords:  AignoreRawTypeArguments AsuggestPureMethods Anocheckjdk
-%  LocalWords:  AassumeAssertionsAreEnabled AassumeAssertionsAreDisabled
-%  LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AnoPrintErrorStack
-%  LocalWords:  AprintAllQualifiers Aignorejdkastub AstubDebug Aflowdotdir
-%  LocalWords:  AresourceStats jls r78 JDKs i18n AignoreRangeOverflow L129
-%  LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
-%  LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles tz1
-%%  LocalWords:  AshowSuppressWarningKeys AoutputArgsToFile RegexChecker
-%%  LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
-%%  LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror
-%%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode beingConstructed
-%%  LocalWords:  AuseDefaultsForUncheckedCode AresolveReflection Ainfer
-%%  LocalWords:  AconservativeUninferredTypeArguments Averbosecfg Acfgviz
-%%  LocalWords:  AstubWarnIfOverwritesBytecode AprintVerboseGenerics
-%%  LocalWords:  AatfDoNotCache AatfCacheSize IntRange AwarnIfNotFound
-%%  LocalWords:  AwarnUnneededSuppressions AshowInferenceSteps BHCJEIBB
-%%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses processOptions getopt
-%%  LocalWords:  EnsuresNonNull EnsuresNonNullIf checkername orElseThrow
-%%  LocalWords:  ArequirePrefixInWarningSuppressions MaybePresent
+% LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext
+% LocalWords:  AignoreRawTypeArguments AsuggestPureMethods Anocheckjdk
+% LocalWords:  AassumeAssertionsAreEnabled AassumeAssertionsAreDisabled
+% LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AnoPrintErrorStack
+% LocalWords:  AprintAllQualifiers Aignorejdkastub AstubDebug Aflowdotdir
+% LocalWords:  AresourceStats jls r78 JDKs i18n AignoreRangeOverflow L129
+% LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
+% LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles tz1
+% LocalWords:  AshowSuppressWarningKeys AoutputArgsToFile RegexChecker
+% LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
+% LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror
+% LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode beingConstructed
+% LocalWords:  AuseDefaultsForUncheckedCode AresolveReflection Ainfer
+% LocalWords:  AconservativeUninferredTypeArguments Averbosecfg Acfgviz
+% LocalWords:  AstubWarnIfOverwritesBytecode AprintVerboseGenerics
+% LocalWords:  AatfDoNotCache AatfCacheSize IntRange AwarnIfNotFound
+% LocalWords:  AwarnUnneededSuppressions AshowInferenceSteps BHCJEIBB
+% LocalWords:  AstubWarnIfNotFoundIgnoresClasses processOptions getopt
+% LocalWords:  EnsuresNonNull EnsuresNonNullIf checkername orElseThrow
+% LocalWords:  ArequirePrefixInWarningSuppressions MaybePresent
+% LocalWords:  AignoreInvalidAnnotationLocations AprintGitProperties
+% LocalWords:  AstubWarnIfRedundantWithBytecode
