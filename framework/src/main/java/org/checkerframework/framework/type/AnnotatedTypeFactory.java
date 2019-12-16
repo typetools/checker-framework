@@ -949,15 +949,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return type;
     }
 
-    /**
-     * Return the annotation on {@code tree} that is in the hierarchy that contains the qualifier
-     * {@code target}. Returns null if none exists, or if {@code target} is not a supported
-     * qualifier.
-     */
     @Override
-    public AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target) {
-        AnnotationMirror mirror = AnnotationBuilder.fromClass(elements, target);
-        if (isSupportedQualifier(mirror)) {
+    public @Nullable AnnotationMirror getAnnotationMirror(
+            Tree tree, Class<? extends Annotation> target) {
+        if (isSupportedQualifier(target)) {
             AnnotatedTypeMirror atm = getAnnotatedType(tree);
             return atm.getAnnotation(target);
         }
@@ -2403,6 +2398,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         return AnnotationUtils.containsSameByName(
                 this.getQualifierHierarchy().getTypeQualifiers(), a);
+    }
+
+    /**
+     * Determines whether the given class is a part of the type system under which this type factory
+     * operates.
+     *
+     * @param className annotation class
+     * @return true if that class is a type qualifier in the type system under which this type
+     *     factory operates, false otherwise
+     */
+    public boolean isSupportedQualifier(Class<? extends Annotation> className) {
+        return isSupportedQualifier(className.getCanonicalName());
+    }
+
+    /**
+     * Determines whether the given class name is a part of the type system under which this type
+     * factory operates.
+     *
+     * @param className fully-qualified annotation class name
+     * @return true if that class name is a type qualifier in the type system under which this type
+     *     factory operates, false otherwise
+     */
+    public boolean isSupportedQualifier(String className) {
+        return AnnotationUtils.containsSameByName(
+                this.getQualifierHierarchy().getTypeQualifiers(), className);
     }
 
     /**
