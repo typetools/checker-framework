@@ -28,6 +28,7 @@ package java.lang;
 import java.lang.annotation.Native;
 import java.math.*;
 
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
@@ -1097,6 +1098,7 @@ public final class Long extends Number implements Comparable<Long> {
      *          {@code false} otherwise.
      */
     @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof Long) {
             return value == ((Long)obj).longValue();

@@ -148,6 +148,13 @@ public class ContractsUtils {
         public int hashCode() {
             return Objects.hash(expression, annotation, kind);
         }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s{expression=%s, annotation=%s, contractAnnotation=%s}",
+                    getClass().getSimpleName(), expression, annotation, contractAnnotation);
+        }
     }
 
     /** A precondition contract. */
@@ -239,6 +246,15 @@ public class ContractsUtils {
         @Override
         public int hashCode() {
             return Objects.hash(super.hashCode(), annoResult);
+        }
+
+        @Override
+        public String toString() {
+            String superToString = super.toString();
+            return superToString.substring(0, superToString.length() - 1)
+                    + ", annoResult="
+                    + annoResult
+                    + "}";
         }
     }
 
