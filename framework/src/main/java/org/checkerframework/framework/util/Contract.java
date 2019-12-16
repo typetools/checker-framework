@@ -124,6 +124,13 @@ public abstract class Contract {
         return Objects.hash(kind, expression, annotation);
     }
 
+    @Override
+    public String toString() {
+        return String.format(
+                "%s{expression=%s, annotation=%s, contractAnnotation=%s}",
+                getClass().getSimpleName(), expression, annotation, contractAnnotation);
+    }
+
     /** A precondition contract. */
     public static class Precondition extends Contract {
         /**
@@ -276,6 +283,15 @@ public abstract class Contract {
         @Override
         public int hashCode() {
             return Objects.hash(super.hashCode(), annoResult);
+        }
+
+        @Override
+        public String toString() {
+            String superToString = super.toString();
+            return superToString.substring(0, superToString.length() - 1)
+                    + ", annoResult="
+                    + annoResult
+                    + "}";
         }
     }
 }
