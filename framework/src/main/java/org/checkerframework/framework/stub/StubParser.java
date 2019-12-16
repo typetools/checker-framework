@@ -221,13 +221,21 @@ public class StubParser {
     /**
      * All annotations defined in the package (but not those nested within classes in the package).
      * Keys are simple names.
+     *
+     * @param packageElement a package
+     * @return a map from annotation name to TypeElement
      */
     private Map<String, TypeElement> annosInPackage(PackageElement packageElement) {
         return createImportedAnnotationsMap(
                 ElementFilter.typesIn(packageElement.getEnclosedElements()));
     }
 
-    /** All annotations declared (directly) within a class. Keys are simple names. */
+    /**
+     * All annotations declared (directly) within a class. Keys are simple names.
+     *
+     * @param packageElement a type
+     * @return a map from annotation name to TypeElement
+     */
     private Map<String, TypeElement> annosInType(TypeElement typeElement) {
         return createImportedAnnotationsMap(
                 ElementFilter.typesIn(typeElement.getEnclosedElements()));
@@ -270,6 +278,8 @@ public class StubParser {
      * Returns all annotations found in the stub file, as a value for {@link #allStubAnnotations}.
      * Note that this also modifies {@link #importedConstants} and {@link #importedTypes}.
      *
+     * @return a map from simple (unqualified) name to TypeElement, for all annotations found in the
+     *     stub file
      * @see #allStubAnnotations
      */
     private Map<String, TypeElement> getAllStubAnnotations() {
@@ -1524,6 +1534,10 @@ public class StubParser {
     /**
      * Convert {@code annotation} into an AnnotationMirror. Returns null if the annotation isn't
      * supported by the checker or if some error occurred while converting it.
+     *
+     * @param annotation syntax tree for an annotation
+     * @param allStubAnnotations map from simple nawe to annotation definition
+     * @param the AnnotationMirror for the annotation
      */
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, TypeElement> allStubAnnotations) {
