@@ -431,7 +431,7 @@ public final class SceneToStubWriter {
                 }
             } else {
                 // for enums, instead of printing fields print the enum constants
-                List<VariableElement> enumConstants = enumConstants.get(classname);
+                List<VariableElement> enumConstants = this.enumConstants.get(classname);
                 boolean first = true;
                 for (VariableElement enumConstant : enumConstants) {
                     if (!first) {
