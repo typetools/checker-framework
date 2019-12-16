@@ -153,7 +153,7 @@ public class ContractsUtils {
      * Returns the contracts on method or constructor {@code executableElement}.
      *
      * @param executableElement the method whose contracts to return
-     * @param the kind of contracts to retrieve
+     * @param kind the kind of contracts to retrieve
      * @return the contracts on {@code executableElement}
      */
     public Set<Contract> getContracts(ExecutableElement executableElement, Kind kind) {
