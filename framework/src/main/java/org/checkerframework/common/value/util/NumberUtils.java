@@ -99,7 +99,7 @@ public class NumberUtils {
      * @param type a primitive or boxed primitive type
      * @return a primitive type
      */
-    private static TypeKind unboxPrimitive(TypeMirror type) {
+    public static TypeKind unboxPrimitive(TypeMirror type) {
         if (type.getKind() == TypeKind.DECLARED) {
             String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
 

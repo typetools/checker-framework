@@ -282,26 +282,56 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * should always be {@code <= to}.
      */
     @Override
-    public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
-        boolean result = super.validateType(tree, type);
+    public boolean validateType(Tree tree, AnnotatedTypeMirror atm) {
+        boolean result = super.validateType(tree, atm);
         if (!result) {
-            AnnotationMirror anno = type.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+            AnnotationMirror anno = atm.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
             if (areSameByClass(anno, IntRange.class)) {
-                long from = atypeFactory.getFromValueFromIntRange(type);
-                long to = atypeFactory.getToValueFromIntRange(type);
-                if (from > to) {
-                    checker.report(Result.failure("from.greater.than.to"), tree);
-                    return false;
+                if (isIntegral(atm)) {
+                    long from = atypeFactory.getFromValueFromIntRange(atm);
+                    long to = atypeFactory.getToValueFromIntRange(atm);
+                    if (from > to) {
+                        checker.report(Result.failure("from.greater.than.to"), tree);
+                    }
+                } else {
+                    checker.report(Result.failure("annotation.intrange.on.noninteger"), tree);
                 }
             } else if (areSameByClass(anno, ArrayLenRange.class)) {
                 int from = getElementValue(anno, "from", Integer.class, true);
                 int to = getElementValue(anno, "to", Integer.class, true);
                 if (from > to) {
                     checker.report(Result.failure("from.greater.than.to"), tree);
-                    return false;
                 }
             }
         }
         return result;
+    }
+
+    /** The following 3 methods are temporarily located here to allow issue #2942 to be analized. */
+    private static boolean isIntegral(AnnotatedTypeMirror type) {
+        return isIntegral(NumberUtils.unboxPrimitive(type.getUnderlyingType()));
+    }
+
+    private static boolean isIntegral(TypeKind typeKind) {
+        return isPrimitiveIntegral(typeKind);
+    }
+
+    /**
+     * Return true if the argument is one of INT, SHORT, BYTE, CHAR, LONG.
+     *
+     * @param typeKind the TypeKind to inspect
+     * @return true if the argument is a primitive integral type
+     */
+    private static boolean isPrimitiveIntegral(TypeKind typeKind) {
+        switch (typeKind) {
+            case INT:
+            case SHORT:
+            case BYTE:
+            case CHAR:
+            case LONG:
+                return true;
+            default:
+                return false;
+        }
     }
 }
