@@ -38,7 +38,7 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
     /** A set of trees that are annotated with {@code @SuppressWarnings}. */
     public final List<Tree> treesWithSuppressWarnings;
 
-    /** Whether or not a warning should be issued for unneeded warning suppressions. * */
+    /** Whether or not a warning should be issued for unneeded warning suppressions. */
     private final boolean warnUnneededSuppressions;
 
     /**
