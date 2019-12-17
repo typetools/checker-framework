@@ -301,10 +301,9 @@ public final class SceneToStubWriter {
         } else if (basetypes.containsKey(aField.type.description.toString())) {
             basetype = basetypes.get(aField.type.description.toString()).toString();
         } else {
-            basetype = "TODOTYPE";
-            /*throw new BugInCF(
-            "SceneToStubWriter: could not find the base type for this variable declaration: "
-                    + fieldName);*/
+            throw new BugInCF(
+                    "SceneToStubWriter: could not find the base type for this variable declaration: "
+                            + fieldName);
         }
 
         if (basetype.contains("[")) {
