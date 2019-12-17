@@ -128,7 +128,7 @@ public class QualifierKindHierarchy {
         this.glbs = initializeGlbs();
 
         verify(directSuperMap);
-        //        printLubs();
+        //                printLubs();
         //        printIsSubtype();
     }
 

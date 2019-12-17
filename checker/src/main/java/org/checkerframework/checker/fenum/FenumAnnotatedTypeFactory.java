@@ -82,7 +82,6 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     protected static class FenumQualifierKindHierarchy extends QualifierKindHierarchy {
-
         public FenumQualifierKindHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses) {
             super(qualifierClasses);

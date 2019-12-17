@@ -5,6 +5,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -28,8 +29,10 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
+import org.checkerframework.framework.util.ComplexHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierKindHierarchy;
+import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -500,88 +503,81 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    protected static class UnitsQualifierKindHierarchy extends QualifierKindHierarchy {
+        public UnitsQualifierKindHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses) {
+            super(qualifierClasses);
+        }
+
+        @Override
+        protected Map<QualifierKind, Set<QualifierKind>> initializeDirectSuperTypes() {
+            Map<QualifierKind, Set<QualifierKind>> supersMap = super.initializeDirectSuperTypes();
+            QualifierKind bottom =
+                    getQualifierKindMap()
+                            .get("org.checkerframework.checker.units.qual.UnitsBottom");
+            Set<QualifierKind> superTypes = supersMap.get(bottom);
+            superTypes.addAll(supersMap.keySet());
+            superTypes.remove(bottom);
+            return supersMap;
+        }
+    }
+
     /** Set the Bottom qualifier as the bottom of the hierarchy. */
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new UnitsQualifierHierarchy(
-                factory, AnnotationBuilder.fromClass(elements, UnitsBottom.class));
+        return new UnitsQualifierHierarchy();
     }
 
     /** Qualifier Hierarchy for the Units Checker. */
-    protected class UnitsQualifierHierarchy extends GraphQualifierHierarchy {
+    protected class UnitsQualifierHierarchy extends ComplexHierarchy {
 
         /** Constructor. */
-        public UnitsQualifierHierarchy(MultiGraphFactory mgf, AnnotationMirror unitsBottom) {
-            super(mgf, unitsBottom);
+        public UnitsQualifierHierarchy() {
+            super(UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameByName(superAnno, subAnno)) {
-                return AnnotationUtils.sameElementValues(superAnno, subAnno);
-            }
-            superAnno = removePrefix(superAnno);
-            subAnno = removePrefix(subAnno);
-
-            return super.isSubtype(subAnno, superAnno);
+        protected QualifierKindHierarchy createQualifierKindHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses) {
+            return new UnitsQualifierKindHierarchy(qualifierClasses);
         }
 
-        // Overriding leastUpperBound due to the fact that alias annotations are
-        // not placed in the Supported Type Qualifiers set, instead, their base
-        // SI units are in the set.
-        // Whenever an alias annotation or prefix-multiple of a base SI unit is
-        // used in ternary statements or through mismatched PolyUnit method
-        // parameters, we handle the LUB resolution here so that these units can
-        // correctly resolve to an LUB Unit.
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            AnnotationMirror result;
+        protected boolean isSubtype(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            return AnnotationUtils.areSame(subAnno, superAnno);
+        }
 
-            // if the prefix is Prefix.one, automatically strip it for LUB checking
-            if (UnitsRelationsTools.getPrefix(a1) == Prefix.one) {
-                a1 = removePrefix(a1);
-            }
-            if (UnitsRelationsTools.getPrefix(a2) == Prefix.one) {
-                a2 = removePrefix(a2);
-            }
-
-            // if the two units have the same base SI unit
-            // TODO: it is possible to rewrite these two lines to use UnitsRelationsTools, will it
-            // have worse performance?
-            if (AnnotationUtils.areSameByName(a1, a2)) {
-                // and if they have the same Prefix, it means it is the same unit
-                if (AnnotationUtils.sameElementValues(a1, a2)) {
-                    // return the unit
-                    result = a1;
+        @Override
+        protected AnnotationMirror leastUpperBound(
+                AnnotationMirror a1,
+                QualifierKind qual1,
+                AnnotationMirror a2,
+                QualifierKind qual2) {
+            if (qual1.isBottom()) {
+                return a2;
+            } else if (qual2.isBottom()) {
+                return a1;
+            } else if (qual1 == qual2) {
+                if (AnnotationUtils.areSame(a1, a2)) {
+                    return a1;
+                } else {
+                    return UnitsAnnotatedTypeFactory.this.TOP;
                 }
-
-                // if they don't have the same Prefix, find the LUB
-                else {
-                    // check if a1 is a prefixed multiple of a base unit
-                    boolean a1Prefixed = !UnitsRelationsTools.hasNoPrefix(a1);
-                    // check if a2 is a prefixed multiple of a base unit
-                    boolean a2Prefixed = !UnitsRelationsTools.hasNoPrefix(a2);
-
-                    // when calling findLub(), the left AnnoMirror has to be a type within the
-                    // supertypes Map this means it has to be one of the base SI units, so always
-                    // strip the left unit or ensure it has no prefix
-                    if (a1Prefixed && a2Prefixed) {
-                        // if both are prefixed, strip the left and find LUB
-                        result = this.findLub(removePrefix(a1), a2);
-                    } else if (a1Prefixed && !a2Prefixed) {
-                        // if only the left is prefixed, swap order and find LUB
-                        result = this.findLub(a2, a1);
-                    } else {
-                        // else (only right is prefixed), just find the LUB
-                        result = this.findLub(a1, a2);
-                    }
-                }
-            } else {
-                // if they don't have the same base SI unit, let super find it
-                result = super.leastUpperBound(a1, a2);
             }
+            throw new BugInCF("Unexpected QualifierKinds: %s %s", qual1, qual2);
+        }
 
-            return result;
+        @Override
+        protected AnnotationMirror greatestLowerBound(
+                AnnotationMirror a1,
+                QualifierKind qual1,
+                AnnotationMirror a2,
+                QualifierKind qual2) {
+            return UnitsAnnotatedTypeFactory.this.BOTTOM;
         }
     }
 
