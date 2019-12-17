@@ -12,6 +12,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * An annotation intended solely for representing an unqualified type in the qualifier hierarchy for
  * the Purity Checker.
+ *
+ * @checker_framework.manual #purity-checker Purity Checker
  */
 @Documented
 @Retention(RetentionPolicy.SOURCE) // do not store in class file

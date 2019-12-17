@@ -23,6 +23,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * the bottom qualifier to the qualifier hierarchy.
  *
  * @see org.checkerframework.framework.type.QualifierHierarchy#getBottomAnnotations()
+ * @checker_framework.manual #subtyping-checker Subtyping Checker
  */
 @Documented
 @SubtypeOf({})

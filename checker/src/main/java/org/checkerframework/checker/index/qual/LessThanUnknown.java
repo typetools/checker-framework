@@ -13,4 +13,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
+/**
+ * The top qualifier for the LessThan type hierarchy. It indicates that no other expression is known
+ * to be larger than the annotated one.
+ *
+ * @checker_framework.manual #index-inequalities Index Chceker Inequalities
+ */
 public @interface LessThanUnknown {}

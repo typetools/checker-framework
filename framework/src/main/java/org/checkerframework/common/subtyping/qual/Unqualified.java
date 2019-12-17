@@ -16,6 +16,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>Only use this qualifier when experimenting with very simple type systems. For any more
  * realistic type systems, introduce a top and bottom qualifier that gets stored in bytecode.
+ *
+ * @checker_framework.manual #subtyping-checker Subtyping Checker
  */
 @Documented
 @Retention(RetentionPolicy.SOURCE) // don't store in class file
