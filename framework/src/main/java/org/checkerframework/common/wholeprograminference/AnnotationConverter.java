@@ -24,8 +24,8 @@ import scenelib.annotations.field.BasicAFT;
 import scenelib.annotations.field.ScalarAFT;
 
 /**
- * This class has auxiliary methods that performs conversion between {@link
- * scenelib.annotations.Annotation} and {@link javax.lang.model.element.AnnotationMirror}.
+ * This class contains static methods that convert between {@link scenelib.annotations.Annotation}
+ * and {@link javax.lang.model.element.AnnotationMirror}.
  */
 public class AnnotationConverter {
 
@@ -117,7 +117,7 @@ public class AnnotationConverter {
             try {
                 return new ArrayAFT(BasicAFT.forType(Class.forName(elemType.toString())));
             } catch (ClassNotFoundException e) {
-                throw new BugInCF(e.getMessage());
+                throw new BugInCF(e);
             }
         } else if (value instanceof Boolean) {
             return BasicAFT.forType(boolean.class);
