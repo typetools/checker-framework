@@ -807,7 +807,7 @@ public class DependentTypesHelper {
 
     private boolean isExpressionAnno(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
-            if (AnnotationUtils.areSameByClass(am, clazz)) {
+            if (factory.areSameByClass(am, clazz)) {
                 return true;
             }
         }
@@ -954,7 +954,7 @@ public class DependentTypesHelper {
      */
     private List<String> getListOfExpressionElements(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
-            if (AnnotationUtils.areSameByClass(am, clazz)) {
+            if (factory.areSameByClass(am, clazz)) {
                 return annoToElements.get(clazz);
             }
         }

@@ -14,7 +14,6 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * Implements the actual checks to make sure that array accesses aren't too low. Will issue a
@@ -80,8 +79,8 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
                 anm = null;
             }
             if (anm == null
-                    || !(AnnotationUtils.areSameByClass(anm, NonNegative.class)
-                            || AnnotationUtils.areSameByClass(anm, Positive.class))) {
+                    || !(atypeFactory.areSameByClass(anm, NonNegative.class)
+                            || atypeFactory.areSameByClass(anm, Positive.class))) {
                 checker.report(
                         Result.failure(
                                 FROM_NOT_NN, subSeq.from, anm == null ? "@LowerBoundUnknown" : anm),

@@ -914,9 +914,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.messages = getMessages();
 
         this.visitor = createSourceVisitor();
-
-        // TODO: hack to clear out static caches.
-        AnnotationUtils.clear();
     }
 
     /**
@@ -1137,6 +1134,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 swTree);
     }
 
+    private final String suppressWarningsClassName = SuppressWarnings.class.getCanonicalName();
     /**
      * Finds the tree that is a {@code @SuppressWarnings} annotation.
      *
@@ -1154,9 +1152,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         for (AnnotationTree annotationTree : annotations) {
-            if (AnnotationUtils.areSameByClass(
+            if (AnnotationUtils.areSameByName(
                     TreeUtils.annotationFromAnnotationTree(annotationTree),
-                    SuppressWarnings.class)) {
+                    suppressWarningsClassName)) {
                 return annotationTree;
             }
         }

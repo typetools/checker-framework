@@ -223,7 +223,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private void addUpperBoundTypeFromValueType(
             AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
-        if (AnnotationUtils.containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
+        if (containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
             type.replaceAnnotation(BOTTOM);
         }
     }
@@ -323,7 +323,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * The last argument should be Positive.class, NonNegative.class, or GTENegativeOne.class.
      */
     public boolean hasLowerBoundTypeByClass(Node node, Class<? extends Annotation> classOfType) {
-        return AnnotationUtils.areSameByClass(
+        return areSameByClass(
                 getLowerBoundAnnotatedTypeFactory()
                         .getAnnotatedType(node.getTree())
                         .getAnnotationInHierarchy(getLowerBoundAnnotatedTypeFactory().UNKNOWN),
@@ -482,8 +482,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private void addAnnotationForBitwiseComplement(
                 AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
-            if (AnnotationUtils.containsSameByClass(
-                    searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
+            if (containsSameByClass(searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
                 AnnotationMirror nif = searchIndexType.getAnnotation(NegativeIndexFor.class);
                 List<String> arrays = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(nif);
                 List<String> negativeOnes = Collections.nCopies(arrays.size(), "-1");

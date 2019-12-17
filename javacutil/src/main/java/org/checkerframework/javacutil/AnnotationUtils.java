@@ -42,22 +42,6 @@ public class AnnotationUtils {
         throw new AssertionError("Class AnnotationUtils cannot be instantiated.");
     }
 
-    /** Clear the static caches. */
-    // TODO: hack to clear out static state.
-    public static void clear() {
-        annotationClassNames.clear();
-    }
-
-    // **********************************************************************
-    // Factory Methods to create instances of AnnotationMirror
-    // **********************************************************************
-
-    private static final int ANNOTATION_CACHE_SIZE = 500;
-
-    /** Maps classes representing AnnotationMirrors to their names. */
-    private static final Map<Class<? extends Annotation>, String> annotationClassNames =
-            Collections.synchronizedMap(CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE));
-
     // **********************************************************************
     // Helper methods to handle annotations.  mainly workaround
     // AnnotationMirror.equals undesired property
@@ -159,12 +143,7 @@ public class AnnotationUtils {
      */
     public static boolean areSameByClass(
             AnnotationMirror am, Class<? extends Annotation> annoClass) {
-        String canonicalName = annotationClassNames.get(annoClass);
-        if (canonicalName == null) {
-            canonicalName = annoClass.getCanonicalName();
-            assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
-            annotationClassNames.put(annoClass, canonicalName);
-        }
+        String canonicalName = annoClass.getCanonicalName();
         return areSameByName(am, canonicalName);
     }
 
