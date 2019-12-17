@@ -17,17 +17,22 @@ if [[ "${BUILDJDK}" != "buildjdk" && "${BUILDJDK}" != "downloadjdk" ]]; then
   echo "Bad argument '${BUILDJDK}'; should be omitted or one of: downloadjdk, buildjdk."
   exit 1
 fi
+echo "BUILDJDK=${BUILDJDK}"
 
 export SHELLOPTS
+echo "SHELLOPTS=${SHELLOPTS}"
 
 if [ "$(uname)" == "Darwin" ] ; then
   export JAVA_HOME=${JAVA_HOME:-$(/usr/libexec/java_home)}
 else
   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(readlink -f $(which javac))))}
 fi
+echo "JAVA_HOME=${JAVA_HOME}"
 
+echo "Start git"
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
   || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+echo "Finish git"
 
 # This does not work:
 #   AT=${AFU}/..
@@ -64,7 +69,7 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
 ## Compile
 
-# Two options: rebuild the JDK or download a prebuilt JDK.
+# Two options: download a prebuilt JDK or rebuild the JDK.
 if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   echo "running \"./gradlew assemble\" for checker-framework"
   ./gradlew assemble printJdkJarManifest --console=plain --warning-mode=all -s --no-daemon
