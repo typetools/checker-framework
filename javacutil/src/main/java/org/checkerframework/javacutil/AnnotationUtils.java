@@ -45,7 +45,6 @@ public class AnnotationUtils {
     /** Clear the static caches. */
     // TODO: hack to clear out static state.
     public static void clear() {
-        AnnotationBuilder.clear();
         annotationClassNames.clear();
     }
 

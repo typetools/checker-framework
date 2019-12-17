@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -65,14 +64,6 @@ public class AnnotationBuilder {
     private final DeclaredType annotationType;
     /** A mapping from element to AnnotationValue. */
     private final Map<ExecutableElement, AnnotationValue> elementValues;
-
-    /**
-     * Caching for annotation creation. Each annotation has no values; that is, getElementValues
-     * returns an empty map. This may be in conflict with the annotation's definition, which might
-     * contain elements (annotation fields).
-     */
-    private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
-            Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Create a new AnnotationBuilder for the given annotation and environment (with no
@@ -169,10 +160,6 @@ public class AnnotationBuilder {
      *     be loaded
      */
     public static @Nullable AnnotationMirror fromName(Elements elements, CharSequence name) {
-        AnnotationMirror res = annotationsFromNames.get(name);
-        if (res != null) {
-            return res;
-        }
         final TypeElement annoElt = elements.getTypeElement(name);
         if (annoElt == null) {
             return null;
@@ -187,13 +174,7 @@ public class AnnotationBuilder {
         }
         AnnotationMirror result =
                 new CheckerFrameworkAnnotationMirror(annoType, Collections.emptyMap());
-        annotationsFromNames.put(name, result);
         return result;
-    }
-
-    // TODO: hack to clear out static state.
-    public static void clear() {
-        annotationsFromNames.clear();
     }
 
     /** Whether or not {@link #build()} has been called. */
