@@ -30,8 +30,6 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon
 make -C docs/manual all
 
-# This comes last, in case we wish to ignore it
-# if [ "$CI_IS_PR" == "true" ] ; then
 (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
 /tmp/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt
 

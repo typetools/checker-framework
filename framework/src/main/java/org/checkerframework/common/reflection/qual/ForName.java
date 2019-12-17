@@ -7,8 +7,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for methods like {@code Class.forName}. Their signature is {@code @}{@link
- * ClassVal}{@code ("name") Class method(String name) {...}}.
+ * Annotation for methods like {@code Class.forName}. Their signature is
+ *
+ * <pre><code>
+ * &nbsp;@ClassVal("name") Class method(@ForName String name) {...}
+ * </code></pre>
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
  */
