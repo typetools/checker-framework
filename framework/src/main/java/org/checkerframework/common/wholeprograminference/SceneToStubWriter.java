@@ -400,6 +400,23 @@ public final class SceneToStubWriter {
     }
 
     /**
+     * Prints all the fields of a given class (the AClass).
+     *
+     * @param aClass the class whose fields should be printed
+     * @param fullyQualifiedClassname the fully-qualified name of the class
+     */
+    private void printFields(AClass aClass, @FullyQualifiedName String fullyQualifiedClassname) {
+        for (Map.Entry<String, AField> fieldEntry : aClass.fields.entrySet()) {
+            String fieldName = fieldEntry.getKey();
+            AField aField = fieldEntry.getValue();
+            printWriter.println();
+            printWriter.print(INDENT);
+            printAField(aField, fieldName, fullyQualifiedClassname);
+            printWriter.println(";");
+        }
+    }
+
+    /**
      * The implementation of {@link #write(AScene, Map, Map, Map, Writer)} and {@link #write(AScene,
      * Map, Map, Map, String)}. Prints imports, classes, method signatures, and fields in stub file
      * format, all with appropriate annotations.
@@ -451,14 +468,7 @@ public final class SceneToStubWriter {
 
             // print fields or enum constants
             if (!enumConstants.containsKey(fullyQualifiedClassname)) {
-                for (Map.Entry<String, AField> fieldEntry : aClass.fields.entrySet()) {
-                    String fieldName = fieldEntry.getKey();
-                    AField aField = fieldEntry.getValue();
-                    printWriter.println();
-                    printWriter.print(INDENT);
-                    printAField(aField, fieldName, fullyQualifiedClassname);
-                    printWriter.println(";");
-                }
+                printFields(aClass, fullyQualifiedClassname);
             } else {
                 // for enums, instead of printing fields print the enum constants
                 List<VariableElement> enumConstants =
