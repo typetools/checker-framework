@@ -180,6 +180,10 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
         QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
+        if (lub == null) {
+            // lub is null when the qualifiers are not in the same hierarchy.
+            return null;
+        }
         if (lub.hasElements()) {
             return leastUpperBound(a1, qual1, a2, qual2);
         }

@@ -49,8 +49,10 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.ComplexHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -739,16 +741,19 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * The {@link QualifierHierarchy} for the initialization type system. Type systems extending the
      * Initialization Checker should call methods {@link
-     * InitializationQualifierHierarchy#isSubtypeInitialization(AnnotationMirror, AnnotationMirror)}
-     * and {@link InitializationQualifierHierarchy#leastUpperBoundInitialization(AnnotationMirror,
+     * InitializationQualifierHierarchy#isSubtypeInitialization(AnnotationMirror, QualifierKind,
+     * AnnotationMirror, QualifierKind)} and {@link
+     * InitializationQualifierHierarchy#leastUpperBoundInitialization(AnnotationMirror,
      * AnnotationMirror)} for appropriate qualifiers. See protected subclass
      * NullnessQualifierHierarchy within class {@link
      * org.checkerframework.checker.nullness.NullnessChecker} for an example.
      */
-    protected abstract class InitializationQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    protected abstract class InitializationQualifierHierarchy extends ComplexHierarchy {
+        private final QualifierKind UNKNOWN_INIT;
 
-        public InitializationQualifierHierarchy(MultiGraphFactory f, Object... arg) {
-            super(f, arg);
+        public InitializationQualifierHierarchy() {
+            super(InitializationAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
+            UNKNOWN_INIT = getQualifierKind(UNKNOWN_INITIALIZATION);
         }
 
         /**

@@ -55,8 +55,10 @@ import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotato
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -523,29 +525,51 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new NullnessQualifierHierarchy(factory, (Object[]) null);
+        return new NullnessQualifierHierarchy();
     }
 
     protected class NullnessQualifierHierarchy extends InitializationQualifierHierarchy {
+        private final QualifierKind NULLABLE;
 
-        public NullnessQualifierHierarchy(MultiGraphFactory f, Object[] arg) {
-            super(f, arg);
+        public NullnessQualifierHierarchy() {
+            super();
+            NULLABLE = getQualifierKind(NullnessAnnotatedTypeFactory.this.NULLABLE);
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (isInitializationAnnotation(subAnno) || isInitializationAnnotation(superAnno)) {
+        protected boolean isSubtype(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            if (!subKind.areInSameHierarchy(NULLABLE) || !superKind.areInSameHierarchy(NULLABLE)) {
                 return this.isSubtypeInitialization(subAnno, superAnno);
             }
-            return super.isSubtype(subAnno, superAnno);
+            throw new BugInCF("Unexpected annotations %s %s.", subAnno, superAnno);
         }
 
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (isInitializationAnnotation(a1) || isInitializationAnnotation(a2)) {
+        protected AnnotationMirror leastUpperBound(
+                AnnotationMirror a1,
+                QualifierKind qual1,
+                AnnotationMirror a2,
+                QualifierKind qual2) {
+            if (!qual1.areInSameHierarchy(NULLABLE) || !qual2.areInSameHierarchy(NULLABLE)) {
                 return this.leastUpperBoundInitialization(a1, a2);
             }
-            return super.leastUpperBound(a1, a2);
+            throw new BugInCF("Unexpected annotations %s %s.", a1, a2);
+        }
+
+        @Override
+        protected AnnotationMirror greatestLowerBound(
+                AnnotationMirror a1,
+                QualifierKind qual1,
+                AnnotationMirror a2,
+                QualifierKind qual2) {
+            if (!qual1.areInSameHierarchy(NULLABLE) || !qual2.areInSameHierarchy(NULLABLE)) {
+                return FBCBOTTOM;
+            }
+            throw new BugInCF("Unexpected annotations %s %s.", a1, a2);
         }
     }
 }
