@@ -25,7 +25,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected AnnotationMirror FENUM_UNQUALIFIED;
-    protected AnnotationMirror FENUM, FENUM_BOTTOM;
+    protected AnnotationMirror FENUM, FENUM_BOTTOM, FENUM_TOP;
 
     public FenumAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -33,6 +33,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         FENUM_BOTTOM = AnnotationBuilder.fromClass(elements, FenumBottom.class);
         FENUM = AnnotationBuilder.fromClass(elements, Fenum.class);
         FENUM_UNQUALIFIED = AnnotationBuilder.fromClass(elements, FenumUnqualified.class);
+        FENUM_TOP = AnnotationBuilder.fromClass(elements, FenumTop.class);
 
         this.postInit();
     }
@@ -80,6 +81,26 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new FenumQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
+    protected static class FenumQualifierKindHierarchy extends QualifierKindHierarchy {
+
+        public FenumQualifierKindHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses) {
+            super(qualifierClasses);
+        }
+
+        @Override
+        protected Map<QualifierKind, Set<QualifierKind>> initializeDirectSuperTypes() {
+            Map<QualifierKind, Set<QualifierKind>> supersMap = super.initializeDirectSuperTypes();
+            QualifierKind bottom =
+                    getQualifierKindMap()
+                            .get("org.checkerframework.checker.fenum.qual.FenumBottom");
+            Set<QualifierKind> superTypes = supersMap.get(bottom);
+            superTypes.addAll(supersMap.keySet());
+            superTypes.remove(bottom);
+            return supersMap;
+        }
+    }
+
     protected class FenumQualifierHierarchy extends ComplexHierarchy {
         private final QualifierKind FENUM_KIND;
 
@@ -95,14 +116,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         protected QualifierKindHierarchy createQualifierKindHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses) {
-            return new QualifierKindHierarchy(qualifierClasses) {
-                @Override
-                protected Set<QualifierKind> initializeBottoms(
-                        Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
-                    this.bottoms.add(FENUM_BOTTOM);
-                    return null;
-                }
-            };
+            return new FenumQualifierKindHierarchy(qualifierClasses);
         }
 
         @Override
@@ -121,7 +135,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a2,
                 QualifierKind qual2) {
             if (qual1 == FENUM_KIND && qual2 == FENUM_KIND) {
-                return FENUM_UNQUALIFIED;
+                return FENUM_TOP;
             } else if (qual1 == FENUM_KIND) {
                 return a1;
             } else if (qual2 == FENUM_KIND) {

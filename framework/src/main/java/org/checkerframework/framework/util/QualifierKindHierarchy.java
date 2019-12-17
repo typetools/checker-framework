@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -278,15 +279,14 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Initializes bottoms. (Requires directSuperMap to be initialized.)
+     * Initializes bottoms.*
      *
      * @param directSuperMap
      * @return
      */
     protected Set<QualifierKind> initializeBottoms(
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
-        Set<QualifierKind> bottoms = new TreeSet<>();
-        bottoms.addAll(directSuperMap.keySet());
+        Set<QualifierKind> bottoms = new TreeSet<>(directSuperMap.keySet());
         for (Set<QualifierKind> superKinds : directSuperMap.values()) {
             bottoms.removeAll(superKinds);
         }
@@ -367,7 +367,7 @@ public class QualifierKindHierarchy {
     }
 
     private Map<QualifierClassPair, QualifierKind> initializeLubs() {
-        Map<QualifierClassPair, QualifierKind> lubs = new TreeMap<>();
+        Map<QualifierClassPair, QualifierKind> lubs = new HashMap<>();
         for (QualifierKind qual1 : qualifierKindMap.values()) {
             for (QualifierKind qual2 : qualifierKindMap.values()) {
                 if (qual1.top != qual2.top) {
@@ -423,7 +423,7 @@ public class QualifierKindHierarchy {
     }
 
     private Map<QualifierClassPair, QualifierKind> initializeGlbs() {
-        Map<QualifierClassPair, QualifierKind> glbs = new TreeMap<>();
+        Map<QualifierClassPair, QualifierKind> glbs = new HashMap<>();
         for (QualifierKind qual1 : qualifierKindMap.values()) {
             for (QualifierKind qual2 : qualifierKindMap.values()) {
                 if (qual1.top != qual2.top) {

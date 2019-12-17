@@ -23,7 +23,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 // Subtype relationships are set up by passing this class as a bottom
 // to the multigraph hierarchy constructor.
-@SubtypeOf({})
+@SubtypeOf({FenumTop.class})
 @Retention(RetentionPolicy.RUNTIME)
 @DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface FenumBottom {}
