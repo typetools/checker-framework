@@ -543,7 +543,7 @@ public class NullnessAnnotatedTypeFactory
                 AnnotationMirror superAnno,
                 QualifierKind superKind) {
             if (!subKind.areInSameHierarchy(NULLABLE) || !superKind.areInSameHierarchy(NULLABLE)) {
-                return this.isSubtypeInitialization(subAnno, superAnno);
+                return this.isSubtypeInitialization(subAnno, subKind, superAnno, superKind);
             }
             throw new BugInCF("Unexpected annotations %s %s.", subAnno, superAnno);
         }
@@ -555,7 +555,7 @@ public class NullnessAnnotatedTypeFactory
                 AnnotationMirror a2,
                 QualifierKind qual2) {
             if (!qual1.areInSameHierarchy(NULLABLE) || !qual2.areInSameHierarchy(NULLABLE)) {
-                return this.leastUpperBoundInitialization(a1, a2);
+                return this.leastUpperBoundInitialization(a1, qual1, a2, qual2);
             }
             throw new BugInCF("Unexpected annotations %s %s.", a1, a2);
         }

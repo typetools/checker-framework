@@ -744,16 +744,18 @@ public abstract class InitializationAnnotatedTypeFactory<
      * InitializationQualifierHierarchy#isSubtypeInitialization(AnnotationMirror, QualifierKind,
      * AnnotationMirror, QualifierKind)} and {@link
      * InitializationQualifierHierarchy#leastUpperBoundInitialization(AnnotationMirror,
-     * AnnotationMirror)} for appropriate qualifiers. See protected subclass
-     * NullnessQualifierHierarchy within class {@link
+     * QualifierKind, AnnotationMirror, QualifierKind)} for appropriate qualifiers. See protected
+     * subclass NullnessQualifierHierarchy within class {@link
      * org.checkerframework.checker.nullness.NullnessChecker} for an example.
      */
     protected abstract class InitializationQualifierHierarchy extends ComplexHierarchy {
         private final QualifierKind UNKNOWN_INIT;
+        private final QualifierKind UNDER_INIT;
 
         public InitializationQualifierHierarchy() {
             super(InitializationAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
             UNKNOWN_INIT = getQualifierKind(UNKNOWN_INITIALIZATION);
+            UNDER_INIT = getQualifierKind(UNDER_INITALIZATION);
         }
 
         /**
@@ -761,49 +763,23 @@ public abstract class InitializationAnnotatedTypeFactory<
          * not an initialization annotation. Subclasses should override isSubtype and call this
          * method for initialization qualifiers.
          */
-        public boolean isSubtypeInitialization(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (!isInitializationAnnotation(rhs) || !isInitializationAnnotation(lhs)) {
+        public boolean isSubtypeInitialization(
+                AnnotationMirror rhs,
+                QualifierKind subKind,
+                AnnotationMirror lhs,
+                QualifierKind superKind) {
+            if (!subKind.isSubtype(superKind)) {
                 return false;
-            }
-
-            // 't' is always a subtype of 't'
-            if (AnnotationUtils.areSame(rhs, lhs)) {
+            } else if ((subKind == UNDER_INIT && superKind == UNDER_INIT)
+                    || (subKind == UNDER_INIT && superKind == UNKNOWN_INIT)
+                    || (subKind == UNKNOWN_INIT && superKind == UNKNOWN_INIT)) {
+                // Thus, we only need to look at the type frame.
+                TypeMirror frame1 = getTypeFrameFromAnnotation(rhs);
+                TypeMirror frame2 = getTypeFrameFromAnnotation(lhs);
+                return types.isSubtype(frame1, frame2);
+            } else {
                 return true;
             }
-            // @Initialized is only a supertype of @FBCBottom.
-            if (isCommitted(lhs)) {
-                return isFbcBottom(rhs);
-            }
-
-            // @FBCBottom is a supertype of nothing.
-            if (isFbcBottom(lhs)) {
-                return false;
-            }
-            // @FBCBottom is a subtype of everything.
-            if (isFbcBottom(rhs)) {
-                return true;
-            }
-            boolean unc1 = isUnclassified(rhs);
-            boolean unc2 = isUnclassified(lhs);
-            boolean free1 = isFree(rhs);
-            boolean free2 = isFree(lhs);
-
-            // @Initialized is only a subtype of @UnknownInitialization.
-            if (isCommitted(rhs)) {
-                return unc2;
-            }
-            // @UnknownInitialization is not a subtype of @UnderInitialization.
-            if (unc1 && free2) {
-                return false;
-            }
-            // Now, either both annotations are @UnderInitialization, both annotations are
-            // @UnknownInitialization or anno1 is @UnderInitialization and anno2 is
-            // @UnknownInitialization.
-            assert (free1 && free2) || (unc1 && unc2) || (free1 && unc2);
-            // Thus, we only need to look at the type frame.
-            TypeMirror frame1 = getTypeFrameFromAnnotation(rhs);
-            TypeMirror frame2 = getTypeFrameFromAnnotation(lhs);
-            return types.isSubtype(frame1, frame2);
         }
 
         /**
@@ -812,19 +788,31 @@ public abstract class InitializationAnnotatedTypeFactory<
          * leastUpperBound and call this method for initialization qualifiers.
          *
          * @param anno1 an initialization qualifier
+         * @param qual1
          * @param anno2 an initialization qualifier
+         * @param qual2
          * @return the lub of anno1 and anno2
          */
         protected AnnotationMirror leastUpperBoundInitialization(
-                AnnotationMirror anno1, AnnotationMirror anno2) {
+                AnnotationMirror anno1,
+                QualifierKind qual1,
+                AnnotationMirror anno2,
+                QualifierKind qual2) {
+            // qual1=UnknownInitialization, qual2=UnknownInitialization UnknownInitialization
+            // qual1=UnderInitialization, qual2=UnderInitialization UnderInitialization
+            // qual1=UnderInitialization, qual2=Initialized UnknownInitialization
+            // qual1=UnknownInitialization, qual2=UnderInitialization UnknownInitialization
+            // qual1=UnderInitialization, qual2=FBCBottom UnderInitialization
+            // qual1=UnknownInitialization, qual2=Initialized UnknownInitialization
+            // qual1=UnknownInitialization, qual2=FBCBottom UnknownInitialization
             if (!isInitializationAnnotation(anno1) || !isInitializationAnnotation(anno2)) {
                 return null;
             }
 
             // Handle the case where one is a subtype of the other.
-            if (isSubtypeInitialization(anno1, anno2)) {
+            if (isSubtypeInitialization(anno1, qual1, anno2, qual2)) {
                 return anno2;
-            } else if (isSubtypeInitialization(anno2, anno1)) {
+            } else if (isSubtypeInitialization(anno2, qual2, anno1, qual1)) {
                 return anno1;
             }
             boolean unc1 = isUnclassified(anno1);

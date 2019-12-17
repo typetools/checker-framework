@@ -128,6 +128,28 @@ public class QualifierKindHierarchy {
         this.glbs = initializeGlbs();
 
         verify(directSuperMap);
+        //        printLubs();
+        //        printIsSubtype();
+    }
+
+    private void printLubs() {
+        for (Entry<QualifierClassPair, QualifierKind> entry : lubs.entrySet()) {
+            if (entry.getValue().hasElements()) {
+                System.out.println(entry.getKey() + " " + entry.getValue());
+            }
+        }
+    }
+
+    private void printIsSubtype() {
+        for (QualifierKind subKind : qualifierKindMap.values()) {
+            for (QualifierKind superKind : qualifierKindMap.values()) {
+                if (subKind.isSubtype(superKind)
+                        && superKind.hasElements()
+                        && subKind.hasElements()) {
+                    System.out.printf("Sub: %s Super: %s%n", subKind, superKind);
+                }
+            }
+        }
     }
 
     public void verify(Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
@@ -515,6 +537,11 @@ public class QualifierKindHierarchy {
             int result = qual1.hashCode();
             result = 31 * result + qual2.hashCode();
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return "qual1=" + qual1 + ", qual2=" + qual2;
         }
     }
 
