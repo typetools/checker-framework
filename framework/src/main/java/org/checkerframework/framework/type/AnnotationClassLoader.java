@@ -583,6 +583,11 @@ public class AnnotationClassLoader {
             // Convert path notation to class notation.
             className = className.replace(SLASH, DOT);
 
+            String className2 = Signatures.classfilenameToBinaryName(je.getName());
+            if (!className.equals(className2)) {
+                System.out.printf("Not equal: %s %s%n", className, className2);
+            }
+
             // filter for qual package
             if (className.startsWith(packageName + DOT)) {
                 // add to set

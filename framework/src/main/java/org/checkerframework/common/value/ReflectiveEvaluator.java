@@ -254,7 +254,8 @@ public class ReflectiveEvaluator {
      *
      * @param classname the class containing the field
      * @param fieldName the name fo the field
-     * @param MemberSelectTree the static field access in the program; used for diagnostics
+     * @param tree the static field access in the program; used for diagnostics
+     * @return the value of the static field access, or null if it cannot be determinedx
      */
     public Object evaluateStaticFieldAccess(
             @ClassGetName String classname, String fieldName, MemberSelectTree tree) {
