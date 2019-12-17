@@ -100,7 +100,13 @@ public class ValueTransfer extends CFTransfer {
         return Range.create(lowerLength, upperLength);
     }
 
-    /** Returns a range of possible lengths for {@code subNode}, as casted to a String. */
+    /**
+     * Returns a range of possible lengths for {@code subNode}, as casted to a String.
+     *
+     * @param subNode some subnode of {@code p}
+     * @param p TransferInput
+     * @return a range of possible lengths for {@code subNode}, as casted to a String.
+     */
     private Range getStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
 
@@ -181,6 +187,10 @@ public class ValueTransfer extends CFTransfer {
      * Returns a list of possible values for {@code subNode}, as casted to a String. Returns null if
      * {@code subNode}'s type is top/unknown. Returns an empty list if {@code subNode}'s type is
      * bottom.
+     *
+     * @param subNode a subNode of p
+     * @param p TransferInput
+     * @return a list of possible values for {@code subNode} or null
      */
     private List<String> getStringValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
@@ -333,7 +343,13 @@ public class ValueTransfer extends CFTransfer {
         return NumberUtils.castRange(node.getType(), range);
     }
 
-    /** Returns true if this node is annotated with {@code @IntRange}. */
+    /**
+     * Returns true if subNode is annotated with {@code @IntRange}.
+     *
+     * @param subNode subNode of {@code p}
+     * @param p TransferInput
+     * @return true if this subNode is annotated with {@code @IntRange}.
+     */
     private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         return atypefactory.isIntRange(value.getAnnotations());

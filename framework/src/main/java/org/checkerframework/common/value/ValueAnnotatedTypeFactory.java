@@ -1042,6 +1042,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Gets the values stored in either an ArrayLen annotation (ints) or an IntVal/DoubleVal/etc.
      * annotation (longs), and casts the result to a long.
+     *
+     * @param anno annotation mirror from which to get values
+     * @return the values in {@code anno} casted to longs
      */
     private List<Long> getArrayLenOrIntValue(AnnotationMirror anno) {
         List<Long> result;
@@ -1080,7 +1083,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * @return the int range annotation is that equalient to {@code anm}, or {@code anm} if one
+     * Converts {@link IntRangeFromPositive}, {@link IntRangeFromNonNegative}, or {@link
+     * IntRangeFromGTENegativeOne} to {@link IntRange}. Any other annotation is just return.
+     *
+     * @param anm any annotation mirror
+     * @return the int range annotation is that equivalent to {@code anm}, or {@code anm} if one
      *     doesn't exist
      */
     private AnnotationMirror convertSpecialIntRangeToStandardIntRange(AnnotationMirror anm) {
@@ -1101,6 +1108,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * If {@code anno} is equivalent to UnknownVal, return UnknownVal; otherwise, return {@code
      * anno}.
+     *
+     * @param anno any annotation mirror
+     * @return UnknownVal if {@code anno} is equivalent to it; otherwise, return {@code anno}
      */
     private AnnotationMirror convertToUnknown(AnnotationMirror anno) {
         if (AnnotationUtils.areSameByName(anno, ARRAYLENRANGE_NAME)) {
@@ -1585,11 +1595,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns a constant value annotation for a length of an array or string type with a constant
-     * value annotation.
+     * Returns the estimate for the length of a string or array with whose annotated type is {@code
+     * type}.
+     *
+     * @param type annotated typed
+     * @return the estimate for the length of a string or array with whose annotated type is {@code
+     *     type}.
      */
-    AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror receiverType) {
-        AnnotationMirror arrayAnno = receiverType.getAnnotationInHierarchy(UNKNOWNVAL);
+    AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror type) {
+        AnnotationMirror arrayAnno = type.getAnnotationInHierarchy(UNKNOWNVAL);
         switch (AnnotationUtils.annotationName(arrayAnno)) {
             case ARRAYLEN_NAME:
                 // array.length, where array : @ArrayLen(x)
@@ -2286,6 +2300,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns the smallest possible value that an integral annotation might take on. The passed
      * {@code AnnotatedTypeMirror} should contain either an {@code @IntRange} annotation or an
      * {@code @IntVal} annotation. Returns null if it does not.
+     *
+     * @param atm annotated type
+     * @return the smallest possible integral for which the {@code atm} could be the type
      */
     public Long getMinimumIntegralValue(AnnotatedTypeMirror atm) {
         AnnotationMirror anm = atm.getAnnotationInHierarchy(UNKNOWNVAL);
