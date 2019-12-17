@@ -2,6 +2,7 @@ package org.checkerframework.checker.fenum;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
@@ -96,8 +97,10 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Collection<Class<? extends Annotation>> qualifierClasses) {
             return new QualifierKindHierarchy(qualifierClasses) {
                 @Override
-                protected void initializeBottoms() {
+                protected Set<QualifierKind> initializeBottoms(
+                        Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
                     this.bottoms.add(FENUM_BOTTOM);
+                    return null;
                 }
             };
         }
