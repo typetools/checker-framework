@@ -375,15 +375,15 @@ public final class SceneToStubWriter {
             AClass aClass) {
 
         String nameToPrint = basename;
-        String rest = "";
+        String remainingInnerClassNames = "";
         if (basename.contains(".")) {
             nameToPrint = basename.substring(0, basename.indexOf('.'));
-            rest = basename.substring(basename.indexOf('.') + 1);
+            remainingInnerClassNames = basename.substring(basename.indexOf('.') + 1);
         }
 
         // Enums cannot be nested within non-classes,
         // so only print as an enum if the leaf has been reached.
-        if (enumConstants.containsKey(classname) && "".equals(rest)) {
+        if (enumConstants.containsKey(classname) && "".equals(remainingInnerClassNames)) {
             printWriter.print("enum ");
         } else {
             printWriter.print("class ");
@@ -392,10 +392,10 @@ public final class SceneToStubWriter {
         printWriter.print(nameToPrint);
         printTypeParameters(classname);
         printWriter.println(" {");
-        if ("".equals(rest)) {
+        if ("".equals(remainingInnerClassNames)) {
             return 0;
         } else {
-            return 1 + printClassDefinitions(rest, classname, aClass);
+            return 1 + printClassDefinitions(remainingInnerClassNames, classname, aClass);
         }
     }
 
