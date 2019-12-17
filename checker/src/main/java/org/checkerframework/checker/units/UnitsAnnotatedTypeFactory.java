@@ -273,6 +273,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
+    /** Return all annotations that are meta-annotated with UnitsMultiple. */
     private @Nullable @DotSeparatedIdentifiers Name getBaseUnitAnno(AnnotationMirror anno) {
         // loop through the meta annotations of the annotation, look for UnitsMultiple
         for (AnnotationMirror metaAnno :

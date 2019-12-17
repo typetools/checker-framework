@@ -249,6 +249,13 @@ public class ReflectiveEvaluator {
         return returnListOfLists;
     }
 
+    /**
+     * Return the value of a static field access. Return null if there is trouble.
+     *
+     * @param classname the class containing the field
+     * @param fieldName the name fo the field
+     * @param MemberSelectTree the static field access in the program; used for diagnostics
+     */
     public Object evaluateStaticFieldAccess(
             @ClassGetName String classname, String fieldName, MemberSelectTree tree) {
         try {

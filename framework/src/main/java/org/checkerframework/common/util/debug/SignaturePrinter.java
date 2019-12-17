@@ -73,6 +73,12 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     private SourceChecker checker;
 
     ///////// Initialization /////////////
+    /**
+     * Initialization.
+     *
+     * @param env the ProcessingEnvironment
+     * @param checkerName the name of the checker
+     */
     private void init(ProcessingEnvironment env, @Nullable @BinaryName String checkerName) {
         if (checkerName != null) {
             try {
