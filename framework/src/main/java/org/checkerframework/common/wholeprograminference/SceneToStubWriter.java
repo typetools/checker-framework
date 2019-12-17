@@ -8,6 +8,7 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -180,22 +181,23 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Prints a literal; used when printing the arguments of annotations. Nearly a copy of the
-     * same-named method in {@code IndexFileWriter}, with one modification: this version (correctly)
-     * prints long literals with an L at the end, so that they are valid Java source code (if they
-     * are larger than Integer.MAX_VALUE).
+     * Formats a literal; used when printing the arguments of annotations. Similar to {@code
+     * IndexFileWriter#printValue}, but does not print directly. Instead, returns the result to be
+     * printed.
      *
-     * @param aft the annotation in which we are printing
-     * @param o the value or values to print
+     * @param aft the annotation whose values are being formatted, for context
+     * @param o the value or values to format
+     * @return the String representation of the value
      */
-    private void printValue(AnnotationFieldType aft, Object o) {
+    private String formatAnnotationValue(AnnotationFieldType aft, Object o) {
         if (aft instanceof AnnotationAFT) {
-            printAnnotation((Annotation) o);
+            return formatAnnotation((Annotation) o);
         } else if (aft instanceof ArrayAFT) {
+            StringBuilder result = new StringBuilder();
             ArrayAFT aaft = (ArrayAFT) aft;
-            printWriter.print('{');
+            result.append('{');
             if (!(o instanceof List)) {
-                printValue(aaft.elementType, o);
+                result.append(formatAnnotationValue(aaft.elementType, o));
             } else {
                 List<?> l = (List<?>) o;
                 // watch out--could be an empty array of unknown type
@@ -205,96 +207,106 @@ public final class SceneToStubWriter {
                         throw new AssertionError();
                     }
                 } else {
-                    boolean first = true;
+                    StringJoiner sj = new StringJoiner(",");
                     for (Object o2 : l) {
-                        if (!first) {
-                            printWriter.print(',');
-                        }
-                        printValue(aaft.elementType, o2);
-                        first = false;
+                        sj.add(formatAnnotationValue(aaft.elementType, o2));
                     }
+                    result.append(sj.toString());
                 }
             }
-            printWriter.print('}');
+            result.append("}");
+            return result.toString();
         } else if (aft instanceof ClassTokenAFT) {
-            printWriter.print(aft.format(o));
+            return aft.format(o);
         } else if (aft instanceof BasicAFT && o instanceof String) {
-            printWriter.print(Strings.escape((String) o));
+            return Strings.escape((String) o);
         } else if (aft instanceof BasicAFT && o instanceof Long) {
-            printWriter.print(o.toString() + "L");
+            return o.toString() + "L";
         } else {
-            printWriter.print(o.toString());
+            return o.toString();
         }
     }
 
     /**
-     * Prints an annotation in Java source format.
+     * Returns the String representation of an annotation in Java source format.
      *
      * @param a the annotation to print
+     * @return the formatted annotation
      */
-    private void printAnnotation(Annotation a) {
-        printWriter.print("@" + a.def().name.substring(a.def().name.lastIndexOf('.') + 1));
+    private String formatAnnotation(Annotation a) {
+        StringBuilder result = new StringBuilder();
+        result.append("@" + a.def().name.substring(a.def().name.lastIndexOf('.') + 1));
         if (!a.fieldValues.isEmpty()) {
-            printWriter.print('(');
-            boolean first = true;
+            result.append('(');
+            StringJoiner sj = new StringJoiner(",");
             for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
-                if (!first) {
-                    printWriter.print(',');
-                }
-                printWriter.print(f.getKey() + "=");
-                printValue(a.def().fieldTypes.get(f.getKey()), f.getValue());
-                first = false;
+                sj.add(
+                        f.getKey()
+                                + "="
+                                + formatAnnotationValue(
+                                        a.def().fieldTypes.get(f.getKey()), f.getValue()));
             }
-            printWriter.print(')');
+            result.append(sj.toString());
+            result.append(')');
         }
+        return result.toString();
     }
 
     /**
-     * Prints all annotations in {@code annos}, separated by spaces.
+     * Returns all annotations in {@code annos}, separated by spaces, in a form suitable to be
+     * printed as Java source code.
      *
-     * <p>Internal JDK annotation such as jdk.Profile+Annotation contain "+", so ignore those when
-     * printing. This code is mostly borrowed from {@code IndexFileWriter}.
+     * <p>This method also adds a trailing space.
      *
-     * @param annos the annotations to print
-     * @see #printAnnotation(Annotation)
+     * <p>Internal JDK annotations, such as jdk.Profile+Annotation, are ignored. These annotations
+     * are identified using the convention that their names contain "+".
+     *
+     * @param annos the annotations to format
+     * @see #formatAnnotation(Annotation)
      */
-    private void printAnnotations(Collection<? extends Annotation> annos) {
+    private String formatAnnotations(Collection<? extends Annotation> annos) {
+        StringJoiner sj = new StringJoiner(" ");
         for (Annotation tla : annos) {
             if (!tla.def.name.contains("+")) {
-                printAnnotation(tla);
-                printWriter.print(' ');
+                sj.add(formatAnnotation(tla));
             }
         }
+        return sj.toString() + " ";
     }
 
     /**
-     * Prints the annotations on the component type of an array, if there are any.
+     * Formats the annotations on the component type of an array, if there are any.
      *
-     * @param e the array type to print
+     * @param e the array type to format
+     * @returns the array type formatted to be written to Java source code
      */
-    private void printArrayComponentTypeAnnotation(ATypeElement e) {
+    private String formatArrayComponentTypeAnnotation(ATypeElement e) {
+        StringBuilder result = new StringBuilder();
         for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
             InnerTypeLocation loc = ite.getKey();
             AElement it = ite.getValue();
             if (loc.location.contains(TypePathEntry.ARRAY)) {
-                printAnnotations(it.tlAnnotationsHere);
+                result.append(formatAnnotations(it.tlAnnotationsHere));
             }
         }
+        return result.toString();
     }
 
     /**
-     * Prints the stub representation of an AField, which represents a variable declaration. In
-     * practice, {@code aField} should represent either a field declaration or a formal parameter of
-     * a method, because stub files should not contain local variable declarations. It is the
-     * responsibility of each caller of this method to ensure that is true.
+     * Formats an AField so that it can be printed in a stub. An AField represents a variable
+     * declaration. In practice, {@code aField} should represent either a field declaration or a
+     * formal parameter of a method, because stub files should not contain local variable
+     * declarations. It is the responsibility of each caller of this method to ensure that is true.
      *
-     * @param aField the field to print
+     * @param aField the field to format
      * @param fieldName the name to use for the declaration in the stub file. This doesn't matter
      *     for parameters, but must be correct for fields.
      * @param className the name of the enclosing class. This is only used for printing the type of
      *     an explicit receiver parameter (i.e. a parameter named "this").
+     * @return a String suitable to print in a stub file
      */
-    private void printAField(AField aField, String fieldName, String className) {
+    private String formatAField(AField aField, String fieldName, String className) {
+        StringBuilder result = new StringBuilder();
         String basetype;
         if ("this".equals(fieldName)) {
             basetype = className;
@@ -308,15 +320,16 @@ public final class SceneToStubWriter {
 
         if (basetype.contains("[")) {
             String component = basetype.substring(0, basetype.lastIndexOf('['));
-            printArrayComponentTypeAnnotation(aField.type);
-            printWriter.print(component);
-            printWriter.print(" ");
+            result.append(formatArrayComponentTypeAnnotation(aField.type));
+            result.append(component);
+            result.append(" ");
             basetype = "[]";
         }
-        printAnnotations(aField.type.tlAnnotationsHere);
-        printWriter.print(basetype);
-        printWriter.print(" ");
-        printWriter.print(fieldName);
+        result.append(formatAnnotations(aField.type.tlAnnotationsHere));
+        result.append(basetype);
+        result.append(' ');
+        result.append(fieldName);
+        return result.toString();
     }
 
     /**
@@ -388,7 +401,7 @@ public final class SceneToStubWriter {
         } else {
             printWriter.print("class ");
         }
-        printAnnotations(aClass.tlAnnotationsHere);
+        formatAnnotations(aClass.tlAnnotationsHere);
         printWriter.print(nameToPrint);
         printTypeParameters(classname);
         printWriter.println(" {");
@@ -411,9 +424,70 @@ public final class SceneToStubWriter {
             AField aField = fieldEntry.getValue();
             printWriter.println();
             printWriter.print(INDENT);
-            printAField(aField, fieldName, fullyQualifiedClassname);
+            printWriter.print(formatAField(aField, fieldName, fullyQualifiedClassname));
             printWriter.println(";");
         }
+    }
+
+    /**
+     * Prints a method signature in stub file format (i.e. without a method body).
+     *
+     * @param aMethod the method to print
+     * @param basename the simple name of the containing class. Used only to determine if the method
+     *     being printed is the constructor of an inner class.
+     * @param fullyQualifiedClassname the fully-qualified name of the containing class
+     */
+    private void printMethodSignature(
+            AMethod aMethod, String basename, String fullyQualifiedClassname) {
+        printWriter.println();
+        printWriter.print(INDENT);
+        printWriter.print(formatAnnotations(aMethod.returnType.tlAnnotationsHere));
+        String methodName = aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
+        // Use Java syntax for constructors.
+        if ("<init>".equals(methodName)) {
+            // Constructor names cannot contain dots, if this is an inner class.
+            methodName =
+                    basename.contains(".")
+                            ? basename.substring(basename.lastIndexOf('.') + 1)
+                            : basename;
+        } else {
+            // This isn't a constructor, so add a return type if one is available.
+            // Note that the stub file format doesn't require this to be correct,
+            // so it would be acceptable to print "java.lang.Object" for every
+            // method. A better type is printed if one is available to improve
+            // the readability of the resulting stub file.
+            String descriptionString = aMethod.returnType.description.toString();
+            if (basetypes.containsKey(descriptionString)) {
+                printWriter.print(basetypes.get(descriptionString));
+            } else {
+                printWriter.print("java.lang.Object");
+            }
+            printWriter.print(" ");
+        }
+        printWriter.print(methodName);
+        printWriter.print("(");
+
+        StringJoiner parameters = new StringJoiner(", ");
+
+        if (!aMethod.receiver.type.tlAnnotationsHere.isEmpty()
+                || !aMethod.receiver.type.innerTypes.isEmpty()) {
+            // Only output the receiver if it has an annotation.
+            parameters.add(formatAField(aMethod.receiver, "this", fullyQualifiedClassname));
+        }
+        for (Integer index : aMethod.parameters.keySet()) {
+            AField param = aMethod.parameters.get(index);
+            // AMethod doesn't actually track real parameter names.
+            // Fortunately, the stub file parser also doesn't, so
+            // this code can safely ignore that problem and use a generic
+            // name instead.
+            //
+            // TODO: use the actual parse tree of the method
+            // to figure out the real parameter names, and then thread them
+            // through to here.
+            parameters.add(formatAField(param, "param" + index, fullyQualifiedClassname));
+        }
+        printWriter.print(parameters.toString());
+        printWriter.println(");");
     }
 
     /**
@@ -473,15 +547,13 @@ public final class SceneToStubWriter {
                 // for enums, instead of printing fields print the enum constants
                 List<VariableElement> enumConstants =
                         this.enumConstants.get(fullyQualifiedClassname);
-                boolean first = true;
+
+                StringJoiner sj = new StringJoiner(", ");
                 for (VariableElement enumConstant : enumConstants) {
-                    if (!first) {
-                        printWriter.print(", ");
-                    }
-                    printWriter.print(enumConstant.getSimpleName());
-                    first = false;
+                    sj.add(enumConstant.getSimpleName());
                 }
-                if (!first) {
+                if (sj.length() != 0) {
+                    printWriter.print(sj.toString());
                     printWriter.println(";");
                 }
             }
@@ -489,58 +561,7 @@ public final class SceneToStubWriter {
             // print method signatures
             for (Map.Entry<String, AMethod> methodEntry : aClass.methods.entrySet()) {
                 AMethod aMethod = methodEntry.getValue();
-                printWriter.println();
-                printWriter.print(INDENT);
-                printAnnotations(aMethod.returnType.tlAnnotationsHere);
-                String methodName =
-                        aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
-                // Use Java syntax for constructors.
-                if ("<init>".equals(methodName)) {
-                    // Constructor names cannot contain dots, if this is an inner class.
-                    methodName =
-                            basename.contains(".")
-                                    ? basename.substring(basename.lastIndexOf('.') + 1)
-                                    : basename;
-                } else {
-                    // This isn't a constructor, so add a return type if one is available.
-                    // Note that the stub file format doesn't require this to be correct,
-                    // so it would be acceptable to print "java.lang.Object" for every
-                    // method. A better type is printed if one is available to improve
-                    // the readability of the resulting stub file.
-                    String descriptionString = aMethod.returnType.description.toString();
-                    if (basetypes.containsKey(descriptionString)) {
-                        printWriter.print(basetypes.get(descriptionString));
-                    } else {
-                        printWriter.print("java.lang.Object");
-                    }
-                    printWriter.print(" ");
-                }
-                printWriter.print(methodName);
-                printWriter.print("(");
-                boolean firstParam = true;
-                if (!aMethod.receiver.type.tlAnnotationsHere.isEmpty()
-                        || !aMethod.receiver.type.innerTypes.isEmpty()) {
-                    // Only output the receiver if it has an annotation.
-                    printAField(aMethod.receiver, "this", fullyQualifiedClassname);
-                    firstParam = false;
-                }
-                for (Integer index : aMethod.parameters.keySet()) {
-                    if (!firstParam) {
-                        printWriter.print(", ");
-                    }
-                    AField param = aMethod.parameters.get(index);
-                    // AMethod doesn't actually track real parameter names.
-                    // Fortunately, the stub file parser also doesn't, so
-                    // this code can safely ignore that problem and use a generic
-                    // name instead.
-                    //
-                    // TODO: use the actual parse tree of the method
-                    // to figure out the real parameter names, and then thread them
-                    // through to here.
-                    printAField(param, "param" + index, fullyQualifiedClassname);
-                    firstParam = false;
-                }
-                printWriter.println(");");
+                printMethodSignature(aMethod, basename, fullyQualifiedClassname);
             }
             for (int i = 0; i < curlyCount; i++) {
                 printWriter.println("}");
@@ -564,14 +585,11 @@ public final class SceneToStubWriter {
             return;
         }
         printWriter.print("<");
-        boolean first = true;
+        StringJoiner sj = new StringJoiner(", ");
         for (TypeParameterElement t : typeParameters) {
-            if (!first) {
-                printWriter.print(", ");
-            }
-            printWriter.print(t.getSimpleName().toString());
-            first = false;
+            sj.add(t.getSimpleName().toString());
         }
+        printWriter.print(sj.toString());
         printWriter.print(">");
     }
 }
