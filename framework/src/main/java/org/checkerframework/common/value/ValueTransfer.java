@@ -355,7 +355,13 @@ public class ValueTransfer extends CFTransfer {
         return atypefactory.isIntRange(value.getAnnotations());
     }
 
-    /** Returns true if this node is annotated with {@code @UnknownVal}. */
+    /**
+     * Returns true if {@code node} an integral type and is {@code anno} is {@code @UnknownVal}.
+     *
+     * @param node a node
+     * @param anno annotation mirror
+     * @return true if node is annotated with {@code @UnknownVal} and it is an integral type.
+     */
     private boolean isIntegralUnknownVal(Node node, AnnotationMirror anno) {
         return AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.UNKNOWN_NAME)
                 && TypesUtils.isIntegral(node.getType());
