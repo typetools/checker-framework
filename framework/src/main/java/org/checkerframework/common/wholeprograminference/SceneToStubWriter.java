@@ -49,9 +49,6 @@ public final class SceneToStubWriter {
     /** How far to indent when writing members of a stub file. */
     private static final String INDENT = "    ";
 
-    /** The printer where the stub file is written. */
-    private final PrintWriter printWriter;
-
     /**
      * A map from the {@code description} field of an ATypeElement to the corresponding unqualified
      * Java types, since {@code AScene}s don't carry that information. See the comment on the {@code
@@ -84,17 +81,14 @@ public final class SceneToStubWriter {
      *     declarations
      * @param enumConstants a map from fully-qualified enum names to the enum constants defined in
      *     that name
-     * @param out the Writer to output the stub file to
      */
     private SceneToStubWriter(
             Map<String, TypeMirror> basetypes,
             Map<@FullyQualifiedName String, TypeElement> types,
-            Map<@FullyQualifiedName String, List<VariableElement>> enumConstants,
-            Writer out) {
+            Map<@FullyQualifiedName String, List<VariableElement>> enumConstants) {
         this.basetypes = basetypes;
         this.types = types;
         this.enumConstants = enumConstants;
-        printWriter = new PrintWriter(out);
     }
 
     /**
@@ -115,8 +109,8 @@ public final class SceneToStubWriter {
             Map<@FullyQualifiedName String, TypeElement> types,
             Map<@FullyQualifiedName String, List<VariableElement>> enumConstants,
             Writer out) {
-        SceneToStubWriter writer = new SceneToStubWriter(basetypes, types, enumConstants, out);
-        writer.writeImpl(scene);
+        SceneToStubWriter writer = new SceneToStubWriter(basetypes, types, enumConstants);
+        writer.writeImpl(scene, new PrintWriter(out));
     }
 
     /**
@@ -341,6 +335,8 @@ public final class SceneToStubWriter {
      */
     private class ImportDefCollector extends DefCollector {
 
+        private final PrintWriter printWriter;
+
         /**
          * Constructs a new ImportDefCollector, which will run on the given AScene when its {@code
          * visit} method is called.
@@ -348,8 +344,9 @@ public final class SceneToStubWriter {
          * @param scene the scene whose imported annotations should be printed
          * @throws DefException if the DefCollector does not succeed
          */
-        ImportDefCollector(AScene scene) throws DefException {
+        ImportDefCollector(AScene scene, PrintWriter printWriter) throws DefException {
             super(scene);
+            this.printWriter = printWriter;
         }
 
         /**
@@ -380,12 +377,14 @@ public final class SceneToStubWriter {
      * @param classname the fully-qualified name of the class in question, so that it can be printed
      *     as an enum if it is one
      * @param aClass the AClass representing the classname
+     * @param printWriter the writer where the class definition should be printed
      * @return the number of outer classes within which this class is nested
      */
     private int printClassDefinitions(
             @FullyQualifiedName String basename,
             @FullyQualifiedName String classname,
-            AClass aClass) {
+            AClass aClass,
+            PrintWriter printWriter) {
 
         String nameToPrint = basename;
         String remainingInnerClassNames = "";
@@ -403,12 +402,14 @@ public final class SceneToStubWriter {
         }
         formatAnnotations(aClass.tlAnnotationsHere);
         printWriter.print(nameToPrint);
-        printTypeParameters(classname);
+        printTypeParameters(classname, printWriter);
         printWriter.println(" {");
         if ("".equals(remainingInnerClassNames)) {
             return 0;
         } else {
-            return 1 + printClassDefinitions(remainingInnerClassNames, classname, aClass);
+            return 1
+                    + printClassDefinitions(
+                            remainingInnerClassNames, classname, aClass, printWriter);
         }
     }
 
@@ -417,8 +418,12 @@ public final class SceneToStubWriter {
      *
      * @param aClass the class whose fields should be printed
      * @param fullyQualifiedClassname the fully-qualified name of the class
+     * @param printWriter the writer on which to print the fields
      */
-    private void printFields(AClass aClass, @FullyQualifiedName String fullyQualifiedClassname) {
+    private void printFields(
+            AClass aClass,
+            @FullyQualifiedName String fullyQualifiedClassname,
+            PrintWriter printWriter) {
         for (Map.Entry<String, AField> fieldEntry : aClass.fields.entrySet()) {
             String fieldName = fieldEntry.getKey();
             AField aField = fieldEntry.getValue();
@@ -436,9 +441,13 @@ public final class SceneToStubWriter {
      * @param basename the simple name of the containing class. Used only to determine if the method
      *     being printed is the constructor of an inner class.
      * @param fullyQualifiedClassname the fully-qualified name of the containing class
+     * @param printWriter where to print the method signature
      */
     private void printMethodSignature(
-            AMethod aMethod, String basename, String fullyQualifiedClassname) {
+            AMethod aMethod,
+            String basename,
+            String fullyQualifiedClassname,
+            PrintWriter printWriter) {
         printWriter.println();
         printWriter.print(INDENT);
         printWriter.print(formatAnnotations(aMethod.returnType.tlAnnotationsHere));
@@ -496,12 +505,13 @@ public final class SceneToStubWriter {
      * format, all with appropriate annotations.
      *
      * @param scene the scene to write
+     * @param printWriter where to write the scene to
      */
-    private void writeImpl(AScene scene) {
+    private void writeImpl(AScene scene, PrintWriter printWriter) {
         // Write out all imports
         ImportDefCollector importDefCollector;
         try {
-            importDefCollector = new ImportDefCollector(scene);
+            importDefCollector = new ImportDefCollector(scene, printWriter);
         } catch (DefException e) {
             throw new BugInCF(e.getMessage(), e);
         }
@@ -538,11 +548,14 @@ public final class SceneToStubWriter {
             // inner classes with a ., so that they are printed correctly in stub files.
             String fullyQualifiedClassname = convertBinaryToFullyQualified(classname);
 
-            int curlyCount = 1 + printClassDefinitions(basename, fullyQualifiedClassname, aClass);
+            int curlyCount =
+                    1
+                            + printClassDefinitions(
+                                    basename, fullyQualifiedClassname, aClass, printWriter);
 
             // print fields or enum constants
             if (!enumConstants.containsKey(fullyQualifiedClassname)) {
-                printFields(aClass, fullyQualifiedClassname);
+                printFields(aClass, fullyQualifiedClassname, printWriter);
             } else {
                 // for enums, instead of printing fields print the enum constants
                 List<VariableElement> enumConstants =
@@ -561,7 +574,7 @@ public final class SceneToStubWriter {
             // print method signatures
             for (Map.Entry<String, AMethod> methodEntry : aClass.methods.entrySet()) {
                 AMethod aMethod = methodEntry.getValue();
-                printMethodSignature(aMethod, basename, fullyQualifiedClassname);
+                printMethodSignature(aMethod, basename, fullyQualifiedClassname, printWriter);
             }
             for (int i = 0; i < curlyCount; i++) {
                 printWriter.println("}");
@@ -574,8 +587,9 @@ public final class SceneToStubWriter {
      * Prints the type parameters of the given class, enclosed in {@code <...>}.
      *
      * @param classname a fully-qualified class name
+     * @param printWriter where to print the type parameters
      */
-    private void printTypeParameters(String classname) {
+    private void printTypeParameters(String classname, PrintWriter printWriter) {
         TypeElement type = types.get(classname);
         if (type == null) {
             return;
