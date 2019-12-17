@@ -224,7 +224,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * {@code replacement}.
      *
      * @param checkerClass the checker class
-     * @praam replacement the string to replace "Checker" or "Subchecker" by
+     * @param replacement the string to replace "Checker" or "Subchecker" by
      * @return the name of the related class
      */
     @SuppressWarnings("signature") // string manipulation of @ClassGetName string

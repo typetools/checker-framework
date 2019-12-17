@@ -133,7 +133,7 @@ public class LockAnnotatedTypeFactory
     /**
      * Returns the value of Class.forName, or null if Class.forName would throw an exception.
      *
-     * @param an annotation's fully-qualified name
+     * @param annotationClassName an annotation's fully-qualified name
      * @return an annotation class or null
      */
     @SuppressWarnings("unchecked") // cast to generic type
