@@ -294,6 +294,13 @@ public class ValueTransfer extends CFTransfer {
         return getNumericalValues(subNode, valueAnno);
     }
 
+    /**
+     * Returns the numerical values in valueAnno casted to the type of subNode.
+     *
+     * @param subNode node
+     * @param valueAnno annotation mirror
+     * @return the numerical values in valueAnno casted to the type of subNode.
+     */
     private List<? extends Number> getNumericalValues(Node subNode, AnnotationMirror valueAnno) {
 
         if (valueAnno == null
@@ -322,6 +329,15 @@ public class ValueTransfer extends CFTransfer {
         return getIntRangeFromAnnotation(subNode, val);
     }
 
+    /**
+     * Returns the {@link Range} object corresponding to the annotation {@code val} casted to the
+     * type of {@code node}.
+     *
+     * @param node a node
+     * @param val annotation mirror
+     * @return the {@link Range} object corresponding to the annotation {@code val} casted to the
+     *     type of {@code node}.
+     */
     private Range getIntRangeFromAnnotation(Node node, AnnotationMirror val) {
         Range range;
         if (val == null

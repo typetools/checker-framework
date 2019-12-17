@@ -2219,8 +2219,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
-    public boolean isIntRange(AnnotationMirror anm) {
-        String name = AnnotationUtils.annotationName(anm);
+    /**
+     * Returns true if {@code anno} is an {@link IntRange}, {@link IntRangeFromPositive}, {@link
+     * IntRangeFromNonNegative}, or {@link IntRangeFromGTENegativeOne}.
+     *
+     * @param anno annotation mirror
+     * @return true if {@code anno} is an {@link IntRange}, {@link IntRangeFromPositive}, {@link
+     *     IntRangeFromNonNegative}, or {@link IntRangeFromGTENegativeOne}
+     */
+    public boolean isIntRange(AnnotationMirror anno) {
+        String name = AnnotationUtils.annotationName(anno);
         return name.equals(INTRANGE_NAME)
                 || name.equals(INTRANGE_FROMPOS_NAME)
                 || name.equals(INTRANGE_FROMNONNEG_NAME)
