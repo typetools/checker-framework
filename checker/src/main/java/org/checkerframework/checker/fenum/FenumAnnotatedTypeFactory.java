@@ -135,6 +135,9 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a2,
                 QualifierKind qual2) {
             if (qual1 == FENUM_KIND && qual2 == FENUM_KIND) {
+                if (AnnotationUtils.areSame(a1, a2)) {
+                    return a1;
+                }
                 return FENUM_TOP;
             } else if (qual1 == FENUM_KIND) {
                 return a1;
