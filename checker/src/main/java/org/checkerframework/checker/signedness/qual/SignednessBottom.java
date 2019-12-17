@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@SubtypeOf({SignednessGlb.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
+@SubtypeOf({SignednessGlb.class})
 public @interface SignednessBottom {}

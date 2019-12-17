@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -13,8 +14,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultQualifierInHierarchy
-@SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf({})
+@DefaultQualifierInHierarchy
 public @interface UpperBoundUnknown {}

@@ -16,8 +16,8 @@ import org.checkerframework.framework.qual.FieldInvariant;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Inherited
 @Target(ElementType.TYPE)
+@Inherited
 public @interface MinLenFieldInvariant {
 
     /**

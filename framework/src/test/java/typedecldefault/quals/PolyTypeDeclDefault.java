@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /** A polymorphic qualifier for the TyepDeclDefault type system. */
 @Documented
-@PolymorphicQualifier
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@PolymorphicQualifier
 public @interface PolyTypeDeclDefault {}

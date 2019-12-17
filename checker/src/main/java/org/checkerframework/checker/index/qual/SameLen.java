@@ -17,8 +17,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@SubtypeOf(SameLenUnknown.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(SameLenUnknown.class)
 public @interface SameLen {
     /** A list of other sequences with the same length. */
     @JavaExpression

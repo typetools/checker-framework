@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -21,11 +22,12 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * @checker_framework.manual #map-key-checker Map Key Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
 @DefaultFor(value = TypeUseLocation.LOWER_BOUND, types = Void.class)
 @QualifierForLiterals(LiteralKind.NULL)
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface UnknownKeyFor {}

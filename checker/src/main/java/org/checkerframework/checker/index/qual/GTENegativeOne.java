@@ -30,6 +30,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@SubtypeOf({LowerBoundUnknown.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf({LowerBoundUnknown.class})
 public @interface GTENegativeOne {}

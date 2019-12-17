@@ -1,5 +1,6 @@
 package org.checkerframework.checker.lock.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -22,6 +23,9 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @see LockHeld
  * @checker_framework.manual #lock-checker Lock Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({})
 @InvisibleQualifier
 @SubtypeOf({}) // The top type in the hierarchy
 @DefaultQualifierInHierarchy
@@ -29,6 +33,4 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @QualifierForLiterals(LiteralKind.NULL)
 @DefaultQualifierInHierarchyInUncheckedCode
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND})
-@Retention(RetentionPolicy.RUNTIME)
-@Target({})
 public @interface LockPossiblyHeld {}

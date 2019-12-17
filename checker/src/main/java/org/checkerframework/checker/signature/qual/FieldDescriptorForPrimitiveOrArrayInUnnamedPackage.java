@@ -22,9 +22,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({ClassGetName.class, FieldDescriptor.class})
 @QualifierForLiterals(
         stringPatterns =
                 "^([BCDFIJSZ]|\\[+[BCDFIJSZ]|\\[L[A-Za-z_][A-Za-z_0-9]*(\\$[A-Za-z_0-9]+)*;)$")
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface FieldDescriptorForPrimitiveOrArrayInUnnamedPackage {}

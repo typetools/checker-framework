@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * object and that it returns an interned object.
  */
 @Documented
-@Inherited
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+@Inherited
 public @interface InternMethod {}

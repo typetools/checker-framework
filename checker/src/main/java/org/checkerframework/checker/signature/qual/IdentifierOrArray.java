@@ -17,7 +17,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({FullyQualifiedName.class, ClassGetSimpleName.class})
 @QualifierForLiterals(stringPatterns = "^[A-Za-z_][A-Za-z_0-9]*(\\[\\])*$")
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IdentifierOrArray {}

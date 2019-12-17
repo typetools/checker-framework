@@ -1,5 +1,6 @@
 package org.checkerframework.checker.tainting.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -15,9 +16,10 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * @checker_framework.manual #tainting-checker Tainting Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(Tainted.class)
 @QualifierForLiterals(LiteralKind.STRING)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
 @DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface Untainted {}

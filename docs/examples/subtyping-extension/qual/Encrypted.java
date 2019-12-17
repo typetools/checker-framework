@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 /** Denotes that the representation of an object is encrypted. */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(PossiblyUnencrypted.class)
 @DefaultFor({TypeUseLocation.LOWER_BOUND})
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}

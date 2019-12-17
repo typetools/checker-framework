@@ -15,6 +15,6 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@PolymorphicQualifier(UpperBoundUnknown.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@PolymorphicQualifier(UpperBoundUnknown.class)
 public @interface PolyUpperBound {}

@@ -29,6 +29,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@SubtypeOf(SignatureUnknown.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(SignatureUnknown.class)
 public @interface MethodDescriptor {}

@@ -15,6 +15,6 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@PolymorphicQualifier(SameLenUnknown.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@PolymorphicQualifier(SameLenUnknown.class)
 public @interface PolySameLen {}
