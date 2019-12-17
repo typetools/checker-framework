@@ -198,6 +198,10 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
         QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);
+        if (glb == null) {
+            // glb is null when the qualifiers are not in the same hierarchy.
+            return null;
+        }
         if (glb.hasElements()) {
             return greatestLowerBound(a1, qual1, a2, qual2);
         }
