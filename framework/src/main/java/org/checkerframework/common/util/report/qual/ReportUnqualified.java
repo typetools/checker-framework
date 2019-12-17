@@ -13,8 +13,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>Note that because of the missing RetentionPolicy, the qualifier will not be stored in
  * bytecode.
  */
-@InvisibleQualifier
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@InvisibleQualifier
 public @interface ReportUnqualified {}
