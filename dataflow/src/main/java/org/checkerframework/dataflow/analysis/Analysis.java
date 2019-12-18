@@ -15,7 +15,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
@@ -125,11 +124,9 @@ public class Analysis<
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph. The transfer function is set later using {@code setTransferFunction}.
-     *
-     * @param env the associated processing environment
      */
-    public Analysis(ProcessingEnvironment env) {
-        this(null, -1);
+    public Analysis(int maxCountBeforeWidening) {
+        this(null, maxCountBeforeWidening);
     }
 
     /**

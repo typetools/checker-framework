@@ -19,7 +19,6 @@ public class ConstantPropagationPlayground {
 
         // run the analysis and create a PDF file
         ConstantPropagationTransfer transfer = new ConstantPropagationTransfer();
-        @SuppressWarnings("nullness")
         Analysis<Constant, ConstantPropagationStore, ConstantPropagationTransfer> analysis =
                 new Analysis<>(transfer);
         JavaSource2CFGDOT.generateDOTofCFG(inputFile, outputDir, method, clazz, true, analysis);

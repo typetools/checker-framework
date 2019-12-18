@@ -79,7 +79,7 @@ public abstract class CFAbstractAnalysis<
             GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             List<Pair<VariableElement, V>> fieldValues,
             int maxCountBeforeWidening) {
-        super(null, maxCountBeforeWidening);
+        super(maxCountBeforeWidening);
         env = checker.getProcessingEnvironment();
         types = env.getTypeUtils();
         qualifierHierarchy = factory.getQualifierHierarchy();
