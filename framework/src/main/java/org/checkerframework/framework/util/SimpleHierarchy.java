@@ -176,6 +176,10 @@ public class SimpleHierarchy extends QualifierHierarchy {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
         QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
+        if (lub == null) {
+            // a1 and a2 are not in the same hierarchy
+            return null;
+        }
         return qualifierMap.get(lub);
     }
 
@@ -184,6 +188,10 @@ public class SimpleHierarchy extends QualifierHierarchy {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
         QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);
+        if (glb == null) {
+            // a1 and a2 are not in the same hierarchy
+            return null;
+        }
         return qualifierMap.get(glb);
     }
 
