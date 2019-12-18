@@ -18,10 +18,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@SubtypeOf(UpperBoundUnknown.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(UpperBoundUnknown.class)
 public @interface LTEqLengthOf {
     /** Sequences, each of which is at least as long as the annotated expression's value. */
     @JavaExpression

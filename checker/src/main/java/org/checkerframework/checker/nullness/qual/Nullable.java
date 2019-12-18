@@ -25,11 +25,11 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @see org.checkerframework.checker.nullness.NullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})
 @QualifierForLiterals(LiteralKind.NULL)
 @DefaultFor(types = Void.class)
 @DefaultInUncheckedCodeFor({TypeUseLocation.RETURN, TypeUseLocation.UPPER_BOUND})
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Nullable {}

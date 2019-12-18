@@ -1,5 +1,8 @@
 package org.checkerframework.checker.formatter.qual;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
@@ -16,8 +19,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #formatter-checker Format String Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({})
 @InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
-@Target({})
 public @interface UnknownFormat {}

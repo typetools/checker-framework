@@ -52,11 +52,6 @@ public class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
-    }
-
-    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new MultiGraphQualifierHierarchy(factory);
     }

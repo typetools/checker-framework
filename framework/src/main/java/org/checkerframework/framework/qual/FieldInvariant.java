@@ -23,9 +23,9 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #field-invariants Field invariants
  */
 @Documented
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Inherited
-@Retention(RetentionPolicy.RUNTIME)
 public @interface FieldInvariant {
 
     /**
