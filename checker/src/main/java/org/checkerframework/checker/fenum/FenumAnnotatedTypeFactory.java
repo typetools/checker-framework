@@ -88,15 +88,10 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        protected Map<QualifierKind, Set<QualifierKind>> initializeDirectSuperTypes() {
-            Map<QualifierKind, Set<QualifierKind>> supersMap = super.initializeDirectSuperTypes();
-            QualifierKind bottom =
-                    getQualifierKindMap()
-                            .get("org.checkerframework.checker.fenum.qual.FenumBottom");
-            Set<QualifierKind> superTypes = supersMap.get(bottom);
-            superTypes.addAll(supersMap.keySet());
-            superTypes.remove(bottom);
-            return supersMap;
+        protected void specifyBottom(
+                Map<QualifierKind, Set<QualifierKind>> directSuperMap,
+                Class<? extends Annotation> bottom) {
+            super.specifyBottom(directSuperMap, FenumBottom.class);
         }
     }
 

@@ -23,6 +23,8 @@ public class QualifierKindHierarchy {
     public static @Interned class QualifierKind implements Comparable<QualifierKind> {
         private final @Interned String name;
         private final Class<? extends Annotation> clazz;
+        private final boolean hasElements;
+
         private boolean isPoly;
         /**
          * All qualifiers that are a super qualifier of this qualifier, except for this qualifier
@@ -32,8 +34,6 @@ public class QualifierKindHierarchy {
 
         private QualifierKind top;
         private QualifierKind bottom;
-
-        private boolean hasElements;
 
         QualifierKind(Class<? extends Annotation> clazz) {
             this.clazz = clazz;
@@ -119,7 +119,8 @@ public class QualifierKindHierarchy {
 
     public QualifierKindHierarchy(Collection<Class<? extends Annotation>> qualifierClasses) {
         this.qualifierKindMap = createQualifierKinds(qualifierClasses);
-        Map<QualifierKind, Set<QualifierKind>> directSuperMap = initializeDirectSuperTypes();
+        Map<QualifierKind, Set<QualifierKind>> directSuperMap = initializeDirectSuperQualifiers();
+        specifyBottom(directSuperMap, null);
         this.tops = initializeTops(directSuperMap);
         this.bottoms = initializeBottoms(directSuperMap);
         this.polyMap = initializePolymorphicQualifiers();
@@ -194,10 +195,11 @@ public class QualifierKindHierarchy {
 
     /**
      * Creates all QualifierKind objects for the given {@code qualifierClasses} and adds them to
-     * qualifierClassMap. (This method does not initialize all fields in the {@link QualifierKind}.)
+     * qualifierClassMap. (This method does not initialize all fields in the {@link QualifierKind}
+     * that is done by {@link #initializeQualifierKinds(Map)}.)
      *
      * @param qualifierClasses a collection of classes of annotations that are type qualifiers
-     * @return
+     * @return a mapping from annotation name to {@link QualifierKind}
      */
     protected Map<@Interned String, QualifierKind> createQualifierKinds(
             Collection<Class<? extends Annotation>> qualifierClasses) {
@@ -216,6 +218,116 @@ public class QualifierKindHierarchy {
     }
 
     /**
+     * Creates a mapping from a {@link QualifierKind} to a set of its direct super qualifiers using
+     * the {@link SubtypeOf} meta-annotation. The direct super qualifiers must not contain the
+     * qualifier itself. This mapping is used to by {@link #initializeBottoms(Map)}, {@link
+     * #initializeTops(Map)}, and {@link #initializeQualifierKinds(Map)}.
+     *
+     * <p>Subclasses may override this method to create the direct super map some other way.
+     *
+     * <p>Note that this method is called from the constructor and only {@link #qualifierKindMap}
+     * has been initialized.
+     *
+     * @throws UserError if the {@link SubtypeOf} meta-annotation refers to a class that is not a
+     *     qualifier
+     * @return a mapping from a {@link QualifierKind} to a set of its direct super qualifiers
+     */
+    protected Map<QualifierKind, Set<QualifierKind>> initializeDirectSuperQualifiers() {
+        Map<QualifierKind, Set<QualifierKind>> directSuperMap = new TreeMap<>();
+        for (QualifierKind qualifierKind : qualifierKindMap.values()) {
+            SubtypeOf subtypeOfMetaAnno = qualifierKind.clazz.getAnnotation(SubtypeOf.class);
+            if (subtypeOfMetaAnno != null) {
+                Class<? extends Annotation>[] superQualifiers = subtypeOfMetaAnno.value();
+                Set<QualifierKind> directSupers = new TreeSet<>();
+                directSuperMap.put(qualifierKind, directSupers);
+                for (Class<? extends Annotation> superClazz : superQualifiers) {
+                    String superName = superClazz.getCanonicalName();
+                    QualifierKind superQualifier = qualifierKindMap.get(superName);
+                    if (superQualifier == null) {
+                        throw new UserError(
+                                "%s @Subtype meta-annotation refers to a qualifier, %s, that isn't in the hierarchy.",
+                                qualifierKind, superName);
+                    }
+                    directSupers.add(superQualifier);
+                }
+            }
+        }
+        return directSuperMap;
+    }
+
+    /**
+     * Explicitly set bottom to the given class.
+     *
+     * <p>For some type systems, qualifiers may be added at runtime, so the {@link SubtypeOf}
+     * meta-annotation on the bottom qualifier class cannot specify all other qualifiers. For those
+     * type systems, override this method and call super with the bottom class. For example,
+     *
+     * <pre>
+     * @Override
+     * protected void specifyBottom(Map<QualifierKind, Set<QualifierKind>> directSuperMap, Class<? extends Annotation> bottom) {
+     *     super.specifyBottom(directSuperMap, UnitsBottom.class);
+     * }
+     * </pre>
+     *
+     * If this method is not overriden, it has no effect.
+     *
+     * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
+     *     qualifiers
+     * @param bottom the class of the bottom qualifier
+     */
+    protected void specifyBottom(
+            Map<QualifierKind, Set<QualifierKind>> directSuperMap,
+            Class<? extends Annotation> bottom) {
+        if (bottom != null) {
+            String name = bottom.getCanonicalName();
+            QualifierKind bottomKind = getQualifierKindMap().get(name);
+            Set<QualifierKind> superTypes = directSuperMap.get(bottomKind);
+            superTypes.addAll(directSuperMap.keySet());
+            superTypes.remove(bottomKind);
+        }
+    }
+
+    /**
+     * Creates the set of top {@link QualifierKind}s by searching {@code directSuperMap} for
+     * qualifiers without any direct super qualifiers.
+     *
+     * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
+     *     qualifiers; create by {@link #initializeDirectSuperQualifiers()}
+     * @return the set of top {@link QualifierKind}s
+     */
+    private Set<QualifierKind> initializeTops(
+            Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
+        Set<QualifierKind> tops = new TreeSet<>();
+        for (Entry<QualifierKind, Set<QualifierKind>> entry : directSuperMap.entrySet()) {
+            QualifierKind qualifierKind = entry.getKey();
+            if (entry.getValue().size() == 0) {
+                tops.add(qualifierKind);
+                qualifierKind.top = qualifierKind;
+            }
+        }
+        return tops;
+    }
+
+    /**
+     * Creates the set of bottom {@link QualifierKind}s by search {@code directSuperMap} for
+     * qualifiers that are not a direct super qualifier of another qualifier.
+     *
+     * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
+     *     qualifiers; create by {@link #initializeDirectSuperQualifiers()}
+     * @return the set of bottom {@link QualifierKind}s
+     */
+    private Set<QualifierKind> initializeBottoms(
+            Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
+        // Bottom starts with all qualifiers
+        Set<QualifierKind> bottoms = new TreeSet<>(directSuperMap.keySet());
+        for (Set<QualifierKind> superKinds : directSuperMap.values()) {
+            // Remove any qualifier that is a direct super qualifier of another qualifier
+            bottoms.removeAll(superKinds);
+        }
+        return bottoms;
+    }
+
+    /**
      * Iterates for all the qualifiers and adds all polymorphic qualifiers to polymorphicQualifiers.
      * Also sets {@link QualifierKind#isPoly} to true and {@link QualifierKind#top} to top if the
      * meta-annotation {@link PolymorphicQualifier} specifies a top.
@@ -224,7 +336,7 @@ public class QualifierKindHierarchy {
      *
      * @throws UserError if the meta-annotation {@link PolymorphicQualifier} specifies an annotation
      *     that is not in the hierarchy.
-     * @return
+     * @return a mapping from a top qualifier to the polymorphic qualifier in the heirarchy
      */
     protected Map<QualifierKind, QualifierKind> initializePolymorphicQualifiers() {
         Map<QualifierKind, QualifierKind> polyMap = new TreeMap<>();
@@ -253,69 +365,6 @@ public class QualifierKindHierarchy {
             }
         }
         return polyMap;
-    }
-
-    /**
-     * Initializes directSuperMap.
-     *
-     * @throws UserError if the {@link SubtypeOf} meta-annotation refers to a class that is not a
-     *     qualifier
-     * @return
-     */
-    protected Map<QualifierKind, Set<QualifierKind>> initializeDirectSuperTypes() {
-        Map<QualifierKind, Set<QualifierKind>> directSuperMap = new TreeMap<>();
-        for (QualifierKind qualifierKind : qualifierKindMap.values()) {
-            SubtypeOf subtypeOfMetaAnno = qualifierKind.clazz.getAnnotation(SubtypeOf.class);
-            if (subtypeOfMetaAnno != null) {
-                Class<? extends Annotation>[] superQualifiers = subtypeOfMetaAnno.value();
-                Set<QualifierKind> directSupers = new TreeSet<>();
-                directSuperMap.put(qualifierKind, directSupers);
-                for (Class<? extends Annotation> superClazz : superQualifiers) {
-                    String superName = superClazz.getCanonicalName();
-                    QualifierKind superQualifier = qualifierKindMap.get(superName);
-                    if (superQualifier == null) {
-                        throw new UserError(
-                                "%s @Subtype meta-annotation refers to a qualifier, %s, that isn't in the hierarchy.",
-                                qualifierKind, superName);
-                    }
-                    directSupers.add(superQualifier);
-                }
-            }
-        }
-        return directSuperMap;
-    }
-
-    /**
-     * Initializes tops. (Requires directSuperMap to be initialized.)
-     *
-     * @param directSuperMap
-     */
-    protected Set<QualifierKind> initializeTops(
-            Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
-        Set<QualifierKind> tops = new TreeSet<>();
-        for (Entry<QualifierKind, Set<QualifierKind>> entry : directSuperMap.entrySet()) {
-            QualifierKind qualifierKind = entry.getKey();
-            if (entry.getValue().size() == 0) {
-                tops.add(qualifierKind);
-                qualifierKind.top = qualifierKind;
-            }
-        }
-        return tops;
-    }
-
-    /**
-     * Initializes bottoms.*
-     *
-     * @param directSuperMap
-     * @return
-     */
-    protected Set<QualifierKind> initializeBottoms(
-            Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
-        Set<QualifierKind> bottoms = new TreeSet<>(directSuperMap.keySet());
-        for (Set<QualifierKind> superKinds : directSuperMap.values()) {
-            bottoms.removeAll(superKinds);
-        }
-        return bottoms;
     }
 
     /**

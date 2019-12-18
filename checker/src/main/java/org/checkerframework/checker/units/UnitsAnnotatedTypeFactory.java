@@ -510,15 +510,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        protected Map<QualifierKind, Set<QualifierKind>> initializeDirectSuperTypes() {
-            Map<QualifierKind, Set<QualifierKind>> supersMap = super.initializeDirectSuperTypes();
-            QualifierKind bottom =
-                    getQualifierKindMap()
-                            .get("org.checkerframework.checker.units.qual.UnitsBottom");
-            Set<QualifierKind> superTypes = supersMap.get(bottom);
-            superTypes.addAll(supersMap.keySet());
-            superTypes.remove(bottom);
-            return supersMap;
+        protected void specifyBottom(
+                Map<QualifierKind, Set<QualifierKind>> directSuperMap,
+                Class<? extends Annotation> bottom) {
+            super.specifyBottom(directSuperMap, UnitsBottom.class);
         }
     }
 
