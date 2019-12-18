@@ -179,11 +179,10 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
-        QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
-        if (lub == null) {
-            // lub is null when the qualifiers are not in the same hierarchy.
+        if (!qual1.areInSameHierarchy(qual2)) {
             return null;
         }
+        QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
         if (lub.hasElements()) {
             return leastUpperBound(a1, qual1, a2, qual2);
         }
@@ -197,11 +196,10 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
-        QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);
-        if (glb == null) {
-            // glb is null when the qualifiers are not in the same hierarchy.
+        if (!qual1.areInSameHierarchy(qual2)) {
             return null;
         }
+        QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);
         if (glb.hasElements()) {
             return greatestLowerBound(a1, qual1, a2, qual2);
         }

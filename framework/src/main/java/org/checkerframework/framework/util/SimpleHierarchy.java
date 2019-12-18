@@ -175,11 +175,10 @@ public class SimpleHierarchy extends QualifierHierarchy {
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
-        QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
-        if (lub == null) {
-            // a1 and a2 are not in the same hierarchy
+        if (!qual1.areInSameHierarchy(qual2)) {
             return null;
         }
+        QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
         return qualifierMap.get(lub);
     }
 
@@ -187,11 +186,10 @@ public class SimpleHierarchy extends QualifierHierarchy {
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
-        QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);
-        if (glb == null) {
-            // a1 and a2 are not in the same hierarchy
+        if (!qual1.areInSameHierarchy(qual2)) {
             return null;
         }
+        QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);
         return qualifierMap.get(glb);
     }
 
