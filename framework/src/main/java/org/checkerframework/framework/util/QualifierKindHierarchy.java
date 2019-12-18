@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.UserError;
 
 /** NO AnnotationMirrors allowed in this class. */
 public class QualifierKindHierarchy {
-    @Interned public static class QualifierKind implements Comparable<QualifierKind> {
+    public static @Interned class QualifierKind implements Comparable<QualifierKind> {
         private final @Interned String name;
         private final Class<? extends Annotation> clazz;
         private boolean isPoly;
@@ -203,7 +203,10 @@ public class QualifierKindHierarchy {
             Collection<Class<? extends Annotation>> qualifierClasses) {
         Map<@Interned String, QualifierKind> qualifierKindMap = new TreeMap<>();
         for (Class<? extends Annotation> clazz : qualifierClasses) {
-            QualifierKind qualifierKind = new QualifierKind(clazz);
+            // If another QualifierKind exists with the same class, an exception will be thrown
+            // below.
+            @SuppressWarnings("interning")
+            @Interned QualifierKind qualifierKind = new QualifierKind(clazz);
             if (qualifierKindMap.containsKey(qualifierKind.name)) {
                 throw new UserError("");
             }
