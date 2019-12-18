@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------
 
+Version 3.1.0, January 2, 2020
+
 Command-line option -AprintGitProperties prints information about the git
 repository from which the Checker Framework was compiled.
 

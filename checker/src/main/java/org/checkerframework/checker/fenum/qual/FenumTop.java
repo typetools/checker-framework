@@ -15,10 +15,10 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
-@SubtypeOf({})
-@DefaultFor({TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.RESOURCE_VARIABLE})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
+@SubtypeOf({})
+@DefaultFor({TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.RESOURCE_VARIABLE})
 public @interface FenumTop {}
