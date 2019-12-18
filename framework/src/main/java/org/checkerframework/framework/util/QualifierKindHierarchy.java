@@ -245,8 +245,10 @@ public class QualifierKindHierarchy {
                     QualifierKind superQualifier = qualifierKindMap.get(superName);
                     if (superQualifier == null) {
                         throw new UserError(
-                                "%s @Subtype meta-annotation refers to a qualifier, %s, that isn't in the hierarchy.",
-                                qualifierKind, superName);
+                                "%s @Subtype meta-annotation refers to a qualifier, %s, that isn't in the hierarchy. Qualifiers: [%s]",
+                                qualifierKind,
+                                superName,
+                                PluginUtil.join(", ", qualifierKindMap.values()));
                     }
                     directSupers.add(superQualifier);
                 }
