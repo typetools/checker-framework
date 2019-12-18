@@ -553,8 +553,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                                 "signature") // https://tinyurl.com/cfissue/658 for getNameAsString
                         @FullyQualifiedName String typeName = type.getNameAsString();
                         @SuppressWarnings(
-                                "signature") // TODO FIXME BUG: resolve requires a @BinaryName, but
-                        // this passes a @FullyQualifiedName!
+                                "signature") // TODO looks like a bug in ToIndexFileConverter:
+                        // resolve requires a @BinaryName, but this passes a @FullyQualifiedName!
                         String name = resolve(typeName);
                         if (name == null) {
                             // could be defined in the same stub file

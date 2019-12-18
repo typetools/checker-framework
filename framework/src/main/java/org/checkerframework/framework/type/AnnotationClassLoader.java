@@ -108,7 +108,7 @@ public class AnnotationClassLoader {
      *
      * @param checker a {@link BaseTypeChecker} or its subclass
      */
-    @SuppressWarnings("signature") // TODO
+    @SuppressWarnings("signature") // TODO: reduce use of string manipulation
     public AnnotationClassLoader(final BaseTypeChecker checker) {
         this.checker = checker;
         processingEnv = checker.getProcessingEnvironment();
@@ -643,7 +643,7 @@ public class AnnotationClassLoader {
      * @return a set fully qualified annotation class name, for annotations in the root directory or
      *     its sub-directories
      */
-    @SuppressWarnings("signature") // TODO
+    @SuppressWarnings("signature") // TODO: reduce use of string manipulation
     private final Set<@BinaryName String> getAnnotationNamesFromDirectory(
             final @Nullable @DotSeparatedIdentifiers String packageName,
             final File rootDirectory,

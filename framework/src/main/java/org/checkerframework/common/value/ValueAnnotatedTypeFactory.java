@@ -1499,7 +1499,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // The field is static and final.
                 Element e = TreeUtils.elementFromTree(tree.getExpression());
                 if (e != null) {
-                    @SuppressWarnings("signature") // TODO: this looks like a bug
+                    @SuppressWarnings("signature") // TODO: this looks like a bug in
+                    // ValueAnnotatedTypeFactory.  evaluateStaticFieldAcces requires a @ClassGetName
+                    // but this passes a @FullyQualifiedName
                     @BinaryName String classname = ElementUtils.getQualifiedClassName(e).toString();
                     @SuppressWarnings(
                             "signature") // https://tinyurl.com/cfissue/658 for Name.toString()
