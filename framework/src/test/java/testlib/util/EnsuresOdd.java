@@ -12,10 +12,10 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  * A postcondition annotation to indicate that a method ensures certain expressions to be {@link
  * Odd}.
  */
-@PostconditionAnnotation(qualifier = Odd.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+@PostconditionAnnotation(qualifier = Odd.class)
 @InheritedAnnotation
 public @interface EnsuresOdd {
     String[] value();
