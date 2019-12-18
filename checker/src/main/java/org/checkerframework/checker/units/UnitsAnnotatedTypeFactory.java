@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 import javax.tools.Diagnostic.Kind;
@@ -504,9 +506,35 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     protected static class UnitsQualifierKindHierarchy extends QualifierKindHierarchy {
+        private final Map<QualifierKind, QualifierKind> directSuperType;
+
         public UnitsQualifierKindHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses) {
             super(qualifierClasses);
+            directSuperType = initDirectTypeType();
+        }
+
+        private Map<QualifierKind, QualifierKind> initDirectTypeType() {
+            Map<QualifierKind, QualifierKind> directSuperType = new TreeMap<>();
+            for (QualifierKind qualifierKind : getQualifierKindMap().values()) {
+                directSuperType.put(qualifierKind, directSuperType(qualifierKind));
+            }
+            return directSuperType;
+        }
+
+        private QualifierKind directSuperType(QualifierKind qualifierKind) {
+            if (qualifierKind.isTop()) {
+                return qualifierKind;
+            }
+            Set<QualifierKind> superQuals = new TreeSet<>(qualifierKind.getSuperTypes());
+            while (superQuals.size() > 0) {
+                Set<QualifierKind> lowest = findLowestQualifiers(superQuals);
+                if (lowest.size() == 1) {
+                    return lowest.iterator().next();
+                }
+                superQuals.removeAll(lowest);
+            }
+            throw new BugInCF("No directSuperType found for %s", qualifierKind);
         }
 
         @Override
@@ -525,7 +553,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Qualifier Hierarchy for the Units Checker. */
     protected class UnitsQualifierHierarchy extends ComplexHierarchy {
-
         /** Constructor. */
         public UnitsQualifierHierarchy() {
             super(UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
@@ -560,7 +587,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (AnnotationUtils.areSame(a1, a2)) {
                     return a1;
                 } else {
-                    return UnitsAnnotatedTypeFactory.this.TOP;
+                    QualifierKind lub =
+                            ((UnitsQualifierKindHierarchy) qualifierKindHierarchy)
+                                    .directSuperType.get(qual1);
+                    return AnnotationBuilder.fromName(elements, lub.getName());
                 }
             }
             throw new BugInCF("Unexpected QualifierKinds: %s %s", qual1, qual2);

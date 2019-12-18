@@ -488,7 +488,7 @@ public class QualifierKindHierarchy {
     }
 
     /** Remove all supertypes of elements contained in the set. */
-    private Set<QualifierKind> findLowestQualifiers(Set<QualifierKind> qualifierKinds) {
+    protected final Set<QualifierKind> findLowestQualifiers(Set<QualifierKind> qualifierKinds) {
         Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
             lowestQualifiers.removeIf(a2 -> a1 != a2 && a1.isSubtype(a2));
@@ -548,7 +548,7 @@ public class QualifierKindHierarchy {
     }
 
     /** Remove all supertypes of elements contained in the set. */
-    private Set<QualifierKind> findHighestQualifiers(Set<QualifierKind> qualifierKinds) {
+    protected final Set<QualifierKind> findHighestQualifiers(Set<QualifierKind> qualifierKinds) {
         Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
             lowestQualifiers.removeIf(a2 -> a1 != a2 && a2.isSubtype(a1));
