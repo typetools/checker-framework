@@ -350,7 +350,7 @@ public class ValueTransfer extends CFTransfer {
                 && TypesUtils.isIntegral(node.getType());
     }
 
-    /** Returns true if this node is annotated with {@code @IntRange} or {@code @UnknownVal}. */
+    /* Returns true if this node is annotated with {@code @IntRange} or {@code @UnknownVal}. */
     private boolean isIntRangeOrIntegralUnknownVal(Node node, TransferInput<CFValue, CFStore> p) {
         if (isIntRange(node, p)) {
             return true;
