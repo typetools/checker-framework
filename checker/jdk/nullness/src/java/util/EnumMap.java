@@ -482,6 +482,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      *
      * @return a set view of the mappings contained in this enum map
      */
+    @SideEffectFree
     public Set<Map.Entry<K,V>> entrySet() {
         Set<Map.Entry<K,V>> es = entrySet;
         if (es != null)

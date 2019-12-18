@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -74,6 +75,7 @@ public final class Byte extends Number implements Comparable<Byte> {
      * @return the string representation of the specified {@code byte}
      * @see java.lang.Integer#toString(int)
      */
+    @SideEffectFree
     public static String toString(byte b) {
         return Integer.toString((int)b, 10);
     }
@@ -434,6 +436,8 @@ public final class Byte extends Number implements Comparable<Byte> {
      * @return          {@code true} if the objects are the same;
      *                  {@code false} otherwise.
      */
+    @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof Byte) {
             return value == ((Byte)obj).byteValue();

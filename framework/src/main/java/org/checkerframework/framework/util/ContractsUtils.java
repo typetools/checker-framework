@@ -36,10 +36,11 @@ import org.checkerframework.javacutil.Pair;
  * @see RequiresQualifier
  * @see PostconditionAnnotation
  * @see EnsuresQualifier
+ * @see ConditionalPostconditionAnnotation
  * @see EnsuresQualifierIf
  */
 // TODO: This class assumes that most annotations have a field named "expression".
-// If not, issue a more helpful error message rather than a crash.
+// If not, issue a more helpful error message.
 public class ContractsUtils {
 
     /**
@@ -67,13 +68,17 @@ public class ContractsUtils {
     /**
      * A contract represents an annotation on an expression, along with the kind: precondition,
      * postcondition, or conditional postcondition.
+     *
+     * @see Precondition
+     * @see Postcondition
+     * @see ConditionalPostcondition
      */
     public abstract static class Contract {
 
         public enum Kind {
             PRECONDITION("precondition"),
-            POSTCONDTION("postcondition"),
-            CONDITIONALPOSTCONDTION("conditional.postcondition");
+            POSTCONDITION("postcondition"),
+            CONDITIONALPOSTCONDITION("conditional.postcondition");
             public final String errorKey;
 
             Kind(String errorKey) {
@@ -84,15 +89,20 @@ public class ContractsUtils {
         /**
          * The expression for which the condition must hold, such as {@code "foo"} in
          * {@code @RequiresNonNull("foo")}.
+         *
+         * <p>An annotation like {@code @RequiresNonNull({"a", "b", "c"})} would be represented by
+         * multiple Contracts.
          */
         public final String expression;
 
-        /** The annotation that must be on the type of expression as part of this contract. */
+        /** The annotation that must be on the type of expression, according to this contract. */
         public final AnnotationMirror annotation;
 
         /** The annotation that expressed this contract; used for diagnostic messages. */
         public final AnnotationMirror contractAnnotation;
 
+        // This is redundant with the contract's class  and is not used in this file, but the field
+        // is used by clients.
         /** The kind of contract: precondition, postcondition, or conditional postcondition. */
         public final Kind kind;
 
@@ -116,6 +126,8 @@ public class ContractsUtils {
             this.kind = kind;
         }
 
+        // Note that equality requires exact match of the run-time class and that it ignores the
+        // `contractAnnotation` field.
         @Override
         public boolean equals(@Nullable Object o) {
             if (this == o) {
@@ -135,6 +147,13 @@ public class ContractsUtils {
         @Override
         public int hashCode() {
             return Objects.hash(expression, annotation, kind);
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s{expression=%s, annotation=%s, contractAnnotation=%s}",
+                    getClass().getSimpleName(), expression, annotation, contractAnnotation);
         }
     }
 
@@ -170,7 +189,7 @@ public class ContractsUtils {
                 String expression,
                 AnnotationMirror annotation,
                 AnnotationMirror contractAnnotation) {
-            super(expression, annotation, contractAnnotation, Kind.POSTCONDTION);
+            super(expression, annotation, contractAnnotation, Kind.POSTCONDITION);
         }
     }
 
@@ -204,7 +223,7 @@ public class ContractsUtils {
                 boolean annoResult,
                 AnnotationMirror annotation,
                 AnnotationMirror contractAnnotation) {
-            super(expression, annotation, contractAnnotation, Kind.CONDITIONALPOSTCONDTION);
+            super(expression, annotation, contractAnnotation, Kind.CONDITIONALPOSTCONDITION);
             this.annoResult = annoResult;
         }
 
@@ -228,27 +247,49 @@ public class ContractsUtils {
         public int hashCode() {
             return Objects.hash(super.hashCode(), annoResult);
         }
+
+        @Override
+        public String toString() {
+            String superToString = super.toString();
+            return superToString.substring(0, superToString.length() - 1)
+                    + ", annoResult="
+                    + annoResult
+                    + "}";
+        }
     }
 
-    public List<Contract> getContracts(ExecutableElement element) {
+    /**
+     * Returns all the contracts on {@code methodElement}.
+     *
+     * @param methodElement the method or constructor whose contracts to retrieve
+     * @return the contracts on {@code methodElement}
+     */
+    public List<Contract> getContracts(ExecutableElement methodElement) {
         List<Contract> contracts = new ArrayList<>();
-        contracts.addAll(getPreconditions(element));
-        contracts.addAll(getPostconditions(element));
-        contracts.addAll(getConditionalPostconditions(element));
+        contracts.addAll(getPreconditions(methodElement));
+        contracts.addAll(getPostconditions(methodElement));
+        contracts.addAll(getConditionalPostconditions(methodElement));
         return contracts;
     }
 
-    /** Returns the set of preconditions on the element {@code element}. */
-    public Set<Precondition> getPreconditions(Element element) {
+    /// Precondition methods (keep in sync with other two types)
+
+    /**
+     * Returns the preconditions on {@code methodElement}.
+     *
+     * @param methodElement the method or contract whose preconditions to return
+     * @return the preconditions on {@code methodElement}
+     */
+    public Set<Precondition> getPreconditions(ExecutableElement methodElement) {
         Set<Precondition> result = new LinkedHashSet<>();
         // Check for a single contract annotation.
         AnnotationMirror requiresQualifier =
-                factory.getDeclAnnotation(element, RequiresQualifier.class);
+                factory.getDeclAnnotation(methodElement, RequiresQualifier.class);
         result.addAll(getPrecondition(requiresQualifier));
 
         // Check for a wrapper around contract annotations.
         AnnotationMirror requiresQualifiers =
-                factory.getDeclAnnotation(element, RequiresQualifiers.class);
+                factory.getDeclAnnotation(methodElement, RequiresQualifiers.class);
         if (requiresQualifiers != null) {
             List<AnnotationMirror> requiresQualifierList =
                     AnnotationUtils.getElementValueArray(
@@ -260,11 +301,13 @@ public class ContractsUtils {
 
         // Check for type-system specific annotations.
         List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
-                factory.getDeclAnnotationWithMetaAnnotation(element, PreconditionAnnotation.class);
+                factory.getDeclAnnotationWithMetaAnnotation(
+                        methodElement, PreconditionAnnotation.class);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
-            AnnotationMirror metaAnno = r.second;
-            AnnotationMirror precondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
+            AnnotationMirror contractAnno = r.second;
+            AnnotationMirror precondAnno =
+                    getAnnotationMirrorOfContractAnnotation(contractAnno, anno);
             if (precondAnno == null) {
                 continue;
             }
@@ -302,7 +345,14 @@ public class ContractsUtils {
         return result;
     }
 
-    /** Returns the set of postconditions on the method {@code methodElement}. */
+    /// Postcondition methods (keep in sync with other two types)
+
+    /**
+     * Returns the unconditional postconditions on {@code methodElement}.
+     *
+     * @param methodElement the method or contract whose postconditions to return
+     * @return the postconditions on {@code methodElement}
+     */
     public Set<Postcondition> getPostconditions(ExecutableElement methodElement) {
         Set<Postcondition> result = new LinkedHashSet<>();
         // Check for a single contract annotation.
@@ -328,8 +378,9 @@ public class ContractsUtils {
                         methodElement, PostconditionAnnotation.class);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
-            AnnotationMirror metaAnno = r.second;
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
+            AnnotationMirror contractAnno = r.second;
+            AnnotationMirror postcondAnno =
+                    getAnnotationMirrorOfContractAnnotation(contractAnno, anno);
             if (postcondAnno == null) {
                 continue;
             }
@@ -343,10 +394,10 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns the postconditions expressed by the given annotation.
+     * Returns the unconditional postconditions expressed by the given annotation.
      *
      * @param ensuresQualifier an {@link EnsuresQualifier}, or null
-     * @return the postconditions expostssed by the given annotation, or the empty set if the
+     * @return the postconditions expressed by the given annotation, or the empty set if the
      *     argument is null
      */
     private Set<Postcondition> getPostcondition(AnnotationMirror ensuresQualifier) {
@@ -367,7 +418,14 @@ public class ContractsUtils {
         return result;
     }
 
-    /** Returns the conditional postconditions on the method {@code methodElement}. */
+    /// Conditional postcondition methods (keep in sync with other two types)
+
+    /**
+     * Returns the conditional postconditions on {@code methodElement}.
+     *
+     * @param methodElement the method or contract whose unconditional postconditions to return
+     * @return the unconditional postconditions on {@code methodElement}
+     */
     public Set<ConditionalPostcondition> getConditionalPostconditions(
             ExecutableElement methodElement) {
         Set<ConditionalPostcondition> result = new LinkedHashSet<>();
@@ -380,22 +438,23 @@ public class ContractsUtils {
         AnnotationMirror ensuresQualifiersIf =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifiersIf.class);
         if (ensuresQualifiersIf != null) {
-            List<AnnotationMirror> annotations =
+            List<AnnotationMirror> ensuresQualifiersIfList =
                     AnnotationUtils.getElementValueArray(
                             ensuresQualifiersIf, "value", AnnotationMirror.class, false);
-            for (AnnotationMirror a : annotations) {
+            for (AnnotationMirror a : ensuresQualifiersIfList) {
                 result.addAll(getConditionalPostcondition(a));
             }
         }
 
-        // Check for type-system-specific annotations.
+        // Check for type-system specific annotations.
         List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
                 factory.getDeclAnnotationWithMetaAnnotation(
                         methodElement, ConditionalPostconditionAnnotation.class);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
-            AnnotationMirror metaAnno = r.second;
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(metaAnno, anno);
+            AnnotationMirror contractAnno = r.second;
+            AnnotationMirror postcondAnno =
+                    getAnnotationMirrorOfContractAnnotation(contractAnno, anno);
             if (postcondAnno == null) {
                 continue;
             }
@@ -411,8 +470,11 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns a set of triples {@code (expr, result, annotation)} of conditional postconditions
-     * that are expressed in the source code using the given postcondition annotation.
+     * Returns the conditional postconditions expressed by the given annotation.
+     *
+     * @param ensuresQualifierIf an {@link EnsuresQualifierIf}, or null
+     * @return the postconditions expressed by the given annotation, or the empty set if the
+     *     argument is null
      */
     private Set<ConditionalPostcondition> getConditionalPostcondition(
             AnnotationMirror ensuresQualifierIf) {
@@ -440,13 +502,40 @@ public class ContractsUtils {
     /// Helper methods
 
     /**
+     * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
+     * contractAnno}. May return null.
+     *
+     * @param contractAnno a pre- or post-condition annotation
+     * @return the type annotation specified in {@code contractAnno.qualifier}
+     */
+    private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
+            AnnotationMirror contractAnno) {
+        return getAnnotationMirrorOfContractAnnotation(contractAnno, null, null);
+    }
+
+    /**
+     * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
+     * contractAnno}, with arguments taken from {@code argumentAnno}. May return null.
+     *
+     * @param contractAnno a pre- or post-condition annotation
+     * @param argumentAnno supplies the elements/fields in the return value
+     * @return the type annotation specified in {@code contractAnno.qualifier}
+     */
+    private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
+            AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
+
+        Map<String, String> argumentRenaming =
+                makeArgumentRenaming(argumentAnno.getAnnotationType().asElement());
+        return getAnnotationMirrorOfContractAnnotation(
+                contractAnno, argumentAnno, argumentRenaming);
+    }
+
+    /**
      * Returns the annotation mirror as specified by the "qualifier" element in {@code
      * contractAnno}. If {@code argumentAnno} is specified, then arguments are copied from {@code
      * argumentAnno} to the returned annotation, renamed according to {@code argumentRenaming}.
      *
-     * <p>This is a helper method intended to be called from {@link
-     * getAnnotationMirrorOfContractAnnotation} and {@link getAnnotationMirrorOfContractAnnotation}.
-     * Use one of those methods if possible.
+     * <p>This is a helper method. Use one of its overloads if possible.
      *
      * @param contractAnno a contract annotation, which has a {@code qualifier} element
      * @param argumentAnno annotation containing the argument values, or {@code null}
@@ -455,7 +544,7 @@ public class ContractsUtils {
      * @return a qualifier whose type is that of {@code contract.qualifier}, or an alias for it, or
      *     null if it is not a supported qualifier of the type system
      */
-    private AnnotationMirror getAnnotationMirrorOfQualifier(
+    private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
             AnnotationMirror contractAnno,
             AnnotationMirror argumentAnno,
             Map<String, String> argumentRenaming) {
@@ -482,15 +571,6 @@ public class ContractsUtils {
                 return null;
             }
         }
-    }
-
-    /**
-     * Returns the annotation mirror as specified by the "qualifier" element in {@code
-     * contractAnno}.
-     */
-    private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
-            AnnotationMirror contractAnno) {
-        return getAnnotationMirrorOfQualifier(contractAnno, null, null);
     }
 
     /**
@@ -525,17 +605,5 @@ public class ContractsUtils {
             }
         }
         return argumentRenaming;
-    }
-
-    /**
-     * Returns the annotation mirror as specified by the "qualifier" element in {@code
-     * contractAnno}, with arguments taken from {@code argumentAnno}.
-     */
-    private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
-            AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
-
-        Map<String, String> argumentRenaming =
-                makeArgumentRenaming(argumentAnno.getAnnotationType().asElement());
-        return getAnnotationMirrorOfQualifier(contractAnno, argumentAnno, argumentRenaming);
     }
 }

@@ -20,4 +20,4 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 
 cd ../daikon
 make compile
-make -C java typecheck
+time make -C java typecheck
