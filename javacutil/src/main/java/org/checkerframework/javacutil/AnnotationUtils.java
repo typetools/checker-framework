@@ -144,6 +144,7 @@ public class AnnotationUtils {
     public static boolean areSameByClass(
             AnnotationMirror am, Class<? extends Annotation> annoClass) {
         String canonicalName = annoClass.getCanonicalName();
+        assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
         return areSameByName(am, canonicalName);
     }
 
