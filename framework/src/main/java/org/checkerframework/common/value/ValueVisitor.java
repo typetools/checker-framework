@@ -308,10 +308,20 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     }
 
     /** The following 3 methods are temporarily located here to allow issue #2942 to be analized. */
+    
+    /**
+     * Evaluates if an AnnotatedTypeMirror is an integral type.
+     * @param type to evaluate
+     * @return true if is an integral type
+     */
     private static boolean isIntegral(AnnotatedTypeMirror type) {
         return isIntegral(NumberUtils.unboxPrimitive(type.getUnderlyingType()));
     }
-
+    /**
+     * Evaluates if a TypeKind is an integral type.
+     * @param typeKind to evaluate
+     * @return true if is an integral type 
+     */
     private static boolean isIntegral(TypeKind typeKind) {
         return isPrimitiveIntegral(typeKind);
     }
