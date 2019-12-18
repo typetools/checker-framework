@@ -85,6 +85,7 @@ import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
+import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.SimpleHierarchy;
@@ -616,7 +617,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * necessary.
      */
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new SimpleHierarchy(this.getSupportedTypeQualifiers(), elements);
+        return new GraphQualifierHierarchy(factory, null);
     }
 
     /**
@@ -632,11 +633,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return an annotation relation tree representing the supported qualifiers
      */
     protected QualifierHierarchy createQualifierHierarchy() {
-        Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
-        MultiGraphQualifierHierarchy.MultiGraphFactory factory =
-                this.createQualifierHierarchyFactory();
+        try {
+            return new SimpleHierarchy(this.getSupportedTypeQualifiers(), elements);
+        } catch (Exception ex) {
+            Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
+            MultiGraphQualifierHierarchy.MultiGraphFactory factory =
+                    this.createQualifierHierarchyFactory();
 
-        return createQualifierHierarchy(elements, supportedTypeQualifiers, factory);
+            return createQualifierHierarchy(elements, supportedTypeQualifiers, factory);
+        }
     }
 
     /**
