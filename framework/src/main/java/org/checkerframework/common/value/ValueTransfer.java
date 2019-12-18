@@ -352,8 +352,10 @@ public class ValueTransfer extends CFTransfer {
 
     /** Returns true if this node is annotated with {@code @IntRange} or {@code @UnknownVal}. */
     private boolean isIntRangeOrIntegralUnknownVal(Node node, TransferInput<CFValue, CFStore> p) {
-        AnnotationMirror anno = getValueAnnotation(p.getValueOfSubNode(node));
-        return isIntRange(node, p) || isIntegralUnknownVal(node, anno);
+        if (isIntRange(node, p)){
+            return true;
+        }
+        return isIntegralUnknownVal(node, getValueAnnotation(p.getValueOfSubNode(node)));
     }
 
     /**
