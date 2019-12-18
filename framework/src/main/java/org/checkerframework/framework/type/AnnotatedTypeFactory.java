@@ -371,6 +371,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The Object.getClass method. */
     protected final ExecutableElement objectGetClass;
 
+    /** Size of the annotationClassNames cache. */
     private static final int ANNOTATION_CACHE_SIZE = 500;
 
     /** Maps classes representing AnnotationMirrors to their names. */
@@ -3820,6 +3821,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return true if annoclass is the class of am
      */
     public boolean areSameByClass(AnnotationMirror am, Class<? extends Annotation> annoClass) {
+        if (!shouldCache) {
+            return AnnotationUtils.areSameByName(am, annoClass.getCanonicalName());
+        }
         String canonicalName = annotationClassNames.get(annoClass);
         if (canonicalName == null) {
             canonicalName = annoClass.getCanonicalName();
