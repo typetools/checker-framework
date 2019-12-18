@@ -576,17 +576,18 @@ public class AnnotationClassLoader {
                 continue;
             }
 
-            // TODO: In reflection-util 0.2.0, use
-            // Signatures.classfilenameToBinaryName(je.getName()).
+            // TODO: In reflection-util 0.2.0, I should be able to use
+            // Signatures.classfilenameToBinaryName(je.getName()),
+            // but it is not working for me.
             // Get rid of the .class suffix.
-            String className = je.getName().substring(0, je.getName().lastIndexOf('.'));
+            @BinaryName String className = je.getName().substring(0, je.getName().lastIndexOf('.'));
             // Convert path notation to class notation.
             className = className.replace(SLASH, DOT);
 
-            String className2 = Signatures.classfilenameToBinaryName(je.getName());
-            if (!className.equals(className2)) {
-                System.out.printf("Not equal: %s %s%n", className, className2);
-            }
+            // String className2 = Signatures.classfilenameToBinaryName(je.getName());
+            // if (!className.equals(className2)) {
+            //     System.out.printf("Not equal: %s %s%n", className, className2);
+            // }
 
             // filter for qual package
             if (className.startsWith(packageName + DOT)) {
