@@ -51,7 +51,9 @@ public class SortedRandomAccessAnnotationMirrorSet
 
     @Override
     public boolean add(AnnotationMirror annotationMirror) {
-        int index = Collections.binarySearch(shadowList, annotationMirror, AnnotationUtils::compareAnnotationMirrors);
+        int index =
+                Collections.binarySearch(
+                        shadowList, annotationMirror, AnnotationUtils::compareAnnotationMirrors);
         // Already found, don't insert the same value
         if (index >= 0) {
             return false;
@@ -69,7 +71,11 @@ public class SortedRandomAccessAnnotationMirrorSet
             return false;
         }
 
-        int index = Collections.binarySearch(shadowList, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors);
+        int index =
+                Collections.binarySearch(
+                        shadowList,
+                        (AnnotationMirror) o,
+                        AnnotationUtils::compareAnnotationMirrors);
         if (index < 0) {
             return false;
         }
@@ -171,7 +177,11 @@ public class SortedRandomAccessAnnotationMirrorSet
             return -1;
         }
 
-        int index = Collections.binarySearch(shadowList, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors);
+        int index =
+                Collections.binarySearch(
+                        shadowList,
+                        (AnnotationMirror) o,
+                        AnnotationUtils::compareAnnotationMirrors);
         return index < 0 ? -1 : index;
     }
 

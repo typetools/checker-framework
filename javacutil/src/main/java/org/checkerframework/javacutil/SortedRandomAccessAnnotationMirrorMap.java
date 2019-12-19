@@ -15,7 +15,9 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
                 return false;
             }
 
-            return Collections.binarySearch(this, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors) >= 0;
+            return Collections.binarySearch(
+                            this, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors)
+                    >= 0;
         }
     }
 
@@ -26,11 +28,6 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
         keys = new SortedArraySet();
         values = new ArrayList<>();
     }
-
-    //    public SortedRandomAccessAnnotationMirrorMap(Map<AnnotationMirror, ? extends V> copy) {
-    //        this();
-    //        this.putAll(copy);
-    //    }
 
     @Override
     public int size() {
@@ -48,7 +45,9 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
             return false;
         }
 
-        return Collections.binarySearch(keys, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors) >= 0;
+        return Collections.binarySearch(
+                        keys, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors)
+                >= 0;
     }
 
     @Override
@@ -67,7 +66,9 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
             return null;
         }
 
-        int index = Collections.binarySearch(keys, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors);
+        int index =
+                Collections.binarySearch(
+                        keys, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors);
         if (index >= 0) {
             return values.get(index);
         }
@@ -76,7 +77,9 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
 
     @Override
     public V put(AnnotationMirror annotationMirror, V v) {
-        int index = Collections.binarySearch(keys, annotationMirror, AnnotationUtils::compareAnnotationMirrors);
+        int index =
+                Collections.binarySearch(
+                        keys, annotationMirror, AnnotationUtils::compareAnnotationMirrors);
         if (index >= 0) {
             V value = values.get(index);
             values.set(index, v);
@@ -97,7 +100,9 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
             return null;
         }
 
-        int index = Collections.binarySearch(keys, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors);
+        int index =
+                Collections.binarySearch(
+                        keys, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors);
         if (index >= 0) {
             V value = values.get(index);
             keys.remove(index);
@@ -133,8 +138,41 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
 
     @Override
     public Set<Entry<AnnotationMirror, V>> entrySet() {
-        assert false;
-        return null;
+        return createEntrySet();
+    }
+
+    private Set<Entry<AnnotationMirror, V>> createEntrySet() {
+        LinkedHashSet<Entry<AnnotationMirror, V>> entries = new LinkedHashSet<>(keys.size());
+        for (int i = 0; i < keys.size(); i++) {
+            entries.add(new InternalEntry(keys.get(i), values.get(i)));
+        }
+        return entries;
+    }
+
+    private class InternalEntry implements Entry<AnnotationMirror, V> {
+        AnnotationMirror key;
+        V value;
+
+        InternalEntry(AnnotationMirror key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public AnnotationMirror getKey() {
+            return key;
+        }
+
+        @Override
+        public V getValue() {
+            return value;
+        }
+
+        @Override
+        public V setValue(V value) {
+            assert false : "Does not support setting value";
+            return null;
+        }
     }
 
     public static <V> Unmodifiable<V> unmodifiable(Map<AnnotationMirror, V> map) {
