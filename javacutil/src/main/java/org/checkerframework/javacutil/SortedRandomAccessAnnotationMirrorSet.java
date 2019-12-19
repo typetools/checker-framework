@@ -9,11 +9,9 @@ public class SortedRandomAccessAnnotationMirrorSet
                 RandomAccess,
                 RandomAccessSet<AnnotationMirror> {
 
-    private final Comparator<AnnotationMirror> comparator;
     private ArrayList<AnnotationMirror> shadowList;
 
     public SortedRandomAccessAnnotationMirrorSet() {
-        comparator = AnnotationUtils.annotationOrdering();
         shadowList = new ArrayList<>();
     }
 
@@ -53,7 +51,7 @@ public class SortedRandomAccessAnnotationMirrorSet
 
     @Override
     public boolean add(AnnotationMirror annotationMirror) {
-        int index = Collections.binarySearch(shadowList, annotationMirror, comparator);
+        int index = Collections.binarySearch(shadowList, annotationMirror, AnnotationUtils::compareAnnotationMirrors);
         // Already found, don't insert the same value
         if (index >= 0) {
             return false;
@@ -71,7 +69,7 @@ public class SortedRandomAccessAnnotationMirrorSet
             return false;
         }
 
-        int index = Collections.binarySearch(shadowList, (AnnotationMirror) o, comparator);
+        int index = Collections.binarySearch(shadowList, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors);
         if (index < 0) {
             return false;
         }
@@ -134,7 +132,7 @@ public class SortedRandomAccessAnnotationMirrorSet
             return false;
         }
 
-        toRetain.sort(comparator);
+        toRetain.sort(AnnotationUtils::compareAnnotationMirrors);
         shadowList = toRetain;
         return true;
     }
@@ -173,7 +171,7 @@ public class SortedRandomAccessAnnotationMirrorSet
             return -1;
         }
 
-        int index = Collections.binarySearch(shadowList, (AnnotationMirror) o, comparator);
+        int index = Collections.binarySearch(shadowList, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors);
         return index < 0 ? -1 : index;
     }
 
@@ -235,7 +233,7 @@ public class SortedRandomAccessAnnotationMirrorSet
         if (c instanceof SortedRandomAccessAnnotationMirrorSet) {
             SortedRandomAccessAnnotationMirrorSet s = (SortedRandomAccessAnnotationMirrorSet) c;
             for (int i = 0; i < s.size(); i++) {
-                if (comparator.compare(get(i), s.get(i)) != 0) {
+                if (AnnotationUtils.compareAnnotationMirrors(get(i), s.get(i)) != 0) {
                     return false;
                 }
             }

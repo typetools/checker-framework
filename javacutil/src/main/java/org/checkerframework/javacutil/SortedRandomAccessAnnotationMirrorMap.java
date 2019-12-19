@@ -15,12 +15,10 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
                 return false;
             }
 
-            return Collections.binarySearch(this, (AnnotationMirror) o, comparator) >= 0;
+            return Collections.binarySearch(this, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors) >= 0;
         }
     }
 
-    private static final Comparator<AnnotationMirror> comparator =
-            AnnotationUtils.annotationOrdering();
     private SortedArraySet keys;
     private ArrayList<V> values;
 
@@ -50,7 +48,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
             return false;
         }
 
-        return Collections.binarySearch(keys, (AnnotationMirror) o, comparator) >= 0;
+        return Collections.binarySearch(keys, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors) >= 0;
     }
 
     @Override
@@ -69,7 +67,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
             return null;
         }
 
-        int index = Collections.binarySearch(keys, (AnnotationMirror) o, comparator);
+        int index = Collections.binarySearch(keys, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors);
         if (index >= 0) {
             return values.get(index);
         }
@@ -78,7 +76,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
 
     @Override
     public V put(AnnotationMirror annotationMirror, V v) {
-        int index = Collections.binarySearch(keys, annotationMirror, comparator);
+        int index = Collections.binarySearch(keys, annotationMirror, AnnotationUtils::compareAnnotationMirrors);
         if (index >= 0) {
             V value = values.get(index);
             values.set(index, v);
@@ -99,7 +97,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
             return null;
         }
 
-        int index = Collections.binarySearch(keys, (AnnotationMirror) o, comparator);
+        int index = Collections.binarySearch(keys, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors);
         if (index >= 0) {
             V value = values.get(index);
             keys.remove(index);
