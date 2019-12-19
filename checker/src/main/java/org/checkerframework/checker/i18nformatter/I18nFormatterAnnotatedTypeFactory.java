@@ -72,6 +72,11 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         this.postInit();
     }
 
+    /**
+     * Builds a map from a translation file key to its value in the file.
+     *
+     * @return Map from a translation file key to its value in the file
+     */
     private Map<String, String> buildLookup() {
         Map<String, String> result = new HashMap<>();
 
