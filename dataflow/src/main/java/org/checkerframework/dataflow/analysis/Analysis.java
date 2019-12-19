@@ -124,6 +124,8 @@ public class Analysis<
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph. The transfer function is set later using {@code setTransferFunction}.
+     *
+     * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
     public Analysis(int maxCountBeforeWidening) {
         this(null, maxCountBeforeWidening);
