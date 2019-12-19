@@ -31,10 +31,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.*;
 
 /**
  * Represents an annotated type in the Java programming language. Types include primitive types,
@@ -288,7 +285,7 @@ public abstract class AnnotatedTypeMirror {
      * @return a unmodifiable set of the annotations on this
      */
     public final Set<AnnotationMirror> getAnnotations() {
-        return Collections.unmodifiableSet(annotations);
+        return SortedRandomAccessAnnotationMirrorSet.unmodifiable(annotations);
     }
 
     /**

@@ -215,6 +215,12 @@ public class AnnotationUtils {
      */
     public static boolean containsSame(
             Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
+        if (c instanceof RandomAccessSet) {
+            @SuppressWarnings("unchecked")
+            RandomAccessSet<AnnotationMirror> set = (RandomAccessSet<AnnotationMirror>) c;
+            return set.contains(anno);
+        }
+
         return getSame(c, anno) != null;
     }
 
@@ -471,7 +477,7 @@ public class AnnotationUtils {
      * @return a new map with {@link AnnotationMirror} as key
      */
     public static <V> Map<AnnotationMirror, V> createAnnotationMap() {
-        return new TreeMap<>(AnnotationUtils::compareAnnotationMirrors);
+        return new SortedRandomAccessAnnotationMirrorMap<>();
     }
 
     /**
@@ -483,7 +489,7 @@ public class AnnotationUtils {
      * @return a sorted new set to store {@link AnnotationMirror} as element
      */
     public static SortedSet<AnnotationMirror> createAnnotationSet() {
-        return new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
+        return new SortedRandomAccessAnnotationMirrorSet();
     }
 
     /**
@@ -836,7 +842,7 @@ public class AnnotationUtils {
             result.addAll(map.get(key));
             result.addAll(newQual);
         }
-        map.put(key, Collections.unmodifiableSet(result));
+        map.put(key, SortedRandomAccessAnnotationMirrorSet.unmodifiable(result));
     }
 
     /**

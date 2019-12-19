@@ -17,9 +17,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
-import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.*;
 
 /**
  * Represents the type qualifier hierarchy of a type system that supports multiple separate subtype
@@ -182,7 +180,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         super();
         // no need for copying as f.supertypes has no mutable references to it
         // TODO: also make the Set of supertypes immutable?
-        this.supertypesDirect = Collections.unmodifiableMap(f.supertypesDirect);
+        this.supertypesDirect =
+                SortedRandomAccessAnnotationMirrorMap.<Set<AnnotationMirror>>unmodifiable(
+                        f.supertypesDirect);
 
         // Calculate the transitive closure
         Map<AnnotationMirror, Set<AnnotationMirror>> supertypesTransitive =
@@ -200,14 +200,16 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
         finish(this, supertypesTransitive, this.polyQualifiers, newtops, newbottoms, args);
 
-        this.tops = Collections.unmodifiableSet(newtops);
-        this.bottoms = Collections.unmodifiableSet(newbottoms);
+        this.tops = SortedRandomAccessAnnotationMirrorSet.unmodifiable(newtops);
+        this.bottoms = SortedRandomAccessAnnotationMirrorSet.unmodifiable(newbottoms);
         // TODO: make polyQualifiers immutable also?
 
-        this.supertypesTransitive = Collections.unmodifiableMap(supertypesTransitive);
+        this.supertypesTransitive =
+                SortedRandomAccessAnnotationMirrorMap.<Set<AnnotationMirror>>unmodifiable(
+                        supertypesTransitive);
         Set<AnnotationMirror> typeQualifiers = AnnotationUtils.createAnnotationSet();
         typeQualifiers.addAll(supertypesTransitive.keySet());
-        this.typeQualifiers = Collections.unmodifiableSet(typeQualifiers);
+        this.typeQualifiers = SortedRandomAccessAnnotationMirrorSet.unmodifiable(typeQualifiers);
         // System.out.println("MGH: " + this);
     }
 
@@ -766,7 +768,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             // add all of current super's super into superset
             supers.addAll(findAllSupers(superAnno, supertypes, allSupersSoFar));
         }
-        allSupersSoFar.put(anno, Collections.unmodifiableSet(supers));
+        allSupersSoFar.put(anno, SortedRandomAccessAnnotationMirrorSet.unmodifiable(supers));
         return supers;
     }
 

@@ -410,6 +410,9 @@ public class CheckerMain {
                             "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
         }
 
+        //        args.add(
+        //
+        // "-agentpath:/home/trung/Downloads/visualvm_144/profiler/lib/deployed/jdk16/linux-amd64/libprofilerinterface.so=/home/trung/Downloads/visualvm_144/profiler/lib,5140");
         args.add("-classpath");
         args.add(String.join(File.pathSeparator, runtimeClasspath));
         args.add("-ea");
