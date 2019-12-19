@@ -470,12 +470,22 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // This is used to trigger AggregateChecker's setProcessingEnvironment.
         setProcessingEnvironment(env);
 
+        // Keep in synce with check in checker-framework/build.gradle.
         int jreVersion = PluginUtil.getJreVersion();
         if (jreVersion < 8) {
             throw new UserError(
+                    "The Checker Framework must be run under at least JDK 8.  You are using version %d.  Please use JDK 8 or JDK 11.",
+                    jreVersion);
+        } else if (jreVersion > 12) {
+            throw new UserError(
                     String.format(
-                            "The Checker Framework must be run under at least JDK 8.  You are using version %d.",
+                            "The Checker Framework cannot be run with JDK 13+.  You are using version %d. Please use JDK 8 or JDK 11.",
                             jreVersion));
+        } else if (jreVersion != 8 && jreVersion != 11) {
+            message(
+                    Kind.WARNING,
+                    "The Checker Framework is only tested with JDK 8 and JDK 11. You are using version %d. Please use JDK 8 or JDK 11.",
+                    jreVersion);
         }
 
         if (hasOption("printGitProperties")) {
