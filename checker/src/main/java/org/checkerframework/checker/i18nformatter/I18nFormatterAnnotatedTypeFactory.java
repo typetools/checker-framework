@@ -5,14 +5,12 @@ import com.sun.source.tree.Tree;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
@@ -75,11 +73,11 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         this.postInit();
     }
 
-    @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiers(I18nUnknownFormat.class, I18nFormatBottom.class);
-    }
-
+    /**
+     * Builds a map from a translation file key to its value in the file.
+     *
+     * @return Map from a translation file key to its value in the file
+     */
     private Map<String, String> buildLookup() {
         Map<String, String> result = new HashMap<>();
 
