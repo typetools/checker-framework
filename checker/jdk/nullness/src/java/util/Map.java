@@ -578,7 +578,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @param o object to be compared for equality with this map
      * @return <tt>true</tt> if the specified object is equal to this map
      */
-    boolean equals(Object o);
+    boolean equals(@Nullable Object o);
 
     /**
      * Returns the hash code value for this map.  The hash code of a map is

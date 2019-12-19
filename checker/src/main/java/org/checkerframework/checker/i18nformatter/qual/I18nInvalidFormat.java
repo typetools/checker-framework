@@ -1,5 +1,6 @@
 package org.checkerframework.checker.i18nformatter.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,9 +13,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  */
-@SubtypeOf(I18nUnknownFormat.class)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(I18nUnknownFormat.class)
 public @interface I18nInvalidFormat {
     /**
      * Using a value of the annotated type as the first argument to {@link

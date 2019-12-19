@@ -10,10 +10,10 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUnchecke
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /** Middle is the default type in hierarchy. */
-@SubtypeOf(NTDTop.class)
-@DefaultQualifierInHierarchy
-@DefaultQualifierInHierarchyInUncheckedCode
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(NTDTop.class)
+@DefaultQualifierInHierarchy
+@DefaultQualifierInHierarchyInUncheckedCode
 public @interface NTDMiddle {}

@@ -17,6 +17,8 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.signature.qual.ClassGetName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.ElementUtils;
@@ -164,9 +166,10 @@ public class ReflectiveEvaluator {
     private Method getMethodObject(MethodInvocationTree tree) {
         try {
             ExecutableElement ele = TreeUtils.elementFromUse(tree);
-            Name clazz =
+            @DotSeparatedIdentifiers Name clazz =
                     TypesUtils.getQualifiedName((DeclaredType) ele.getEnclosingElement().asType());
             List<Class<?>> paramClzz = getParameterClasses(ele);
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Class.toString
             Class<?> clzz = Class.forName(clazz.toString());
             Method method =
                     clzz.getMethod(
@@ -246,8 +249,16 @@ public class ReflectiveEvaluator {
         return returnListOfLists;
     }
 
+    /**
+     * Return the value of a static field access. Return null if there is trouble.
+     *
+     * @param classname the class containing the field
+     * @param fieldName the name fo the field
+     * @param tree the static field access in the program; used for diagnostics
+     * @return the value of the static field access, or null if it cannot be determinedx
+     */
     public Object evaluateStaticFieldAccess(
-            String classname, String fieldName, MemberSelectTree tree) {
+            @ClassGetName String classname, String fieldName, MemberSelectTree tree) {
         try {
             Class<?> recClass = Class.forName(classname);
             Field field = recClass.getField(fieldName);

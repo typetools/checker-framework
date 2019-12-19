@@ -14,6 +14,6 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */
 @Documented
-@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
 public @interface JavaExpression {}

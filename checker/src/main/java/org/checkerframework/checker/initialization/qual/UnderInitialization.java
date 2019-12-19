@@ -36,10 +36,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #underinitialization-examples Examples of the @UnderInitialization
  *     annotation
  */
-@SubtypeOf(UnknownInitialization.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(UnknownInitialization.class)
 public @interface UnderInitialization {
     /**
      * The type-frame down to which the expression (of this type) has been initialized at least

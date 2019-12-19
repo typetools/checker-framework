@@ -31,6 +31,7 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.plumelib.reflection.Signatures;
 
 /**
  * Adds {@link I18nFormat} to the type of tree, if it is a {@code String} or {@code char} literal
@@ -142,6 +143,13 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                 System.err.println("Couldn't parse the resource bundles: <" + bundleNames + ">");
             } else {
                 for (String bundleName : namesArr) {
+                    if (!Signatures.isBinaryName(bundleName)) {
+                        System.err.println(
+                                "Malformed resource bundle: <"
+                                        + bundleName
+                                        + "> should be a binary name.");
+                        continue;
+                    }
                     ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
                     if (bundle == null) {
                         System.err.println(
@@ -149,7 +157,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                                         + bundleName
                                         + "> for locale <"
                                         + Locale.getDefault()
-                                        + ">");
+                                        + ">.");
                         continue;
                     }
 

@@ -309,7 +309,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
             return oldValue;
         }
 
-        public final boolean equals(Object o) {
+        public final boolean equals(@Nullable Object o) {
             if (o == this)
                 return true;
             if (o instanceof Map.Entry) {
