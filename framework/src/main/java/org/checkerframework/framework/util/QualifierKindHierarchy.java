@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -119,17 +118,17 @@ public class QualifierKindHierarchy {
 
     public QualifierKindHierarchy(Collection<Class<? extends Annotation>> qualifierClasses) {
         this.qualifierKindMap = createQualifierKinds(qualifierClasses);
-        Map<QualifierKind, Set<QualifierKind>> directSuperMap = initializeDirectSuperQualifiers();
+        Map<QualifierKind, Set<QualifierKind>> directSuperMap = createDirectSuperMap();
         specifyBottom(directSuperMap, null);
-        this.tops = initializeTops(directSuperMap);
-        this.bottoms = initializeBottoms(directSuperMap);
+        this.tops = createTopsSet(directSuperMap);
+        this.bottoms = createBottomsSet(directSuperMap);
         this.polyMap = initializePolymorphicQualifiers();
-        initializeQualifierKinds(directSuperMap);
-        this.lubs = initializeLubs();
-        this.glbs = initializeGlbs();
+        initializeQualifierKindFields(directSuperMap);
+        this.lubs = createLubsMap();
+        this.glbs = createGlbsMap();
 
         verify(directSuperMap);
-        //                printLubs();
+        printLubs();
         //        printIsSubtype();
     }
 
@@ -196,7 +195,7 @@ public class QualifierKindHierarchy {
     /**
      * Creates all QualifierKind objects for the given {@code qualifierClasses} and adds them to
      * qualifierClassMap. (This method does not initialize all fields in the {@link QualifierKind}
-     * that is done by {@link #initializeQualifierKinds(Map)}.)
+     * that is done by {@link #initializeQualifierKindFields(Map)}.)
      *
      * @param qualifierClasses a collection of classes of annotations that are type qualifiers
      * @return a mapping from annotation name to {@link QualifierKind}
@@ -220,8 +219,8 @@ public class QualifierKindHierarchy {
     /**
      * Creates a mapping from a {@link QualifierKind} to a set of its direct super qualifiers using
      * the {@link SubtypeOf} meta-annotation. The direct super qualifiers must not contain the
-     * qualifier itself. This mapping is used to by {@link #initializeBottoms(Map)}, {@link
-     * #initializeTops(Map)}, and {@link #initializeQualifierKinds(Map)}.
+     * qualifier itself. This mapping is used to by {@link #createBottomsSet(Map)}, {@link
+     * #createTopsSet(Map)}, and {@link #initializeQualifierKindFields(Map)}.
      *
      * <p>Subclasses may override this method to create the direct super map some other way.
      *
@@ -232,7 +231,7 @@ public class QualifierKindHierarchy {
      *     qualifier
      * @return a mapping from a {@link QualifierKind} to a set of its direct super qualifiers
      */
-    protected Map<QualifierKind, Set<QualifierKind>> initializeDirectSuperQualifiers() {
+    protected Map<QualifierKind, Set<QualifierKind>> createDirectSuperMap() {
         Map<QualifierKind, Set<QualifierKind>> directSuperMap = new TreeMap<>();
         for (QualifierKind qualifierKind : qualifierKindMap.values()) {
             SubtypeOf subtypeOfMetaAnno = qualifierKind.clazz.getAnnotation(SubtypeOf.class);
@@ -294,10 +293,12 @@ public class QualifierKindHierarchy {
      * qualifiers without any direct super qualifiers.
      *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
-     *     qualifiers; create by {@link #initializeDirectSuperQualifiers()}
+     *     qualifiers; create by {@link #createDirectSuperMap()}
      * @return the set of top {@link QualifierKind}s
      */
-    private Set<QualifierKind> initializeTops(
+    // Subclasses should override createDirectSuperMap to change the tops and not this method,
+    // because other methods expect the directSuperMap to be complete.
+    private Set<QualifierKind> createTopsSet(
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         Set<QualifierKind> tops = new TreeSet<>();
         for (Entry<QualifierKind, Set<QualifierKind>> entry : directSuperMap.entrySet()) {
@@ -315,10 +316,13 @@ public class QualifierKindHierarchy {
      * qualifiers that are not a direct super qualifier of another qualifier.
      *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
-     *     qualifiers; create by {@link #initializeDirectSuperQualifiers()}
+     *     qualifiers; create by {@link #createDirectSuperMap()}
      * @return the set of bottom {@link QualifierKind}s
      */
-    private Set<QualifierKind> initializeBottoms(
+    // Subclasses should override createDirectSuperMap or specifyBottom to change the bottoms and
+    // not this method,
+    // because other methods expect the directSuperMap to be complete.
+    private Set<QualifierKind> createBottomsSet(
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         // Bottom starts with all qualifiers
         Set<QualifierKind> bottoms = new TreeSet<>(directSuperMap.keySet());
@@ -330,9 +334,10 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Iterates for all the qualifiers and adds all polymorphic qualifiers to polymorphicQualifiers.
-     * Also sets {@link QualifierKind#isPoly} to true and {@link QualifierKind#top} to top if the
-     * meta-annotation {@link PolymorphicQualifier} specifies a top.
+     * Iterates over all the qualifier kinds and adds all polymorphic qualifiers to
+     * polymorphicQualifiers. Also sets {@link QualifierKind#isPoly} to true and {@link
+     * QualifierKind#top} to top if the meta-annotation {@link PolymorphicQualifier} specifies a
+     * top.
      *
      * <p>Requires that tops has been initialized.
      *
@@ -371,14 +376,15 @@ public class QualifierKindHierarchy {
 
     /**
      * Initializes {@link QualifierKind#superTypes}, {@link QualifierKind#top} and {@link
-     * QualifierKind#bottom}. (Requires directSuperMap, tops, bottoms, and polymorphicQualifiers to
-     * be initialized.)
+     * QualifierKind#bottom}. (Requires tops, bottoms, and polymorphicQualifiers to be initialized.)
      *
+     * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
+     *     qualifiers; create by {@link #createDirectSuperMap()}
      * @throws UserError if a qualifier isn't a subtype of one of the top qualifiers or if multiple
      *     tops or bottoms are found for the same hierarchy.
-     * @param directSuperMap
      */
-    protected void initializeQualifierKinds(Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
+    protected void initializeQualifierKindFields(
+            Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         for (QualifierKind qualifierKind : qualifierKindMap.values()) {
             if (qualifierKind.isPoly) {
                 qualifierKind.superTypes = new TreeSet<>();
@@ -442,8 +448,14 @@ public class QualifierKindHierarchy {
         return allSupers;
     }
 
-    private Map<QualifierClassPair, QualifierKind> initializeLubs() {
-        Map<QualifierClassPair, QualifierKind> lubs = new HashMap<>();
+    /**
+     * Creates a mapping from {@link QualifierClassPair} to the least upper bound of both
+     * QualifierKinds.
+     *
+     * @return a mapping from {@link QualifierClassPair} to their lub.
+     */
+    protected Map<QualifierClassPair, QualifierKind> createLubsMap() {
+        Map<QualifierClassPair, QualifierKind> lubs = new TreeMap<>();
         for (QualifierKind qual1 : qualifierKindMap.values()) {
             for (QualifierKind qual2 : qualifierKindMap.values()) {
                 if (qual1.top != qual2.top) {
@@ -466,6 +478,13 @@ public class QualifierKindHierarchy {
         return lubs;
     }
 
+    /**
+     * Returns the least upper bound of {@code qual1} and {@code qual2}.
+     *
+     * @param qual1 a qualifier kind
+     * @param qual2 a qualifier kind
+     * @return the least upper bound of {@code qual1} and {@code qual2}
+     */
     private QualifierKind findLub(QualifierKind qual1, QualifierKind qual2) {
         if (qual1 == qual2) {
             return qual1;
@@ -489,7 +508,12 @@ public class QualifierKindHierarchy {
         return lub;
     }
 
-    /** Remove all supertypes of elements contained in the set. */
+    /**
+     * Returns the lowest qualifiers in the passed set.
+     *
+     * @param qualifierKinds the passed set
+     * @return the lowest qualifiers in the passed set
+     */
     protected final Set<QualifierKind> findLowestQualifiers(Set<QualifierKind> qualifierKinds) {
         Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
@@ -498,8 +522,14 @@ public class QualifierKindHierarchy {
         return lowestQualifiers;
     }
 
-    private Map<QualifierClassPair, QualifierKind> initializeGlbs() {
-        Map<QualifierClassPair, QualifierKind> glbs = new HashMap<>();
+    /**
+     * Creates a mapping from {@link QualifierClassPair} to the greatest lower bound of both
+     * QualifierKinds.
+     *
+     * @return a mapping from {@link QualifierClassPair} to their glb.
+     */
+    private Map<QualifierClassPair, QualifierKind> createGlbsMap() {
+        Map<QualifierClassPair, QualifierKind> glbs = new TreeMap<>();
         for (QualifierKind qual1 : qualifierKindMap.values()) {
             for (QualifierKind qual2 : qualifierKindMap.values()) {
                 if (qual1.top != qual2.top) {
@@ -522,6 +552,13 @@ public class QualifierKindHierarchy {
         return glbs;
     }
 
+    /**
+     * Returns the greatest lower bound of {@code qual1} and {@code qual2}.
+     *
+     * @param qual1 a qualifier kind
+     * @param qual2 a qualifier kind
+     * @return the greatest lower bound of {@code qual1} and {@code qual2}
+     */
     private QualifierKind findGlb(QualifierKind qual1, QualifierKind qual2) {
         if (qual1 == qual2) {
             return qual1;
@@ -549,7 +586,12 @@ public class QualifierKindHierarchy {
         return lub;
     }
 
-    /** Remove all supertypes of elements contained in the set. */
+    /**
+     * Returns the higest qualifiers in the passed set.
+     *
+     * @param qualifierKinds the passed set
+     * @return the highest qualifiers in the passed set
+     */
     protected final Set<QualifierKind> findHighestQualifiers(Set<QualifierKind> qualifierKinds) {
         Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
@@ -558,13 +600,26 @@ public class QualifierKindHierarchy {
         return lowestQualifiers;
     }
 
-    private static class QualifierClassPair {
+    /**
+     * A pair of {@link QualifierKind}s. new QualifierClassPair(q1, q2) is equal to new
+     * QualifierClassPair(q2, q1).
+     */
+    protected static class QualifierClassPair implements Comparable<QualifierClassPair> {
+
+        /** The first qualifier of the pair. */
         private final QualifierKind qual1;
+        /** The second qualifier of the pair. */
         private final QualifierKind qual2;
 
+        /**
+         * Create a pair.
+         *
+         * @param qual1 a qualifier kind
+         * @param qual2 a qualifier kind
+         */
         public QualifierClassPair(QualifierKind qual1, QualifierKind qual2) {
             // Order the pair.
-            if (qual1.compareTo(qual2) > 0) {
+            if (qual1.compareTo(qual2) <= 0) {
                 this.qual1 = qual1;
                 this.qual2 = qual2;
             } else {
@@ -596,6 +651,14 @@ public class QualifierKindHierarchy {
         @Override
         public String toString() {
             return "qual1=" + qual1 + ", qual2=" + qual2;
+        }
+
+        @Override
+        public int compareTo(QualifierClassPair o) {
+            if (this.qual1 == o.qual1) {
+                return this.qual2.compareTo(o.qual2);
+            }
+            return this.qual1.compareTo(o.qual1);
         }
     }
 
