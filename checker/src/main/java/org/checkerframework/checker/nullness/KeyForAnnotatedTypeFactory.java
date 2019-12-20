@@ -41,8 +41,6 @@ public class KeyForAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
                 KeyForValue, KeyForStore, KeyForTransfer, KeyForAnalysis> {
 
-    /** The @{@link KeyFor} annotation. */
-    protected final AnnotationMirror KEYFOR = AnnotationBuilder.fromClass(elements, KeyFor.class);
     /** The @{@link UnknownKeyFor} annotation. */
     protected final AnnotationMirror UNKNOWNKEYFOR =
             AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
