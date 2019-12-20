@@ -27,13 +27,12 @@ import org.plumelib.reflection.Signatures;
 public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected AnnotationMirror FENUM_UNQUALIFIED;
-    protected AnnotationMirror FENUM, FENUM_BOTTOM, FENUM_TOP;
+    protected AnnotationMirror FENUM_BOTTOM, FENUM_TOP;
 
     public FenumAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
         FENUM_BOTTOM = AnnotationBuilder.fromClass(elements, FenumBottom.class);
-        FENUM = AnnotationBuilder.fromClass(elements, Fenum.class);
         FENUM_UNQUALIFIED = AnnotationBuilder.fromClass(elements, FenumUnqualified.class);
         FENUM_TOP = AnnotationBuilder.fromClass(elements, FenumTop.class);
 
