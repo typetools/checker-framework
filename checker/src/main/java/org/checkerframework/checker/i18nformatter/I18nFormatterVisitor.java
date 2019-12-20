@@ -131,8 +131,10 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         // For method calls, they are issued in checkInvocationFormatFor.
         if (rhs != null
                 && lhs != null
-                && AnnotationUtils.areSameByName(rhs, atypeFactory.I18NFORMAT)
-                && AnnotationUtils.areSameByName(lhs, atypeFactory.I18NFORMAT)) {
+                && AnnotationUtils.areSameByName(
+                        rhs, I18nFormatterAnnotatedTypeFactory.I18NFORMAT_NAME)
+                && AnnotationUtils.areSameByName(
+                        lhs, I18nFormatterAnnotatedTypeFactory.I18NFORMAT_NAME)) {
             I18nConversionCategory[] rhsArgTypes =
                     atypeFactory.treeUtil.formatAnnotationToCategories(rhs);
             I18nConversionCategory[] lhsArgTypes =

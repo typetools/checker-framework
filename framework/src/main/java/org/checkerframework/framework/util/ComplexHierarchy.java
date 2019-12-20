@@ -83,9 +83,13 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
 
     protected QualifierKind getQualifierKind(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
+        return getQualifierKind(name);
+    }
+
+    protected QualifierKind getQualifierKind(String name) {
         QualifierKind kind = qualifierKindHierarchy.getQualifierKindMap().get(name);
-        if (name == null) {
-            throw new BugInCF("Annotation not in hierarchy: %s", anno);
+        if (kind == null) {
+            throw new BugInCF("QualifierKind not in hierarchy: %s", name);
         }
         return kind;
     }

@@ -104,9 +104,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         public FormatterQualifierHierarchy() {
             super(FormatterAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
-            FORMAT_KIND = this.qualifierKindHierarchy.getQualifierKindMap().get(FORMAT_NAME);
-            INVALIDFORMAT_KIND =
-                    this.qualifierKindHierarchy.getQualifierKindMap().get(INVALIDFORMAT_NAME);
+            FORMAT_KIND = getQualifierKind(FORMAT_NAME);
+            INVALIDFORMAT_KIND = getQualifierKind(INVALIDFORMAT_NAME);
         }
 
         @Override
