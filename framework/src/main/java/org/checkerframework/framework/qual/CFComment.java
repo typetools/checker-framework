@@ -24,6 +24,8 @@ import java.lang.annotation.RetentionPolicy;
  * <p>As a matter of style, programmers should use this annotation on the most deeply nested element
  * to which the comment applies (e.g., local variable rather than method, and method rather than
  * class).
+ *
+ * @checker_framework.manual #library-tips-dont-change-the-code Don't change the code
  */
 @Documented
 @Retention(RetentionPolicy.SOURCE)

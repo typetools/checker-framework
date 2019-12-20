@@ -1300,7 +1300,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
             return oldValue;
         }
 
-        public boolean equals(Object o) {
+        public boolean equals(@Nullable Object o) {
             if (!(o instanceof Map.Entry))
                 return false;
             Map.Entry<?,?> e = (Map.Entry<?,?>)o;

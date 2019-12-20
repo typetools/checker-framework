@@ -12,11 +12,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #units-checker Units Checker
  */
-@SuppressWarnings("checkstyle:typename")
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(Mass.class)
+@SuppressWarnings("checkstyle:typename")
 public @interface g {
     Prefix value() default Prefix.one;
 }
