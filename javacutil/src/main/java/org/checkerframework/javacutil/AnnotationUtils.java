@@ -32,6 +32,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */
@@ -42,9 +43,9 @@ public class AnnotationUtils {
         throw new AssertionError("Class AnnotationUtils cannot be instantiated.");
     }
 
+    /** Clear the static caches. */
     // TODO: hack to clear out static state.
     public static void clear() {
-        AnnotationBuilder.clear();
         annotationClassNames.clear();
     }
 
@@ -142,8 +143,6 @@ public class AnnotationUtils {
      * Checks that the annotation {@code am} has the name {@code aname} (a fully-qualified type
      * name). Values are ignored.
      *
-     * <p>(Use {@link #areSameByClass} instead of this method when possible. It is faster.)
-     *
      * @param am the AnnotationMirror whose name to compare
      * @param aname the string to compare
      * @return true if aname is the name of am
@@ -155,8 +154,6 @@ public class AnnotationUtils {
     /**
      * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
      *
-     * <p>(Use this method rather than {@link #areSameByName} when possible. This method is faster.)
-     *
      * @param am the AnnotationMirror whose class to compare
      * @param annoClass the class to compare
      * @return true if annoclass is the class of am
@@ -165,7 +162,6 @@ public class AnnotationUtils {
             AnnotationMirror am, Class<? extends Annotation> annoClass) {
         String canonicalName = annotationClassNames.get(annoClass);
         if (canonicalName == null) {
-            // This method is faster than #areSameByName because of this cache.
             canonicalName = annoClass.getCanonicalName();
             assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
             annotationClassNames.put(annoClass, canonicalName);
@@ -793,7 +789,8 @@ public class AnnotationUtils {
      * @param useDefaults whether to apply default values to the element
      * @return the name of the class that is referenced by element with the given name
      */
-    public static Name getElementValueClassName(
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getQualifiedName
+    public static @DotSeparatedIdentifiers Name getElementValueClassName(
             AnnotationMirror anno, CharSequence elementName, boolean useDefaults) {
         Type.ClassType ct = getElementValue(anno, elementName, Type.ClassType.class, useDefaults);
         // TODO:  Is it a problem that this returns the type parameters too?  Should I cut them off?

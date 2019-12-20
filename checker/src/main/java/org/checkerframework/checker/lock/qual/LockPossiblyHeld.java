@@ -23,14 +23,14 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @see LockHeld
  * @checker_framework.manual #lock-checker Lock Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({})
 @InvisibleQualifier
 @SubtypeOf({}) // The top type in the hierarchy
-@Documented
 @DefaultQualifierInHierarchy
 @DefaultFor(value = TypeUseLocation.LOWER_BOUND, types = Void.class)
 @QualifierForLiterals(LiteralKind.NULL)
 @DefaultQualifierInHierarchyInUncheckedCode
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND})
-@Retention(RetentionPolicy.RUNTIME)
-@Target({})
 public @interface LockPossiblyHeld {}

@@ -47,8 +47,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @Documented
-@SubtypeOf(Nullable.class)
-@Target(ElementType.TYPE_USE)
-@MonotonicQualifier(NonNull.class)
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE_USE)
+@SubtypeOf(Nullable.class)
+@MonotonicQualifier(NonNull.class)
 public @interface MonotonicNonNull {}

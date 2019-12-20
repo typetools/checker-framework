@@ -12,10 +12,10 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * A conditional postcondition annotation to indicate that a method ensures certain expressions to
  * be {@link Odd} given a certain result (either true or false).
  */
-@ConditionalPostconditionAnnotation(qualifier = Odd.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+@ConditionalPostconditionAnnotation(qualifier = Odd.class)
 @InheritedAnnotation
 public @interface EnsuresOddIf {
     String[] expression();

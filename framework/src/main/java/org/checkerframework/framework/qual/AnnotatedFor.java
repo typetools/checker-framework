@@ -25,8 +25,8 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #compiling-libraries Compiling partially-annotated libraries
  */
 @Documented
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.PACKAGE})
 @Retention(RetentionPolicy.SOURCE)
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.PACKAGE})
 public @interface AnnotatedFor {
     /**
      * @return the type systems for which the class has been annotated. Legal arguments are any

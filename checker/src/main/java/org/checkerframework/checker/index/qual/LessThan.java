@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -22,10 +23,13 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *   <li>{@code @LessThan({"a", "b"}) <: @LessThan({"a"})}
  *   <li>{@code @LessThan({"a", "b"})} is not related to {@code @LessThan({"a", "c"})}.
  * </ul>
+ *
+ * @checker_framework.manual #index-inequalities Index Chceker Inequalities
  */
-@SubtypeOf({LessThanUnknown.class})
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@SubtypeOf({LessThanUnknown.class})
 // TODO: I chose to implement less than rather than greater than because in most of the case studies
 // false positives, the bigger value is final or effectively final, so it can appear in a dependent
 // annotation without causing soundness issues.

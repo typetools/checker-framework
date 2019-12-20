@@ -250,15 +250,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Try to reflectively load the type factory.
         Class<?> checkerClass = checker.getClass();
         while (checkerClass != BaseTypeChecker.class) {
-            final String classToLoad =
-                    checkerClass
-                            .getName()
-                            .replace("Checker", "AnnotatedTypeFactory")
-                            .replace("Subchecker", "AnnotatedTypeFactory");
-
             AnnotatedTypeFactory result =
                     BaseTypeChecker.invokeConstructorFor(
-                            classToLoad,
+                            BaseTypeChecker.getRelatedClassName(
+                                    checkerClass, "AnnotatedTypeFactory"),
                             new Class<?>[] {BaseTypeChecker.class},
                             new Object[] {checker});
             if (result != null) {
@@ -753,7 +748,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /** Reports single purity error. * */
+    /** Reports single purity error. */
     private void reportPurityError(String msgPrefix, Pair<Tree, String> r) {
         String reason = r.second;
         @SuppressWarnings("CompilerMessages")
