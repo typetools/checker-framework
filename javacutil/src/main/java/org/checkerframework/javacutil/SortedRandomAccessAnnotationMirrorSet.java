@@ -2,6 +2,8 @@ package org.checkerframework.javacutil;
 
 import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 
 public class SortedRandomAccessAnnotationMirrorSet implements RandomAccessSet<AnnotationMirror> {
 
@@ -26,7 +28,7 @@ public class SortedRandomAccessAnnotationMirrorSet implements RandomAccessSet<An
     }
 
     @Override
-    public boolean contains(Object o) {
+    public boolean contains(@Nullable Object o) {
         return indexOf(o) != -1;
     }
 
@@ -41,8 +43,8 @@ public class SortedRandomAccessAnnotationMirrorSet implements RandomAccessSet<An
     }
 
     @Override
-    public <T> T[] toArray(T[] ts) {
-        return shadowList.toArray(ts);
+    public <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a) {
+        return shadowList.toArray(a);
     }
 
     @Override
@@ -62,7 +64,7 @@ public class SortedRandomAccessAnnotationMirrorSet implements RandomAccessSet<An
     }
 
     @Override
-    public boolean remove(Object o) {
+    public boolean remove(@Nullable Object o) {
         if (!(o instanceof AnnotationMirror)) {
             return false;
         }
@@ -139,7 +141,7 @@ public class SortedRandomAccessAnnotationMirrorSet implements RandomAccessSet<An
         return shadowList.get(i);
     }
 
-    private int indexOf(Object o) {
+    private int indexOf(@Nullable Object o) {
         if (!(o instanceof AnnotationMirror)) {
             return -1;
         }
@@ -168,7 +170,7 @@ public class SortedRandomAccessAnnotationMirrorSet implements RandomAccessSet<An
     }
 
     @Override
-    public boolean equals(Object other) {
+    public boolean equals(@Nullable Object other) {
         if (other == this) {
             return true;
         }
@@ -219,7 +221,7 @@ public class SortedRandomAccessAnnotationMirrorSet implements RandomAccessSet<An
         }
 
         @Override
-        public boolean contains(Object o) {
+        public boolean contains(@Nullable Object o) {
             return set.contains(o);
         }
 
@@ -234,8 +236,8 @@ public class SortedRandomAccessAnnotationMirrorSet implements RandomAccessSet<An
         }
 
         @Override
-        public <T> T[] toArray(T[] ts) {
-            return set.toArray(ts);
+        public <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a) {
+            return set.toArray(a);
         }
 
         @Override
@@ -259,7 +261,7 @@ public class SortedRandomAccessAnnotationMirrorSet implements RandomAccessSet<An
         }
 
         @Override
-        public boolean remove(Object o) {
+        public boolean remove(@Nullable Object o) {
             throw new RuntimeException("Illegal operation");
         }
 
