@@ -134,9 +134,27 @@ public class QualifierKindHierarchy {
 
     private void printLubs() {
         for (Entry<QualifierClassPair, QualifierKind> entry : lubs.entrySet()) {
-            if (entry.getValue().hasElements()) {
-                System.out.println(entry.getKey() + " " + entry.getValue());
+            System.out.printf(
+                    "LUB(%s, %s): %s%n",
+                    entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
+        }
+    }
+
+    private void printLubsWithElements() {
+        for (Entry<QualifierClassPair, QualifierKind> entry : lubs.entrySet()) {
+            if (entry.getValue().hasElements) {
+                System.out.printf(
+                        "LUB(%s, %s): %s%n",
+                        entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
             }
+        }
+    }
+
+    private void printGlbs() {
+        for (Entry<QualifierClassPair, QualifierKind> entry : glbs.entrySet()) {
+            System.out.printf(
+                    "GLB(%s, %s): %s%n",
+                    entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
         }
     }
 

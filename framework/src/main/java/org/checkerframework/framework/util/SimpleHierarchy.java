@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.UserError;
 
-/** All qualifiers must be represented by annotations with out elements. */
+/** All qualifiers must be represented by annotations without elements. */
 public class SimpleHierarchy extends QualifierHierarchy {
     private Elements elements;
     protected final QualifierKindHierarchy qualifierKindHierarchy;

@@ -39,6 +39,74 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
         bottoms.addAll(bottomsMap.values());
         this.bottoms = Collections.unmodifiableSet(bottoms);
         this.qualifierMap = createQualifiers();
+        printImplement();
+    }
+
+    protected void printIsSubtypeBody(QualifierKind subKind, QualifierKind superKind) {
+        if (subKind.isSubtype(superKind)) {
+            if (superKind.hasElements() && subKind.hasElements()) {
+                System.out.printf(
+                        "  if (subKind == \"%s\" && superKind == \"%s\") {}%n", subKind, superKind);
+            }
+        }
+    }
+
+    protected void printLeastUpperBoundBody(QualifierKind qual1, QualifierKind qual2) {
+        if (!qual1.areInSameHierarchy(qual2)) {
+            return;
+        }
+        QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
+        if (lub.hasElements()) {
+            System.out.printf(
+                    "  if (qual1 == \"%s\" && qual2 == \"%s\") { /* LUB is %s */ }%n",
+                    qual1, qual2, lub);
+        }
+    }
+
+    protected void printGreatestLowerBoundBody(QualifierKind qual1, QualifierKind qual2) {
+        if (!qual1.areInSameHierarchy(qual2)) {
+            return;
+        }
+        QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);
+        if (glb.hasElements()) {
+            System.out.printf(
+                    "  if (qual1 == \"%s\" && qual2 == \"%s\") { /* GLB is %s */}%n",
+                    qual1, qual2, glb);
+        }
+    }
+
+    void printImplement() {
+        System.out.println(
+                "@Override\n"
+                        + "protected boolean isSubtype(AnnotationMirror subAnno, QualifierKind subKind, AnnotationMirror superAnno,  QualifierKind superKind) {");
+        for (QualifierKind qualifierKind1 : qualifierKindHierarchy.getQualifierKindMap().values()) {
+            for (QualifierKind qualifierKind2 :
+                    qualifierKindHierarchy.getQualifierKindMap().values()) {
+                printIsSubtypeBody(qualifierKind1, qualifierKind2);
+            }
+        }
+        System.out.println("}\n");
+
+        System.out.println(
+                "@Override\n"
+                        + "protected AnnotationMirror leastUpperBound(AnnotationMirror a1, QualifierKind qual1, AnnotationMirror a2, QualifierKind qual2) {");
+        for (QualifierKind qualifierKind1 : qualifierKindHierarchy.getQualifierKindMap().values()) {
+            for (QualifierKind qualifierKind2 :
+                    qualifierKindHierarchy.getQualifierKindMap().values()) {
+                printLeastUpperBoundBody(qualifierKind1, qualifierKind2);
+            }
+        }
+        System.out.println("}\n");
+        System.out.println(
+                "@Override\n"
+                        + "protected AnnotationMirror greatestLowerBound(AnnotationMirror a1, QualifierKind qual1, AnnotationMirror a2, QualifierKind qual2) {");
+        for (QualifierKind qualifierKind1 : qualifierKindHierarchy.getQualifierKindMap().values()) {
+            for (QualifierKind qualifierKind2 :
+                    qualifierKindHierarchy.getQualifierKindMap().values()) {
+                printGreatestLowerBoundBody(qualifierKind1, qualifierKind2);
+            }
+        }
+        System.out.println("}");
     }
 
     @Override
