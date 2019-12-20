@@ -2,9 +2,7 @@ package org.checkerframework.checker.formatter;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
-import java.lang.annotation.Annotation;
 import java.util.IllegalFormatException;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
@@ -36,14 +34,16 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The @{@link UnknownFormat} annotation. */
     protected final AnnotationMirror UNKNOWNFORMAT =
             AnnotationBuilder.fromClass(elements, UnknownFormat.class);
-    /** The @{@link Format} annotation. */
-    protected final AnnotationMirror FORMAT = AnnotationBuilder.fromClass(elements, Format.class);
-    /** The @{@link InvalidFormat} annotation. */
-    protected final AnnotationMirror INVALIDFORMAT =
-            AnnotationBuilder.fromClass(elements, InvalidFormat.class);
     /** The @{@link FormatBottom} annotation. */
     protected final AnnotationMirror FORMATBOTTOM =
             AnnotationBuilder.fromClass(elements, FormatBottom.class);
+
+    /** The fully-qualified name of the {@link Format} qualifier. */
+    protected static final String FORMAT_NAME =
+            "org.checkerframework.checker.formatter.qual.Format";
+    /** The fully-qualified name of the {@link InvalidFormat} qualifier. */
+    protected static final String INVALIDFORMAT_NAME =
+            "org.checkerframework.checker.formatter.qual.InvalidFormat";
 
     /** Syntax tree utilities. */
     protected final FormatterTreeUtil treeUtil = new FormatterTreeUtil(checker);
@@ -53,12 +53,6 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
 
         this.postInit();
-    }
-
-    @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiers(
-                UnknownFormat.class, Format.class, InvalidFormat.class, FormatBottom.class);
     }
 
     @Override
@@ -78,7 +72,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            if (!type.isAnnotatedInHierarchy(FORMAT)) {
+            if (!type.isAnnotatedInHierarchy(UNKNOWNFORMAT)) {
                 String format = null;
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
                     format = (String) tree.getValue();
@@ -110,8 +104,9 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         public FormatterQualifierHierarchy() {
             super(FormatterAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
-            FORMAT_KIND = getQualifierKind(FORMAT);
-            INVALIDFORMAT_KIND = getQualifierKind(INVALIDFORMAT);
+            FORMAT_KIND = this.qualifierKindHierarchy.getQualifierKindMap().get(FORMAT_NAME);
+            INVALIDFORMAT_KIND =
+                    this.qualifierKindHierarchy.getQualifierKindMap().get(INVALIDFORMAT_NAME);
         }
 
         @Override

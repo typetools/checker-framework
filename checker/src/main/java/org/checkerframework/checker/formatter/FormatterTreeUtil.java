@@ -26,6 +26,7 @@ import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -413,54 +414,68 @@ public class FormatterTreeUtil {
         return list.toArray(new ConversionCategory[] {});
     }
 
-    private static final Class<? extends Object> typeMirrorToClass(final TypeMirror type) {
-        return type.accept(
-                new SimpleTypeVisitor7<Class<? extends Object>, Class<Void>>() {
-                    @Override
-                    public Class<? extends Object> visitPrimitive(PrimitiveType t, Class<Void> v) {
-                        switch (t.getKind()) {
-                            case BOOLEAN:
-                                return Boolean.class;
-                            case BYTE:
-                                return Byte.class;
-                            case CHAR:
-                                return Character.class;
-                            case SHORT:
-                                return Short.class;
-                            case INT:
-                                return Integer.class;
-                            case LONG:
-                                return Long.class;
-                            case FLOAT:
-                                return Float.class;
-                            case DOUBLE:
-                                return Double.class;
-                            default:
-                                return null;
-                        }
-                    }
+    /** Converts a TypeMirror to a Class. */
+    private static class TypeMirrorToClassVisitor
+            extends SimpleTypeVisitor7<Class<? extends Object>, Class<Void>> {
+        @Override
+        public Class<? extends Object> visitPrimitive(PrimitiveType t, Class<Void> v) {
+            switch (t.getKind()) {
+                case BOOLEAN:
+                    return Boolean.class;
+                case BYTE:
+                    return Byte.class;
+                case CHAR:
+                    return Character.class;
+                case SHORT:
+                    return Short.class;
+                case INT:
+                    return Integer.class;
+                case LONG:
+                    return Long.class;
+                case FLOAT:
+                    return Float.class;
+                case DOUBLE:
+                    return Double.class;
+                default:
+                    return null;
+            }
+        }
 
-                    @Override
-                    public Class<? extends Object> visitDeclared(DeclaredType dt, Class<Void> v) {
-                        return dt.asElement()
-                                .accept(
-                                        new SimpleElementVisitor7<
-                                                Class<? extends Object>, Class<Void>>() {
-                                            @Override
-                                            public Class<? extends Object> visitType(
-                                                    TypeElement e, Class<Void> v) {
-                                                try {
-                                                    return Class.forName(
-                                                            e.getQualifiedName().toString());
-                                                } catch (ClassNotFoundException e1) {
-                                                    return null; // the lookup should work for all
-                                                    // the classes we care about
-                                                }
-                                            }
-                                        },
-                                        Void.TYPE);
-                    }
-                },
-                Void.TYPE);
+        @Override
+        public Class<? extends Object> visitDeclared(DeclaredType dt, Class<Void> v) {
+            return dt.asElement()
+                    .accept(
+                            new SimpleElementVisitor7<Class<? extends Object>, Class<Void>>() {
+                                @Override
+                                public Class<? extends Object> visitType(
+                                        TypeElement e, Class<Void> v) {
+                                    try {
+                                        @SuppressWarnings(
+                                                "signature") // https://tinyurl.com/cfissue/658:
+                                        // Name.toString should be @PolySignature
+                                        @BinaryName String cname = e.getQualifiedName().toString();
+                                        return Class.forName(cname);
+                                    } catch (ClassNotFoundException e1) {
+                                        return null; // the lookup should work for all
+                                        // the classes we care about
+                                    }
+                                }
+                            },
+                            Void.TYPE);
+        }
+    }
+
+    /** The singleton instance of TypeMirrorToClassVisitor. */
+    private static TypeMirrorToClassVisitor typeMirrorToClassVisitor =
+            new TypeMirrorToClassVisitor();
+
+    /**
+     * Converts a TypeMirror to a Class.
+     *
+     * @param type a TypeMirror
+     * @return the class corresponding to the argument
+     */
+    private static final Class<? extends Object> typeMirrorToClass(final TypeMirror type) {
+        return type.accept(typeMirrorToClassVisitor, Void.TYPE);
     }
 }

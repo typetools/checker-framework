@@ -15,6 +15,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.units.qual.MixedUnits;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.UnitsBottom;
@@ -39,6 +41,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.reflection.Signatures;
 
 /**
  * Annotated type factory for the Units Checker.
@@ -182,6 +185,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         String qualNames = checker.getOption("units");
         if (qualNames != null) {
             for (String qualName : qualNames.split(",")) {
+                if (!Signatures.isBinaryName(qualName)) {
+                    throw new UserError(
+                            "Malformed qualifier name \"%s\" in -Aunits=%s", qualName, qualNames);
+                }
                 loadExternalUnit(qualName);
             }
         }
@@ -195,8 +202,12 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Loads and processes a single external units qualifier. */
-    private void loadExternalUnit(String annoName) {
+    /**
+     * Loads and processes a single external units qualifier.
+     *
+     * @param annoName the name of a units qualifier
+     */
+    private void loadExternalUnit(@BinaryName String annoName) {
         // loadExternalAnnotationClass() returns null for alias units
         Class<? extends Annotation> loadedClass = loader.loadExternalAnnotationClass(annoName);
         if (loadedClass != null) {
@@ -230,10 +241,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // if it is an aliased annotation
         else {
             // ensure it has a base unit
-            Name baseUnitClass = getBaseUnitAnno(mirror);
+            @DotSeparatedIdentifiers Name baseUnitClass = getBaseUnitAnno(mirror);
             if (baseUnitClass != null) {
                 // if the base unit isn't already added, add that first
-                String baseUnitClassName = baseUnitClass.toString();
+                @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658
+                @DotSeparatedIdentifiers String baseUnitClassName = baseUnitClass.toString();
                 if (!externalQualsMap.containsKey(baseUnitClassName)) {
                     loadExternalUnit(baseUnitClassName);
                 }
@@ -269,7 +281,14 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
-    private @Nullable Name getBaseUnitAnno(AnnotationMirror anno) {
+    /**
+     * Return the name of the given annotation, if it is meta-annotated with UnitsMultiple;
+     * otherwise return null.
+     *
+     * @param anno the annotation to examine
+     * @return the annotation's name, if it is meta-annotated with UnitsMultiple; otherwise null
+     */
+    private @Nullable @DotSeparatedIdentifiers Name getBaseUnitAnno(AnnotationMirror anno) {
         // loop through the meta annotations of the annotation, look for UnitsMultiple
         for (AnnotationMirror metaAnno :
                 anno.getAnnotationType().asElement().getAnnotationMirrors()) {
@@ -300,12 +319,18 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
-                Name theclassname = AnnotationUtils.getElementValueClassName(ama, "value", true);
+                String theclassname =
+                        AnnotationUtils.getElementValueClassName(ama, "value", true).toString();
+                if (!Signatures.isClassGetName(theclassname)) {
+                    throw new UserError(
+                            "Malformed class name \"%s\" should be in ClassGetName format in annotation %s",
+                            theclassname, ama);
+                }
                 Class<?> valueElement;
                 try {
                     ClassLoader classLoader =
                             InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
-                    valueElement = Class.forName(theclassname.toString(), true, classLoader);
+                    valueElement = Class.forName(theclassname, true, classLoader);
                 } catch (ClassNotFoundException e) {
                     String msg =
                             String.format(

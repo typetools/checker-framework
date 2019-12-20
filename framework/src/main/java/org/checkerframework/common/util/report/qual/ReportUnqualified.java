@@ -16,7 +16,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Documented
 @Retention(RetentionPolicy.SOURCE) // do not store in class file
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
+@InvisibleQualifier
 public @interface ReportUnqualified {}

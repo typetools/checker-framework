@@ -690,7 +690,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     typeQualifier.getAnnotation(SubtypeOf.class).value();
             for (Class<? extends Annotation> superQualifier : superQualifiers) {
                 if (!supportedTypeQualifiers.contains(superQualifier)) {
-                    continue;
+                    throw new BugInCF(
+                            "Found unsupported qualifier in SubTypeOf: %s on qualifier: %s",
+                            superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
                 }
                 AnnotationMirror superAnno = AnnotationBuilder.fromClass(elements, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);

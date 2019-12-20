@@ -23,6 +23,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.plumelib.util.ImmutableTypes;
 
 /** A utility class that helps with {@link TypeMirror}s. */
@@ -41,7 +42,7 @@ public final class TypesUtils {
      * @param type the declared type
      * @return the name corresponding to that type
      */
-    public static Name getQualifiedName(DeclaredType type) {
+    public static @DotSeparatedIdentifiers Name getQualifiedName(DeclaredType type) {
         TypeElement element = (TypeElement) type.asElement();
         return element.getQualifiedName();
     }

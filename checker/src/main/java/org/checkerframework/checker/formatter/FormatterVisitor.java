@@ -183,8 +183,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         // For method calls, it is issued in visitMethodInvocation.
         if (rhs != null
                 && lhs != null
-                && AnnotationUtils.areSameByName(rhs, atypeFactory.FORMAT)
-                && AnnotationUtils.areSameByName(lhs, atypeFactory.FORMAT)) {
+                && AnnotationUtils.areSameByName(rhs, FormatterAnnotatedTypeFactory.FORMAT_NAME)
+                && AnnotationUtils.areSameByName(lhs, FormatterAnnotatedTypeFactory.FORMAT_NAME)) {
             ConversionCategory[] rhsArgTypes =
                     atypeFactory.treeUtil.formatAnnotationToCategories(rhs);
             ConversionCategory[] lhsArgTypes =

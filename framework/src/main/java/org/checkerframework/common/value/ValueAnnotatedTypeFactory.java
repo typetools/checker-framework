@@ -29,6 +29,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -1497,8 +1499,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // The field is static and final.
                 Element e = TreeUtils.elementFromTree(tree.getExpression());
                 if (e != null) {
-                    String classname = ElementUtils.getQualifiedClassName(e).toString();
-                    String fieldName = tree.getIdentifier().toString();
+                    @SuppressWarnings("signature") // TODO: this looks like a bug in
+                    // ValueAnnotatedTypeFactory.  evaluateStaticFieldAcces requires a @ClassGetName
+                    // but this passes a @FullyQualifiedName
+                    @BinaryName String classname = ElementUtils.getQualifiedClassName(e).toString();
+                    @SuppressWarnings(
+                            "signature") // https://tinyurl.com/cfissue/658 for Name.toString()
+                    @Identifier String fieldName = tree.getIdentifier().toString();
                     value = evaluator.evaluateStaticFieldAccess(classname, fieldName, tree);
                     if (value != null) {
                         type.replaceAnnotation(
