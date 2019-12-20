@@ -3,11 +3,7 @@ package org.checkerframework.javacutil;
 import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
 
-public class SortedRandomAccessAnnotationMirrorSet
-        implements List<AnnotationMirror>,
-                Set<AnnotationMirror>,
-                RandomAccess,
-                RandomAccessSet<AnnotationMirror> {
+public class SortedRandomAccessAnnotationMirrorSet implements RandomAccessSet<AnnotationMirror> {
 
     private ArrayList<AnnotationMirror> shadowList;
 
@@ -95,7 +91,6 @@ public class SortedRandomAccessAnnotationMirrorSet
     }
 
     // O(n^2)
-    // TODO: recheck
     @Override
     public boolean addAll(Collection<? extends AnnotationMirror> collection) {
         boolean changed = false;
@@ -103,13 +98,6 @@ public class SortedRandomAccessAnnotationMirrorSet
             changed = add(anno) || changed;
         }
         return changed;
-    }
-
-    // TODO: recheck
-    @Override
-    public boolean addAll(int i, Collection<? extends AnnotationMirror> collection) {
-        // TODO: This is illegal
-        throw new RuntimeException("Illegal operation");
     }
 
     // O(n^2)
@@ -125,7 +113,6 @@ public class SortedRandomAccessAnnotationMirrorSet
     // O(n^2)
     @Override
     public boolean retainAll(Collection<?> collection) {
-        assert false;
         ArrayList<AnnotationMirror> toRetain = new ArrayList<>(collection.size());
         for (Object el : collection) {
             int index = indexOf(el);
@@ -148,31 +135,11 @@ public class SortedRandomAccessAnnotationMirrorSet
         shadowList.clear();
     }
 
-    @Override
-    public AnnotationMirror get(int i) {
+    protected AnnotationMirror get(int i) {
         return shadowList.get(i);
     }
 
-    @Override
-    public AnnotationMirror set(int i, AnnotationMirror annotationMirror) {
-        // TODO: This is illegal
-        throw new RuntimeException("Illegal operation");
-    }
-
-    @Override
-    public void add(int i, AnnotationMirror annotationMirror) {
-        // TODO: This is illegal
-        throw new RuntimeException("Illegal operation");
-    }
-
-    @Override
-    public AnnotationMirror remove(int i) {
-        // TODO: This is illegal
-        throw new RuntimeException("Illegal operation");
-    }
-
-    @Override
-    public int indexOf(Object o) {
+    private int indexOf(Object o) {
         if (!(o instanceof AnnotationMirror)) {
             return -1;
         }
@@ -186,31 +153,7 @@ public class SortedRandomAccessAnnotationMirrorSet
     }
 
     @Override
-    public int lastIndexOf(Object o) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public ListIterator<AnnotationMirror> listIterator() {
-        assert false;
-        return shadowList.listIterator();
-    }
-
-    @Override
-    public ListIterator<AnnotationMirror> listIterator(int i) {
-        assert false;
-        return shadowList.listIterator(i);
-    }
-
-    @Override
-    public List<AnnotationMirror> subList(int i1, int i2) {
-        assert false;
-        return shadowList.subList(i1, i2);
-    }
-
-    @Override
     public Spliterator<AnnotationMirror> spliterator() {
-        assert false;
         return shadowList.spliterator();
     }
 
@@ -221,36 +164,36 @@ public class SortedRandomAccessAnnotationMirrorSet
 
     @Override
     public int hashCode() {
-        assert false;
-        return super.hashCode();
+        return shadowList.hashCode();
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == this) {
+    public boolean equals(Object other) {
+        if (other == this) {
             return true;
         }
 
-        if (!(o instanceof Collection)) {
+        if (!(other instanceof Collection)) {
             return false;
         }
 
-        Collection<?> c = (Collection<?>) o;
-        if (c.size() != this.size()) {
+        Collection<?> otherCollection = (Collection<?>) other;
+        if (otherCollection.size() != size()) {
             return false;
         }
 
-        if (c instanceof SortedRandomAccessAnnotationMirrorSet) {
-            SortedRandomAccessAnnotationMirrorSet s = (SortedRandomAccessAnnotationMirrorSet) c;
-            for (int i = 0; i < s.size(); i++) {
-                if (AnnotationUtils.compareAnnotationMirrors(get(i), s.get(i)) != 0) {
+        if (otherCollection instanceof SortedRandomAccessAnnotationMirrorSet) {
+            SortedRandomAccessAnnotationMirrorSet otherSet =
+                    (SortedRandomAccessAnnotationMirrorSet) otherCollection;
+            for (int i = 0; i < otherSet.size(); i++) {
+                if (AnnotationUtils.compareAnnotationMirrors(get(i), otherSet.get(i)) != 0) {
                     return false;
                 }
             }
             return true;
         }
 
-        return containsAll(c);
+        return containsAll(otherCollection);
     }
 
     private static class Unmodifiable extends SortedRandomAccessAnnotationMirrorSet {
@@ -258,6 +201,11 @@ public class SortedRandomAccessAnnotationMirrorSet
 
         private Unmodifiable(SortedRandomAccessAnnotationMirrorSet set) {
             this.set = set;
+        }
+
+        @Override
+        protected AnnotationMirror get(int i) {
+            return set.get(i);
         }
 
         @Override
@@ -291,33 +239,8 @@ public class SortedRandomAccessAnnotationMirrorSet
         }
 
         @Override
-        public AnnotationMirror get(int i) {
-            return set.get(i);
-        }
-
-        @Override
-        public int indexOf(Object o) {
-            return set.indexOf(o);
-        }
-
-        @Override
         public boolean containsAll(Collection<?> collection) {
             return set.containsAll(collection);
-        }
-
-        @Override
-        public ListIterator<AnnotationMirror> listIterator() {
-            return set.listIterator();
-        }
-
-        @Override
-        public ListIterator<AnnotationMirror> listIterator(int i) {
-            return set.listIterator(i);
-        }
-
-        @Override
-        public List<AnnotationMirror> subList(int i1, int i2) {
-            return set.subList(i1, i2);
         }
 
         @Override
@@ -346,11 +269,6 @@ public class SortedRandomAccessAnnotationMirrorSet
         }
 
         @Override
-        public boolean addAll(int i, Collection<? extends AnnotationMirror> collection) {
-            throw new RuntimeException("Illegal operation");
-        }
-
-        @Override
         public boolean removeAll(Collection<?> collection) {
             throw new RuntimeException("Illegal operation");
         }
@@ -363,11 +281,6 @@ public class SortedRandomAccessAnnotationMirrorSet
         @Override
         public void clear() {
             throw new RuntimeException("Illegal operation");
-        }
-
-        @Override
-        public int lastIndexOf(Object o) {
-            throw new RuntimeException("Not implemented");
         }
     }
 }
