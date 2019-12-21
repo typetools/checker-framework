@@ -17,8 +17,8 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
-@Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.ANNOTATION_TYPE})
 public @interface PolymorphicQualifier {
     /**
      * Indicates which type system this annotation refers to (optional, and usually unnecessary).

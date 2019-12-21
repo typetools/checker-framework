@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
@@ -32,6 +33,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */
@@ -185,12 +187,11 @@ public class AnnotationUtils {
             return areSame(c1.iterator().next(), c2.iterator().next());
         }
 
-        Set<AnnotationMirror> s1 = createAnnotationSet();
-        Set<AnnotationMirror> s2 = createAnnotationSet();
+        // while loop depends on SortedSet implementation.
+        SortedSet<AnnotationMirror> s1 = createAnnotationSet();
+        SortedSet<AnnotationMirror> s2 = createAnnotationSet();
         s1.addAll(c1);
         s2.addAll(c2);
-
-        // depend on the fact that Set is an ordered set.
         Iterator<AnnotationMirror> iter1 = s1.iterator();
         Iterator<AnnotationMirror> iter2 = s2.iterator();
 
@@ -479,9 +480,9 @@ public class AnnotationUtils {
      * <p>It stores at most once instance of {@link AnnotationMirror} of a given type, regardless of
      * the annotation element values.
      *
-     * @return a new set to store {@link AnnotationMirror} as element
+     * @return a sorted new set to store {@link AnnotationMirror} as element
      */
-    public static Set<AnnotationMirror> createAnnotationSet() {
+    public static SortedSet<AnnotationMirror> createAnnotationSet() {
         return new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
     }
 
@@ -788,7 +789,8 @@ public class AnnotationUtils {
      * @param useDefaults whether to apply default values to the element
      * @return the name of the class that is referenced by element with the given name
      */
-    public static Name getElementValueClassName(
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getQualifiedName
+    public static @DotSeparatedIdentifiers Name getElementValueClassName(
             AnnotationMirror anno, CharSequence elementName, boolean useDefaults) {
         Type.ClassType ct = getElementValue(anno, elementName, Type.ClassType.class, useDefaults);
         // TODO:  Is it a problem that this returns the type parameters too?  Should I cut them off?

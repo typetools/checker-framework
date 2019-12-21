@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -16,9 +17,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@SubtypeOf(SearchIndexUnknown.class)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(SearchIndexUnknown.class)
 public @interface SearchIndexFor {
     /**
      * Sequences for which the annotated expression has the type of the result of a call to {@link
