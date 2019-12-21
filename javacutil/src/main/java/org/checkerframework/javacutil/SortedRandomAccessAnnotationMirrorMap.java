@@ -2,19 +2,15 @@ package org.checkerframework.javacutil;
 
 import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.nullness.qual.KeyFor;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.PolyNull;
 
 public class SortedRandomAccessAnnotationMirrorMap<V>
         implements Map<AnnotationMirror, V>, RandomAccess {
 
     @SuppressWarnings("serial")
     private static class SortedArraySet extends ArrayList<AnnotationMirror>
-            implements RandomAccessSet<AnnotationMirror> {
+            implements Set<AnnotationMirror>, RandomAccessSet<AnnotationMirror> {
         @Override
-        public boolean contains(@Nullable Object o) {
+        public boolean contains(Object o) {
             if (!(o instanceof AnnotationMirror)) {
                 return false;
             }
@@ -44,7 +40,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
     }
 
     @Override
-    public boolean containsKey(@Nullable Object o) {
+    public boolean containsKey(Object o) {
         if (!(o instanceof AnnotationMirror)) {
             return false;
         }
@@ -55,9 +51,9 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
     }
 
     @Override
-    public boolean containsValue(@Nullable Object o) {
+    public boolean containsValue(Object o) {
         for (V value : values) {
-            if (Objects.equals(value, o)) {
+            if (value.equals(o)) {
                 return true;
             }
         }
@@ -65,7 +61,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
     }
 
     @Override
-    @Nullable public V get(@Nullable Object o) {
+    public V get(Object o) {
         if (!(o instanceof AnnotationMirror)) {
             return null;
         }
@@ -80,7 +76,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
     }
 
     @Override
-    @Nullable public V put(AnnotationMirror annotationMirror, V v) {
+    public V put(AnnotationMirror annotationMirror, V v) {
         int index =
                 Collections.binarySearch(
                         keys, annotationMirror, AnnotationUtils::compareAnnotationMirrors);
@@ -99,7 +95,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
     }
 
     @Override
-    @Nullable public V remove(@Nullable Object o) {
+    public V remove(Object o) {
         if (!(o instanceof AnnotationMirror)) {
             return null;
         }
@@ -131,8 +127,8 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
     }
 
     @Override
-    public Set<@KeyFor("this") AnnotationMirror> keySet() {
-        return (Set<@KeyFor("this") AnnotationMirror>) keys;
+    public Set<AnnotationMirror> keySet() {
+        return keys;
     }
 
     @Override
@@ -141,8 +137,8 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
     }
 
     @Override
-    public Set<Entry<@KeyFor("this") AnnotationMirror, V>> entrySet() {
-        return (Set<Entry<@KeyFor("this") AnnotationMirror, V>>) createEntrySet();
+    public Set<Entry<AnnotationMirror, V>> entrySet() {
+        return createEntrySet();
     }
 
     private Set<Entry<AnnotationMirror, V>> createEntrySet() {
@@ -202,7 +198,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
         }
 
         @Override
-        public boolean contains(@Nullable Object o) {
+        public boolean contains(Object o) {
             return set.contains(o);
         }
 
@@ -217,8 +213,8 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
         }
 
         @Override
-        public <T> @NonNull T @PolyNull [] toArray(T @PolyNull [] a) {
-            return set.toArray(a);
+        public <T> T[] toArray(T[] ts) {
+            return set.toArray(ts);
         }
 
         @Override
@@ -227,7 +223,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
         }
 
         @Override
-        public int indexOf(@Nullable Object o) {
+        public int indexOf(Object o) {
             return set.indexOf(o);
         }
 
@@ -267,7 +263,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
         }
 
         @Override
-        public boolean remove(@Nullable Object o) {
+        public boolean remove(Object o) {
             throw new RuntimeException("Illegal operation");
         }
 
@@ -297,7 +293,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
         }
 
         @Override
-        public int lastIndexOf(@Nullable Object o) {
+        public int lastIndexOf(Object o) {
             throw new RuntimeException("Not implemented");
         }
     }
@@ -321,23 +317,23 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
         }
 
         @Override
-        public boolean containsKey(@Nullable Object o) {
+        public boolean containsKey(Object o) {
             return map.containsKey(o);
         }
 
         @Override
-        public boolean containsValue(@Nullable Object o) {
+        public boolean containsValue(Object o) {
             return map.containsValue(o);
         }
 
         @Override
-        @Nullable public V get(@Nullable Object o) {
+        public V get(Object o) {
             return map.get(o);
         }
 
         @Override
-        public Set<@KeyFor("this") AnnotationMirror> keySet() {
-            return (Set<@KeyFor("this") AnnotationMirror>) new UnmodifiableKeys(map.keys);
+        public Set<AnnotationMirror> keySet() {
+            return new UnmodifiableKeys(map.keys);
         }
 
         @Override
@@ -346,8 +342,8 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
         }
 
         @Override
-        public Set<Entry<@KeyFor("this") AnnotationMirror, V>> entrySet() {
-            return (Set<Entry<@KeyFor("this") AnnotationMirror, V>>) map.entrySet();
+        public Set<Entry<AnnotationMirror, V>> entrySet() {
+            return map.entrySet();
         }
 
         @Override
@@ -356,7 +352,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
         }
 
         @Override
-        public V remove(@Nullable Object o) {
+        public V remove(Object o) {
             throw new RuntimeException("Illegal operation");
         }
 
