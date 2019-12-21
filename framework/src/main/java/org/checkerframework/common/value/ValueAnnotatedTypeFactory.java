@@ -932,18 +932,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
                     && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
-                List<Double> subValues = convertLongListToDoubleList(getIntValues(subAnno));
                 List<Double> superValues = getDoubleValues(superAnno);
+                List<Double> subValues = convertLongListToDoubleList(getIntValues(subAnno));
                 return superValues.containsAll(subValues);
             } else if ((AnnotationUtils.areSameByClass(superAnno, IntRange.class)
                             && AnnotationUtils.areSameByClass(subAnno, IntVal.class))
                     || (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
                             && AnnotationUtils.areSameByClass(subAnno, ArrayLen.class))) {
-                List<Long> subValues = getArrayLenOrIntValue(subAnno);
                 Range superRange = getRange(superAnno);
-                long subMinVal = Collections.min(subValues);
-                long subMaxVal = Collections.max(subValues);
-                return subMinVal >= superRange.from && subMaxVal <= superRange.to;
+                List<Long> subValues = getArrayLenOrIntValue(subAnno);
+                Range subRange = Range.create(subValues);
+                return superRange.contains(subRange);
             } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
                     && AnnotationUtils.areSameByClass(subAnno, IntRange.class)) {
                 Range subRange = getRange(subAnno);
@@ -976,9 +975,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
                 // StringVal is a subtype of ArrayLen, if all the strings have one of the correct
                 // lengths
-                List<String> subValues = getStringValues(subAnno);
                 List<Integer> superValues = getArrayLength(superAnno);
-
+                List<String> subValues = getStringValues(subAnno);
                 for (String value : subValues) {
                     if (!superValues.contains(value.length())) {
                         return false;
@@ -989,8 +987,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
                 // StringVal is a subtype of ArrayLenRange, if all the strings have a length in the
                 // range.
-                List<String> subValues = getStringValues(subAnno);
                 Range superRange = getRange(superAnno);
+                List<String> subValues = getStringValues(subAnno);
                 for (String value : subValues) {
                     if (!superRange.contains(value.length())) {
                         return false;
