@@ -8,7 +8,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
 
     @SuppressWarnings("serial")
     private static class SortedArraySet extends ArrayList<AnnotationMirror>
-            implements Set<AnnotationMirror>, RandomAccessSet<AnnotationMirror> {
+            implements RandomAccessSet<AnnotationMirror> {
         @Override
         public boolean contains(Object o) {
             if (!(o instanceof AnnotationMirror)) {
