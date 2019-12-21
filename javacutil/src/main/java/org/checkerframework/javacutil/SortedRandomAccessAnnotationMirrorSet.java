@@ -3,7 +3,8 @@ package org.checkerframework.javacutil;
 import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
 
-public class SortedRandomAccessAnnotationMirrorSet implements RandomAccessSet<AnnotationMirror> {
+public class SortedRandomAccessAnnotationMirrorSet
+        implements RandomAccessSet<AnnotationMirror>, SortedSet<AnnotationMirror> {
 
     private ArrayList<AnnotationMirror> shadowList;
 
@@ -150,6 +151,43 @@ public class SortedRandomAccessAnnotationMirrorSet implements RandomAccessSet<An
                         (AnnotationMirror) o,
                         AnnotationUtils::compareAnnotationMirrors);
         return index < 0 ? -1 : index;
+    }
+
+    @Override
+    public Comparator<? super AnnotationMirror> comparator() {
+        return AnnotationUtils::compareAnnotationMirrors;
+    }
+
+    @Override
+    public SortedSet<AnnotationMirror> subSet(
+            AnnotationMirror fromElement, AnnotationMirror toElement) {
+        throw new UnsupportedOperationException("Operation not implemented");
+    }
+
+    @Override
+    public SortedSet<AnnotationMirror> headSet(AnnotationMirror toElement) {
+        throw new UnsupportedOperationException("Operation not implemented");
+    }
+
+    @Override
+    public SortedSet<AnnotationMirror> tailSet(AnnotationMirror fromElement) {
+        throw new UnsupportedOperationException("Operation not implemented");
+    }
+
+    @Override
+    public AnnotationMirror first() {
+        if (shadowList.isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        return shadowList.get(0);
+    }
+
+    @Override
+    public AnnotationMirror last() {
+        if (shadowList.isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        return shadowList.get(shadowList.size() - 1);
     }
 
     @Override
