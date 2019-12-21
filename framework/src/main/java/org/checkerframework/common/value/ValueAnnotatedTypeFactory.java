@@ -682,29 +682,33 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // If both bounds of the new range are bigger than the old range, then returned range
             // should use the lower bound of the new range and a MAX_VALUE.
             if ((newRange.from >= oldRange.from && newRange.to >= oldRange.to)) {
-                if (lubRange.to < Byte.MAX_VALUE) {
-                    return Range.create(newRange.from, Byte.MAX_VALUE);
-                } else if (lubRange.to < Short.MAX_VALUE) {
-                    return Range.create(newRange.from, Short.MAX_VALUE);
-                } else if (lubRange.to < Integer.MAX_VALUE) {
-                    return Range.create(newRange.from, Integer.MAX_VALUE);
+                long max = lubRange.to;
+                if (max < Byte.MAX_VALUE) {
+                    max = Byte.MAX_VALUE;
+                } else if (max < Short.MAX_VALUE) {
+                    max = Short.MAX_VALUE;
+                } else if (max < Integer.MAX_VALUE) {
+                    max = Integer.MAX_VALUE;
                 } else {
-                    return Range.create(newRange.from, Long.MAX_VALUE);
+                    max = Long.MAX_VALUE;
                 }
+                return Range.create(newRange.from, max);
             }
 
             // If both bounds of the old range are bigger than the new range, then returned range
             // should use a MIN_VALUE and the upper bound of the new range.
             if ((newRange.from <= oldRange.from && newRange.to <= oldRange.to)) {
-                if (lubRange.from > Byte.MIN_VALUE) {
-                    return Range.create(Byte.MIN_VALUE, newRange.to);
-                } else if (lubRange.from > Short.MIN_VALUE) {
-                    return Range.create(Short.MIN_VALUE, newRange.to);
-                } else if (lubRange.from > Integer.MIN_VALUE) {
-                    return Range.create(Integer.MIN_VALUE, newRange.to);
+                long min = lubRange.from;
+                if (min > Byte.MIN_VALUE) {
+                    min = Byte.MIN_VALUE;
+                } else if (min > Short.MIN_VALUE) {
+                    min = Short.MIN_VALUE;
+                } else if (min > Integer.MIN_VALUE) {
+                    min = Integer.MIN_VALUE;
                 } else {
-                    return Range.create(Long.MIN_VALUE, newRange.to);
+                    min = Long.MIN_VALUE;
                 }
+                return Range.create(min, newRange.to);
             }
 
             if (lubRange.isWithin(Byte.MIN_VALUE + 1, Byte.MAX_VALUE)
