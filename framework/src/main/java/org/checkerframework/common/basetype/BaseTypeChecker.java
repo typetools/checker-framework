@@ -25,6 +25,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.reflection.MethodValChecker;
@@ -112,7 +113,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * list before getSubcheckers() is called, thereby ensuring that this list is non-empty only for
      * one checker.
      */
-    private List<BaseTypeChecker> subcheckers;
+    private @MonotonicNonNull List<BaseTypeChecker> subcheckers = null;
 
     /**
      * The list of subcheckers that are direct dependencies of this checker. This list will be
@@ -121,16 +122,17 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * <p>Does not need to be initialized to null or an empty list because it is always initialized
      * via calls to instantiateSubcheckers.
      */
-    private List<BaseTypeChecker> immediateSubcheckers;
+    // Set to non-null when subcheckers is.
+    private @MonotonicNonNull List<BaseTypeChecker> immediateSubcheckers = null;
 
     /** Supported options for this checker. */
-    private Set<String> supportedOptions;
+    private @MonotonicNonNull Set<String> supportedOptions = null;
 
     /**
-     * TreePathCacher to share between instances. Initialized either in instantiateSubcheckers or in
-     * getTreePathCacher.
+     * TreePathCacher to share between instances. Initialized either in getTreePathCacher (which is
+     * also called from instantiateSubcheckers).
      */
-    private TreePathCacher treePathCacher;
+    private TreePathCacher treePathCacher = null;
 
     @Override
     protected void setRoot(CompilationUnitTree newRoot) {
@@ -576,7 +578,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * unit. If this checker has no subcheckers and is not a subchecker for any other checker, then
      * messageStore is null and messages will be printed as they are issued by this checker.
      */
-    private TreeSet<CheckerMessage> messageStore;
+    private TreeSet<CheckerMessage> messageStore = null;;
 
     /**
      * If this is a compound checker or a subchecker of a compound checker, then the message is
