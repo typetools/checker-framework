@@ -546,7 +546,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * unit. If this checker has no subcheckers and is not a subchecker for any other checker, then
      * messageStore is null and messages will be printed as they are issued by this checker.
      */
-    private TreeSet<CheckerMessage> messageStore = null;;
+    private TreeSet<CheckerMessage> messageStore = null;
 
     /**
      * If this is a compound checker or a subchecker of a compound checker, then the message is
@@ -568,8 +568,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     /**
      * Prints error messages for this checker and all subcheckers such that the errors are ordered
-     * by line and column number and then by checker. (See compareCheckerMessages for more precise
-     * order.)
+     * by line and column number and then by checker. (See {@link #compareCheckerMessages} for more
+     * precise order.)
      *
      * @param unit current compilation unit
      */
@@ -612,8 +612,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
             CheckerMessage that = (CheckerMessage) o;
             return this.kind == that.kind
-                    && this.source == that.source
                     && this.message.equals(that.message)
+                    && this.source == that.source
                     && this.checker == that.checker;
         }
 
@@ -639,13 +639,14 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     }
 
     /**
-     * Comparator for CheckerMessage objects. Sort by position at which the error will be printed,
-     * then by kind of message, then by the message string, and finally by the order in which the
-     * checkers run.
+     * Compares two {@link CheckerMessage}s. Compares first by position at which the error will be
+     * printed, then by kind of message, then by the message string, and finally by the order in
+     * which the checkers run.
      *
-     * @param o1 the first message
-     * @param o2 the second message
-     * @return the ordering
+     * @param o1 the first CheckerMessage
+     * @param o2 the second CheckerMessage
+     * @return a negative integer, zero, or a positive integer if the first CheckerMessage is less
+     *     than, equal to, or greater than the second.
      */
     private int compareCheckerMessages(CheckerMessage o1, CheckerMessage o2) {
         int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
@@ -665,16 +666,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             return 0;
         }
 
-        List<BaseTypeChecker> subcheckers = BaseTypeChecker.this.getSubcheckers();
-
         // Sort by order in which the checkers are run. (All the subcheckers,
         // followed by the checker.)
+        List<BaseTypeChecker> subcheckers = BaseTypeChecker.this.getSubcheckers();
         int o1Index = subcheckers.indexOf(o1.checker);
         int o2Index = subcheckers.indexOf(o2.checker);
-        if (o1Index == o2Index) {
-            // If the two messages are from the same checker, sort by message.
-            return msgcmp;
-        }
         if (o1Index == -1) {
             o1Index = subcheckers.size();
         }
@@ -683,7 +679,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         }
         int checkercmp = Integer.compare(o1Index, o2Index);
         if (checkercmp == 0) {
-            // If it is the same checker, sort by message.
+            // If the two messages are from the same checker, sort by message.
             return msgcmp;
         } else {
             return checkercmp;
