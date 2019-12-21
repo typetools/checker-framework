@@ -5,6 +5,7 @@ set -o verbose
 set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
+
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 echo "BUILDJDK=${BUILDJDK}"
