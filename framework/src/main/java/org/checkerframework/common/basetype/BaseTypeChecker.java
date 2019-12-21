@@ -98,6 +98,10 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             checker.setSupportedLintOptions(this.getSupportedLintOptions());
         }
 
+        if (!getSubcheckers().isEmpty()) {
+            messageStore = new TreeSet<>(this::compareCheckerMessages);
+        }
+
         super.initChecker();
     }
 
@@ -465,49 +469,13 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         return treePathCacher;
     }
 
-    /**
-     * Compares two {@link CheckerMessage}s first by position at which the error will be printed,
-     * then by the order in which the checkers run, then by kind of message, and finally by the
-     * message string.
-     *
-     * @param o1 the first CheckerMessage
-     * @param o2 the second CheckerMessage
-     * @return a negative integer, zero, or a positive integer if the first CheckerMessage is less
-     *     than, equal to, or greater than the second.
-     */
-    private int compareCheckerMessages(CheckerMessage o1, CheckerMessage o2) {
-        int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
-        if (byPos != 0) {
-            return byPos;
-        }
-
-        // Sort by order in which the checkers are run. (All the subcheckers in
-        // followed by the checker.)
-        int o1Index = getSubcheckers().indexOf(o1.checker);
-        int o2Index = getSubcheckers().indexOf(o2.checker);
-        if (o1Index != o2Index) {
-            if (o1Index == -1) {
-                o1Index = getSubcheckers().size();
-            }
-            if (o2Index == -1) {
-                o2Index = getSubcheckers().size();
-            }
-            return Integer.compare(o1Index, o2Index);
-        }
-
-        int kind = o1.kind.compareTo(o2.kind);
-        if (kind != 0) {
-            return kind;
-        }
-
-        return o1.message.compareTo(o2.message);
-    }
-
     // AbstractTypeProcessor delegation
     @Override
     public void typeProcess(TypeElement element, TreePath tree) {
         if (!getSubcheckers().isEmpty()) {
-            messageStore = new TreeSet<>(this::compareCheckerMessages);
+            // TODO: I expected this to only be necessary if (parentChecker == null).
+            // However, the NestedAggregateChecker fails otherwise.
+            messageStore.clear();
         }
 
         // Errors (or other messages) issued via
@@ -578,7 +546,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * unit. If this checker has no subcheckers and is not a subchecker for any other checker, then
      * messageStore is null and messages will be printed as they are issued by this checker.
      */
-    private TreeSet<CheckerMessage> messageStore = null;;
+    private TreeSet<CheckerMessage> messageStore = null;
 
     /**
      * If this is a compound checker or a subchecker of a compound checker, then the message is
@@ -600,8 +568,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     /**
      * Prints error messages for this checker and all subcheckers such that the errors are ordered
-     * by line and column number and then by checker. (See checkerMessageComparator for more precise
-     * order.)
+     * by line and column number and then by checker. (See {@link #compareCheckerMessages} for more
+     * precise order.)
      *
      * @param unit current compilation unit
      */
@@ -643,17 +611,10 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             }
 
             CheckerMessage that = (CheckerMessage) o;
-
-            if (kind != that.kind) {
-                return false;
-            }
-            if (!message.equals(that.message)) {
-                return false;
-            }
-            if (source != that.source) {
-                return false;
-            }
-            return checker == that.checker;
+            return this.kind == that.kind
+                    && this.message.equals(that.message)
+                    && this.source == that.source
+                    && this.checker == that.checker;
         }
 
         @Override
@@ -674,6 +635,54 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                     + ", source="
                     + source
                     + '}';
+        }
+    }
+
+    /**
+     * Compares two {@link CheckerMessage}s. Compares first by position at which the error will be
+     * printed, then by kind of message, then by the message string, and finally by the order in
+     * which the checkers run.
+     *
+     * @param o1 the first CheckerMessage
+     * @param o2 the second CheckerMessage
+     * @return a negative integer, zero, or a positive integer if the first CheckerMessage is less
+     *     than, equal to, or greater than the second.
+     */
+    private int compareCheckerMessages(CheckerMessage o1, CheckerMessage o2) {
+        int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
+        if (byPos != 0) {
+            return byPos;
+        }
+
+        int kind = o1.kind.compareTo(o2.kind);
+        if (kind != 0) {
+            return kind;
+        }
+
+        int msgcmp = o1.message.compareTo(o2.message);
+        if (msgcmp == 0) {
+            // If the two messages are identical so far, it doesn't matter
+            // from which checker they came.
+            return 0;
+        }
+
+        // Sort by order in which the checkers are run. (All the subcheckers,
+        // followed by the checker.)
+        List<BaseTypeChecker> subcheckers = BaseTypeChecker.this.getSubcheckers();
+        int o1Index = subcheckers.indexOf(o1.checker);
+        int o2Index = subcheckers.indexOf(o2.checker);
+        if (o1Index == -1) {
+            o1Index = subcheckers.size();
+        }
+        if (o2Index == -1) {
+            o2Index = subcheckers.size();
+        }
+        int checkercmp = Integer.compare(o1Index, o2Index);
+        if (checkercmp == 0) {
+            // If the two messages are from the same checker, sort by message.
+            return msgcmp;
+        } else {
+            return checkercmp;
         }
     }
 
