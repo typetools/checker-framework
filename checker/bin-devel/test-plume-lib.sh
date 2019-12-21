@@ -4,8 +4,8 @@ set -e
 set -o verbose
 set -o xtrace
 export SHELLOPTS
-
 echo "SHELLOPTS=${SHELLOPTS}"
+
 # Optional argument $1 is the group.
 GROUPARG=$1
 echo "GROUPARG=$GROUPARG"
