@@ -45,9 +45,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
             return false;
         }
 
-        return Collections.binarySearch(
-                        keys, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors)
-                >= 0;
+        return getKeyIndex((AnnotationMirror) o) >= 0;
     }
 
     @Override
@@ -66,13 +64,15 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
             return null;
         }
 
-        int index =
-                Collections.binarySearch(
-                        keys, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors);
+        int index = getKeyIndex((AnnotationMirror) o);
         if (index >= 0) {
             return values.get(index);
         }
         return null;
+    }
+
+    private int getKeyIndex(AnnotationMirror o) {
+        return Collections.binarySearch(keys, o, AnnotationUtils::compareAnnotationMirrors);
     }
 
     @Override
@@ -100,9 +100,7 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
             return null;
         }
 
-        int index =
-                Collections.binarySearch(
-                        keys, (AnnotationMirror) o, AnnotationUtils::compareAnnotationMirrors);
+        int index = getKeyIndex((AnnotationMirror) o);
         if (index >= 0) {
             V value = values.get(index);
             keys.remove(index);
@@ -170,13 +168,19 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
 
         @Override
         public V setValue(V value) {
-            assert false : "Does not support setting value";
-            return null;
+            int index = SortedRandomAccessAnnotationMirrorMap.this.getKeyIndex(key);
+            if (index < 0) {
+                return null;
+            }
+
+            V oldValue = values.get(index);
+            values.set(index, value);
+            return oldValue;
         }
     }
 
-    public static <V> Unmodifiable<V> unmodifiable(Map<AnnotationMirror, V> map) {
-        return new Unmodifiable<>((SortedRandomAccessAnnotationMirrorMap<V>) map);
+    public static <V> UnmodifiableMap<V> unmodifiable(Map<AnnotationMirror, V> map) {
+        return new UnmodifiableMap<>((SortedRandomAccessAnnotationMirrorMap<V>) map);
     }
 
     @SuppressWarnings("serial")
@@ -298,11 +302,11 @@ public class SortedRandomAccessAnnotationMirrorMap<V>
         }
     }
 
-    private static class Unmodifiable<V> extends SortedRandomAccessAnnotationMirrorMap<V> {
+    private static class UnmodifiableMap<V> extends SortedRandomAccessAnnotationMirrorMap<V> {
 
         SortedRandomAccessAnnotationMirrorMap<V> map;
 
-        Unmodifiable(SortedRandomAccessAnnotationMirrorMap<V> map) {
+        UnmodifiableMap(SortedRandomAccessAnnotationMirrorMap<V> map) {
             this.map = map;
         }
 
