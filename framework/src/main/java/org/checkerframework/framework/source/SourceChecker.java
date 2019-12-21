@@ -470,7 +470,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // This is used to trigger AggregateChecker's setProcessingEnvironment.
         setProcessingEnvironment(env);
 
-        // Keep in synce with check in checker-framework/build.gradle.
+        // Keep in sync with check in checker-framework/build.gradle and text in installation
+        // section of manual.
         int jreVersion = PluginUtil.getJreVersion();
         if (jreVersion < 8) {
             throw new UserError(
