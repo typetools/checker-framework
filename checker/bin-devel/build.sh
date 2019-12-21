@@ -12,12 +12,11 @@ export BUILDJDK=$1
 if [[ "${BUILDJDK}" == "" ]]; then
   export BUILDJDK=downloadjdk
 fi
-
+echo "BUILDJDK=${BUILDJDK}"
 if [[ "${BUILDJDK}" != "buildjdk" && "${BUILDJDK}" != "downloadjdk" ]]; then
   echo "Bad argument '${BUILDJDK}'; should be omitted or one of: downloadjdk, buildjdk."
   exit 1
 fi
-echo "BUILDJDK=${BUILDJDK}"
 
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
