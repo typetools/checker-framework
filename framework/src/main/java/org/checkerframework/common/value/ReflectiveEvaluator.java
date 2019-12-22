@@ -253,7 +253,7 @@ public class ReflectiveEvaluator {
      * Return the value of a static field access. Return null if there is trouble.
      *
      * @param classname the class containing the field
-     * @param fieldName the name fo the field
+     * @param fieldName the name of the field
      * @param tree the static field access in the program; used for diagnostics
      * @return the value of the static field access, or null if it cannot be determinedx
      */
