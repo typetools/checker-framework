@@ -29,11 +29,11 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #lock-checker Lock Checker
  * @checker_framework.manual #lock-checker-polymorphism-example Lock Checker polymorphism example
  */
-@SubtypeOf(GuardedByUnknown.class) // TODO: Should @GuardSatisfied be in its own hierarchy?
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@TargetLocations({TypeUseLocation.RECEIVER, TypeUseLocation.PARAMETER, TypeUseLocation.RETURN})
 @Target(ElementType.TYPE_USE)
+@TargetLocations({TypeUseLocation.RECEIVER, TypeUseLocation.PARAMETER, TypeUseLocation.RETURN})
+@SubtypeOf(GuardedByUnknown.class) // TODO: Should @GuardSatisfied be in its own hierarchy?
 public @interface GuardSatisfied {
     /**
      * The index on the GuardSatisfied polymorphic qualifier. Defaults to -1 so that the user can

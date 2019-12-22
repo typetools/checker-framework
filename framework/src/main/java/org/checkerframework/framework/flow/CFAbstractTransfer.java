@@ -1049,7 +1049,7 @@ public abstract class CFAbstractTransfer<
                 // existing information rather than replacing it.  If the called method is not
                 // side-effect-free, then the values that might have been changed by the method call
                 // are removed from the store before this method is called.
-                if (p.kind == Contract.Kind.CONDITIONALPOSTCONDTION) {
+                if (p.kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
                     if (((ConditionalPostcondition) p).annoResult) {
                         thenStore.insertOrRefine(r, anno);
                     } else {

@@ -23,10 +23,10 @@ import java.lang.annotation.Target;
  * @see org.checkerframework.framework.source.SupportedOptions
  * @checker_framework.manual #creating-compiler-interface The checker class: Compiler interface
  */
-@Inherited
 @Documented
-@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Inherited
 public @interface SupportedLintOptions {
     String[] value();
 }

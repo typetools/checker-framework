@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.interning.qual.Interned;
 
-public class InternMethod {
+public class InternMethodTest {
 
     private static Map<Foo, @Interned Foo> pool = new HashMap<>();
 

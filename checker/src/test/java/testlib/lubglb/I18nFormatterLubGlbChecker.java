@@ -4,16 +4,23 @@ package testlib.lubglb;
 // https://github.com/typetools/checker-framework/issues/723
 // https://github.com/typetools/checker-framework/issues/756
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.i18nformatter.I18nFormatterAnnotatedTypeFactory;
 import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
 import org.checkerframework.checker.i18nformatter.I18nFormatterTreeUtil;
+import org.checkerframework.checker.i18nformatter.I18nFormatterVisitor;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormatBottom;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nUnknownFormat;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -26,6 +33,41 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * tests the implementation of LUB computation in the I18n Format String Checker.
  */
 public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
+    @Override
+    protected BaseTypeVisitor<?> createSourceVisitor() {
+        return new I18nFormatterVisitor(this) {
+            @Override
+            protected I18nFormatterAnnotatedTypeFactory createTypeFactory() {
+                return new I18nFormatterLubGlbAnnotatedTypeFactory(checker);
+            }
+        };
+    }
+
+    /** I18nFormatterLubGlbAnnotatedTypeFactory */
+    private static class I18nFormatterLubGlbAnnotatedTypeFactory
+            extends I18nFormatterAnnotatedTypeFactory {
+
+        /**
+         * Constructor
+         *
+         * @param checker checker
+         */
+        public I18nFormatterLubGlbAnnotatedTypeFactory(BaseTypeChecker checker) {
+            super(checker);
+            postInit();
+        }
+
+        @Override
+        protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+            return new HashSet<>(
+                    Arrays.asList(
+                            I18nUnknownFormat.class,
+                            I18nFormatBottom.class,
+                            I18nFormat.class,
+                            I18nInvalidFormat.class,
+                            I18nFormatFor.class));
+        }
+    }
 
     @SuppressWarnings("checkstyle:localvariablename")
     @Override

@@ -24,13 +24,15 @@ Writing a simple checker is easy!  For example, here is a complete, useful
 type-checker:
 
 \begin{Verbatim}
+import java.lang.annotation.Documented;
 import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.SubtypeOf;
 
-@SubtypeOf(Unqualified.class)
+@Documented
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(Unqualified.class)
 public @interface Encrypted {}
 \end{Verbatim}
 

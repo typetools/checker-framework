@@ -77,8 +77,8 @@ public class ContractsUtils {
 
         public enum Kind {
             PRECONDITION("precondition"),
-            POSTCONDTION("postcondition"),
-            CONDITIONALPOSTCONDTION("conditional.postcondition");
+            POSTCONDITION("postcondition"),
+            CONDITIONALPOSTCONDITION("conditional.postcondition");
             public final String errorKey;
 
             Kind(String errorKey) {
@@ -148,6 +148,13 @@ public class ContractsUtils {
         public int hashCode() {
             return Objects.hash(expression, annotation, kind);
         }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s{expression=%s, annotation=%s, contractAnnotation=%s}",
+                    getClass().getSimpleName(), expression, annotation, contractAnnotation);
+        }
     }
 
     /** A precondition contract. */
@@ -182,7 +189,7 @@ public class ContractsUtils {
                 String expression,
                 AnnotationMirror annotation,
                 AnnotationMirror contractAnnotation) {
-            super(expression, annotation, contractAnnotation, Kind.POSTCONDTION);
+            super(expression, annotation, contractAnnotation, Kind.POSTCONDITION);
         }
     }
 
@@ -216,7 +223,7 @@ public class ContractsUtils {
                 boolean annoResult,
                 AnnotationMirror annotation,
                 AnnotationMirror contractAnnotation) {
-            super(expression, annotation, contractAnnotation, Kind.CONDITIONALPOSTCONDTION);
+            super(expression, annotation, contractAnnotation, Kind.CONDITIONALPOSTCONDITION);
             this.annoResult = annoResult;
         }
 
@@ -239,6 +246,15 @@ public class ContractsUtils {
         @Override
         public int hashCode() {
             return Objects.hash(super.hashCode(), annoResult);
+        }
+
+        @Override
+        public String toString() {
+            String superToString = super.toString();
+            return superToString.substring(0, superToString.length() - 1)
+                    + ", annoResult="
+                    + annoResult
+                    + "}";
         }
     }
 

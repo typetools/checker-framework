@@ -24,6 +24,10 @@ dependencies {
     implementation project(':dataflow')
     implementation project(':javacutil')
     implementation project(':checker-qual')
+    // As of 2019/12/16, the version of reflection-util in the Annotation
+    // File Utilities takes priority over this version, in the fat jar
+    // file. :-( So update it and re-build it locally when updating this.
+    implementation 'org.plumelib:reflection-util:0.2.0'
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation project(':framework-test')
@@ -159,6 +163,13 @@ task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
     }
 }
 
+task cleanJdk(type: Exec){
+    description 'Runs \'make clean\' in checker/jdk directory.'
+    workingDir "${projectDir}/jdk"
+    executable 'make'
+    args = ["clean"]
+}
+
 task updateJdk() {
     description 'Downloads or builds jdk8.jar and copies into checker/dist'
     if (jdkShaHash.is('local')) {
@@ -247,6 +258,7 @@ artifacts {
 }
 
 clean {
+    dependsOn cleanJdk
     delete "${projectDir}/dist"
 }
 

@@ -103,6 +103,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.reflection.Signatures;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -395,14 +396,9 @@ public abstract class GenericAnnotatedTypeFactory<
         Class<?> checkerClass = checker.getClass();
 
         while (checkerClass != BaseTypeChecker.class) {
-            final String classToLoad =
-                    checkerClass
-                            .getName()
-                            .replace("Checker", "Analysis")
-                            .replace("Subchecker", "Analysis");
             FlowAnalysis result =
                     BaseTypeChecker.invokeConstructorFor(
-                            classToLoad,
+                            BaseTypeChecker.getRelatedClassName(checkerClass, "Analysis"),
                             new Class<?>[] {BaseTypeChecker.class, this.getClass(), List.class},
                             new Object[] {checker, this, fieldValues});
             if (result != null) {
@@ -442,14 +438,9 @@ public abstract class GenericAnnotatedTypeFactory<
         Class<?> checkerClass = checker.getClass();
 
         while (checkerClass != BaseTypeChecker.class) {
-            final String classToLoad =
-                    checkerClass
-                            .getName()
-                            .replace("Checker", "Transfer")
-                            .replace("Subchecker", "Transfer");
             TransferFunction result =
                     BaseTypeChecker.invokeConstructorFor(
-                            classToLoad,
+                            BaseTypeChecker.getRelatedClassName(checkerClass, "Transfer"),
                             new Class<?>[] {analysis.getClass()},
                             new Object[] {analysis});
             if (result != null) {
@@ -1700,6 +1691,11 @@ public abstract class GenericAnnotatedTypeFactory<
                         "-Acfgviz specified without arguments, should be -Acfgviz=VizClassName[,opts,...]");
             }
             String[] opts = cfgviz.split(",");
+            String vizClassName = opts[0];
+            if (!Signatures.isBinaryName(vizClassName)) {
+                throw new UserError(
+                        "Bad -Acfgviz class name \"%s\", should be a binary name.", vizClassName);
+            }
 
             Map<String, Object> args = processCFGVisualizerOption(opts);
             if (!args.containsKey("verbose")) {
@@ -1709,7 +1705,7 @@ public abstract class GenericAnnotatedTypeFactory<
             args.put("checkerName", getCheckerName());
 
             CFGVisualizer<Value, Store, TransferFunction> res =
-                    BaseTypeChecker.invokeConstructorFor(opts[0], null, null);
+                    BaseTypeChecker.invokeConstructorFor(vizClassName, null, null);
             res.init(args);
             return res;
         }
