@@ -45,7 +45,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   latexmk \
   librsvg2-bin \
   maven \
-  python-pip \
+  python3-pip \
   rsync \
   texlive-font-utils \
   texlive-fonts-recommended \
