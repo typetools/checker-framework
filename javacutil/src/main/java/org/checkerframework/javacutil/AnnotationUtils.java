@@ -715,12 +715,16 @@ public class AnnotationUtils {
             } catch (Throwable t) {
                 String err1 =
                         String.format(
-                                "getElementValueArray(anno=%s, elementName=%s, expectedType=%s, useDefaults=%s)",
+                                "getElementValueArray(%n  anno=%s,%n  elementName=%s,%n  expectedType=%s,%n  useDefaults=%s)%n",
                                 anno, elementName, expectedType, useDefaults);
                 String err2 =
                         String.format(
-                                "Error in cast: expectedType=%s a=%s a.getValue()=%s%n",
-                                expectedType, a, a.getValue());
+                                "Error in cast:%n  expectedType=%s%n  a=%s [%s]%n  a.getValue()=%s [%s]",
+                                expectedType,
+                                a,
+                                a.getClass(),
+                                a.getValue(),
+                                a.getValue().getClass());
                 throw new BugInCF(err1 + "; " + err2, t);
             }
         }
