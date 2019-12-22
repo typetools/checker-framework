@@ -48,9 +48,10 @@ public @interface EnsuresMinLenIf {
      * <p>Programmers generally do not need to write this. It is created by Java when a programmer
      * writes more than one {@link EnsuresMinLenIf} annotation at the same location.
      */
-    @ConditionalPostconditionAnnotation(qualifier = MinLen.class)
+    @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @ConditionalPostconditionAnnotation(qualifier = MinLen.class)
     @InheritedAnnotation
     @interface List {
         /** The repeatable annotations. */
