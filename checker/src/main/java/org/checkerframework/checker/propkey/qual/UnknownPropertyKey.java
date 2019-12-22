@@ -13,9 +13,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #propkey-checker Property File Checker
  */
-@SubtypeOf({})
-@DefaultQualifierInHierarchy
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf({})
+@DefaultQualifierInHierarchy
 public @interface UnknownPropertyKey {}

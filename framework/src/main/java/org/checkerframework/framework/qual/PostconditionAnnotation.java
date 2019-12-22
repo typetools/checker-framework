@@ -54,8 +54,8 @@ import java.lang.annotation.Target;
  * @see QualifierArgument
  */
 @Documented
-@Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.ANNOTATION_TYPE})
 public @interface PostconditionAnnotation {
     /**
      * The qualifier that will be established as a postcondition.

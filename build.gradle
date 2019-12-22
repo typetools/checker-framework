@@ -23,7 +23,7 @@ repositories {
 }
 
 gitProperties {
-    gitPropertiesResourceDir = "${project.rootDir}/checker/src/main/resources"
+    gitPropertiesResourceDir = "${project.rootDir}/framework/src/main/resources"
 }
 
 ext {
@@ -54,10 +54,21 @@ ext {
     // This value is always overwritten, but Gradle needs the variable to be initialized.
     localRepo = ".git"
 }
-
-if (!JavaVersion.current().isJava8() && !JavaVersion.current().isJava11()) {
-    throw new RuntimeException("The Checker Framework should only be built with JDK 8 or JDK 11." +
-            " Found version " + JavaVersion.current().majorVersion);
+// Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
+// and with text in #installation
+switch (JavaVersion.current()) {
+    case JavaVersion.VERSION_1_9:
+    case JavaVersion.VERSION_1_10:
+    case JavaVersion.VERSION_12:
+        logger.warn("The Checker Framework has only been tested with JDK 8 and 11." +
+                " Found version " + JavaVersion.current().majorVersion);
+        break;
+    case JavaVersion.VERSION_1_8:
+    case JavaVersion.VERSION_11:
+        break; // Supported versions
+    default:
+        logger.error("Build the Checker Framework with JDK 8 or JDK 11." +
+                " Found version " + JavaVersion.current().majorVersion);
 }
 
 task setLocalRepo(type:Exec) {
@@ -404,9 +415,9 @@ createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.'
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
     onlyIf { !(new File("${jtregHome}/lib/jtreg.jar").exists()) }
-    // TODO: ci.adoptopenjdk.net is currently down, use a local copy. (4/4/2019)
-    // src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
-    src 'https://checkerframework.org/jtreg-4.2.0-tip.tar.gz'
+    src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
+    // If ci.adoptopenjdk.net is down, use this copy.
+    // src 'https://checkerframework.org/jtreg-4.2.0-tip.tar.gz'
     overwrite true
     dest new File(buildDir, 'jtreg-4.2.0-tip.tar.gz')
     doLast {
@@ -611,11 +622,12 @@ subprojects {
         }
 
         // Add tasks to run various checkers on all the main source sets.
+        // TODO: fix or suppress all not.interned warnings and remove the suppression here.
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-AsuppressWarnings=not.interned'])
         createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness')
         createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'WorkingNullness', ['-AskipUses=com.sun.*', '-AskipDefs=org.checkerframework.checker.*|org.checkerframework.common.*|org.checkerframework.framework.*|org.checkerframework.dataflow.cfg.CFGBuilder'])
         createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
-        // TODO: fix or suppress all not.interned warnings and remove the suppression here.
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-AsuppressWarnings=not.interned'])
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.signature.SignatureChecker', 'Signature')
 
         // Add jtregTests to framework and checker modules
         if (project.name.is('framework') || project.name.is('checker')) {
@@ -778,7 +790,7 @@ subprojects {
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
-            dependsOn('checkPurity', 'checkInterning', 'checkWorkingNullness')
+            dependsOn('checkInterning', 'checkPurity', 'checkSignature', 'checkWorkingNullness')
             if (project.name.is('framework') || project.name.is('checker')) {
                 dependsOn('checkCompilerMessages', 'jtregTests')
             }

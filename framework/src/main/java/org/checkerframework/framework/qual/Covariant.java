@@ -28,8 +28,8 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #covariant-type-parameters Covariant type parameters
  */
 @Documented
-@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
 public @interface Covariant {
     /** The zero-based indices of the type parameters that should be treated covariantly. */
     int[] value();
