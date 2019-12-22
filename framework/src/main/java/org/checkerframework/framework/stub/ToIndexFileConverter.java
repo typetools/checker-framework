@@ -654,13 +654,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     /**
-     * Combines an import with a name, yielding a fully-qualified name.
+     * Combines an import with a partial binary name, yielding a binary name.
      *
      * @param importName package name or (for an inner class) the outer class name
      * @param className the class name
      * @return fully qualified class name if resolution succeeds, null otherwise
      */
-    private static String mergeImport(String importName, String className) {
+    @SuppressWarnings("signature") // string manipulation of signature strings
+    private static @BinaryName String mergeImport(String importName, @BinaryName String className) {
         if (importName.isEmpty() || importName.equals(className)) {
             return className;
         }
