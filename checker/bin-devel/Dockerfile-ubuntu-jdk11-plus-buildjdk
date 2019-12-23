@@ -22,6 +22,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   make \
   maven \
   mercurial \
+  python3-requests \
   unzip \
   wget \
 && apt-get clean \
@@ -44,7 +45,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   latexmk \
   librsvg2-bin \
   maven \
-  python-pip \
+  python3-pip \
   rsync \
   texlive-font-utils \
   texlive-fonts-recommended \
@@ -54,7 +55,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*
 
-RUN pip install html5validator
+RUN pip3 install html5validator
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
