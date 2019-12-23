@@ -628,11 +628,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             }
         }
 
-        // Every Java program implicitly does "import java.lang.*",
-        // so see whether this class is in that package.
-        String qualifiedName = Signatures.addPackage("java.lang", className);
-        if (loadClass(qualifiedName) != null) {
-            return qualifiedName;
+        {
+            // Every Java program implicitly does "import java.lang.*",
+            // so see whether this class is in that package.
+            String qualifiedName = Signatures.addPackage("java.lang", className);
+            if (loadClass(qualifiedName) != null) {
+                return qualifiedName;
+            }
         }
 
         for (String declName : imports) {
