@@ -665,6 +665,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
         public Iterator<K> iterator() {
             return getIterator(KEYS);
         }
+        @Pure
         public int size() {
             return count;
         }
@@ -754,6 +755,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
             return false;
         }
 
+        @Pure
         public int size() {
             return count;
         }
@@ -791,6 +793,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
         public Iterator<V> iterator() {
             return getIterator(VALUES);
         }
+        @Pure
         public int size() {
             return count;
         }
@@ -1297,7 +1300,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
             return oldValue;
         }
 
-        public boolean equals(Object o) {
+        public boolean equals(@Nullable Object o) {
             if (!(o instanceof Map.Entry))
                 return false;
             Map.Entry<?,?> e = (Map.Entry<?,?>)o;

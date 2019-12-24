@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -123,6 +124,7 @@ public final class Boolean implements java.io.Serializable,
      * @since 1.5
      */
     @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
     public static boolean parseBoolean(@Nullable String s) {
         return ((s != null) && s.equalsIgnoreCase("true"));
     }
@@ -234,6 +236,7 @@ public final class Boolean implements java.io.Serializable,
      *          same value; {@code false} otherwise.
      */
     @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof Boolean) {
             return value == ((Boolean)obj).booleanValue();
@@ -261,6 +264,7 @@ public final class Boolean implements java.io.Serializable,
      * @see     java.lang.System#getProperty(java.lang.String, java.lang.String)
      */
     @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
     public static boolean getBoolean(@Nullable String name) {
         boolean result = false;
         try {

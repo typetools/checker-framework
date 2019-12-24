@@ -9,13 +9,13 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})
 @DefaultFor({
     TypeUseLocation.LOCAL_VARIABLE,
     TypeUseLocation.IMPLICIT_UPPER_BOUND,
     TypeUseLocation.RECEIVER
 })
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface NTDTop {}

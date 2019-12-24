@@ -65,7 +65,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -103,11 +102,11 @@ import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.Contract;
+import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
+import org.checkerframework.framework.util.Contract.Postcondition;
+import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsUtils;
-import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
-import org.checkerframework.framework.util.ContractsUtils.Contract;
-import org.checkerframework.framework.util.ContractsUtils.Postcondition;
-import org.checkerframework.framework.util.ContractsUtils.Precondition;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -251,15 +250,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Try to reflectively load the type factory.
         Class<?> checkerClass = checker.getClass();
         while (checkerClass != BaseTypeChecker.class) {
-            final String classToLoad =
-                    checkerClass
-                            .getName()
-                            .replace("Checker", "AnnotatedTypeFactory")
-                            .replace("Subchecker", "AnnotatedTypeFactory");
-
             AnnotatedTypeFactory result =
                     BaseTypeChecker.invokeConstructorFor(
-                            classToLoad,
+                            BaseTypeChecker.getRelatedClassName(
+                                    checkerClass, "AnnotatedTypeFactory"),
                             new Class<?>[] {BaseTypeChecker.class},
                             new Object[] {checker});
             if (result != null) {
@@ -754,7 +748,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /** Reports single purity error. * */
+    /** Reports single purity error. */
     private void reportPurityError(String msgPrefix, Pair<Tree, String> r) {
         String reason = r.second;
         @SuppressWarnings("CompilerMessages")
@@ -804,10 +798,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             if (expr != null && !abstractMethod) {
                 switch (contract.kind) {
-                    case POSTCONDTION:
+                    case POSTCONDITION:
                         checkPostcondition(node, annotation, contract.contractAnnotation, expr);
                         break;
-                    case CONDITIONALPOSTCONDTION:
+                    case CONDITIONALPOSTCONDITION:
                         checkConditionalPostcondition(
                                 node,
                                 annotation,
@@ -1406,7 +1400,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param tree the Tree immediately prior to which the preconditions must hold true
      * @param preconditions the preconditions to be checked
      */
-    protected void checkPreconditions(MethodInvocationTree tree, Set<Precondition> preconditions) {
+    protected void checkPreconditions(MethodInvocationTree tree, Set<Contract> preconditions) {
         // This check is needed for the GUI effects and Units Checkers tests to pass.
         // TODO: Remove this check and investigate the root cause.
         if (preconditions.isEmpty()) {
@@ -1420,7 +1414,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        for (Precondition p : preconditions) {
+        for (Contract c : preconditions) {
+            Precondition p = (Precondition) c;
             String expression = p.expression;
             AnnotationMirror anno = p.annotation;
 
@@ -1896,7 +1891,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
-        if (castType.getKind() == TypeKind.DECLARED) {
+        final TypeKind castTypeKind = castType.getKind();
+        if (castTypeKind == TypeKind.DECLARED) {
             // Don't issue an error if the annotations are equivalent to the qualifier upper bound
             // of the type.
             AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType) castType;
@@ -1910,7 +1906,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (checker.hasOption("checkCastElementType")) {
             AnnotatedTypeMirror newCastType;
-            if (castType.getKind() == TypeKind.TYPEVAR) {
+            if (castTypeKind == TypeKind.TYPEVAR) {
                 newCastType = ((AnnotatedTypeVariable) castType).getUpperBound();
             } else {
                 newCastType = castType;
@@ -1942,8 +1938,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // TODO: the same number of arguments actually doesn't guarantee anything.
                     return false;
                 }
-            } else if (castType.getKind() == TypeKind.TYPEVAR
-                    && exprType.getKind() == TypeKind.TYPEVAR) {
+            } else if (castTypeKind == TypeKind.TYPEVAR && exprType.getKind() == TypeKind.TYPEVAR) {
                 // If both the cast type and the casted expression are type variables, then check
                 // the bounds.
                 Set<AnnotationMirror> lowerBoundAnnotationsCast =
@@ -1959,7 +1954,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 castType.getEffectiveAnnotations());
             }
             Set<AnnotationMirror> castAnnos;
-            if (castType.getKind() == TypeKind.TYPEVAR) {
+            if (castTypeKind == TypeKind.TYPEVAR) {
                 // If the cast type is a type var, but the expression is not, then check that the
                 // type of the expression is a subtype of the lower bound.
                 castAnnos =
@@ -3245,8 +3240,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             // Check postconditions
             ContractsUtils contracts = ContractsUtils.getInstance(atypeFactory);
-            Set<Postcondition> superPost = contracts.getPostconditions(overridden.getElement());
-            Set<Postcondition> subPost = contracts.getPostconditions(overrider.getElement());
+            Set<Contract> superPost = contracts.getPostconditions(overridden.getElement());
+            Set<Contract> subPost = contracts.getPostconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPost2 =
                     resolveContracts(superPost, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPost2 = resolveContracts(subPost, overrider);
@@ -3262,8 +3257,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     postmsg);
 
             // Check preconditions
-            Set<Precondition> superPre = contracts.getPreconditions(overridden.getElement());
-            Set<Precondition> subPre = contracts.getPreconditions(overrider.getElement());
+            Set<Contract> superPre = contracts.getPreconditions(overridden.getElement());
+            Set<Contract> subPre = contracts.getPreconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPre2 =
                     resolveContracts(superPre, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPre2 = resolveContracts(subPre, overrider);
@@ -3279,10 +3274,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     premsg);
 
             // Check conditional postconditions
-            Set<ConditionalPostcondition> superCPost =
+            Set<Contract> superCPost =
                     contracts.getConditionalPostconditions(overridden.getElement());
-            Set<ConditionalPostcondition> subCPost =
-                    contracts.getConditionalPostconditions(overrider.getElement());
+            Set<Contract> subCPost = contracts.getConditionalPostconditions(overrider.getElement());
             // consider only 'true' postconditions
             Set<Postcondition> superCPostTrue = filterConditionalPostconditions(superCPost, true);
             Set<Postcondition> subCPostTrue = filterConditionalPostconditions(subCPost, true);
@@ -3549,53 +3543,42 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
+        /**
+         * Returns true if the return type of the overridden method is a subtype of the return type
+         * of the overriding method.
+         *
+         * @return true if the return type is correct
+         */
         private boolean checkReturn() {
-            boolean success = true;
-            // Check the return value.
-            if ((overridingReturnType.getKind() != TypeKind.VOID)) {
-                final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
-                success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
-
-                // If both the overridden method have type variables as return types and both types
-                // were defined in their respective methods then, they can be covariant or invariant
-                // use super/subtypes for the overrides locations
-                if (!success) {
-                    success = testTypevarContainment(overridingReturnType, overriddenReturnType);
-
-                    // Sometimes when using a Java 8 compiler (not JSR308) the overridden return
-                    // type of a method reference becomes a captured type.  This leads to defaulting
-                    // that often makes the overriding return type invalid.  We ignore these.  This
-                    // happens in Issue403/Issue404 when running without the jsr308-langtools
-                    // compiler.
-                    if (!success && methodReference) {
-
-                        boolean isCaptureConverted =
-                                (overriddenReturnType.getKind() == TypeKind.TYPEVAR)
-                                        && TypesUtils.isCaptured(
-                                                (TypeVariable)
-                                                        overriddenReturnType.getUnderlyingType());
-
-                        if (methodReference && isCaptureConverted) {
-                            ExecutableElement overridenMethod = overridden.getElement();
-                            boolean isFunctionApply =
-                                    ElementUtils.isMethod(
-                                            overridenMethod,
-                                            functionApply,
-                                            atypeFactory.getProcessingEnv());
-                            if (isFunctionApply) {
-                                AnnotatedTypeMirror overridingUpperBound =
-                                        ((AnnotatedTypeVariable) overriddenReturnType)
-                                                .getUpperBound();
-                                success =
-                                        typeHierarchy.isSubtype(
-                                                overridingReturnType, overridingUpperBound);
-                            }
-                        }
-                    }
-                }
-
-                checkReturnMsg(success);
+            if ((overridingReturnType.getKind() == TypeKind.VOID)) {
+                // Nothing to check.
+                return true;
             }
+            final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
+            boolean success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
+            if (!success) {
+                // If both the overridden method have type variables as return types and both
+                // types were defined in their respective methods then, they can be covariant or
+                // invariant use super/subtypes for the overrides locations
+                success = testTypevarContainment(overridingReturnType, overriddenReturnType);
+            }
+
+            // Sometimes the overridden return type of a method reference becomes a captured
+            // type.  This leads to defaulting that often makes the overriding return type
+            // invalid.  We ignore these.  This happens in Issue403/Issue404.
+            if (!success
+                    && methodReference
+                    && TypesUtils.isCaptured(overriddenReturnType.getUnderlyingType())) {
+                if (ElementUtils.isMethod(
+                        overridden.getElement(), functionApply, atypeFactory.getProcessingEnv())) {
+                    success =
+                            typeHierarchy.isSubtype(
+                                    overridingReturnType,
+                                    ((AnnotatedTypeVariable) overriddenReturnType).getUpperBound());
+                }
+            }
+
+            checkReturnMsg(success);
             return success;
         }
 
@@ -3654,11 +3637,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * then the following {@code @EnsuresNonNullIf} conditional postcondition would match:<br>
      * {@code @EnsuresNonNullIf(expression="#1", result=true)}<br>
      * {@code boolean equals(@Nullable Object o)}
+     *
+     * @param conditionalPostconditions each is a ConditionalPostcondition
+     * @param b the value required for the {@code result} element
+     * @return all the given conditional postconditions whose {@code result} is {@code b}
      */
     private Set<Postcondition> filterConditionalPostconditions(
-            Set<ConditionalPostcondition> conditionalPostconditions, boolean b) {
+            Set<Contract> conditionalPostconditions, boolean b) {
         Set<Postcondition> result = new LinkedHashSet<>();
-        for (ConditionalPostcondition p : conditionalPostconditions) {
+        for (Contract c : conditionalPostconditions) {
+            ConditionalPostcondition p = (ConditionalPostcondition) c;
             if (p.annoResult == b) {
                 result.add(new Postcondition(p.expression, p.annotation, p.contractAnnotation));
             }

@@ -362,13 +362,9 @@ public abstract class AnnotatedTypeMirror {
         List<? extends AnnotationMirror> typeAnnotations =
                 this.getUnderlyingType().getAnnotationMirrors();
 
-        Set<? extends AnnotationMirror> validAnnotations =
-                atypeFactory.getQualifierHierarchy().getTypeQualifiers();
         for (AnnotationMirror explicitAnno : typeAnnotations) {
-            for (AnnotationMirror validAnno : validAnnotations) {
-                if (AnnotationUtils.areSameByName(explicitAnno, validAnno)) {
-                    explicitAnnotations.add(explicitAnno);
-                }
+            if (atypeFactory.isSupportedQualifier(explicitAnno)) {
+                explicitAnnotations.add(explicitAnno);
             }
         }
 
@@ -613,9 +609,15 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
+    /**
+     * Removes an annotation of the given class from the type.
+     *
+     * @param a the class of the annotation to remove
+     * @return true if the annotation was removed, false if the type's annotations were unchanged
+     */
     public boolean removeAnnotation(Class<? extends Annotation> a) {
         AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
-        if (anno == null || !atypeFactory.isSupportedQualifier(anno)) {
+        if (!atypeFactory.isSupportedQualifier(anno)) {
             throw new BugInCF(
                     "AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
         }

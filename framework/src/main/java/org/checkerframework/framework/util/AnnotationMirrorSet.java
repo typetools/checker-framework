@@ -22,7 +22,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * method; therefore, the existing implementations of Set cannot be used.
  */
 public class AnnotationMirrorSet implements Set<AnnotationMirror> {
-    private Set<AnnotationMirror> shadowSet = new TreeSet<>(AnnotationUtils.annotationOrdering());
+
+    /** Backing set. */
+    private Set<AnnotationMirror> shadowSet =
+            new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
 
     /** Default constructor. */
     public AnnotationMirrorSet() {}
@@ -104,7 +107,7 @@ public class AnnotationMirrorSet implements Set<AnnotationMirror> {
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        Set<AnnotationMirror> newSet = new TreeSet<>(AnnotationUtils.annotationOrdering());
+        Set<AnnotationMirror> newSet = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
         for (Object o : c) {
             if (contains(o)) {
                 newSet.add((AnnotationMirror) o);

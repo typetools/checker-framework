@@ -309,7 +309,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         // at least one of the intersection bound types must be convertible to the param type
         final AnnotatedDeclaredType subtypeAsParam =
                 AnnotatedTypes.castedAsSuper(typeFactory, subtype, supertype);
-        if (subtypeAsParam != null && !subtypeAsParam.equals(subtype)) {
+        if (subtypeAsParam != null && !subtypeAsParam.equals(supertype)) {
             addConstraint(subtypeAsParam, supertype, constraints);
         }
 

@@ -17,6 +17,7 @@ import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -46,7 +47,7 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Create a UBQualifier from the given annotation, with an extra offset
+     * Create a UBQualifier from the given annotation, with an extra offset.
      *
      * @param am the annotation to turn into a UBQualifier
      * @param offset the extra offset; may be null
@@ -177,7 +178,7 @@ public abstract class UBQualifier {
      * an explanation of how node is added as an offset.
      *
      * @param node a Node
-     * @param factory AnnotatedTypeFactory
+     * @param factory an AnnotatedTypeFactory
      * @return a copy of this qualifier with node added as an offset
      */
     public UBQualifier plusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
@@ -435,7 +436,7 @@ public abstract class UBQualifier {
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(@Nullable Object o) {
             if (this == o) {
                 return true;
             }
@@ -712,7 +713,7 @@ public abstract class UBQualifier {
          * this object.
          *
          * @param node a Node
-         * @param factory AnnotatedTypeFactory
+         * @param factory an AnnotatedTypeFactory
          * @return a copy of this qualifier with node add as an offset
          */
         @Override
@@ -726,7 +727,7 @@ public abstract class UBQualifier {
          * in a copy of this object.
          *
          * @param node a Node
-         * @param factory AnnotatedTypeFactory
+         * @param factory an AnnotatedTypeFactory
          * @return a copy of this qualifier with node add as an offset
          */
         @Override

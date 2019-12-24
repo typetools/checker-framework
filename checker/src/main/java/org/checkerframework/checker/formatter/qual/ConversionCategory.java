@@ -106,14 +106,17 @@ public enum ConversionCategory {
      */
     UNUSED(null /* everything */, null);
 
-    ConversionCategory(Class<? extends Object>[] types, String chars) {
+    /** Create a new conversion category. */
+    ConversionCategory(Class<?>[] types, String chars) {
         this.types = types;
         this.chars = chars;
     }
 
+    /** The format types. */
     @SuppressWarnings("ImmutableEnumChecker") // TODO: clean this up!
-    public final Class<? extends Object>[] types;
+    public final Class<?>[] types;
 
+    /** The format characters. */
     public final String chars;
 
     /**

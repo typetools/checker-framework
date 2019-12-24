@@ -43,6 +43,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * The Attributes class maps Manifest attribute names to associated string
@@ -194,6 +195,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
      * @return true if this Map maps one or more attribute names to
      *         the specified value
      */
+    @Pure
     public boolean containsValue(Object value) {
         return map.containsValue(value);
     }
@@ -204,6 +206,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
      * @param name the attribute name
      * @return true if this Map contains the specified attribute name
      */
+    @Pure
     @EnsuresKeyForIf(result=true, expression="#1", map="this")
     public boolean containsKey(Object name) {
         return map.containsKey(name);
@@ -242,6 +245,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
     /**
      * Returns true if this Map contains no attributes.
      */
+    @Pure
     public boolean isEmpty() {
         return map.isEmpty();
     }
@@ -264,6 +268,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
      * Returns a Collection view of the attribute name-value mappings
      * contained in this Map.
      */
+    @SideEffectFree
     public Set<Map.Entry<Object,Object>> entrySet() {
         return map.entrySet();
     }
@@ -276,7 +281,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
      * @param o the Object to be compared
      * @return true if the specified Object is equal to this Map
      */
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         return map.equals(o);
     }
 
@@ -506,7 +511,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
          * @return true if this attribute name is equal to the
          *         specified attribute object
          */
-        public boolean equals(Object o) {
+        public boolean equals(@Nullable Object o) {
             if (o instanceof Name) {
                 Comparator<String> c = ASCIICaseInsensitiveComparator.CASE_INSENSITIVE_ORDER;
                 return c.compare(name, ((Name)o).name) == 0;

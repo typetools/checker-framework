@@ -26,8 +26,11 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -72,9 +75,11 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.UserError;
 
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -336,7 +341,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         long from;
-        switch (atm.getUnderlyingType().getKind()) {
+        TypeMirror type = atm.getUnderlyingType();
+        switch (type.getKind()) {
             case INT:
                 from = Integer.MIN_VALUE;
                 break;
@@ -349,8 +355,36 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             case CHAR:
                 from = Character.MIN_VALUE;
                 break;
-            default:
+            case LONG:
                 from = Long.MIN_VALUE;
+                break;
+            case DECLARED:
+                String qualifiedName = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+                switch (qualifiedName) {
+                    case "java.lang.Integer":
+                        from = Integer.MIN_VALUE;
+                        break;
+                    case "java.lang.Short":
+                        from = Short.MIN_VALUE;
+                        break;
+                    case "java.lang.Byte":
+                        from = Byte.MIN_VALUE;
+                        break;
+                    case "java.lang.Character":
+                        from = Character.MIN_VALUE;
+                        break;
+                    case "java.lang.Long":
+                        from = Long.MIN_VALUE;
+                        break;
+                    default:
+                        throw new UserError(
+                                "Illegal type \"@IntRange "
+                                        + qualifiedName
+                                        + "\". @IntRange can be applied to Java integral types.");
+                }
+                break;
+            default:
+                throw new BugInCF(anno.toString() + " on a type of kind " + type.getKind());
         }
         return from;
     }
@@ -371,7 +405,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         long to;
-        switch (atm.getUnderlyingType().getKind()) {
+        TypeMirror type = atm.getUnderlyingType();
+        switch (type.getKind()) {
             case INT:
                 to = Integer.MAX_VALUE;
                 break;
@@ -384,8 +419,37 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             case CHAR:
                 to = Character.MAX_VALUE;
                 break;
-            default:
+            case LONG:
                 to = Long.MAX_VALUE;
+                break;
+            case DECLARED:
+                String qualifiedName = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+                switch (qualifiedName) {
+                    case "java.lang.Integer":
+                        to = Integer.MAX_VALUE;
+                        break;
+                    case "java.lang.Short":
+                        to = Short.MAX_VALUE;
+                        break;
+                    case "java.lang.Byte":
+                        to = Byte.MAX_VALUE;
+                        break;
+                    case "java.lang.Character":
+                        to = Character.MAX_VALUE;
+                        break;
+                    case "java.lang.Long":
+                        to = Long.MAX_VALUE;
+                        break;
+                    default:
+                        throw new UserError(
+                                "Illegal type \"@IntRange "
+                                        + qualifiedName
+                                        + "\". @IntRange can be applied to Java integral types.");
+                }
+                break;
+            default:
+                throw new BugInCF(
+                        "Tried to apply a default to an IntRange annotation that was neither an integral primitive nor a declared type.");
         }
         return to;
     }
@@ -396,7 +460,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     protected class ValueTypeAnnotator extends TypeAnnotator {
 
-        /** Construct a new ValueTypeAnnotator */
+        /** Construct a new ValueTypeAnnotator. */
         protected ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
@@ -442,10 +506,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
                 List<Long> values = getIntValues(anno);
                 if (values.size() > MAX_VALUES) {
-                    long annoMinVal = Collections.min(values);
-                    long annoMaxVal = Collections.max(values);
-                    atm.replaceAnnotation(
-                            createIntRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
+                    atm.replaceAnnotation(createIntRangeAnnotation(Range.create(values)));
                 }
             } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
                 List<Integer> values = getArrayLength(anno);
@@ -454,10 +515,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (Collections.min(values) < 0) {
                     atm.replaceAnnotation(BOTTOMVAL);
                 } else if (values.size() > MAX_VALUES) {
-                    long annoMinVal = Collections.min(values);
-                    long annoMaxVal = Collections.max(values);
-                    atm.replaceAnnotation(
-                            createArrayLenRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
+                    atm.replaceAnnotation(createArrayLenRangeAnnotation(Range.create(values)));
                 }
             } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
                 // Compute appropriate defaults for integral ranges.
@@ -516,7 +574,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The qualifier hierarchy for the Value type system. */
     private final class ValueQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
-        /** @param factory MultiGraphFactory to use to construct this */
+        /** @param factory the MultiGraphFactory to use to construct this */
         public ValueQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
         }
@@ -624,29 +682,33 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // If both bounds of the new range are bigger than the old range, then returned range
             // should use the lower bound of the new range and a MAX_VALUE.
             if ((newRange.from >= oldRange.from && newRange.to >= oldRange.to)) {
-                if (lubRange.to < Byte.MAX_VALUE) {
-                    return new Range(newRange.from, Byte.MAX_VALUE);
-                } else if (lubRange.to < Short.MAX_VALUE) {
-                    return new Range(newRange.from, Short.MAX_VALUE);
-                } else if (lubRange.to < Integer.MAX_VALUE) {
-                    return new Range(newRange.from, Integer.MAX_VALUE);
+                long max = lubRange.to;
+                if (max < Byte.MAX_VALUE) {
+                    max = Byte.MAX_VALUE;
+                } else if (max < Short.MAX_VALUE) {
+                    max = Short.MAX_VALUE;
+                } else if (max < Integer.MAX_VALUE) {
+                    max = Integer.MAX_VALUE;
                 } else {
-                    return new Range(newRange.from, Long.MAX_VALUE);
+                    max = Long.MAX_VALUE;
                 }
+                return Range.create(newRange.from, max);
             }
 
             // If both bounds of the old range are bigger than the new range, then returned range
             // should use a MIN_VALUE and the upper bound of the new range.
             if ((newRange.from <= oldRange.from && newRange.to <= oldRange.to)) {
-                if (lubRange.from > Byte.MIN_VALUE) {
-                    return new Range(Byte.MIN_VALUE, newRange.to);
-                } else if (lubRange.from > Short.MIN_VALUE) {
-                    return new Range(Short.MIN_VALUE, newRange.to);
-                } else if (lubRange.from > Integer.MIN_VALUE) {
-                    return new Range(Integer.MIN_VALUE, newRange.to);
+                long min = lubRange.from;
+                if (min > Byte.MIN_VALUE) {
+                    min = Byte.MIN_VALUE;
+                } else if (min > Short.MIN_VALUE) {
+                    min = Short.MIN_VALUE;
+                } else if (min > Integer.MIN_VALUE) {
+                    min = Integer.MIN_VALUE;
                 } else {
-                    return new Range(Long.MIN_VALUE, newRange.to);
+                    min = Long.MIN_VALUE;
                 }
+                return Range.create(min, newRange.to);
             }
 
             if (lubRange.isWithin(Byte.MIN_VALUE + 1, Byte.MAX_VALUE)
@@ -804,8 +866,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (doubleValAnno != null) {
                 if (intRangeAnno != null) {
                     intValAnno = convertIntRangeToIntVal(intRangeAnno);
-                    intRangeAnno = null;
-                    if (intValAnno == UNKNOWNVAL) {
+                    if (AnnotationUtils.areSameByClass(intValAnno, UnknownVal.class)) {
                         intValAnno = null;
                     }
                 }
@@ -871,18 +932,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
                     && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
-                List<Double> subValues = convertLongListToDoubleList(getIntValues(subAnno));
                 List<Double> superValues = getDoubleValues(superAnno);
+                List<Double> subValues = convertLongListToDoubleList(getIntValues(subAnno));
                 return superValues.containsAll(subValues);
             } else if ((AnnotationUtils.areSameByClass(superAnno, IntRange.class)
                             && AnnotationUtils.areSameByClass(subAnno, IntVal.class))
                     || (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
                             && AnnotationUtils.areSameByClass(subAnno, ArrayLen.class))) {
-                List<Long> subValues = getArrayLenOrIntValue(subAnno);
                 Range superRange = getRange(superAnno);
-                long subMinVal = Collections.min(subValues);
-                long subMaxVal = Collections.max(subValues);
-                return subMinVal >= superRange.from && subMaxVal <= superRange.to;
+                List<Long> subValues = getArrayLenOrIntValue(subAnno);
+                Range subRange = Range.create(subValues);
+                return superRange.contains(subRange);
             } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
                     && AnnotationUtils.areSameByClass(subAnno, IntRange.class)) {
                 Range subRange = getRange(subAnno);
@@ -915,9 +975,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
                 // StringVal is a subtype of ArrayLen, if all the strings have one of the correct
                 // lengths
-                List<String> subValues = getStringValues(subAnno);
                 List<Integer> superValues = getArrayLength(superAnno);
-
+                List<String> subValues = getStringValues(subAnno);
                 for (String value : subValues) {
                     if (!superValues.contains(value.length())) {
                         return false;
@@ -928,8 +987,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
                 // StringVal is a subtype of ArrayLenRange, if all the strings have a length in the
                 // range.
-                List<String> subValues = getStringValues(subAnno);
                 Range superRange = getRange(superAnno);
+                List<String> subValues = getStringValues(subAnno);
                 for (String value : subValues) {
                     if (!superRange.contains(value.length())) {
                         return false;
@@ -1002,7 +1061,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * If {@code anno} is equalient to UnknownVal, return UnknownVal; otherwise, return {@code
+     * If {@code anno} is equivalent to UnknownVal, return UnknownVal; otherwise, return {@code
      * anno}.
      */
     private AnnotationMirror convertToUnknown(AnnotationMirror anno) {
@@ -1011,16 +1070,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (range.from == 0 && range.to >= Integer.MAX_VALUE) {
                 return UNKNOWNVAL;
             }
-            return anno;
         } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
             Range range = getRange(anno);
             if (range.isLongEverything()) {
                 return UNKNOWNVAL;
             }
-            return anno;
-        } else {
-            return anno;
         }
+        return anno;
     }
 
     /** The TreeAnnotator for this AnnotatedTypeFactory. It adds/replaces annotations. */
@@ -1299,8 +1355,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * @return The Range of the Math.min or Math.max method, or null if the argument is none of
-         *     these methods or their arguments are not annotated in ValueChecker hierarchy.
+         * @return the Range of the Math.min or Math.max method, or null if the argument is none of
+         *     these methods or their arguments are not annotated in ValueChecker hierarchy
          */
         private Range getRangeForMathMinMax(MethodInvocationTree tree) {
             if (getMethodIdentifier().isMathMin(tree, processingEnv)) {
@@ -1445,8 +1501,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // The field is static and final.
                 Element e = TreeUtils.elementFromTree(tree.getExpression());
                 if (e != null) {
-                    String classname = ElementUtils.getQualifiedClassName(e).toString();
-                    String fieldName = tree.getIdentifier().toString();
+                    @SuppressWarnings("signature") // TODO: this looks like a bug in
+                    // ValueAnnotatedTypeFactory.  evaluateStaticFieldAcces requires a @ClassGetName
+                    // but this passes a @FullyQualifiedName
+                    @BinaryName String classname = ElementUtils.getQualifiedClassName(e).toString();
+                    @SuppressWarnings(
+                            "signature") // https://tinyurl.com/cfissue/658 for Name.toString()
+                    @Identifier String fieldName = tree.getIdentifier().toString();
                     value = evaluator.evaluateStaticFieldAccess(classname, fieldName, tree);
                     if (value != null) {
                         type.replaceAnnotation(
@@ -1521,7 +1582,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns a constant value annotation with the {@code value}. The class of the annotation
      * reflects the {@code resultType} given.
      *
-     * @param resultType used to selecte which kind of value annotation is returned
+     * @param resultType used to select which kind of value annotation is returned
      * @param value value to use
      * @return a constant value annotation with the {@code value}
      */
@@ -1533,7 +1594,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns a constant value annotation with the {@code values}. The class of the annotation
      * reflects the {@code resultType} given.
      *
-     * @param resultType used to selected which kind of value annotation is returned
+     * @param resultType used to select which kind of value annotation is returned
      * @param values must be a homogeneous list: every element of it has the same class
      * @return a constant value annotation with the {@code values}
      */
@@ -1918,8 +1979,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createArrayLenRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
-        } else if (range.isLongEverything()
-                || !range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+        } else if (range.isLongEverything() || !range.isWithinInteger()) {
             return UNKNOWNVAL;
         } else {
             return createArrayLenRangeAnnotation(
@@ -1968,13 +2028,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRangeFromPositive.class)) {
-            return new Range(1, Integer.MAX_VALUE);
+            return Range.create(1, Integer.MAX_VALUE);
         }
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRangeFromNonNegative.class)) {
-            return new Range(0, Integer.MAX_VALUE);
+            return Range.create(0, Integer.MAX_VALUE);
         }
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRangeFromGTENegativeOne.class)) {
-            return new Range(-1, Integer.MAX_VALUE);
+            return Range.create(-1, Integer.MAX_VALUE);
         }
 
         if (AnnotationUtils.areSameByClass(rangeAnno, IntVal.class)) {
@@ -1983,13 +2043,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRange.class)) {
-            return new Range(
+            return Range.create(
                     AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true),
                     AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true));
         }
 
         if (AnnotationUtils.areSameByClass(rangeAnno, ArrayLenRange.class)) {
-            return new Range(
+            return Range.create(
                     AnnotationUtils.getElementValue(rangeAnno, "from", Integer.class, true),
                     AnnotationUtils.getElementValue(rangeAnno, "to", Integer.class, true));
         }

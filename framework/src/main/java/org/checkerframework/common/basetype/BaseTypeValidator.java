@@ -41,11 +41,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     /** Should the primary annotation on the top level type be checked? */
     protected boolean checkTopLevelDeclaredType = true;
 
-    /** BaseTypeChecker */
+    /** BaseTypeChecker. */
     protected final BaseTypeChecker checker;
-    /** BaseTypeVisitor */
+    /** BaseTypeVisitor. */
     protected final BaseTypeVisitor<?> visitor;
-    /** AnnotatedTypeFactory */
+    /** AnnotatedTypeFactory. */
     protected final AnnotatedTypeFactory atypeFactory;
 
     // TODO: clean up coupling between components
@@ -87,7 +87,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * <p>Top-level type is not checked if tree is a local variable or an expression tree.
      *
      * @param type AnnotatedTypeMirror being validated
-     * @param tree Tree whose type is {@code type}
+     * @param tree a Tree whose type is {@code type}
      * @return whether or not the top-level type should be checked
      */
     protected boolean shouldCheckTopLevelDeclaredType(AnnotatedTypeMirror type, Tree tree) {
