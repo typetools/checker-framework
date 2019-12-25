@@ -414,12 +414,11 @@ public class QualifierDefaults {
                     return TreeUtils.elementFromDeclaration((VariableTree) t);
                 case METHOD:
                     return TreeUtils.elementFromDeclaration((MethodTree) t);
-                case CLASS:
-                case ENUM:
-                case INTERFACE:
-                case ANNOTATION_TYPE:
-                    return TreeUtils.elementFromDeclaration((ClassTree) t);
-                default: // Do nothing.
+                default:
+                    if (TreeUtils.isClassTree(t)) {
+                        return TreeUtils.elementFromDeclaration((ClassTree) t);
+                    }
+                    // Do nothing.
             }
             prev = t;
         }

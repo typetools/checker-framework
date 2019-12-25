@@ -456,15 +456,6 @@ public final class TreeUtils {
         }
 
         switch (tree.getKind()) {
-            case VARIABLE:
-            case METHOD:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-            case ANNOTATION_TYPE:
-            case TYPE_PARAMETER:
-                return TreeInfo.symbolFor((JCTree) tree);
-
                 // symbol() only works on MethodSelects, so we need to get it manually
                 // for method invocations.
             case METHOD_INVOCATION:
@@ -485,6 +476,11 @@ public final class TreeUtils {
                 return ((JCMemberReference) tree).sym;
 
             default:
+                if (isTypeDeclaration(tree)
+                        || tree.getKind().equals(Tree.Kind.VARIABLE)
+                        || tree.getKind().equals(Tree.Kind.METHOD)) {
+                    return TreeInfo.symbolFor((JCTree) tree);
+                }
                 return TreeInfo.symbol((JCTree) tree);
         }
     }
@@ -812,6 +808,14 @@ public final class TreeUtils {
                     Tree.Kind.ENUM,
                     Tree.Kind.INTERFACE,
                     Tree.Kind.ANNOTATION_TYPE);
+
+    static {
+        try {
+            classTreeKinds.add(Tree.Kind.valueOf("RECORD"));
+        } catch (IllegalArgumentException ignored) {
+            // We're using a version of Java that doesn't have records.
+        }
+    }
 
     public static Set<Tree.Kind> classTreeKinds() {
         return classTreeKinds;
@@ -1185,7 +1189,7 @@ public final class TreeUtils {
                 return true;
 
             default:
-                return false;
+                return node.getKind().name().equals("RECORD");
         }
     }
 

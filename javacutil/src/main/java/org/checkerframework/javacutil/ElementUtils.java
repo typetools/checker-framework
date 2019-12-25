@@ -490,19 +490,9 @@ public class ElementUtils {
     }
 
     public static boolean isTypeDeclaration(Element elt) {
-        switch (elt.getKind()) {
-                // These tree kinds are always declarations.  Uses of the declared
-                // types have tree kind IDENTIFIER.
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-            case TYPE_PARAMETER:
-                return true;
-
-            default:
-                return false;
-        }
+        return elt.getKind().isClass()
+            || elt.getKind().isInterface()
+            || elt.getKind().equals(ElementKind.TYPE_PARAMETER);
     }
 
     /**

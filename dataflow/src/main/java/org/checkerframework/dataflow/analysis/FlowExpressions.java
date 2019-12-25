@@ -307,13 +307,11 @@ public class FlowExpressions {
                                 new FieldAccess(
                                         fieldAccessExpression, typeOfId, (VariableElement) ele);
                         break;
-                    case CLASS:
-                    case ENUM:
-                    case ANNOTATION_TYPE:
-                    case INTERFACE:
-                        receiver = new ClassName(ele.asType());
-                        break;
                     default:
+                        if (ele.getKind().isClass() || ele.getKind().isInterface()) {
+                            receiver = new ClassName(ele.asType());
+                            break;
+                        }
                         receiver = null;
                 }
                 break;
@@ -376,18 +374,16 @@ public class FlowExpressions {
             case METHOD:
             case CONSTRUCTOR:
                 return internalReprOf(provider, memberSelectTree.getExpression());
-            case CLASS: // o instanceof MyClass.InnerClass
-            case ENUM:
-            case INTERFACE: // o instanceof MyClass.InnerInterface
-            case ANNOTATION_TYPE:
-                TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
-                return new ClassName(selectType);
             case ENUM_CONSTANT:
             case FIELD:
                 TypeMirror fieldType = TreeUtils.typeOf(memberSelectTree);
                 Receiver r = internalReprOf(provider, memberSelectTree.getExpression());
                 return new FieldAccess(r, fieldType, (VariableElement) ele);
             default:
+                if (ele.getKind().isClass() || ele.getKind().isInterface()) {
+                    TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
+                    return new ClassName(selectType);
+                }
                 throw new BugInCF("Unexpected element kind: %s element: %s", ele.getKind(), ele);
         }
     }

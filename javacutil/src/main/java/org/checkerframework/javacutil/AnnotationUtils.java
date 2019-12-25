@@ -558,6 +558,9 @@ public class AnnotationUtils {
                 if (elementType.name().contentEquals("MODULE")) {
                     return EnumSet.noneOf(ElementKind.class);
                 }
+                if (elementType.name().equals("RECORD_COMPONENT")) {
+                    return EnumSet.of(ElementKind.valueOf("RECORD_COMPONENT"));
+                }
                 throw new BugInCF("Unrecognized ElementType: " + elementType);
         }
     }

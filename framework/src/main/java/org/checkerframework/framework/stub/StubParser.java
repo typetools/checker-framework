@@ -589,14 +589,16 @@ public class StubParser {
                     processCallableDeclaration(
                             (CallableDeclaration<?>) decl, (ExecutableElement) elt);
                     break;
-                case CLASS:
-                case INTERFACE:
-                    processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, packageAnnos);
-                    break;
                 case ENUM:
                     processTypeDecl((EnumDeclaration) decl, innerName, packageAnnos);
                     break;
                 default:
+                    // TODO: Previous code had a case for CLASS|INTERFACE, and
+                    //       not ANNOTATION_TYPE.  Intentional?
+                    if (elt.getKind().isClass() || elt.getKind().equals(ElementKind.INTERFACE))
+                        processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, packageAnnos);
+                        break;
+                    }
                     /* do nothing */
                     stubWarnNotFound("StubParser ignoring: " + elt);
                     break;
