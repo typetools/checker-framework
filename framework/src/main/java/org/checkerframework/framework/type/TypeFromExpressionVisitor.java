@@ -190,12 +190,16 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             // the type of a class literal is the type of the "class" element.
             return f.getAnnotatedType(elt);
         }
-
-        if (elt.getKind().isClass()
-                || elt.getKind().isInterface()
-                || elt.getKind().equals(ElementKind.METHOD)
-                || elt.getKind().equals(ElementKind.PACKAGE)) {
-            return f.fromElement(elt);
+        switch (elt.getKind()) {
+            case METHOD:
+            case PACKAGE: // "java.lang" in new java.lang.Short("2")
+            case CLASS: // o instanceof MyClass.InnerClass
+            case ENUM:
+            case INTERFACE: // o instanceof MyClass.InnerInterface
+            case ANNOTATION_TYPE:
+                return f.fromElement(elt);
+            default:
+                // Fall-through.
         }
 
         if (node.getIdentifier().contentEquals("this")) {

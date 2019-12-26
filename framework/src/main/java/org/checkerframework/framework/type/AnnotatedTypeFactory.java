@@ -2651,17 +2651,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Prevent calling declarationFor on elements we know we don't have
         // the tree for
 
-        if (elt.getKind().isClass()
-                || elt.getKind().isInterface()
-                || elt.getKind().isField()
-                || elt.getKind().equals(ElementKind.METHOD)
-                || elt.getKind().equals(ElementKind.CONSTRUCTOR)) {
-            fromElt = trees.getTree(elt);
-        } else {
-            fromElt =
-                com.sun.tools.javac.tree.TreeInfo.declarationFor(
-                    (com.sun.tools.javac.code.Symbol) elt,
-                    (com.sun.tools.javac.tree.JCTree) root);
+        switch (elt.getKind()) {
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+            case ANNOTATION_TYPE:
+            case FIELD:
+            case ENUM_CONSTANT:
+            case METHOD:
+            case CONSTRUCTOR:
+                fromElt = trees.getTree(elt);
+                break;
+            default:
+                fromElt =
+                        com.sun.tools.javac.tree.TreeInfo.declarationFor(
+                                (com.sun.tools.javac.code.Symbol) elt,
+                                (com.sun.tools.javac.tree.JCTree) root);
+                break;
         }
         if (shouldCache) {
             elementToTreeCache.put(elt, fromElt);

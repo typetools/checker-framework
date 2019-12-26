@@ -209,6 +209,10 @@ public class TypeVarUseApplier {
                 break;
 
             default:
+                if (useElem.getKind().name().equals("BINDING_VARIABLE")) {
+                    annotations = getVariableAnnos(useElem);
+                    break;
+                }
                 throw new BugInCF(
                         "TypeVarUseApplier::extractAndApply : "
                                 + "Unhandled element kind "

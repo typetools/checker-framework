@@ -388,7 +388,7 @@ public class DependentTypesHelper {
 
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
-            case EXCEPTION_PARAMETER:
+            case EXCEPTION_PARAMETER: {
                 TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                 FlowExpressions.Receiver receiver =
                         FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
@@ -398,6 +398,7 @@ public class DependentTypesHelper {
                         new FlowExpressionContext(receiver, params, factory.getContext());
                 standardizeUseLocals(localContext, path, type);
                 break;
+            }
             case FIELD:
             case ENUM_CONSTANT:
                 FlowExpressions.Receiver receiverF;
@@ -416,6 +417,17 @@ public class DependentTypesHelper {
                 standardizeDoNotUseLocals(fieldContext, path, type);
                 break;
             default:
+                if (ele.getKind().name().equals("BINDING_VARIABLE")) {
+                    TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+                    FlowExpressions.Receiver receiver =
+                        FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
+                    List<Receiver> params =
+                        FlowExpressions.getParametersOfEnclosingMethod(factory, path);
+                    FlowExpressionContext localContext =
+                        new FlowExpressionContext(receiver, params, factory.getContext());
+                    standardizeUseLocals(localContext, path, type);
+                    break;
+                }
                 throw new BugInCF(
                         this.getClass()
                                 + ": unexpected element kind "
@@ -480,7 +492,7 @@ public class DependentTypesHelper {
             case PARAMETER:
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
-            case EXCEPTION_PARAMETER:
+            case EXCEPTION_PARAMETER: {
                 Tree tree = factory.declarationFromElement(elt);
                 if (tree == null) {
                     if (elt.getKind() == ElementKind.PARAMETER) {
@@ -500,7 +512,29 @@ public class DependentTypesHelper {
 
                 standardizeVariable(tree, type, elt);
                 break;
+            }
             default:
+                if (elt.getKind().name().equals("BINDING_VARIABLE")) {
+                    Tree tree = factory.declarationFromElement(elt);
+                    if (tree == null) {
+                        if (elt.getKind() == ElementKind.PARAMETER) {
+                            // The tree might be null when
+                            // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
+                            // gets the assignment context for a pseudo assignment of an argument to
+                            // a method parameter.
+                            return;
+                        }
+                        throw new BugInCF(this.getClass() + ": tree not found");
+                    } else if (TreeUtils.typeOf(tree) == null) {
+                        // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
+                        // gets the assignment context for a pseudo assignment of an argument to
+                        // a method parameter.
+                        return;
+                    }
+
+                    standardizeVariable(tree, type, elt);
+                    break;
+                }
                 // Nothing to do.
         }
     }

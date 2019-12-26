@@ -1117,6 +1117,14 @@ public abstract class GenericAnnotatedTypeFactory<
                                 }
                             }
                             break;
+                        case CLASS:
+                        case ANNOTATION_TYPE:
+                        case INTERFACE:
+                        case ENUM:
+                            // Visit inner and nested class trees.
+                            // TODO: Use no store for them? What can be captured?
+                            queue.add(Pair.of((ClassTree) m, capturedStore));
+                            break;
                         case BLOCK:
                             BlockTree b = (BlockTree) m;
                             analyze(
@@ -1131,12 +1139,6 @@ public abstract class GenericAnnotatedTypeFactory<
                                     capturedStore);
                             break;
                         default:
-                            if (TreeUtils.isClassTree(m)) {
-                                // Visit inner and nested class trees.
-                                // TODO: Use no store for them? What can be captured?
-                                queue.add(Pair.of((ClassTree) m, capturedStore));
-                                break;
-                            }
                             assert false : "Unexpected member: " + m.getKind();
                             break;
                     }
