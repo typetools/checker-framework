@@ -489,6 +489,12 @@ public class ElementUtils {
         return types;
     }
 
+    /**
+     * Return true if the element is a type declaration.
+     *
+     * @param elt the element to test
+     * @return true if the argument is a type declaration
+     */
     public static boolean isTypeDeclaration(Element elt) {
         return elt.getKind().isClass()
                 || elt.getKind().isInterface()

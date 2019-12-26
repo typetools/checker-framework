@@ -817,6 +817,11 @@ public final class TreeUtils {
         }
     }
 
+    /**
+     * Return the set of kinds that represent classes.
+     *
+     * @return the set of kinds that represent classes
+     */
     public static Set<Tree.Kind> classTreeKinds() {
         return classTreeKinds;
     }
