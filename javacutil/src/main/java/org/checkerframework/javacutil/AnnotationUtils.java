@@ -553,10 +553,8 @@ public class AnnotationUtils {
             case TYPE_USE:
                 return EnumSet.noneOf(ElementKind.class);
             default:
-                // TODO: Add actual case to check for the enum constant and return Set containing
-                // ElementKind.MODULE.  (Java 11)
-                if (elementType.name().contentEquals("MODULE")) {
-                    return EnumSet.noneOf(ElementKind.class);
+                if (elementType.name().equals("MODULE")) {
+                    return EnumSet.of(ElementKind.valueOf("MODULE"));
                 }
                 throw new BugInCF("Unrecognized ElementType: " + elementType);
         }
