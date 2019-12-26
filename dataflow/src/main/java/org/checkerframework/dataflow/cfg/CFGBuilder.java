@@ -3910,7 +3910,7 @@ public class CFGBuilder {
                     default:
                         if (element.getKind().isClass()
                                 || element.getKind().isInterface()
-                                || element.getKind().equals(ElementKind.TYPE_PARAMETER)) {
+                                || element.getKind() == ElementKind.TYPE_PARAMETER) {
                             node = new ClassNameNode(tree);
                             break;
                         }
@@ -4176,7 +4176,7 @@ public class CFGBuilder {
                 Element element = TreeUtils.elementFromUse(tree);
                 if (element.getKind().isClass() || element.getKind().isInterface()) {
                     return extendWithNode(new ClassNameNode(tree, expr));
-                } else if (element.getKind().equals(ElementKind.PACKAGE)) {
+                } else if (element.getKind() == ElementKind.PACKAGE) {
                     return extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
                 } else {
                     assert false : "Unexpected element kind: " + element.getKind();

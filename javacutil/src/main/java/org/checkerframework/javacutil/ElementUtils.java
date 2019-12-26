@@ -491,8 +491,8 @@ public class ElementUtils {
 
     public static boolean isTypeDeclaration(Element elt) {
         return elt.getKind().isClass()
-            || elt.getKind().isInterface()
-            || elt.getKind().equals(ElementKind.TYPE_PARAMETER);
+                || elt.getKind().isInterface()
+                || elt.getKind() == ElementKind.TYPE_PARAMETER;
     }
 
     /**

@@ -477,8 +477,8 @@ public final class TreeUtils {
 
             default:
                 if (isTypeDeclaration(tree)
-                        || tree.getKind().equals(Tree.Kind.VARIABLE)
-                        || tree.getKind().equals(Tree.Kind.METHOD)) {
+                        || tree.getKind() == Tree.Kind.VARIABLE
+                        || tree.getKind() == Tree.Kind.METHOD) {
                     return TreeInfo.symbolFor((JCTree) tree);
                 }
                 return TreeInfo.symbol((JCTree) tree);
