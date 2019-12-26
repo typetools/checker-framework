@@ -3908,7 +3908,9 @@ public class CFGBuilder {
                         node = new PackageNameNode(tree);
                         break;
                     default:
-                        if (element.getKind().isClass() || element.getKind().isInterface()) {
+                        if (element.getKind().isClass()
+                                || element.getKind().isInterface()
+                                || element.getKind().equals(ElementKind.TYPE_PARAMETER)) {
                             node = new ClassNameNode(tree);
                             break;
                         }
