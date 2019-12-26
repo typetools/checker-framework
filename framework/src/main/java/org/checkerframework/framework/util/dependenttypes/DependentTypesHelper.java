@@ -480,7 +480,7 @@ public class DependentTypesHelper {
             case PARAMETER:
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
-            case EXCEPTION_PARAMETER: {
+            case EXCEPTION_PARAMETER:
                 Tree tree = factory.declarationFromElement(elt);
                 if (tree == null) {
                     if (elt.getKind() == ElementKind.PARAMETER) {
@@ -500,7 +500,6 @@ public class DependentTypesHelper {
 
                 standardizeVariable(tree, type, elt);
                 break;
-            }
             default:
                 // Nothing to do.
         }
