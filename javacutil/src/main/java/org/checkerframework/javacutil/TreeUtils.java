@@ -802,6 +802,7 @@ public final class TreeUtils {
     // Adding Tree.Kind.NEW_CLASS here doesn't work, because then a
     // tree gets cast to ClassTree when it is actually a NewClassTree,
     // for example in enclosingClass above.
+    /** The set of kinds that represent classes. */
     private static final Set<Tree.Kind> classTreeKinds = EnumSet.noneOf(Tree.Kind.class);
 
     static {

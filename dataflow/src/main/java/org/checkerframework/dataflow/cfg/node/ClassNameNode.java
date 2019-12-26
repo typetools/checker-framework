@@ -37,6 +37,11 @@ public class ClassNameNode extends Node {
         this.parent = null;
     }
 
+    /**
+     * Create a new ClassNameNode.
+     *
+     * @param tree the class tree for this node
+     */
     public ClassNameNode(ClassTree tree) {
         super(TreeUtils.typeOf(tree));
         assert TreeUtils.isClassTree(tree);
