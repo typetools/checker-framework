@@ -803,9 +803,10 @@ public final class TreeUtils {
     // tree gets cast to ClassTree when it is actually a NewClassTree,
     // for example in enclosingClass above.
     /** The set of kinds that represent classes. */
-    private static final Set<Tree.Kind> classTreeKinds = EnumSet.noneOf(Tree.Kind.class);
+    private static final Set<Tree.Kind> classTreeKinds;
 
     static {
+        classTreeKinds = EnumSet.noneOf(Tree.Kind.class);
         for (Tree.Kind kind : Tree.Kind.values()) {
             if (kind.asInterface() == ClassTree.class) {
                 classTreeKinds.add(kind);
