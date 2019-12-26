@@ -1180,8 +1180,6 @@ public final class TreeUtils {
      * @return true if the tree is a type declaration
      */
     public static boolean isTypeDeclaration(Tree node) {
-        // These tree kinds are always declarations.  Uses of the declared types
-        // have tree kind IDENTIFIER.
         return isClassTree(node) || node.getKind() == Tree.Kind.TYPE_PARAMETER;
     }
 
