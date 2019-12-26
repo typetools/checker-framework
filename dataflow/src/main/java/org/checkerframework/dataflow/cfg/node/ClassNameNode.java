@@ -39,10 +39,7 @@ public class ClassNameNode extends Node {
 
     public ClassNameNode(ClassTree tree) {
         super(TreeUtils.typeOf(tree));
-        assert tree.getKind() == Tree.Kind.CLASS
-                || tree.getKind() == Tree.Kind.ENUM
-                || tree.getKind() == Tree.Kind.INTERFACE
-                || tree.getKind() == Tree.Kind.ANNOTATION_TYPE;
+        assert TreeUtils.isClassTree(tree);
         this.tree = tree;
         this.element = TreeUtils.elementFromDeclaration(tree);
         this.parent = null;

@@ -526,11 +526,13 @@ public class AnnotationUtils {
     public static EnumSet<ElementKind> getElementKindsForElementType(ElementType elementType) {
         switch (elementType) {
             case TYPE:
-                return EnumSet.of(
-                        ElementKind.CLASS,
-                        ElementKind.INTERFACE,
-                        ElementKind.ANNOTATION_TYPE,
-                        ElementKind.ENUM);
+                EnumSet<ElementKind> typeKinds = EnumSet.noneOf(ElementKind.class);
+                for (ElementKind kind : typeKinds) {
+                    if (kind.isClass() || kind.isInterface()) {
+                        typeKinds.add(kind);
+                    }
+                }
+                return typeKinds;
             case FIELD:
                 return EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
             case METHOD:
