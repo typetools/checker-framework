@@ -1582,7 +1582,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns a constant value annotation with the {@code value}. The class of the annotation
      * reflects the {@code resultType} given.
      *
-     * @param resultType used to selecte which kind of value annotation is returned
+     * @param resultType used to select which kind of value annotation is returned
      * @param value value to use
      * @return a constant value annotation with the {@code value}
      */
@@ -1594,7 +1594,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns a constant value annotation with the {@code values}. The class of the annotation
      * reflects the {@code resultType} given.
      *
-     * @param resultType used to selected which kind of value annotation is returned
+     * @param resultType used to select which kind of value annotation is returned
      * @param values must be a homogeneous list: every element of it has the same class
      * @return a constant value annotation with the {@code values}
      */
