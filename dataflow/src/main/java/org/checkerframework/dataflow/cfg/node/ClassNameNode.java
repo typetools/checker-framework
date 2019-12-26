@@ -44,7 +44,6 @@ public class ClassNameNode extends Node {
      */
     public ClassNameNode(ClassTree tree) {
         super(TreeUtils.typeOf(tree));
-        assert TreeUtils.isClassTree(tree);
         this.tree = tree;
         this.element = TreeUtils.elementFromDeclaration(tree);
         this.parent = null;
