@@ -802,18 +802,12 @@ public final class TreeUtils {
     // Adding Tree.Kind.NEW_CLASS here doesn't work, because then a
     // tree gets cast to ClassTree when it is actually a NewClassTree,
     // for example in enclosingClass above.
-    private static final Set<Tree.Kind> classTreeKinds =
-            EnumSet.of(
-                    Tree.Kind.CLASS,
-                    Tree.Kind.ENUM,
-                    Tree.Kind.INTERFACE,
-                    Tree.Kind.ANNOTATION_TYPE);
-
+    private static final Set<Tree.Kind> classTreeKinds = EnumSet.noneOf(Tree.Kind.class);
     static {
-        try {
-            classTreeKinds.add(Tree.Kind.valueOf("RECORD"));
-        } catch (IllegalArgumentException ignored) {
-            // We're using a version of Java that doesn't have records.
+        for (Tree.Kind kind : Tree.Kind.values()) {
+            if (kind.asInterface() == ClassTree.class) {
+                classTreeKinds.add(kind);
+            }
         }
     }
 
