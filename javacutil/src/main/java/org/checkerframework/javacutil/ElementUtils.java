@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -490,6 +491,37 @@ public class ElementUtils {
         List<TypeElement> types = new ArrayList<>();
         types.addAll(ElementFilter.typesIn(type.getEnclosedElements()));
         return types;
+    }
+
+    /** The set of kinds that represent classes. */
+    private static final Set<ElementKind> classElementKinds;
+
+    static {
+        classElementKinds = EnumSet.noneOf(ElementKind.class);
+        for (ElementKind kind : ElementKind.values()) {
+            if (kind.isClass() || kind.isInterface()) {
+                classElementKinds.add(kind);
+            }
+        }
+    }
+
+    /**
+     * Return the set of kinds that represent classes.
+     *
+     * @return the set of kinds that represent classes
+     */
+    public static Set<ElementKind> classElementKinds() {
+        return classElementKinds;
+    }
+
+    /**
+     * Is the given element kind a class, i.e. a class, enum, interface, or annotation type.
+     *
+     * @param element the element to test
+     * @return true, iff the given kind is a class kind
+     */
+    public static boolean isClassElement(Element element) {
+        return classElementKinds().contains(element.getKind());
     }
 
     /**
