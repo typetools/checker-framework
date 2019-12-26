@@ -287,6 +287,10 @@ public class FlowExpressions {
                 assert TreeUtils.isUseOfElement(identifierTree)
                         : "@AssumeAssertion(nullness): tree kind";
                 Element ele = TreeUtils.elementFromUse(identifierTree);
+                if (ElementUtils.isClassElement(ele)) {
+                    receiver = new ClassName(ele.asType());
+                    break;
+                }
                 switch (ele.getKind()) {
                     case LOCAL_VARIABLE:
                     case RESOURCE_VARIABLE:
@@ -308,10 +312,6 @@ public class FlowExpressions {
                                         fieldAccessExpression, typeOfId, (VariableElement) ele);
                         break;
                     default:
-                        if (ele.getKind().isClass() || ele.getKind().isInterface()) {
-                            receiver = new ClassName(ele.asType());
-                            break;
-                        }
                         receiver = null;
                 }
                 break;
@@ -370,6 +370,12 @@ public class FlowExpressions {
         }
         assert TreeUtils.isUseOfElement(memberSelectTree) : "@AssumeAssertion(nullness): tree kind";
         Element ele = TreeUtils.elementFromUse(memberSelectTree);
+        if (ElementUtils.isClassElement(ele)) {
+            // o instanceof MyClass.InnerClass
+            // o instanceof MyClass.InnerInterface
+            TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
+            return new ClassName(selectType);
+        }
         switch (ele.getKind()) {
             case METHOD:
             case CONSTRUCTOR:
@@ -380,10 +386,6 @@ public class FlowExpressions {
                 Receiver r = internalReprOf(provider, memberSelectTree.getExpression());
                 return new FieldAccess(r, fieldType, (VariableElement) ele);
             default:
-                if (ele.getKind().isClass() || ele.getKind().isInterface()) {
-                    TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
-                    return new ClassName(selectType);
-                }
                 throw new BugInCF("Unexpected element kind: %s element: %s", ele.getKind(), ele);
         }
     }

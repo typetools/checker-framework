@@ -643,7 +643,7 @@ public final class TypesUtils {
      */
     public static @Nullable TypeElement getTypeElement(TypeMirror type) {
         Element element = ((Type) type).asElement();
-        if (element.getKind().isClass() || element.getKind().isInterface()) {
+        if (ElementUtils.isClassElement(element)) {
             return (TypeElement) element;
         }
         return null;

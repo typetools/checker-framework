@@ -4172,7 +4172,7 @@ public class CFGBuilder {
             if (!TreeUtils.isFieldAccess(tree)) {
                 // Could be a selector of a class or package
                 Element element = TreeUtils.elementFromUse(tree);
-                if (element.getKind().isClass() || element.getKind().isInterface()) {
+                if (ElementUtils.isClassElement(element)) {
                     return extendWithNode(new ClassNameNode(tree, expr));
                 } else if (element.getKind() == ElementKind.PACKAGE) {
                     return extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));

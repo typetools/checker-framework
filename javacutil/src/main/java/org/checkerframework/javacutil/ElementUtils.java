@@ -46,7 +46,7 @@ public class ElementUtils {
      */
     public static TypeElement enclosingClass(final Element elem) {
         Element result = elem;
-        while (result != null && !result.getKind().isClass() && !result.getKind().isInterface()) {
+        while (result != null && !isClassElement(result)) {
             @Nullable Element encl = result.getEnclosingElement();
             result = encl;
         }
@@ -172,9 +172,7 @@ public class ElementUtils {
         if (n == null) {
             return "Unexpected element: " + elt;
         }
-        if (elt.getKind() == ElementKind.PACKAGE
-                || elt.getKind().isClass()
-                || elt.getKind().isInterface()) {
+        if (elt.getKind() == ElementKind.PACKAGE || isClassElement(elt)) {
             return n.toString();
         } else {
             return n + "." + elt;
@@ -531,9 +529,7 @@ public class ElementUtils {
      * @return true if the argument is a type declaration
      */
     public static boolean isTypeDeclaration(Element elt) {
-        return elt.getKind().isClass()
-                || elt.getKind().isInterface()
-                || elt.getKind() == ElementKind.TYPE_PARAMETER;
+        return isClassElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
     }
 
     /**
