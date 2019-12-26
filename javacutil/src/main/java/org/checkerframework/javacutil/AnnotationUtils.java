@@ -527,7 +527,7 @@ public class AnnotationUtils {
         switch (elementType) {
             case TYPE:
                 EnumSet<ElementKind> typeKinds = EnumSet.noneOf(ElementKind.class);
-                for (ElementKind kind : typeKinds) {
+                for (ElementKind kind : ElementKind.values()) {
                     if (kind.isClass() || kind.isInterface()) {
                         typeKinds.add(kind);
                     }
