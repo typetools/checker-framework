@@ -1183,19 +1183,9 @@ public final class TreeUtils {
      * @return true if the tree is a type declaration
      */
     public static boolean isTypeDeclaration(Tree node) {
-        switch (node.getKind()) {
-                // These tree kinds are always declarations.  Uses of the declared
-                // types have tree kind IDENTIFIER.
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-            case TYPE_PARAMETER:
-                return true;
-
-            default:
-                return node.getKind().name().equals("RECORD");
-        }
+        // These tree kinds are always declarations.  Uses of the declared types
+        // have tree kind IDENTIFIER.
+        return isClassTree(node) || node.getKind() == Tree.Kind.TYPE_PARAMETER;
     }
 
     /**
