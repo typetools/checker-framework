@@ -4,14 +4,20 @@
 FROM ubuntu
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
+ENV DEBIAN_FRONTEND noninteractive
+
 ## Keep this file in sync with ../../docs/manual/troubleshooting.tex
 
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
 #  * Put "apt-get update" and "apt-get install" and apt cleanup in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
+
+RUN apt-get -qqy update \
+&& apt-get -qqy install \
+  openjdk-11-jdk
+
+RUN apt-get -qqy update \
 && apt-get -qqy install \
   ant \
   cpp \
@@ -25,19 +31,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   python3-pip \
   python3-requests \
   unzip \
-  wget \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
+  wget
 
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& apt-get -qqy install \
-  openjdk-11-jdk \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
+RUN apt-get -qqy update \
 && apt-get -qqy install \
   dia \
   hevea \
@@ -52,14 +48,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   texlive-fonts-recommended \
   texlive-latex-base \
   texlive-latex-extra \
-  texlive-latex-recommended \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
+  texlive-latex-recommended
 
 RUN pip3 install html5validator
 
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
+RUN apt-get -qqy update \
 && apt-get -qqy install \
   autoconf \
   libasound2-dev \
@@ -70,9 +63,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   libxrandr-dev \
   libxrender-dev \
   libxt-dev \
-  libxtst-dev \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
+  libxtst-dev
 
 RUN wget https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2-b14.tar.gz \
 && tar xzf jtreg-4.2-b14.tar.gz \
@@ -80,3 +71,6 @@ RUN wget https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulB
 
 RUN git config --global user.email "you@example.com" \
 && git config --global user.name "Your Name"
+
+RUN apt-get clean \
+&& rm -rf /var/lib/apt/lists/*

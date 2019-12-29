@@ -4,12 +4,18 @@
 FROM ubuntu
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
+ENV DEBIAN_FRONTEND noninteractive
+
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
 #  * Put "apt-get update" and "apt-get install" and apt cleanup in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
+
+RUN apt-get -qqy update \
+&& apt-get -qqy install \
+  openjdk-11-jdk
+
+RUN apt-get -qqy update \
 && apt-get -qqy install \
   ant \
   cpp \
@@ -23,13 +29,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   python3-pip \
   python3-requests \
   unzip \
-  wget \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
+  wget
 
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& apt-get -qqy install \
-  openjdk-11-jdk \
-&& apt-get clean \
+RUN apt-get clean \
 && rm -rf /var/lib/apt/lists/*
