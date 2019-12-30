@@ -4,8 +4,6 @@
 FROM ubuntu
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
-ENV DEBIAN_FRONTEND noninteractive
-
 ## Keep this file in sync with ../../docs/manual/troubleshooting.tex
 
 # According to
@@ -13,11 +11,13 @@ ENV DEBIAN_FRONTEND noninteractive
 #  * Put "apt-get update" and "apt-get install" and apt cleanup in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
 
-RUN apt-get -qqy update \
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
 && apt-get -qqy install \
   openjdk-11-jdk
 
-RUN apt-get -qqy update \
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
 && apt-get -qqy install \
   ant \
   cpp \
@@ -33,7 +33,8 @@ RUN apt-get -qqy update \
   unzip \
   wget
 
-RUN apt-get -qqy update \
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
 && apt-get -qqy install \
   dia \
   hevea \
@@ -52,7 +53,8 @@ RUN apt-get -qqy update \
 
 RUN pip3 install html5validator
 
-RUN apt-get -qqy update \
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
 && apt-get -qqy install \
   autoconf \
   libasound2-dev \
@@ -72,5 +74,6 @@ RUN wget https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulB
 RUN git config --global user.email "you@example.com" \
 && git config --global user.name "Your Name"
 
-RUN apt-get clean \
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get clean \
 && rm -rf /var/lib/apt/lists/*
