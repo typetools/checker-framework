@@ -10,7 +10,6 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -462,41 +461,50 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 method.returnType, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.RETURN);
 
         // Now, update overridden methods based on the implementation we just saw.
-        // If the overridden method is abstract, then WPI cannot update it directly
-        // (because no calls directly resolve to it). This inference is similar to
+        // This inference is similar to
         // the inference procedure for method parameters: both are updated based
         // only on the implementations (in this case) or call-sites (for method
         // parameters) that are available to WPI.
+        //
+        // TODO: Performing this for each return statement is inefficient. It would
+        //  be enough to propagate the information once at the end of WPI, for the
+        //  final return type.
+        //
+        // In addition, it's inefficient to propagate (elsewhere) when the overriding
+        // relationship is discovered. More information may be discovered but not propagated.
+        // This could lead to an extra iteration of WPI, which would be very costly.
+        //
+        // It would be better to record overriding relationships as they are discovered,
+        // then do all propagation related to them at the end of WPI.
+        //
         for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
                 overriddenMethods.entrySet()) {
 
-            AnnotatedDeclaredType superclassType = pair.getKey();
-            ExecutableElement superclassMethodDef = pair.getValue();
+            AnnotatedDeclaredType superclassDecl = pair.getKey();
+            ExecutableElement overriddenMethodElement = pair.getValue();
 
             AnnotatedExecutableType overriddenMethod =
                     AnnotatedTypes.asMemberOf(
                             atf.getProcessingEnv().getTypeUtils(),
                             atf,
-                            superclassType,
-                            superclassMethodDef);
+                            superclassDecl,
+                            overriddenMethodElement);
 
-            if (overriddenMethod.getElement().getModifiers().contains(Modifier.ABSTRACT)) {
-                String superClassName = superclassType.getUnderlyingType().toString();
-                String superJaifPath = helper.getJaifPath(superClassName);
-                AClass superClazz = helper.getAClass(superClassName, superJaifPath);
-                AMethod superMethod =
-                        superClazz.methods.getVivify(
-                                JVMNames.getJVMMethodName(superclassMethodDef));
-                AnnotatedTypeMirror superLhsATM = overriddenMethod.getReturnType();
+            String superClassName = superclassDecl.getUnderlyingType().toString();
+            String superJaifPath = helper.getJaifPath(superClassName);
+            AClass superClazz = helper.getAClass(superClassName, superJaifPath);
+            AMethod overriddenMethodInSuperclass =
+                    superClazz.methods.getVivify(
+                            JVMNames.getJVMMethodName(overriddenMethodElement));
+            AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
 
-                helper.updateAnnotationSetInScene(
-                        superMethod.returnType,
-                        atf,
-                        superJaifPath,
-                        rhsATM,
-                        superLhsATM,
-                        TypeUseLocation.RETURN);
-            }
+            helper.updateAnnotationSetInScene(
+                    overriddenMethodInSuperclass.returnType,
+                    atf,
+                    superJaifPath,
+                    rhsATM,
+                    overriddenMethodReturnType,
+                    TypeUseLocation.RETURN);
         }
     }
 
