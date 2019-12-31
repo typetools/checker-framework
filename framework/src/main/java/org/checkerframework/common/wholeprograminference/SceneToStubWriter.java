@@ -333,7 +333,7 @@ public final class SceneToStubWriter {
      * annotations are used in a given AScene. Here, we use that construct to write out the proper
      * import statements into a stub file.
      */
-    private class ImportDefCollector extends DefCollector {
+    private static class ImportDefCollector extends DefCollector {
 
         private final PrintWriter printWriter;
 
