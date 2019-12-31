@@ -526,11 +526,7 @@ public class AnnotationUtils {
     public static EnumSet<ElementKind> getElementKindsForElementType(ElementType elementType) {
         switch (elementType) {
             case TYPE:
-                return EnumSet.of(
-                        ElementKind.CLASS,
-                        ElementKind.INTERFACE,
-                        ElementKind.ANNOTATION_TYPE,
-                        ElementKind.ENUM);
+                return EnumSet.copyOf(ElementUtils.classElementKinds());
             case FIELD:
                 return EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
             case METHOD:
@@ -557,6 +553,9 @@ public class AnnotationUtils {
                 // ElementKind.MODULE.  (Java 11)
                 if (elementType.name().contentEquals("MODULE")) {
                     return EnumSet.noneOf(ElementKind.class);
+                }
+                if (elementType.name().equals("RECORD_COMPONENT")) {
+                    return EnumSet.of(ElementKind.valueOf("RECORD_COMPONENT"));
                 }
                 throw new BugInCF("Unrecognized ElementType: " + elementType);
         }
