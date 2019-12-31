@@ -619,8 +619,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      * @return fully qualified name of class that {@code className} identifies in the current
      *     context, or null if resolution fails
      */
-    private @BinaryName String resolve(@BinaryName String className) {
-        @BinaryName String qualifiedName;
+    private @ClassGetName String resolve(@BinaryName String className) {
+        @ClassGetName String qualifiedName;
         Class<?> resolved = null;
 
         if (pkgName == null) {

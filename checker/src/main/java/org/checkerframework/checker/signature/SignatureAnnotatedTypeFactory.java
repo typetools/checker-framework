@@ -11,8 +11,20 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.BinaryNameInUnnamedPackage;
+import org.checkerframework.checker.signature.qual.ClassGetName;
+import org.checkerframework.checker.signature.qual.ClassGetSimpleName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.checker.signature.qual.FieldDescriptor;
+import org.checkerframework.checker.signature.qual.FieldDescriptorForPrimitive;
+import org.checkerframework.checker.signature.qual.FieldDescriptorForPrimitiveOrArrayInUnnamedPackage;
+import org.checkerframework.checker.signature.qual.FqBinaryName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.Identifier;
+import org.checkerframework.checker.signature.qual.IdentifierOrArray;
 import org.checkerframework.checker.signature.qual.InternalForm;
+import org.checkerframework.checker.signature.qual.MethodDescriptor;
+import org.checkerframework.checker.signature.qual.PolySignature;
 import org.checkerframework.checker.signature.qual.SignatureBottom;
 import org.checkerframework.checker.signature.qual.SignatureUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -66,7 +78,24 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiers(SignatureUnknown.class, SignatureBottom.class);
+        return getBundledTypeQualifiers(
+                SignatureUnknown.class,
+                SignatureBottom.class,
+                BinaryName.class,
+                BinaryNameInUnnamedPackage.class,
+                ClassGetName.class,
+                ClassGetSimpleName.class,
+                DotSeparatedIdentifiers.class,
+                FieldDescriptor.class,
+                FieldDescriptorForPrimitive.class,
+                FieldDescriptorForPrimitiveOrArrayInUnnamedPackage.class,
+                FqBinaryName.class,
+                FullyQualifiedName.class,
+                Identifier.class,
+                IdentifierOrArray.class,
+                InternalForm.class,
+                MethodDescriptor.class,
+                PolySignature.class);
     }
 
     @Override
