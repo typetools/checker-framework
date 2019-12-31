@@ -361,7 +361,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     // to override.
 
     /** True if the git.properties file has been printed. */
-    static boolean gitPropertiesPrinted = false;
+    private static boolean gitPropertiesPrinted = false;
 
     /** The @SuppressWarnings key that will suppress warnings for all checkers. */
     public static final String SUPPRESS_ALL_KEY = "all";
@@ -478,12 +478,23 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // This is used to trigger AggregateChecker's setProcessingEnvironment.
         setProcessingEnvironment(env);
 
+        // Keep in sync with check in checker-framework/build.gradle and text in installation
+        // section of manual.
         int jreVersion = PluginUtil.getJreVersion();
         if (jreVersion < 8) {
             throw new UserError(
+                    "The Checker Framework must be run under at least JDK 8.  You are using version %d.  Please use JDK 8 or JDK 11.",
+                    jreVersion);
+        } else if (jreVersion > 12) {
+            throw new UserError(
                     String.format(
-                            "The Checker Framework must be run under at least JDK 8.  You are using version %d.",
+                            "The Checker Framework cannot be run with JDK 13+.  You are using version %d. Please use JDK 8 or JDK 11.",
                             jreVersion));
+        } else if (jreVersion != 8 && jreVersion != 11) {
+            message(
+                    Kind.WARNING,
+                    "The Checker Framework is only tested with JDK 8 and JDK 11. You are using version %d. Please use JDK 8 or JDK 11.",
+                    jreVersion);
         }
 
         if (hasOption("printGitProperties")) {
@@ -1203,34 +1214,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
         return sb.toString();
     }
-
-    // Uses private fields, need to rewrite.
-    // public void dumpState() {
-    //     System.out.printf("SourceChecker = %s%n", this);
-    //     System.out.printf("  env = %s%n", env);
-    //     System.out.printf(
-    //             "    env.elementUtils = %s%n", ((JavacProcessingEnvironment) env).elementUtils);
-    //     System.out.printf(
-    //             "      env.elementUtils.types = %s%n",
-    //             ((JavacProcessingEnvironment) env).elementUtils.types);
-    //     System.out.printf(
-    //             "      env.elementUtils.enter = %s%n",
-    //             ((JavacProcessingEnvironment) env).elementUtils.enter);
-    //     System.out.printf(
-    //             "    env.typeUtils = %s%n", ((JavacProcessingEnvironment) env).typeUtils);
-    //     System.out.printf("  trees = %s%n", trees);
-    //     System.out.printf(
-    //             "    trees.enter = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).enter);
-    //     System.out.printf(
-    //             "    trees.elements = %s%n",
-    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements);
-    //     System.out.printf(
-    //             "      trees.elements.types = %s%n",
-    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements.types);
-    //     System.out.printf(
-    //             "      trees.elements.enter = %s%n",
-    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements.enter);
-    // }
 
     /**
      * Returns the localized long message corresponding for this key, and returns the defValue if no
@@ -2320,10 +2303,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
         gitPropertiesPrinted = true;
 
-        InputStream in = getClass().getResourceAsStream("/git.properties");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String line;
-        try {
+        try (InputStream in = getClass().getResourceAsStream("/git.properties");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in)); ) {
+            String line;
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
             }

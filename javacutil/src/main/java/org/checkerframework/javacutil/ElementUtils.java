@@ -146,7 +146,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the qualified name of the inner most class enclosing the provided {@code Element}
+     * Returns the qualified name of the innermost class enclosing the provided {@code Element}.
      *
      * @param element an element enclosed by a class, or a {@code TypeElement}
      * @return the qualified {@code Name} of the innermost class enclosing the element
@@ -371,10 +371,13 @@ public class ElementUtils {
         }
     }
 
-    /** @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError" */
+    /**
+     * @param element the element to test
+     * @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError"
+     */
     public static boolean isError(Element element) {
         return element.getClass().getName()
-                == "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError";
+                == "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError"; // interned
     }
 
     /**

@@ -26,8 +26,19 @@ import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+/**
+ * Evaluates expressions (such as method calls and field accesses) at compile time, to determine
+ * whether they have compile-time constant values.
+ */
 public class ReflectiveEvaluator {
+
+    /** The checker that is using this ReflectiveEvaluator. */
     private BaseTypeChecker checker;
+
+    /**
+     * Whether to report warnings about problems with evaluation. Controlled by the
+     * -AreportEvalWarns command-line option.
+     */
     private boolean reportWarnings;
 
     public ReflectiveEvaluator(
@@ -253,9 +264,9 @@ public class ReflectiveEvaluator {
      * Return the value of a static field access. Return null if there is trouble.
      *
      * @param classname the class containing the field
-     * @param fieldName the name fo the field
+     * @param fieldName the name of the field
      * @param tree the static field access in the program; used for diagnostics
-     * @return the value of the static field access, or null if it cannot be determinedx
+     * @return the value of the static field access, or null if it cannot be determined
      */
     public Object evaluateStaticFieldAccess(
             @ClassGetName String classname, String fieldName, MemberSelectTree tree) {
