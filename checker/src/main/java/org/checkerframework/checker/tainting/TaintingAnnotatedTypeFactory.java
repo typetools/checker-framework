@@ -19,6 +19,7 @@ public class TaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Default constructor. */
     public TaintingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+        this.postInit();
     }
 
     @Override
