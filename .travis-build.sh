@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
+echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`
 
 # Optional argument $1 is one of:
 #   all, all-tests, junit-tests, nonjunit-tests, jdk.jar, misc, checker-framework-inference, plume-lib, downstream
@@ -102,4 +102,4 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   $SCRIPTDIR/test-downstream.sh
 fi
 
-echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
+echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`
