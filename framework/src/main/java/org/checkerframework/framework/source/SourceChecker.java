@@ -1145,6 +1145,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 swTree);
     }
 
+    /** The name of the @SuppressWarnings annotation. */
     private final String suppressWarningsClassName = SuppressWarnings.class.getCanonicalName();
     /**
      * Finds the tree that is a {@code @SuppressWarnings} annotation.
