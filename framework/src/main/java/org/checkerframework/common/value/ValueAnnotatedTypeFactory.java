@@ -713,29 +713,33 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // If both bounds of the new range are bigger than the old range, then returned range
             // should use the lower bound of the new range and a MAX_VALUE.
             if ((newRange.from >= oldRange.from && newRange.to >= oldRange.to)) {
-                if (lubRange.to < Byte.MAX_VALUE) {
-                    return Range.create(newRange.from, Byte.MAX_VALUE);
-                } else if (lubRange.to < Short.MAX_VALUE) {
-                    return Range.create(newRange.from, Short.MAX_VALUE);
-                } else if (lubRange.to < Integer.MAX_VALUE) {
-                    return Range.create(newRange.from, Integer.MAX_VALUE);
+                long max = lubRange.to;
+                if (max < Byte.MAX_VALUE) {
+                    max = Byte.MAX_VALUE;
+                } else if (max < Short.MAX_VALUE) {
+                    max = Short.MAX_VALUE;
+                } else if (max < Integer.MAX_VALUE) {
+                    max = Integer.MAX_VALUE;
                 } else {
-                    return Range.create(newRange.from, Long.MAX_VALUE);
+                    max = Long.MAX_VALUE;
                 }
+                return Range.create(newRange.from, max);
             }
 
             // If both bounds of the old range are bigger than the new range, then returned range
             // should use a MIN_VALUE and the upper bound of the new range.
             if ((newRange.from <= oldRange.from && newRange.to <= oldRange.to)) {
-                if (lubRange.from > Byte.MIN_VALUE) {
-                    return Range.create(Byte.MIN_VALUE, newRange.to);
-                } else if (lubRange.from > Short.MIN_VALUE) {
-                    return Range.create(Short.MIN_VALUE, newRange.to);
-                } else if (lubRange.from > Integer.MIN_VALUE) {
-                    return Range.create(Integer.MIN_VALUE, newRange.to);
+                long min = lubRange.from;
+                if (min > Byte.MIN_VALUE) {
+                    min = Byte.MIN_VALUE;
+                } else if (min > Short.MIN_VALUE) {
+                    min = Short.MIN_VALUE;
+                } else if (min > Integer.MIN_VALUE) {
+                    min = Integer.MIN_VALUE;
                 } else {
-                    return Range.create(Long.MIN_VALUE, newRange.to);
+                    min = Long.MIN_VALUE;
                 }
+                return Range.create(min, newRange.to);
             }
 
             if (lubRange.isWithin(Byte.MIN_VALUE + 1, Byte.MAX_VALUE)
@@ -974,69 +978,73 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     subAnno, "value", Object.class, true);
                     return superValues.containsAll(subValues);
                 }
-            }
-
-            switch (superQual + subQual) {
-                case DOUBLEVAL_NAME + INTVAL_NAME:
-                    List<Double> subDValues = convertLongListToDoubleList(getIntValues(subAnno));
-                    List<Double> superDValues = getDoubleValues(superAnno);
-                    return superDValues.containsAll(subDValues);
-                case INTRANGE_NAME + INTVAL_NAME:
-                case ARRAYLENRANGE_NAME + ARRAYLEN_NAME:
-                    List<Long> subValues = getArrayLenOrIntValue(subAnno);
-                    Range superRange = getRange(superAnno);
-                    long subMinVal = Collections.min(subValues);
-                    long subMaxVal = Collections.max(subValues);
-                    return subMinVal >= superRange.from && subMaxVal <= superRange.to;
-                case DOUBLEVAL_NAME + INTRANGE_NAME:
-                    Range subRange = getRange(subAnno);
-                    if (subRange.isWiderThan(MAX_VALUES)) {
-                        return false;
-                    }
-                    List<Double> superValues = getDoubleValues(superAnno);
-                    List<Double> subDoublValues =
-                            ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
-                    return superValues.containsAll(subDoublValues);
-                case INTVAL_NAME + INTRANGE_NAME:
-                case ARRAYLEN_NAME + ARRAYLENRANGE_NAME:
-                    Range subArrayRange = getRange(subAnno);
-                    if (subArrayRange.isWiderThan(MAX_VALUES)) {
-                        return false;
-                    }
-                    List<Long> superLValues = getArrayLenOrIntValue(superAnno);
-                    List<Long> subLValues =
-                            ValueCheckerUtils.getValuesFromRange(subArrayRange, Long.class);
-                    return superLValues.containsAll(subLValues);
-                case STRINGVAL_NAME + ARRAYLENRANGE_NAME:
-                case STRINGVAL_NAME + ARRAYLEN_NAME:
-                    // Allow @ArrayLen(0) to be converted to @StringVal("")
-                    List<String> superSValues = getStringValues(superAnno);
-                    return superSValues.contains("") && getMaxLenValue(subAnno) == 0;
-                case ARRAYLEN_NAME + STRINGVAL_NAME:
-                    // StringVal is a subtype of ArrayLen, if all the strings have one of the
-                    // correct lengths
-                    List<String> subSValues = getStringValues(subAnno);
-                    List<Integer> superIValues = getArrayLength(superAnno);
-
-                    for (String value : subSValues) {
-                        if (!superIValues.contains(value.length())) {
-                            return false;
-                        }
-                    }
-                    return true;
-                case ARRAYLENRANGE_NAME + STRINGVAL_NAME:
-                    // StringVal is a subtype of ArrayLenRange, if all the strings have a length
-                    // in the range.
-                    List<String> subStringValues = getStringValues(subAnno);
-                    Range superArrayRange = getRange(superAnno);
-                    for (String value : subStringValues) {
-                        if (!superArrayRange.contains(value.length())) {
-                            return false;
-                        }
-                    }
-                    return true;
-                default:
+            } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
+                    && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
+                List<Double> superValues = getDoubleValues(superAnno);
+                List<Double> subValues = convertLongListToDoubleList(getIntValues(subAnno));
+                return superValues.containsAll(subValues);
+            } else if ((AnnotationUtils.areSameByClass(superAnno, IntRange.class)
+                            && AnnotationUtils.areSameByClass(subAnno, IntVal.class))
+                    || (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
+                            && AnnotationUtils.areSameByClass(subAnno, ArrayLen.class))) {
+                Range superRange = getRange(superAnno);
+                List<Long> subValues = getArrayLenOrIntValue(subAnno);
+                Range subRange = Range.create(subValues);
+                return superRange.contains(subRange);
+            } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
+                    && AnnotationUtils.areSameByClass(subAnno, IntRange.class)) {
+                Range subRange = getRange(subAnno);
+                if (subRange.isWiderThan(MAX_VALUES)) {
                     return false;
+                }
+                List<Double> superValues = getDoubleValues(superAnno);
+                List<Double> subValues =
+                        ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
+                return superValues.containsAll(subValues);
+            } else if ((AnnotationUtils.areSameByClass(superAnno, IntVal.class)
+                            && AnnotationUtils.areSameByClass(subAnno, IntRange.class))
+                    || (AnnotationUtils.areSameByClass(superAnno, ArrayLen.class)
+                            && AnnotationUtils.areSameByClass(subAnno, ArrayLenRange.class))) {
+                Range subRange = getRange(subAnno);
+                if (subRange.isWiderThan(MAX_VALUES)) {
+                    return false;
+                }
+                List<Long> superValues = getArrayLenOrIntValue(superAnno);
+                List<Long> subValues = ValueCheckerUtils.getValuesFromRange(subRange, Long.class);
+                return superValues.containsAll(subValues);
+            } else if (AnnotationUtils.areSameByClass(superAnno, StringVal.class)
+                    && (AnnotationUtils.areSameByClass(subAnno, ArrayLen.class)
+                            || AnnotationUtils.areSameByClass(subAnno, ArrayLenRange.class))) {
+
+                // Allow @ArrayLen(0) to be converted to @StringVal("")
+                List<String> superValues = getStringValues(superAnno);
+                return superValues.contains("") && getMaxLenValue(subAnno) == 0;
+            } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLen.class)
+                    && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
+                // StringVal is a subtype of ArrayLen, if all the strings have one of the correct
+                // lengths
+                List<Integer> superValues = getArrayLength(superAnno);
+                List<String> subValues = getStringValues(subAnno);
+                for (String value : subValues) {
+                    if (!superValues.contains(value.length())) {
+                        return false;
+                    }
+                }
+                return true;
+            } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
+                    && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
+                // StringVal is a subtype of ArrayLenRange, if all the strings have a length in the
+                // range.
+                Range superRange = getRange(superAnno);
+                List<String> subValues = getStringValues(subAnno);
+                for (String value : subValues) {
+                    if (!superRange.contains(value.length())) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                return false;
             }
         }
     }
@@ -1633,7 +1641,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns a constant value annotation with the {@code value}. The class of the annotation
      * reflects the {@code resultType} given.
      *
-     * @param resultType used to selecte which kind of value annotation is returned
+     * @param resultType used to select which kind of value annotation is returned
      * @param value value to use
      * @return a constant value annotation with the {@code value}
      */
@@ -1645,7 +1653,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns a constant value annotation with the {@code values}. The class of the annotation
      * reflects the {@code resultType} given.
      *
-     * @param resultType used to selected which kind of value annotation is returned
+     * @param resultType used to select which kind of value annotation is returned
      * @param values must be a homogeneous list: every element of it has the same class
      * @return a constant value annotation with the {@code values}
      */
