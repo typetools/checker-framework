@@ -374,8 +374,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Size of the annotationClassNames cache. */
     private static final int ANNOTATION_CACHE_SIZE = 500;
 
-    /** Maps classes representing AnnotationMirrors to their names. */
+    /** Maps classes representing AnnotationMirrors to their canonical names. */
     private final Map<Class<? extends Annotation>, String> annotationClassNames;
+
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
      * root. (These parameters are required so that the factory may conduct the appropriate
