@@ -171,7 +171,7 @@ public class TreeMap<K, V>
      *        If {@code null}, the {@linkplain Comparable natural
      *        ordering} of the keys will be used.
      */
-    public TreeMap(Comparator<? super K> comparator) {
+    public TreeMap(@Nullable Comparator<? super K> comparator) {
         this.comparator = comparator;
     }
 

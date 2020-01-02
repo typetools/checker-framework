@@ -25,8 +25,8 @@
 
 package java.lang.ref;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-
 
 /**
  * Phantom reference objects, which are enqueued after the collector
@@ -61,7 +61,7 @@ public class PhantomReference<T> extends Reference<T> {
      *
      * @return  <code>null</code>
      */
-    @SideEffectFree public T get() {
+    @SideEffectFree public @Nullable T get() {
         return null;
     }
 
@@ -78,7 +78,7 @@ public class PhantomReference<T> extends Reference<T> {
      * @param q the queue with which the reference is to be registered,
      *          or <tt>null</tt> if registration is not required
      */
-    public PhantomReference(T referent, ReferenceQueue<? super T> q) {
+    public PhantomReference(@Nullable T referent, ReferenceQueue<? super T> q) {
         super(referent, q);
     }
 

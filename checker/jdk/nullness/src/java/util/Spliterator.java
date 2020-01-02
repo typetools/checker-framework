@@ -29,6 +29,8 @@ import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * An object for traversing and partitioning elements of a source.  The source
  * of elements covered by a Spliterator could be, for example, an array, a
@@ -367,7 +369,7 @@ public interface Spliterator<T> {
      * @return a {@code Spliterator} covering some portion of the
      * elements, or {@code null} if this spliterator cannot be split
      */
-    Spliterator<T> trySplit();
+    @Nullable Spliterator<T> trySplit();
 
     /**
      * Returns an estimate of the number of elements that would be
@@ -461,7 +463,7 @@ public interface Spliterator<T> {
      * @throws IllegalStateException if the spliterator does not report
      *         a characteristic of {@code SORTED}.
      */
-    default Comparator<? super T> getComparator() {
+    default @Nullable Comparator<? super T> getComparator() {
         throw new IllegalStateException();
     }
 

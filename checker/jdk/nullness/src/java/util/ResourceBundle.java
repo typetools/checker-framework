@@ -19,8 +19,8 @@ public abstract class ResourceBundle{
     public final static ResourceBundle.Control getNoFallbackControl(List<String> a1) { throw new RuntimeException("skeleton method"); }
     public List<String> getFormats(String a1) { throw new RuntimeException("skeleton method"); }
     public List<Locale> getCandidateLocales(String a1, Locale a2) { throw new RuntimeException("skeleton method"); }
-    public Locale getFallbackLocale(String a1, Locale a2) { throw new RuntimeException("skeleton method"); }
-    public ResourceBundle newBundle(String a1, Locale a2, String a3, ClassLoader a4, boolean a5) throws IllegalAccessException, InstantiationException, java.io.IOException { throw new RuntimeException("skeleton method"); }
+    public @Nullable Locale getFallbackLocale(String a1, Locale a2) { throw new RuntimeException("skeleton method"); }
+    public @Nullable ResourceBundle newBundle(String a1, Locale a2, String a3, ClassLoader a4, boolean a5) throws IllegalAccessException, InstantiationException, java.io.IOException { throw new RuntimeException("skeleton method"); }
     public long getTimeToLive(String a1, Locale a2) { throw new RuntimeException("skeleton method"); }
     public boolean needsReload(String a1, Locale a2, String a3, ClassLoader a4, ResourceBundle a5, long a6) { throw new RuntimeException("skeleton method"); }
     public String toBundleName(String a1, Locale a2) { throw new RuntimeException("skeleton method"); }

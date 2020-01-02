@@ -186,7 +186,7 @@ public interface ConcurrentMap<K extends @NonNull Object, V extends @NonNull Obj
      *         and this map does not permit null keys or values
      *         (<a href="../Collection.html#optional-restrictions">optional</a>)
      */
-    boolean remove(Object key, Object value);
+    boolean remove(@Nullable Object key, @Nullable Object value);
 
     /**
      * Replaces the entry for a key only if currently mapped to a given value.
