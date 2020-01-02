@@ -112,6 +112,12 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return newtops;
         }
 
+        /**
+         * Returns true is {@code anno} is annotation in the Leaked hierarchy.
+         *
+         * @param anno an annotation
+         * @return true is {@code anno} is annotation in the Leaked hierarchy
+         */
         private boolean isLeakedQualifier(AnnotationMirror anno) {
             return areSameByClass(anno, MaybeLeaked.class)
                     || areSameByClass(anno, NonLeaked.class)

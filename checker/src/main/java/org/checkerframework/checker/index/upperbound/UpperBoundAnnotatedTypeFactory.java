@@ -220,6 +220,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Checks if valueType contains a {@link org.checkerframework.common.value.qual.BottomVal}
      * annotation. If so, adds an {@link UpperBoundBottom} annotation to type.
+     *
+     * @param valueType annotated type from the {@link ValueAnnotatedTypeFactory}
+     * @param type annotated type from this factory that is side effected
      */
     private void addUpperBoundTypeFromValueType(
             AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
@@ -321,6 +324,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns true iff the given node has the passed Lower Bound qualifier according to the LBC.
      * The last argument should be Positive.class, NonNegative.class, or GTENegativeOne.class.
+     *
+     * @param node the given node
+     * @param classOfType Positive.class, NonNegative.class, or GTENegativeOne.class
+     * @return true iff the given node has the passed Lower Bound qualifier according to the LBC
      */
     public boolean hasLowerBoundTypeByClass(Node node, Class<? extends Annotation> classOfType) {
         return areSameByClass(

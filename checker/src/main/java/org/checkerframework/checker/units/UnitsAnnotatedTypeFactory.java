@@ -300,6 +300,12 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return null;
     }
 
+    /**
+     * Returns true if {@code metaAnno} is {@link UnitsMultiple}.
+     *
+     * @param metaAnno an annotation mirror
+     * @return true if {@code metaAnno} is {@link UnitsMultiple}
+     */
     private boolean isUnitsMultiple(AnnotationMirror metaAnno) {
         return areSameByClass(metaAnno, UnitsMultiple.class);
     }

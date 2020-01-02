@@ -805,6 +805,13 @@ public class DependentTypesHelper {
         }
     }
 
+    /**
+     * Returns true if {@code am} is an expression annotation, that is an annotation whose value is
+     * a Java expression.
+     *
+     * @param am an annotation
+     * @return true if {@code am} is an expression annotation
+     */
     private boolean isExpressionAnno(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
             if (factory.areSameByClass(am, clazz)) {
