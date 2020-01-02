@@ -129,9 +129,7 @@ public class ContractsUtils {
      *     null
      */
     private <T extends Contract> Set<T> getContract(
-            Contract.Kind kind,
-            AnnotationMirror contractAnnotation,
-            @SuppressWarnings("UnusedVariable") Class<T> clazz) {
+            Contract.Kind kind, AnnotationMirror contractAnnotation, Class<T> clazz) {
         if (contractAnnotation == null) {
             return Collections.emptySet();
         }
@@ -148,11 +146,10 @@ public class ContractsUtils {
                 AnnotationUtils.getElementValueOrNull(
                         contractAnnotation, "result", Boolean.class, false);
         for (String expr : expressions) {
-            @SuppressWarnings("unchecked") // clazz consistent with enum
             T contract =
-                    (T)
+                    clazz.cast(
                             Contract.create(
-                                    kind, expr, enforcedQualifier, contractAnnotation, annoResult);
+                                    kind, expr, enforcedQualifier, contractAnnotation, annoResult));
             result.add(contract);
         }
         return result;
@@ -203,8 +200,9 @@ public class ContractsUtils {
             Boolean annoResult =
                     AnnotationUtils.getElementValueOrNull(anno, "result", Boolean.class, false);
             for (String expr : expressions) {
-                @SuppressWarnings("unchecked") // clazz consistent with enum
-                T contract = (T) Contract.create(kind, expr, enforcedQualifier, anno, annoResult);
+                T contract =
+                        clazz.cast(
+                                Contract.create(kind, expr, enforcedQualifier, anno, annoResult));
                 result.add(contract);
             }
         }
