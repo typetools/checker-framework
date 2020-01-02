@@ -129,7 +129,9 @@ public class ContractsUtils {
      *     null
      */
     private <T extends Contract> Set<T> getContract(
-            Contract.Kind kind, AnnotationMirror contractAnnotation, Class<T> clazz) {
+            Contract.Kind kind,
+            AnnotationMirror contractAnnotation,
+            @SuppressWarnings("UnusedVariable") Class<T> clazz) {
         if (contractAnnotation == null) {
             return Collections.emptySet();
         }
