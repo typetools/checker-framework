@@ -978,73 +978,69 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     subAnno, "value", Object.class, true);
                     return superValues.containsAll(subValues);
                 }
-            } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
-                    && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
-                List<Double> superValues = getDoubleValues(superAnno);
-                List<Double> subValues = convertLongListToDoubleList(getIntValues(subAnno));
-                return superValues.containsAll(subValues);
-            } else if ((AnnotationUtils.areSameByClass(superAnno, IntRange.class)
-                            && AnnotationUtils.areSameByClass(subAnno, IntVal.class))
-                    || (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
-                            && AnnotationUtils.areSameByClass(subAnno, ArrayLen.class))) {
-                Range superRange = getRange(superAnno);
-                List<Long> subValues = getArrayLenOrIntValue(subAnno);
-                Range subRange = Range.create(subValues);
-                return superRange.contains(subRange);
-            } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
-                    && AnnotationUtils.areSameByClass(subAnno, IntRange.class)) {
-                Range subRange = getRange(subAnno);
-                if (subRange.isWiderThan(MAX_VALUES)) {
-                    return false;
-                }
-                List<Double> superValues = getDoubleValues(superAnno);
-                List<Double> subValues =
-                        ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
-                return superValues.containsAll(subValues);
-            } else if ((AnnotationUtils.areSameByClass(superAnno, IntVal.class)
-                            && AnnotationUtils.areSameByClass(subAnno, IntRange.class))
-                    || (AnnotationUtils.areSameByClass(superAnno, ArrayLen.class)
-                            && AnnotationUtils.areSameByClass(subAnno, ArrayLenRange.class))) {
-                Range subRange = getRange(subAnno);
-                if (subRange.isWiderThan(MAX_VALUES)) {
-                    return false;
-                }
-                List<Long> superValues = getArrayLenOrIntValue(superAnno);
-                List<Long> subValues = ValueCheckerUtils.getValuesFromRange(subRange, Long.class);
-                return superValues.containsAll(subValues);
-            } else if (AnnotationUtils.areSameByClass(superAnno, StringVal.class)
-                    && (AnnotationUtils.areSameByClass(subAnno, ArrayLen.class)
-                            || AnnotationUtils.areSameByClass(subAnno, ArrayLenRange.class))) {
+            }
+            switch (superQual + subQual) {
+                case DOUBLEVAL_NAME + INTVAL_NAME:
+                    List<Double> superValues = getDoubleValues(superAnno);
+                    List<Double> subValues = convertLongListToDoubleList(getIntValues(subAnno));
+                    return superValues.containsAll(subValues);
+                case INTRANGE_NAME + INTVAL_NAME:
+                case ARRAYLENRANGE_NAME + ARRAYLEN_NAME:
+                    Range superRange = getRange(superAnno);
+                    List<Long> subLongValues = getArrayLenOrIntValue(subAnno);
+                    Range subLongRange = Range.create(subLongValues);
+                    return superRange.contains(subLongRange);
+                case DOUBLEVAL_NAME + INTRANGE_NAME:
+                    Range subRange = getRange(subAnno);
+                    if (subRange.isWiderThan(MAX_VALUES)) {
+                        return false;
+                    }
+                    List<Double> superDoubleValues = getDoubleValues(superAnno);
+                    List<Double> subDoubleValues =
+                            ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
+                    return superDoubleValues.containsAll(subDoubleValues);
+                case INTVAL_NAME + INTRANGE_NAME:
+                case ARRAYLEN_NAME + ARRAYLENRANGE_NAME:
+                    Range subRange2 = getRange(subAnno);
+                    if (subRange2.isWiderThan(MAX_VALUES)) {
+                        return false;
+                    }
+                    List<Long> superValues2 = getArrayLenOrIntValue(superAnno);
+                    List<Long> subValues2 =
+                            ValueCheckerUtils.getValuesFromRange(subRange2, Long.class);
+                    return superValues2.containsAll(subValues2);
+                case STRINGVAL_NAME + ARRAYLENRANGE_NAME:
+                case STRINGVAL_NAME + ARRAYLEN_NAME:
 
-                // Allow @ArrayLen(0) to be converted to @StringVal("")
-                List<String> superValues = getStringValues(superAnno);
-                return superValues.contains("") && getMaxLenValue(subAnno) == 0;
-            } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLen.class)
-                    && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
-                // StringVal is a subtype of ArrayLen, if all the strings have one of the correct
-                // lengths
-                List<Integer> superValues = getArrayLength(superAnno);
-                List<String> subValues = getStringValues(subAnno);
-                for (String value : subValues) {
-                    if (!superValues.contains(value.length())) {
-                        return false;
+                    // Allow @ArrayLen(0) to be converted to @StringVal("")
+                    List<String> superStringValues = getStringValues(superAnno);
+                    return superStringValues.contains("") && getMaxLenValue(subAnno) == 0;
+                case ARRAYLEN_NAME + STRINGVAL_NAME:
+                    // StringVal is a subtype of ArrayLen, if all the strings have one of the
+                    // correct
+                    // lengths
+                    List<Integer> superIntValues = getArrayLength(superAnno);
+                    List<String> subStringValues = getStringValues(subAnno);
+                    for (String value : subStringValues) {
+                        if (!superIntValues.contains(value.length())) {
+                            return false;
+                        }
                     }
-                }
-                return true;
-            } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
-                    && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
-                // StringVal is a subtype of ArrayLenRange, if all the strings have a length in the
-                // range.
-                Range superRange = getRange(superAnno);
-                List<String> subValues = getStringValues(subAnno);
-                for (String value : subValues) {
-                    if (!superRange.contains(value.length())) {
-                        return false;
+                    return true;
+                case ARRAYLENRANGE_NAME + STRINGVAL_NAME:
+                    // StringVal is a subtype of ArrayLenRange, if all the strings have a length in
+                    // the
+                    // range.
+                    Range superRange2 = getRange(superAnno);
+                    List<String> subValues3 = getStringValues(subAnno);
+                    for (String value : subValues3) {
+                        if (!superRange2.contains(value.length())) {
+                            return false;
+                        }
                     }
-                }
-                return true;
-            } else {
-                return false;
+                    return true;
+                default:
+                    return false;
             }
         }
     }
