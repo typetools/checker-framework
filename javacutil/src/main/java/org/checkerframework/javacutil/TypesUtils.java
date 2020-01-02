@@ -23,6 +23,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.plumelib.util.ImmutableTypes;
 
 /** A utility class that helps with {@link TypeMirror}s. */
@@ -41,7 +42,7 @@ public final class TypesUtils {
      * @param type the declared type
      * @return the name corresponding to that type
      */
-    public static Name getQualifiedName(DeclaredType type) {
+    public static @DotSeparatedIdentifiers Name getQualifiedName(DeclaredType type) {
         TypeElement element = (TypeElement) type.asElement();
         return element.getQualifiedName();
     }
@@ -350,7 +351,7 @@ public final class TypesUtils {
             if (w.isSuperBound()) { // returns true if w is unbound
                 Symtab syms = Symtab.instance(context);
                 // w.bound is null if the wildcard is from bytecode.
-                return w.bound == null ? syms.objectType : w.bound.bound;
+                return w.bound == null ? syms.objectType : w.bound.getUpperBound();
             } else {
                 return wildUpperBound(w.type, env);
             }
@@ -642,15 +643,10 @@ public final class TypesUtils {
      */
     public static @Nullable TypeElement getTypeElement(TypeMirror type) {
         Element element = ((Type) type).asElement();
-        switch (element.getKind()) {
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-                return (TypeElement) element;
-            default:
-                return null;
+        if (ElementUtils.isClassElement(element)) {
+            return (TypeElement) element;
         }
+        return null;
     }
 
     /**

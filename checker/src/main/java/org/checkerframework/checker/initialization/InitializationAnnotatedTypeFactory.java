@@ -343,11 +343,6 @@ public abstract class InitializationAnnotatedTypeFactory<
         return anno.hasEffectiveAnnotation(Initialized.class);
     }
 
-    @Override
-    protected MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
-    }
-
     /** Are all fields committed-only? */
     protected boolean areAllFieldsCommittedOnly(ClassTree classTree) {
         for (Tree member : classTree.getMembers()) {
