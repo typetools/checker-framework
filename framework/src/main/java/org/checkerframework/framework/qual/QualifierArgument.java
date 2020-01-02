@@ -34,8 +34,8 @@ import java.lang.annotation.Target;
  * @see PreconditionAnnotation
  */
 @Documented
-@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
 public @interface QualifierArgument {
     /**
      * Specifies the name of the argument of the qualifier, that is passed the values held in the

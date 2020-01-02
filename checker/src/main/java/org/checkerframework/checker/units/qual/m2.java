@@ -12,11 +12,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #units-checker Units Checker
  */
-@SuppressWarnings("checkstyle:typename")
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(Area.class)
+@SuppressWarnings("checkstyle:typename")
 public @interface m2 {
     // does this make sense? Is it multiple of (m^2)? Or (multiple of m)^2?
     Prefix value() default Prefix.one;

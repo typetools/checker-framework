@@ -16,6 +16,7 @@ import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.reflection.Signatures;
 
 /** Defines {@link #createSupportedTypeQualifiers}. */
 public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -49,6 +50,10 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // load individually named qualifiers
         if (qualNames != null) {
             for (String qualName : qualNames.split(",")) {
+                if (!Signatures.isBinaryName(qualName)) {
+                    throw new UserError(
+                            "Malformed qualifier \"%s\" in -Aquals=%s", qualName, qualNames);
+                }
                 Class<? extends Annotation> anno = loader.loadExternalAnnotationClass(qualName);
                 if (anno == null) {
                     throw new UserError("Qualifier specified in -Aquals not found: " + qualName);

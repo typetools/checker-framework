@@ -10,6 +10,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
@@ -47,7 +48,8 @@ public class ValueCheckerUtils {
             case ARRAY:
                 return getArrayClassObject(((ArrayType) type).getComponentType());
             case DECLARED:
-                String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+                @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
+                @DotSeparatedIdentifiers String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
                 if (typeString.equals("<nulltype>")) {
                     return Object.class;
                 }
