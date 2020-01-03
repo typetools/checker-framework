@@ -202,14 +202,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected TypeArgumentInference typeArgumentInference;
 
     /**
-     * To cache the supported type qualifiers. call {@link #getSupportedTypeQualifiers()} instead of
-     * using this field directly, as it may not have been initialized.
+     * Caches the supported type qualifiers classes. Call {@link #getSupportedTypeQualifiers()}
+     * instead of using this field directly, as it may not have been initialized.
      */
     private final Set<Class<? extends Annotation>> supportedQuals;
 
     /**
-     * To cache the supported type qualifier names. call {@link #getSupportedTypeQualifierNames()}
-     * instead of using this field directly, as it may not have been initialized.
+     * Caches the fully-qualified names of the classes in {@link #supportedQuals}. Call {@link
+     * #getSupportedTypeQualifierNames()} instead of using this field directly, as it may not have
+     * been initialized.
      */
     private final Set<String> supportedQualNames;
 
@@ -2443,12 +2444,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Determines whether the given class is a part of the type system under which this type factory
      * operates.
      *
-     * @param className annotation class
+     * @param clazz annotation class
      * @return true if that class is a type qualifier in the type system under which this type
      *     factory operates, false otherwise
      */
-    public boolean isSupportedQualifier(Class<? extends Annotation> className) {
-        return isSupportedQualifier(className.getCanonicalName());
+    public boolean isSupportedQualifier(Class<? extends Annotation> clazz) {
+        return getSupportedTypeQualifiers().contains(clazz);
     }
 
     /**
