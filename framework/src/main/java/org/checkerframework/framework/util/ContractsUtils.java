@@ -4,7 +4,6 @@ import static org.checkerframework.framework.util.Contract.Kind.CONDITIONALPOSTC
 import static org.checkerframework.framework.util.Contract.Kind.POSTCONDITION;
 import static org.checkerframework.framework.util.Contract.Kind.PRECONDITION;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -66,13 +65,13 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns all the contracts on method or contstructor {@code executableElement}.
+     * Returns all the contracts on method or constructor {@code executableElement}.
      *
      * @param executableElement the method or constructor whose contracts to retrieve
      * @return the contracts on {@code executableElement}
      */
-    public List<Contract> getContracts(ExecutableElement executableElement) {
-        List<Contract> contracts = new ArrayList<>();
+    public Set<Contract> getContracts(ExecutableElement executableElement) {
+        Set<Contract> contracts = new LinkedHashSet<>();
         contracts.addAll(getPreconditions(executableElement));
         contracts.addAll(getPostconditions(executableElement));
         contracts.addAll(getConditionalPostconditions(executableElement));
@@ -87,8 +86,8 @@ public class ContractsUtils {
      * @param executableElement the method whose contracts to return
      * @return the contracts on {@code executableElement}
      */
-    public Set<Contract> getPreconditions(ExecutableElement executableElement) {
-        return getContracts(executableElement, PRECONDITION);
+    public Set<Contract.Precondition> getPreconditions(ExecutableElement executableElement) {
+        return getContracts(executableElement, PRECONDITION, Contract.Precondition.class);
     }
 
     /// Postcondition methods (keep in sync with other two types)
@@ -99,8 +98,8 @@ public class ContractsUtils {
      * @param executableElement the method whose contracts to return
      * @return the contracts on {@code executableElement}
      */
-    public Set<Contract> getPostconditions(ExecutableElement executableElement) {
-        return getContracts(executableElement, POSTCONDITION);
+    public Set<Contract.Postcondition> getPostconditions(ExecutableElement executableElement) {
+        return getContracts(executableElement, POSTCONDITION, Contract.Postcondition.class);
     }
 
     /// Conditional postcondition methods (keep in sync with other two types)
@@ -111,8 +110,10 @@ public class ContractsUtils {
      * @param methodElement the method whose contracts to return
      * @return the contracts on {@code methodElement}
      */
-    public Set<Contract> getConditionalPostconditions(ExecutableElement methodElement) {
-        return getContracts(methodElement, CONDITIONALPOSTCONDITION);
+    public Set<Contract.ConditionalPostcondition> getConditionalPostconditions(
+            ExecutableElement methodElement) {
+        return getContracts(
+                methodElement, CONDITIONALPOSTCONDITION, Contract.ConditionalPostcondition.class);
     }
 
     /// Helper methods
@@ -123,10 +124,13 @@ public class ContractsUtils {
      * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, {@link
      *     EnsuresQualifierIf}, or null
      * @param kind the kind of {@code contractAnnotation}
+     * @param clazz the class to determine the return type
+     * @param <T> the specific type of {@link Contract} to use
      * @return the contracts expressed by the given annotation, or the empty set if the argument is
      *     null
      */
-    private Set<Contract> getContract(Contract.Kind kind, AnnotationMirror contractAnnotation) {
+    private <T extends Contract> Set<T> getContract(
+            Contract.Kind kind, AnnotationMirror contractAnnotation, Class<T> clazz) {
         if (contractAnnotation == null) {
             return Collections.emptySet();
         }
@@ -135,7 +139,7 @@ public class ContractsUtils {
         if (enforcedQualifier == null) {
             return Collections.emptySet();
         }
-        Set<Contract> result = new LinkedHashSet<>();
+        Set<T> result = new LinkedHashSet<>();
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         contractAnnotation, "expression", String.class, false);
@@ -143,8 +147,11 @@ public class ContractsUtils {
                 AnnotationUtils.getElementValueOrNull(
                         contractAnnotation, "result", Boolean.class, false);
         for (String expr : expressions) {
-            result.add(
-                    Contract.create(kind, expr, enforcedQualifier, contractAnnotation, annoResult));
+            T contract =
+                    clazz.cast(
+                            Contract.create(
+                                    kind, expr, enforcedQualifier, contractAnnotation, annoResult));
+            result.add(contract);
         }
         return result;
     }
@@ -154,14 +161,17 @@ public class ContractsUtils {
      *
      * @param executableElement the method whose contracts to return
      * @param kind the kind of contracts to retrieve
+     * @param clazz the class to determine the return type
+     * @param <T> the specific type of {@link Contract} to use
      * @return the contracts on {@code executableElement}
      */
-    public Set<Contract> getContracts(ExecutableElement executableElement, Kind kind) {
-        Set<Contract> result = new LinkedHashSet<>();
+    private <T extends Contract> Set<T> getContracts(
+            ExecutableElement executableElement, Kind kind, Class<T> clazz) {
+        Set<T> result = new LinkedHashSet<>();
         // Check for a single contract annotation.
         AnnotationMirror frameworkContractAnno =
                 factory.getDeclAnnotation(executableElement, kind.frameworkContractClass);
-        result.addAll(getContract(kind, frameworkContractAnno));
+        result.addAll(getContract(kind, frameworkContractAnno, clazz));
 
         // Check for a wrapper around contract annotations.
         AnnotationMirror frameworkContractAnnos =
@@ -171,7 +181,7 @@ public class ContractsUtils {
                     AnnotationUtils.getElementValueArray(
                             frameworkContractAnnos, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : frameworkContractAnnoList) {
-                result.addAll(getContract(kind, a));
+                result.addAll(getContract(kind, a, clazz));
             }
         }
 
@@ -192,7 +202,10 @@ public class ContractsUtils {
             Boolean annoResult =
                     AnnotationUtils.getElementValueOrNull(anno, "result", Boolean.class, false);
             for (String expr : expressions) {
-                result.add(Contract.create(kind, expr, enforcedQualifier, anno, annoResult));
+                T contract =
+                        clazz.cast(
+                                Contract.create(kind, expr, enforcedQualifier, anno, annoResult));
+                result.add(contract);
             }
         }
         return result;
