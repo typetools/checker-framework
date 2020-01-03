@@ -927,8 +927,9 @@ task checkBasicStyle(group: 'Format') {
 assemble.mustRunAfter(clean)
 task buildAll {
     description 'Build all jar files, including source and javadoc jars'
-    dependsOn(clean, assemble, allJavadoc)
+    dependsOn(allJavadoc)
     subprojects { Project subproject ->
+        dependsOn("${subproject.name}:assemble")
         dependsOn("${subproject.name}:javadocJar")
         dependsOn("${subproject.name}:sourcesJar")
     }
@@ -937,6 +938,7 @@ task buildAll {
 
 task releaseBuild {
     description 'Build everything required for a release'
+    dependsOn(clean)
     doFirst {
         release = true
     }
