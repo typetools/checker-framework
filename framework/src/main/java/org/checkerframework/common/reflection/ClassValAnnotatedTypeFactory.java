@@ -88,9 +88,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param anno any AnnotationMirror
      * @return list of classnames in anno
      */
-    public static List<String> getClassNamesFromAnnotation(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, ClassBound.class)
-                || AnnotationUtils.areSameByClass(anno, ClassVal.class)) {
+    public List<String> getClassNamesFromAnnotation(AnnotationMirror anno) {
+        if (areSameByClass(anno, ClassBound.class) || areSameByClass(anno, ClassVal.class)) {
             return AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
         }
         return new ArrayList<>();
@@ -129,8 +128,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 lubClassNames.addAll(a2ClassNames);
 
                 // If either annotation is a ClassBound, the lub must also be a class bound.
-                if (AnnotationUtils.areSameByClass(a1, ClassBound.class)
-                        || AnnotationUtils.areSameByClass(a2, ClassBound.class)) {
+                if (areSameByClass(a1, ClassBound.class) || areSameByClass(a2, ClassBound.class)) {
                     return createClassBound(new ArrayList<>(lubClassNames));
                 } else {
                     return createClassVal(new ArrayList<>(lubClassNames));
@@ -157,8 +155,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // For example:
                 // GLB( @ClassVal(a,b), @ClassBound(a,c)) is @ClassVal(a)
                 // because @ClassBound(a) is not a subtype of @ClassVal(a,b)
-                if (AnnotationUtils.areSameByClass(a1, ClassVal.class)
-                        || AnnotationUtils.areSameByClass(a2, ClassVal.class)) {
+                if (areSameByClass(a1, ClassVal.class) || areSameByClass(a2, ClassVal.class)) {
                     return createClassVal(new ArrayList<>(glbClassNames));
                 } else {
                     return createClassBound(new ArrayList<>(glbClassNames));
@@ -174,16 +171,16 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             if (AnnotationUtils.areSame(subAnno, superAnno)
-                    || AnnotationUtils.areSameByClass(superAnno, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(subAnno, ClassValBottom.class)) {
+                    || areSameByClass(superAnno, UnknownClass.class)
+                    || areSameByClass(subAnno, ClassValBottom.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(subAnno, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(superAnno, ClassValBottom.class)) {
+            if (areSameByClass(subAnno, UnknownClass.class)
+                    || areSameByClass(superAnno, ClassValBottom.class)) {
                 return false;
             }
-            if (AnnotationUtils.areSameByClass(superAnno, ClassVal.class)
-                    && AnnotationUtils.areSameByClass(subAnno, ClassBound.class)) {
+            if (areSameByClass(superAnno, ClassVal.class)
+                    && areSameByClass(subAnno, ClassBound.class)) {
                 return false;
             }
 
