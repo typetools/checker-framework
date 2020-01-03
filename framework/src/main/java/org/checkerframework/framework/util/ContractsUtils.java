@@ -121,11 +121,11 @@ public class ContractsUtils {
     /**
      * Returns the contracts expressed by the given framework contract annotation.
      *
-     * @param T the specific type of {@link Contract} to use
      * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, {@link
      *     EnsuresQualifierIf}, or null
      * @param kind the kind of {@code contractAnnotation}
      * @param clazz the class to determine the return type
+     * @param <T> the specific type of {@link Contract} to use
      * @return the contracts expressed by the given annotation, or the empty set if the argument is
      *     null
      */
@@ -159,10 +159,10 @@ public class ContractsUtils {
     /**
      * Returns the contracts on method or constructor {@code executableElement}.
      *
-     * @param T the specific type of {@link Contract} to use
      * @param executableElement the method whose contracts to return
      * @param kind the kind of contracts to retrieve
      * @param clazz the class to determine the return type
+     * @param <T> the specific type of {@link Contract} to use
      * @return the contracts on {@code executableElement}
      */
     private <T extends Contract> Set<T> getContracts(
