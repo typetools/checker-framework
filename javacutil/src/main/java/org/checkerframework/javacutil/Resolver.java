@@ -282,7 +282,7 @@ public class Resolver {
                             pck,
                             names.fromString(name),
                             Kinds.KindSelector.TYP);
-            if (res.getKind() == ElementKind.CLASS) {
+            if (res.getKind().isClass() || res.getKind().isInterface()) {
                 return (ClassSymbol) res;
             } else {
                 return null;
