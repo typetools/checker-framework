@@ -807,7 +807,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 annotation,
                                 contract.contractAnnotation,
                                 expr,
-                                ((ConditionalPostcondition) contract).annoResult);
+                                ((ConditionalPostcondition) contract).resultValue);
                         break;
                     case PRECONDITION:
                         // Preconditions are checked at method invocations, not declarations
@@ -3648,7 +3648,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<Postcondition> result = new LinkedHashSet<>();
         for (Contract c : conditionalPostconditions) {
             ConditionalPostcondition p = (ConditionalPostcondition) c;
-            if (p.annoResult == b) {
+            if (p.resultValue == b) {
                 result.add(new Postcondition(p.expression, p.annotation, p.contractAnnotation));
             }
         }

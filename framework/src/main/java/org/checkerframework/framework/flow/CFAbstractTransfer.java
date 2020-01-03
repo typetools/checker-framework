@@ -1050,7 +1050,7 @@ public abstract class CFAbstractTransfer<
                 // side-effect-free, then the values that might have been changed by the method call
                 // are removed from the store before this method is called.
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
-                    if (((ConditionalPostcondition) p).annoResult) {
+                    if (((ConditionalPostcondition) p).resultValue) {
                         thenStore.insertOrRefine(r, anno);
                     } else {
                         elseStore.insertOrRefine(r, anno);
