@@ -75,6 +75,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -3889,13 +3890,6 @@ public class CFGBuilder {
             } else {
                 Element element = TreeUtils.elementFromUse(tree);
                 switch (element.getKind()) {
-                    case ANNOTATION_TYPE:
-                    case CLASS:
-                    case ENUM:
-                    case INTERFACE:
-                    case TYPE_PARAMETER:
-                        node = new ClassNameNode(tree);
-                        break;
                     case FIELD:
                         // Note that "this"/"super" is a field, but not a field access.
                         if (element.getSimpleName().contentEquals("this")) {
@@ -3914,6 +3908,10 @@ public class CFGBuilder {
                         node = new PackageNameNode(tree);
                         break;
                     default:
+                        if (ElementUtils.isTypeDeclaration(element)) {
+                            node = new ClassNameNode(tree);
+                            break;
+                        }
                         throw new BugInCF("bad element kind " + element.getKind());
                 }
             }
@@ -4173,23 +4171,15 @@ public class CFGBuilder {
             Node expr = scan(tree.getExpression(), p);
             if (!TreeUtils.isFieldAccess(tree)) {
                 // Could be a selector of a class or package
-                Node result = null;
                 Element element = TreeUtils.elementFromUse(tree);
-                switch (element.getKind()) {
-                    case ANNOTATION_TYPE:
-                    case CLASS:
-                    case ENUM:
-                    case INTERFACE:
-                        result = extendWithNode(new ClassNameNode(tree, expr));
-                        break;
-                    case PACKAGE:
-                        result = extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
-                        break;
-                    default:
-                        assert false : "Unexpected element kind: " + element.getKind();
-                        return null;
+                if (ElementUtils.isClassElement(element)) {
+                    return extendWithNode(new ClassNameNode(tree, expr));
+                } else if (element.getKind() == ElementKind.PACKAGE) {
+                    return extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
+                } else {
+                    assert false : "Unexpected element kind: " + element.getKind();
+                    return null;
                 }
-                return result;
             }
 
             Node node = new FieldAccessNode(tree, expr);
