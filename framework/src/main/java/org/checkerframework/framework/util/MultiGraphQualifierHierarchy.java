@@ -374,6 +374,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
+    @Deprecated
     public Set<? extends AnnotationMirror> getTypeQualifiers() {
         return typeQualifiers;
     }
