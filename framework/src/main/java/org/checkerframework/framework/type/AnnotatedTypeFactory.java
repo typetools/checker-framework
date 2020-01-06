@@ -201,7 +201,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected TypeArgumentInference typeArgumentInference;
 
     /**
-     * Caches the supported type qualifiers classes. Call {@link #getSupportedTypeQualifiers()}
+     * Caches the supported type qualifier classes. Call {@link #getSupportedTypeQualifiers()}
      * instead of using this field directly, as it may not have been initialized.
      */
     private final Set<Class<? extends Annotation>> supportedQuals;
@@ -914,7 +914,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an immutable set of the type qualifiers supported by this checker.
+     * Returns an immutable set of the classes corresponding to the type qualifiers supported by
+     * this checker.
      *
      * <p>Subclasses cannot override this method; they should override {@link
      * #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
@@ -932,7 +933,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an immutable set of the type qualifiers supported by this checker.
+     * Returns an immutable set of the fully qualified names of the type qualifiers supported by
+     * this checker.
      *
      * <p>Subclasses cannot override this method; they should override {@link
      * #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
