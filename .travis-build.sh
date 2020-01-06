@@ -40,9 +40,9 @@ set -o xtrace
 export SHELLOPTS
 
 if [ -d "/tmp/plume-scripts" ] ; then
-  git -C /tmp/plume-scripts pull -q > /dev/null 2>&1 \
+  (cd /tmp/plume-scripts && git pull -q) > /dev/null 2>&1
 else
-  git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+  (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
 fi
 # For debugging
 /tmp/plume-scripts/ci-info typetools
