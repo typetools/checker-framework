@@ -1,5 +1,6 @@
 package org.checkerframework.checker.i18nformatter.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -26,9 +27,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @see I18nConversionCategory
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  */
-@SubtypeOf(I18nUnknownFormat.class)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(I18nUnknownFormat.class)
 public @interface I18nFormat {
     /**
      * An array of {@link I18nConversionCategory}, indicating the types of legal remaining arguments

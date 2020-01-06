@@ -281,7 +281,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
      * @param o the Object to be compared
      * @return true if the specified Object is equal to this Map
      */
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         return map.equals(o);
     }
 
@@ -511,7 +511,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
          * @return true if this attribute name is equal to the
          *         specified attribute object
          */
-        public boolean equals(Object o) {
+        public boolean equals(@Nullable Object o) {
             if (o instanceof Name) {
                 Comparator<String> c = ASCIICaseInsensitiveComparator.CASE_INSENSITIVE_ORDER;
                 return c.compare(name, ((Name)o).name) == 0;

@@ -12,8 +12,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #units-checker Units Checker
  */
-@SubtypeOf(UnknownUnits.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({}) // forbids a programmer from writing it in a program
+@SubtypeOf(UnknownUnits.class)
 public @interface MixedUnits {}
