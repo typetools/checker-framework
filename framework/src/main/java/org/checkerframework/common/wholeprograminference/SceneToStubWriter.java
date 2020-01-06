@@ -153,10 +153,10 @@ public final class SceneToStubWriter {
      * {@code $}s in the names of inner classes with {@code .}s, so that they can be printed
      * correctly in stub files.
      *
-     * @param className a fully-qualified name
+     * @param className a binary name
      * @return the part of the name representing the class's name without its package
      */
-    private static @FullyQualifiedName String basenamePart(@BinaryName String className) {
+    private static String basenamePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
         String result = (lastdot == -1) ? className : className.substring(lastdot + 1);
         return result.replace('$', '.');
@@ -169,6 +169,7 @@ public final class SceneToStubWriter {
      * @param binaryName the binary name of a Java class
      * @return the fully-qualified name of that Java class
      */
+    @SuppressWarnings("signature") // TODO: replace with a call to an appropriate JDK method
     private static @FullyQualifiedName String convertBinaryToFullyQualified(
             @BinaryName String binaryName) {
         return binaryName.replace('$', '.');
@@ -381,7 +382,7 @@ public final class SceneToStubWriter {
      * @return the number of outer classes within which this class is nested
      */
     private int printClassDefinitions(
-            @FullyQualifiedName String basename,
+            String basename,
             @FullyQualifiedName String classname,
             AClass aClass,
             PrintWriter printWriter) {
@@ -446,7 +447,7 @@ public final class SceneToStubWriter {
     private void printMethodSignature(
             AMethod aMethod,
             String basename,
-            String fullyQualifiedClassname,
+            @FullyQualifiedName String fullyQualifiedClassname,
             PrintWriter printWriter) {
         printWriter.println();
         printWriter.print(INDENT);
@@ -520,7 +521,8 @@ public final class SceneToStubWriter {
 
         // For each class
         for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
-            String classname = classEntry.getKey();
+            @SuppressWarnings("signature") // TODO: annotate AScene library
+            @BinaryName String classname = classEntry.getKey();
             AClass aClass = classEntry.getValue();
             String pkg = packagePart(classname);
             String basename = basenamePart(classname);

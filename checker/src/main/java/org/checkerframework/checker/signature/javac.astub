@@ -19,3 +19,11 @@ package com.sun.tools.javac.code;
 class Type {
   @FullyQualifiedName String toString();
 }
+
+class Symbol {
+  @DotSeparatedIdentifiers Name getQualifiedName();
+
+  class ClassSymbol {
+    @DotSeparatedIdentifiers Name getQualifiedName();
+  }
+}

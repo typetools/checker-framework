@@ -18,6 +18,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
@@ -162,8 +163,8 @@ public class WholeProgramInferenceScenesHelper {
      * @param types mapping from fully-qualified names to Java types
      */
     public void writeScenesToStub(
-            Map<String, List<VariableElement>> enumNamesToEnumConstants,
-            Map<String, TypeElement> types) {
+            Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstants,
+            Map<@FullyQualifiedName String, TypeElement> types) {
         // Use the same directory that .jaif files would normally be written to.
         File stubDir = new File(JAIF_FILES_PATH);
         if (!stubDir.exists()) {

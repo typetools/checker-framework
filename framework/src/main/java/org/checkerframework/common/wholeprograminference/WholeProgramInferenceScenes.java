@@ -14,8 +14,10 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -91,7 +93,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * This maps from fully-qualified names of enums to their list of enum constants. The stub file
      * format requires enums to be output differently than classes.
      */
-    private final Map<String, List<VariableElement>> enumNamesToEnumConstants = new HashMap<>();
+    private final Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstants =
+            new HashMap<>();
 
     /**
      * This map goes from fully-qualified names to the TypeElement representing a class declaration,
@@ -99,7 +102,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * class declarations. The stub file format requires that the correct number of type parameters
      * be written on a class declaration.
      */
-    private final Map<String, TypeElement> types = new HashMap<>();
+    private final Map<@FullyQualifiedName String, TypeElement> types = new HashMap<>();
 
     /**
      * Create a new WholeProgramInferenceScenes.
@@ -541,7 +544,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param classSymbol the class for which to update metadata
      */
     private void updateClassMetadata(ClassSymbol classSymbol) {
-        String qualifiedName = classSymbol.getQualifiedName().toString();
+        Name qualifiedName = classSymbol.getQualifiedName();
+        @SuppressWarnings("signature") // see note in javac.astub in the signature checker
+        @FullyQualifiedName String qualifiedNameAsString = qualifiedName.toString();
         if (classSymbol.isEnum()) {
             List<VariableElement> enumConstants = new ArrayList<>();
             for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
@@ -549,10 +554,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     enumConstants.add((VariableElement) e);
                 }
             }
-            enumNamesToEnumConstants.put(qualifiedName, enumConstants);
+            enumNamesToEnumConstants.put(qualifiedNameAsString, enumConstants);
         }
-        if (!types.containsKey(qualifiedName)) {
-            types.put(qualifiedName, classSymbol);
+        if (!types.containsKey(qualifiedNameAsString)) {
+            types.put(qualifiedNameAsString, classSymbol);
         }
     }
 }
