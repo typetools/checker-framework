@@ -1,3 +1,6 @@
+Implementation details:
+ * Deprecated QualifierHierarchy#getTypeQualifiers.
+
 ---------------------------------------------------------------------------
 
 Version 3.1.0, January 3, 2020
