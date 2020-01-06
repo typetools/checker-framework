@@ -204,7 +204,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         long intLiteral = integerLiteral.longValue();
 
         if (intLiteral == 0) {
-            if (AnnotationUtils.areSameByClass(otherAnno, NonNegative.class)) {
+            if (aTypeFactory.areSameByClass(otherAnno, NonNegative.class)) {
                 List<Node> internals = splitAssignments(otherNode);
                 for (Node internal : internals) {
                     Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, internal);
@@ -212,7 +212,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
                 }
             }
         } else if (intLiteral == -1) {
-            if (AnnotationUtils.areSameByClass(otherAnno, GTENegativeOne.class)) {
+            if (aTypeFactory.areSameByClass(otherAnno, GTENegativeOne.class)) {
                 List<Node> internals = splitAssignments(otherNode);
                 for (Node internal : internals) {
                     Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, internal);
@@ -437,16 +437,16 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
          *      nn + * -> *
          *      pos + gte-1 -> nn
          */
-        if (AnnotationUtils.areSameByClass(leftAnno, Positive.class)
-                && AnnotationUtils.areSameByClass(rightAnno, Positive.class)) {
+        if (aTypeFactory.areSameByClass(leftAnno, Positive.class)
+                && aTypeFactory.areSameByClass(rightAnno, Positive.class)) {
             return POS;
         }
 
-        if (AnnotationUtils.areSameByClass(leftAnno, NonNegative.class)) {
+        if (aTypeFactory.areSameByClass(leftAnno, NonNegative.class)) {
             return rightAnno;
         }
 
-        if (AnnotationUtils.areSameByClass(rightAnno, NonNegative.class)) {
+        if (aTypeFactory.areSameByClass(rightAnno, NonNegative.class)) {
             return leftAnno;
         }
 
@@ -805,16 +805,34 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         return UNKNOWN;
     }
 
+    /**
+     * Returns true if the argument is the @Positive type annotation.
+     *
+     * @param anm the annotation to test
+     * @return true if the the argument is the @Positive type annotation
+     */
     private boolean isPositive(AnnotationMirror anm) {
-        return AnnotationUtils.areSameByClass(anm, Positive.class);
+        return aTypeFactory.areSameByClass(anm, Positive.class);
     }
 
+    /**
+     * Returns true if the argument is the @NonNegative type annotation (or a stronger one).
+     *
+     * @param anm the annotation to test
+     * @return true if the the argument is the @NonNegative type annotation
+     */
     private boolean isNonNegative(AnnotationMirror anm) {
-        return AnnotationUtils.areSameByClass(anm, NonNegative.class) || isPositive(anm);
+        return aTypeFactory.areSameByClass(anm, NonNegative.class) || isPositive(anm);
     }
 
+    /**
+     * Returns true if the argument is the @GTENegativeOne type annotation (or a stronger one).
+     *
+     * @param anm the annotation to test
+     * @return true if the the argument is the @GTENegativeOne type annotation
+     */
     private boolean isGTEN1(AnnotationMirror anm) {
-        return AnnotationUtils.areSameByClass(anm, GTENegativeOne.class) || isNonNegative(anm);
+        return aTypeFactory.areSameByClass(anm, GTENegativeOne.class) || isNonNegative(anm);
     }
 
     private AnnotationMirror getLowerBoundAnnotation(

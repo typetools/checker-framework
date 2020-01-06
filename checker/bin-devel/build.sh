@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
+echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`
 
 # Fail the whole script if any command fails
 set -e
@@ -27,9 +27,9 @@ else
 fi
 
 if [ -d "/tmp/plume-scripts" ] ; then
-  git -C /tmp/plume-scripts pull -q > /dev/null 2>&1
+  (cd /tmp/plume-scripts && git pull -q) > /dev/null 2>&1
 else
-  git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+  (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
 fi
 
 # This does not work:
@@ -76,4 +76,4 @@ else
   ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
 fi
 
-echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
+echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`

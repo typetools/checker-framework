@@ -178,7 +178,7 @@ public class NullnessTransfer
                     secondValue != null
                             ? secondValue.getAnnotations()
                             : AnnotationUtils.createAnnotationSet();
-            if (AnnotationUtils.containsSameByClass(secondAnnos, PolyNull.class)) {
+            if (nullnessTypeFactory.containsSameByClass(secondAnnos, PolyNull.class)) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
                 thenStore.setPolyNullNull(true);
