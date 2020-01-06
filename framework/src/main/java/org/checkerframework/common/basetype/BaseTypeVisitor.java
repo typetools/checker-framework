@@ -379,6 +379,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
+     * Callback of annotation consistency condition in {@link
+     * BaseTypeVisitor#checkExtendsImplements(ClassTree)}
+     *
+     * @param classAnno annotation on class declaration
+     * @param superAnno annotation on extends or implements clause
+     * @return true if the annotations are consistent, otherwise false
+     */
+    protected boolean extendsImplementsAnnoConsistency(
+            AnnotationMirror classAnno, AnnotationMirror superAnno) {
+        return atypeFactory.getQualifierHierarchy().isSubtype(classAnno, superAnno);
+    }
+
+    /**
      * If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
      *
      * <p>Also validate the types of the extends and implements clauses.
@@ -405,7 +418,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             for (AnnotationMirror classAnno : classBounds) {
                 AnnotationMirror extendsAnno =
                         qualifierHierarchy.findAnnotationInSameHierarchy(extendsAnnos, classAnno);
-                if (!qualifierHierarchy.isSubtype(classAnno, extendsAnno)) {
+                if (!extendsImplementsAnnoConsistency(classAnno, extendsAnno)) {
                     checker.report(
                             Result.failure(
                                     "declaration.inconsistent.with.extends.clause",
@@ -424,7 +437,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 AnnotationMirror implementsAnno =
                         qualifierHierarchy.findAnnotationInSameHierarchy(
                                 implementsClauseAnnos, classAnno);
-                if (!qualifierHierarchy.isSubtype(classAnno, implementsAnno)) {
+                if (!extendsImplementsAnnoConsistency(classAnno, implementsAnno)) {
                     checker.report(
                             Result.failure(
                                     "declaration.inconsistent.with.implements.clause",
