@@ -657,7 +657,7 @@ public class IdentityHashMap<K, V>
      * @see Object#equals(Object)
      */
     @Pure
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (o == this) {
             return true;
         } else if (o instanceof IdentityHashMap) {
@@ -904,7 +904,7 @@ public class IdentityHashMap<K, V>
                 return oldValue;
             }
 
-            public boolean equals(Object o) {
+            public boolean equals(@Nullable Object o) {
                 if (index < 0)
                     return super.equals(o);
 

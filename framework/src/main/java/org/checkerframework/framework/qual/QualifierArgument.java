@@ -1,5 +1,6 @@
 package org.checkerframework.framework.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -32,8 +33,9 @@ import java.lang.annotation.Target;
  * @see ConditionalPostconditionAnnotation
  * @see PreconditionAnnotation
  */
-@Target(ElementType.METHOD)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
 public @interface QualifierArgument {
     /**
      * Specifies the name of the argument of the qualifier, that is passed the values held in the

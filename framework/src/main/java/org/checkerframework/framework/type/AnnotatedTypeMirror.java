@@ -331,7 +331,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {
         for (AnnotationMirror annoMirror : annotations) {
-            if (AnnotationUtils.areSameByClass(annoMirror, annoClass)) {
+            if (atypeFactory.areSameByClass(annoMirror, annoClass)) {
                 return annoMirror;
             }
         }
@@ -362,13 +362,9 @@ public abstract class AnnotatedTypeMirror {
         List<? extends AnnotationMirror> typeAnnotations =
                 this.getUnderlyingType().getAnnotationMirrors();
 
-        Set<? extends AnnotationMirror> validAnnotations =
-                atypeFactory.getQualifierHierarchy().getTypeQualifiers();
         for (AnnotationMirror explicitAnno : typeAnnotations) {
-            for (AnnotationMirror validAnno : validAnnotations) {
-                if (AnnotationUtils.areSameByName(explicitAnno, validAnno)) {
-                    explicitAnnotations.add(explicitAnno);
-                }
+            if (atypeFactory.isSupportedQualifier(explicitAnno)) {
+                explicitAnnotations.add(explicitAnno);
             }
         }
 
@@ -412,7 +408,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public AnnotationMirror getEffectiveAnnotation(Class<? extends Annotation> annoClass) {
         for (AnnotationMirror annoMirror : getEffectiveAnnotations()) {
-            if (AnnotationUtils.areSameByClass(annoMirror, annoClass)) {
+            if (atypeFactory.areSameByClass(annoMirror, annoClass)) {
                 return annoMirror;
             }
         }

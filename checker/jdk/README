@@ -10,6 +10,9 @@ from checker/dist/, never from here.
 
 If you make a change within this directory, see
 https://github.com/typetools/annotated-libraries
+In particular, to rebuild the annotated JDK, run (from the
+checker-framework directory):
+./gradlew buildJdk -PuseLocalJdk
 
 Each subdirectory of this directory contains annotations for one type
 system, in a complete copy of JDK 8 source files.  If you wish to create a

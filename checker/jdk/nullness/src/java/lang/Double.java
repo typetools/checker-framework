@@ -29,6 +29,7 @@ import sun.misc.FloatingDecimal;
 import sun.misc.FpUtils;
 import sun.misc.DoubleConsts;
 
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -816,6 +817,7 @@ public final class Double extends Number implements Comparable<Double> {
      * @see java.lang.Double#doubleToLongBits(double)
      */
     @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object obj) {
         return (obj instanceof Double)
                && (doubleToLongBits(((Double)obj).value) ==

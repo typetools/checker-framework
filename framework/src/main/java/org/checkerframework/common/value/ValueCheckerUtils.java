@@ -10,14 +10,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.common.value.qual.ArrayLen;
-import org.checkerframework.common.value.qual.BoolVal;
-import org.checkerframework.common.value.qual.BottomVal;
-import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -47,7 +43,8 @@ public class ValueCheckerUtils {
             case ARRAY:
                 return getArrayClassObject(((ArrayType) type).getComponentType());
             case DECLARED:
-                String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+                @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
+                @DotSeparatedIdentifiers String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
                 if (typeString.equals("<nulltype>")) {
                     return Object.class;
                 }
@@ -95,27 +92,32 @@ public class ValueCheckerUtils {
      */
     public static List<?> getValuesCastedToType(AnnotationMirror anno, TypeMirror castTo) {
         Class<?> castType = ValueCheckerUtils.getClassFromType(castTo);
-        List<?> values = null;
-
-        if (AnnotationUtils.areSameByClass(anno, DoubleVal.class)) {
-            values = convertDoubleVal(anno, castType, castTo);
-        } else if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
-            List<Long> longs = ValueAnnotatedTypeFactory.getIntValues(anno);
-            values = convertIntVal(longs, castType, castTo);
-        } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
-            Range range = ValueAnnotatedTypeFactory.getRange(anno);
-            List<Long> longs = getValuesFromRange(range, Long.class);
-            values = convertIntVal(longs, castType, castTo);
-        } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
-            values = convertStringVal(anno, castType);
-        } else if (AnnotationUtils.areSameByClass(anno, BoolVal.class)) {
-            values = convertBoolVal(anno, castType);
-        } else if (AnnotationUtils.areSameByClass(anno, BottomVal.class)) {
-            values = new ArrayList<>();
-        } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class)) {
-            values = null;
-        } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
-            values = new ArrayList<>();
+        List<?> values;
+        switch (AnnotationUtils.annotationName(anno)) {
+            case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
+                values = convertDoubleVal(anno, castType, castTo);
+                break;
+            case ValueAnnotatedTypeFactory.INTVAL_NAME:
+                List<Long> longs = ValueAnnotatedTypeFactory.getIntValues(anno);
+                values = convertIntVal(longs, castType, castTo);
+                break;
+            case ValueAnnotatedTypeFactory.INTRANGE_NAME:
+                Range range = ValueAnnotatedTypeFactory.getRange(anno);
+                List<Long> rangeValues = getValuesFromRange(range, Long.class);
+                values = convertIntVal(rangeValues, castType, castTo);
+                break;
+            case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+                values = convertStringVal(anno, castType);
+                break;
+            case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
+                values = convertBoolVal(anno, castType);
+                break;
+            case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME:
+            case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+                values = new ArrayList<>();
+                break;
+            default:
+                values = null;
         }
         return values;
     }

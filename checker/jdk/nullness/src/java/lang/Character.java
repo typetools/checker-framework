@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -615,6 +616,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
          * guarantee holds for all subclasses.
          */
         @Pure
+        @EnsuresNonNullIf(expression="#1", result=true)
         public final boolean equals(@Nullable Object obj) {
             return (this == obj);
         }
@@ -4632,6 +4634,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      *          {@code false} otherwise.
      */
     @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof Character) {
             return value == ((Character)obj).charValue();
