@@ -12,7 +12,7 @@ plugins {
 apply plugin: 'org.checkerframework'
 
 dependencies {
-    ext.checkerFrameworkVersion = '3.0.1'
+    ext.checkerFrameworkVersion = '3.1.0'
     compileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
     testCompileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
     checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
