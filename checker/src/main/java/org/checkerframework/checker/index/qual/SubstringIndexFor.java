@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -30,9 +31,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #index-substringindex Index Checker
  */
-@SubtypeOf(SubstringIndexUnknown.class)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(SubstringIndexUnknown.class)
 public @interface SubstringIndexFor {
     /**
      * Sequences, each of which is longer than the annotated expression plus the corresponding

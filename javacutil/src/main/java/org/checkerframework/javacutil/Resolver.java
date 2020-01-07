@@ -24,11 +24,14 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A Utility class to find symbols corresponding to string references. */
 // This class reflectively accesses jdk.compiler/com.sun.tools.javac.comp.
@@ -156,7 +159,7 @@ public class Resolver {
      * @param path the tree path to the local scope
      * @return the {@code PackageSymbol} for the package if it is found, {@code null} otherwise
      */
-    public PackageSymbol findPackage(String name, TreePath path) {
+    public @Nullable PackageSymbol findPackage(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
             Env<AttrContext> env = getEnvForPath(path);
@@ -186,9 +189,9 @@ public class Resolver {
      * @param name the name of the field
      * @param type the type of the receiver (i.e., the type in which to look for the field).
      * @param path the tree path to the local scope
-     * @return the element for the field
+     * @return the element for the field, {@code null} otherwise
      */
-    public VariableElement findField(String name, TypeMirror type, TreePath path) {
+    public @Nullable VariableElement findField(String name, TypeMirror type, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
             Env<AttrContext> env = getEnvForPath(path);
@@ -219,9 +222,10 @@ public class Resolver {
      *
      * @param name the name of the local variable
      * @param path the tree path to the local scope
-     * @return the element for the local variable
+     * @return the element for the local variable, {@code null} otherwise
      */
-    public VariableElement findLocalVariableOrParameterOrField(String name, TreePath path) {
+    public @Nullable VariableElement findLocalVariableOrParameterOrField(
+            String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
             Env<AttrContext> env = getEnvForPath(path);
@@ -267,7 +271,7 @@ public class Resolver {
      * @param path the tree path to the local scope
      * @return the {@code ClassSymbol} for the class if it is found, {@code null} otherwise
      */
-    public ClassSymbol findClassInPackage(String name, PackageSymbol pck, TreePath path) {
+    public @Nullable ClassSymbol findClassInPackage(String name, PackageSymbol pck, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
             Env<AttrContext> env = getEnvForPath(path);
@@ -278,7 +282,7 @@ public class Resolver {
                             pck,
                             names.fromString(name),
                             Kinds.KindSelector.TYP);
-            if (res.getKind() == ElementKind.CLASS) {
+            if (ElementUtils.isClassElement(res)) {
                 return (ClassSymbol) res;
             } else {
                 return null;
@@ -367,12 +371,13 @@ public class Resolver {
         setField(methodContext, "attrMode", DeferredAttr.AttrMode.CHECK);
         @SuppressWarnings("rawtypes")
         List<?> phases = (List) getField(resolve, "methodResolutionSteps");
+        assert phases != null : "@AssumeAssertion(nullness): assumption";
         setField(methodContext, "step", phases.get(1));
         return methodContext;
     }
 
     /** Reflectively set a field. */
-    private void setField(Object receiver, String fieldName, Object value)
+    private void setField(Object receiver, String fieldName, @Nullable Object value)
             throws NoSuchFieldException, IllegalAccessException {
         Field f = receiver.getClass().getDeclaredField(fieldName);
         f.setAccessible(true);
@@ -380,28 +385,30 @@ public class Resolver {
     }
 
     /** Reflectively get the value of a field. */
-    private Object getField(Object receiver, String fieldName)
+    private @Nullable Object getField(Object receiver, String fieldName)
             throws NoSuchFieldException, IllegalAccessException {
         Field f = receiver.getClass().getDeclaredField(fieldName);
         f.setAccessible(true);
         return f.get(receiver);
     }
 
+    /** Wrap a method invocation on the {code resolve} object. */
     private Symbol wrapInvocationOnResolveInstance(Method method, Object... args) {
         return wrapInvocation(resolve, method, args);
     }
 
-    private Symbol wrapInvocation(Object receiver, Method method, Object... args) {
+    /** Wrap a method invocation. */
+    private Symbol wrapInvocation(Object receiver, Method method, @Nullable Object... args) {
         try {
-            return (Symbol) method.invoke(receiver, args);
+            @SuppressWarnings("nullness") // assume arguments are OK
+            @NonNull Symbol res = (Symbol) method.invoke(receiver, args);
+            return res;
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            Error err =
-                    new AssertionError(
-                            String.format(
-                                    "Unexpected Reflection error in wrapInvocation(%s, %s, %s)",
-                                    receiver, method, args));
-            err.initCause(e);
-            throw err;
+            throw new BugInCF(
+                    String.format(
+                            "Unexpected Reflection error in wrapInvocation(%s, %s, %s)",
+                            receiver, method, Arrays.toString(args)),
+                    e);
         }
     }
 }

@@ -236,7 +236,8 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
 
     @Override
     public void extractAndApply() throws UnexpectedAnnotationLocationException {
-        ElementAnnotationUtil.addAnnotationsFromElement(type, element.getAnnotationMirrors());
+        ElementAnnotationUtil.addDeclarationAnnotationsFromElement(
+                type, element.getAnnotationMirrors());
         super.extractAndApply();
     }
 }

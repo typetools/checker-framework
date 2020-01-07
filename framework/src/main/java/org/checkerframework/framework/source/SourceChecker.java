@@ -15,8 +15,10 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.net.URL;
@@ -108,11 +110,6 @@ import org.checkerframework.javacutil.UserError;
     "skipDefs",
     "onlyDefs",
 
-    // Whether to ignore all subtype tests for type arguments that
-    // were inferred for a raw type
-    // org.checkerframework.framework.type.TypeHierarchy.isSubtypeTypeArguments
-    "ignoreRawTypeArguments",
-
     // Unsoundly ignore side effects
     "assumeSideEffectFree",
 
@@ -169,6 +166,11 @@ import org.checkerframework.javacutil.UserError;
     // See Issue 979.
     "conservativeUninferredTypeArguments",
 
+    // Whether to ignore all subtype tests for type arguments that
+    // were inferred for a raw type. Defaults to true.
+    // org.checkerframework.framework.type.TypeHierarchy.isSubtypeTypeArguments
+    "ignoreRawTypeArguments",
+
     ///
     /// Type-checking modes:  enable/disable functionality
     ///
@@ -199,7 +201,7 @@ import org.checkerframework.javacutil.UserError;
     // org.checkerframework.common.basetype.BaseTypeChecker.warnUnneededSuppressions
     // org.checkerframework.framework.source.SourceChecker.warnUnneededSuppressions
     // org.checkerframework.framework.source.SourceChecker.shouldSuppressWarnings(javax.lang.model.element.Element, java.lang.String)
-    // org.checkerframework.framework.source.SourceeVisitor.checkForSuppressWarningsAnno
+    // org.checkerframework.framework.source.SourceVisitor.checkForSuppressWarningsAnno
     "warnUnneededSuppressions",
 
     // Require that warning suppression annotations contain a checker key as a prefix in order for
@@ -243,6 +245,9 @@ import org.checkerframework.javacutil.UserError;
     ///
 
     /// Amount of detail in messages
+
+    // Print info about git repository from which the Checker Framework was compiled
+    "printGitProperties",
 
     // Whether to print @InvisibleQualifier marked annotations
     // org.checkerframework.framework.type.AnnotatedTypeMirror.toString()
@@ -346,6 +351,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
     // to override.
+
+    /** True if the git.properties file has been printed. */
+    private static boolean gitPropertiesPrinted = false;
 
     /** The @SuppressWarnings key that will suppress warnings for all checkers. */
     public static final String SUPPRESS_ALL_KEY = "all";
@@ -462,12 +470,27 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // This is used to trigger AggregateChecker's setProcessingEnvironment.
         setProcessingEnvironment(env);
 
+        // Keep in sync with check in checker-framework/build.gradle and text in installation
+        // section of manual.
         int jreVersion = PluginUtil.getJreVersion();
         if (jreVersion < 8) {
             throw new UserError(
+                    "The Checker Framework must be run under at least JDK 8.  You are using version %d.  Please use JDK 8 or JDK 11.",
+                    jreVersion);
+        } else if (jreVersion > 12) {
+            throw new UserError(
                     String.format(
-                            "The Checker Framework must be run under at least JDK 8.  You are using version %d.",
+                            "The Checker Framework cannot be run with JDK 13+.  You are using version %d. Please use JDK 8 or JDK 11.",
                             jreVersion));
+        } else if (jreVersion != 8 && jreVersion != 11) {
+            message(
+                    Kind.WARNING,
+                    "The Checker Framework is only tested with JDK 8 and JDK 11. You are using version %d. Please use JDK 8 or JDK 11.",
+                    jreVersion);
+        }
+
+        if (hasOption("printGitProperties")) {
+            printGitProperties();
         }
     }
 
@@ -902,9 +925,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.messages = getMessages();
 
         this.visitor = createSourceVisitor();
-
-        // TODO: hack to clear out static caches.
-        AnnotationUtils.clear();
     }
 
     /**
@@ -1125,6 +1145,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 swTree);
     }
 
+    /** The name of the @SuppressWarnings annotation. */
+    private final String suppressWarningsClassName = SuppressWarnings.class.getCanonicalName();
     /**
      * Finds the tree that is a {@code @SuppressWarnings} annotation.
      *
@@ -1142,9 +1164,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         for (AnnotationTree annotationTree : annotations) {
-            if (AnnotationUtils.areSameByClass(
+            if (AnnotationUtils.areSameByName(
                     TreeUtils.annotationFromAnnotationTree(annotationTree),
-                    SuppressWarnings.class)) {
+                    suppressWarningsClassName)) {
                 return annotationTree;
             }
         }
@@ -1183,34 +1205,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
         return sb.toString();
     }
-
-    // Uses private fields, need to rewrite.
-    // public void dumpState() {
-    //     System.out.printf("SourceChecker = %s%n", this);
-    //     System.out.printf("  env = %s%n", env);
-    //     System.out.printf(
-    //             "    env.elementUtils = %s%n", ((JavacProcessingEnvironment) env).elementUtils);
-    //     System.out.printf(
-    //             "      env.elementUtils.types = %s%n",
-    //             ((JavacProcessingEnvironment) env).elementUtils.types);
-    //     System.out.printf(
-    //             "      env.elementUtils.enter = %s%n",
-    //             ((JavacProcessingEnvironment) env).elementUtils.enter);
-    //     System.out.printf(
-    //             "    env.typeUtils = %s%n", ((JavacProcessingEnvironment) env).typeUtils);
-    //     System.out.printf("  trees = %s%n", trees);
-    //     System.out.printf(
-    //             "    trees.enter = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).enter);
-    //     System.out.printf(
-    //             "    trees.elements = %s%n",
-    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements);
-    //     System.out.printf(
-    //             "      trees.elements.types = %s%n",
-    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements.types);
-    //     System.out.printf(
-    //             "      trees.elements.enter = %s%n",
-    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements.enter);
-    // }
 
     /**
      * Returns the localized long message corresponding for this key, and returns the defValue if no
@@ -2192,7 +2186,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * also be used from primitive types, which don't have an element.
      *
      * <p>Checkers that require their annotations not to be checked on certain JDK classes may
-     * override this method to skip them. They shall call {@code super.shouldSkipUses(typerName)} to
+     * override this method to skip them. They shall call {@code super.shouldSkipUses(typeName)} to
      * also skip the classes matching the pattern.
      *
      * @param typeName the fully-qualified name of a type
@@ -2291,5 +2285,23 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     @Override
     public final SourceVersion getSupportedSourceVersion() {
         return SourceVersion.latest();
+    }
+
+    /** Print information about the git repository from which the Checker Framework was compiled. */
+    void printGitProperties() {
+        if (gitPropertiesPrinted) {
+            return;
+        }
+        gitPropertiesPrinted = true;
+
+        try (InputStream in = getClass().getResourceAsStream("/git.properties");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in)); ) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            System.out.println("IOException while reading git.properties: " + e.getMessage());
+        }
     }
 }

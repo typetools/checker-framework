@@ -2,6 +2,7 @@ package org.checkerframework.framework.util.defaults;
 
 import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -26,14 +27,14 @@ public class Default implements Comparable<Default> {
     public int compareTo(Default other) {
         int locationOrder = location.compareTo(other.location);
         if (locationOrder == 0) {
-            return AnnotationUtils.annotationOrdering().compare(anno, other.anno);
+            return AnnotationUtils.compareAnnotationMirrors(anno, other.anno);
         } else {
             return locationOrder;
         }
     }
 
     @Override
-    public boolean equals(Object thatObj) {
+    public boolean equals(@Nullable Object thatObj) {
         if (thatObj == this) {
             return true;
         }

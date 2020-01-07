@@ -865,7 +865,7 @@ public final class URL implements java.io.Serializable {
      * @return  {@code true} if the objects are the same;
      *          {@code false} otherwise.
      */
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof URL))
             return false;
         URL u2 = (URL)obj;

@@ -42,7 +42,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.Heuristics;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -290,7 +289,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(typeMirror);
             // Don't issue an invalid type warning for creations of objects of interned classes;
             // instead, issue an interned.object.creation if required.
-            if (AnnotationUtils.containsSameByClass(bounds, Interned.class)) {
+            if (atypeFactory.containsSameByClass(bounds, Interned.class)) {
                 ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(newClassTree);
                 AnnotatedExecutableType constructor = fromUse.executableType;
                 if (!checkCreationOfInternedObject(newClassTree, constructor)) {
@@ -826,7 +825,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         }
         if (classElt != null) {
             Set<AnnotationMirror> bound = atypeFactory.getTypeDeclarationBounds(tm);
-            return AnnotationUtils.containsSameByClass(bound, Interned.class);
+            return atypeFactory.containsSameByClass(bound, Interned.class);
         }
         return false;
     }

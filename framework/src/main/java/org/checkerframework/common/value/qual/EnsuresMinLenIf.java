@@ -1,5 +1,6 @@
 package org.checkerframework.common.value.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -18,9 +19,10 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * @see MinLen
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
-@ConditionalPostconditionAnnotation(qualifier = MinLen.class)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+@ConditionalPostconditionAnnotation(qualifier = MinLen.class)
 @InheritedAnnotation
 public @interface EnsuresMinLenIf {
     /**

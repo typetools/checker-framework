@@ -6,21 +6,24 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.javacutil.BugInCF;
 
 /** Base class of the {@link Block} implementation hierarchy. */
 public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements ExceptionBlock {
 
+    /** The node of this block. */
+    protected @Nullable Node node;
+
     /** Set of exceptional successors. */
     protected final Map<TypeMirror, Set<Block>> exceptionalSuccessors;
 
+    /** Create an empty exceptional block. */
     public ExceptionBlockImpl() {
         super(BlockType.EXCEPTION_BLOCK);
         exceptionalSuccessors = new HashMap<>();
     }
-
-    /** The node of this block. */
-    protected Node node;
 
     /** Set the node. */
     public void setNode(Node c) {
@@ -30,6 +33,9 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
 
     @Override
     public Node getNode() {
+        if (node == null) {
+            throw new BugInCF("Requested node for exception block before initialization");
+        }
         return node;
     }
 

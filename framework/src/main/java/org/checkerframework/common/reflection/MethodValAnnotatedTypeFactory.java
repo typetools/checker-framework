@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.ClassBound;
@@ -185,16 +186,16 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             if (AnnotationUtils.areSame(subAnno, superAnno)
-                    || AnnotationUtils.areSameByClass(superAnno, UnknownMethod.class)
-                    || AnnotationUtils.areSameByClass(subAnno, MethodValBottom.class)) {
+                    || areSameByClass(superAnno, UnknownMethod.class)
+                    || areSameByClass(subAnno, MethodValBottom.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(subAnno, UnknownMethod.class)
-                    || AnnotationUtils.areSameByClass(superAnno, MethodValBottom.class)) {
+            if (areSameByClass(subAnno, UnknownMethod.class)
+                    || areSameByClass(superAnno, MethodValBottom.class)) {
                 return false;
             }
-            assert AnnotationUtils.areSameByClass(subAnno, MethodVal.class)
-                            && AnnotationUtils.areSameByClass(superAnno, MethodVal.class)
+            assert areSameByClass(subAnno, MethodVal.class)
+                            && areSameByClass(superAnno, MethodVal.class)
                     : "Unexpected annotation in MethodVal";
             List<MethodSignature> subSignatures = getListOfMethodSignatures(subAnno);
             List<MethodSignature> superSignatures = getListOfMethodSignatures(superAnno);
@@ -373,7 +374,7 @@ class MethodSignature {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }

@@ -1,5 +1,6 @@
 package org.checkerframework.common.value.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -20,9 +21,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
-@SubtypeOf(UnknownVal.class)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@SubtypeOf(UnknownVal.class)
 public @interface IntRange {
     /** Smallest value in the range, inclusive. */
     long from() default Long.MIN_VALUE;

@@ -22,6 +22,8 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.plumelib.util.ImmutableTypes;
 
 /** A utility class that helps with {@link TypeMirror}s. */
@@ -40,7 +42,7 @@ public final class TypesUtils {
      * @param type the declared type
      * @return the name corresponding to that type
      */
-    public static Name getQualifiedName(DeclaredType type) {
+    public static @DotSeparatedIdentifiers Name getQualifiedName(DeclaredType type) {
         TypeElement element = (TypeElement) type.asElement();
         return element.getQualifiedName();
     }
@@ -321,9 +323,10 @@ public final class TypesUtils {
      * Get the type parameter for this wildcard from the underlying type's bound field This field is
      * sometimes null, in that case this method will return null.
      *
-     * @return the TypeParameterElement the wildcard is an argument to
+     * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
      */
-    public static TypeParameterElement wildcardToTypeParam(final Type.WildcardType wildcard) {
+    public static @Nullable TypeParameterElement wildcardToTypeParam(
+            final Type.WildcardType wildcard) {
 
         final Element typeParamElement;
         if (wildcard.bound != null) {
@@ -348,7 +351,7 @@ public final class TypesUtils {
             if (w.isSuperBound()) { // returns true if w is unbound
                 Symtab syms = Symtab.instance(context);
                 // w.bound is null if the wildcard is from bytecode.
-                return w.bound == null ? syms.objectType : w.bound.bound;
+                return w.bound == null ? syms.objectType : w.bound.getUpperBound();
             } else {
                 return wildUpperBound(w.type, env);
             }
@@ -385,7 +388,9 @@ public final class TypesUtils {
             TypeMirror componentType = typeFromClass(clazz.getComponentType(), types, elements);
             return types.getArrayType(componentType);
         } else {
-            TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
+            String name = clazz.getCanonicalName();
+            assert name != null : "@AssumeAssertion(nullness): assumption";
+            TypeElement element = elements.getTypeElement(name);
             if (element == null) {
                 throw new BugInCF("Unrecognized class: " + clazz);
             }
@@ -437,10 +442,10 @@ public final class TypesUtils {
      * bounded type extends other bounded types, this method will iterate through their bounds until
      * a class, interface, or intersection is found.
      *
-     * @return a type that is not a wildcard or typevar, or null if this type is an unbounded
-     *     wildcard
+     * @return a type that is not a wildcard or typevar, or {@code null} if this type is an
+     *     unbounded wildcard
      */
-    public static TypeMirror findConcreteUpperBound(final TypeMirror boundedType) {
+    public static @Nullable TypeMirror findConcreteUpperBound(final TypeMirror boundedType) {
         TypeMirror effectiveUpper = boundedType;
         outerLoop:
         while (true) {
@@ -484,8 +489,8 @@ public final class TypesUtils {
         return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(typeVar)).isCaptured();
     }
 
-    /** If typeVar is a captured wildcard, returns that wildcard; otherwise returns null. */
-    public static WildcardType getCapturedWildcard(TypeVariable typeVar) {
+    /** If typeVar is a captured wildcard, returns that wildcard; otherwise returns {@code null}. */
+    public static @Nullable WildcardType getCapturedWildcard(TypeVariable typeVar) {
         if (isCaptured(typeVar)) {
             return ((CapturedType) TypeAnnotationUtils.unannotatedType(typeVar)).wildcard;
         }
@@ -634,19 +639,14 @@ public final class TypesUtils {
      *
      * @param type whose element is returned
      * @return the type element for {@code type} if {@code type} is a class, interface, annotation
-     *     type, or enum; otherwise, returns null
+     *     type, or enum; otherwise, returns {@code null}
      */
-    public static TypeElement getTypeElement(TypeMirror type) {
+    public static @Nullable TypeElement getTypeElement(TypeMirror type) {
         Element element = ((Type) type).asElement();
-        switch (element.getKind()) {
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-                return (TypeElement) element;
-            default:
-                return null;
+        if (ElementUtils.isClassElement(element)) {
+            return (TypeElement) element;
         }
+        return null;
     }
 
     /**

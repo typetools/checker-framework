@@ -5,20 +5,41 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.javacutil.BugInCF;
 
 /** Base class for sets that are more efficient than HashSet for 0 and 1 elements. */
-public abstract class AbstractMostlySingleton<T> implements Set<T> {
+public abstract class AbstractMostlySingleton<T extends Object> implements Set<T> {
 
+    /** The possible states of the collection. */
     public enum State {
+        /** An empty set. */
         EMPTY,
+        /** A singleton set. */
         SINGLETON,
+        /** A set of arbitrary size. */
         ANY
     }
 
+    /** The current state. */
     protected State state;
-    protected T value;
-    protected Collection<T> set;
+    /** The current value, non-null when the state is SINGLETON. */
+    protected @Nullable T value;
+    /** The wrapped collection, non-null when the state is ANY. */
+    protected @Nullable Collection<T> set;
+
+    /** Create an AbstractMostlySingleton. */
+    protected AbstractMostlySingleton(State s) {
+        this.state = s;
+        this.value = null;
+    }
+
+    /** Create an AbstractMostlySingleton. */
+    protected AbstractMostlySingleton(State s, T v) {
+        this.state = s;
+        this.value = v;
+    }
 
     @Override
     public int size() {
@@ -28,6 +49,7 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
             case SINGLETON:
                 return 1;
             case ANY:
+                assert set != null : "@AssumeAssertion(nullness): set initialized before";
                 return set.size();
             default:
                 throw new BugInCF("Unhandled state " + state);
@@ -57,6 +79,8 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
                     public T next() {
                         if (hasNext) {
                             hasNext = false;
+                            assert value != null
+                                    : "@AssumeAssertion(nullness): previous add is non-null";
                             return value;
                         }
                         throw new NoSuchElementException();
@@ -68,6 +92,7 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
                     }
                 };
             case ANY:
+                assert set != null : "@AssumeAssertion(nullness): set initialized before";
                 return set.iterator();
             default:
                 throw new BugInCF("Unhandled state " + state);
@@ -82,6 +107,7 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
             case SINGLETON:
                 return "[" + value + "]";
             case ANY:
+                assert set != null : "@AssumeAssertion(nullness): set initialized before";
                 return set.toString();
             default:
                 throw new BugInCF("Unhandled state " + state);
@@ -103,12 +129,12 @@ public abstract class AbstractMostlySingleton<T> implements Set<T> {
     }
 
     @Override
-    public <S> S[] toArray(S[] a) {
+    public <S> @Nullable S @PolyNull [] toArray(S @PolyNull [] a) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean remove(Object o) {
+    public boolean remove(@Nullable Object o) {
         throw new UnsupportedOperationException();
     }
 

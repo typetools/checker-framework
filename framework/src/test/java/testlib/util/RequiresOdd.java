@@ -11,10 +11,10 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * A precondition annotation to indicate that a method requires certain expressions to be {@link
  * Odd}.
  */
-@PreconditionAnnotation(qualifier = Odd.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+@PreconditionAnnotation(qualifier = Odd.class)
 public @interface RequiresOdd {
     String[] value();
 }

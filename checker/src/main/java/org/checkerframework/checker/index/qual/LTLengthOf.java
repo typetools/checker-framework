@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -30,9 +31,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @see IndexFor
  * @checker_framework.manual #index-checker Index Checker
  */
-@SubtypeOf(LTEqLengthOf.class)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(LTEqLengthOf.class)
 public @interface LTLengthOf {
     /** Sequences, each of which is longer than the annotated expression's value. */
     @JavaExpression
