@@ -601,7 +601,7 @@ public interface Spliterator<T> {
     public interface OfPrimitive<T, T_CONS, T_SPLITR extends Spliterator.OfPrimitive<T, T_CONS, T_SPLITR>>
             extends Spliterator<T> {
         @Override
-        T_SPLITR trySplit();
+        @Nullable T_SPLITR trySplit();
 
         /**
          * If a remaining element exists, performs the given action on it,
@@ -646,7 +646,7 @@ public interface Spliterator<T> {
     public interface OfInt extends OfPrimitive<Integer, IntConsumer, OfInt> {
 
         @Override
-        OfInt trySplit();
+        @Nullable OfInt trySplit();
 
         @Override
         boolean tryAdvance(IntConsumer action);
@@ -710,7 +710,7 @@ public interface Spliterator<T> {
     public interface OfLong extends OfPrimitive<Long, LongConsumer, OfLong> {
 
         @Override
-        OfLong trySplit();
+        @Nullable OfLong trySplit();
 
         @Override
         boolean tryAdvance(LongConsumer action);
@@ -774,7 +774,7 @@ public interface Spliterator<T> {
     public interface OfDouble extends OfPrimitive<Double, DoubleConsumer, OfDouble> {
 
         @Override
-        OfDouble trySplit();
+        @Nullable OfDouble trySplit();
 
         @Override
         boolean tryAdvance(DoubleConsumer action);
