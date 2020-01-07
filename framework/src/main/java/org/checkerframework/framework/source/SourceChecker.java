@@ -1358,6 +1358,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             messageText = messageText.replaceAll("\n", LINE_SEPARATOR);
         }
 
+        // TODO: when #979 is fixed, remove this hack
+        if (!this.hasOption("conservativeUninferredTypeArguments")
+                && messageText.contains("INFERENCE FAILED")) {
+            return;
+        }
+
         if (source instanceof Element) {
             messager.printMessage(kind, messageText, (Element) source);
         } else if (source instanceof Tree) {
