@@ -460,11 +460,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         helper.updateAnnotationSetInScene(
                 method.returnType, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.RETURN);
 
-        // Now, update overridden methods based on the implementation we just saw.
-        // This inference is similar to
-        // the inference procedure for method parameters: both are updated based
-        // only on the implementations (in this case) or call-sites (for method
-        // parameters) that are available to WPI.
+        // Now, update overridden methods based on the implementation we just saw.  This inference
+        // is similar to the inference procedure for method parameters: both are updated based only
+        // on the implementations (in this case) or call-sites (for method parameters) that are
+        // available to WPI.
         //
         // TODO: Performing this for each return statement is inefficient. It would
         //  be enough to propagate the information once at the end of WPI, for the
@@ -475,7 +474,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // This could lead to an extra iteration of WPI, which would be very costly.
         //
         // It would be better to record overriding relationships as they are discovered,
-        // then do all propagation related to them at the end of WPI.
+        // then do all propagation related to them at the end of one iteration of WPI.
         //
         for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
                 overriddenMethods.entrySet()) {
