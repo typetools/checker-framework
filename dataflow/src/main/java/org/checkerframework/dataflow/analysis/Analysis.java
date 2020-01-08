@@ -202,6 +202,7 @@ public class Analysis<
      * @param transfer transfer function
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
+    @SuppressWarnings("nullness")
     public Analysis(@Nullable T transfer, int maxCountBeforeWidening) {
         // The initialization of env and types can be removed in next version.
         this.env = null;
