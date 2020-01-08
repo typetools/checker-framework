@@ -3974,7 +3974,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
         checkedJDK = true;
-        if (PluginUtil.getJreVersion() != 8 || checker.hasOption("nocheckjdk")) {
+        if (PluginUtil.getJreVersion() != 8
+                || checker.hasOption("permitMissingJdk")
+                // temporary, for backward compatibility
+                || checker.hasOption("nocheckjdk")) {
             return;
         }
         TypeElement objectTE = elements.getTypeElement("java.lang.Object");
