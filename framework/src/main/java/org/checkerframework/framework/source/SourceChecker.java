@@ -1359,9 +1359,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         // TODO: when #979 is fixed, remove this hack
-        if (!this.hasOption("conservativeUninferredTypeArguments")
-                && messageText.contains("INFERENCE FAILED")) {
-            return;
+        if (this.processingEnv.getOptions() != null
+                && !this.processingEnv
+                        .getOptions()
+                        .containsKey("conservativeUninferredTypeArguments")) {
+
+            if (messageText.contains("INFERENCE FAILED")) {
+                return;
+            } else if (this.processingEnv.getOptions().containsKey("nomsgtext")) {
+                for (Object arg : args) {
+                    if (arg != null && arg.toString().contains("INFERENCE FAILED")) {
+                        return;
+                    }
+                }
+            }
         }
 
         if (source instanceof Element) {
