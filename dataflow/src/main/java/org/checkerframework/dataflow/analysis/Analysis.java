@@ -218,7 +218,11 @@ public class Analysis<
         this.finalLocalValues = new HashMap<>();
     }
 
-    /** The current transfer function. */
+    /**
+     * The current transfer function.
+     *
+     * @return {@link #transferFunction}
+     */
     public @Nullable T getTransferFunction() {
         return transferFunction;
     }
