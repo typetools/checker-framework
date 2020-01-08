@@ -29,7 +29,7 @@ echo "PACKAGES=${PACKAGES}"
 
 
 if [ -d "/tmp/plume-scripts" ] ; then
-  (cd /tmp/plume-scripts && git pull -q) > /dev/null 2>&1
+  (cd /tmp/plume-scripts && git pull -q)
 else
   (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
 fi
