@@ -168,9 +168,9 @@ Here is an example of a new unit annotation.
 \begin{alltt}
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Target(\{ElementType.TYPE_USE, ElementType.TYPE_PARAMETER\})
 @SubtypeOf(\ttlcb{}Time.class\ttrcb{})
 @UnitsMultiple(quantity=s.class, prefix=Prefix.nano)
-@Target(\{ElementType.TYPE_USE, ElementType.TYPE_PARAMETER\})
 public @interface ns \ttlcb{}\ttrcb{}
 \end{alltt}
 

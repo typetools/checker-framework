@@ -37,12 +37,13 @@ public class ClassNameNode extends Node {
         this.parent = null;
     }
 
+    /**
+     * Create a new ClassNameNode.
+     *
+     * @param tree the class tree for this node
+     */
     public ClassNameNode(ClassTree tree) {
         super(TreeUtils.typeOf(tree));
-        assert tree.getKind() == Tree.Kind.CLASS
-                || tree.getKind() == Tree.Kind.ENUM
-                || tree.getKind() == Tree.Kind.INTERFACE
-                || tree.getKind() == Tree.Kind.ANNOTATION_TYPE;
         this.tree = tree;
         this.element = TreeUtils.elementFromDeclaration(tree);
         this.parent = null;

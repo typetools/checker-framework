@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -45,7 +46,7 @@ public class ElementUtils {
      */
     public static TypeElement enclosingClass(final Element elem) {
         Element result = elem;
-        while (result != null && !result.getKind().isClass() && !result.getKind().isInterface()) {
+        while (result != null && !isClassElement(result)) {
             @Nullable Element encl = result.getEnclosingElement();
             result = encl;
         }
@@ -146,7 +147,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the qualified name of the inner most class enclosing the provided {@code Element}
+     * Returns the qualified name of the innermost class enclosing the provided {@code Element}.
      *
      * @param element an element enclosed by a class, or a {@code TypeElement}
      * @return the qualified {@code Name} of the innermost class enclosing the element
@@ -171,9 +172,7 @@ public class ElementUtils {
         if (n == null) {
             return "Unexpected element: " + elt;
         }
-        if (elt.getKind() == ElementKind.PACKAGE
-                || elt.getKind().isClass()
-                || elt.getKind().isInterface()) {
+        if (elt.getKind() == ElementKind.PACKAGE || isClassElement(elt)) {
             return n.toString();
         } else {
             return n + "." + elt;
@@ -371,10 +370,13 @@ public class ElementUtils {
         }
     }
 
-    /** @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError" */
+    /**
+     * @param element the element to test
+     * @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError"
+     */
     public static boolean isError(Element element) {
         return element.getClass().getName()
-                == "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError";
+                == "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError"; // interned
     }
 
     /**
@@ -489,20 +491,45 @@ public class ElementUtils {
         return types;
     }
 
-    public static boolean isTypeDeclaration(Element elt) {
-        switch (elt.getKind()) {
-                // These tree kinds are always declarations.  Uses of the declared
-                // types have tree kind IDENTIFIER.
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-            case TYPE_PARAMETER:
-                return true;
+    /** The set of kinds that represent classes. */
+    private static final Set<ElementKind> classElementKinds;
 
-            default:
-                return false;
+    static {
+        classElementKinds = EnumSet.noneOf(ElementKind.class);
+        for (ElementKind kind : ElementKind.values()) {
+            if (kind.isClass() || kind.isInterface()) {
+                classElementKinds.add(kind);
+            }
         }
+    }
+
+    /**
+     * Return the set of kinds that represent classes.
+     *
+     * @return the set of kinds that represent classes
+     */
+    public static Set<ElementKind> classElementKinds() {
+        return classElementKinds;
+    }
+
+    /**
+     * Is the given element kind a class, i.e. a class, enum, interface, or annotation type.
+     *
+     * @param element the element to test
+     * @return true, iff the given kind is a class kind
+     */
+    public static boolean isClassElement(Element element) {
+        return classElementKinds().contains(element.getKind());
+    }
+
+    /**
+     * Return true if the element is a type declaration.
+     *
+     * @param elt the element to test
+     * @return true if the argument is a type declaration
+     */
+    public static boolean isTypeDeclaration(Element elt) {
+        return isClassElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
     }
 
     /**

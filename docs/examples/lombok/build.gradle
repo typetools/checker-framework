@@ -4,7 +4,7 @@
 
 plugins {
     id 'java'
-    id "io.freefair.lombok" version "4.0.1"
+    id "io.freefair.lombok" version "4.1.5"
     // Checker Framework pluggable type-checking
     id 'org.checkerframework' version '0.3.28' apply false
 }
@@ -12,7 +12,7 @@ plugins {
 apply plugin: 'org.checkerframework'
 
 dependencies {
-    ext.checkerFrameworkVersion = '3.0.1'
+    ext.checkerFrameworkVersion = '3.1.0'
     compileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
     testCompileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
     checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"

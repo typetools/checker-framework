@@ -1,5 +1,8 @@
 package org.checkerframework.common.subtyping.qual;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -11,15 +14,16 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>This annotation may not be written in source code; it is an implementation detail of the
  * checker.
  *
- * <p>Note that because of the missing RetentionPolicy, the qualifier will not be stored in
- * bytecode.
- *
  * <p>Only use this qualifier when experimenting with very simple type systems. For any more
  * realistic type systems, introduce a top and bottom qualifier that gets stored in bytecode.
+ *
+ * @checker_framework.manual #subtyping-checker Subtyping Checker
  */
+@Documented
+@Retention(RetentionPolicy.SOURCE) // don't store in class file
+@Target({}) // empty target prevents programmers from writing this in a program.
 @InvisibleQualifier
 @SubtypeOf({})
-@Target({}) // empty target prevents programmers from writing this in a program
-// At the moment this is done in SubtypingATF to prevent errors in checker-framework-inference
+// At the moment defaulting is done in SubtypingATF to prevent errors in checker-framework-inference
 // @DefaultFor(TypeUseLocation.OTHERWISE)
 public @interface Unqualified {}

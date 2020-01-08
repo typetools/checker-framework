@@ -1,5 +1,6 @@
 package org.checkerframework.checker.lock.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -18,8 +19,9 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * @checker_framework.manual #lock-checker Lock Checker
  */
-@SubtypeOf({})
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultInUncheckedCodeFor({TypeUseLocation.RECEIVER})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf({})
+@DefaultInUncheckedCodeFor({TypeUseLocation.RECEIVER})
 public @interface GuardedByUnknown {}

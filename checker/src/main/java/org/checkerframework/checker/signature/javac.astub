@@ -1,0 +1,21 @@
+import org.checkerframework.checker.signature.qual.*;
+
+package javax.lang.model.element;
+
+interface TypeElement {
+  // TODO: Is this correct??  or is it a @BinaryName?
+    @DotSeparatedIdentifiers Name getQualifiedName();
+}
+
+// This does not work because Name does not define an override of toString.
+// interface Name {
+//     @PolySignature String toString(@PolySignature Name this);
+// }
+// Writing those annotations on java.lang.Object does not work either, because
+// then vast numbers of toString overrides fail to typecheck.
+
+package com.sun.tools.javac.code;
+
+class Type {
+  @FullyQualifiedName String toString();
+}

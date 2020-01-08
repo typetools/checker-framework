@@ -19,9 +19,9 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @see org.checkerframework.checker.interning.InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker
  */
-@SubtypeOf(Interned.class)
-@DefaultFor(value = {TypeUseLocation.LOWER_BOUND})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(Interned.class)
+@DefaultFor(value = {TypeUseLocation.LOWER_BOUND})
 public @interface InternedDistinct {}

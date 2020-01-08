@@ -1,6 +1,9 @@
 package org.checkerframework.common.value.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
@@ -12,6 +15,8 @@ import java.lang.annotation.Target;
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface MinLen {
     /** The minimum number of elements in this sequence. */
