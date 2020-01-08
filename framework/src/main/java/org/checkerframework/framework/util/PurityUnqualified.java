@@ -16,7 +16,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #purity-checker Purity Checker
  */
 @Documented
-@Retention(RetentionPolicy.SOURCE) // do not store in class file
+@Retention(RetentionPolicy.SOURCE) // do not store in .class file
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})
 @DefaultQualifierInHierarchy

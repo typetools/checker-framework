@@ -40,9 +40,10 @@ checker/jdk/jdk*.jar
 checker/jdk/**/*.class
 *.pyc
 checker/build-temp
-checker/bin-devel/.run-google-java-format
 checker/bin-devel/.plume-scripts
-checker/src/main/resources/git.properties
+checker/bin-devel/.run-google-java-format
+checker/bin-devel/dockerdir
+framework/src/main/resources/git.properties
 
 # manual files
 bib

@@ -1,4 +1,4 @@
-import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 public class SkipUses2 {
