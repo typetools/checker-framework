@@ -54,6 +54,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.OptionConfiguration;
@@ -1368,8 +1369,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 return;
             } else if (this.processingEnv.getOptions().containsKey("nomsgtext")) {
                 for (Object arg : args) {
-                    if (arg != null && arg.toString().contains("INFERENCE FAILED")) {
-                        return;
+                    if (arg != null && arg instanceof AnnotatedTypeMirror.AnnotatedWildcardType) {
+                        if (((AnnotatedTypeMirror.AnnotatedWildcardType) arg)
+                                .isUninferredTypeArgument()) {
+                            return;
+                        }
                     }
                 }
             }
