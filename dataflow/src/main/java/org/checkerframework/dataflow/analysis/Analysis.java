@@ -15,8 +15,10 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -60,6 +62,20 @@ public class Analysis<
 
     /** Then stores before every basic block (assumed to be 'no information' if not present). */
     protected final IdentityHashMap<Block, S> thenStores;
+
+    /**
+     * The associated processing environment.
+     *
+     * @deprecated will be removed in next version
+     */
+    @Deprecated protected final ProcessingEnvironment env;
+
+    /**
+     * Instance of the types utility.
+     *
+     * @deprecated will be removed in next version
+     */
+    @Deprecated protected final Types types;
 
     /** Else stores before every basic block (assumed to be 'no information' if not present). */
     protected final IdentityHashMap<Block, S> elseStores;
@@ -125,6 +141,18 @@ public class Analysis<
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph. The transfer function is set later using {@code setTransferFunction}.
      *
+     * @deprecated will be removed in next version
+     * @param env associated processing environment
+     */
+    @Deprecated
+    public Analysis(ProcessingEnvironment env) {
+        this(null, -1, env);
+    }
+
+    /**
+     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
+     * flow graph. The transfer function is set later using {@code setTransferFunction}.
+     *
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
     public Analysis(int maxCountBeforeWidening) {
@@ -145,10 +173,39 @@ public class Analysis<
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      *
+     * @deprecated will be removed in next version, use {@link #Analysis(TransferFunction, int)}
+     *     instead.
+     * @param transfer transfer function
+     * @param maxCountBeforeWidening number of times a block can be analyzed before widening
+     * @param env associated processing environment
+     */
+    @Deprecated
+    public Analysis(@Nullable T transfer, int maxCountBeforeWidening, ProcessingEnvironment env) {
+        this.env = env;
+        this.types = env.getTypeUtils();
+        this.transferFunction = transfer;
+        this.maxCountBeforeWidening = maxCountBeforeWidening;
+        this.thenStores = new IdentityHashMap<>();
+        this.elseStores = new IdentityHashMap<>();
+        this.blockCount = maxCountBeforeWidening == -1 ? null : new IdentityHashMap<>();
+        this.inputs = new IdentityHashMap<>();
+        this.storesAtReturnStatements = new IdentityHashMap<>();
+        this.worklist = new Worklist();
+        this.nodeValues = new IdentityHashMap<>();
+        this.finalLocalValues = new HashMap<>();
+    }
+
+    /**
+     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
+     * flow graph, given a transfer function.
+     *
      * @param transfer transfer function
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
     public Analysis(@Nullable T transfer, int maxCountBeforeWidening) {
+        // The initialization of env and types can be removed in next version.
+        this.env = null;
+        this.types = null;
         this.transferFunction = transfer;
         this.maxCountBeforeWidening = maxCountBeforeWidening;
         this.thenStores = new IdentityHashMap<>();
@@ -164,6 +221,28 @@ public class Analysis<
     /** The current transfer function. */
     public @Nullable T getTransferFunction() {
         return transferFunction;
+    }
+
+    /**
+     * Get the types utility.
+     *
+     * @deprecated will be removed in next version
+     * @return {@link #types}
+     */
+    @Deprecated
+    public Types getTypes() {
+        return types;
+    }
+
+    /**
+     * Get the processing environment.
+     *
+     * @deprecated will be removed in next version
+     * @return {@link #env}
+     */
+    @Deprecated
+    public ProcessingEnvironment getEnv() {
+        return env;
     }
 
     /**

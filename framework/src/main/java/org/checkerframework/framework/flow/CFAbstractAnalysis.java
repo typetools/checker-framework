@@ -193,6 +193,7 @@ public abstract class CFAbstractAnalysis<
      *
      * @return {@link #types}
      */
+    @SuppressWarnings("deprecation")
     public Types getTypes() {
         return types;
     }
@@ -202,6 +203,7 @@ public abstract class CFAbstractAnalysis<
      *
      * @return {@link #env}
      */
+    @SuppressWarnings("deprecation")
     public ProcessingEnvironment getEnv() {
         return env;
     }
