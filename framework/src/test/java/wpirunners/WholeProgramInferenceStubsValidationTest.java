@@ -1,4 +1,4 @@
-package tests;
+package wpirunners;
 
 import java.io.File;
 import java.util.List;
