@@ -375,6 +375,7 @@ public final class TreeUtils {
      *
      * <ul>
      *   <li>AssignmentTree
+     *   <li>LambdaExpressionTree
      *   <li>CompoundAssignmentTree
      *   <li>MethodInvocationTree
      *   <li>NewArrayTree
@@ -415,6 +416,7 @@ public final class TreeUtils {
                 // Otherwise use the context of the ConditionalExpressionTree.
                 return getAssignmentContext(parentPath);
             case ASSIGNMENT:
+            case LAMBDA_EXPRESSION:
             case METHOD_INVOCATION:
             case NEW_ARRAY:
             case NEW_CLASS:

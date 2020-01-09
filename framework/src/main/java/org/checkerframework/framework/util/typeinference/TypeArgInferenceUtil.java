@@ -208,6 +208,9 @@ public class TypeArgInferenceUtil {
 
         } else if (assignmentContext instanceof VariableTree) {
             res = assignedToVariable(atypeFactory, assignmentContext);
+        } else if (assignmentContext instanceof LambdaExpressionTree) {
+            // TODO: find the correct type
+            return null;
         } else {
             throw new BugInCF("AnnotatedTypes.assignedTo: shouldn't be here");
         }
