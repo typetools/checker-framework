@@ -122,7 +122,8 @@ public interface WholeProgramInference {
 
     /**
      * Updates the return type of the method {@code methodTree} based on {@code returnedExpression}.
-     * May also strengthen the return types of any abstract methods that this method overrides.
+     * Also updates the return types of any methods that this method overrides that are available as
+     * source code.
      *
      * @param returnedExpression the node that contains the expression returned
      * @param classSymbol the symbol of the class that contains the method

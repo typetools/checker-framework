@@ -409,9 +409,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /**
      * Updates the return type of the method methodTree in the Scene of the class with symbol
-     * classSymbol.
-     *
-     * <p>Maybe also update the return types of abstract methods in the chain of overridden methods.
+     * classSymbol. Also updates the return types of methods that this method overrides, if they are
+     * available as source.
      *
      * <p>If the Scene does not contain an annotated return type for the method methodTree, then the
      * type of the value passed to the return expression will be added to the return type of that
