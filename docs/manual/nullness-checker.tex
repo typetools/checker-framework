@@ -99,11 +99,11 @@ command-line option.)
 
 \item
   \label{nullness-lint-trustarraylenzero}%
-  If you supply the \code{-Alint=trustArrayLenZero} command-line option, then
-  the checker trusts \refqualclass{common/value/qual}{ArrayLen} annotations with
-  length 0 when determining whether a call to \code{Collection.toArray} will
-  return an array with non-null components.
-  See Section~\ref{nullness-collection-toarray} for a discussion.
+  If you supply the \code{-Alint=trustArrayLenZero} command-line option, then a
+  call to \code{Collection.toArray} will return an array with a non-null
+  component type if the argument is a field accesses where the field declaration
+  has a \refqualclasswithparams{common/value/qual}{ArrayLen}{0} annotation. See
+  Section~\ref{nullness-collection-toarray} for a discussion.
 
 \end{itemize}
 
@@ -496,10 +496,11 @@ hold:
 
 \end{itemize}
 
-Additionally, when the lint option \<-Alint=trustArrayLenZero> is provided,
-field accesses where the field declaration has a \<@ArrayLen(0)> annotation are
-considered when the Nullness Checker is estimating whether a call to
-\code{Collection.toArray} will return an array with non-null components.
+Additionally, when you supply the \code{-Alint=trustArrayLenZero} command-line
+option, a call to \code{Collection.toArray} will be estimated to return an array
+with a non-null component type by the Nullness Checker if the argument is a field
+accesses where the field declaration has a \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
+annotation.
 
 This trusts the \<@ArrayLen(0)> annotation, but does not verify it. Run the
 Constant Value Checker (see \chapterpageref{constant-value-checker}) to verify
@@ -507,8 +508,6 @@ that annotation.
 
 Note: From \sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])},
 the nullness of the returned array doesn't depend on the passed array nullness.
-
-
 
 
 \subsectionAndLabel{Run-time checks for nullness}{nullness-runtime-checks}
