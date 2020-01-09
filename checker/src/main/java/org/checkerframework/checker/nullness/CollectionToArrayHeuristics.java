@@ -56,6 +56,11 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>Note: From {@link Collection#toArray(Object[]) Collection.toArray(T[])}, the nullness of the
  * returned array doesn't depend on the passed array nullness.
+ *
+ * <p>Note: Corresponding section in manual should be consistent with this Javadoc.
+ *
+ * @checker_framework.manual #nullness-collection-toarray Nullness and conversions from collections
+ *     to arrays
  */
 public class CollectionToArrayHeuristics {
     /** The processing environment. */
