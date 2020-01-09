@@ -206,14 +206,13 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         }
         AnnotationMirrorMap<AnnotationMirrorSet> matchingMapping = new AnnotationMirrorMap<>();
         for (Entry<AnnotationMirror, AnnotationMirror> entry : polyQuals.entrySet()) {
+            AnnotationMirror topAnno = entry.getValue();
             AnnotationMirror polyAnnotation = entry.getKey();
-            if (entry.getValue() == null) {
-                matchingMapping.put(
-                        polyAnnotation, new AnnotationMirrorSet(owner.getAnnotations()));
-                continue;
-            }
             AnnotationMirrorSet resolvedType = new AnnotationMirrorSet();
-            resolvedType.add(owner.getAnnotationInHierarchy(entry.getValue()));
+            AnnotationMirror annoOnOwner = owner.getAnnotationInHierarchy(topAnno);
+            if (annoOnOwner != null) {
+                resolvedType.add(annoOnOwner);
+            }
             matchingMapping.put(polyAnnotation, resolvedType);
         }
         if (!matchingMapping.isEmpty()) {
