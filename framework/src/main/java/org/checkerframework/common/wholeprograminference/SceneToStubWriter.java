@@ -336,6 +336,7 @@ public final class SceneToStubWriter {
      */
     private static class ImportDefCollector extends DefCollector {
 
+        /** The writer onto which to write the import statements. */
         private final PrintWriter printWriter;
 
         /**
@@ -343,6 +344,7 @@ public final class SceneToStubWriter {
          * visit} method is called.
          *
          * @param scene the scene whose imported annotations should be printed
+         * @param printWriter the writer onto which to write the import statements
          * @throws DefException if the DefCollector does not succeed
          */
         ImportDefCollector(AScene scene, PrintWriter printWriter) throws DefException {
