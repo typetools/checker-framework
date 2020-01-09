@@ -8,13 +8,13 @@ public class Issue152 {
     static class SuperClass {
         protected final Object myLock = new Object();
 
-        @GuardedBy("myLock") private Object locked;
+        private @GuardedBy("myLock") Object locked;
     }
 
     static class SubClass extends SuperClass {
         private final Object myLock = new Object();
 
-        @GuardedBy("myLock") private Object locked;
+        private @GuardedBy("myLock") Object locked;
 
         void method() {
             // :: error: (assignment.type.incompatible)

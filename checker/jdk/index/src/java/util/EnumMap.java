@@ -391,7 +391,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
         public Iterator<K> iterator() {
             return new KeyIterator();
         }
-        public int size() {
+        public @NonNegative int size() {
             return size;
         }
         public boolean contains(Object o) {

@@ -4,6 +4,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.NullnessChecker;
@@ -45,8 +47,7 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * The visitor for the freedom-before-commitment type-system. The freedom-before-commitment
  * type-system and this class are abstract and need to be combined with another type-system whose
- * safe initialization should be tracked. For an example, see the {@link NullnessChecker}. Also
- * supports rawness as a type-system for tracking initialization, though FBC is preferred.
+ * safe initialization should be tracked. For an example, see the {@link NullnessChecker}.
  */
 public class InitializationVisitor<
                 Factory extends InitializationAnnotatedTypeFactory<Value, Store, ?, ?>,
@@ -61,13 +62,16 @@ public class InitializationVisitor<
             "initialization.invalid.cast";
     private static final @CompilerMessageKey String COMMITMENT_FIELDS_UNINITIALIZED =
             "initialization.fields.uninitialized";
+    private static final @CompilerMessageKey String COMMITMENT_STATIC_FIELDS_UNINITIALIZED =
+            "initialization.static.fields.uninitialized";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
             "initialization.invalid.field.type";
     private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
             "initialization.invalid.constructor.return.type";
-    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED =
-            "initialization.invalid.field.write.unknown";
-    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED =
+    private static final @CompilerMessageKey String
+            COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION =
+                    "initialization.invalid.field.write.unknown";
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED =
             "initialization.invalid.field.write.initialized";
 
     public InitializationVisitor(BaseTypeChecker checker) {
@@ -86,12 +90,23 @@ public class InitializationVisitor<
     }
 
     @Override
-    protected boolean checkConstructorInvocation(
+    protected void checkConstructorInvocation(
             AnnotatedDeclaredType dt, AnnotatedExecutableType constructor, NewClassTree src) {
         // receiver annotations for constructors are forbidden, therefore no
         // check is necessary
         // TODO: nested constructors can have receivers!
-        return true;
+    }
+
+    @Override
+    protected void checkConstructorResult(
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        // Nothing to check
+    }
+
+    @Override
+    protected void checkThisOrSuperConstructorCall(
+            MethodInvocationTree superCall, @CompilerMessageKey String errorKey) {
+        // Nothing to check
     }
 
     @Override
@@ -110,16 +125,17 @@ public class InitializationVisitor<
             // UnknownInitialization annotation
             Set<AnnotationMirror> fieldAnnotations =
                     atypeFactory.getAnnotatedType(TreeUtils.elementFromUse(lhs)).getAnnotations();
-            if (!AnnotationUtils.containsSameByName(fieldAnnotations, atypeFactory.UNCLASSIFIED)) {
+            if (!AnnotationUtils.containsSameByName(
+                    fieldAnnotations, atypeFactory.UNKNOWN_INITIALIZATION)) {
                 if (!ElementUtils.isStatic(el)
                         && !(atypeFactory.isCommitted(yType)
                                 || atypeFactory.isFree(xType)
                                 || atypeFactory.isFbcBottom(yType))) {
                     @CompilerMessageKey String err;
                     if (atypeFactory.isCommitted(xType)) {
-                        err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
+                        err = COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED;
                     } else {
-                        err = COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED;
+                        err = COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION;
                     }
                     checker.report(Result.failure(err, varTree), varTree);
                     return; // prevent issuing another errow about subtyping
@@ -141,7 +157,7 @@ public class InitializationVisitor<
                     if (atypeFactory.isUnclassified(a)) {
                         continue; // unclassified is allowed
                     }
-                    if (AnnotationUtils.areSameByClass(a, c)) {
+                    if (atypeFactory.areSameByClass(a, c)) {
                         checker.report(Result.failure(COMMITMENT_INVALID_FIELD_TYPE, node), node);
                         break;
                     }
@@ -302,7 +318,7 @@ public class InitializationVisitor<
             for (Class<? extends Annotation> c :
                     atypeFactory.getInvalidConstructorReturnTypeAnnotations()) {
                 for (AnnotationMirror a : returnTypeAnnotations) {
-                    if (AnnotationUtils.areSameByClass(a, c)) {
+                    if (atypeFactory.areSameByClass(a, c)) {
                         checker.report(
                                 Result.failure(COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE, node),
                                 node);
@@ -361,6 +377,11 @@ public class InitializationVisitor<
             return;
         }
 
+        String COMMITMENT_FIELDS_UNINITIALIZED_KEY =
+                (staticFields
+                        ? COMMITMENT_STATIC_FIELDS_UNINITIALIZED
+                        : COMMITMENT_FIELDS_UNINITIALIZED);
+
         List<VariableTree> violatingFields =
                 atypeFactory.getUninitializedInvariantFields(
                         store, getCurrentPath(), staticFields, receiverAnnotations);
@@ -380,7 +401,7 @@ public class InitializationVisitor<
         while (itor.hasNext()) {
             VariableTree f = itor.next();
             Element e = TreeUtils.elementFromTree(f);
-            if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED)) {
+            if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED_KEY)) {
                 itor.remove();
             }
         }
@@ -396,7 +417,7 @@ public class InitializationVisitor<
                 fieldsString.append(f.getName());
             }
             checker.report(
-                    Result.failure(COMMITMENT_FIELDS_UNINITIALIZED, fieldsString), blockNode);
+                    Result.failure(COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString), blockNode);
         }
     }
 }

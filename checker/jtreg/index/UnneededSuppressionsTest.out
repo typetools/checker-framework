@@ -1,6 +1,6 @@
-UnneededSuppressionsTest.java:10:1: compiler.warn.proc.messager: [unneeded.suppression] this warning suppression is not used by the IndexChecker for key "index"
-UnneededSuppressionsTest.java:23:5: compiler.warn.proc.messager: [unneeded.suppression] this warning suppression is not used by the IndexChecker for key "lowerbound"
-UnneededSuppressionsTest.java:25:9: compiler.warn.proc.messager: [unneeded.suppression] this warning suppression is not used by the IndexChecker for key "upperbound:assignment.type.incompatible"
-UnneededSuppressionsTest.java:34:5: compiler.warn.proc.messager: [unneeded.suppression] this warning suppression is not used by the IndexChecker for key "purity.not.deterministic.call"
-UnneededSuppressionsTest.java:37:5: compiler.warn.proc.messager: [unneeded.suppression] this warning suppression is not used by the IndexChecker for key "purity"
+UnneededSuppressionsTest.java:10:1: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "index" is not used by IndexChecker
+UnneededSuppressionsTest.java:23:5: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "lowerbound" is not used by IndexChecker
+UnneededSuppressionsTest.java:25:9: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "upperbound:assignment.type.incompatible" is not used by IndexChecker
+UnneededSuppressionsTest.java:34:5: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "purity.not.deterministic.call" is not used by IndexChecker
+UnneededSuppressionsTest.java:37:5: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "purity" is not used by IndexChecker
 5 warnings

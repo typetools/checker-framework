@@ -8,4 +8,10 @@ class AnonymousClass {
         // :: error: (type.argument.type.incompatible)
         new Bound<@Nullable String>() {};
     }
+
+    // The dummy parameter tests ParamApplier
+    void test(Object dummy) {
+        // :: error: (type.argument.type.incompatible)
+        new Bound<@Nullable String>() {};
+    }
 }

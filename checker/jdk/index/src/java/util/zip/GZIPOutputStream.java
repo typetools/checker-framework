@@ -180,6 +180,7 @@ class GZIPOutputStream extends DeflaterOutputStream {
     /*
      * Writes GZIP member header.
      */
+    @SuppressWarnings("cast.unsafe") // https://github.com/typetools/checker-framework/issues/2731
     private void writeHeader() throws IOException {
         out.write(new byte[] {
                       (byte) GZIP_MAGIC,        // Magic number (short)

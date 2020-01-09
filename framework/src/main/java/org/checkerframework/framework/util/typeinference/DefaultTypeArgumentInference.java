@@ -63,7 +63,8 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7 See
- * <a href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7">JLS
+ * the JLS 7: <a
+ * href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7">JLS
  * &sect;5.12.2.7</a>
  *
  * <p>Note, there are some deviations JLS 7 for the following cases:
@@ -152,7 +153,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
         assert pathToExpression != null;
 
-        final AnnotatedTypeMirror assignedTo =
+        AnnotatedTypeMirror assignedTo =
                 TypeArgInferenceUtil.assignedTo(typeFactory, pathToExpression);
 
         SourceChecker checker = typeFactory.getContext().getChecker();
@@ -182,7 +183,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
             return inferredArgs;
         }
-
+        if (assignedTo == null) {
+            assignedTo = typeFactory.getDummyAssignedTo(expressionTree);
+        }
         Map<TypeVariable, AnnotatedTypeMirror> inferredArgs;
         try {
             inferredArgs =
@@ -214,8 +217,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (showInferenceSteps) {
             checker.message(Kind.NOTE, "  results: %s\n", inferredArgs);
         }
-
-        return inferredArgs;
+        try {
+            return TypeArgInferenceUtil.correctResults(
+                    inferredArgs, expressionTree, methodType.getUnderlyingType(), typeFactory);
+        } catch (Throwable ex) {
+            // Ignore any exceptions
+            return inferredArgs;
+        }
     }
 
     /**
@@ -242,18 +250,18 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (!hasNullType(inferredArgs)) {
             return;
         }
-        final Map<TypeVariable, AnnotatedTypeMirror> inferredArgsWithOutNull =
+        final Map<TypeVariable, AnnotatedTypeMirror> inferredArgsWithoutNull =
                 infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, false);
         for (AnnotatedTypeVariable atv : methodType.getTypeVariables()) {
             TypeVariable typeVar = atv.getUnderlyingType();
             AnnotatedTypeMirror result = inferredArgs.get(typeVar);
             if (result == null) {
-                AnnotatedTypeMirror withoutNullResult = inferredArgsWithOutNull.get(typeVar);
+                AnnotatedTypeMirror withoutNullResult = inferredArgsWithoutNull.get(typeVar);
                 if (withoutNullResult != null) {
                     inferredArgs.put(typeVar, withoutNullResult);
                 }
             } else if (result.getKind() == TypeKind.NULL) {
-                AnnotatedTypeMirror withoutNullResult = inferredArgsWithOutNull.get(typeVar);
+                AnnotatedTypeMirror withoutNullResult = inferredArgsWithoutNull.get(typeVar);
                 if (withoutNullResult == null) {
                     // withoutNullResult is null when the only constraint on a type argument is
                     // where a method argument is null.
@@ -448,7 +456,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      *
      * // The invocation of id will result in a type argument with primary annotations of @FBCBottom @Nullable
      * // but this is below the lower bound of T in the initialization hierarchy so instead replace
-     * // @FBCBottom with @Initialized.
+     * // @FBCBottom with @Initialized
      *
      * // This should happen ONLY with supertype constraints because raising the primary annotation would still
      * // be valid for these constraints (since we just LUB the arguments involved) but would violate any
@@ -773,8 +781,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final TypeVariable typeVar = atv.getUnderlyingType();
             if (targets.contains((TypeVariable) TypeAnnotationUtils.unannotatedType(typeVar))) {
                 final AnnotatedTypeMirror inferredType = inferredArgs.get(typeVar);
-                if (inferredType == null
-                        || TypeArgInferenceUtil.containsTypeParameter(inferredType, targets)) {
+                if (inferredType == null) {
                     AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
                     inferredArgs.put(atv.getUnderlyingType(), dummy);
                 }

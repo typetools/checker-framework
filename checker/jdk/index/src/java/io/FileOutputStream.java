@@ -300,7 +300,7 @@ class FileOutputStream extends OutputStream
      * @param      len   the number of bytes to write.
      * @exception  IOException  if an I/O error occurs.
      */
-    public void write(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         writeBytes(b, off, len, append);
     }
 

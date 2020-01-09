@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.checkerframework.checker.i18n.qual.*;
 
 @LocalizableKey class Issue2186 {
-    // :: error: (super.invocation.invalid)
+    // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     Issue2186() {}
 
     // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)

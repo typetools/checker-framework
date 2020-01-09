@@ -1,6 +1,8 @@
 package typedecldefault.quals;
 
 import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -10,5 +12,5 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})
-@DefaultFor({TypeUseLocation.TYPE_DECLARATION})
+@DefaultFor(TypeUseLocation.CONSTRUCTOR_RESULT)
 public @interface TypeDeclDefaultTop {}

@@ -4,17 +4,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.BugInCF;
 
-// TODO: The design is gross, both because this is returned instead of thrown, and because errors
-// are propagated in strings and then unparsed later.  The Checker Framework should report the
-// errors earlier rather than propagating them within strings.
 /**
  * Helper class for creating dependent type annotation error strings.
  *
- * <p>IMPORTANT: This is not an Exception. It is a regular class that is returned, not thrown.
+ * <p>IMPORTANT: This is not an Exception. It is a regular class that is returned, not thrown. The
+ * errors are not thrown so that they are only reported once rather than every time the annotation
+ * is parsed. See {@link DependentTypesHelper} for more details.
  */
 public class DependentTypesError {
 
@@ -85,7 +85,7 @@ public class DependentTypesError {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) {
             return true;
         }

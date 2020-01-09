@@ -1,6 +1,5 @@
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
-import org.checkerframework.checker.nullness.qual.Raw;
 
 class OverrideANNA3 {
     static class Super {
@@ -8,7 +7,7 @@ class OverrideANNA3 {
         Object g;
 
         @EnsuresNonNull({"f", "g"})
-        void setfg(@Raw @UnknownInitialization Super this) {
+        void setfg(@UnknownInitialization Super this) {
             f = new Object();
             g = new Object();
         }
@@ -22,7 +21,7 @@ class OverrideANNA3 {
         @Override
         @EnsuresNonNull("f")
         // :: error: (contracts.postcondition.override.invalid)
-        void setfg(@Raw @UnknownInitialization Sub this) {
+        void setfg(@UnknownInitialization Sub this) {
             f = new Object();
         }
     }

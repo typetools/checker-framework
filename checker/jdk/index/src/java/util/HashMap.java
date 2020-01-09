@@ -221,6 +221,7 @@ public class HashMap<K,V>
      * Constructs an empty <tt>HashMap</tt> with the default initial capacity
      * (16) and the default load factor (0.75).
      */
+    @SuppressWarnings("cast.unsafe") // https://github.com/typetools/checker-framework/issues/2731
     public HashMap() {
         this.loadFactor = DEFAULT_LOAD_FACTOR;
         threshold = (int)(DEFAULT_INITIAL_CAPACITY * DEFAULT_LOAD_FACTOR);
@@ -887,7 +888,7 @@ public class HashMap<K,V>
         public Iterator<K> iterator() {
             return newKeyIterator();
         }
-        public int size() {
+        public @NonNegative int size() {
             return size;
         }
         public boolean contains(Object o) {
@@ -923,7 +924,7 @@ public class HashMap<K,V>
         public Iterator<V> iterator() {
             return newValueIterator();
         }
-        public int size() {
+        public @NonNegative int size() {
             return size;
         }
         public boolean contains(Object o) {
@@ -973,7 +974,7 @@ public class HashMap<K,V>
         public boolean remove(Object o) {
             return removeMapping(o) != null;
         }
-        public int size() {
+        public @NonNegative int size() {
             return size;
         }
         public void clear() {

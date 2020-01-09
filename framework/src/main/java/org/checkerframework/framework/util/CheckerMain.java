@@ -125,8 +125,14 @@ public class CheckerMain {
         assertValidState();
     }
 
+    /** Assert that required jars exist. */
     protected void assertValidState() {
-        assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
+        if (PluginUtil.getJreVersion() < 9) {
+            assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
+        } else {
+            // TODO: once the jdk11 jars exist, check for them.
+            assertFilesExist(Arrays.asList(checkerJar, checkerQualJar));
+        }
     }
 
     public void addToClasspath(List<String> cpOpts) {
@@ -145,9 +151,19 @@ public class CheckerMain {
         return new ArrayList<>(Arrays.asList(javacJar.getAbsolutePath()));
     }
 
+    /**
+     * Returns the compilation bootclasspath from {@code argsList} and appends {@code jdkJar} if
+     * using Java 8.
+     *
+     * @param argsList args to add
+     * @return the compilation bootclasspath from {@code argsList} and appends {@code jdkJar} if
+     *     using Java 8
+     */
     protected List<String> createCompilationBootclasspath(final List<String> argsList) {
         final List<String> extractedBcp = extractBootClassPath(argsList);
-        extractedBcp.add(0, jdkJar.getAbsolutePath());
+        if (PluginUtil.getJreVersion() == 8) {
+            extractedBcp.add(0, jdkJar.getAbsolutePath());
+        }
 
         return extractedBcp;
     }
@@ -375,11 +391,24 @@ public class CheckerMain {
     }
 
     /** Invoke the compiler with all relevant jars on its classpath and/or bootclasspath. */
+    // TODO: unify with PluginUtil.getCmd
     public List<String> getExecArguments() {
         List<String> args = new ArrayList<>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 7);
 
-        final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
+        // TODO: do we need java.exe on Windows?
+        final String java =
+                "java"; // PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
         args.add(java);
+
+        if (PluginUtil.getJreVersion() == 8) {
+            args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, runtimeClasspath));
+        } else {
+            args.addAll(
+                    Arrays.asList(
+                            "--illegal-access=warn",
+                            "--add-opens",
+                            "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
+        }
 
         args.add("-classpath");
         args.add(String.join(File.pathSeparator, runtimeClasspath));
@@ -391,16 +420,6 @@ public class CheckerMain {
 
         addMainToArgs(args);
 
-        // No classes on the compilation bootclasspath will be loaded
-        // during compilation, but the classes are read by the compiler
-        // without loading them.  The compiler assumes that any class on
-        // this bootclasspath will be on the bootclasspath of the JVM used
-        // to later run the classfiles that Javac produces.  Our
-        // jdk8.jar classes don't have bodies, so they won't be used at
-        // run time, but other, real definitions of those classes will be
-        // on the classpath at run time.
-        args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, compilationBootclasspath));
-
         if (!argsListHasClassPath(argListFiles)) {
             args.add("-classpath");
             args.add(quote(concatenatePaths(cpOpts)));
@@ -408,6 +427,27 @@ public class CheckerMain {
         if (!argsListHasProcessorPath(argListFiles)) {
             args.add("-processorpath");
             args.add(quote(concatenatePaths(ppOpts)));
+        }
+
+        if (PluginUtil.getJreVersion() == 8) {
+            // No classes on the compilation bootclasspath will be loaded
+            // during compilation, but the classes are read by the compiler
+            // without loading them.  The compiler assumes that any class on
+            // this bootclasspath will be on the bootclasspath of the JVM used
+            // to later run the classfiles that Javac produces.  Our
+            // jdk8.jar classes don't have bodies, so they won't be used at
+            // run time, but other, real definitions of those classes will be
+            // on the classpath at run time.
+            args.add(
+                    "-Xbootclasspath/p:"
+                            + String.join(File.pathSeparator, compilationBootclasspath));
+
+            // We currently provide a Java 8 JDK and want to be runnable
+            // on a Java 8 JVM. So set source/target to 8.
+            args.add("-source");
+            args.add("8");
+            args.add("-target");
+            args.add("8");
         }
 
         args.addAll(toolOpts);

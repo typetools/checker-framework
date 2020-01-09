@@ -67,7 +67,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         // The check only needs to be done for constructors with result type
         // @Unique. We also want to avoid visiting the <init> method.
         if (isInUniqueConstructor()) {
-            if (TreeUtils.isSuperCall(node)) {
+            if (TreeUtils.isSuperConstructorCall(node)) {
                 // Check if a call to super() might create an alias: that
                 // happens when the parent's respective constructor is not @Unique.
                 AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(node);
@@ -238,6 +238,28 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             }
         }
         return super.visitNewArray(node, p);
+    }
+
+    @Override
+    protected void checkConstructorResult(
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        // @Unique is verified, so don't check this.
+        if (!constructorType.getReturnType().hasAnnotation(atypeFactory.UNIQUE)) {
+            super.checkConstructorResult(constructorType, constructorElement);
+        }
+    }
+
+    @Override
+    protected void checkThisOrSuperConstructorCall(
+            MethodInvocationTree superCall, @CompilerMessageKey String errorKey) {
+        if (isInUniqueConstructor()) {
+            // Check if a call to super() might create an alias: that
+            // happens when the parent's respective constructor is not @Unique.
+            AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(superCall);
+            if (!superResult.hasAnnotation(Unique.class)) {
+                checker.report(Result.failure("unique.leaked"), superCall);
+            }
+        }
     }
 
     /**

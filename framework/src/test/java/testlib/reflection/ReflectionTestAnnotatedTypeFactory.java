@@ -3,9 +3,10 @@ package testlib.reflection;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
@@ -21,18 +22,16 @@ public final class ReflectionTestAnnotatedTypeFactory extends BaseAnnotatedTypeF
     public ReflectionTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
-        AnnotationMirror bottom = AnnotationBuilder.fromClass(elements, ReflectBottom.class);
-        addTypeNameImplicit(java.lang.Void.class, bottom);
     }
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        LiteralTreeAnnotator literalTreeAnnotator = new LiteralTreeAnnotator(this);
         AnnotationMirror bottom = AnnotationBuilder.fromClass(elements, ReflectBottom.class);
-        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, bottom);
-        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.INT_LITERAL, bottom);
+        literalTreeAnnotator.addLiteralKind(LiteralKind.INT, bottom);
+        literalTreeAnnotator.addStandardLiteralQualifiers();
 
-        return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
+        return new ListTreeAnnotator(new PropagationTreeAnnotator(this), literalTreeAnnotator);
     }
 
     @Override

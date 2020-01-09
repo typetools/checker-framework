@@ -968,7 +968,7 @@ public class IdentityHashMap<K,V>
         public Iterator<K> iterator() {
             return new KeyIterator();
         }
-        public int size() {
+        public @NonNegative int size() {
             return size;
         }
         public boolean contains(Object o) {
@@ -1037,7 +1037,7 @@ public class IdentityHashMap<K,V>
         public Iterator<V> iterator() {
             return new ValueIterator();
         }
-        public int size() {
+        public @NonNegative int size() {
             return size;
         }
         public boolean contains(Object o) {
@@ -1119,7 +1119,7 @@ public class IdentityHashMap<K,V>
             Map.Entry entry = (Map.Entry)o;
             return removeMapping(entry.getKey(), entry.getValue());
         }
-        public int size() {
+        public @NonNegative int size() {
             return size;
         }
         public void clear() {

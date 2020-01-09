@@ -53,7 +53,7 @@ public class ByteArrayOutputStream extends OutputStream {
     /**
      * The number of valid bytes in the buffer.
      */
-    protected int count;
+    protected @IndexOrHigh("this.buf") int count;
 
     /**
      * Creates a new byte array output stream. The buffer capacity is
@@ -133,7 +133,7 @@ public class ByteArrayOutputStream extends OutputStream {
      * @param   off   the start offset in the data.
      * @param   len   the number of bytes to write.
      */
-    public synchronized void write(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) {
+    public synchronized void write(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) {
         if ((off < 0) || (off > b.length) || (len < 0) ||
             ((off + len) - b.length > 0)) {
             throw new IndexOutOfBoundsException();
@@ -186,7 +186,7 @@ public class ByteArrayOutputStream extends OutputStream {
      *          of valid bytes in this output stream.
      * @see     java.io.ByteArrayOutputStream#count
      */
-    public synchronized @NonNegative int size() {
+    public synchronized @IndexOrHigh("this.buf") int size() {
         return count;
     }
 

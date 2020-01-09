@@ -1,6 +1,6 @@
 import testlib.util.*;
 
-// :: error: (super.invocation.invalid)
+// ::warning: (inconsistent.constructor.type) :: error: (super.invocation.invalid)
 public @Odd class ClassAnnotations {
 
     ClassAnnotations c;

@@ -1,13 +1,15 @@
-// This class should be kept in sync with plume.RegexUtil.
+// This class should be kept in sync with org.plumelib.util.RegexUtil in the plume-util project.
 
 package org.checkerframework.checker.regex;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.checker.regex.qual.*;
-import org.checkerframework.dataflow.qual.*;
+import org.checkerframework.checker.index.qual.GTENegativeOne;
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.regex.qual.Regex;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
 /**
@@ -18,13 +20,13 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
  * href="https://checkerframework.org/manual/#regexutil-methods">Testing whether a string is a
  * regular expression</a> in the Checker Framework manual.
  *
- * <p><b>Runtime Dependency</b>: Using this class introduces a runtime dependency. This means that
- * you need to distribute (or link to) the Checker Framework, along with your binaries. To eliminate
- * this dependency, you can simply copy this class into your own project.
+ * <p><b>Runtime Dependency</b>: Using this class introduces a runtime dependency on the
+ * checker-qual package. To eliminate this dependency, you can simply copy this class into your own
+ * project.
  */
 // The Purity Checker cannot show for most methods in this class that
 // they are pure, even though they are.
-@SuppressWarnings("purity")
+@SuppressWarnings("all:purity")
 public final class RegexUtil {
 
     /** This class is a collection of methods; it does not represent anything. */
@@ -84,10 +86,10 @@ public final class RegexUtil {
          *
          * @param desc a description of the error
          * @param regex the erroneous pattern
-         * @param index the approximate index in the pattern of the error, or -1 if the index is not
-         *     known
+         * @param index the approximate index in the pattern of the error, or {@code -1} if the
+         *     index is not known
          */
-        public CheckedPatternSyntaxException(String desc, String regex, int index) {
+        public CheckedPatternSyntaxException(String desc, String regex, @GTENegativeOne int index) {
             this(new PatternSyntaxException(desc, regex, index));
         }
 
@@ -153,7 +155,7 @@ public final class RegexUtil {
      * @param groups number of groups expected
      * @return true iff s is a regular expression with {@code groups} groups
      */
-    @SuppressWarnings({"regex", "deterministic"}) // RegexUtil; for purity, catches an exception
+    @SuppressWarnings({"regex", "all:deterministic"}) // RegexUtil; for purity, catches an exception
     @Pure
     // @EnsuresQualifierIf annotation is extraneous because this method is special-cased
     // in RegexTransfer.
@@ -176,7 +178,8 @@ public final class RegexUtil {
      */
     @SuppressWarnings({
         "regex",
-        "purity.not.deterministic.call"
+        "all:purity.not.deterministic.call",
+        "lock"
     }) // RegexUtil; temp value used in pure method is equal up to equals but not up to ==
     @Pure
     @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
@@ -191,7 +194,6 @@ public final class RegexUtil {
      * @param s string to check for being a regular expression
      * @return null, or a string describing why the argument is not a regex
      */
-    @SuppressWarnings("regex") // RegexUtil
     @SideEffectFree
     public static @Nullable String regexError(String s) {
         return regexError(s, 0);
@@ -228,7 +230,6 @@ public final class RegexUtil {
      * @param s string to check for being a regular expression
      * @return null, or a PatternSyntaxException describing why the argument is not a regex
      */
-    @SuppressWarnings("regex") // RegexUtil
     @SideEffectFree
     public static @Nullable PatternSyntaxException regexException(String s) {
         return regexException(s, 0);
@@ -305,6 +306,8 @@ public final class RegexUtil {
      * Generates an error message for s when expectedGroups are needed, but s only has actualGroups.
      *
      * @param s string to check for being a regular expression
+     * @param expectedGroups the number of needed capturing groups
+     * @param actualGroups the number of groups that {@code s} has
      * @return an error message for s when expectedGroups groups are needed, but s only has
      *     actualGroups groups
      */
@@ -325,7 +328,7 @@ public final class RegexUtil {
      * @param p pattern whose groups to count
      * @return the count of groups in the argument
      */
-    @SuppressWarnings("purity") // does not depend on object identity
+    @SuppressWarnings({"all:purity", "lock"}) // does not depend on object identity
     @Pure
     private static int getGroupCount(Pattern p) {
         return p.matcher("").groupCount();

@@ -24,13 +24,13 @@ public class Main {
         final JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
         final StandardJavaFileManager fileManager = javac.getStandardFileManager(null, null, null);
         if (!doStuff(javac, fileManager)) {
-            System.exit(1);
+            return;
         }
         if (!doStuff(javac, fileManager)) {
-            System.exit(1);
+            return;
         }
         if (!doStuff(javac, fileManager)) {
-            System.exit(1);
+            return;
         }
     }
 

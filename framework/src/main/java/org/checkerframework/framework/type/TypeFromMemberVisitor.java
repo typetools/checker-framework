@@ -1,18 +1,19 @@
 package org.checkerframework.framework.type;
 
-/** Created by jburke on 11/20/14. */
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -30,49 +31,52 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(f, node.getType());
 
         // Add primary annotations
+        List<? extends AnnotationTree> annoTrees = node.getModifiers().getAnnotations();
+        if (annoTrees != null && !annoTrees.isEmpty()) {
+            List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
+            AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(result);
+            for (AnnotationMirror anno : annos) {
+                // The code here is similar to
+                // org.checkerframework.framework.util.element.ElementAnnotationUtil.addDeclarationAnnotationsFromElement.
+                if (AnnotationUtils.isDeclarationAnnotation(anno)
+                        // Always treat Checker Framework annotations as type annotations.
+                        && !AnnotationUtils.annotationName(anno)
+                                .startsWith("org.checkerframework")) {
+                    // Declaration annotations apply to the outer type.
+                    result.addAnnotation(anno);
+                } else {
+                    // Type annotations apply to the inner most type.
+                    innerType.addAnnotation(anno);
+                }
+            }
+        }
+
         Element elt = TreeUtils.elementFromDeclaration(node);
-        ElementAnnotationApplier.apply(result, elt, f);
         AnnotatedTypeMirror lambdaParamType = inferLambdaParamAnnotations(f, result, elt);
         if (lambdaParamType != null) {
             return lambdaParamType;
         }
         return result;
-
-        /* An alternative I played around with. It unfortunately
-         * ignores stub files, which is not good.
-        com.sun.tools.javac.code.Type undType = ((JCTree)node).type;
-        AnnotatedTypeMirror result;
-
-        if (undType != null) {
-            result = f.toAnnotatedType(undType);
-        } else {
-            // node.getType() ignores the top-level modifiers, which are
-            // in node.getModifiers()
-            result = f.fromTypeTree(node.getType());
-            // We still need to remove all annotations.
-            // result.clearAnnotations();
-        }
-
-        // TODO: Additionally decoding should NOT be necessary.
-        // However, the underlying javac Type doesn't contain
-        // type argument annotations.
-        Element elt = TreeUtils.elementFromDeclaration(node);
-        ElementAnnotationUtils.apply(result, elt, f);
-
-        return result;*/
     }
 
     @Override
     public AnnotatedTypeMirror visitMethod(MethodTree node, AnnotatedTypeFactory f) {
-
         ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
 
         AnnotatedExecutableType result =
                 (AnnotatedExecutableType) f.toAnnotatedType(elt.asType(), false);
         result.setElement(elt);
+        // Make sure the return type field gets initialized... otherwise
+        // some code throws NPE. This should be cleaned up.
+        result.getReturnType();
 
+        // TODO: Needed to visit parameter types, etc.
+        // It would be nicer if this didn't decode the information from the Element and
+        // instead also used the Tree. If this is implemented, then care needs to be taken to put
+        // any alias declaration annotations in the correct place for return types that are arrays.
+        // This would be similar to
+        // org.checkerframework.framework.util.element.ElementAnnotationUtil.addDeclarationAnnotationsFromElement.
         ElementAnnotationApplier.apply(result, elt, f);
-
         return result;
     }
 
@@ -93,9 +97,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         if (declaredInTree.getKind() == Kind.LAMBDA_EXPRESSION) {
             LambdaExpressionTree lambdaDecl = (LambdaExpressionTree) declaredInTree;
             int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
-            Pair<AnnotatedDeclaredType, AnnotatedExecutableType> res =
-                    f.getFnInterfaceFromTree(lambdaDecl);
-            AnnotatedExecutableType functionType = res.second;
+            AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
             AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
             if (TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
                 if (f.types.isSubtype(funcTypeParam.actualType, lambdaParam.actualType)) {

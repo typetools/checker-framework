@@ -75,8 +75,10 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 /** A utility class made for helping to analyze a given {@code Tree}. */
 // TODO: This class needs significant restructuring
@@ -103,7 +105,7 @@ public final class TreeUtils {
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to super
      */
-    public static boolean isSuperCall(MethodInvocationTree tree) {
+    public static boolean isSuperConstructorCall(MethodInvocationTree tree) {
         return isNamedMethodCall("super", tree);
     }
 
@@ -113,7 +115,7 @@ public final class TreeUtils {
      * @param tree a tree defining a method invocation
      * @return true iff tree describes a call to this
      */
-    public static boolean isThisCall(MethodInvocationTree tree) {
+    public static boolean isThisConstructorCall(MethodInvocationTree tree) {
         return isNamedMethodCall("this", tree);
     }
 
@@ -149,7 +151,7 @@ public final class TreeUtils {
      * @return {@code true} iff the member is a member of {@code this} instance
      */
     public static boolean isSelfAccess(final ExpressionTree tree) {
-        ExpressionTree tr = TreeUtils.skipParens(tree);
+        ExpressionTree tr = TreeUtils.withoutParens(tree);
         // If method invocation check the method select
         if (tr.getKind() == Tree.Kind.ARRAY_ACCESS) {
             return false;
@@ -158,11 +160,11 @@ public final class TreeUtils {
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             tr = ((MethodInvocationTree) tree).getMethodSelect();
         }
-        tr = TreeUtils.skipParens(tr);
+        tr = TreeUtils.withoutParens(tr);
         if (tr.getKind() == Tree.Kind.TYPE_CAST) {
             tr = ((TypeCastTree) tr).getExpression();
         }
-        tr = TreeUtils.skipParens(tr);
+        tr = TreeUtils.withoutParens(tr);
 
         if (tr.getKind() == Tree.Kind.IDENTIFIER) {
             return true;
@@ -184,9 +186,9 @@ public final class TreeUtils {
      *
      * @param path the path defining the tree node
      * @param kind the kind of the desired tree
-     * @return the enclosing tree of the given type as given by the path
+     * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
      */
-    public static Tree enclosingOfKind(final TreePath path, final Tree.Kind kind) {
+    public static @Nullable Tree enclosingOfKind(final TreePath path, final Tree.Kind kind) {
         return enclosingOfKind(path, EnumSet.of(kind));
     }
 
@@ -195,9 +197,9 @@ public final class TreeUtils {
      *
      * @param path the path defining the tree node
      * @param kinds the set of kinds of the desired tree
-     * @return the enclosing tree of the given type as given by the path
+     * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
      */
-    public static Tree enclosingOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
+    public static @Nullable Tree enclosingOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
         TreePath p = path;
 
         while (p != null) {
@@ -217,9 +219,9 @@ public final class TreeUtils {
      * method.
      *
      * @param path the path defining the tree node
-     * @return the path to the enclosing class tree
+     * @return the path to the enclosing class tree, {@code null} otherwise
      */
-    public static TreePath pathTillClass(final TreePath path) {
+    public static @Nullable TreePath pathTillClass(final TreePath path) {
         return pathTillOfKind(path, classTreeKinds());
     }
 
@@ -228,9 +230,9 @@ public final class TreeUtils {
      *
      * @param path the path defining the tree node
      * @param kind the kind of the desired tree
-     * @return the path to the enclosing tree of the given type
+     * @return the path to the enclosing tree of the given type, {@code null} otherwise
      */
-    public static TreePath pathTillOfKind(final TreePath path, final Tree.Kind kind) {
+    public static @Nullable TreePath pathTillOfKind(final TreePath path, final Tree.Kind kind) {
         return pathTillOfKind(path, EnumSet.of(kind));
     }
 
@@ -239,9 +241,10 @@ public final class TreeUtils {
      *
      * @param path the path defining the tree node
      * @param kinds the set of kinds of the desired tree
-     * @return the path to the enclosing tree of the given type
+     * @return the path to the enclosing tree of the given type, {@code null} otherwise
      */
-    public static TreePath pathTillOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
+    public static @Nullable TreePath pathTillOfKind(
+            final TreePath path, final Set<Tree.Kind> kinds) {
         TreePath p = path;
 
         while (p != null) {
@@ -261,9 +264,9 @@ public final class TreeUtils {
      *
      * @param path the path defining the tree node
      * @param treeClass the class of the desired tree
-     * @return the enclosing tree of the given type as given by the path
+     * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
      */
-    public static <T extends Tree> T enclosingOfClass(
+    public static <T extends Tree> @Nullable T enclosingOfClass(
             final TreePath path, final Class<T> treeClass) {
         TreePath p = path;
 
@@ -284,10 +287,10 @@ public final class TreeUtils {
      * obtained.
      *
      * @param path the path defining the tree node
-     * @return the enclosing class (or interface) as given by the path, or null if one does not
-     *     exist
+     * @return the enclosing class (or interface) as given by the path, or {@code null} if one does
+     *     not exist
      */
-    public static @Nullable ClassTree enclosingClass(final @Nullable TreePath path) {
+    public static @Nullable ClassTree enclosingClass(final TreePath path) {
         return (ClassTree) enclosingOfKind(path, classTreeKinds());
     }
 
@@ -295,9 +298,9 @@ public final class TreeUtils {
      * Gets the enclosing variable of a tree node defined by the given {@link TreePath}.
      *
      * @param path the path defining the tree node
-     * @return the enclosing variable as given by the path, or null if one does not exist
+     * @return the enclosing variable as given by the path, or {@code null} if one does not exist
      */
-    public static VariableTree enclosingVariable(final TreePath path) {
+    public static @Nullable VariableTree enclosingVariable(final TreePath path) {
         return (VariableTree) enclosingOfKind(path, Tree.Kind.VARIABLE);
     }
 
@@ -307,9 +310,9 @@ public final class TreeUtils {
      * can be obtained.
      *
      * @param path the path defining the tree node
-     * @return the enclosing method as given by the path, or null if one does not exist
+     * @return the enclosing method as given by the path, or {@code null} if one does not exist
      */
-    public static @Nullable MethodTree enclosingMethod(final @Nullable TreePath path) {
+    public static @Nullable MethodTree enclosingMethod(final TreePath path) {
         return (MethodTree) enclosingOfKind(path, Tree.Kind.METHOD);
     }
 
@@ -319,9 +322,10 @@ public final class TreeUtils {
      * checkers.types.AnnotatedTypeMirror} or {@link Element} can be obtained.
      *
      * @param path the path defining the tree node
-     * @return the enclosing method or lambda as given by the path, or null if one does not exist
+     * @return the enclosing method or lambda as given by the path, or {@code null} if one does not
+     *     exist
      */
-    public static @Nullable Tree enclosingMethodOrLambda(final @Nullable TreePath path) {
+    public static @Nullable Tree enclosingMethodOrLambda(final TreePath path) {
         return enclosingOfKind(path, EnumSet.of(Tree.Kind.METHOD, Kind.LAMBDA_EXPRESSION));
     }
 
@@ -338,18 +342,37 @@ public final class TreeUtils {
     }
 
     /**
-     * If the given tree is a parenthesized tree, it returns the enclosed non-parenthesized tree.
-     * Otherwise, it returns the same tree.
+     * If the given tree is a parenthesized tree, return the enclosed non-parenthesized tree.
+     * Otherwise, return the same tree.
      *
      * @param tree an expression tree
      * @return the outermost non-parenthesized tree enclosed by the given tree
      */
-    public static ExpressionTree skipParens(final ExpressionTree tree) {
+    public static ExpressionTree withoutParens(final ExpressionTree tree) {
         ExpressionTree t = tree;
         while (t.getKind() == Tree.Kind.PARENTHESIZED) {
             t = ((ParenthesizedTree) t).getExpression();
         }
         return t;
+    }
+
+    /**
+     * Gets the first enclosing tree in path, that is not a parenthesis.
+     *
+     * @param path the path defining the tree node
+     * @return a pair of a non-parenthesis tree that contains the argument, and its child that is
+     *     the argument or is a parenthesized version of it
+     */
+    public static Pair<Tree, Tree> enclosingNonParen(final TreePath path) {
+        TreePath parentPath = path.getParentPath();
+        Tree enclosing = parentPath.getLeaf();
+        Tree enclosingChild = path.getLeaf();
+        while (enclosing.getKind() == Kind.PARENTHESIZED) {
+            parentPath = parentPath.getParentPath();
+            enclosingChild = enclosing;
+            enclosing = parentPath.getLeaf();
+        }
+        return Pair.of(enclosing, enclosingChild);
     }
 
     /**
@@ -378,9 +401,9 @@ public final class TreeUtils {
      *
      * <p>Otherwise, null is returned.
      *
-     * @return the assignment context as described
+     * @return the assignment context as described, {@code null} otherwise
      */
-    public static Tree getAssignmentContext(final TreePath treePath) {
+    public static @Nullable Tree getAssignmentContext(final TreePath treePath) {
         TreePath parentPath = treePath.getParentPath();
 
         if (parentPath == null) {
@@ -439,6 +462,7 @@ public final class TreeUtils {
      *     tree (JCTree)
      * @return the {@link Symbol} for the given tree, or null if one could not be found
      */
+    @Pure
     public static @Nullable Element elementFromTree(Tree tree) {
         if (tree == null) {
             throw new BugInCF("InternalUtils.symbol: tree is null");
@@ -449,19 +473,10 @@ public final class TreeUtils {
         }
 
         if (isExpressionTree(tree)) {
-            tree = skipParens((ExpressionTree) tree);
+            tree = withoutParens((ExpressionTree) tree);
         }
 
         switch (tree.getKind()) {
-            case VARIABLE:
-            case METHOD:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-            case ANNOTATION_TYPE:
-            case TYPE_PARAMETER:
-                return TreeInfo.symbolFor((JCTree) tree);
-
                 // symbol() only works on MethodSelects, so we need to get it manually
                 // for method invocations.
             case METHOD_INVOCATION:
@@ -482,6 +497,11 @@ public final class TreeUtils {
                 return ((JCMemberReference) tree).sym;
 
             default:
+                if (isTypeDeclaration(tree)
+                        || tree.getKind() == Tree.Kind.VARIABLE
+                        || tree.getKind() == Tree.Kind.METHOD) {
+                    return TreeInfo.symbolFor((JCTree) tree);
+                }
                 return TreeInfo.symbol((JCTree) tree);
         }
     }
@@ -491,8 +511,9 @@ public final class TreeUtils {
      *
      * @return the element for the given class
      */
-    public static final TypeElement elementFromDeclaration(ClassTree node) {
+    public static TypeElement elementFromDeclaration(ClassTree node) {
         TypeElement elt = (TypeElement) TreeUtils.elementFromTree(node);
+        assert elt != null : "@AssumeAssertion(nullness): tree kind";
         return elt;
     }
 
@@ -501,8 +522,9 @@ public final class TreeUtils {
      *
      * @return the element for the given method
      */
-    public static final ExecutableElement elementFromDeclaration(MethodTree node) {
+    public static ExecutableElement elementFromDeclaration(MethodTree node) {
         ExecutableElement elt = (ExecutableElement) TreeUtils.elementFromTree(node);
+        assert elt != null : "@AssumeAssertion(nullness): tree kind";
         return elt;
     }
 
@@ -511,8 +533,9 @@ public final class TreeUtils {
      *
      * @return the element for the given variable
      */
-    public static final VariableElement elementFromDeclaration(VariableTree node) {
+    public static VariableElement elementFromDeclaration(VariableTree node) {
         VariableElement elt = (VariableElement) TreeUtils.elementFromTree(node);
+        assert elt != null : "@AssumeAssertion(nullness): tree kind";
         return elt;
     }
 
@@ -526,15 +549,15 @@ public final class TreeUtils {
      * class might be the first place someone looks for this functionality.
      *
      * @param node the tree corresponding to a use of an element
-     * @return the element for the corresponding declaration
+     * @return the element for the corresponding declaration, {@code null} otherwise
      */
-    public static final Element elementFromUse(ExpressionTree node) {
+    @Pure
+    public static @Nullable Element elementFromUse(ExpressionTree node) {
         return TreeUtils.elementFromTree(node);
     }
 
-    // Specialization for return type.
-    // Might return null if element wasn't found.
-    public static final ExecutableElement elementFromUse(MethodInvocationTree node) {
+    /** Specialization for return type. Might return null if element wasn't found. */
+    public static @Nullable ExecutableElement elementFromUse(MethodInvocationTree node) {
         Element el = TreeUtils.elementFromTree(node);
         if (el instanceof ExecutableElement) {
             return (ExecutableElement) el;
@@ -548,7 +571,7 @@ public final class TreeUtils {
      *
      * @see #constructor(NewClassTree)
      */
-    public static final ExecutableElement elementFromUse(NewClassTree node) {
+    public static @Nullable ExecutableElement elementFromUse(NewClassTree node) {
         Element el = TreeUtils.elementFromTree(node);
         if (el instanceof ExecutableElement) {
             return (ExecutableElement) el;
@@ -605,13 +628,16 @@ public final class TreeUtils {
      * @param node the ExpressionTree to test
      * @return whether the tree refers to an identifier, member select, or method invocation
      */
-    public static final boolean isUseOfElement(ExpressionTree node) {
-        node = TreeUtils.skipParens(node);
-        switch (node.getKind()) {
+    @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
+    @Pure
+    public static boolean isUseOfElement(ExpressionTree node) {
+        ExpressionTree realnode = TreeUtils.withoutParens(node);
+        switch (realnode.getKind()) {
             case IDENTIFIER:
             case MEMBER_SELECT:
             case METHOD_INVOCATION:
             case NEW_CLASS:
+                assert elementFromUse(node) != null : "@AssumeAssertion(nullness): inspection";
                 return true;
             default:
                 return false;
@@ -619,7 +645,7 @@ public final class TreeUtils {
     }
 
     /** @return the name of the invoked method */
-    public static final Name methodName(MethodInvocationTree node) {
+    public static Name methodName(MethodInvocationTree node) {
         ExpressionTree expr = node.getMethodSelect();
         if (expr.getKind() == Tree.Kind.IDENTIFIER) {
             return ((IdentifierTree) expr).getName();
@@ -633,7 +659,7 @@ public final class TreeUtils {
      * @return true if the first statement in the body is a self constructor invocation within a
      *     constructor
      */
-    public static final boolean containsThisConstructorInvocation(MethodTree node) {
+    public static boolean containsThisConstructorInvocation(MethodTree node) {
         if (!TreeUtils.isConstructor(node) || node.getBody().getStatements().isEmpty()) {
             return false;
         }
@@ -651,7 +677,15 @@ public final class TreeUtils {
         return "this".contentEquals(TreeUtils.methodName(invocation));
     }
 
-    public static final Tree firstStatement(Tree tree) {
+    /**
+     * Returns the first statement of the tree if it is a block. If it is not a block or an empty
+     * block, tree is returned.
+     *
+     * @param tree any kind of tree
+     * @return the first statement of the tree if it is a block. If it is not a block or an empty
+     *     block, tree is returned.
+     */
+    public static Tree firstStatement(Tree tree) {
         Tree first;
         if (tree.getKind() == Tree.Kind.BLOCK) {
             BlockTree block = (BlockTree) tree;
@@ -692,7 +726,7 @@ public final class TreeUtils {
      *
      * @see com.sun.tools.javac.tree.TreeInfo#isDiamond(JCTree)
      */
-    public static final boolean isDiamondTree(Tree tree) {
+    public static boolean isDiamondTree(Tree tree) {
         switch (tree.getKind()) {
             case ANNOTATED_TYPE:
                 return isDiamondTree(((AnnotatedTypeTree) tree).getUnderlyingType());
@@ -720,12 +754,12 @@ public final class TreeUtils {
     }
 
     /** Returns true if the tree represents a {@code String} concatenation operation. */
-    public static final boolean isStringConcatenation(Tree tree) {
+    public static boolean isStringConcatenation(Tree tree) {
         return (tree.getKind() == Tree.Kind.PLUS && TypesUtils.isString(TreeUtils.typeOf(tree)));
     }
 
     /** Returns true if the compound assignment tree is a string concatenation. */
-    public static final boolean isStringCompoundConcatenation(CompoundAssignmentTree tree) {
+    public static boolean isStringCompoundConcatenation(CompoundAssignmentTree tree) {
         return (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
                 && TypesUtils.isString(TreeUtils.typeOf(tree)));
     }
@@ -742,7 +776,7 @@ public final class TreeUtils {
      * </ol>
      */
     public static boolean isCompileTimeString(ExpressionTree node) {
-        ExpressionTree tree = TreeUtils.skipParens(node);
+        ExpressionTree tree = TreeUtils.withoutParens(node);
         if (tree instanceof LiteralTree) {
             return true;
         }
@@ -760,59 +794,66 @@ public final class TreeUtils {
     }
 
     /** Returns the receiver tree of a field access or a method invocation. */
-    public static ExpressionTree getReceiverTree(ExpressionTree expression) {
-        ExpressionTree receiver = TreeUtils.skipParens(expression);
+    public static @Nullable ExpressionTree getReceiverTree(ExpressionTree expression) {
+        ExpressionTree receiver;
+        switch (expression.getKind()) {
+            case METHOD_INVOCATION:
+                // Trying to handle receiver calls to trees of the form
+                //     ((m).getArray())
+                // returns the type of 'm' in this case
+                receiver = ((MethodInvocationTree) expression).getMethodSelect();
 
-        if (!(receiver.getKind() == Tree.Kind.METHOD_INVOCATION
-                || receiver.getKind() == Tree.Kind.MEMBER_SELECT
-                || receiver.getKind() == Tree.Kind.IDENTIFIER
-                || receiver.getKind() == Tree.Kind.ARRAY_ACCESS)) {
-            // No receiver tree for anything but these four kinds.
-            return null;
+                if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
+                    receiver = ((MemberSelectTree) receiver).getExpression();
+                } else {
+                    // It's a method call "m(foo)" without an explicit receiver
+                    return null;
+                }
+                break;
+            case NEW_CLASS:
+                receiver = ((NewClassTree) expression).getEnclosingExpression();
+                break;
+            case ARRAY_ACCESS:
+                receiver = ((ArrayAccessTree) expression).getExpression();
+                break;
+            case MEMBER_SELECT:
+                receiver = ((MemberSelectTree) expression).getExpression();
+                // Avoid int.class
+                if (receiver instanceof PrimitiveTypeTree) {
+                    return null;
+                }
+                break;
+            case IDENTIFIER:
+                // It's a field access on implicit this or a local variable/parameter.
+                return null;
+            default:
+                return null;
         }
 
-        if (receiver.getKind() == Tree.Kind.METHOD_INVOCATION) {
-            // Trying to handle receiver calls to trees of the form
-            //     ((m).getArray())
-            // returns the type of 'm' in this case
-            receiver = ((MethodInvocationTree) receiver).getMethodSelect();
-
-            if (receiver.getKind() == Tree.Kind.IDENTIFIER) {
-                // It's a method call "m(foo)" without an explicit receiver
-                return null;
-            } else if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
-                receiver = ((MemberSelectTree) receiver).getExpression();
-            } else {
-                // Otherwise, e.g. a NEW_CLASS: nothing to do.
-            }
-        } else if (receiver.getKind() == Tree.Kind.IDENTIFIER) {
-            // It's a field access on implicit this or a local variable/parameter.
-            return null;
-        } else if (receiver.getKind() == Tree.Kind.ARRAY_ACCESS) {
-            return TreeUtils.skipParens(((ArrayAccessTree) receiver).getExpression());
-        } else if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
-            receiver = ((MemberSelectTree) receiver).getExpression();
-            // Avoid int.class
-            if (receiver instanceof PrimitiveTypeTree) {
-                return null;
-            }
-        }
-
-        // Receiver is now really just the receiver tree.
-        return TreeUtils.skipParens(receiver);
+        return TreeUtils.withoutParens(receiver);
     }
 
     // TODO: What about anonymous classes?
     // Adding Tree.Kind.NEW_CLASS here doesn't work, because then a
     // tree gets cast to ClassTree when it is actually a NewClassTree,
     // for example in enclosingClass above.
-    private static final Set<Tree.Kind> classTreeKinds =
-            EnumSet.of(
-                    Tree.Kind.CLASS,
-                    Tree.Kind.ENUM,
-                    Tree.Kind.INTERFACE,
-                    Tree.Kind.ANNOTATION_TYPE);
+    /** The set of kinds that represent classes. */
+    private static final Set<Tree.Kind> classTreeKinds;
 
+    static {
+        classTreeKinds = EnumSet.noneOf(Tree.Kind.class);
+        for (Tree.Kind kind : Tree.Kind.values()) {
+            if (kind.asInterface() == ClassTree.class) {
+                classTreeKinds.add(kind);
+            }
+        }
+    }
+
+    /**
+     * Return the set of kinds that represent classes.
+     *
+     * @return the set of kinds that represent classes
+     */
     public static Set<Tree.Kind> classTreeKinds() {
         return classTreeKinds;
     }
@@ -866,6 +907,7 @@ public final class TreeUtils {
         }
         MethodInvocationTree methInvok = (MethodInvocationTree) tree;
         ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
+        assert invoked != null : "@AssumeAssertion(nullness): assumption";
         return ElementUtils.isMethod(invoked, method, env);
     }
 
@@ -911,6 +953,9 @@ public final class TreeUtils {
             String typeName, String methodName, int params, ProcessingEnvironment env) {
         List<ExecutableElement> methods = new ArrayList<>(1);
         TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
+        if (typeElt == null) {
+            throw new UserError("Configuration problem! Could not load type: " + typeName);
+        }
         for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
             if (exec.getSimpleName().contentEquals(methodName)
                     && exec.getParameters().size() == params) {
@@ -934,7 +979,7 @@ public final class TreeUtils {
                 List<? extends VariableElement> params = exec.getParameters();
                 for (int i = 0; i < paramTypes.length; i++) {
                     VariableElement ve = params.get(i);
-                    TypeMirror tm = ve.asType();
+                    TypeMirror tm = TypeAnnotationUtils.unannotatedType(ve.asType());
                     if (!tm.toString().equals(paramTypes[i])) {
                         typesMatch = false;
                         break;
@@ -951,7 +996,8 @@ public final class TreeUtils {
                         + "."
                         + methodName
                         + "("
-                        + Arrays.toString(paramTypes));
+                        + Arrays.toString(paramTypes)
+                        + ")");
     }
 
     /**
@@ -959,7 +1005,7 @@ public final class TreeUtils {
      *
      * <p>TODO: Should this also handle "super"?
      */
-    public static final boolean isExplicitThisDereference(ExpressionTree tree) {
+    public static boolean isExplicitThisDereference(ExpressionTree tree) {
         if (tree.getKind() == Tree.Kind.IDENTIFIER
                 && ((IdentifierTree) tree).getName().contentEquals("this")) {
             // Explicit this reference "this"
@@ -1005,14 +1051,16 @@ public final class TreeUtils {
      * @return true iff if tree is a field access expression (implicit or explicit)
      */
     public static boolean isFieldAccess(Tree tree) {
-        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             // explicit field access
             MemberSelectTree memberSelect = (MemberSelectTree) tree;
+            assert isUseOfElement(memberSelect) : "@AssumeAssertion(nullness): tree kind";
             Element el = TreeUtils.elementFromUse(memberSelect);
             return el.getKind().isField();
-        } else if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
+        } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
             // implicit field access
             IdentifierTree ident = (IdentifierTree) tree;
+            assert isUseOfElement(ident) : "@AssumeAssertion(nullness): tree kind";
             Element el = TreeUtils.elementFromUse(ident);
             return el.getKind().isField()
                     && !ident.getName().contentEquals("this")
@@ -1029,7 +1077,7 @@ public final class TreeUtils {
      */
     public static String getFieldName(Tree tree) {
         assert isFieldAccess(tree);
-        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             MemberSelectTree mtree = (MemberSelectTree) tree;
             return mtree.getIdentifier().toString();
         } else {
@@ -1049,18 +1097,20 @@ public final class TreeUtils {
      * @return true iff if tree is a method access expression (implicit or explicit)
      */
     public static boolean isMethodAccess(Tree tree) {
-        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             // explicit method access
             MemberSelectTree memberSelect = (MemberSelectTree) tree;
+            assert isUseOfElement(memberSelect) : "@AssumeAssertion(nullness): tree kind";
             Element el = TreeUtils.elementFromUse(memberSelect);
             return el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR;
-        } else if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
+        } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
             // implicit method access
             IdentifierTree ident = (IdentifierTree) tree;
             // The field "super" and "this" are also legal methods
             if (ident.getName().contentEquals("super") || ident.getName().contentEquals("this")) {
                 return true;
             }
+            assert isUseOfElement(ident) : "@AssumeAssertion(nullness): tree kind";
             Element el = TreeUtils.elementFromUse(ident);
             return el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR;
         }
@@ -1075,7 +1125,7 @@ public final class TreeUtils {
      */
     public static String getMethodName(Tree tree) {
         assert isMethodAccess(tree);
-        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             MemberSelectTree mtree = (MemberSelectTree) tree;
             return mtree.getIdentifier().toString();
         } else {
@@ -1100,10 +1150,12 @@ public final class TreeUtils {
     public static boolean isSpecificFieldAccess(Tree tree, VariableElement var) {
         if (tree instanceof MemberSelectTree) {
             MemberSelectTree memSel = (MemberSelectTree) tree;
+            assert isUseOfElement(memSel) : "@AssumeAssertion(nullness): tree kind";
             Element field = TreeUtils.elementFromUse(memSel);
             return field.equals(var);
         } else if (tree instanceof IdentifierTree) {
             IdentifierTree idTree = (IdentifierTree) tree;
+            assert isUseOfElement(idTree) : "@AssumeAssertion(nullness): tree kind";
             Element field = TreeUtils.elementFromUse(idTree);
             return field.equals(var);
         } else {
@@ -1133,12 +1185,11 @@ public final class TreeUtils {
     /**
      * Determine whether the given tree represents an ExpressionTree.
      *
-     * <p>TODO: is there a nicer way than an instanceof?
-     *
      * @param tree the Tree to test
      * @return whether the tree is an ExpressionTree
      */
     public static boolean isExpressionTree(Tree tree) {
+        // TODO: is there a nicer way than an instanceof?
         return tree instanceof ExpressionTree;
     }
 
@@ -1148,7 +1199,9 @@ public final class TreeUtils {
      */
     public static boolean isEnumSuper(MethodInvocationTree node) {
         ExecutableElement ex = TreeUtils.elementFromUse(node);
+        assert ex != null : "@AssumeAssertion(nullness): tree kind";
         Name name = ElementUtils.getQualifiedClassName(ex);
+        assert name != null : "@AssumeAssertion(nullness): assumption";
         boolean correctClass = "java.lang.Enum".contentEquals(name);
         boolean correctMethod = "<init>".contentEquals(ex.getSimpleName());
         return correctClass && correctMethod;
@@ -1162,19 +1215,7 @@ public final class TreeUtils {
      * @return true if the tree is a type declaration
      */
     public static boolean isTypeDeclaration(Tree node) {
-        switch (node.getKind()) {
-                // These tree kinds are always declarations.  Uses of the declared
-                // types have tree kind IDENTIFIER.
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-            case TYPE_PARAMETER:
-                return true;
-
-            default:
-                return false;
-        }
+        return isClassTree(node) || node.getKind() == Tree.Kind.TYPE_PARAMETER;
     }
 
     /**
@@ -1245,34 +1286,62 @@ public final class TreeUtils {
         return false;
     }
 
-    public static final List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
-            List<? extends AnnotationTree> annos) {
-        List<AnnotationMirror> annotations = new ArrayList<>(annos.size());
-        for (AnnotationTree anno : annos) {
+    /**
+     * Converts the given AnnotationTrees to AnnotationMirrors.
+     *
+     * @param annoTreess list of annotation trees to convert to annotation mirrors
+     * @return list of annotation mirrors that represent the given annotation trees
+     */
+    public static List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
+            List<? extends AnnotationTree> annoTreess) {
+        List<AnnotationMirror> annotations = new ArrayList<>(annoTreess.size());
+        for (AnnotationTree anno : annoTreess) {
             annotations.add(TreeUtils.annotationFromAnnotationTree(anno));
         }
         return annotations;
     }
 
+    /**
+     * Converts the given AnnotationTree to an AnnotationMirror.
+     *
+     * @param tree annotation tree to convert to an annotation mirror
+     * @return annotation mirror that represent the given annotation tree
+     */
     public static AnnotationMirror annotationFromAnnotationTree(AnnotationTree tree) {
         return ((JCAnnotation) tree).attribute;
     }
 
-    public static final List<? extends AnnotationMirror> annotationsFromTree(
-            AnnotatedTypeTree node) {
-        return annotationsFromTypeAnnotationTrees(((JCAnnotatedType) node).annotations);
+    /**
+     * Converts the given AnnotatedTypeTree to a list of AnnotationMirrors.
+     *
+     * @param tree annotated type tree to convert
+     * @return list of AnnotationMirrors from the tree
+     */
+    public static List<? extends AnnotationMirror> annotationsFromTree(AnnotatedTypeTree tree) {
+        return annotationsFromTypeAnnotationTrees(((JCAnnotatedType) tree).annotations);
     }
 
-    public static final List<? extends AnnotationMirror> annotationsFromTree(
-            TypeParameterTree node) {
-        return annotationsFromTypeAnnotationTrees(((JCTypeParameter) node).annotations);
+    /**
+     * Converts the given TypeParameterTree to a list of AnnotationMirrors.
+     *
+     * @param tree type parameter tree to convert
+     * @return list of AnnotationMirrors from the tree
+     */
+    public static List<? extends AnnotationMirror> annotationsFromTree(TypeParameterTree tree) {
+        return annotationsFromTypeAnnotationTrees(((JCTypeParameter) tree).annotations);
     }
 
-    public static final List<? extends AnnotationMirror> annotationsFromArrayCreation(
-            NewArrayTree node, int level) {
+    /**
+     * Converts the given NewArrayTree to a list of AnnotationMirrors.
+     *
+     * @param tree new array tree
+     * @return list of AnnotationMirrors from the tree
+     */
+    public static List<? extends AnnotationMirror> annotationsFromArrayCreation(
+            NewArrayTree tree, int level) {
 
-        assert node instanceof JCNewArray;
-        final JCNewArray newArray = ((JCNewArray) node);
+        assert tree instanceof JCNewArray;
+        final JCNewArray newArray = ((JCNewArray) tree);
 
         if (level == -1) {
             return annotationsFromTypeAnnotationTrees(newArray.annotations);
@@ -1287,6 +1356,20 @@ public final class TreeUtils {
         return Collections.emptyList();
     }
 
+    /** @return true if the tree is the declaration or use of a local variable */
+    public static boolean isLocalVariable(Tree tree) {
+        if (tree.getKind() == Kind.VARIABLE) {
+            return elementFromDeclaration((VariableTree) tree).getKind()
+                    == ElementKind.LOCAL_VARIABLE;
+        } else if (tree.getKind() == Kind.IDENTIFIER) {
+            ExpressionTree etree = (ExpressionTree) tree;
+            assert isUseOfElement(etree) : "@AssumeAssertion(nullness): tree kind";
+            return elementFromUse(etree).getKind() == ElementKind.LOCAL_VARIABLE;
+        }
+        return false;
+    }
+
+    /** @return the type as a TypeMirror of {@code tree} */
     public static TypeMirror typeOf(Tree tree) {
         return ((JCTree) tree).type;
     }

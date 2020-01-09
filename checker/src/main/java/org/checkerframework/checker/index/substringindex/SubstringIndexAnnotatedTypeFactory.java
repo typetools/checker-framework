@@ -26,14 +26,16 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The top qualifier of the Substring Index hierarchy. */
-    public final AnnotationMirror UNKNOWN;
+    public final AnnotationMirror UNKNOWN =
+            AnnotationBuilder.fromClass(elements, SubstringIndexUnknown.class);
     /** The bottom qualifier of the Substring Index hierarchy. */
-    public final AnnotationMirror BOTTOM;
+    public final AnnotationMirror BOTTOM =
+            AnnotationBuilder.fromClass(elements, SubstringIndexBottom.class);
 
+    /** Create a new SubstringIndexAnnotatedTypeFactory. */
     public SubstringIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN = AnnotationBuilder.fromClass(elements, SubstringIndexUnknown.class);
-        BOTTOM = AnnotationBuilder.fromClass(elements, SubstringIndexBottom.class);
+
         this.postInit();
     }
 
@@ -124,16 +126,16 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameByClass(superAnno, SubstringIndexUnknown.class)) {
+            if (areSameByClass(superAnno, SubstringIndexUnknown.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(subAnno, SubstringIndexBottom.class)) {
+            if (areSameByClass(subAnno, SubstringIndexBottom.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(subAnno, SubstringIndexUnknown.class)) {
+            if (areSameByClass(subAnno, SubstringIndexUnknown.class)) {
                 return false;
             }
-            if (AnnotationUtils.areSameByClass(superAnno, SubstringIndexBottom.class)) {
+            if (areSameByClass(superAnno, SubstringIndexBottom.class)) {
                 return false;
             }
 

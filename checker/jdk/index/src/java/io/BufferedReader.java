@@ -91,7 +91,7 @@ public class BufferedReader extends Reader {
      *
      * @exception  IllegalArgumentException  If sz is <= 0
      */
-    public BufferedReader(Reader in, @NonNegative int sz) {
+    public BufferedReader(Reader in, @Positive int sz) {
         super(in);
         if (sz <= 0)
             throw new IllegalArgumentException("Buffer size <= 0");
@@ -267,7 +267,7 @@ public class BufferedReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         synchronized (lock) {
             ensureOpen();
             if ((off < 0) || (off > cbuf.length) || (len < 0) ||
@@ -393,7 +393,7 @@ public class BufferedReader extends Reader {
      * @exception  IllegalArgumentException  If <code>n</code> is negative.
      * @exception  IOException  If an I/O error occurs
      */
-    public long skip(long n) throws IOException {
+    public @NonNegative long skip(@NonNegative long n) throws IOException {
         if (n < 0L) {
             throw new IllegalArgumentException("skip value is negative");
         }

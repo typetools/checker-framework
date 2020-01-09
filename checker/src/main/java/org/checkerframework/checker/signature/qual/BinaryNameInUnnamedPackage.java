@@ -1,8 +1,11 @@
 package org.checkerframework.checker.signature.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
@@ -10,11 +13,18 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * ClassGetName}. The string represents a class that is in the unnamed package (also known as the
  * default package).
  *
- * <p>Examples: {@code MyClass}, {@code MyClass$22}.
+ * <p>Examples:
+ *
+ * <pre>{@code
+ * MyClass
+ * MyClass$22
+ * }</pre>
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@SubtypeOf({BinaryName.class, InternalForm.class})
-@ImplicitFor(stringPatterns = "^[A-Za-z_][A-Za-z_0-9]*(\\$[A-Za-z_0-9]+)*$")
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf({BinaryName.class, InternalForm.class})
+@QualifierForLiterals(stringPatterns = "^[A-Za-z_][A-Za-z_0-9]*(\\$[A-Za-z_0-9]+)*$")
 public @interface BinaryNameInUnnamedPackage {}

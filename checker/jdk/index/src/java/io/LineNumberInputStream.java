@@ -127,7 +127,7 @@ class LineNumberInputStream extends FilterInputStream {
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.LineNumberInputStream#read()
      */
-    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if ((off < 0) || (off > b.length) || (len < 0) ||
@@ -176,7 +176,7 @@ class LineNumberInputStream extends FilterInputStream {
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.FilterInputStream#in
      */
-    public long skip(long n) throws IOException {
+    public @NonNegative long skip(long n) throws IOException {
         int chunk = 2048;
         long remaining = n;
         byte data[];

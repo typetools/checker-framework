@@ -167,9 +167,9 @@
 % Arg 1: .html reference, without the .../api/ prefix
 % Arg 2: What will appear in the formatted manual.
 % Do not use \url in the body of any macro
-\newcommand{\sunjavadoc}[2]{\href{https://docs.oracle.com/javase/8/docs/api/#1}{\<#2>}}
+\newcommand{\sunjavadoc}[2]{\href{https://docs.oracle.com/en/java/javase/11/docs/api/#1}{\<#2>}}
 % Like \sunjavadoc, but for annotations and prepends "@".
-\newcommand{\sunjavadocanno}[2]{\href{https://docs.oracle.com/javase/8/docs/api/#1}{\<@#2>}}
+\newcommand{\sunjavadocanno}[2]{\href{https://docs.oracle.com/en/java/javase/11/docs/api/#1}{\<@#2>}}
 % Now, for Java EE (version 7 is the last version):
 \newcommand{\javaeejavadoc}[2]{\href{https://docs.oracle.com/javaee/7/api/#1}{\<#2>}}
 \newcommand{\javaeejavadocanno}[2]{\href{https://docs.oracle.com/javaee/7/api/#1}{\<@#2>}}
@@ -183,7 +183,12 @@
 
 
 \ifhevea
-\newcommand{\selflink}[1]{\if@refs\ \ahrefloc{#1}{\small\@print@u{128279}}\fi}
+% Using a Unicode character avoids needing to use an image.  Unfortunately,
+% this Unicode character is not installed on all computers, so use an image
+% anyway.
+% \newcommand{\linkicon}{{\small\@print@u{128279}}}
+\newcommand{\linkicon}{\imgsrc[width="10" height="10"]{chainlink.svg}}
+\newcommand{\selflink}[1]{\if@refs\ \ahrefloc{#1}{\linkicon}\fi}
 \newcommand{\mksectionAndLabel}[1]
 {\newcommand{\csname #1AndLabel\endcsname}[2]
 {\csname #1\endcsname{##1\label{##2}\selflink{##2}}}}
@@ -201,4 +206,4 @@
 \newcommand{\paragraphAndLabel}[2]{\paragraph{#1}\label{#2}}
 \fi
 
-%  LocalWords:  fontsize
+%  LocalWords:  fontsize mysmall myxsmall myxxsmall subsubsection

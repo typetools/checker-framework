@@ -35,7 +35,9 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  *
  * <pre>{@code   @EnsuresNonNullIf(expression="next_cache", result=true)
  *   public boolean hasNext() {
- *     if (next_cache == null) return false;
+ *     if (next_cache == null) {
+ *       return false;
+ *     }
  *     ...
  *   }}</pre>
  *
@@ -49,12 +51,23 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * <pre>{@code   @EnsuresNonNullIf(expression="getComponentType()", result=true)
  *   public native @Pure boolean isArray();}</pre>
  *
- * You can write multiple {@code @EnsuresNonNullIf} annotations on a single method:
+ * <!-- Issue:  https://tinyurl.com/cfissue/1307 -->
+ * You cannot write two {@code @EnsuresNonNullIf} annotations on a single method; to get the effect
+ * of
  *
  * <pre><code>
  * &nbsp;   @EnsuresNonNullIf(expression="outputFile", result=true)
  * &nbsp;   @EnsuresNonNullIf(expression="memoryOutputStream", result=false)
  *     public boolean isThresholdExceeded() { ... }
+ * </code></pre>
+ *
+ * you need to instead write
+ *
+ * <pre><code>
+ * &nbsp;@EnsuresQualifiersIf({
+ * &nbsp;  @EnsuresQualifierIf(result=true, qualifier=NonNull.class, expression="outputFile"),
+ * &nbsp;  @EnsuresQualifierIf(result=false, qualifier=NonNull.class, expression="memoryOutputStream")
+ * })
  * </code></pre>
  *
  * @see NonNull

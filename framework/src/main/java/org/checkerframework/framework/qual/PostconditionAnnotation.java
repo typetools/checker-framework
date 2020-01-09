@@ -1,6 +1,7 @@
 package org.checkerframework.framework.qual;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -8,9 +9,7 @@ import java.lang.annotation.Target;
 
 /**
  * A meta-annotation that indicates that an annotation E is a postcondition annotation, i.e., E is a
- * type-specialized version of {@link EnsuresQualifier}. The value {@code qualifier} that is
- * necessary for a postcondition specified with {@link EnsuresQualifier} is specified here with the
- * value {@code qualifier}.
+ * type-specialized version of {@link EnsuresQualifier}.
  *
  * <p>The annotation E that is meta-annotated as {@link PostconditionAnnotation} must have an
  * element called {@code value} that is an array of {@code String}s of the same format and with the
@@ -51,9 +50,14 @@ import java.lang.annotation.Target;
  * @see EnsuresQualifier
  * @see QualifierArgument
  */
-@Target({ElementType.ANNOTATION_TYPE})
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.ANNOTATION_TYPE})
 public @interface PostconditionAnnotation {
-    /** The qualifier that will be established as a postcondition. */
+    /**
+     * The qualifier that will be established as a postcondition.
+     *
+     * <p>This element is analogous to {@link EnsuresQualifier#qualifier()}.
+     */
     Class<? extends Annotation> qualifier();
 }

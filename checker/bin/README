@@ -11,6 +11,9 @@ javac.bat - Is the equivalent of the javac script for Windows systems.
 
 The directory "checker/dist/" houses all jars built for the binary distribution.
 To build these jars, run "./gradlew assemble buildJdk" from the "checker-framework" directory.
+(First, be sure you have followed the instructions for building the Checker
+Framework from source (https://checkerframework.org/manual/#build-source),
+including running `./gradlew cloneAndBuildDependencies`.)
 Afterward, the directory will contain all jars needed to run the
 Checker Framework.
 

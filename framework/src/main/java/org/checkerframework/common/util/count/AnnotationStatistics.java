@@ -18,6 +18,7 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Name;
@@ -61,7 +62,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationStatistics extends SourceChecker {
 
-    final Map<Name, Integer> annotationCount = new HashMap<>();
+    final Map<String, Integer> annotationCount = new HashMap<>();
 
     @Override
     public void typeProcessingOver() {
@@ -69,18 +70,19 @@ public class AnnotationStatistics extends SourceChecker {
             System.out.println("No annotations found.");
         } else {
             System.out.println("Found annotations: ");
-            for (Map.Entry<Name, Integer> entry : annotationCount.entrySet()) {
-                System.out.println(entry.getKey() + "\t" + entry.getValue());
+            for (String key : new TreeSet<>(annotationCount.keySet())) {
+                System.out.println(key + "\t" + annotationCount.get(key));
             }
         }
     }
 
     /** Increment the number of times annotation with name {@code annoName} has appeared. */
     protected void incrementCount(Name annoName) {
-        if (!annotationCount.containsKey(annoName)) {
-            annotationCount.put(annoName, 1);
+        String annoString = annoName.toString();
+        if (!annotationCount.containsKey(annoString)) {
+            annotationCount.put(annoString, 1);
         } else {
-            annotationCount.put(annoName, annotationCount.get(annoName) + 1);
+            annotationCount.put(annoString, annotationCount.get(annoString) + 1);
         }
     }
 

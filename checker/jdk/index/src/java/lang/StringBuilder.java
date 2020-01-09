@@ -201,7 +201,7 @@ public final class StringBuilder
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder append(char[] str, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int len) {
+    public StringBuilder append(char[] str, @IndexOrHigh("#1") int offset, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) {
         super.append(str, offset, len);
         return this;
     }

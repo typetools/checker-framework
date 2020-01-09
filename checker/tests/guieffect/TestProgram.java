@@ -21,7 +21,6 @@ public class TestProgram {
                     }
                 });
         uicons.runAsync(
-                // :: error: (declaration.inconsistent.with.implements.clause)
                 new @UI IGenericTask() {
                     final UIElement e2 = e;
 
@@ -42,8 +41,7 @@ public class TestProgram {
                     }
                 });
         safecons.runAsync(
-                // :: error: (argument.type.incompatible) :: error:
-                // (declaration.inconsistent.with.implements.clause)
+                // :: error: (argument.type.incompatible)
                 new @UI IGenericTask() {
                     final UIElement e2 = e;
 

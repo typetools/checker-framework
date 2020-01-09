@@ -24,7 +24,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * <p><b>Runtime Dependency</b>
  *
  * <p>Please note that using this class introduces a runtime dependency. This means that you need to
- * distribute (or link to) the Checker Framework, along with your binaries.
+ * distribute (or link to) {@code checker-qual.jar}, along with your binaries.
  *
  * <p>To eliminate this dependency, you can simply copy this class into your own project.
  *
@@ -45,7 +45,8 @@ public final class Opt {
      * @throws NoSuchElementException if primary is null
      * @see java.util.Optional#get()
      */
-    public static <T> @NonNull T get(T primary) {
+    // `primary` is @NonNull; otherwise, the method could throw an exception.
+    public static <T extends @NonNull Object> T get(T primary) {
         if (primary == null) {
             throw new NoSuchElementException("No value present");
         }
@@ -125,13 +126,14 @@ public final class Opt {
     }
 
     /**
-     * Return primary if it is non-null. If primary is null, return an exception to be created by
-     * the provided supplier.
+     * Return primary if it is non-null. If primary is null, throw an exception to be created by the
+     * provided supplier.
      *
      * @see java.util.Optional#orElseThrow(Supplier)
      */
-    public static <T, X extends @NonNull Throwable> @NonNull T orElseThrow(
-            T primary, Supplier<? extends @NonNull X> exceptionSupplier) throws X {
+    // `primary` is @NonNull; otherwise, the method could throw an exception.
+    public static <T extends @NonNull Object, X extends @NonNull Throwable> T orElseThrow(
+            T primary, Supplier<? extends X> exceptionSupplier) throws X {
         if (primary != null) {
             return primary;
         } else {

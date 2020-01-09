@@ -86,7 +86,7 @@ public class StringReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         synchronized (lock) {
             ensureOpen();
             if ((off < 0) || (off > cbuf.length) || (len < 0) ||
@@ -120,7 +120,7 @@ public class StringReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public long skip(long ns) throws IOException {
+    public @NonNegative long skip(long ns) throws IOException {
         synchronized (lock) {
             ensureOpen();
             if (next >= length)

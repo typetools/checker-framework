@@ -8,16 +8,18 @@ import org.checkerframework.checker.initialization.qual.*;
 
 public class Object {
   public Object() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure
+  @EnsuresNonNullIf(expression="#1", result=true)
+  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   // toString() is @SideEffectFree rather than @Pure because it returns a string
   // that differs according to ==, and @Deterministic requires that the results of
   // two calls of the method are ==.
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
-  public final void wait(@UnknownInitialization @Raw Object this, long a1, int a2) throws InterruptedException { throw new RuntimeException("skeleton method"); }
-  public final void wait(@UnknownInitialization @Raw Object this) throws InterruptedException { throw new RuntimeException("skeleton method"); }
+  public final void wait(@UnknownInitialization Object this, long a1, int a2) throws InterruptedException { throw new RuntimeException("skeleton method"); }
+  public final void wait(@UnknownInitialization Object this) throws InterruptedException { throw new RuntimeException("skeleton method"); }
 
   private static native void registerNatives();
-  @Pure public final native Class<?> getClass(@UnknownInitialization @Raw Object this);
+  @Pure public final native Class<?> getClass(@UnknownInitialization Object this);
   @Pure public native int hashCode();
   @SideEffectFree protected native Object clone() throws CloneNotSupportedException;
   public final native void notify();

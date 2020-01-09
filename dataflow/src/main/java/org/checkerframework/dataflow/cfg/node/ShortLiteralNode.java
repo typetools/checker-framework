@@ -4,6 +4,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for a short literal. For example:
@@ -19,9 +20,14 @@ import java.util.Collections;
  */
 public class ShortLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new ShortLiteralNode.
+     *
+     * @param t the tree for the literal value
+     */
     public ShortLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.INT_LITERAL);
+        assert t.getKind() == Tree.Kind.INT_LITERAL;
     }
 
     @Override
@@ -35,7 +41,7 @@ public class ShortLiteralNode extends ValueLiteralNode {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         // test that obj is a ShortLiteralNode
         if (!(obj instanceof ShortLiteralNode)) {
             return false;

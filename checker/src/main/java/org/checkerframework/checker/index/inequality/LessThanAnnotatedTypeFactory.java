@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
 import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.LessThanBottom;
@@ -22,6 +21,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntRange;
@@ -47,7 +47,12 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
         postInit();
     }
-    /** Returns the Value Checker's annotated type factory. */
+
+    /**
+     * Returns the Value Checker's annotated type factory.
+     *
+     * @return the Value Checker's annotated type factory
+     */
     public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(ValueChecker.class);
     }
@@ -78,10 +83,11 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             List<String> subList = getLessThanExpressions(subAnno);
-            List<String> superList = getLessThanExpressions(superAnno);
             if (subList == null) {
                 return true;
-            } else if (superList == null) {
+            }
+            List<String> superList = getLessThanExpressions(superAnno);
+            if (superList == null) {
                 return false;
             }
 
@@ -121,7 +127,11 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** @return is left less than right? */
+    /**
+     * @param left the first tree to compare
+     * @param right the second tree to compare
+     * @return is left less than right?
+     */
     public boolean isLessThan(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);
         return isLessThan(leftATM.getAnnotationInHierarchy(UNKNOWN), right);
@@ -138,7 +148,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** @return {@code smaller < bigger}, using information from the Value Checker */
     public boolean isLessThanByValue(Tree smaller, String bigger, TreePath path) {
-        Long smallerValue = IndexUtil.getMinValue(smaller, getValueAnnotatedTypeFactory());
+        Long smallerValue = ValueCheckerUtils.getMinValue(smaller, getValueAnnotatedTypeFactory());
         if (smallerValue == null) {
             return false;
         }
@@ -251,8 +261,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Creates a less than qualifier given the expressions.
      *
      * <p>If expressions is null, {@link LessThanBottom} is returned. If expressions is empty,
-     * {@link LessThanUnknown} is returned. Otherwise, {@code LessThanUnknown(expressions)} is
-     * returned.
+     * {@link LessThanUnknown} is returned. Otherwise, {@code LessThan(expressions)} is returned.
      */
     public AnnotationMirror createLessThanQualifier(List<String> expressions) {
         if (expressions == null) {

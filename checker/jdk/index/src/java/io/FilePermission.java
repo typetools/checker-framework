@@ -24,7 +24,6 @@
  */
 
 package java.io;
-import org.checkerframework.checker.index.qual.*;
 
 import java.security.*;
 import java.util.Enumeration;

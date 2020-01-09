@@ -272,7 +272,7 @@ public class StreamTokenizer {
      * @param   low   the low end of the range.
      * @param   hi    the high end of the range.
      */
-    public void wordChars(@NonNegative int low, @NonNegative int hi) {
+    public void wordChars(int low, int hi) {
         if (low < 0)
             low = 0;
         if (hi >= ctype.length)
@@ -293,7 +293,7 @@ public class StreamTokenizer {
      * @param   low   the low end of the range.
      * @param   hi    the high end of the range.
      */
-    public void whitespaceChars(@NonNegative int low, @NonNegative int hi) {
+    public void whitespaceChars(int low, int hi) {
         if (low < 0)
             low = 0;
         if (hi >= ctype.length)
@@ -313,7 +313,7 @@ public class StreamTokenizer {
      * @param   hi    the high end of the range.
      * @see     java.io.StreamTokenizer#ordinaryChar(int)
      */
-    public void ordinaryChars(@NonNegative int low, @NonNegative int hi) {
+    public void ordinaryChars(int low, int hi) {
         if (low < 0)
             low = 0;
         if (hi >= ctype.length)

@@ -5,14 +5,12 @@ import com.sun.source.tree.Tree;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
@@ -31,6 +29,7 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.plumelib.reflection.Signatures;
 
 /**
  * Adds {@link I18nFormat} to the type of tree, if it is a {@code String} or {@code char} literal
@@ -45,37 +44,40 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    protected final AnnotationMirror I18NUNKNOWNFORMAT;
-    protected final AnnotationMirror I18NFORMAT;
-    protected final AnnotationMirror I18NINVALIDFORMAT;
-    protected final AnnotationMirror I18NFORMATBOTTOM;
-    protected final AnnotationMirror I18NFORMATFOR;
+    /** The @{@link I18nUnknownFormat} annotation. */
+    protected final AnnotationMirror I18NUNKNOWNFORMAT =
+            AnnotationBuilder.fromClass(elements, I18nUnknownFormat.class);
+    /** The @{@link I18nFormat} annotation. */
+    protected final AnnotationMirror I18NFORMAT =
+            AnnotationBuilder.fromClass(elements, I18nFormat.class);
+    /** The @{@link I18nInvalidFormat} annotation. */
+    protected final AnnotationMirror I18NINVALIDFORMAT =
+            AnnotationBuilder.fromClass(elements, I18nInvalidFormat.class);
+    /** The @{@link I18nFormatBottom} annotation. */
+    protected final AnnotationMirror I18NFORMATBOTTOM =
+            AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
+    /** The @{@link I18nFormatFor} annotation. */
+    protected final AnnotationMirror I18NFORMATFOR =
+            AnnotationBuilder.fromClass(elements, I18nFormatFor.class);
 
-    public final Map<String, String> translations;
+    /** Map from a translation file key to its value in the file. */
+    public final Map<String, String> translations = Collections.unmodifiableMap(buildLookup());
 
-    protected final I18nFormatterTreeUtil treeUtil;
+    /** Syntax tree utilities. */
+    protected final I18nFormatterTreeUtil treeUtil = new I18nFormatterTreeUtil(checker);
 
+    /** Create a new I18nFormatterAnnotatedTypeFactory. */
     public I18nFormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        I18NUNKNOWNFORMAT = AnnotationBuilder.fromClass(elements, I18nUnknownFormat.class);
-        I18NFORMAT = AnnotationBuilder.fromClass(elements, I18nFormat.class);
-        I18NINVALIDFORMAT = AnnotationBuilder.fromClass(elements, I18nInvalidFormat.class);
-        I18NFORMATBOTTOM = AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
-        I18NFORMATFOR = AnnotationBuilder.fromClass(elements, I18nFormatFor.class);
-
-        this.translations = Collections.unmodifiableMap(buildLookup());
-
-        this.treeUtil = new I18nFormatterTreeUtil(checker);
         this.postInit();
     }
 
-    @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll(
-                I18nUnknownFormat.class, I18nFormatBottom.class);
-    }
-
+    /**
+     * Builds a map from a translation file key to its value in the file.
+     *
+     * @return Map from a translation file key to its value in the file
+     */
     private Map<String, String> buildLookup() {
         Map<String, String> result = new HashMap<>();
 
@@ -139,6 +141,13 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                 System.err.println("Couldn't parse the resource bundles: <" + bundleNames + ">");
             } else {
                 for (String bundleName : namesArr) {
+                    if (!Signatures.isBinaryName(bundleName)) {
+                        System.err.println(
+                                "Malformed resource bundle: <"
+                                        + bundleName
+                                        + "> should be a binary name.");
+                        continue;
+                    }
                     ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
                     if (bundle == null) {
                         System.err.println(
@@ -146,7 +155,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                                         + bundleName
                                         + "> for locale <"
                                         + Locale.getDefault()
-                                        + ">");
+                                        + ">.");
                         continue;
                     }
 

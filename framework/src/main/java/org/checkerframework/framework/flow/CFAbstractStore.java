@@ -1,6 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,6 +21,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.StringCFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -30,6 +32,8 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -190,30 +194,36 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V otherVal = e.getValue();
 
                 // case 3:
-                List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
-                        atypeFactory.getAnnotationWithMetaAnnotation(
-                                fieldAccess.getField(), MonotonicQualifier.class);
-                V newOtherVal = null;
-                for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
-                    AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
-                    Name annotation =
-                            AnnotationUtils.getElementValueClassName(
-                                    monotonicAnnotation, "value", false);
-                    AnnotationMirror target =
-                            AnnotationBuilder.fromName(atypeFactory.getElementUtils(), annotation);
-                    // Make sure the 'target' annotation is present.
-                    if (AnnotationUtils.containsSame(otherVal.getAnnotations(), target)) {
-                        newOtherVal =
-                                analysis.createSingleAnnotationValue(
-                                                target, otherVal.getUnderlyingType())
-                                        .mostSpecific(newOtherVal, null);
+                if (!((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+                        .getSupportedMonotonicTypeQualifiers()
+                        .isEmpty()) {
+                    List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
+                            atypeFactory.getAnnotationWithMetaAnnotation(
+                                    fieldAccess.getField(), MonotonicQualifier.class);
+                    V newOtherVal = null;
+                    for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation :
+                            fieldAnnotations) {
+                        AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
+                        Name annotation =
+                                AnnotationUtils.getElementValueClassName(
+                                        monotonicAnnotation, "value", false);
+                        AnnotationMirror target =
+                                AnnotationBuilder.fromName(
+                                        atypeFactory.getElementUtils(), annotation);
+                        // Make sure the 'target' annotation is present.
+                        if (AnnotationUtils.containsSame(otherVal.getAnnotations(), target)) {
+                            newOtherVal =
+                                    analysis.createSingleAnnotationValue(
+                                                    target, otherVal.getUnderlyingType())
+                                            .mostSpecific(newOtherVal, null);
+                        }
                     }
-                }
-                if (newOtherVal != null) {
-                    // keep information for all hierarchies where we had a
-                    // monotone annotation.
-                    newFieldValues.put(fieldAccess, newOtherVal);
-                    continue;
+                    if (newOtherVal != null) {
+                        // keep information for all hierarchies where we had a
+                        // monotone annotation.
+                        newFieldValues.put(fieldAccess, newOtherVal);
+                        continue;
+                    }
                 }
 
                 // case 2:
@@ -253,13 +263,56 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         insertValue(r, analysis.createSingleAnnotationValue(a, r.getType()));
     }
 
+    /**
+     * Add the annotation {@code newAnno} for the expression {@code r} (correctly deciding where to
+     * store the information depending on the type of the expression {@code r}).
+     *
+     * <p>This method does not take care of removing other information that might be influenced by
+     * changes to certain parts of the state.
+     *
+     * <p>If there is already a value {@code v} present for {@code r}, then the greatest lower bound
+     * of the new and old value is inserted into the store unless it's bottom. Some checkers do not
+     * override {@link QualifierHierarchy#greatestLowerBound(AnnotationMirror, AnnotationMirror)}
+     * and the default implementation will return the bottom qualifier incorrectly. So this method
+     * conservatively does not insert the glb if it is bottom.
+     *
+     * <p>Note that this happens per hierarchy, and if the store already contains information about
+     * a hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
+     */
+    public void insertOrRefine(FlowExpressions.Receiver r, AnnotationMirror newAnno) {
+        if (!canInsertReceiver(r)) {
+            return;
+        }
+        V oldValue = getValue(r);
+        if (oldValue == null) {
+            insertValue(r, analysis.createSingleAnnotationValue(newAnno, r.getType()));
+            return;
+        }
+        QualifierHierarchy qualifierHierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+        AnnotationMirror top = qualifierHierarchy.getTopAnnotation(newAnno);
+        AnnotationMirror oldAnno =
+                qualifierHierarchy.findAnnotationInHierarchy(oldValue.annotations, top);
+        if (oldAnno == null) {
+            insertValue(r, analysis.createSingleAnnotationValue(newAnno, r.getType()));
+            return;
+        }
+
+        AnnotationMirror glb = qualifierHierarchy.greatestLowerBound(newAnno, oldAnno);
+        if (AnnotationUtils.areSame(qualifierHierarchy.getBottomAnnotation(top), glb)) {
+            glb = newAnno;
+        }
+
+        insertValue(r, analysis.createSingleAnnotationValue(glb, r.getType()));
+    }
+
     /** Returns true if the receiver {@code r} can be stored in this store. */
     public static boolean canInsertReceiver(Receiver r) {
         if (r instanceof FlowExpressions.FieldAccess
                 || r instanceof FlowExpressions.ThisReference
                 || r instanceof FlowExpressions.LocalVariable
                 || r instanceof FlowExpressions.MethodCall
-                || r instanceof FlowExpressions.ArrayAccess) {
+                || r instanceof FlowExpressions.ArrayAccess
+                || r instanceof FlowExpressions.ClassName) {
             return !r.containsUnknown();
         }
         return false;
@@ -354,6 +407,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *     true.
      */
     protected boolean isMonotonicUpdate(FieldAccess fieldAcc, V value) {
+        if (analysis.atypeFactory.getSupportedMonotonicTypeQualifiers().isEmpty()) {
+            return false;
+        }
         boolean isMonotonic = false;
         // TODO: This check for !sequentialSemantics is an optimization that breaks the contract of
         // the method, since the method name and documentation say nothing about sequential
@@ -584,47 +640,45 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *     abstract value is not known).
      */
     protected void removeConflicting(FlowExpressions.FieldAccess fieldAccess, @Nullable V val) {
-        Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
-        for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
-            FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
-            V otherVal = e.getValue();
+        final Iterator<Entry<FieldAccess, V>> fieldValuesIterator =
+                fieldValues.entrySet().iterator();
+        while (fieldValuesIterator.hasNext()) {
+            Entry<FieldAccess, V> entry = fieldValuesIterator.next();
+            FieldAccess otherFieldAccess = entry.getKey();
+            V otherVal = entry.getValue();
             // case 2:
             if (otherFieldAccess.getReceiver().containsModifiableAliasOf(this, fieldAccess)) {
-                continue; // remove information completely
+                fieldValuesIterator.remove(); // remove information completely
             }
             // case 1:
-            if (fieldAccess.getField().equals(otherFieldAccess.getField())) {
+            else if (fieldAccess.getField().equals(otherFieldAccess.getField())) {
                 if (canAlias(fieldAccess.getReceiver(), otherFieldAccess.getReceiver())) {
                     if (!otherFieldAccess.isFinal()) {
                         if (val != null) {
                             V newVal = val.leastUpperBound(otherVal);
-                            newFieldValues.put(otherFieldAccess, newVal);
+                            entry.setValue(newVal);
                         } else {
                             // remove information completely
+                            fieldValuesIterator.remove();
                         }
-                        continue;
                     }
                 }
             }
-            // information is save to be carried over
-            newFieldValues.put(otherFieldAccess, otherVal);
         }
-        fieldValues = newFieldValues;
 
-        Map<FlowExpressions.ArrayAccess, V> newArrayValues = new HashMap<>();
-        for (Entry<ArrayAccess, V> e : arrayValues.entrySet()) {
-            FlowExpressions.ArrayAccess otherArrayAccess = e.getKey();
-            V otherVal = e.getValue();
+        final Iterator<Entry<ArrayAccess, V>> arrayValuesIterator =
+                arrayValues.entrySet().iterator();
+        while (arrayValuesIterator.hasNext()) {
+            Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
+            FlowExpressions.ArrayAccess otherArrayAccess = entry.getKey();
             if (otherArrayAccess.containsModifiableAliasOf(this, fieldAccess)) {
                 // remove information completely
-                continue;
+                arrayValuesIterator.remove();
             }
-            newArrayValues.put(otherArrayAccess, otherVal);
         }
-        arrayValues = newArrayValues;
 
         // case 3:
-        methodValues = new HashMap<>();
+        methodValues.clear();
     }
 
     /**
@@ -647,41 +701,37 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *     abstract value is not known).
      */
     protected void removeConflicting(FlowExpressions.ArrayAccess arrayAccess, @Nullable V val) {
-        Map<FlowExpressions.ArrayAccess, V> newArrayValues = new HashMap<>();
-        for (Entry<FlowExpressions.ArrayAccess, V> e : arrayValues.entrySet()) {
-            FlowExpressions.ArrayAccess otherArrayAccess = e.getKey();
-            V otherVal = e.getValue();
+        final Iterator<Entry<ArrayAccess, V>> arrayValuesIterator =
+                arrayValues.entrySet().iterator();
+        while (arrayValuesIterator.hasNext()) {
+            Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
+            ArrayAccess otherArrayAccess = entry.getKey();
             // case 1:
             if (otherArrayAccess.containsModifiableAliasOf(this, arrayAccess)) {
-                continue; // remove information completely
-            }
-            if (canAlias(arrayAccess.getReceiver(), otherArrayAccess.getReceiver())) {
+                arrayValuesIterator.remove(); // remove information completely
+            } else if (canAlias(arrayAccess.getReceiver(), otherArrayAccess.getReceiver())) {
                 // TODO: one could be less strict here, and only raise the abstract
                 // value for all array expressions with potentially aliasing receivers.
-                continue; // remove information completely
+                arrayValuesIterator.remove(); // remove information completely
             }
-            // information is save to be carried over
-            newArrayValues.put(otherArrayAccess, otherVal);
         }
-        arrayValues = newArrayValues;
 
         // case 2:
-        Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
-        for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
-            FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
-            V otherVal = e.getValue();
+        final Iterator<Entry<FieldAccess, V>> fieldValuesIterator =
+                fieldValues.entrySet().iterator();
+        while (fieldValuesIterator.hasNext()) {
+            Entry<FieldAccess, V> entry = fieldValuesIterator.next();
+            FieldAccess otherFieldAccess = entry.getKey();
             Receiver receiver = otherFieldAccess.getReceiver();
             if (receiver.containsModifiableAliasOf(this, arrayAccess)
                     && receiver.containsOfClass(ArrayAccess.class)) {
                 // remove information completely
-                continue;
+                fieldValuesIterator.remove();
             }
-            newFieldValues.put(otherFieldAccess, otherVal);
         }
-        fieldValues = newFieldValues;
 
         // case 3:
-        methodValues = new HashMap<>();
+        methodValues.clear();
     }
 
     /**
@@ -698,39 +748,39 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * </ol>
      */
     protected void removeConflicting(LocalVariable var) {
-        Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
-        for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
-            FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
+        final Iterator<Entry<FieldAccess, V>> fieldValuesIterator =
+                fieldValues.entrySet().iterator();
+        while (fieldValuesIterator.hasNext()) {
+            Entry<FieldAccess, V> entry = fieldValuesIterator.next();
+            FieldAccess otherFieldAccess = entry.getKey();
             // case 1:
             if (otherFieldAccess.containsSyntacticEqualReceiver(var)) {
-                continue;
+                fieldValuesIterator.remove();
             }
-            newFieldValues.put(otherFieldAccess, e.getValue());
         }
-        fieldValues = newFieldValues;
 
-        Map<FlowExpressions.ArrayAccess, V> newArrayValues = new HashMap<>();
-        for (Entry<FlowExpressions.ArrayAccess, V> e : arrayValues.entrySet()) {
-            FlowExpressions.ArrayAccess otherArrayAccess = e.getKey();
+        final Iterator<Entry<ArrayAccess, V>> arrayValuesIterator =
+                arrayValues.entrySet().iterator();
+        while (arrayValuesIterator.hasNext()) {
+            Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
+            ArrayAccess otherArrayAccess = entry.getKey();
             // case 2:
             if (otherArrayAccess.containsSyntacticEqualReceiver(var)) {
-                continue;
+                arrayValuesIterator.remove();
             }
-            newArrayValues.put(otherArrayAccess, e.getValue());
         }
-        arrayValues = newArrayValues;
 
-        Map<FlowExpressions.MethodCall, V> newMethodValues = new HashMap<>();
-        for (Entry<FlowExpressions.MethodCall, V> e : methodValues.entrySet()) {
-            FlowExpressions.MethodCall otherMethodAccess = e.getKey();
+        final Iterator<Entry<MethodCall, V>> methodValuesIterator =
+                methodValues.entrySet().iterator();
+        while (methodValuesIterator.hasNext()) {
+            Entry<MethodCall, V> entry = methodValuesIterator.next();
+            MethodCall otherMethodAccess = entry.getKey();
             // case 3:
             if (otherMethodAccess.containsSyntacticEqualReceiver(var)
                     || otherMethodAccess.containsSyntacticEqualParameter(var)) {
-                continue;
+                methodValuesIterator.remove();
             }
-            newMethodValues.put(otherMethodAccess, e.getValue());
         }
-        methodValues = newMethodValues;
     }
 
     /**
@@ -921,7 +971,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (o instanceof CFAbstractStore) {
             @SuppressWarnings("unchecked")
             CFAbstractStore<V, S> other = (CFAbstractStore<V, S>) o;
@@ -940,41 +990,47 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     @SideEffectFree
     @Override
     public String toString() {
-        return "Use a CFGVisualizer to see the Store: " + this.hashCode();
+        return visualize(new StringCFGVisualizer<>());
     }
 
     @Override
-    public void visualize(CFGVisualizer<?, S, ?> viz) {
+    public String visualize(CFGVisualizer<?, S, ?> viz) {
         /* This cast is guaranteed to be safe, as long as the CFGVisualizer is created by
          * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
         @SuppressWarnings("unchecked")
         CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
-        castedViz.visualizeStoreHeader(this.getClass().getCanonicalName());
-        internalVisualize(castedViz);
-        castedViz.visualizeStoreFooter();
+        StringBuilder sbVisualize = new StringBuilder();
+        sbVisualize.append(castedViz.visualizeStoreHeader(this.getClass().getCanonicalName()));
+        sbVisualize.append(internalVisualize(castedViz));
+        sbVisualize.append(castedViz.visualizeStoreFooter());
+        return sbVisualize.toString();
     }
 
     /**
-     * Adds a representation of the internal information of this store to visualizer {@code viz}.
+     * Adds a representation of the internal information of this Store to visualizer {@code viz}.
+     *
+     * @return a representation of the internal information of this {@link Store}
      */
-    protected void internalVisualize(CFGVisualizer<V, S, ?> viz) {
+    protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
+        StringBuilder res = new StringBuilder();
         for (Entry<FlowExpressions.LocalVariable, V> entry : localVariableValues.entrySet()) {
-            viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue()));
         }
         if (thisValue != null) {
-            viz.visualizeStoreThisVal(thisValue);
+            res.append(viz.visualizeStoreThisVal(thisValue));
         }
         for (Entry<FlowExpressions.FieldAccess, V> entry : fieldValues.entrySet()) {
-            viz.visualizeStoreFieldVals(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreFieldVals(entry.getKey(), entry.getValue()));
         }
         for (Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues.entrySet()) {
-            viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue()));
         }
         for (Entry<MethodCall, V> entry : methodValues.entrySet()) {
-            viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue()));
         }
         for (Entry<FlowExpressions.ClassName, V> entry : classValues.entrySet()) {
-            viz.visualizeStoreClassVals(entry.getKey(), entry.getValue());
+            res.append(viz.visualizeStoreClassVals(entry.getKey(), entry.getValue()));
         }
+        return res.toString();
     }
 }

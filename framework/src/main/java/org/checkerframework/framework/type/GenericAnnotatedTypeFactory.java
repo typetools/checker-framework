@@ -18,7 +18,6 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +28,7 @@ import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -70,20 +70,20 @@ import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
+import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultQualifierForUseTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.IrrelevantTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
@@ -96,17 +96,17 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.reflection.Signatures;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
- * inference, qualifier polymorphism, implicit annotations via {@link ImplicitFor}, and
- * user-specified defaults via {@link DefaultQualifier}.
+ * inference, qualifier polymorphism, default annotations via {@link DefaultFor}, and user-specified
+ * defaults via {@link DefaultQualifier}.
  */
 public abstract class GenericAnnotatedTypeFactory<
                 Value extends CFAbstractValue<Value>,
@@ -124,8 +124,8 @@ public abstract class GenericAnnotatedTypeFactory<
     /** to annotate types based on the given tree */
     protected TypeAnnotator typeAnnotator;
 
-    /** for use in addTypeImplicits */
-    private ImplicitsTypeAnnotator implicitsTypeAnnotator;
+    /** for use in addAnnotationsFromDefaultQualifierForUse */
+    private DefaultQualifierForUseTypeAnnotator defaultQualifierForUseTypeAnnotator;
 
     /** to annotate types based on the given un-annotated types */
     protected TreeAnnotator treeAnnotator;
@@ -222,10 +222,6 @@ public abstract class GenericAnnotatedTypeFactory<
             flowResultAnalysisCaches = null;
         }
 
-        // Add common aliases.
-        // addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
-        //         Pure.class, AnnotationUtils.fromClass(elements, Pure.class));
-
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
     }
@@ -238,6 +234,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.defaults = createAndInitQualifierDefaults();
         this.treeAnnotator = createTreeAnnotator();
         this.typeAnnotator = createTypeAnnotator();
+        this.defaultQualifierForUseTypeAnnotator = createDefaultForUseTypeAnnotator();
 
         this.poly = createQualifierPolymorphism();
 
@@ -284,6 +281,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         if (shouldCache) {
             this.flowResultAnalysisCaches.clear();
+            this.defaultQualifierForUseTypeAnnotator.clearCache();
         }
     }
 
@@ -318,7 +316,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * <ol>
      *   <li>{@link PropagationTreeAnnotator}: Propagates annotations from subtrees
-     *   <li>{@link ImplicitsTreeAnnotator}: Adds annotations based on {@link ImplicitFor}
+     *   <li>{@link LiteralTreeAnnotator}: Adds annotations based on {@link QualifierForLiterals}
      *       meta-annotations
      *   <li>{@link DependentTypesTreeAnnotator}: Adapts dependent annotations based on context
      * </ol>
@@ -334,7 +332,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected TreeAnnotator createTreeAnnotator() {
         List<TreeAnnotator> treeAnnotators = new ArrayList<>();
         treeAnnotators.add(new PropagationTreeAnnotator(this));
-        treeAnnotators.add(new ImplicitsTreeAnnotator(this));
+        treeAnnotators.add(new LiteralTreeAnnotator(this).addStandardLiteralQualifiers());
         if (dependentTypesHelper != null) {
             treeAnnotators.add(dependentTypesHelper.createDependentTypesTreeAnnotator(this));
         }
@@ -342,8 +340,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
-     * that adds annotations to a type based on the content of the type itself.
+     * Returns a {@link DefaultForTypeAnnotator} that adds annotations to a type based on the
+     * content of the type itself.
      *
      * <p>Subclass may override this method. The default type annotator is a {@link
      * ListTypeAnnotator} of the following:
@@ -352,7 +350,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@link
      *       RelevantJavaTypes} annotation on the checker.
      *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards.
-     *   <li>{@link ImplicitsTypeAnnotator}: Adds annotations based on {@link ImplicitFor}
+     *   <li>{@link DefaultForTypeAnnotator}: Adds annotations based on {@link DefaultFor}
      *       meta-annotations.
      * </ol>
      *
@@ -370,13 +368,13 @@ public abstract class GenericAnnotatedTypeFactory<
                             this, getQualifierHierarchy().getTopAnnotations(), relevantClasses));
         }
         typeAnnotators.add(new PropagationTypeAnnotator(this));
-        implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
-        typeAnnotators.add(implicitsTypeAnnotator);
+        typeAnnotators.add(new DefaultForTypeAnnotator(this));
         return new ListTypeAnnotator(typeAnnotators);
     }
 
-    protected void addTypeNameImplicit(Class<?> clazz, AnnotationMirror implicitAnno) {
-        implicitsTypeAnnotator.addTypeName(clazz, implicitAnno);
+    /** Creates an {@link DefaultQualifierForUseTypeAnnotator}. */
+    protected DefaultQualifierForUseTypeAnnotator createDefaultForUseTypeAnnotator() {
+        return new DefaultQualifierForUseTypeAnnotator(this);
     }
 
     /**
@@ -396,14 +394,9 @@ public abstract class GenericAnnotatedTypeFactory<
         Class<?> checkerClass = checker.getClass();
 
         while (checkerClass != BaseTypeChecker.class) {
-            final String classToLoad =
-                    checkerClass
-                            .getName()
-                            .replace("Checker", "Analysis")
-                            .replace("Subchecker", "Analysis");
             FlowAnalysis result =
                     BaseTypeChecker.invokeConstructorFor(
-                            classToLoad,
+                            BaseTypeChecker.getRelatedClassName(checkerClass, "Analysis"),
                             new Class<?>[] {BaseTypeChecker.class, this.getClass(), List.class},
                             new Object[] {checker, this, fieldValues});
             if (result != null) {
@@ -443,14 +436,9 @@ public abstract class GenericAnnotatedTypeFactory<
         Class<?> checkerClass = checker.getClass();
 
         while (checkerClass != BaseTypeChecker.class) {
-            final String classToLoad =
-                    checkerClass
-                            .getName()
-                            .replace("Checker", "Transfer")
-                            .replace("Subchecker", "Transfer");
             TransferFunction result =
                     BaseTypeChecker.invokeConstructorFor(
-                            classToLoad,
+                            BaseTypeChecker.getRelatedClassName(checkerClass, "Transfer"),
                             new Class<?>[] {analysis.getClass()},
                             new Object[] {analysis});
             if (result != null) {
@@ -528,15 +516,6 @@ public abstract class GenericAnnotatedTypeFactory<
         return new QualifierDefaults(elements, this);
     }
 
-    /** Defines alphabetical sort ordering for qualifiers. */
-    private static final Comparator<Class<? extends Annotation>> QUALIFIER_SORT_ORDERING =
-            new Comparator<Class<? extends Annotation>>() {
-                @Override
-                public int compare(Class<? extends Annotation> a1, Class<? extends Annotation> a2) {
-                    return a1.getCanonicalName().compareTo(a2.getCanonicalName());
-                }
-            };
-
     /**
      * Creates and returns a string containing the number of qualifiers and the canonical class
      * names of each qualifier that has been added to this checker's supported qualifier set. The
@@ -555,9 +534,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
         // Create a list of the supported qualifiers and sort the list
         // alphabetically
-        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>();
-        sortedSupportedQuals.addAll(stq);
-        Collections.sort(sortedSupportedQuals, QUALIFIER_SORT_ORDERING);
+        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>(stq);
+        sortedSupportedQuals.sort(Comparator.comparing(Class::getCanonicalName));
 
         // display the number of qualifiers as well as the names of each
         // qualifier.
@@ -779,14 +757,18 @@ public abstract class GenericAnnotatedTypeFactory<
             Store store = getStoreBefore(tree);
             Value value = store.getValue(receiver);
             if (value != null) {
-                annotationMirror =
-                        AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
+                annotationMirror = getAnnotationByClass(value.getAnnotations(), clazz);
             }
         }
         // If the specific annotation wasn't in the store, look in the type factory.
         if (annotationMirror == null) {
             if (receiver instanceof LocalVariable) {
                 Element ele = ((LocalVariable) receiver).getElement();
+                // Because of
+                // https://github.com/eisop/checker-framework/issues/14
+                // and the workaround in
+                // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
+                // The annotationMirror may not contain all explicitly written annotations.
                 annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
             } else if (receiver instanceof FieldAccess) {
                 Element ele = ((FieldAccess) receiver).getField();
@@ -815,6 +797,23 @@ public abstract class GenericAnnotatedTypeFactory<
                         this.getContext());
 
         return FlowExpressionParseUtil.parse(expression, context, currentPath, true);
+    }
+
+    /**
+     * Produces the receiver and offset associated with an expression. For instance, "n+1" has no
+     * associated Receiver, but this method produces a pair of a Receiver (for "n") and an offset
+     * ("1").
+     *
+     * @param expression a Java expression, possibly with a constant offset
+     * @param currentPath location at which expression is evaluated
+     * @return receiver and offset for the given expression
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     */
+    public Pair<Receiver, String> getReceiverAndOffsetFromJavaExpressionString(
+            String expression, TreePath currentPath) throws FlowExpressionParseException {
+        Pair<String, String> p = getExpressionAndOffset(expression);
+        Receiver r = getReceiverFromJavaExpressionString(p.first, currentPath);
+        return Pair.of(r, p.second);
     }
 
     /**
@@ -1005,7 +1004,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
         for (Node node : nodes) {
-            if (node.getClass().equals(kind)) {
+            if (node.getClass() == kind) {
                 return kind.cast(node);
             }
         }
@@ -1338,6 +1337,9 @@ public abstract class GenericAnnotatedTypeFactory<
             case ARRAY_ACCESS:
                 res = getAnnotatedType(lhsTree);
                 break;
+            case PARENTHESIZED:
+                res = getAnnotatedTypeLhs(TreeUtils.withoutParens((ExpressionTree) lhsTree));
+                break;
             default:
                 if (TreeUtils.isTypeTree(lhsTree)) {
                     // lhsTree is a type tree at the pseudo assignment of a returned expression to
@@ -1408,35 +1410,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
-        poly.annotate(tree, method);
-
-        // If the newClassTree "tree" is explicitly annotated with a polymorphic annotation,
-        // do not replace that. This ensures consistent behaviour with constructor invocations that
-        // are cast to the polymorphic type i.e "(@Poly X) new X();" is the same as
-        // "new @Poly X();"
-        // TODO: Replace getExplicitAnnotationsOnNewClassTree() with getExplicitAnnotations()
-        // when issue 2324 is fixed.
-        // See https://github.com/typetools/checker-framework/issues/2324.
-        Set<? extends AnnotationMirror> explicitAnnotations =
-                getExplicitAnnotationsOnNewClassTree(
-                        tree, getAnnotatedType(tree.getIdentifier()).getAnnotations());
-        Set<? extends AnnotationMirror> topAnnotations = qualHierarchy.getTopAnnotations();
-        for (AnnotationMirror top : topAnnotations) {
-            AnnotationMirror polyAnnotation = qualHierarchy.getPolymorphicAnnotation(top);
-            if (AnnotationUtils.containsSameByName(explicitAnnotations, polyAnnotation)) {
-                if (!qualHierarchy.isSubtype(
-                        method.returnType.getAnnotationInHierarchy(top), polyAnnotation)) {
-                    checker.report(
-                            Result.warning(
-                                    "cast.unsafe.constructor.invocation",
-                                    method.returnType.getAnnotationInHierarchy(top),
-                                    polyAnnotation),
-                            tree);
-                }
-                method.returnType.replaceAnnotation(polyAnnotation);
-            }
-        }
-
+        poly.resolve(tree, method);
         return mType;
     }
 
@@ -1460,6 +1434,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     @Override
     public void addDefaultAnnotations(AnnotatedTypeMirror type) {
+        addAnnotationsFromDefaultQualifierForUse(null, type);
         typeAnnotator.visit(type, null);
         defaults.annotate((Element) null, type);
     }
@@ -1476,8 +1451,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Like {#addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding implementations
-     * typically simply pass the boolean to calls to super.
+     * Like {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding
+     * implementations typically simply pass the boolean to calls to super.
      */
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
@@ -1486,6 +1461,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
 
+        addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(tree, type);
@@ -1556,8 +1532,18 @@ public abstract class GenericAnnotatedTypeFactory<
         applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
     }
 
+    /**
+     * To add annotations to the type of method or constructor parameters, add a {@link
+     * TypeAnnotator} using {@link #createTypeAnnotator()} and see the comment in {@link
+     * TypeAnnotator#visitExecutable(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType,
+     * Void)}.
+     *
+     * @param elt an element
+     * @param type the type obtained from {@code elt}
+     */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+        addAnnotationsFromDefaultQualifierForUse(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
         if (dependentTypesHelper != null) {
@@ -1572,7 +1558,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
-        poly.annotate(tree, method);
+        poly.resolve(tree, method);
         return mType;
     }
 
@@ -1594,8 +1580,8 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the AnnotatedTypeFactory of the subchecker and copies the current visitor state to
      * the sub-factory so that the types are computed properly. Because the visitor state is copied,
-     * call this method each time a subfactory is needed rather than store the returned factory in a
-     * field.
+     * call this method each time a subfactory is needed rather than store the returned subfactory
+     * in a field.
      *
      * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
      */
@@ -1651,6 +1637,11 @@ public abstract class GenericAnnotatedTypeFactory<
                         "-Acfgviz specified without arguments, should be -Acfgviz=VizClassName[,opts,...]");
             }
             String[] opts = cfgviz.split(",");
+            String vizClassName = opts[0];
+            if (!Signatures.isBinaryName(vizClassName)) {
+                throw new UserError(
+                        "Bad -Acfgviz class name \"%s\", should be a binary name.", vizClassName);
+            }
 
             Map<String, Object> args = processCFGVisualizerOption(opts);
             if (!args.containsKey("verbose")) {
@@ -1660,7 +1651,7 @@ public abstract class GenericAnnotatedTypeFactory<
             args.put("checkerName", getCheckerName());
 
             CFGVisualizer<Value, Store, TransferFunction> res =
-                    BaseTypeChecker.invokeConstructorFor(opts[0], null, null);
+                    BaseTypeChecker.invokeConstructorFor(vizClassName, null, null);
             res.init(args);
             return res;
         }
@@ -1668,13 +1659,15 @@ public abstract class GenericAnnotatedTypeFactory<
         return null;
     }
 
-    /* A simple utility method to determine a short checker name to be
-     * used by CFG visualizations.
+    /**
+     * A simple utility method to determine a short checker name to be used by CFG visualizations.
      */
     private String getCheckerName() {
         String checkerName = checker.getClass().getSimpleName();
-        if (checkerName.endsWith("Checker") || checkerName.endsWith("checker")) {
-            checkerName = checkerName.substring(0, checkerName.length() - "checker".length());
+        if (checkerName.endsWith("Checker")) {
+            checkerName = checkerName.substring(0, checkerName.length() - "Checker".length());
+        } else if (checkerName.endsWith("Subchecker")) {
+            checkerName = checkerName.substring(0, checkerName.length() - "Subchecker".length());
         }
         return checkerName;
     }
@@ -1705,5 +1698,31 @@ public abstract class GenericAnnotatedTypeFactory<
     /** The CFGVisualizer to be used by all CFAbstractAnalysis instances. */
     public CFGVisualizer<Value, Store, TransferFunction> getCFGVisualizer() {
         return cfgVisualizer;
+    }
+
+    /**
+     * Adds default qualifiers bases on the underlying type of {@code type} to {@code type}. If
+     * {@code element} is a local variable, then the defaults are not added.
+     *
+     * @param element possibly null element whose type is {@code type}
+     * @param type the type to which defaults are added
+     */
+    protected void addAnnotationsFromDefaultQualifierForUse(
+            @Nullable Element element, AnnotatedTypeMirror type) {
+        if (element != null
+                && element.getKind() == ElementKind.LOCAL_VARIABLE
+                && type.getKind() == TypeKind.DECLARED) {
+            // If this is a type for a local variable, don't apply the default to the primary
+            // location.
+            AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
+            if (declaredType.getEnclosingType() != null) {
+                defaultQualifierForUseTypeAnnotator.visit(declaredType.getEnclosingType());
+            }
+            for (AnnotatedTypeMirror typeArg : declaredType.getTypeArguments()) {
+                defaultQualifierForUseTypeAnnotator.visit(typeArg);
+            }
+        } else {
+            defaultQualifierForUseTypeAnnotator.visit(type);
+        }
     }
 }

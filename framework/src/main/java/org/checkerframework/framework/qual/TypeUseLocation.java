@@ -11,9 +11,6 @@ package org.checkerframework.framework.qual;
  */
 public enum TypeUseLocation {
 
-    /** Apply default annotations to class, interface, and Enum declarations. */
-    TYPE_DECLARATION,
-
     /** Apply default annotations to all unannotated raw types of fields. */
     FIELD,
 
@@ -39,6 +36,9 @@ public enum TypeUseLocation {
 
     /** Apply default annotations to all unannotated raw types of return types. */
     RETURN,
+
+    /** Apply default annotations to all unannotated raw types of constructor result types. */
+    CONSTRUCTOR_RESULT,
 
     /**
      * Apply default annotations to unannotated lower bounds for type variables and wildcards both

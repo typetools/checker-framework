@@ -1,7 +1,6 @@
 package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
@@ -26,28 +25,37 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+/** Annotated type factory for the Aliasing Checker. */
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private final AnnotationMirror MAYBE_ALIASED, NON_LEAKED, UNIQUE, MAYBE_LEAKED;
+    /** Aliasing annotations. */
+    /** The @{@link MaybeAliased} annotation. */
+    protected final AnnotationMirror MAYBE_ALIASED =
+            AnnotationBuilder.fromClass(elements, MaybeAliased.class);
+    /** The @{@link NonLeaked} annotation. */
+    protected final AnnotationMirror NON_LEAKED =
+            AnnotationBuilder.fromClass(elements, NonLeaked.class);
+    /** The @{@link Unique} annotation. */
+    protected final AnnotationMirror UNIQUE = AnnotationBuilder.fromClass(elements, Unique.class);
+    /** The @{@link MaybeLeaked} annotation. */
+    protected final AnnotationMirror MAYBE_LEAKED =
+            AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
 
+    /** Create the type factory. */
     public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        MAYBE_ALIASED = AnnotationBuilder.fromClass(elements, MaybeAliased.class);
-        NON_LEAKED = AnnotationBuilder.fromClass(elements, NonLeaked.class);
-        UNIQUE = AnnotationBuilder.fromClass(elements, Unique.class);
-        MAYBE_LEAKED = AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
-        if (this.getClass().equals(AliasingAnnotatedTypeFactory.class)) {
+        if (this.getClass() == AliasingAnnotatedTypeFactory.class) {
             this.postInit();
         }
     }
 
     // @NonLeaked and @LeakedToResult are type qualifiers because of a checker
     // framework limitation (Issue 383). Once the stub parser gets updated to read
-    // non-type-qualifers annotations on stub files, this annotation won't be a
+    // non-type-qualifiers annotations on stub files, this annotation won't be a
     // type qualifier anymore.
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll(MaybeLeaked.class);
+        return getBundledTypeQualifiers(MaybeLeaked.class);
     }
 
     @Override
@@ -64,21 +72,6 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
-            // Copied hack below from SPARTA:
-            // This is a horrible hack around the implementation of constructor
-            // results (CF treats annotations on constructor results in stub
-            // files as if it were a default and therefore ignores it.)
-            // This hack ignores any annotation written in the following location:
-            // new @A SomeClass();
-            AnnotatedTypeMirror defaulted =
-                    atypeFactory.constructorFromUse(node).executableType.getReturnType();
-            Set<AnnotationMirror> defaultedSet = defaulted.getAnnotations();
-            p.replaceAnnotations(defaultedSet);
-            return null;
-        }
-
-        @Override
         public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
             type.replaceAnnotation(UNIQUE);
             return super.visitNewArray(node, type);
@@ -88,11 +81,6 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected ListTreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(new AliasingTreeAnnotator(this), super.createTreeAnnotator());
-    }
-
-    @Override
-    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
     }
 
     @Override
@@ -124,10 +112,16 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return newtops;
         }
 
+        /**
+         * Returns true is {@code anno} is annotation in the Leaked hierarchy.
+         *
+         * @param anno an annotation
+         * @return true is {@code anno} is annotation in the Leaked hierarchy
+         */
         private boolean isLeakedQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, MaybeLeaked.class)
-                    || AnnotationUtils.areSameByClass(anno, NonLeaked.class)
-                    || AnnotationUtils.areSameByClass(anno, LeakedToResult.class);
+            return areSameByClass(anno, MaybeLeaked.class)
+                    || areSameByClass(anno, NonLeaked.class)
+                    || areSameByClass(anno, LeakedToResult.class);
         }
 
         @Override

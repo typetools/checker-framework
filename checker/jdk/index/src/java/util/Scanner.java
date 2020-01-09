@@ -25,6 +25,7 @@
 
 package java.util;
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.IntRange;
 
 import java.nio.file.Path;
 import java.nio.file.Files;
@@ -400,7 +401,7 @@ public final class Scanner implements Iterator<String>, Closeable {
     private @Positive int radix = 10;
 
     // The default radix for this scanner
-    private int defaultRadix = 10;
+    private @IntRange(from = 2, to = 36) int defaultRadix = 10;
 
     // The locale used by this scanner
     private Locale locale = null;
@@ -1293,7 +1294,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @return this scanner
      * @throws IllegalArgumentException if radix is out of range
      */
-    public Scanner useRadix(@Positive int radix) {
+    public Scanner useRadix(@IntRange(from = 2, to = 36) int radix) {
         if ((radix < Character.MIN_RADIX) || (radix > Character.MAX_RADIX))
             throw new IllegalArgumentException("radix:"+radix);
 
@@ -2488,7 +2489,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      *         <code>BigInteger</code>
      * @throws IllegalStateException if this scanner is closed
      */
-    public boolean hasNextBigInteger(@Positive int radix) {
+    public boolean hasNextBigInteger(@IntRange(from = 2, to = 36) int radix) {
         setRadix(radix);
         boolean result = hasNext(integerPattern());
         if (result) { // Cache it
@@ -2545,7 +2546,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws NoSuchElementException if the input is exhausted
      * @throws IllegalStateException if this scanner is closed
      */
-    public BigInteger nextBigInteger(@Positive int radix) {
+    public BigInteger nextBigInteger(@IntRange(from = 2, to = 36) int radix) {
         // Check cached result
         if ((typeCache != null) && (typeCache instanceof BigInteger)
             && this.radix == radix) {

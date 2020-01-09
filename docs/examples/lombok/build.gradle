@@ -4,43 +4,27 @@
 
 plugins {
     id 'java'
-    id 'net.ltgt.apt' version '0.15'
+    id "io.freefair.lombok" version "4.1.5"
+    // Checker Framework pluggable type-checking
+    id 'org.checkerframework' version '0.3.28' apply false
+}
+
+apply plugin: 'org.checkerframework'
+
+dependencies {
+    ext.checkerFrameworkVersion = '3.1.0'
+    compileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+    testCompileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+    checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
+    checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
 }
 
 repositories {
     mavenCentral()
 }
 
-dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.4'
-    annotationProcessor 'org.projectlombok:lombok:1.18.4'
-}
-
-configurations {
-  checkerFrameworkAnnotatedJDK {
-    description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
-  }
-}
-
-dependencies {
-  ext.checkerFrameworkVersion = '2.7.0'
-  checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
-  annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
-  implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
-}
-
-allprojects {
-  tasks.withType(JavaCompile).all { JavaCompile compile ->
-    def processors = [
-            'org.checkerframework.checker.nullness.NullnessChecker',
-            'lombok.launch.AnnotationProcessorHider\$AnnotationProcessor',
+checkerFramework {
+    checkers = [
+        'org.checkerframework.checker.nullness.NullnessChecker',
     ]
-    options.compilerArgs = [
-            '-processor', processors.join(','),
-            '-Xmaxerrs', '10000',
-            '-Xmaxwarns', '10000',
-            '-AcheckPurityAnnotations',
-            "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
-    ]
-  }
 }

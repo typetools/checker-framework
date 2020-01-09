@@ -76,7 +76,7 @@ class CharArrayWriter extends Writer {
     /**
      * Writes a character to the buffer.
      */
-    public void write(@NonNegative int c) {
+    public void write(int c) {
         synchronized (lock) {
             int newcount = count + 1;
             if (newcount > buf.length) {
@@ -93,7 +93,7 @@ class CharArrayWriter extends Writer {
      * @param off       the start offset in the data
      * @param len       the number of chars that are written
      */
-    public void write(char c[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) {
+    public void write(char c[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) {
         if ((off < 0) || (off > c.length) || (len < 0) ||
             ((off + len) > c.length) || ((off + len) < 0)) {
             throw new IndexOutOfBoundsException();
@@ -116,7 +116,7 @@ class CharArrayWriter extends Writer {
      * @param  off  Offset from which to start reading characters
      * @param  len  Number of characters to be written
      */
-    public void write(String str, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) {
+    public void write(String str, @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) {
         synchronized (lock) {
             int newcount = count + len;
             if (newcount > buf.length) {

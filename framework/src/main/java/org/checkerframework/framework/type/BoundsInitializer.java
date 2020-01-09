@@ -36,6 +36,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -69,6 +70,7 @@ public class BoundsInitializer {
         final List<AnnotatedTypeMirror> typeArgs = new ArrayList<>();
 
         // Create AnnotatedTypeMirror for each type argument and store them in the typeArgsMap.
+        // Take un-annotated type variables as the key for this map.
         Map<TypeVariable, AnnotatedTypeMirror> typeArgMap = new HashMap<>();
         for (int i = 0; i < typeElement.getTypeParameters().size(); i++) {
             TypeMirror javaTypeArg;
@@ -92,11 +94,16 @@ public class BoundsInitializer {
             typeArgs.add(typeArg);
 
             // Add mapping from type parameter to the annotated type argument.
-            typeArgMap.put((TypeVariable) typeElement.getTypeParameters().get(i).asType(), typeArg);
+            TypeVariable key =
+                    (TypeVariable)
+                            TypeAnnotationUtils.unannotatedType(
+                                    typeElement.getTypeParameters().get(i).asType());
+            typeArgMap.put(key, typeArg);
 
             if (javaTypeArg.getKind() == TypeKind.TYPEVAR) {
                 // Add mapping from Java type argument to the annotated type argument.
-                typeArgMap.put((TypeVariable) javaTypeArg, typeArg);
+                key = (TypeVariable) TypeAnnotationUtils.unannotatedType(javaTypeArg);
+                typeArgMap.put(key, typeArg);
             }
         }
 
@@ -451,8 +458,11 @@ public class BoundsInitializer {
                     }
                     break;
                 case TYPEVAR:
-                    if (typevars.containsKey(type.getUnderlyingType())) {
-                        return typevars.get(type.getUnderlyingType());
+                    TypeVariable key =
+                            (TypeVariable)
+                                    TypeAnnotationUtils.unannotatedType(type.getUnderlyingType());
+                    if (typevars.containsKey(key)) {
+                        return typevars.get(key);
                     }
                     break;
                 default:
@@ -681,11 +691,7 @@ public class BoundsInitializer {
                                 + currentStructure
                                 + "\n");
             } // else
-
-            final TypeVariableStructure toPop = (TypeVariableStructure) this.currentStructure;
-            if (toPop.typeVar != typeVar) {
-                this.currentStructure = toPop.parent;
-            }
+            this.currentStructure = ((TypeVariableStructure) this.currentStructure).parent;
         }
 
         public ReferenceMap createReferenceMap(final BoundStructure boundStruct) {
@@ -869,7 +875,8 @@ public class BoundsInitializer {
         /**
          * If this type variable is upper or lower bounded by another type variable (not a declared
          * type or intersection) then this variable will contain the path to that type variable.
-         * (TODO: Add link to explanation)
+         *
+         * <p>TODO: Add link to explanation
          *
          * <p>e.g. {@code T extends E} &rArr; The structure for T will have an
          * immediateBoundTypeVars = List(UpperBound) The BoundPaths here must exist in pathToTypeVar
@@ -1272,7 +1279,7 @@ public class BoundsInitializer {
             final TypeKind typeKind,
             final AnnotatedTypeVariable type,
             final AnnotatedTypeMirror parent) {
-        if (parent.getKind().equals(typeKind)) {
+        if (parent.getKind() == typeKind) {
             return;
         }
 

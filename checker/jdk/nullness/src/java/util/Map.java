@@ -136,7 +136,7 @@ import org.checkerframework.framework.qual.Covariant;
  */
 // Subclasses of this interface/class may opt to prohibit null elements
 @Covariant(0)
-public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
+public interface Map<K, V> {
     // Query Operations
 
     /**
@@ -404,7 +404,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.2
      */
     @Covariant(0)
-    interface Entry<K extends @Nullable Object, V extends @Nullable Object> {
+    interface Entry<K, V> {
         /**
          * Returns the key corresponding to this entry.
          *
@@ -578,7 +578,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @param o object to be compared for equality with this map
      * @return <tt>true</tt> if the specified object is equal to this map
      */
-    boolean equals(Object o);
+    boolean equals(@Nullable Object o);
 
     /**
      * Returns the hash code value for this map.  The hash code of a map is
@@ -986,7 +986,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V computeIfAbsent(K key,
-            Function<? super K, ? extends V> mappingFunction) {
+            Function<? super K, ? extends @Nullable V> mappingFunction) {
         Objects.requireNonNull(mappingFunction);
         V v;
         if ((v = get(key)) == null) {
@@ -1047,7 +1047,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V computeIfPresent(K key,
-            BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+            BiFunction<? super K, ? super V, ? extends @Nullable V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         V oldValue;
         if ((oldValue = get(key)) != null) {
@@ -1123,7 +1123,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V compute(K key,
-            BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+            BiFunction<? super K, ? super @Nullable V, ? extends @Nullable V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         V oldValue = get(key);
 
@@ -1204,7 +1204,7 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
      * @since 1.8
      */
     default V merge(K key, V value,
-            BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+            BiFunction<? super V, ? super V, ? extends @Nullable V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         Objects.requireNonNull(value);
         V oldValue = get(key);

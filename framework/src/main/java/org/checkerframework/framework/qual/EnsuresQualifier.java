@@ -43,6 +43,6 @@ public @interface EnsuresQualifier {
      */
     String[] expression();
 
-    /** The qualifier that is guaranteed to hold on successfull termination of the method. */
+    /** The qualifier that is guaranteed to hold on successful termination of the method. */
     Class<? extends Annotation> qualifier();
 }

@@ -2,6 +2,7 @@ package testlib.wholeprograminference;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,9 +10,10 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.UnknownClass;
+import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -42,7 +44,6 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
     public WholeProgramInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
-        addTypeNameImplicit(java.lang.Void.class, BOTTOM);
     }
 
     @Override
@@ -61,11 +62,11 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, BOTTOM);
-        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.INT_LITERAL, BOTTOM);
+        LiteralTreeAnnotator literalTreeAnnotator = new LiteralTreeAnnotator(this);
+        literalTreeAnnotator.addLiteralKind(LiteralKind.INT, BOTTOM);
+        literalTreeAnnotator.addStandardLiteralQualifiers();
 
-        return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
+        return new ListTreeAnnotator(new PropagationTreeAnnotator(this), literalTreeAnnotator);
     }
 
     @Override
@@ -90,17 +91,20 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
         }
 
         @Override
+        public Set<? extends AnnotationMirror> getBottomAnnotations() {
+            return Collections.singleton(BOTTOM);
+        }
+
+        @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if ((AnnotationUtils.areSameByClass(a1, Sibling1.class)
-                            && AnnotationUtils.areSameByClass(a2, Sibling2.class))
-                    || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
-                            && AnnotationUtils.areSameByClass(a2, Sibling1.class))
-                    || (AnnotationUtils.areSameByClass(a1, Sibling1.class)
-                            && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))
-                    || (AnnotationUtils.areSameByClass(a1, SiblingWithFields.class)
-                            && AnnotationUtils.areSameByClass(a2, Sibling2.class))
-                    || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
-                            && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))) {
+            if ((areSameByClass(a1, Sibling1.class) && areSameByClass(a2, Sibling2.class))
+                    || (areSameByClass(a1, Sibling2.class) && areSameByClass(a2, Sibling1.class))
+                    || (areSameByClass(a1, Sibling1.class)
+                            && areSameByClass(a2, SiblingWithFields.class))
+                    || (areSameByClass(a1, SiblingWithFields.class)
+                            && areSameByClass(a2, Sibling2.class))
+                    || (areSameByClass(a1, Sibling2.class)
+                            && areSameByClass(a2, SiblingWithFields.class))) {
                 return PARENT;
             }
             return super.leastUpperBound(a1, a2);
@@ -109,49 +113,47 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             if (AnnotationUtils.areSame(subAnno, superAnno)
-                    || AnnotationUtils.areSameByClass(superAnno, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(subAnno, WholeProgramInferenceBottom.class)
-                    || AnnotationUtils.areSameByClass(superAnno, Top.class)) {
+                    || areSameByClass(superAnno, UnknownClass.class)
+                    || areSameByClass(subAnno, WholeProgramInferenceBottom.class)
+                    || areSameByClass(superAnno, Top.class)) {
                 return true;
             }
 
-            if (AnnotationUtils.areSameByClass(subAnno, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(
-                            superAnno, WholeProgramInferenceBottom.class)) {
+            if (areSameByClass(subAnno, UnknownClass.class)
+                    || areSameByClass(superAnno, WholeProgramInferenceBottom.class)) {
                 return false;
             }
 
-            if (AnnotationUtils.areSameByClass(subAnno, Top.class)) {
+            if (areSameByClass(subAnno, Top.class)) {
                 return false;
             }
 
-            if (AnnotationUtils.areSameByClass(subAnno, ImplicitAnno.class)
-                    && (AnnotationUtils.areSameByClass(superAnno, Sibling1.class)
-                            || AnnotationUtils.areSameByClass(superAnno, Sibling2.class)
-                            || AnnotationUtils.areSameByClass(
-                                    superAnno, SiblingWithFields.class))) {
+            if (areSameByClass(subAnno, ImplicitAnno.class)
+                    && (areSameByClass(superAnno, Sibling1.class)
+                            || areSameByClass(superAnno, Sibling2.class)
+                            || areSameByClass(superAnno, SiblingWithFields.class))) {
                 return true;
             }
 
-            if ((AnnotationUtils.areSameByClass(subAnno, Sibling1.class)
-                            || AnnotationUtils.areSameByClass(subAnno, Sibling2.class)
-                            || AnnotationUtils.areSameByClass(subAnno, ImplicitAnno.class)
-                            || AnnotationUtils.areSameByClass(subAnno, SiblingWithFields.class))
-                    && AnnotationUtils.areSameByClass(superAnno, Parent.class)) {
+            if ((areSameByClass(subAnno, Sibling1.class)
+                            || areSameByClass(subAnno, Sibling2.class)
+                            || areSameByClass(subAnno, ImplicitAnno.class)
+                            || areSameByClass(subAnno, SiblingWithFields.class))
+                    && areSameByClass(superAnno, Parent.class)) {
                 return true;
             }
 
-            if ((AnnotationUtils.areSameByClass(subAnno, Sibling1.class)
-                            || AnnotationUtils.areSameByClass(subAnno, Sibling2.class)
-                            || AnnotationUtils.areSameByClass(subAnno, ImplicitAnno.class)
-                            || AnnotationUtils.areSameByClass(subAnno, SiblingWithFields.class)
-                            || AnnotationUtils.areSameByClass(subAnno, Parent.class))
-                    && AnnotationUtils.areSameByClass(superAnno, DefaultType.class)) {
+            if ((areSameByClass(subAnno, Sibling1.class)
+                            || areSameByClass(subAnno, Sibling2.class)
+                            || areSameByClass(subAnno, ImplicitAnno.class)
+                            || areSameByClass(subAnno, SiblingWithFields.class)
+                            || areSameByClass(subAnno, Parent.class))
+                    && areSameByClass(superAnno, DefaultType.class)) {
                 return true;
             }
 
-            if (AnnotationUtils.areSameByClass(subAnno, SiblingWithFields.class)
-                    && AnnotationUtils.areSameByClass(superAnno, SiblingWithFields.class)) {
+            if (areSameByClass(subAnno, SiblingWithFields.class)
+                    && areSameByClass(superAnno, SiblingWithFields.class)) {
                 List<String> subVal1 =
                         AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
                 List<String> supVal1 =

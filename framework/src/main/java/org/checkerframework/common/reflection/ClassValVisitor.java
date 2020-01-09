@@ -47,7 +47,8 @@ class ClassNameValidator extends BaseTypeValidator {
         classVal = classVal == null ? type.getAnnotation(ClassBound.class) : classVal;
         if (classVal != null) {
             List<String> classNames =
-                    ClassValAnnotatedTypeFactory.getClassNamesFromAnnotation(classVal);
+                    ((ClassValAnnotatedTypeFactory) atypeFactory)
+                            .getClassNamesFromAnnotation(classVal);
             for (String className : classNames) {
                 if (!isLegalClassName(className)) {
                     checker.report(Result.failure("illegal.classname", className, type), tree);
@@ -59,7 +60,7 @@ class ClassNameValidator extends BaseTypeValidator {
 
     /**
      * A string is a legal binary name if it has the following form: ((Java identifier)\.)*(Java
-     * identifier)([])* https://docs.oracle.com/javase/specs/jls/se10/html/jls-13.html#jls-13.1
+     * identifier)([])* https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1
      *
      * @param className string to check
      * @return true if className is a legal class name

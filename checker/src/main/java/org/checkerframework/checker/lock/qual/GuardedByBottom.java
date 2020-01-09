@@ -5,8 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -20,10 +18,9 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #lock-checker Lock Checker
  * @checker_framework.manual #bottom-type the bottom type
  */
-@SubtypeOf({GuardedBy.class, GuardSatisfied.class})
-@ImplicitFor(literals = LiteralKind.NULL)
 @Documented
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
-@Retention(RetentionPolicy.RUNTIME)
+@SubtypeOf({GuardedBy.class, GuardSatisfied.class})
 public @interface GuardedByBottom {}

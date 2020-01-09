@@ -95,7 +95,7 @@ public class PipedReader extends Reader {
      * @exception  IllegalArgumentException if <code>pipeSize <= 0</code>.
      * @since      1.6
      */
-    public PipedReader(PipedWriter src, @NonNegative int pipeSize) throws IOException {
+    public PipedReader(PipedWriter src, @Positive int pipeSize) throws IOException {
         initPipe(pipeSize);
         connect(src);
     }
@@ -124,7 +124,7 @@ public class PipedReader extends Reader {
      * @exception  IllegalArgumentException if <code>pipeSize <= 0</code>.
      * @since      1.6
      */
-    public PipedReader(@NonNegative int pipeSize) {
+    public PipedReader(@Positive int pipeSize) {
         initPipe(pipeSize);
     }
 
@@ -289,7 +289,7 @@ public class PipedReader extends Reader {
      *                  {@link #connect(java.io.PipedWriter) unconnected}, closed,
      *                  or an I/O error occurs.
      */
-    public synchronized @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len)  throws IOException {
+    public synchronized @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len)  throws IOException {
         if (!connected) {
             throw new IOException("Pipe not connected");
         } else if (closedByReader) {

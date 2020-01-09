@@ -25,6 +25,8 @@
 
 package sun.nio.ch;
 
+import org.checkerframework.checker.index.qual.*;
+
 import java.lang.ref.SoftReference;
 import java.lang.reflect.*;
 import java.io.IOException;
@@ -294,7 +296,7 @@ class Util {
     static <E> Set<E> ungrowableSet(final Set<E> s) {
         return new Set<E>() {
 
-                public int size()                 { return s.size(); }
+                public @NonNegative int size()                 { return s.size(); }
                 public boolean isEmpty()          { return s.isEmpty(); }
                 public boolean contains(Object o) { return s.contains(o); }
                 public Object[] toArray()         { return s.toArray(); }

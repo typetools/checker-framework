@@ -21,8 +21,8 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * @checker_framework.manual #lock-examples-holding Example use of @Holding
  */
 @Documented
-@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PreconditionAnnotation(qualifier = LockHeld.class)
 public @interface Holding {
     /**

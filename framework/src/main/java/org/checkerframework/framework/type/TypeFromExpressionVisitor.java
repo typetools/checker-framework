@@ -27,7 +27,6 @@ import com.sun.source.tree.WildcardTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -40,8 +39,61 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Converts ExpressionTrees into AnnotatedTypeMirrors. */
+/**
+ * Converts ExpressionTrees into AnnotatedTypeMirrors.
+ *
+ * <p>The type of some expressions depends on the checker, so for these expressions, a checker
+ * should add annotations in a {@link
+ * org.checkerframework.framework.type.treeannotator.TreeAnnotator} and/or the {@link
+ * org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator}. These trees are:
+ *
+ * <ul>
+ *   <li>{@code BinaryTree}
+ *   <li>{@code CompoundAssignmentTree}
+ *   <li>{@code InstanceOfTree}
+ *   <li>{@code LiteralTree}
+ *   <li>{@code UnaryTree}
+ * </ul>
+ *
+ * Other expressions are in fact type trees and their annotataed type mirrors are computed as type
+ * trees:
+ *
+ * <ul>
+ *   <li>{@code AnnotatedTypeTree}
+ *   <li>{@code TypeCastTree}
+ *   <li>{@code PrimitiveTypeTree}
+ *   <li>{@code ArrayTypeTree}
+ *   <li>{@code ParameterizedTypeTree}
+ *   <li>{@code IntersectionTypeTree}
+ * </ul>
+ */
 class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
+
+    @Override
+    public AnnotatedTypeMirror visitBinary(BinaryTree node, AnnotatedTypeFactory f) {
+        return f.type(node);
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitCompoundAssignment(
+            CompoundAssignmentTree node, AnnotatedTypeFactory f) {
+        return f.type(node);
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitInstanceOf(InstanceOfTree node, AnnotatedTypeFactory f) {
+        return f.type(node);
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitLiteral(LiteralTree node, AnnotatedTypeFactory f) {
+        return f.type(node);
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitUnary(UnaryTree node, AnnotatedTypeFactory f) {
+        return f.type(node);
+    }
 
     @Override
     public AnnotatedTypeMirror visitAnnotatedType(AnnotatedTypeTree node, AnnotatedTypeFactory f) {
@@ -49,19 +101,46 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
 
     @Override
-    public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree node, AnnotatedTypeFactory f) {
+    public AnnotatedTypeMirror visitTypeCast(TypeCastTree node, AnnotatedTypeFactory f) {
 
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = f.visitorState.getAssignmentContext();
-        try {
-            // TODO: what other trees shouldn't maintain the context?
-            f.visitorState.setAssignmentContext(null);
+        // Use the annotated type of the type in the cast.
+        return f.fromTypeTree(node.getType());
+    }
 
-            AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
-            assert type instanceof AnnotatedArrayType;
-            return ((AnnotatedArrayType) type).getComponentType();
-        } finally {
-            f.visitorState.setAssignmentContext(preAssCtxt);
-        }
+    @Override
+    public AnnotatedTypeMirror visitPrimitiveType(PrimitiveTypeTree node, AnnotatedTypeFactory f) {
+        // for e.g. "int.class"
+        return f.fromTypeTree(node);
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitArrayType(ArrayTypeTree node, AnnotatedTypeFactory f) {
+        // for e.g. "int[].class"
+        return f.fromTypeTree(node);
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitParameterizedType(
+            ParameterizedTypeTree node, AnnotatedTypeFactory f) {
+        return f.fromTypeTree(node);
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitIntersectionType(
+            IntersectionTypeTree node, AnnotatedTypeFactory f) {
+        return f.fromTypeTree(node);
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitMemberReference(
+            MemberReferenceTree node, AnnotatedTypeFactory f) {
+        return f.toAnnotatedType(TreeUtils.typeOf(node), false);
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitLambdaExpression(
+            LambdaExpressionTree node, AnnotatedTypeFactory f) {
+        return f.toAnnotatedType(TreeUtils.typeOf(node), false);
     }
 
     @Override
@@ -69,23 +148,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
         // Recurse on the type of the variable.
         return visit(node.getVariable(), f);
-    }
-
-    @Override
-    public AnnotatedTypeMirror visitBinary(BinaryTree node, AnnotatedTypeFactory f) {
-        AnnotatedTypeMirror res = f.type(node);
-        return res;
-    }
-
-    @Override
-    public AnnotatedTypeMirror visitCompoundAssignment(
-            CompoundAssignmentTree node, AnnotatedTypeFactory f) {
-
-        // Recurse on the type of the variable.
-        AnnotatedTypeMirror res = visit(node.getVariable(), f);
-        // TODO: why do we need to clear the type?
-        res.clearAnnotations();
-        return res;
     }
 
     @Override
@@ -120,16 +182,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
 
     @Override
-    public AnnotatedTypeMirror visitInstanceOf(InstanceOfTree node, AnnotatedTypeFactory f) {
-        return f.type(node);
-    }
-
-    @Override
-    public AnnotatedTypeMirror visitLiteral(LiteralTree node, AnnotatedTypeFactory f) {
-        return f.type(node);
-    }
-
-    @Override
     public AnnotatedTypeMirror visitMemberSelect(MemberSelectTree node, AnnotatedTypeFactory f) {
         Element elt = TreeUtils.elementFromUse(node);
 
@@ -150,7 +202,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         }
 
         if (node.getIdentifier().contentEquals("this")) {
-            // TODO: why don't we use getSelfType here?
+            // TODO: Both of these don't work.  See https://tinyurl.com/cfissue/2208
+            // return f.getSelfType(node.getExpression());
+            // return f.getSelfType(node);
             return f.getEnclosingType(
                     (TypeElement) TreeUtils.elementFromTree(node.getExpression()), node);
         } else {
@@ -162,11 +216,19 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
 
     @Override
-    public AnnotatedTypeMirror visitMethodInvocation(
-            MethodInvocationTree node, AnnotatedTypeFactory f) {
+    public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree node, AnnotatedTypeFactory f) {
 
-        AnnotatedExecutableType ex = f.methodFromUse(node).executableType;
-        return ex.getReturnType().asUse();
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = f.visitorState.getAssignmentContext();
+        try {
+            // TODO: what other trees shouldn't maintain the context?
+            f.visitorState.setAssignmentContext(null);
+
+            AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
+            assert type instanceof AnnotatedArrayType;
+            return ((AnnotatedArrayType) type).getComponentType();
+        } finally {
+            f.visitorState.setAssignmentContext(preAssCtxt);
+        }
     }
 
     @Override
@@ -231,9 +293,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
      *   <li>an explicit annotation on the new class expression ({@code new @HERE MyClass()}), or
      *   <li>an explicit annotation on the declaration of the class ({@code @HERE class MyClass
      *       {}}), or
-     *   <li>an explicit annotation on the declaration of the constructor ({@code @HERE public
-     *       MyClass() {}}), or
-     *   <li>no annotation for this hierarchy.
+     *   <li>an explicit or default annotation on the declaration of the constructor ({@code @HERE
+     *       public MyClass() {}}).
      * </ul>
      *
      * @param node NewClassTree
@@ -242,48 +303,23 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
      */
     @Override
     public AnnotatedTypeMirror visitNewClass(NewClassTree node, AnnotatedTypeFactory f) {
-        // constructorFromUse return type has implicits
+        // constructorFromUse return type has default annotations
         // so use fromNewClass which does diamond inference and only
-        // contains explicit annotations and those inherited from the class declaration
+        // contains explicit annotations.
         AnnotatedDeclaredType type = f.fromNewClass(node);
 
-        // Enum constructors lead to trouble.
-        // TODO: is there more to check? Can one annotate them?
-        if (isNewEnum(type)) {
-            return type;
-        }
-
         // Add annotations that are on the constructor declaration.
-        // constructorFromUse gives us resolution of polymorphic qualifiers.
-        // However, it also applies defaulting, so we might apply too many qualifiers.
-        // Therefore, ensure to only add the qualifiers that are explicitly on
-        // the constructor, but then take the possibly substituted qualifier.
         AnnotatedExecutableType ex = f.constructorFromUse(node).executableType;
-        AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(f, type, ex);
+        type.addMissingAnnotations(ex.getReturnType().getAnnotations());
 
         return type;
     }
 
     @Override
-    public AnnotatedTypeMirror visitMemberReference(
-            MemberReferenceTree node, AnnotatedTypeFactory f) {
-
-        AnnotatedDeclaredType type =
-                (AnnotatedDeclaredType) f.toAnnotatedType(TreeUtils.typeOf(node), false);
-        return type;
-    }
-
-    @Override
-    public AnnotatedTypeMirror visitLambdaExpression(
-            LambdaExpressionTree node, AnnotatedTypeFactory f) {
-
-        AnnotatedDeclaredType type =
-                (AnnotatedDeclaredType) f.toAnnotatedType(TreeUtils.typeOf(node), false);
-        return type;
-    }
-
-    private boolean isNewEnum(AnnotatedDeclaredType type) {
-        return type.getUnderlyingType().asElement().getKind() == ElementKind.ENUM;
+    public AnnotatedTypeMirror visitMethodInvocation(
+            MethodInvocationTree node, AnnotatedTypeFactory f) {
+        AnnotatedExecutableType ex = f.methodFromUse(node).executableType;
+        return ex.getReturnType().asUse();
     }
 
     @Override
@@ -291,19 +327,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
         // Recurse on the expression inside the parens.
         return visit(node.getExpression(), f);
-    }
-
-    @Override
-    public AnnotatedTypeMirror visitTypeCast(TypeCastTree node, AnnotatedTypeFactory f) {
-
-        // Use the annotated type of the type in the cast.
-        return f.fromTypeTree(node.getType());
-    }
-
-    @Override
-    public AnnotatedTypeMirror visitUnary(UnaryTree node, AnnotatedTypeFactory f) {
-        // TODO: why not visit(node.getExpression(), f)
-        return f.type(node);
     }
 
     @Override
@@ -326,29 +349,5 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             AnnotatedTypeMerger.merge(bound, ((AnnotatedWildcardType) result).getExtendsBound());
         }
         return result;
-    }
-
-    @Override
-    public AnnotatedTypeMirror visitPrimitiveType(PrimitiveTypeTree node, AnnotatedTypeFactory f) {
-        // for e.g. "int.class"
-        return f.fromTypeTree(node);
-    }
-
-    @Override
-    public AnnotatedTypeMirror visitArrayType(ArrayTypeTree node, AnnotatedTypeFactory f) {
-        // for e.g. "int[].class"
-        return f.fromTypeTree(node);
-    }
-
-    @Override
-    public AnnotatedTypeMirror visitParameterizedType(
-            ParameterizedTypeTree node, AnnotatedTypeFactory f) {
-        return f.fromTypeTree(node);
-    }
-
-    @Override
-    public AnnotatedTypeMirror visitIntersectionType(
-            IntersectionTypeTree node, AnnotatedTypeFactory f) {
-        return f.fromTypeTree(node);
     }
 }

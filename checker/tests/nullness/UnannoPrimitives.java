@@ -10,9 +10,9 @@ class UnannoPrimitives {
     void local() {
         // test whether an arbitrary declaration annotation gets confused
         @SuppressWarnings("tata")
-        int h = new Integer(5);
+        int h = Integer.valueOf(5);
 
-        int i = new Integer(99) + 1900;
+        int i = Integer.valueOf(99) + 1900;
         int j = 7 + 1900;
 
         // :: error: (type.invalid.annotations.on.use)
@@ -43,7 +43,7 @@ class UnannoPrimitives {
 
     void testCasts(Integer i1) {
         Object i2 = (int) i1;
-        // TODO:: error: (type.invalid)
+        // :: error: (type.invalid.annotations.on.use)
         Object i3 = (@Nullable int) i1;
     }
 }

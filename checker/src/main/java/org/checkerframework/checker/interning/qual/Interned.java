@@ -5,8 +5,9 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeKind;
 
@@ -29,10 +30,13 @@ import org.checkerframework.framework.qual.TypeKind;
  * @see org.checkerframework.checker.interning.InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(UnknownInterned.class)
-@ImplicitFor(
-        literals = {LiteralKind.PRIMITIVE, LiteralKind.STRING}, // everyhing but NULL
-        types = {
+@QualifierForLiterals({LiteralKind.PRIMITIVE, LiteralKind.STRING}) // everything but NULL
+@DefaultFor(
+        typeKinds = {
             TypeKind.BOOLEAN,
             TypeKind.BYTE,
             TypeKind.CHAR,
@@ -42,7 +46,4 @@ import org.checkerframework.framework.qual.TypeKind;
             TypeKind.LONG,
             TypeKind.SHORT
         })
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Interned {}

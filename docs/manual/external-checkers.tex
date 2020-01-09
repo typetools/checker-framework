@@ -3,8 +3,8 @@
 
 The Checker Framework has been used to build other checkers that are not
 distributed together with the framework.  This chapter mentions just a few
-of them.  They are listed in chronological order; older ones appear first
-and newer ones appear last.
+of them.  They are listed in reverse chronological order; newer ones appear
+first and older ones appear last.
 
 They are externally-maintained, so if you have problems or questions, you
 should contact their maintainers rather than the Checker Framework
@@ -15,45 +15,154 @@ please send us a link and a short description.
 
 
 % Note to maintainers:
-% Sections are added to this chapter in chronological order.
+% Sections are added to this chapter in reverse chronological order, at the top.
 
 
-\input{typestate-checker}
+\sectionAndLabel{Object Construction Checker}{object-construction-checker}
+
+The \href{https://github.com/kelloggm/object-construction-checker}{Object
+  Construction Checker} verifies that your code correctly uses the builder
+pattern, never omitting a required argument. The checker has built-in
+support for \href{https://projectlombok.org/}{Lombok} and
+\href{https://github.com/google/auto/blob/master/value/userguide/index.md}{AutoValue}. Programmers
+can extend it to other builders by writing method specifications.
 
 
-\sectionAndLabel{Units and dimensions checker}{units-and-dimensions-checker}
+\sectionAndLabel{AWS crypto policy compliance checker}{crypto-policy-compliance-checker}
 
-A checker for units and dimensions is available at
-\url{https://www.lexspoon.org/expannots/}.
-
-Unlike the Units Checker that is distributed with the Checker Framework
-(see Section~\ref{units-checker}), this checker includes dynamic checks and
-permits annotation arguments that are Java expressions.  This added
-flexibility, however, requires that you use a special version both of the
-Checker Framework and of the javac compiler.
+The
+\href{https://github.com/awslabs/aws-crypto-policy-compliance-checker}{AWS
+  crypto policy compliance checker} checks that no weak cipher algorithms
+are used with the Java crypto API\@.
 
 
-\sectionAndLabel{Thread locality checker}{loci-thread-locality-checker}
+\sectionAndLabel{AWS KMS compliance checker}{kms-compliance-checker}
 
-Loci~\cite{WrigstadPMZV2009}, a checker for thread locality, is available at
-\url{http://www.it.uu.se/research/upmarc/loci/}.
-%% This URL is broken as of
-% Developer resources are available at the project page
-% \url{http://java.net/projects/loci/}.
+The \href{https://github.com/awslabs/aws-kms-compliance-checker}{AWS KMS
+  compliance checker} extends the Constant Value Checker (see
+\chapterpageref{constant-value-checker}) to enforce that calls to Amazon
+Web Services' Key Management System only request 256-bit (or longer) data
+keys.  This checker can be used to help enforce a compliance requirement
+(such as from SOC or PCI-DSS) that customer data is always encrypted with
+256-bit keys.
 
-% A paper was publishd in ECOOP 2009, release 0.1 was made in March 2011,
-% but as of October 2013 and June 2017 the manual is still listed as "forthcoming".
+The KMS compliance checker is available in Maven Central.  To use it in
+\<build.gradle>, add the following dependency:
+
+\begin{Verbatim}
+compile group: 'software.amazon.checkerframework', name: 'aws-kms-compliance-checker', version: '1.0.2'
+\end{Verbatim}
+
+\ahref{https://mvnrepository.com/artifact/software.amazon.checkerframework/aws-kms-compliance-checker/1.0.2}{Other build systems} are similar.
 
 
-% In a mail from Amanj Mahmud <amanjpro@gmail.com> on 28.03.2011:
+\sectionAndLabel{UI Thread Checker for ReactiveX}{rx-thread-checker}
 
-% The plugin name:
-% ``Loci: A Pluggable Type Checker for Expressing Thread Locality in
-% Java''
+The \href{https://plv.colorado.edu/benno/ase18.pdf}{Rx Thread \& Effect Checker}~\cite{SteinCSC2018} enforces
+UI Thread safety properties for stream-based Android applications and is available at
+\url{https://github.com/uber-research/RxThreadEffectChecker}.
 
-% Project homepage: http://www.it.uu.se/research/upmarc/loci
 
-% Project's developer's page: http://java.net/projects/loci
+\sectionAndLabel{Glacier:  Class immutability}{glacier-immutability-checker}
+
+\href{http://mcoblenz.github.io/Glacier/}{Glacier}~\cite{CoblenzNAMS2017}
+enforces transitive class immutability in Java.  According to its webpage:
+
+\begin{itemize}
+\item
+  Transitive: if a class is immutable, then every field must be
+  immutable. This means that all reachable state from an immutable object's
+  fields is immutable.
+\item
+  Class: the immutability of an object depends only on its class's
+  immutability declaration.
+\item
+  Immutability: state in an object is not changable through any reference to
+  the object.
+\end{itemize}
+
+
+\sectionAndLabel{SQL checker that supports multiple dialects}{sql-schecker}
+
+\href{http://www.jooq.org/}{jOOQ} is a database API that lets you build
+typesafe SQL queries.  jOOQ version 3.0.9 and later ships with a SQL
+checker that provides even more safety:  it ensures that you don't
+use SQL features that are not supported by your database
+implementation.  You can learn about the SQL checker at
+\url{https://blog.jooq.org/2016/05/09/jsr-308-and-the-checker-framework-add-even-more-typesafety-to-jooq-3-9/}.
+
+
+\sectionAndLabel{Read Checker for CERT FIO08-J}{read-checker}
+
+CERT
+rule \href{https://www.securecoding.cert.org/confluence/display/java/FIO08-J.+Distinguish+between+characters+or+bytes+read+from+a+stream+and+-1}{FIO08-J}
+describes a rule for the correct handling of characters/bytes read
+from a stream.
+
+The Read Checker enforces this rule.
+It is available from
+\url{https://github.com/opprop/ReadChecker}.
+
+
+\sectionAndLabel{Nullness Rawness Checker}{initialization-rawness-checker}
+
+The Nullness Rawness Checker is a nullness checker that uses a different type system for initialization.
+It was distributed with the Checker Framework through release 2.9.0 (dated 3 July 2019). If you wish
+to use them, install \href{https://checkerframework.org/releases/2.9.0/}{Checker Framework version 2.9.0}.
+
+
+\sectionAndLabel{Immutability checkers:  IGJ, OIGJ, and Javari\label{javari-checker}}{igj-checker}
+
+Javari~\cite{TschantzE2005}, IGJ~\cite{ZibinPAAKE2007}, and
+OIGJ~\cite{ZibinPLAE2010} are type systems that enforce immutability
+constraints.  Type-checkers for all three type systems were distributed
+with the Checker Framework through release 1.9.13 (dated 1 April 2016).
+If you wish to use them, install
+\href{https://checkerframework.org/releases/1.9.13/}{Checker
+  Framework version 1.9.13}.
+
+They were removed from the main distribution on June 1, 2016 because the
+implementations were not being maintained as the Checker Framework evolved.
+The type systems are valuable, and some people found the type-checkers
+useful.  However,
+% the type-checkers should be rewritten from scratch and
+we wanted
+to focus on distributing checkers that are currently being maintained.
+
+
+\sectionAndLabel{SPARTA information flow type-checker for Android}{sparta-checker}
+
+SPARTA is a security toolset aimed at preventing malware from appearing in
+an app store.  SPARTA provides an information-flow type-checker that is
+customized to Android but can also be applied to other domains.
+The SPARTA toolset is available from
+\url{https://checkerframework.org/sparta/}.
+The paper
+\href{https://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}{``Collaborative
+    verification of information flow for a high-assurance app store''}
+  appeared in CCS 2014.
+
+
+\sectionAndLabel{CheckLT taint checker}{checklt-checker}
+
+CheckLT uses taint tracking to detect illegal information flows, such as
+unsanitized data that could result in a SQL injection attack.
+CheckLT is available from \url{http://checklt.github.io/}.
+
+
+\sectionAndLabel{EnerJ checker}{enerj-checker}
+
+A checker for EnerJ~\cite{SampsonDFGCG2011}, an extension to Java that exposes hardware faults
+in a safe, principled manner to save energy with only
+slight sacrifices to the quality of service, is available from
+\url{http://sampa.cs.washington.edu/research/approximation/enerj.html}.
+
+
+\sectionAndLabel{Generic Universe Types checker}{gut-checker}
+
+A checker for Generic Universe Types~\cite{DietlEM2011}, a lightweight ownership type
+system, is available from
+\url{https://ece.uwaterloo.ca/~wdietl/ownership/}.
 
 
 \sectionAndLabel{Safety-Critical Java checker}{safety-critical-java-checker}
@@ -79,125 +188,49 @@ Developer resources are available at the project page
 % http://portal.acm.org/citation.cfm?doid=1850771.1850792
 
 
-\sectionAndLabel{Generic Universe Types checker}{gut-checker}
+\sectionAndLabel{Thread locality checker}{loci-thread-locality-checker}
 
-A checker for Generic Universe Types~\cite{DietlEM2011}, a lightweight ownership type
-system, is available from
-\url{https://ece.uwaterloo.ca/~wdietl/ownership/}.
+Loci~\cite{WrigstadPMZV2009}, a checker for thread locality, is available at
+\url{http://www.it.uu.se/research/upmarc/loci/}.
+%% This URL is broken as of
+% Developer resources are available at the project page
+% \url{http://java.net/projects/loci/}.
 
-
-\sectionAndLabel{EnerJ checker}{enerj-checker}
-
-A checker for EnerJ~\cite{SampsonDFGCG2011}, an extension to Java that exposes hardware faults
-in a safe, principled manner to save energy with only
-slight sacrifices to the quality of service, is available from
-\url{http://sampa.cs.washington.edu/research/approximation/enerj.html}.
+% A paper was publishd in ECOOP 2009, release 0.1 was made in March 2011,
+% but as of October 2013 and June 2017 the manual is still listed as "forthcoming".
 
 
-\sectionAndLabel{CheckLT taint checker}{checklt-checker}
+% In a mail from Amanj Mahmud <amanjpro@gmail.com> on 28.03.2011:
 
-CheckLT uses taint tracking to detect illegal information flows, such as
-unsanitized data that could result in a SQL injection attack.
-CheckLT is available from \url{http://checklt.github.io/}.
+% The plugin name:
+% ``Loci: A Pluggable Type Checker for Expressing Thread Locality in
+% Java''
 
+% Project homepage: http://www.it.uu.se/research/upmarc/loci
 
-\sectionAndLabel{SPARTA information flow type-checker for Android}{sparta-checker}
-
-SPARTA is a security toolset aimed at preventing malware from appearing in
-an app store.  SPARTA provides an information-flow type-checker that is
-customized to Android but can also be applied to other domains.
-The SPARTA toolset is available from
-\url{https://checkerframework.org/sparta/}.
-The paper
-\href{https://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}{``Collaborative
-    verification of information flow for a high-assurance app store''}
-  appeared in CCS 2014.
+% Project's developer's page: http://java.net/projects/loci
 
 
-\sectionAndLabel{Immutability checkers:  IGJ, OIGJ, and Javari\label{javari-checker}}{igj-checker}
+\sectionAndLabel{Units and dimensions checker}{units-and-dimensions-checker}
 
-Javari~\cite{TschantzE2005}, IGJ~\cite{ZibinPAAKE2007}, and
-OIGJ~\cite{ZibinPLAE2010} are type systems that enforce immutability
-constraints.  Type-checkers for all three type systems were distributed
-with the Checker Framework through release 1.9.13 (dated 1 April 2016).
-If you wish to use them, install
-\href{https://checkerframework.org/releases/1.9.13/}{Checker
-  Framework version 1.9.13}.
+A checker for units and dimensions is available at
+\url{https://www.lexspoon.org/expannots/}.
 
-They were removed from the main distribution on June 1, 2016 because the
-implementations were not being maintained as the Checker Framework evolved.
-The type systems are valuable, and some people found the type-checkers
-useful.  However,
-% the type-checkers should be rewritten from scratch and
-we wanted
-to focus on distributing checkers that are currently being maintained.
+Unlike the Units Checker that is distributed with the Checker Framework
+(see Section~\ref{units-checker}), this checker includes dynamic checks and
+permits annotation arguments that are Java expressions.  This added
+flexibility, however, requires that you use a special version both of the
+Checker Framework and of the javac compiler.
 
 
-\sectionAndLabel{Read Checker for CERT FIO08-J}{read-checker}
-
-CERT
-rule \href{https://www.securecoding.cert.org/confluence/display/java/FIO08-J.+Distinguish+between+characters+or+bytes+read+from+a+stream+and+-1}{FIO08-J}
-describes a rule for the correct handling of characters/bytes read
-from a stream.
-
-The Read Checker enforces this rule.
-It is available from
-\url{https://github.com/opprop/ReadChecker}.
+\input{typestate-checker}
 
 
-\sectionAndLabel{SQL checker that supports multiple dialects}{sql-schecker}
+%%% *****
+%%% DO NOT EDIT HERE!
+%%% New sections go at the top of the file, not the bottom.
+%%% *****
 
-\href{http://www.jooq.org/}{jOOQ} is a database API that lets you build
-typesafe SQL queries.  jOOQ version 3.0.9 and later ships with a SQL
-checker that provides even more safety:  it ensures that you don't
-use SQL features that are not supported by your database
-implementation.  You can learn about the SQL checker at
-\url{https://blog.jooq.org/2016/05/09/jsr-308-and-the-checker-framework-add-even-more-typesafety-to-jooq-3-9/}.
-
-
-\sectionAndLabel{Glacier:  Class immutability}{glacier-immutability-checker}
-
-\href{http://mcoblenz.github.io/Glacier/}{Glacier}~\cite{CoblenzNAMS2017}
-enforces transitive class immutability in Java.  According to its webpage:
-
-\begin{itemize}
-\item
-  Transitive: if a class is immutable, then every field must be
-  immutable. This means that all reachable state from an immutable object's
-  fields is immutable.
-\item
-  Class: the immutability of an object depends only on its class's
-  immutability declaration.
-\item
-  Immutability: state in an object is not changable through any reference to
-  the object.
-\end{itemize}
-
-
-\sectionAndLabel{UI Thread Checker for ReactiveX}{rx-thread-checker}
-
-The \href{https://plv.colorado.edu/benno/ase18.pdf}{Rx Thread \& Effect Checker}~\cite{SteinCSC2018} enforces
-UI Thread safety properties for stream-based Android applications and is available at
-\url{https://github.com/uber-research/RxThreadEffectChecker}.
-
-
-\sectionAndLabel{AWS KMS compliance checker}{kms-compliance-checker}
-
-The \href{https://github.com/awslabs/aws-kms-compliance-checker}{AWS KMS
-  compliance checker} extends the Constant Value Checker (see
-\chapterpageref{constant-value-checker}) to enforce that calls to Amazon
-Web Services' Key Management System only request 256-bit (or longer) data
-keys.  This checker can be used to help enforce a compliance requirement
-(such as from SOC or PCI-DSS) that customer data is always encrypted with
-256-bit keys.
-
-
-\sectionAndLabel{AWS crypto policy compliance checker}{crypto-policy-compliance-checker}
-
-The
-\href{https://github.com/awslabs/aws-crypto-policy-compliance-checker}{AWS
-  crypto policy compliance checker} checks that no weak cipher algorithms
-are used with the Java crypto API\@.
 
 
 % LocalWords:  SCJ EnerJ CheckLT unsanitized JavaUI CCS IGJ OIGJ FIO08

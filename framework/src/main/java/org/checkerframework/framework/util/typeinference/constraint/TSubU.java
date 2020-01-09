@@ -4,17 +4,19 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
 /**
- * @see org.checkerframework.framework.util.typeinference.constraint.TUConstraint A constraint of
- *     the form: {@code T <: U}
+ * A constraint of the form: {@code T <: U}
+ *
+ * @see org.checkerframework.framework.util.typeinference.constraint.TUConstraint
  */
 public class TSubU extends TUConstraint {
     public TSubU(AnnotatedTypeVariable typeVariable, AnnotatedTypeMirror relatedType) {
         this(typeVariable, relatedType, false);
     }
 
+    /** Create a constraint with a variable less than a type. */
     public TSubU(
             AnnotatedTypeVariable typeVariable, AnnotatedTypeMirror relatedType, boolean uIsArg) {
-        super(typeVariable, relatedType, 163, uIsArg);
+        super(typeVariable, relatedType, uIsArg);
     }
 
     @Override

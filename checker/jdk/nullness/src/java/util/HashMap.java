@@ -141,7 +141,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * @see     Hashtable
  * @since   1.2
  */
-public class HashMap<K extends @Nullable Object, V extends @Nullable Object> extends AbstractMap<K,V>
+public class HashMap<K, V> extends AbstractMap<K,V>
     implements Map<K,V>, Cloneable, Serializable {
 
     private static final long serialVersionUID = 362498820763181265L;
@@ -309,7 +309,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
             return oldValue;
         }
 
-        public final boolean equals(Object o) {
+        public final boolean equals(@Nullable Object o) {
             if (o == this)
                 return true;
             if (o instanceof Map.Entry) {
@@ -922,6 +922,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
     }
 
     final class KeySet extends AbstractSet<K> {
+        @Pure
         public final int size()                 { return size; }
         public final void clear()               { HashMap.this.clear(); }
         @SideEffectFree
@@ -972,6 +973,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
     }
 
     final class Values extends AbstractCollection<V> {
+        @Pure
         public final int size()                 { return size; }
         public final void clear()               { HashMap.this.clear(); }
         @SideEffectFree
@@ -1020,6 +1022,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
     }
 
     final class EntrySet extends AbstractSet<Map.Entry<K,V>> {
+        @Pure
         public final int size()                 { return size; }
         public final void clear()               { HashMap.this.clear(); }
         @SideEffectFree

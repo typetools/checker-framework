@@ -59,18 +59,10 @@ public class ExpectedErrors {
         lubPublicField = getSibling1();
     }
 
-    void assignFieldsToSibling2() {
+    static {
         lubPrivateField = getSibling2();
         lubPublicField = getSibling2();
     }
-
-    // TODO: Add support to static blocks. The static block below should replace
-    // the method above. Problem: It returns null when retrieving the class of the
-    // elements in the static block below.
-    //    static {
-    //        lubPrivateField = getSibling2();
-    //        lubPublicField = getSibling2();
-    //    }
 
     void testLUBFields1() {
         // :: error: (argument.type.incompatible)

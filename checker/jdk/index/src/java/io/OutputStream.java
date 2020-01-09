@@ -104,7 +104,7 @@ public abstract class OutputStream implements Closeable, Flushable {
      *             an <code>IOException</code> is thrown if the output
      *             stream is closed.
      */
-    public void write(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(byte b[], @IndexOrHigh("#1") int off, @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if ((off < 0) || (off > b.length) || (len < 0) ||

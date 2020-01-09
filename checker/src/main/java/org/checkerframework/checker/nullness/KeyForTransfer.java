@@ -13,9 +13,9 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-/*
- * KeyForTransfer ensures that java.util.Map.put and containsKey
- * cause the appropriate @KeyFor annotation to be added to the key.
+/**
+ * KeyForTransfer ensures that java.util.Map.put and containsKey cause the appropriate @KeyFor
+ * annotation to be added to the key.
  */
 public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore, KeyForTransfer> {
 
@@ -49,7 +49,7 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
             final KeyForValue previousKeyValue = in.getValueOfSubNode(node.getArgument(0));
             if (previousKeyValue != null) {
                 for (AnnotationMirror prevAm : previousKeyValue.getAnnotations()) {
-                    if (prevAm != null && AnnotationUtils.areSameByClass(prevAm, KeyFor.class)) {
+                    if (prevAm != null && factory.areSameByClass(prevAm, KeyFor.class)) {
                         keyForMaps.addAll(getKeys(prevAm));
                     }
                 }

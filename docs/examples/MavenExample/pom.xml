@@ -14,7 +14,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- These properties will be set by the Maven Dependency plugin -->
     <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
-    <checkerFrameworkVersion><!-- checker-framework-version -->2.7.0<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.1.0<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
@@ -34,6 +35,11 @@
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
       <version>${checkerFrameworkVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>javac</artifactId>
+      <version>9+181-r4173-1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -64,10 +70,14 @@
       </plugin>
       <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.6.1</version>
+          <version>3.8.1</version>
           <configuration>
+              <fork>true</fork>
+              <!-- If using JDK 8, add source and target. -->
               <source>1.8</source>
               <target>1.8</target>
+              <!-- If using JDK 11, remove source and target and uncomment "release" below. -->
+              <!-- <release>11</release> -->
               <showWarnings>true</showWarnings>
               <annotationProcessorPaths>
                 <path>
@@ -75,17 +85,40 @@
                   <artifactId>checker</artifactId>
                   <version>${checkerFrameworkVersion}</version>
                 </path>
+                <!--
+                  When using the Subtyping Checker, any custom type qualifiers must be in a
+                  separate pre-compiled module; see
+                  https://checkerframework.org/manual/#subtyping-compiling .
+                  Once <annotationProcessorPaths> is defined, it is the only source for
+                  classpath lookup; see
+                  https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html#annotationProcessorPaths .
+                -->
+                <!-- <path> -->
+                <!--   <groupId>your.qual.group</groupId> -->
+                <!--   <artifactId>your-qual-artifact</artifactId> -->
+                <!--   <version>your-qual-artifact-version</version> -->
+                <!-- </path> -->
               </annotationProcessorPaths>
               <annotationProcessors>
                   <!-- Add all the checkers you want to enable here -->
                   <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
               </annotationProcessors>
               <compilerArgs>
-                  <!-- location of the annotated JDK, which comes from a Maven dependency -->
+                  <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
+                  <arg>-J-Xbootclasspath/p:${errorProneJavac}</arg>
+                  <!-- location of the annotated JDK 8, which comes from a Maven dependency -->
                   <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
                   <!-- -Awarns treats Checker Framework errors as warnings -->
                   <!-- <arg>-Awarns</arg> -->
+                  <!--
+                    For the Subtyping Checker, annotations defined in module 'your-qual-artifact':
+                    <arg>-Aquals=myPackage.qual.MyFenum,myPackage.qual.MyCustomType</arg>
+                  -->
                   <arg>-Alint</arg>
+		<!-- If using JDK 11 remove the two arguments above and uncomment the one below. -->
+		<!-- <arg>-J- -add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg> -->
+		<!-- -Awarns turns type-checking errors into warnings. -->
+		<!-- <arg>-Awarns</arg> -->
               </compilerArgs>
           </configuration>
       </plugin>
