@@ -101,11 +101,14 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
-import org.checkerframework.framework.util.*;
-import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
-import org.checkerframework.framework.util.ContractsUtils.Contract;
-import org.checkerframework.framework.util.ContractsUtils.Postcondition;
-import org.checkerframework.framework.util.ContractsUtils.Precondition;
+import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.Contract;
+import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
+import org.checkerframework.framework.util.Contract.Postcondition;
+import org.checkerframework.framework.util.Contract.Precondition;
+import org.checkerframework.framework.util.ContractsUtils;
+import org.checkerframework.framework.util.FieldInvariants;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -856,7 +859,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             List<String> formalParamNames,
             boolean abstractMethod) {
         FlowExpressionContext flowExprContext = null;
-        List<Contract> contracts = contractsUtils.getContracts(methodElement);
+        Set<Contract> contracts = contractsUtils.getContracts(methodElement);
 
         for (Contract contract : contracts) {
             String expression = contract.expression;
@@ -896,7 +899,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 annotation,
                                 contract.contractAnnotation,
                                 expr,
-                                ((ConditionalPostcondition) contract).annoResult);
+                                ((ConditionalPostcondition) contract).resultValue);
                         break;
                     case PRECONDITION:
                         // Preconditions are checked at method invocations, not declarations
@@ -1503,7 +1506,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        for (Precondition p : preconditions) {
+        for (Contract c : preconditions) {
+            Precondition p = (Precondition) c;
             String expression = p.expression;
             AnnotationMirror anno = p.annotation;
 
@@ -3764,12 +3768,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * then the following {@code @EnsuresNonNullIf} conditional postcondition would match:<br>
      * {@code @EnsuresNonNullIf(expression="#1", result=true)}<br>
      * {@code boolean equals(@Nullable Object o)}
+     *
+     * @param conditionalPostconditions each is a ConditionalPostcondition
+     * @param b the value required for the {@code result} element
+     * @return all the given conditional postconditions whose {@code result} is {@code b}
      */
     private Set<Postcondition> filterConditionalPostconditions(
             Set<ConditionalPostcondition> conditionalPostconditions, boolean b) {
         Set<Postcondition> result = new LinkedHashSet<>();
-        for (ConditionalPostcondition p : conditionalPostconditions) {
-            if (p.annoResult == b) {
+        for (Contract c : conditionalPostconditions) {
+            ConditionalPostcondition p = (ConditionalPostcondition) c;
+            if (p.resultValue == b) {
                 result.add(new Postcondition(p.expression, p.annotation, p.contractAnnotation));
             }
         }

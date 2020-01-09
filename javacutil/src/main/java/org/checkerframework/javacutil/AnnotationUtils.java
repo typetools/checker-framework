@@ -44,22 +44,6 @@ public class AnnotationUtils {
         throw new AssertionError("Class AnnotationUtils cannot be instantiated.");
     }
 
-    /** Clear the static caches. */
-    // TODO: hack to clear out static state.
-    public static void clear() {
-        annotationClassNames.clear();
-    }
-
-    // **********************************************************************
-    // Factory Methods to create instances of AnnotationMirror
-    // **********************************************************************
-
-    private static final int ANNOTATION_CACHE_SIZE = 500;
-
-    /** Maps classes representing AnnotationMirrors to their names. */
-    private static final Map<Class<? extends Annotation>, String> annotationClassNames =
-            Collections.synchronizedMap(CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE));
-
     // **********************************************************************
     // Helper methods to handle annotations.  mainly workaround
     // AnnotationMirror.equals undesired property
@@ -161,12 +145,8 @@ public class AnnotationUtils {
      */
     public static boolean areSameByClass(
             AnnotationMirror am, Class<? extends Annotation> annoClass) {
-        String canonicalName = annotationClassNames.get(annoClass);
-        if (canonicalName == null) {
-            canonicalName = annoClass.getCanonicalName();
-            assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
-            annotationClassNames.put(annoClass, canonicalName);
-        }
+        String canonicalName = annoClass.getCanonicalName();
+        assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
         return areSameByName(am, canonicalName);
     }
 
@@ -526,11 +506,7 @@ public class AnnotationUtils {
     public static EnumSet<ElementKind> getElementKindsForElementType(ElementType elementType) {
         switch (elementType) {
             case TYPE:
-                return EnumSet.of(
-                        ElementKind.CLASS,
-                        ElementKind.INTERFACE,
-                        ElementKind.ANNOTATION_TYPE,
-                        ElementKind.ENUM);
+                return EnumSet.copyOf(ElementUtils.classElementKinds());
             case FIELD:
                 return EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
             case METHOD:
@@ -557,6 +533,9 @@ public class AnnotationUtils {
                 // ElementKind.MODULE.  (Java 11)
                 if (elementType.name().contentEquals("MODULE")) {
                     return EnumSet.noneOf(ElementKind.class);
+                }
+                if (elementType.name().equals("RECORD_COMPONENT")) {
+                    return EnumSet.of(ElementKind.valueOf("RECORD_COMPONENT"));
                 }
                 throw new BugInCF("Unrecognized ElementType: " + elementType);
         }
@@ -661,16 +640,13 @@ public class AnnotationUtils {
      * Get the element with the name {@code elementName} of the annotation {@code anno}. The result
      * is expected to have type {@code expectedType}.
      *
-     * <p><em>Note 1</em>: The method does not work well for elements of an array type (as it would
-     * return a list of {@link AnnotationValue}s). Use {@code getElementValueArray} instead.
+     * <p>For elements of array type, use {@code getElementValueArray} instead.
      *
-     * <p><em>Note 2</em>: The method does not work for elements of an enum type, as the
-     * AnnotationValue is a VarSymbol and would be cast to the enum type, which doesn't work. Use
-     * {@code getElementValueEnum} instead.
+     * <p>For elements of enum type, use {@code getElementValueEnum} instead.
      *
-     * @param anno the annotation to disassemble
+     * @param anno the annotation whose element to access
      * @param elementName the name of the element to access
-     * @param expectedType the expected type used to cast the return type
+     * @param expectedType the expected type of the element
      * @param <T> the class of the expected type
      * @param useDefaults whether to apply default values to the element
      * @return the value of the element with the given name
@@ -692,10 +668,48 @@ public class AnnotationUtils {
                 return expectedType.cast(val.getValue());
             }
         }
-        throw new BugInCF(
+        throw new NoSuchElementException(
                 String.format(
                         "No element with name \'%s\' in annotation %s; useDefaults=%s, valmap.keySet()=%s",
                         elementName, anno, useDefaults, valmap.keySet()));
+    }
+
+    /** Differentiates NoSuchElementException from other BugInCF. */
+    @SuppressWarnings("serial")
+    private static class NoSuchElementException extends BugInCF {
+        /**
+         * Constructs a new NoSuchElementException.
+         *
+         * @param message the detail message
+         */
+        public NoSuchElementException(String message) {
+            super(message);
+        }
+    }
+
+    /**
+     * Get the element with the name {@code elementName} of the annotation {@code anno}, or return
+     * null if no such element exists.
+     *
+     * @param anno the annotation whose element to access
+     * @param elementName the name of the element to access
+     * @param expectedType the expected type of the element
+     * @param <T> the class of the expected type
+     * @param useDefaults whether to apply default values to the element
+     * @return the value of the element with the given name, or null
+     */
+    public static <T> @Nullable T getElementValueOrNull(
+            AnnotationMirror anno,
+            CharSequence elementName,
+            Class<T> expectedType,
+            boolean useDefaults) {
+        // This implementation permits getElementValue a more detailed error message than if
+        // getElementValue called getElementValueOrNull and threw an error if the result was null.
+        try {
+            return getElementValue(anno, elementName, expectedType, useDefaults);
+        } catch (NoSuchElementException e) {
+            return null;
+        }
     }
 
     /**

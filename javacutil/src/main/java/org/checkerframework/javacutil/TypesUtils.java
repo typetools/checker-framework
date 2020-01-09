@@ -351,7 +351,7 @@ public final class TypesUtils {
             if (w.isSuperBound()) { // returns true if w is unbound
                 Symtab syms = Symtab.instance(context);
                 // w.bound is null if the wildcard is from bytecode.
-                return w.bound == null ? syms.objectType : w.bound.bound;
+                return w.bound == null ? syms.objectType : w.bound.getUpperBound();
             } else {
                 return wildUpperBound(w.type, env);
             }
@@ -646,15 +646,10 @@ public final class TypesUtils {
         if (element == null) {
             return null;
         }
-        switch (element.getKind()) {
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-                return (TypeElement) element;
-            default:
-                return null;
+        if (ElementUtils.isClassElement(element)) {
+            return (TypeElement) element;
         }
+        return null;
     }
 
     /**

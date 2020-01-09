@@ -331,7 +331,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {
         for (AnnotationMirror annoMirror : annotations) {
-            if (AnnotationUtils.areSameByClass(annoMirror, annoClass)) {
+            if (atypeFactory.areSameByClass(annoMirror, annoClass)) {
                 return annoMirror;
             }
         }
@@ -408,7 +408,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public AnnotationMirror getEffectiveAnnotation(Class<? extends Annotation> annoClass) {
         for (AnnotationMirror annoMirror : getEffectiveAnnotations()) {
-            if (AnnotationUtils.areSameByClass(annoMirror, annoClass)) {
+            if (atypeFactory.areSameByClass(annoMirror, annoClass)) {
                 return annoMirror;
             }
         }
