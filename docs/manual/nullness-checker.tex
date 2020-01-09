@@ -465,6 +465,51 @@ then write a \<@SuppressWarnings> annotation.
 % TODO: explain more aspects, give more examples.
 
 
+\subsectionAndLabel{Nullness and conversions from collections to arrays}{nullness-collection-toarray}
+
+% Keep this in sync with the Javadoc of org.checkerframework.checker.nullness.CollectionToArrayHeuristics
+
+The semantics of
+\sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])}
+cannot be captured by the nullness type system syntax. The nullness type of the
+returned array depends on the size of the passed parameter. In particular, the
+returned array component is of type \<@NonNull> if the following conditions
+hold:
+
+\begin{itemize}
+\item The receiver collection type argument is \<@NonNull>, and
+\item The passed array size is less than the collection size. Here are heuristics to
+       handle the most common cases:
+
+  \begin{itemize}
+    \item the argument has length 0:
+
+    \begin{itemize}
+      \item an empty array initializer, e.g. \<c.toArray(new String[] \{\})>, or
+
+      \item array creation tree of size 0, e.g. \<c.toArray(new String[0])>.
+    \end{itemize}
+
+    \item array creation tree of the collection size method invocation
+      \<c.toArray(new String[c.size()])>.
+\end{itemize}
+
+\end{itemize}
+
+Additionally, when you supply the \code{-Alint=trustArrayLenZero} command-line
+option, a call to \code{Collection.toArray} will be estimated to return an array
+with a non-null component type by the Nullness Checker if the argument is a field
+accesses where the field declaration has a \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
+annotation.
+
+This trusts the \<@ArrayLen(0)> annotation, but does not verify it. Run the
+Constant Value Checker (see \chapterpageref{constant-value-checker}) to verify
+that annotation.
+
+Note: From \sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])},
+the nullness of the returned array doesn't depend on the passed array nullness.
+
+
 \subsectionAndLabel{Run-time checks for nullness}{nullness-runtime-checks}
 
 When you perform a run-time check for nullness, such as \<if (x != null)
