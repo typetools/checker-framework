@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.ArrayDeque;
@@ -135,7 +136,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
 
-        if (assignedTo == null && TreeUtils.getAssignmentContext(pathToExpression) != null) {
+        if ((pathToExpression.getParentPath() != null
+                        && pathToExpression.getParentPath().getLeaf() != null
+                        && pathToExpression.getParentPath().getLeaf().getKind()
+                                == Tree.Kind.LAMBDA_EXPRESSION)
+                || (assignedTo == null
+                        && TreeUtils.getAssignmentContext(pathToExpression) != null)) {
             // If the type of the assignment context isn't found, but the expression is assigned,
             // then don't attempt to infere type arguments, because the Java type inferred will be
             // incorrect.  The assignment type is null when it includes uninferred type arguments.
