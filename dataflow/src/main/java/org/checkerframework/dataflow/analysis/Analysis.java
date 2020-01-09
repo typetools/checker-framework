@@ -60,9 +60,6 @@ public class Analysis<
     /** The current control flow graph to perform the analysis on. */
     protected @Nullable ControlFlowGraph cfg;
 
-    /** Then stores before every basic block (assumed to be 'no information' if not present). */
-    protected final IdentityHashMap<Block, S> thenStores;
-
     /**
      * The associated processing environment.
      *
@@ -76,6 +73,9 @@ public class Analysis<
      * @deprecated will be removed in next version
      */
     @Deprecated protected final Types types;
+
+    /** Then stores before every basic block (assumed to be 'no information' if not present). */
+    protected final IdentityHashMap<Block, S> thenStores;
 
     /** Else stores before every basic block (assumed to be 'no information' if not present). */
     protected final IdentityHashMap<Block, S> elseStores;
