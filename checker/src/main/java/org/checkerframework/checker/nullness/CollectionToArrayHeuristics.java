@@ -36,20 +36,26 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <li value="2">The passed array size is less than the collection size. Here are heuristics to
  *       handle the most common cases:
  *       <ol>
- *         <li value="1">an empty array initializer, e.g. {@code c.toArray(new String[] {})},
- *         <li value="2">array creation tree of size 0, e.g. {@code c.toArray(new String[0])}, or
- *         <li value="3">array creation tree of the collection size method invocation {@code
+ *         <li value="1">the argument has length 0:
+ *             <ol>
+ *               <li value="1">an empty array initializer, e.g. {@code c.toArray(new String[] {})},
+ *                   or
+ *               <li value="2">array creation tree of size 0, e.g. {@code c.toArray(new String[0])}.
+ *             </ol>
+ *         <li value="2">array creation tree of the collection size method invocation {@code
  *             c.toArray(new String[c.size()])}
  *       </ol>
  * </ol>
  *
  * <p>Additionally, when the lint option {@link NullnessChecker#LINT_TRUSTARRAYLENZERO} is provided,
  * field accesses where the field declaration has a {@code @ArrayLen(0)} annotation are considered
- * when determining whether a call to {@link Collection#toArray(Object[]) Collection.toArray(T[])}
- * will return an array with non-null components. . This trusts the {@code @ArrayLen(0)} annotation,
- * but does not verify it. Run the Constant Value Checker to verify that annotation.
+ * when the Nullness Checker is estimating whether a call to {@link Collection#toArray(Object[])
+ * Collection.toArray(T[])} will return an array with non-null components. This trusts the
+ * {@code @ArrayLen(0)} annotation, but does not verify it. Run the Constant Value Checker to verify
+ * that annotation.
  *
- * <p>Note: The nullness of the returned array doesn't depend on the passed array nullness.
+ * <p>Note: From {@link Collection#toArray(Object[]) Collection.toArray(T[])}, the nullness of the
+ * returned array doesn't depend on the passed array nullness.
  */
 public class CollectionToArrayHeuristics {
     /** The processing environment. */

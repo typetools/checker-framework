@@ -467,7 +467,7 @@ then write a \<@SuppressWarnings> annotation.
 
 \subsectionAndLabel{Nullness and conversions from collections to arrays}{nullness-collection-toarray}
 
-% Keep this in sync with the javadoc of org.checkerframework.checker.nullness.CollectionToArrayHeuristics
+% Keep this in sync with the Javadoc of org.checkerframework.checker.nullness.CollectionToArrayHeuristics
 
 The semantics of
 \sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])}
@@ -482,9 +482,13 @@ hold:
        handle the most common cases:
 
   \begin{itemize}
-    \item an empty array initializer, e.g. \<c.toArray(new String[] \{\})>,
+    \item the argument has length 0:
 
-    \item array creation tree of size 0, e.g. \<c.toArray(new String[0])>, or
+    \begin{itemize}
+      \item an empty array initializer, e.g. \<c.toArray(new String[] \{\})>, or
+
+      \item array creation tree of size 0, e.g. \<c.toArray(new String[0])>.
+    \end{itemize}
 
     \item array creation tree of the collection size method invocation
       \<c.toArray(new String[c.size()])>.
@@ -494,14 +498,15 @@ hold:
 
 Additionally, when the lint option \<-Alint=trustArrayLenZero> is provided,
 field accesses where the field declaration has a \<@ArrayLen(0)> annotation are
-considered when determining whether a call to \code{Collection.toArray} will
-return an array with non-null components.
+considered when the Nullness Checker is estimating whether a call to
+\code{Collection.toArray} will return an array with non-null components.
 
 This trusts the \<@ArrayLen(0)> annotation, but does not verify it. Run the
 Constant Value Checker (see \chapterpageref{constant-value-checker}) to verify
 that annotation.
 
-Note: The nullness of the returned array doesn't depend on the passed array nullness.
+Note: From \sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])},
+the nullness of the returned array doesn't depend on the passed array nullness.
 
 
 

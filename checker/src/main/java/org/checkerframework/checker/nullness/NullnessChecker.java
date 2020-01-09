@@ -48,8 +48,8 @@ public class NullnessChecker extends InitializationChecker {
     public static final boolean LINT_DEFAULT_REDUNDANTNULLCOMPARISON = false;
 
     /**
-     * Should we unsoundly trust {@code @ArrayLen(0)} annotations to improve handling of {@link
-     * java.util.Collection#toArray()} by {@link CollectionToArrayHeuristics}?
+     * Should the Nullness Checker unsoundly trust {@code @ArrayLen(0)} annotations to improve
+     * handling of {@link java.util.Collection#toArray()} by {@link CollectionToArrayHeuristics}?
      */
     public static final String LINT_TRUSTARRAYLENZERO = "trustArrayLenZero";
 
