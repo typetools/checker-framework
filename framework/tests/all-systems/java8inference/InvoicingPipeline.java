@@ -1,5 +1,6 @@
 import java.io.Serializable;
 
+@SuppressWarnings("nullness")
 public class InvoicingPipeline {
 
     public static class PCollection<T> implements PValue {
