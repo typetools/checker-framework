@@ -34,8 +34,10 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #lock-checker Lock Checker
  * @checker_framework.manual #lock-examples-guardedby Example use of @GuardedBy
  */
-@SubtypeOf(GuardedByUnknown.class)
 @Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(GuardedByUnknown.class)
 @DefaultQualifierInHierarchy
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER})
 // These are required because the default for local variables is @GuardedByUnknown, but if the local
@@ -53,8 +55,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
             TypeKind.SHORT
         },
         types = {java.lang.String.class, Void.class})
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface GuardedBy {
     /**
      * The Java value expressions that need to be held.

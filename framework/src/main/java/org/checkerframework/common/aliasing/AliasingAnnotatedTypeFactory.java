@@ -84,11 +84,6 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
-    }
-
-    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new AliasingQualifierHierarchy(factory);
     }
@@ -117,10 +112,16 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return newtops;
         }
 
+        /**
+         * Returns true is {@code anno} is annotation in the Leaked hierarchy.
+         *
+         * @param anno an annotation
+         * @return true is {@code anno} is annotation in the Leaked hierarchy
+         */
         private boolean isLeakedQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, MaybeLeaked.class)
-                    || AnnotationUtils.areSameByClass(anno, NonLeaked.class)
-                    || AnnotationUtils.areSameByClass(anno, LeakedToResult.class);
+            return areSameByClass(anno, MaybeLeaked.class)
+                    || areSameByClass(anno, NonLeaked.class)
+                    || areSameByClass(anno, LeakedToResult.class);
         }
 
         @Override

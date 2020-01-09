@@ -8,8 +8,8 @@ import org.checkerframework.common.value.qual.StringVal;
 class StringLenConcats {
 
     void stringLenConcat(@ArrayLen(3) String a, @ArrayLen(5) String b) {
-        @ArrayLen({7, 8, 9}) String ab = a + b;
-        @ArrayLen({6, 7}) String bxx = b + "xx";
+        @ArrayLen(8) String ab = a + b;
+        @ArrayLen(7) String bxx = b + "xx";
     }
 
     void stringLenRangeConcat(
@@ -30,9 +30,9 @@ class StringLenConcats {
             @StringVal({"a", "xxx"}) String c,
             @ArrayLen(11) String d) {
 
-        @ArrayLen({8, 12, 15, 19}) String ad = a + d;
-        @ArrayLen({5, 8, 12, 15}) String bd = b + d;
-        @ArrayLenRange(from = 4, to = 15) String cd = c + d;
+        @ArrayLen(19) String ad = a + d;
+        @ArrayLen(12) String bd = b + d;
+        @ArrayLenRange(from = 12, to = 14) String cd = c + d;
     }
 
     void stringValLenRangeConcat(
@@ -49,8 +49,8 @@ class StringLenConcats {
     void tooManyStringValConcat(
             @StringVal({"a", "b", "c", "d"}) String a,
             @StringVal({"ee", "ff", "gg", "hh", "ii"}) String b) {
-        @ArrayLen({2, 5, 8}) String aa = a + a;
-        @ArrayLen({3, 5, 6, 8}) String ab = a + b;
+        @ArrayLen(2) String aa = a + a;
+        @ArrayLen(3) String ab = a + b;
     }
 
     void charConversions(
@@ -59,8 +59,8 @@ class StringLenConcats {
             @ArrayLen({100, 200}) String s,
             @ArrayLenRange(from = 100, to = 200) String t,
             @StringVal({"a", "bb", "ccc", "dddd"}) String u) {
-        @ArrayLen({5, 101, 201}) String sc = s + c;
-        @ArrayLen({5, 101, 201}) String sd = s + d;
+        @ArrayLen({101, 201}) String sc = s + c;
+        @ArrayLen({101, 201}) String sd = s + d;
 
         @ArrayLenRange(from = 101, to = 201) String tc = t + c;
 
@@ -76,9 +76,9 @@ class StringLenConcats {
             @ArrayLen(10) String a,
             @ArrayLenRange(from = 10, to = 20) String b,
             @StringVal({"aaa", "bbbbb"}) String c) {
-        @ArrayLen({7, 13}) String aConst = a + intConst;
-        @ArrayLenRange(from = 5, to = 17) String aRange = a + intRange;
-        @ArrayLen({7, 8, 9, 10, 13, 14, 15, 16}) String aPositive = a + positiveRange;
+        @ArrayLen(13) String aConst = a + intConst;
+        @ArrayLen({11, 12, 13, 14, 15, 16, 17}) String aRange = a + intRange;
+        @ArrayLen({13, 14, 15, 16}) String aPositive = a + positiveRange;
         @ArrayLenRange(from = 11, to = 21) String aUnknown = a + unknownInt;
 
         @ArrayLenRange(from = 13, to = 23) String bConst = b + intConst;
@@ -86,7 +86,7 @@ class StringLenConcats {
         @ArrayLenRange(from = 13, to = 26) String bPositive = b + positiveRange;
         @ArrayLenRange(from = 11, to = 31) String bUnknown = b + unknownInt;
 
-        @StringVal({"aaa123", "bbbbb123", "null123"}) String cConst = c + intConst;
+        @StringVal({"aaa123", "bbbbb123"}) String cConst = c + intConst;
         @ArrayLen({4, 5, 6, 7, 8, 9, 10, 11, 12}) String cRange = c + intRange;
         @ArrayLen({6, 7, 8, 9, 10, 11}) String cPositive = c + positiveRange;
     }
@@ -97,7 +97,7 @@ class StringLenConcats {
             long unknownLong,
             @ArrayLen(10) String a) {
 
-        @ArrayLen({17, 23}) String aConst = a + longConst;
+        @ArrayLen(23) String aConst = a + longConst;
         @ArrayLenRange(from = 12, to = 23) String aRange = a + longRange;
         @ArrayLenRange(from = 11, to = 30) String aUnknown = a + unknownLong;
     }
@@ -108,9 +108,9 @@ class StringLenConcats {
             byte unknownByte,
             @ArrayLen(10) String a) {
 
-        @ArrayLen({7, 13}) String aConst = a + byteConst;
-        @ArrayLenRange(from = 5, to = 12) String aRange = a + byteRange;
-        @ArrayLenRange(from = 5, to = 14) String aUnknown = a + unknownByte;
+        @ArrayLen(13) String aConst = a + byteConst;
+        @ArrayLenRange(from = 11, to = 12) String aRange = a + byteRange;
+        @ArrayLenRange(from = 11, to = 14) String aUnknown = a + unknownByte;
     }
 
     void minLenConcat(@MinLen(5) String s, @MinLen(7) String t) {

@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
-@PolymorphicQualifier(SignatureUnknown.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@PolymorphicQualifier(SignatureUnknown.class)
 public @interface PolySignature {}

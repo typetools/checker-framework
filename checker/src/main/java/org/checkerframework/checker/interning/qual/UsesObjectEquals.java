@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #interning-checker Interning Checker
  */
 @Documented
-@Inherited
-@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Inherited
 public @interface UsesObjectEquals {}
