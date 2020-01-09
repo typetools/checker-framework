@@ -257,6 +257,8 @@ public final class SceneToStubWriter {
      * are identified using the convention that their names contain "+".
      *
      * @param annos the annotations to format
+     * @return all annotations in {@code annos}, separated by spaces, in a form suitable to be
+     *     printed as Java source code
      * @see #formatAnnotation(Annotation)
      */
     private String formatAnnotations(Collection<? extends Annotation> annos) {
@@ -273,7 +275,7 @@ public final class SceneToStubWriter {
      * Formats the annotations on the component type of an array, if there are any.
      *
      * @param e the array type to format
-     * @returns the array type formatted to be written to Java source code
+     * @return the array type formatted to be written to Java source code
      */
     private String formatArrayComponentTypeAnnotation(ATypeElement e) {
         StringBuilder result = new StringBuilder();
