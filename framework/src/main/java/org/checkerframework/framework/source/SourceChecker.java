@@ -1365,17 +1365,27 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                         .getOptions()
                         .containsKey("conservativeUninferredTypeArguments")) {
 
-            if (messageText.contains("INFERENCE FAILED")) {
-                return;
-            } else if (this.processingEnv.getOptions().containsKey("nomsgtext")) {
-                for (Object arg : args) {
-                    if (arg != null && arg instanceof String) {
-                        if (((String) arg).contains("INFERENCE FAILED")) {
-                            return;
-                        }
-                    } else if (arg != null && arg instanceof AnnotatedTypeMirror) {
-                        if (((AnnotatedTypeMirror) arg).containsUninferredTypeArguments()) {
-                            return;
+            // This is a hack to avoid test failures from Issue1218.java in framework/tests/value.
+            // More generally, the problem is that this suppression is too broad: if there is a
+            // error that will be issued unrelated to type argument inference, but type argument
+            // inference still failed, then the error WILL be suppressed.
+            //
+            // It would be better if there was a way to determine precisely when the failure of
+            // type argument inference is the CAUSE of an error, rather than checking if one
+            // of the types contains a type argument inference failure.
+            if (!"varargs.type.incompatible".equals(msgKey)) {
+                if (messageText.contains("INFERENCE FAILED")) {
+                    return;
+                } else if (this.processingEnv.getOptions().containsKey("nomsgtext")) {
+                    for (Object arg : args) {
+                        if (arg instanceof String) {
+                            if (((String) arg).contains("INFERENCE FAILED")) {
+                                return;
+                            }
+                        } else if (arg instanceof AnnotatedTypeMirror) {
+                            if (((AnnotatedTypeMirror) arg).containsUninferredTypeArguments()) {
+                                return;
+                            }
                         }
                     }
                 }
