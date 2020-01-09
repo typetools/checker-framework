@@ -29,6 +29,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -680,6 +681,36 @@ public abstract class AnnotatedTypeMirror {
     public void clearAnnotations() {
         annotations.clear();
     }
+
+    /**
+     * @return whether this type or any component type is a wildcard type for which Java 7 type
+     *     inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
+     */
+    public boolean containsUninferredTypeArguments() {
+        return uninferredTypeArgumentScanner.visit(this);
+    }
+
+    /** The implementation of the visitor for #containsUninferredTypeArguments */
+    private static final AnnotatedTypeScanner<Boolean, Void> uninferredTypeArgumentScanner =
+            new AnnotatedTypeScanner<Boolean, Void>() {
+                @Override
+                public Boolean visitWildcard(AnnotatedWildcardType type, Void p) {
+                    return type.isUninferredTypeArgument();
+                }
+
+                @Override
+                public Boolean reduce(Boolean r1, Boolean r2) {
+                    if (r1 == null && r2 == null) {
+                        return false;
+                    } else if (r1 == null) {
+                        return r2;
+                    } else if (r2 == null) {
+                        return r1;
+                    } else {
+                        return r1 || r2;
+                    }
+                }
+            };
 
     @SideEffectFree
     @Override

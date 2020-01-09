@@ -1369,9 +1369,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 return;
             } else if (this.processingEnv.getOptions().containsKey("nomsgtext")) {
                 for (Object arg : args) {
-                    if (arg != null && arg instanceof AnnotatedTypeMirror.AnnotatedWildcardType) {
-                        if (((AnnotatedTypeMirror.AnnotatedWildcardType) arg)
-                                .isUninferredTypeArgument()) {
+                    if (arg != null && arg instanceof String) {
+                        if (((String) arg).contains("INFERENCE FAILED")) {
+                            return;
+                        }
+                    } else if (arg != null && arg instanceof AnnotatedTypeMirror) {
+                        if (((AnnotatedTypeMirror) arg).containsUninferredTypeArguments()) {
                             return;
                         }
                     }
