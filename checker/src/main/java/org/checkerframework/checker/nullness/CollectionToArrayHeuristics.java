@@ -54,8 +54,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * {@code @ArrayLen(0)} annotation, but does not verify it. Run the Constant Value Checker to verify
  * that annotation.
  *
- * <p>Note: From {@link Collection#toArray(Object[]) Collection.toArray(T[])}, the nullness of the
- * returned array doesn't depend on the passed array nullness.
+ * <p>Note: The nullness of the returned array doesn't depend on the passed array nullness. This is
+ * a fact about {@link Collection#toArray(Object[]) Collection.toArray(T[])}.
  *
  * <p>Note: Corresponding section in manual should be consistent with this Javadoc.
  *

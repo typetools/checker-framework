@@ -506,8 +506,8 @@ This trusts the \<@ArrayLen(0)> annotation, but does not verify it. Run the
 Constant Value Checker (see \chapterpageref{constant-value-checker}) to verify
 that annotation.
 
-Note: From \sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])},
-the nullness of the returned array doesn't depend on the passed array nullness.
+Note: The nullness of the returned array doesn't depend on the passed array nullness.
+This is a fact about \sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])}.
 
 
 \subsectionAndLabel{Run-time checks for nullness}{nullness-runtime-checks}
