@@ -184,13 +184,13 @@ public class DOTCFGVisualizer<
             srcLoc.append(">");
         } else if (ast.getKind() == Kind.LAMBDA) {
             CFGLambda cfgs = (CFGLambda) ast;
-            outfile.append("Lambda-");
-            outfile.append(ast.hashCode());
+            srcLoc.append("Lambda-");
+            srcLoc.append(ast.hashCode());
 
-            srcloc.append('<');
-            srcloc.append("::lambda::");
-            srcloc.append(((JCTree) cfgs.getCode()).pos);
-            srcloc.append('>');
+            srcLoc.append('<');
+            srcLoc.append("::lambda::");
+            srcLoc.append(((JCTree) cfgs.getCode()).pos);
+            srcLoc.append('>');
         } else {
             throw new BugInCF("Unexpected AST kind: " + ast.getKind() + " value: " + ast);
         }

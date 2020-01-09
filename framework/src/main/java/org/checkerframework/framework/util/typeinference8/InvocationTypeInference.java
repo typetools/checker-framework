@@ -482,7 +482,7 @@ public class InvocationTypeInference {
                 }
                 break;
             case PARENTHESIZED:
-                c.addAll(createAdditionalArgConstraints(TreeUtils.skipParens(ei), fi, map));
+                c.addAll(createAdditionalArgConstraints(TreeUtils.withoutParens(ei), fi, map));
                 break;
             case CONDITIONAL_EXPRESSION:
                 ConditionalExpressionTree conditional = (ConditionalExpressionTree) ei;
@@ -534,7 +534,7 @@ public class InvocationTypeInference {
                 // A parenthesized expression whose contained expression is not pertinent to
                 // applicability.
                 return notPertinentToApplicability(
-                        TreeUtils.skipParens(expressionTree), isTargetVariable);
+                        TreeUtils.withoutParens(expressionTree), isTargetVariable);
             case CONDITIONAL_EXPRESSION:
                 ConditionalExpressionTree conditional = (ConditionalExpressionTree) expressionTree;
                 // A conditional expression whose second or third operand is not pertinent to
@@ -678,13 +678,12 @@ public class InvocationTypeInference {
                 TypeMirror inferredType = variable.getBounds().getInstantiation().getJavaType();
                 if (context.types.isSameType(
                         context.types.erasure((Type) correctType),
-                        context.types.erasure((Type) inferredType),
-                        false)) {
+                        context.types.erasure((Type) inferredType))) {
                     if (areSameCapture(correctType, inferredType)) {
                         continue;
                     }
                 }
-                if (!context.types.isSameType((Type) correctType, (Type) inferredType, false)) {
+                if (!context.types.isSameType((Type) correctType, (Type) inferredType)) {
                     // type.inference.not.same=type variable: %s\ninferred: %s\njava type: %s
                     checker.report(
                             Result.failure(

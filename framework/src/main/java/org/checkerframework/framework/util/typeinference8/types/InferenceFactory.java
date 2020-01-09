@@ -150,9 +150,9 @@ public class InferenceFactory {
                 } else {
                     // TODO: I don't think this should happen. during inference
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosing;
-                    Pair<AnnotatedDeclaredType, AnnotatedExecutableType> fninf =
-                            factory.getFnInterfaceFromTree((LambdaExpressionTree) enclosing);
-                    AnnotatedTypeMirror res = fninf.second.getReturnType();
+                    AnnotatedExecutableType fninf =
+                            factory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
+                    AnnotatedTypeMirror res = fninf.getReturnType();
                     return Pair.of(res, TreeUtils.typeOf(lambdaTree));
                 }
             default:
@@ -290,7 +290,7 @@ public class InferenceFactory {
      * expression, isArgument is called recursively on the true and false expressions.
      */
     private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
-        argumentTree = TreeUtils.skipParens(argumentTree);
+        argumentTree = TreeUtils.withoutParens(argumentTree);
         if (argumentTree == path.getLeaf()) {
             return true;
         } else if (argumentTree.getKind() == Tree.Kind.CONDITIONAL_EXPRESSION) {

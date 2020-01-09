@@ -1455,7 +1455,7 @@ public final class TreeUtils {
         // overloadKind is set
         // com.sun.tools.javac.comp.DeferredAttr.DeferredChecker.visitReference()
         // IsExact: https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13.1-400
-        return ((JCMemberReference) ref).overloadKind != OverloadKind.OVERLOADED;
+        return ((JCMemberReference) ref).getOverloadKind() != OverloadKind.OVERLOADED;
     }
 
     /**

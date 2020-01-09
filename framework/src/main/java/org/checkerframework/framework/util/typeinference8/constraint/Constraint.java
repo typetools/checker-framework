@@ -163,7 +163,7 @@ public abstract class Constraint implements ReductionResult {
                     return inputs;
                 }
             case PARENTHESIZED:
-                return getInputVariablesForExpression(TreeUtils.skipParens(tree), t);
+                return getInputVariablesForExpression(TreeUtils.withoutParens(tree), t);
             case CONDITIONAL_EXPRESSION:
                 ConditionalExpressionTree conditional = (ConditionalExpressionTree) tree;
                 List<Variable> inputs = new ArrayList<>();
