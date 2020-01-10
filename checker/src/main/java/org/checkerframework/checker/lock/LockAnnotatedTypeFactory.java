@@ -9,6 +9,7 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -20,6 +21,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByBottom;
@@ -51,10 +53,10 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.ComplexHierarchy;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -259,8 +261,8 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new LockQualifierHierarchy(factory);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new LockQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
     @Override
@@ -274,137 +276,98 @@ public class LockAnnotatedTypeFactory
         return new LockTransfer((LockAnalysis) analysis, (LockChecker) this.checker);
     }
 
-    class LockQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    class LockQualifierHierarchy extends ComplexHierarchy {
+        private final QualifierKind GUARDEDBY_KIND;
+        private final QualifierKind GUARDSATISFIED_KIND;
+        private final QualifierKind GUARDEDBYBOTTOM_KIND;
+        private final QualifierKind GUARDEDBYUNKNOWN_KIND;
 
-        public LockQualifierHierarchy(MultiGraphFactory f) {
-            super(f, LOCKHELD);
-        }
-
-        boolean isGuardedBy(AnnotationMirror am) {
-            return AnnotationUtils.areSameByName(am, GUARDEDBY);
-        }
-
-        boolean isGuardSatisfied(AnnotationMirror am) {
-            return AnnotationUtils.areSameByName(am, GUARDSATISFIED);
+        public LockQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
+            GUARDEDBY_KIND = getQualifierKind(GUARDEDBY);
+            GUARDSATISFIED_KIND = getQualifierKind(GUARDSATISFIED);
+            GUARDEDBYBOTTOM_KIND = getQualifierKind(GUARDEDBYBOTTOM);
+            GUARDEDBYUNKNOWN_KIND = getQualifierKind(GUARDEDBYUNKNOWN);
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-
-            boolean lhsIsGuardedBy = isGuardedBy(superAnno);
-            boolean rhsIsGuardedBy = isGuardedBy(subAnno);
-
-            if (lhsIsGuardedBy && rhsIsGuardedBy) {
-                // Two @GuardedBy annotations are considered subtypes of each other if and only if
-                // their values match exactly.
-
-                List<String> lhsValues =
+        protected boolean isSubtype(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            if (subKind == GUARDEDBY_KIND && superKind == GUARDEDBY_KIND) {
+                List<String> subLocks =
                         AnnotationUtils.getElementValueArray(
                                 superAnno, "value", String.class, true);
-                List<String> rhsValues =
+                List<String> superLocks =
                         AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
-
-                return rhsValues.containsAll(lhsValues) && lhsValues.containsAll(rhsValues);
-            }
-
-            boolean lhsIsGuardSatisfied = isGuardSatisfied(superAnno);
-            boolean rhsIsGuardSatisfied = isGuardSatisfied(subAnno);
-
-            if (lhsIsGuardSatisfied && rhsIsGuardSatisfied) {
-                // There are cases in which two expressions with identical @GuardSatisfied(...)
-                // annotations are not
-                // assignable. Those are handled elsewhere.
-
-                // Two expressions with @GuardSatisfied annotations (without an index) are sometimes
-                // not assignable.
-                // For example, two method actual parameters with @GuardSatisfied annotations are
-                // assumed to refer to different guards.
-
-                // This is largely handled in methodFromUse and in
-                // LockVisitor.visitMethodInvocation.
-                // Related behavior is handled in LockVisitor.visitMethod (issuing an error if a
-                // non-constructor method definition has a return type of @GuardSatisfied without an
-                // index).
-
-                // Two expressions with @GuardSatisfied() annotations are assignable when comparing
-                // a formal receiver to an actual receiver (see
-                // LockVisitor.skipReceiverSubtypeCheck) or a formal parameter to an actual
-                // parameter (see LockVisitor.commonAssignmentCheck for the details on this rule).
-
+                return subLocks.containsAll(superLocks) && superLocks.containsAll(subLocks);
+            } else if (subKind == GUARDSATISFIED_KIND && superKind == GUARDSATISFIED_KIND) {
                 return AnnotationUtils.areSame(superAnno, subAnno);
             }
-
-            // Remove values from @GuardedBy annotations for further subtype checking. Remove
-            // indices from @GuardSatisfied annotations.
-
-            if (lhsIsGuardedBy) {
-                superAnno = GUARDEDBY;
-            } else if (lhsIsGuardSatisfied) {
-                superAnno = GUARDSATISFIED;
-            }
-
-            if (rhsIsGuardedBy) {
-                subAnno = GUARDEDBY;
-            } else if (rhsIsGuardSatisfied) {
-                subAnno = GUARDSATISFIED;
-            }
-
-            return super.isSubtype(subAnno, superAnno);
+            throw new RuntimeException("Unexpected");
         }
 
         @Override
-        public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            AnnotationMirror a1top = getTopAnnotation(a1);
-            AnnotationMirror a2top = getTopAnnotation(a2);
-
-            if (AnnotationUtils.areSame(a1top, LOCKPOSSIBLYHELD)
-                    && AnnotationUtils.areSame(a2top, LOCKPOSSIBLYHELD)) {
-                return greatestLowerBoundInLockPossiblyHeldHierarchy(a1, a2);
-            } else if (AnnotationUtils.areSame(a1top, GUARDEDBYUNKNOWN)
-                    && AnnotationUtils.areSame(a2top, GUARDEDBYUNKNOWN)) {
-                return greatestLowerBoundInGuardedByUnknownHierarchy(a1, a2);
-            }
-
-            return null;
-        }
-
-        private AnnotationMirror greatestLowerBoundInGuardedByUnknownHierarchy(
-                AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.areSame(a1, GUARDEDBYUNKNOWN)) {
-                return a2;
-            }
-
-            if (AnnotationUtils.areSame(a2, GUARDEDBYUNKNOWN)) {
-                return a1;
-            }
-
-            if ((isGuardedBy(a1) && isGuardedBy(a2))
-                    || (isGuardSatisfied(a1) && isGuardSatisfied(a2))) {
-                // isSubtype(a1, a2) is symmetrical to isSubtype(a2, a1) since two
-                // @GuardedBy annotations are considered subtypes of each other
-                // if and only if their values match exactly, and two @GuardSatisfied
-                // annotations are considered subtypes of each other if and only if
-                // their indices match exactly.
-
-                if (isSubtype(a1, a2)) {
+        protected AnnotationMirror leastUpperBound(
+                AnnotationMirror a1,
+                QualifierKind qual1,
+                AnnotationMirror a2,
+                QualifierKind qual2) {
+            if (qual1 == GUARDEDBY_KIND && qual2 == GUARDEDBY_KIND) {
+                List<String> locks1 =
+                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                List<String> locks2 =
+                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                if (locks1.containsAll(locks2) && locks2.containsAll(locks1)) {
                     return a1;
+                } else {
+                    return GUARDEDBYUNKNOWN;
                 }
-            }
-
-            return GUARDEDBYBOTTOM;
-        }
-
-        private AnnotationMirror greatestLowerBoundInLockPossiblyHeldHierarchy(
-                AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.areSame(a1, LOCKPOSSIBLYHELD)) {
+            } else if (qual1 == GUARDSATISFIED_KIND && qual2 == GUARDSATISFIED_KIND) {
+                if (AnnotationUtils.areSame(a1, a2)) {
+                    return a1;
+                } else {
+                    return GUARDEDBYUNKNOWN;
+                }
+            } else if (qual1 == GUARDEDBYBOTTOM_KIND) {
                 return a2;
-            }
-
-            if (AnnotationUtils.areSame(a2, LOCKPOSSIBLYHELD)) {
+            } else if (qual2 == GUARDEDBYBOTTOM_KIND) {
                 return a1;
             }
+            throw new RuntimeException("Unexpected");
+        }
 
-            return LOCKHELD;
+        @Override
+        protected AnnotationMirror greatestLowerBound(
+                AnnotationMirror a1,
+                QualifierKind qual1,
+                AnnotationMirror a2,
+                QualifierKind qual2) {
+            if (qual1 == GUARDEDBY_KIND && qual2 == GUARDEDBY_KIND) {
+                List<String> locks1 =
+                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                List<String> locks2 =
+                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                if (locks1.containsAll(locks2) && locks2.containsAll(locks1)) {
+                    return a1;
+                } else {
+                    return GUARDEDBYBOTTOM;
+                }
+            } else if (qual1 == GUARDSATISFIED_KIND && qual2 == GUARDSATISFIED_KIND) {
+                if (AnnotationUtils.areSame(a1, a2)) {
+                    return a1;
+                } else {
+                    return GUARDEDBYBOTTOM;
+                }
+            } else if (qual1 == GUARDEDBYUNKNOWN_KIND) {
+                return a2;
+            } else if (qual2 == GUARDEDBYUNKNOWN_KIND) {
+                return a1;
+            }
+            throw new RuntimeException("Unexpected");
         }
     }
 

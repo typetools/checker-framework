@@ -39,7 +39,6 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
         bottoms.addAll(bottomsMap.values());
         this.bottoms = Collections.unmodifiableSet(bottoms);
         this.qualifierMap = createQualifiers();
-        printImplement();
     }
 
     protected void printIsSubtypeBody(QualifierKind subKind, QualifierKind superKind) {
@@ -75,7 +74,7 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
         }
     }
 
-    void printImplement() {
+    protected void printImplement() {
         System.out.println(
                 "@Override\n"
                         + "protected boolean isSubtype(AnnotationMirror subAnno, QualifierKind subKind, AnnotationMirror superAnno,  QualifierKind superKind) {");
