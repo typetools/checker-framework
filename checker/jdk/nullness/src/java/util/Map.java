@@ -619,7 +619,7 @@ public interface Map<K, V> {
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    default V getOrDefault(@Nullable Object key, V defaultValue) {
+    default V getOrDefault(Object key, V defaultValue) {
         V v;
         return (((v = get(key)) != null) || containsKey(key))
             ? v
@@ -775,7 +775,7 @@ public interface Map<K, V> {
      * @since 1.8
      */
     @EnsuresKeyFor(value="#1", map="this")
-    default @Nullable V putIfAbsent(K key, V value) {
+    default V putIfAbsent(K key, V value) {
         V v = get(key);
         if (v == null) {
             v = put(key, value);
@@ -818,7 +818,7 @@ public interface Map<K, V> {
      *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    default boolean remove(@Nullable Object key, @Nullable Object value) {
+    default boolean remove(Object key, Object value) {
         Object curValue = get(key);
         if (!Objects.equals(curValue, value) ||
             (curValue == null && !containsKey(key))) {
@@ -918,7 +918,7 @@ public interface Map<K, V> {
      *         or value prevents it from being stored in this map
      * @since 1.8
      */
-    default @Nullable V replace(K key, V value) {
+    default V replace(K key, V value) {
         V curValue;
         if (((curValue = get(key)) != null) || containsKey(key)) {
             curValue = put(key, value);

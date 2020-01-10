@@ -18,8 +18,8 @@ public interface Deque<E> extends Queue<E> {
   public abstract E getLast();
   public abstract @Nullable E peekFirst();
   public abstract @Nullable E peekLast();
-  public abstract boolean removeFirstOccurrence(@Nullable Object a1);
-  public abstract boolean removeLastOccurrence(@Nullable Object a1);
+  public abstract boolean removeFirstOccurrence(Object a1);
+  public abstract boolean removeLastOccurrence(Object a1);
   public abstract boolean add(E a1);
   public abstract boolean offer(E a1);
   public abstract E remove();
