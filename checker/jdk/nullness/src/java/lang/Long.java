@@ -28,6 +28,7 @@ package java.lang;
 import java.lang.annotation.Native;
 import java.math.*;
 
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
@@ -398,6 +399,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @param   i   a {@code long} to be converted.
      * @return  a string representation of the argument in base&nbsp;10.
      */
+    @SideEffectFree
     public static String toString(long i) {
         if (i == Long.MIN_VALUE)
             return "-9223372036854775808";
@@ -636,6 +638,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @throws     NumberFormatException  if the string does not contain a
      *             parsable {@code long}.
      */
+    @Pure
     public static long parseLong(String s) throws NumberFormatException {
         return parseLong(s, 10);
     }
@@ -808,6 +811,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @throws     NumberFormatException  If the string cannot be parsed
      *             as a {@code long}.
      */
+    @SideEffectFree
     public static Long valueOf(String s) throws NumberFormatException
     {
         return Long.valueOf(parseLong(s, 10));
@@ -1094,6 +1098,7 @@ public final class Long extends Number implements Comparable<Long> {
      *          {@code false} otherwise.
      */
     @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof Long) {
             return value == ((Long)obj).longValue();

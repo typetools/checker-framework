@@ -1,7 +1,6 @@
 package org.checkerframework.common.value;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -54,11 +53,12 @@ class RangeOrListOfValues {
      *
      * <p>If reading from an {@link org.checkerframework.common.value.qual.IntRange} annotation,
      * {@link #convertLongsToInts(List)} should be called before calling this method.
+     *
+     * @param newValues values to add
      */
     public void addAll(List<Integer> newValues) {
         if (isRange) {
-            Range newValueRange = new Range(Collections.min(newValues), Collections.max(newValues));
-            range = range.union(newValueRange);
+            range = range.union(Range.create(newValues));
         } else {
             for (Integer i : newValues) {
                 if (!values.contains(i)) {
@@ -108,7 +108,7 @@ class RangeOrListOfValues {
     public void convertToRange() {
         if (!isRange) {
             isRange = true;
-            range = new Range(Collections.min(values), Collections.max(values));
+            range = Range.create(values);
             values = null;
         }
     }

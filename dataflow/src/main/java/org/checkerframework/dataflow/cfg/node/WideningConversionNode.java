@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -32,11 +33,6 @@ public class WideningConversionNode extends Node {
     }
 
     @Override
-    public TypeMirror getType() {
-        return type;
-    }
-
-    @Override
     public Tree getTree() {
         return tree;
     }
@@ -52,7 +48,7 @@ public class WideningConversionNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof WideningConversionNode)) {
             return false;
         }

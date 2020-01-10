@@ -1,15 +1,17 @@
 package org.checkerframework.dataflow.cfg.block;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.javacutil.BugInCF;
 
 /** Implementation of a conditional basic block. */
 public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock {
 
     /** Successor of the then branch. */
-    protected BlockImpl thenSuccessor;
+    protected @Nullable BlockImpl thenSuccessor;
 
     /** Successor of the else branch. */
-    protected BlockImpl elseSuccessor;
+    protected @Nullable BlockImpl elseSuccessor;
 
     /**
      * The rules below say that the THEN store before a conditional block flows to BOTH of the
@@ -42,11 +44,19 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
 
     @Override
     public Block getThenSuccessor() {
+        if (thenSuccessor == null) {
+            throw new BugInCF(
+                    "Requested thenSuccessor for conditional block before initialization");
+        }
         return thenSuccessor;
     }
 
     @Override
     public Block getElseSuccessor() {
+        if (elseSuccessor == null) {
+            throw new BugInCF(
+                    "Requested elseSuccessor for conditional block before initialization");
+        }
         return elseSuccessor;
     }
 

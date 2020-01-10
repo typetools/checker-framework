@@ -24,13 +24,15 @@ Writing a simple checker is easy!  For example, here is a complete, useful
 type-checker:
 
 \begin{Verbatim}
+import java.lang.annotation.Documented;
 import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.SubtypeOf;
 
-@SubtypeOf(Unqualified.class)
+@Documented
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(Unqualified.class)
 public @interface Encrypted {}
 \end{Verbatim}
 
@@ -467,14 +469,12 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 
 The annotations should be placed within a directory called \<qual>, and
 \<qual> should be placed in the same directory as your checker's source file.
-
-For example, the Nullness Checker's source file is located at
-\<.../nullness/NullnessChecker.java>. The \<@NonNull> qualifier is defined in
-file \<.../nullness/qual/NonNull.java>.
-
 The Checker Framework automatically treats any annotation that
 is declared in the \<qual> package as a type qualifier.
 (See Section \ref{creating-indicating-supported-annotations} for more details.)
+For example, the Nullness Checker's source file is located at
+\<.../nullness/NullnessChecker.java>. The \<@NonNull> qualifier is defined in
+file \<.../nullness/qual/NonNull.java>.
 
 % \noindent
 % The \<@Target({ElementType.TYPE\_USE})> meta-annotation
@@ -489,16 +489,14 @@ is declared in the \<qual> package as a type qualifier.
 Your type system should include a top qualifier and a bottom qualifier
 (Section~\ref{creating-bottom-and-top-qualifier}).
 The top qualifier is conventionally named \<\emph{CheckerName}Unknown>.
-
-You should also define a
+Most type systems should also include a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{qualifier-polymorphism}).
 
-The Javadoc of every type qualifier should include a precise English
-description and an example use of the qualifier.
-
 Choose good names for the qualifiers, because users will write these in
 their source code.
+The Javadoc of every type qualifier should include a precise English
+description and an example use of the qualifier.
 
 
 \subsectionAndLabel{Declaratively defining the qualifier hierarchy}{creating-declarative-hierarchy}
@@ -588,7 +586,7 @@ However, the declarative mechanism is sufficient for most type systems.
 \subsectionAndLabel{Procedurally defining the qualifier hierarchy}{creating-procedural-hierarchy}
 
 While the declarative syntax suffices for many cases, more complex
-type hierarchies can be expressed by overriding, in your subclass of \refclass{common/basetype}{BaseTypeVisitor},
+type hierarchies can be expressed by overriding, in your subclass of \refclass{common/basetype}{BaseAnnotatedTypeFactory},
 either \refmethodterse{framework/type}{AnnotatedTypeFactory}{createQualifierHierarchy}{--} or \refmethodterse{framework/type}{AnnotatedTypeFactory}{createTypeHierarchy}{--} (typically
 only one of these needs to be overridden).
 For more details, see the Javadoc of those methods and of the classes
@@ -892,10 +890,14 @@ or
 \<@Target({ElementType.TYPE\_USE, ElementType.TYPE\_PARAMETER})>.
 
 To indicate support for annotations that are located outside of the \<qual>
-subdirectory, annotations that have other \<ElementType> values
+subdirectory, annotations that have other \<ElementType> values,
 checker writers can override the
 \refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
 method (see its Javadoc for details).
+It is required to define \<createSupportedTypeQualifiers> if you are mixing
+qualifiers from multiple directories (including when extending an existing
+checker that has its own qualifiers) and when using the Buck build tool,
+whose classloader cannot find the qualifier directory.
 
 An aggregate checker (which extends
 \refclass{framework/source}{AggregateChecker}) does not need to specify its
@@ -1876,7 +1878,7 @@ $ javac -processor org.checkerframework.checker.interning.InterningChecker \
      actual: DECLARED java.lang.String
    expected: DECLARED java.lang.String
 docs/examples/InterningExampleWithWarnings.java:21: (not.interned)
-    if (foo == bar)
+    if (foo == bar) {
             ^
  success (line  22): STRING_LITERAL "foo == bar"
      actual: DECLARED @org.checkerframework.checker.interning.qual.Interned java.lang.String

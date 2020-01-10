@@ -1,4 +1,4 @@
-// This stub file will be read second
+// This stub file will be read second.
 // If any of these conflict with stubfile1,
 // then the annotations in the stub file will be used.
 

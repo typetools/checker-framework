@@ -49,7 +49,7 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
             final KeyForValue previousKeyValue = in.getValueOfSubNode(node.getArgument(0));
             if (previousKeyValue != null) {
                 for (AnnotationMirror prevAm : previousKeyValue.getAnnotations()) {
-                    if (prevAm != null && AnnotationUtils.areSameByClass(prevAm, KeyFor.class)) {
+                    if (prevAm != null && factory.areSameByClass(prevAm, KeyFor.class)) {
                         keyForMaps.addAll(getKeys(prevAm));
                     }
                 }

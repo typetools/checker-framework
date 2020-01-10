@@ -17,9 +17,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @see LockPossiblyHeld
  * @checker_framework.manual #lock-checker Lock Checker
  */
-@SubtypeOf(LockPossiblyHeld.class) // This is the bottom type in this hierarchy
-@InvisibleQualifier
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
+@SubtypeOf(LockPossiblyHeld.class) // This is the bottom type in this hierarchy
+@InvisibleQualifier
 public @interface LockHeld {}

@@ -9,9 +9,9 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
-@SubtypeOf({H2S1.class, H2S2.class})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultFor(TypeUseLocation.LOWER_BOUND)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf({H2S1.class, H2S2.class})
+@DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface H2Bot {}

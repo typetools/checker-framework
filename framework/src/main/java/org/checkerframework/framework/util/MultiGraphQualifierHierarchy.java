@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
@@ -76,7 +77,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         /** Create a factory. */
         public MultiGraphFactory(AnnotatedTypeFactory atypeFactory) {
             this.supertypesDirect = AnnotationUtils.createAnnotationMap();
-            this.polyQualifiers = new HashMap<>();
+            this.polyQualifiers = AnnotationUtils.createAnnotationMap();
             this.atypeFactory = atypeFactory;
         }
 
@@ -318,17 +319,14 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
         AnnotationMirror top = getTopAnnotation(start);
         for (AnnotationMirror key : polyQualifiers.keySet()) {
-            if (key != null && AnnotationUtils.areSame(key, top)) {
+            if (key != null
+                    && (AnnotationUtils.areSame(key, top)
+                            || AnnotationUtils.areSame(key, polymorphicQualifier))) {
                 return polyQualifiers.get(key);
             }
         }
-
-        if (AnnotationUtils.containsSame(polyQualifiers.keySet(), polymorphicQualifier)) {
-            return polyQualifiers.get(polymorphicQualifier);
-        } else {
-            // No polymorphic qualifier exists for that hierarchy.
-            return null;
-        }
+        // No polymorphic qualifier exists for that hierarchy.
+        return null;
     }
 
     @Override
@@ -376,6 +374,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
+    @Deprecated
     public Set<? extends AnnotationMirror> getTypeQualifiers() {
         return typeQualifiers;
     }
@@ -938,7 +937,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(@Nullable Object o) {
             if (!(o instanceof AnnotationPair)) {
                 return false;
             }

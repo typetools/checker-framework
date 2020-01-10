@@ -28,8 +28,11 @@ fi
 echo "PACKAGES=${PACKAGES}"
 
 
-git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
-  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+if [ -d "/tmp/plume-scripts" ] ; then
+  (cd /tmp/plume-scripts && git pull -q)
+else
+  (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
+fi
 
 echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
@@ -43,7 +46,7 @@ else
   JSR308="$(cd "$CHECKERFRAMEWORK/.." && pwd -P)"
   (cd $JSR308 && git clone https://github.com/opprop/checker-framework.git) || (cd $JSR308 && git clone https://github.com/opprop/checker-framework.git)
 fi
-# This also builds annotation-tools and jsr308-langtools
+# This also builds annotation-tools
 (cd $CHECKERFRAMEWORK && ./checker/bin-devel/build.sh downloadjdk)
 
 echo "PACKAGES=${PACKAGES}"

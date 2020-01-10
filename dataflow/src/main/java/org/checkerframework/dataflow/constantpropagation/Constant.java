@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.constantpropagation;
 
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 
@@ -39,13 +40,16 @@ public class Constant implements AbstractValue<Constant> {
     public boolean isBottom() {
         return type == Type.BOTTOM;
     }
+
     /** @return whether or not the constant is CONSTANT. */
+    @EnsuresNonNullIf(result = true, expression = "value")
     public boolean isConstant() {
-        return type == Type.CONSTANT;
+        return type == Type.CONSTANT && value != null;
     }
 
+    /** @return the value. */
     public Integer getValue() {
-        assert isConstant();
+        assert isConstant() : "@AssumeAssertion(nullness): inspection";
         return value;
     }
 
@@ -74,7 +78,7 @@ public class Constant implements AbstractValue<Constant> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof Constant)) {
             return false;
         }
@@ -95,6 +99,7 @@ public class Constant implements AbstractValue<Constant> {
             case BOTTOM:
                 return "-";
             case CONSTANT:
+                assert isConstant() : "@AssumeAssertion(nullness)";
                 return value.toString();
         }
         assert false;

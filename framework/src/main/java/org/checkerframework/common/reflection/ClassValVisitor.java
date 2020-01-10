@@ -47,7 +47,8 @@ class ClassNameValidator extends BaseTypeValidator {
         classVal = classVal == null ? type.getAnnotation(ClassBound.class) : classVal;
         if (classVal != null) {
             List<String> classNames =
-                    ClassValAnnotatedTypeFactory.getClassNamesFromAnnotation(classVal);
+                    ((ClassValAnnotatedTypeFactory) atypeFactory)
+                            .getClassNamesFromAnnotation(classVal);
             for (String className : classNames) {
                 if (!isLegalClassName(className)) {
                     checker.report(Result.failure("illegal.classname", className, type), tree);

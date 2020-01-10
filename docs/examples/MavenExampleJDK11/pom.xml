@@ -12,7 +12,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <checkerFrameworkVersion><!-- checker-framework-version -->2.11.1<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.1.0<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
@@ -60,14 +60,27 @@
           <version>3.8.1</version>
           <configuration>
               <fork>true</fork>
-              <showWarnings>true</showWarnings>
               <release>11</release>
+              <showWarnings>true</showWarnings>
               <annotationProcessorPaths>
                 <path>
                   <groupId>org.checkerframework</groupId>
                   <artifactId>checker</artifactId>
                   <version>${checkerFrameworkVersion}</version>
                 </path>
+                <!--
+                  When using the Subtyping Checker, any custom type qualifiers must be in a
+                  separate pre-compiled module; see
+                  https://checkerframework.org/manual/#subtyping-compiling .
+                  Once <annotationProcessorPaths> is defined, it is the only source for
+                  classpath lookup; see
+                  https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html#annotationProcessorPaths .
+                -->
+                <!-- <path> -->
+                <!--   <groupId>your.qual.group</groupId> -->
+                <!--   <artifactId>your-qual-artifact</artifactId> -->
+                <!--   <version>your-qual-artifact-version</version> -->
+                <!-- </path> -->
               </annotationProcessorPaths>
               <annotationProcessors>
                   <!-- Add all the checkers you want to enable here -->
@@ -77,6 +90,10 @@
                   <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
                   <!-- -Awarns treats Checker Framework errors as warnings -->
                   <!-- <arg>-Awarns</arg> -->
+                  <!--
+                    For the Subtyping Checker, annotations defined in module 'your-qual-artifact':
+                    <arg>-Aquals=myPackage.qual.MyFenum,myPackage.qual.MyCustomType</arg>
+                  -->
                   <arg>-Alint</arg>
               </compilerArgs>
           </configuration>

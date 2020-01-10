@@ -306,7 +306,7 @@ public class ConcurrentSkipListSet<E extends @NonNull Object>
      * @param o the object to be compared for equality with this set
      * @return {@code true} if the specified object is equal to this set
      */
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         // Override AbstractSet version to avoid calling size()
         if (o == this)
             return true;
