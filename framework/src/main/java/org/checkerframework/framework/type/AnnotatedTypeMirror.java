@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -753,6 +754,7 @@ public abstract class AnnotatedTypeMirror {
      * always be a call to shallowCopy(true).
      *
      * @see #shallowCopy(boolean)
+     * @return a shallow copy of this type with annotations.
      */
     public abstract AnnotatedTypeMirror shallowCopy();
 
@@ -789,6 +791,13 @@ public abstract class AnnotatedTypeMirror {
                 }
             };
 
+    /**
+     * Create an {@link AnnotatedDeclaredType} with the underlying type of {@link Object}. It
+     * includes any annotations placed by {@link AnnotatedTypeFactory#fromElement(Element)}.
+     *
+     * @param atypeFactory type factory to use
+     * @return AnnotatedDeclaredType for Object
+     */
     protected static AnnotatedDeclaredType createTypeOfObject(AnnotatedTypeFactory atypeFactory) {
         AnnotatedDeclaredType objectType =
                 atypeFactory.fromElement(
