@@ -292,7 +292,8 @@ public class TreeMap<K, V>
         return (p==null ? null : p.value);
     }
 
-    public Comparator<? super K> comparator() {
+    @Pure
+    public @Nullable Comparator<? super K> comparator() {
         return comparator;
     }
 
