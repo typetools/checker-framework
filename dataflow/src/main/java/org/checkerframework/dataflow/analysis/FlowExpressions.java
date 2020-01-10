@@ -287,6 +287,10 @@ public class FlowExpressions {
                 assert TreeUtils.isUseOfElement(identifierTree)
                         : "@AssumeAssertion(nullness): tree kind";
                 Element ele = TreeUtils.elementFromUse(identifierTree);
+                if (ElementUtils.isClassElement(ele)) {
+                    receiver = new ClassName(ele.asType());
+                    break;
+                }
                 switch (ele.getKind()) {
                     case LOCAL_VARIABLE:
                     case RESOURCE_VARIABLE:
@@ -306,12 +310,6 @@ public class FlowExpressions {
                         receiver =
                                 new FieldAccess(
                                         fieldAccessExpression, typeOfId, (VariableElement) ele);
-                        break;
-                    case CLASS:
-                    case ENUM:
-                    case ANNOTATION_TYPE:
-                    case INTERFACE:
-                        receiver = new ClassName(ele.asType());
                         break;
                     default:
                         receiver = null;
@@ -372,16 +370,16 @@ public class FlowExpressions {
         }
         assert TreeUtils.isUseOfElement(memberSelectTree) : "@AssumeAssertion(nullness): tree kind";
         Element ele = TreeUtils.elementFromUse(memberSelectTree);
+        if (ElementUtils.isClassElement(ele)) {
+            // o instanceof MyClass.InnerClass
+            // o instanceof MyClass.InnerInterface
+            TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
+            return new ClassName(selectType);
+        }
         switch (ele.getKind()) {
             case METHOD:
             case CONSTRUCTOR:
                 return internalReprOf(provider, memberSelectTree.getExpression());
-            case CLASS: // o instanceof MyClass.InnerClass
-            case ENUM:
-            case INTERFACE: // o instanceof MyClass.InnerInterface
-            case ANNOTATION_TYPE:
-                TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
-                return new ClassName(selectType);
             case ENUM_CONSTANT:
             case FIELD:
                 TypeMirror fieldType = TreeUtils.typeOf(memberSelectTree);

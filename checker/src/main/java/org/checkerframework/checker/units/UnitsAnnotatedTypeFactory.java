@@ -304,8 +304,14 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return null;
     }
 
+    /**
+     * Returns true if {@code metaAnno} is {@link UnitsMultiple}.
+     *
+     * @param metaAnno an annotation mirror
+     * @return true if {@code metaAnno} is {@link UnitsMultiple}
+     */
     private boolean isUnitsMultiple(AnnotationMirror metaAnno) {
-        return AnnotationUtils.areSameByClass(metaAnno, UnitsMultiple.class);
+        return areSameByClass(metaAnno, UnitsMultiple.class);
     }
 
     /**
@@ -318,7 +324,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationMirror am = AnnotationBuilder.fromClass(elements, qual);
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
-            if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
+            if (areSameByClass(ama, unitsRelationsAnnoClass)) {
                 String theclassname =
                         AnnotationUtils.getElementValueClassName(ama, "value", true).toString();
                 if (!Signatures.isClassGetName(theclassname)) {

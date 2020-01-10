@@ -20,7 +20,6 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.SimpleHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /** Annotated type factory for the Aliasing Checker. */
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -86,10 +85,16 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(AliasingAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
         }
 
+        /**
+         * Returns true is {@code anno} is annotation in the Leaked hierarchy.
+         *
+         * @param anno an annotation
+         * @return true is {@code anno} is annotation in the Leaked hierarchy
+         */
         private boolean isLeakedQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, MaybeLeaked.class)
-                    || AnnotationUtils.areSameByClass(anno, NonLeaked.class)
-                    || AnnotationUtils.areSameByClass(anno, LeakedToResult.class);
+            return areSameByClass(anno, MaybeLeaked.class)
+                    || areSameByClass(anno, NonLeaked.class)
+                    || areSameByClass(anno, LeakedToResult.class);
         }
 
         @Override

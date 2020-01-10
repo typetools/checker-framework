@@ -270,7 +270,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @return true if {@code anno} is {@link UnderInitialization}
      */
     public boolean isFree(AnnotationMirror anno) {
-        return AnnotationUtils.areSameByClass(anno, UnderInitialization.class);
+        return areSameByClass(anno, UnderInitialization.class);
     }
 
     /**
@@ -280,7 +280,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @return true if {@code anno} is {@link UnknownInitialization}
      */
     public boolean isUnclassified(AnnotationMirror anno) {
-        return AnnotationUtils.areSameByClass(anno, UnknownInitialization.class);
+        return areSameByClass(anno, UnknownInitialization.class);
     }
 
     /**

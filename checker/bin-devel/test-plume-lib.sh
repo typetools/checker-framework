@@ -28,8 +28,11 @@ fi
 echo "PACKAGES=${PACKAGES}"
 
 
-git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
-  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+if [ -d "/tmp/plume-scripts" ] ; then
+  (cd /tmp/plume-scripts && git pull -q)
+else
+  (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
+fi
 
 echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"

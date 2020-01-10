@@ -28,13 +28,13 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -202,14 +202,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected TypeArgumentInference typeArgumentInference;
 
     /**
-     * To cache the supported type qualifiers. call {@link #getSupportedTypeQualifiers()} instead of
-     * using this field directly, as it may not have been initialized.
+     * Caches the supported type qualifier classes. Call {@link #getSupportedTypeQualifiers()}
+     * instead of using this field directly, as it may not have been initialized.
      */
     private final Set<Class<? extends Annotation>> supportedQuals;
 
     /**
-     * To cache the supported type qualifier names. call {@link #getSupportedTypeQualifierNames()}
-     * instead of using this field directly, as it may not have been initialized.
+     * Caches the fully-qualified names of the classes in {@link #supportedQuals}. Call {@link
+     * #getSupportedTypeQualifierNames()} instead of using this field directly, as it may not have
+     * been initialized.
      */
     private final Set<String> supportedQualNames;
 
@@ -378,6 +379,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The Object.getClass method. */
     protected final ExecutableElement objectGetClass;
 
+    /** Size of the annotationClassNames cache. */
+    private static final int ANNOTATION_CACHE_SIZE = 500;
+
+    /** Maps classes representing AnnotationMirrors to their canonical names. */
+    private final Map<Class<? extends Annotation>, String> annotationClassNames;
+
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
      * root. (These parameters are required so that the factory may conduct the appropriate
@@ -402,7 +409,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.visitorState = new VisitorState();
 
         this.supportedQuals = new HashSet<>();
-        this.supportedQualNames = new TreeSet<>();
+        this.supportedQualNames = new HashSet<>();
         this.stubTypes = new StubTypes(this);
 
         this.cacheDeclAnnos = new HashMap<>();
@@ -420,6 +427,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             this.fromTypeTreeCache = CollectionUtils.createLRUCache(cacheSize);
             this.elementCache = CollectionUtils.createLRUCache(cacheSize);
             this.elementToTreeCache = CollectionUtils.createLRUCache(cacheSize);
+            this.annotationClassNames =
+                    Collections.synchronizedMap(
+                            CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE));
         } else {
             this.classAndMethodTreeCache = null;
             this.fromExpressionTreeCache = null;
@@ -427,6 +437,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             this.fromTypeTreeCache = null;
             this.elementCache = null;
             this.elementToTreeCache = null;
+            this.annotationClassNames = null;
         }
 
         this.typeFormatter = createAnnotatedTypeFormatter();
@@ -908,7 +919,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an immutable set of the type qualifiers supported by this checker.
+     * Returns an immutable set of the classes corresponding to the type qualifiers supported by
+     * this checker.
      *
      * <p>Subclasses cannot override this method; they should override {@link
      * #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
@@ -926,7 +938,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an immutable set of the type qualifiers supported by this checker.
+     * Returns an immutable set of the fully qualified names of the type qualifiers supported by
+     * this checker.
      *
      * <p>Subclasses cannot override this method; they should override {@link
      * #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
@@ -1478,7 +1491,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
         for (int i = 0; i < annos.size(); i++) {
             for (Class<? extends Annotation> clazz : getFieldInvariantDeclarationAnnotations()) {
-                if (AnnotationUtils.areSameByClass(annos.get(i), clazz)) {
+                if (areSameByClass(annos.get(i), clazz)) {
                     return annoTrees.get(i);
                 }
             }
@@ -2437,12 +2450,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Determines whether the given class is a part of the type system under which this type factory
      * operates.
      *
-     * @param className annotation class
+     * @param clazz annotation class
      * @return true if that class is a type qualifier in the type system under which this type
      *     factory operates, false otherwise
      */
-    public boolean isSupportedQualifier(Class<? extends Annotation> className) {
-        return isSupportedQualifier(className.getCanonicalName());
+    public boolean isSupportedQualifier(Class<? extends Annotation> clazz) {
+        return getSupportedTypeQualifiers().contains(clazz);
     }
 
     /**
@@ -3073,7 +3086,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Set<AnnotationMirror> declAnnos = getDeclAnnotations(elt);
 
         for (AnnotationMirror am : declAnnos) {
-            if (AnnotationUtils.areSameByClass(am, annoClass)) {
+            if (areSameByClass(am, annoClass)) {
                 return am;
             }
         }
@@ -3084,7 +3097,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             if (aliases != null) {
                 for (Class<? extends Annotation> alias : aliases.second) {
                     for (AnnotationMirror am : declAnnos) {
-                        if (AnnotationUtils.areSameByClass(am, alias)) {
+                        if (areSameByClass(am, alias)) {
                             // TODO: need to copy over elements/fields
                             return aliases.first;
                         }
@@ -3176,8 +3189,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                 annotation.getAnnotationType().asElement());
                         continue;
                     }
-                    if (AnnotationUtils.containsSameByClass(
-                                    annotationsOnAnnotation, InheritedAnnotation.class)
+                    if (containsSameByClass(annotationsOnAnnotation, InheritedAnnotation.class)
                             || AnnotationUtils.containsSameByName(
                                     inheritedAnnotations, annotation)) {
                         addOrMerge(results, annotation);
@@ -3249,7 +3261,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             // First call copier, if exception, continue normal modula laws.
             for (AnnotationMirror a : annotationsOnAnnotation) {
-                if (AnnotationUtils.areSameByClass(a, metaAnnotationClass)) {
+                if (areSameByClass(a, metaAnnotationClass)) {
                     result.add(Pair.of(annotation, a));
                 }
             }
@@ -3283,7 +3295,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             List<? extends AnnotationMirror> annotationsOnAnnotation =
                     annotation.getAnnotationType().asElement().getAnnotationMirrors();
             for (AnnotationMirror a : annotationsOnAnnotation) {
-                if (AnnotationUtils.areSameByClass(a, metaAnnotationClass)) {
+                if (areSameByClass(a, metaAnnotationClass)) {
                     result.add(Pair.of(annotation, a));
                 }
             }
@@ -3850,6 +3862,66 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     expressionTree} is assigned to
      */
     public @Nullable AnnotatedTypeMirror getDummyAssignedTo(ExpressionTree expressionTree) {
+        return null;
+    }
+
+    /**
+     * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
+     *
+     * <p>This method is faster than {@link AnnotationUtils#areSameByClass(AnnotationMirror, Class)}
+     * because is caches the name of the class rather than computing it each time.
+     *
+     * @param am the AnnotationMirror whose class to compare
+     * @param annoClass the class to compare
+     * @return true if annoclass is the class of am
+     */
+    public boolean areSameByClass(AnnotationMirror am, Class<? extends Annotation> annoClass) {
+        if (!shouldCache) {
+            return AnnotationUtils.areSameByName(am, annoClass.getCanonicalName());
+        }
+        String canonicalName = annotationClassNames.get(annoClass);
+        if (canonicalName == null) {
+            canonicalName = annoClass.getCanonicalName();
+            assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
+            annotationClassNames.put(annoClass, canonicalName);
+        }
+        return AnnotationUtils.areSameByName(am, canonicalName);
+    }
+
+    /**
+     * Checks that the collection contains the annotation. Using Collection.contains does not always
+     * work, because it does not use areSame for comparison.
+     *
+     * <p>This method is faster than {@link AnnotationUtils#containsSameByClass(Collection, Class)}
+     * because is caches the name of the class rather than computing it each time.
+     *
+     * @param c a collection of AnnotationMirrors
+     * @param anno the annotation class to search for in c
+     * @return true iff c contains anno, according to areSameByClass
+     */
+    public boolean containsSameByClass(
+            Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
+        return getAnnotationByClass(c, anno) != null;
+    }
+
+    /**
+     * Returns the AnnotationMirror in {@code c} that has the same class as {@code anno}.
+     *
+     * <p>This method is faster than {@link AnnotationUtils#getAnnotationByClass(Collection, Class)}
+     * because is caches the name of the class rather than computing it each time.
+     *
+     * @param c a collection of AnnotationMirrors
+     * @param anno the class to search for in c
+     * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
+     *     to areSameByClass; otherwise, {@code null}
+     */
+    public @Nullable AnnotationMirror getAnnotationByClass(
+            Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
+        for (AnnotationMirror an : c) {
+            if (areSameByClass(an, anno)) {
+                return an;
+            }
+        }
         return null;
     }
 }
