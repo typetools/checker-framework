@@ -30,6 +30,7 @@ import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * An object for traversing and partitioning elements of a source.  The source
@@ -463,6 +464,7 @@ public interface Spliterator<T> {
      * @throws IllegalStateException if the spliterator does not report
      *         a characteristic of {@code SORTED}.
      */
+    @Pure
     default @Nullable Comparator<? super T> getComparator() {
         throw new IllegalStateException();
     }
