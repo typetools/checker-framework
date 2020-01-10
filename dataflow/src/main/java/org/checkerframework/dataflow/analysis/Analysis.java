@@ -63,14 +63,18 @@ public class Analysis<
     /**
      * The associated processing environment.
      *
-     * @deprecated will be removed in next version
+     * @deprecated as {@code env} is moved to {@link
+     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this field will be removed in
+     *     next major update
      */
     @Deprecated protected final ProcessingEnvironment env;
 
     /**
      * Instance of the types utility.
      *
-     * @deprecated will be removed in next version
+     * @deprecated as {@code types} is moved to {@link
+     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this field will be removed in
+     *     next major update
      */
     @Deprecated protected final Types types;
 
@@ -141,12 +145,23 @@ public class Analysis<
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph. The transfer function is set later using {@code setTransferFunction}.
      *
-     * @deprecated will be removed in next version
+     * @deprecated as {@code env} is moved to {@link
+     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this helper constructor will be
+     *     removed in next major update. Use {@link #Analysis()}, {@link #Analysis(TransferFunction,
+     *     int)}, {@link #Analysis(TransferFunction)} or {@link #Analysis(int)} instead
      * @param env associated processing environment
      */
     @Deprecated
     public Analysis(ProcessingEnvironment env) {
         this(null, -1, env);
+    }
+
+    /**
+     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
+     * flow graph. The transfer function is set later using {@code setTransferFunction}.
+     */
+    public Analysis() {
+        this(null, -1);
     }
 
     /**
@@ -173,8 +188,9 @@ public class Analysis<
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      *
-     * @deprecated will be removed in next version, use {@link #Analysis(TransferFunction, int)}
-     *     instead.
+     * @deprecated as {@code env} is moved to {@link
+     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this constructor will be removed
+     *     in next major update. Use {@link #Analysis(TransferFunction, int)} instead.
      * @param transfer transfer function
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      * @param env associated processing environment
@@ -231,7 +247,9 @@ public class Analysis<
     /**
      * Get the types utility.
      *
-     * @deprecated will be removed in next version
+     * @deprecated as {@link #getTypes()} is moved to {@link
+     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this method will be removed in
+     *     next major update
      * @return {@link #types}
      */
     @Deprecated
@@ -242,7 +260,9 @@ public class Analysis<
     /**
      * Get the processing environment.
      *
-     * @deprecated will be removed in next version
+     * @deprecated as {@link #getEnv()} is moved to {@link
+     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this method will be removed in
+     *     next major update
      * @return {@link #env}
      */
     @Deprecated
