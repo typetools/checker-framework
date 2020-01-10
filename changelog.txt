@@ -1,7 +1,7 @@
 Implementation details:
  * Deprecated QualifierHierarchy#getTypeQualifiers.
  * Deprecated Analysis#Analysis(ProcessingEnvironment) and Analysis#Analysis(T, int, ProcessingEnvironment),
-   use Analysis#Analysis(int) and Analysis#Analysis(T, int) instead.
+   use Analysis#Analysis(), Analysis#Analysis(int), Analysis#Analysis(T) and Analysis#Analysis(T, int) instead.
 
 ---------------------------------------------------------------------------
 
