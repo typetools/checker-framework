@@ -526,6 +526,8 @@ public class AnnotationUtils {
             case TYPE_USE:
                 return EnumSet.noneOf(ElementKind.class);
             default:
+                // TODO: Use MODULE enum constants directly instead of looking them up by name.
+                // (Java 11)
                 if (elementType.name().equals("MODULE")) {
                     return EnumSet.of(ElementKind.valueOf("MODULE"));
                 }
