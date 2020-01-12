@@ -39,11 +39,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   dia \
   hevea \
   imagemagick \
-  jq \
   latexmk \
   librsvg2-bin \
   maven \
-  python3-pip \
   rsync \
   texlive-font-utils \
   texlive-fonts-recommended \
