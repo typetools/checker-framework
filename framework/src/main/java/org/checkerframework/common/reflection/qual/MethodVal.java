@@ -1,5 +1,6 @@
 package org.checkerframework.common.reflection.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,9 +18,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #methodval-and-classval-checkers MethodVal Checker
  */
-@SubtypeOf({UnknownMethod.class})
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf({UnknownMethod.class})
 public @interface MethodVal {
     /**
      * The <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1">binary

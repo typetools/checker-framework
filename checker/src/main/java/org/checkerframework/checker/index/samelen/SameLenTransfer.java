@@ -30,7 +30,6 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The transfer function for the SameLen checker. Contains three cases:
@@ -132,8 +131,7 @@ public class SameLenTransfer extends CFTransfer {
                 FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getExpression());
 
         if (IndexUtil.isSequenceType(node.getTarget().getType())
-                || (rightAnno != null
-                        && AnnotationUtils.areSameByClass(rightAnno, SameLen.class))) {
+                || (rightAnno != null && aTypeFactory.areSameByClass(rightAnno, SameLen.class))) {
 
             AnnotationMirror rightAnnoOrUnknown = rightAnno == null ? UNKNOWN : rightAnno;
 

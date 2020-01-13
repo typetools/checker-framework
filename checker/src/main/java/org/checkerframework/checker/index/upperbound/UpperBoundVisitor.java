@@ -77,7 +77,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
         AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
-        if (AnnotationUtils.areSameByClass(anno, LTLengthOf.class)) {
+        if (atypeFactory.areSameByClass(anno, LTLengthOf.class)) {
             List<? extends ExpressionTree> args = node.getArguments();
             if (args.size() == 2) {
                 // If offsets are provided, there must be the same number of them as there are
@@ -96,7 +96,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     return null;
                 }
             }
-        } else if (AnnotationUtils.areSameByClass(anno, HasSubsequence.class)) {
+        } else if (atypeFactory.areSameByClass(anno, HasSubsequence.class)) {
             // Check that the arguments to a HasSubsequence annotation are valid flow expressions,
             // and issue an error if one of them is not.
 

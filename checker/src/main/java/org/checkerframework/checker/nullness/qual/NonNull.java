@@ -37,6 +37,9 @@ import org.checkerframework.framework.qual.UpperBoundFor;
  * @checker_framework.manual #nullness-checker Nullness Checker
  * @checker_framework.manual #bottom-type the bottom type
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(MonotonicNonNull.class)
 @QualifierForLiterals(LiteralKind.STRING)
 @DefaultQualifierInHierarchy
@@ -54,7 +57,4 @@ import org.checkerframework.framework.qual.UpperBoundFor;
             TypeKind.BYTE
         })
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND})
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface NonNull {}

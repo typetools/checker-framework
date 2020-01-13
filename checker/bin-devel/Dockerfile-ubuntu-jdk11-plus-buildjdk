@@ -10,6 +10,12 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
 #  * Put "apt-get update" and "apt-get install" and apt cleanup in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
+&& apt-get -qqy install \
+  openjdk-11-jdk
+
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && apt-get -qqy install \
@@ -22,17 +28,10 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   make \
   maven \
   mercurial \
+  python3-pip \
+  python3-requests \
   unzip \
-  wget \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& apt-get -qqy install \
-  openjdk-11-jdk \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
+  wget
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
@@ -40,21 +39,17 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   dia \
   hevea \
   imagemagick \
-  jq \
   latexmk \
   librsvg2-bin \
   maven \
-  python-pip \
   rsync \
   texlive-font-utils \
   texlive-fonts-recommended \
   texlive-latex-base \
   texlive-latex-extra \
-  texlive-latex-recommended \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
+  texlive-latex-recommended
 
-RUN pip install html5validator
+RUN pip3 install html5validator
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
@@ -68,9 +63,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   libxrandr-dev \
   libxrender-dev \
   libxt-dev \
-  libxtst-dev \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
+  libxtst-dev
 
 RUN wget https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2-b14.tar.gz \
 && tar xzf jtreg-4.2-b14.tar.gz \
@@ -78,3 +71,7 @@ RUN wget https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulB
 
 RUN git config --global user.email "you@example.com" \
 && git config --global user.name "Your Name"
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*

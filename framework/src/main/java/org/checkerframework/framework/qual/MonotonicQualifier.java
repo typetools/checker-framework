@@ -36,8 +36,8 @@ import java.lang.annotation.Target;
  * expressions of the target type.
  */
 @Documented
-@Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.ANNOTATION_TYPE})
 public @interface MonotonicQualifier {
     Class<? extends Annotation> value();
 }

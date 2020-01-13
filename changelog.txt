@@ -1,7 +1,25 @@
+Implementation details:
+ * Deprecated QualifierHierarchy#getTypeQualifiers.
+
 ---------------------------------------------------------------------------
+
+Version 3.1.0, January 3, 2020
 
 Command-line option -AprintGitProperties prints information about the git
 repository from which the Checker Framework was compiled.
+
+Implementation details:
+ * Removed static cache in AnnotationUtils#areSameByClass and added
+   AnnotatedTypeFactory#areSameByClass that uses an instance cache.
+ * Removed static cache in AnnotationBuilder#fromName and #fromClass.
+ * ContractsUtils#getPreconditions takes an ExecutableElement as an argument.
+ * ContractsUtils#getContracts returns a Set.
+ * Moved ContractUtils.Contract to outer level.
+ * Renamed ConditionalPostcondition#annoResult to ConditionalPostcondition#resultValue.
+
+Closed issues:
+
+2867, 2897, 2972.
 
 ---------------------------------------------------------------------------
 

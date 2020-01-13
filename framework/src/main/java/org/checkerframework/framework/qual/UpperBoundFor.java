@@ -14,6 +14,8 @@ import java.lang.annotation.Target;
  *   <li>a use of a particular type.
  *   <li>a use of a particular kind of type.
  * </ul>
+ *
+ * @checker_framework.manual #upper-bound-for-use Upper bound of qualifiers on uses of a given type
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
