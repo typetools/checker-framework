@@ -13,6 +13,7 @@ if [[ "${BUILDJDK}" == "" ]]; then
   export BUILDJDK=downloadjdk
 fi
 echo "BUILDJDK=${BUILDJDK}"
+
 if [[ "${BUILDJDK}" != "buildjdk" && "${BUILDJDK}" != "downloadjdk" ]]; then
   echo "Bad argument '${BUILDJDK}'; should be omitted or one of: downloadjdk, buildjdk."
   exit 1
