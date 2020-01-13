@@ -11,6 +11,7 @@ git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
 
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
+
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo "BUILDJDK=${BUILDJDK}"
 source $SCRIPTDIR/build.sh ${BUILDJDK}
