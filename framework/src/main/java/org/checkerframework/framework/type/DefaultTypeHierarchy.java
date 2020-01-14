@@ -154,25 +154,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     @Override
     public boolean isSubtype(
             final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype) {
-        if (subtype.atypeFactory.ignoreUninferredTypeArguments
-                && (subtype.containsUninferredTypeArguments()
-                        || supertype.containsUninferredTypeArguments())) {
-            if (ignoreUninferredTypeArgument(subtype) || ignoreUninferredTypeArgument(supertype)) {
-                // If either is an uninferred type argument don't check primary annotations.
-                return true;
-            }
-            // Check primary annotations.
-            for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-                AnnotationMirror subAnno = subtype.getAnnotationInHierarchy(top);
-                AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(top);
-                if (subAnno != null
-                        && superAnno != null
-                        && !qualifierHierarchy.isSubtype(subAnno, superAnno)) {
-                    return false;
-                }
-            }
-            return true;
-        }
         for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
             if (!isSubtype(subtype, supertype, top)) {
                 return false;
@@ -480,6 +461,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     @Override
     public Boolean visitDeclared_Declared(
             AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype, Void p) {
+        if (subtype.atypeFactory.ignoreUninferredTypeArguments
+                && (subtype.containsUninferredTypeArguments()
+                        || supertype.containsUninferredTypeArguments())) {
+            // Calling castedAsSuper may cause the uninferredTypeArguments to be lost. So, just
+            // return true here.
+            return true;
+        }
         AnnotatedDeclaredType subtypeAsSuper =
                 AnnotatedTypes.castedAsSuper(subtype.atypeFactory, subtype, supertype);
 
