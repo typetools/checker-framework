@@ -136,10 +136,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
 
-        if ((pathToExpression.getParentPath() != null
-                        && pathToExpression.getParentPath().getLeaf() != null
-                        && pathToExpression.getParentPath().getLeaf().getKind()
-                                == Tree.Kind.LAMBDA_EXPRESSION)
+        if (TreeUtils.enclosingNonParen(pathToExpression).first.getKind()
+                        == Tree.Kind.LAMBDA_EXPRESSION
                 || (assignedTo == null
                         && TreeUtils.getAssignmentContext(pathToExpression) != null)) {
             // If the type of the assignment context isn't found, but the expression is assigned,
