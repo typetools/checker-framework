@@ -747,8 +747,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final TypeVariable typeVar = atv.getUnderlyingType();
             if (targets.contains((TypeVariable) TypeAnnotationUtils.unannotatedType(typeVar))) {
                 final AnnotatedTypeMirror inferredType = inferredArgs.get(typeVar);
-                if (inferredType == null
-                        || TypeArgInferenceUtil.containsTypeParameter(inferredType, targets)) {
+                if (inferredType == null) {
                     AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
                     inferredArgs.put(atv.getUnderlyingType(), dummy);
                 }

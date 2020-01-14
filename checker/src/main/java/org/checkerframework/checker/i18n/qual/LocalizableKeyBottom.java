@@ -17,10 +17,10 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #i18n-checker Internationalization Checker
  * @checker_framework.manual #bottom-type the bottom type
  */
-@SubtypeOf(LocalizableKey.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
+@SubtypeOf(LocalizableKey.class)
 @DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface LocalizableKeyBottom {}

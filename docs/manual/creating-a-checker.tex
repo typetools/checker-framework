@@ -24,13 +24,15 @@ Writing a simple checker is easy!  For example, here is a complete, useful
 type-checker:
 
 \begin{Verbatim}
+import java.lang.annotation.Documented;
 import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.SubtypeOf;
 
-@SubtypeOf(Unqualified.class)
+@Documented
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(Unqualified.class)
 public @interface Encrypted {}
 \end{Verbatim}
 
@@ -1759,7 +1761,7 @@ large codebase without being inundated in stack traces.
   through the \code{-Astubs} option are still processed. This is useful
   when experimenting with an alternative stub file.
 
-\item \code{-Anocheckjdk}:
+\item \code{-ApermitMissingJdk}:
   don't issue an error if no annotated JDK can be found.
 
 \item \code{-AstubDebug}:
@@ -2265,7 +2267,7 @@ without warnings or errors.
 %%  LocalWords:  addAbsoluteDefault BaseAnnotatedTypeFactory superclasses
 %%  LocalWords:  SupportedOptions AprintAllQualifiers InvisibleQualifier
 %%  LocalWords:  Adetailedmsgtext AnoPrintErrorStack Aignorejdkastub Astubs
-%%  LocalWords:  Anocheckjdk AstubDebug Aflowdotdir AresourceStats Regex
+%%  LocalWords:  ApermitMissingJdk AstubDebug Aflowdotdir AresourceStats Regex
 %%  LocalWords:  classfiles CHECKERFRAMEWORK RegexUtil asRegex myString
 %%  LocalWords:  myInt CFAbstractTransfer RegexTransfer CFAbstractAnalysis
 %%  LocalWords:  createTransferFunction RegexAnalysis createFlowAnalysis

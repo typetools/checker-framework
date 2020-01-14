@@ -18,10 +18,10 @@ import java.lang.annotation.Target;
  * @see SupportedLintOptions
  * @see javax.annotation.processing.SupportedOptions
  */
-@Inherited
 @Documented
-@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Inherited
 public @interface SupportedOptions {
     String[] value();
 }

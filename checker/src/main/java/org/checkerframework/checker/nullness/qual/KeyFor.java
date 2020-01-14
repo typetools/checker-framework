@@ -36,10 +36,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @see EnsuresKeyForIf
  * @checker_framework.manual #map-key-checker Map Key Checker
  */
-@SubtypeOf(UnknownKeyFor.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(UnknownKeyFor.class)
 public @interface KeyFor {
     /**
      * Java expression(s) that evaluate to a map for which the annotated type is a key.

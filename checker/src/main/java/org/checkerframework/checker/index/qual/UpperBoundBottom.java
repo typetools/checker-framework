@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -14,8 +15,9 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #index-checker Index Checker
  * @checker_framework.manual #bottom-type the bottom type
  */
-@SubtypeOf(LTOMLengthOf.class)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
+@SubtypeOf(LTOMLengthOf.class)
 public @interface UpperBoundBottom {}

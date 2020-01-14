@@ -92,6 +92,10 @@ public class FlowExpressionParseUtil {
     /** Regular expression for a formal parameter use. */
     protected static final String PARAMETER_REGEX = "#([1-9][0-9]*)";
 
+    /** Anchored pattern for a formal parameter. */
+    protected static final Pattern ANCHORED_PARAMETER_PATTERN =
+            Pattern.compile("^" + PARAMETER_REGEX + "$");
+
     /** Unanchored; can be used to find all formal parameter uses. */
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
@@ -132,9 +136,16 @@ public class FlowExpressionParseUtil {
             // superclass.
             throw e.getCheckedException();
         }
-        if (result instanceof ClassName && !expression.endsWith("class")) {
+        if (result instanceof ClassName
+                && !expression.endsWith(".class")
+                // At a call site, "#1" may be transformed to "Something.class", so don't throw an
+                // exception in that case.
+                && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
             throw constructParserException(
-                    expression, "a class name cannot terminate a flow expression string");
+                    expression,
+                    String.format(
+                            "a class name cannot terminate a flow expression string, where result=%s [%s]",
+                            result, result.getClass()));
         }
         return result;
     }

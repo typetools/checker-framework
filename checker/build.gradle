@@ -2,7 +2,7 @@ ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = '54dceee1857209c0f6f90fe9ef9f45655e26642b'
+    jdkShaHash = 'c41c8ace5550c03992c0691019a2ce470458c47f'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -24,8 +24,12 @@ dependencies {
     implementation project(':dataflow')
     implementation project(':javacutil')
     implementation project(':checker-qual')
+    // As of 2019/12/16, the version of reflection-util in the Annotation
+    // File Utilities takes priority over this version, in the fat jar
+    // file. :-( So update it and re-build it locally when updating this.
+    implementation 'org.plumelib:reflection-util:0.2.0'
 
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'junit', name: 'junit', version: '4.13'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
 
@@ -159,6 +163,13 @@ task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
     }
 }
 
+task cleanJdk(type: Exec){
+    description 'Runs \'make clean\' in checker/jdk directory.'
+    workingDir "${projectDir}/jdk"
+    executable 'make'
+    args = ["clean"]
+}
+
 task updateJdk() {
     description 'Downloads or builds jdk8.jar and copies into checker/dist'
     if (jdkShaHash.is('local')) {
@@ -247,6 +258,7 @@ artifacts {
 }
 
 clean {
+    dependsOn cleanJdk
     delete "${projectDir}/dist"
 }
 
