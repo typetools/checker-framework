@@ -39,7 +39,7 @@
         <arg value="-Xprefer:newer"/>
         <arg line="@{files}"/>
         <arg value="-Alint=@{lint}"/>
-        <arg value="-Anocheckjdk"/>
+        <arg value="-ApermitMissingJdk"/>
         <arg value="-AsuppressWarnings=purity"/>
       </java>
     </sequential>

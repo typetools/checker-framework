@@ -413,7 +413,9 @@ public class StubTypes {
         }
         URL resourceURL = factory.getClass().getResource("/jdk" + annotatedJdkVersion);
         if (resourceURL == null) {
-            if (factory.getContext().getChecker().hasOption("nocheckjdk")) {
+            if (factory.getContext().getChecker().hasOption("permitMissingJdk")
+                    // temporary, for backward compatibility
+                    || factory.getContext().getChecker().hasOption("nocheckjdk")) {
                 return;
             }
             throw new BugInCF("JDK not found");
@@ -422,7 +424,9 @@ public class StubTypes {
         } else if (resourceURL.getProtocol().contentEquals("file")) {
             prepJdkFromFile(resourceURL);
         } else {
-            if (factory.getContext().getChecker().hasOption("nocheckjdk")) {
+            if (factory.getContext().getChecker().hasOption("permitMissingJdk")
+                    // temporary, for backward compatibility
+                    || factory.getContext().getChecker().hasOption("nocheckjdk")) {
                 return;
             }
             throw new BugInCF("JDK not found");

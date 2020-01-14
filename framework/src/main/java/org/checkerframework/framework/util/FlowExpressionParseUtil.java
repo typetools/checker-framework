@@ -138,6 +138,8 @@ public class FlowExpressionParseUtil {
         }
         if (result instanceof ClassName
                 && !expression.endsWith(".class")
+                // At a call site, "#1" may be transformed to "Something.class", so don't throw an
+                // exception in that case.
                 && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
             throw constructParserException(
                     expression,

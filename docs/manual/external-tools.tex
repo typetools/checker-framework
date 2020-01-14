@@ -363,7 +363,7 @@ java_library (
 # To add annotation processing
     annotation_processors = [ 'org.checkerframework.checker.units.UnitsChecker' ],
     annotation_processor_deps = [ ':checker-framework', ':checker-qual' ],
-    annotation_processor_params = [ 'nocheckjdk' ]
+    annotation_processor_params = [ 'permitMissingJdk' ]
 )
 \end{Verbatim}
 

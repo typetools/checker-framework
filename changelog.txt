@@ -1,3 +1,7 @@
+Renamed -Anocheckjdk to -ApermitMissingJdk.
+The old version still works, for backward compatibility.
+
+
 Implementation details:
  * Deprecated QualifierHierarchy#getTypeQualifiers.
 
