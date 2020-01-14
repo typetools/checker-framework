@@ -86,6 +86,11 @@ public class WholeProgramInferenceScenesStorage {
      */
     private final Set<String> modifiedScenes = new HashSet<>();
 
+    /*
+     * Default constructor.
+     * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
+     *                              ignored
+     */
     public WholeProgramInferenceScenesStorage(boolean ignoreNullAssignments) {
         this.ignoreNullAssignments = ignoreNullAssignments;
     }

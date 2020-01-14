@@ -76,8 +76,15 @@ import scenelib.annotations.util.JVMNames;
 //  results (order of annotations).
 public class WholeProgramInferenceScenes implements WholeProgramInference {
 
+    /** The interface to the AScene library itself, which stores the inferred annotations. */
     private final WholeProgramInferenceScenesStorage storage;
 
+    /**
+     * Default constructor.
+     *
+     * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
+     *     ignored
+     */
     public WholeProgramInferenceScenes(boolean ignoreNullAssignments) {
         storage = new WholeProgramInferenceScenesStorage(ignoreNullAssignments);
     }
