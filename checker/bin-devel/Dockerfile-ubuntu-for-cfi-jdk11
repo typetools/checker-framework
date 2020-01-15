@@ -1,3 +1,5 @@
+# Rebuild it when typetools' corresponding docker image updates
+
 FROM mdernst/cf-ubuntu-jdk11
 
 LABEL MAINTAINER="w23xing@uwaterloo.ca"
