@@ -906,43 +906,33 @@ latest bug fixes and new features:
 \end{Verbatim}
 
 \item
-  To use a local version of the Checker Framework (for example,
-  one that you have built from source):
+  To use a local version of the Checker Framework that you have built from
+  source, install the relevant Checker Framework jars to your local Maven
+  repository under a SNAPSHOT version number.  For example, you could run:
 
 \begin{alltt}
-  <dependencies>
-    ... existing <dependency> items ...
-
-    <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>checker-qual</artifactId>
-      <version>\ReleaseVersion{}</version>
-      <scope>system</scope>
-      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker-qual.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>checker</artifactId>
-      <version>\ReleaseVersion{}</version>
-      <scope>system</scope>
-      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker.jar</systemPath>
-    </dependency>
-    <!-- The annotated JDK to use. -->
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>jdk8</artifactId>
-      <version>\ReleaseVersion{}</version>
-      <scope>system</scope>
-      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/jdk8.jar</systemPath>
-    </dependency>
-    <dependency>
-    <groupId>com.google.errorprone</groupId>
-      <artifactId>javac</artifactId>
-      <version>9+181-r4173-1</version>
-    </dependency>
-  </dependencies>
+mvn install:install-file -DgroupId=org.checkerframework -DartifactId=checker  \
+  -Dversion=\ReleaseVersion{}-SNAPSHOT -Dpackaging=jar -Dfile=$CHECKERFRAMEWORK/checker/dist/checker.jar
 \end{alltt}
+
+Then, in addition to the instructions above, use \ReleaseVersion{}-SNAPSHOT
+as the version number for \<maven-compiler-plugin>:
+
+\begin{alltt}
+   <artifactId>maven-compiler-plugin</artifactId>
+      ...
+      <configuration>
+        ...
+        <annotationProcessorPaths>
+          <path>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker</artifactId>
+            <version>\ReleaseVersion{}-SNAPSHOT</version>
+          </path>
+\end{alltt}
+
+You can make similar changes if you have changed other artifacts besides
+\<checker>, such as \<checker-qual>, \<jdk8>, etc.
 
 \end{enumerate}
 
