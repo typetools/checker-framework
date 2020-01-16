@@ -338,8 +338,7 @@ public class QualifierKindHierarchy {
      * @return the set of bottom {@link QualifierKind}s
      */
     // Subclasses should override createDirectSuperMap or specifyBottom to change the bottoms and
-    // not this method,
-    // because other methods expect the directSuperMap to be complete.
+    // not this method, because other methods expect the directSuperMap to be complete.
     private Set<QualifierKind> createBottomsSet(
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         // Bottom starts with all qualifiers
