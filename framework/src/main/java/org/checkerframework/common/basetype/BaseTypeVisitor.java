@@ -393,6 +393,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     private void checkQualifierParam(ClassTree classTree) {
         Set<AnnotationMirror> polyWithOutQualiferParam = AnnotationUtils.createAnnotationSet();
         Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
+
+        boolean conflictingErrorReported = false;
         for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
             TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
             AnnotationMirror poly =
@@ -400,6 +402,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (poly != null) {
                 polys.add(poly);
             }
+
+            if (!conflictingErrorReported
+                    && atypeFactory.hasExplicitQualifierParameterInHierarchy(classElement, top)
+                    && atypeFactory.hasExplicitNoQualifierParameterInHierarchy(classElement, top)) {
+                checker.report(Result.failure("conflicting.qual.param", top), classTree);
+                conflictingErrorReported = true;
+            }
+
             if (atypeFactory.hasQualifierParameterInHierarchy(classElement, top)) {
                 continue;
             }

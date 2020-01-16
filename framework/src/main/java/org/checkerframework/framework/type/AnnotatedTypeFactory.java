@@ -43,6 +43,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -68,6 +69,7 @@ import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.HasQualifierParameter;
 import org.checkerframework.framework.qual.InheritedAnnotation;
+import org.checkerframework.framework.qual.NoQualifierParameter;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.Result;
@@ -3330,6 +3332,38 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Returns whether the {@code HasQualifierParameter} annotation was explicitly written on {@code
+     * element} for the hierarchy given by {@code top}.
+     *
+     * @param element Element to check
+     * @param top the top qualifier for the hierarchy to check
+     * @return whether the class given by {@code element} has been explicitly annotated with {@code
+     *     HasQualifierParameter} for the given hierarchy
+     */
+    public boolean hasExplicitQualifierParameterInHierarchy(
+            @Nullable Element element, AnnotationMirror top) {
+        return AnnotationUtils.containsSame(
+                getSupportedAnnotationsInElementAnnotation(element, HasQualifierParameter.class),
+                top);
+    }
+
+    /**
+     * Returns whether the {@code NoQualifierParameter} annotation was explicitly written on {@code
+     * element} for the hierarchy given by {@code top}.
+     *
+     * @param element Element to check
+     * @param top the top qualifier for the hierarchy to check
+     * @return whether the class given by {@code element} has been explicitly annotated with {@code
+     *     NoQualifierParameter} for the given hierarchy
+     */
+    public boolean hasExplicitNoQualifierParameterInHierarchy(
+            @Nullable Element element, AnnotationMirror top) {
+        return AnnotationUtils.containsSame(
+                getSupportedAnnotationsInElementAnnotation(element, NoQualifierParameter.class),
+                top);
+    }
+
+    /**
      * Returns the set of top annotations representing all the hierarchies for which this type has a
      * qualifier parameter.
      *
@@ -3357,20 +3391,62 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     has a qualifier parameter
      */
     public Set<AnnotationMirror> getQualifierParameterHierarchies(@Nullable Element element) {
+        if (element == null || !ElementUtils.isTypeDeclaration(element)) {
+            return AnnotationUtils.createAnnotationSet();
+        }
+
+        Set<AnnotationMirror> found =
+                getSupportedAnnotationsInElementAnnotation(element, HasQualifierParameter.class);
+        Set<AnnotationMirror> hasQualifierParameterTops = AnnotationUtils.createAnnotationSet();
+        PackageElement packageElement = ElementUtils.enclosingPackage(element);
+
+        // Traverse all packages containing this element.
+        while (packageElement != null) {
+            Set<AnnotationMirror> packageDefaultTops =
+                    getSupportedAnnotationsInElementAnnotation(
+                            packageElement, HasQualifierParameter.class);
+            hasQualifierParameterTops.addAll(packageDefaultTops);
+
+            packageElement = ElementUtils.parentPackage(packageElement, elements);
+        }
+
+        Set<AnnotationMirror> noQualifierParamClasses =
+                getSupportedAnnotationsInElementAnnotation(element, NoQualifierParameter.class);
+        for (AnnotationMirror anno : hasQualifierParameterTops) {
+            if (!AnnotationUtils.containsSame(noQualifierParamClasses, anno)) {
+                found.add(anno);
+            }
+        }
+
+        return found;
+    }
+
+    /**
+     * Returns a set of supported annotation mirrors corresponding to the annotation classes listed
+     * in the value element of an annotation with class {@code annoClass} on {@code element}.
+     *
+     * @param element Element to check
+     * @param annoClass the class for an annotation that's written on elements, whose value element
+     *     is a list of annotation classes.
+     * @return the set of supported annotations with classes listed in the value element of an
+     *     annotation with class {@code annoClass} on the {@code element}. Returns an empty set if
+     *     {@code annoClass} is not written on {@code element} or {@code element} is null.
+     */
+    private Set<AnnotationMirror> getSupportedAnnotationsInElementAnnotation(
+            @Nullable Element element, Class<? extends Annotation> annoClass) {
         Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
 
-        if (element == null || !ElementUtils.isTypeDeclaration(element)) {
+        if (element == null) {
             return found;
         }
         // TODO: caching
-        AnnotationMirror hasQualifierParam =
-                getDeclAnnotation(element, HasQualifierParameter.class);
-        if (hasQualifierParam == null) {
+        AnnotationMirror annotation = getDeclAnnotation(element, annoClass);
+        if (annotation == null) {
             return found;
         }
 
         List<Name> qualClasses =
-                AnnotationUtils.getElementValueClassNames(hasQualifierParam, "value", true);
+                AnnotationUtils.getElementValueClassNames(annotation, "value", true);
         for (Name qual : qualClasses) {
             AnnotationMirror annotationMirror = AnnotationBuilder.fromName(elements, qual);
             if (isSupportedQualifier(annotationMirror)) {
