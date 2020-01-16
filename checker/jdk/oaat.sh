@@ -23,7 +23,7 @@ CP="${BINDIR}:${BOOTDIR}:${TOOLSJAR}:${CF_BIN}:${CF_JAR}"
 JFLAGS="-XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000 \
         -source 8 -target 8 -encoding ascii -cp ${CP}"
 PROCESSORS="interning,nullness,signature"
-PFLAGS="-Anocheckjdk -Aignorejdkastub -AuseDefaultsForUncheckedCode=source -Awarns"
+PFLAGS="-ApermitMissingJdk -Aignorejdkastub -AuseDefaultsForUncheckedCode=source -Awarns"
 
 PID=$$      # script process id
 BOOT=0      # 0 to skip building bootstrap class directory
