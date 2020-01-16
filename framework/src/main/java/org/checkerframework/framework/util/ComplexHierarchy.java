@@ -14,14 +14,25 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
-/** Qualifiers may be represented by annotations with out elements. */
+/** Qualifiers may be represented by annotations with elements. */
 public abstract class ComplexHierarchy extends QualifierHierarchy {
+    /** {@link org.checkerframework.javacutil.ElementUtils} */
     private Elements elements;
+    /** {@link QualifierKindHierarchy}. */
     protected final QualifierKindHierarchy qualifierKindHierarchy;
+    /** A mapping from top QualifierKinds to their corresponding AnnotationMirror. */
     protected final Map<QualifierKind, AnnotationMirror> topsMap;
+    /** The set of top annotation mirrors. */
     protected final Set<AnnotationMirror> tops;
+    /** A mapping from bottom QualifierKinds to their corresponding AnnotationMirror. */
     protected final Map<QualifierKind, AnnotationMirror> bottomsMap;
+    /** The set of bottom annotation mirrors. */
     protected final Set<AnnotationMirror> bottoms;
+
+    /**
+     * A mapping from QualifierKind to AnnotationMirror for all qualifiers whose annotations do not
+     * have elements.
+     */
     protected final Map<QualifierKind, AnnotationMirror> qualifierMap;
 
     public ComplexHierarchy(
@@ -117,6 +128,12 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
         return true;
     }
 
+    /**
+     * Creates a mapping from QualifierKind to AnnotationMirror for all qualifiers whose annotations
+     * do not have elements.
+     *
+     * @return the mapping
+     */
     protected Map<QualifierKind, AnnotationMirror> createQualifiers() {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getQualifierKindMap().values()) {
