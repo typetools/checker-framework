@@ -681,7 +681,7 @@ subprojects {
                         if (project.name.is('framework')) {
                             // Do not check for the annotated JDK
                             args += [
-                                    "-javacoptions:-Anocheckjdk"
+                                    "-javacoptions:-ApermitMissingJdk"
                             ]
                         } else if (project.name.is('checker')) {
                             args += [

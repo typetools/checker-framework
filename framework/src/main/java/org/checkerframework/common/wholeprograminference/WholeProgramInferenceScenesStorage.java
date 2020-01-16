@@ -29,6 +29,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
@@ -57,7 +58,7 @@ import scenelib.annotations.io.IndexFileWriter;
  * precision achieved by the whole-program inference analysis will be better. {@link
  * #writeScenesToJaif} rewrites the initial .jaif files, and may create new ones.
  */
-public class WholeProgramInferenceScenesHelper {
+public class WholeProgramInferenceScenesStorage {
 
     /**
      * Maps the toString() representation of an ATypeElement and its TypeUseLocation to a set of
@@ -111,10 +112,12 @@ public class WholeProgramInferenceScenesHelper {
     private final Map<String, TypeMirror> basetypes = new HashMap<>();
 
     /**
+     * Default constructor.
+     *
      * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
-     *     ignored.
+     *     ignored
      */
-    public WholeProgramInferenceScenesHelper(boolean ignoreNullAssignments) {
+    public WholeProgramInferenceScenesStorage(boolean ignoreNullAssignments) {
         this.ignoreNullAssignments = ignoreNullAssignments;
     }
 
@@ -416,8 +419,9 @@ public class WholeProgramInferenceScenesHelper {
      * org.checkerframework.framework.qual.InvisibleQualifier} meta-annotation, also return true.
      *
      * <p>TODO: Merge functionality somewhere else with {@link
-     * org.checkerframework.framework.type.GenericAnnotatedTypeFactory#createQualifierDefaults}.
-     * Look into the createQualifierDefaults method before changing anything here. See Issue 683
+     * org.checkerframework.framework.util.defaults.QualifierDefaults}.
+     * Look into the createQualifierDefaults method in {@link GenericAnnotatedTypeFactory}
+     * (which uses the QualifierDefaults class linked above) before changing anything here. See Issue 683
      * https://github.com/typetools/checker-framework/issues/683
      */
     private boolean shouldIgnore(

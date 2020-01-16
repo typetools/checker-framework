@@ -1141,7 +1141,7 @@ public class StubParser {
      * {@code elt} is a field declaration, the type annotation will be ignored.
      *
      * @param elt the element to be annotated
-     * @param a set of annotations that may be applicable to elt
+     * @param annotations set of annotations that may be applicable to elt
      */
     private void recordDeclAnnotation(Element elt, List<AnnotationExpr> annotations) {
         if (annotations == null) {
