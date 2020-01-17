@@ -159,7 +159,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
             if (assignmentContext != null) {
                 instantiationMapping =
-                        collector.reduce2(
+                        collector.reduceWithUpperBounds(
                                 instantiationMapping,
                                 collector.visit(
                                         // Actual assignment lhs type
@@ -400,7 +400,14 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             return res;
         }
 
-        public AnnotationMirrorMap<AnnotationMirrorSet> reduce2(
+        /**
+         * Reduces lower bounds r1 with upper bounds r2.
+         *
+         * @param r1
+         * @param r2
+         * @return
+         */
+        public AnnotationMirrorMap<AnnotationMirrorSet> reduceWithUpperBounds(
                 AnnotationMirrorMap<AnnotationMirrorSet> r1,
                 AnnotationMirrorMap<AnnotationMirrorSet> r2) {
 
@@ -478,6 +485,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
          *
          * @param type AnnotateTypeMirror used to find instantiations
          * @param polyType AnnotatedTypeMirror that may have polymorphic qualifiers
+         * @param polyIsSub boolean indicates whether polyType is subtype of type
          * @return a mapping of polymorphic qualifiers to their instantiations
          */
         private AnnotationMirrorMap<AnnotationMirrorSet> visit(
@@ -508,8 +516,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                                     polyType,
                                     null);
                         }
-                    case TYPEVAR:
-                        return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
                     default:
                         return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
                 }
