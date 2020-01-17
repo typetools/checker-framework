@@ -6,21 +6,22 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class ValueNullStringsConcatenationTest extends FrameworkPerDirectoryTest {
+public class ValueNonNullStringsConcatenationTest extends FrameworkPerDirectoryTest {
 
-    public ValueNullStringsConcatenationTest(List<File> testFiles) {
+    /** @param testFiles the files containing test code, which will be type-checked */
+    public ValueNonNullStringsConcatenationTest(List<File> testFiles) {
         super(
                 testFiles,
                 org.checkerframework.common.value.ValueChecker.class,
-                "value-null-strings-concatenation",
+                "value-non-null-strings-concatenation",
                 "-Anomsgtext",
                 "-Astubs=statically-executable.astub",
                 "-A" + ValueChecker.REPORT_EVAL_WARNS,
-                "-A" + ValueChecker.NULL_STRINGS_CONCATENATION);
+                "-A" + ValueChecker.NON_NULL_STRINGS_CONCATENATION);
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"all-systems", "value-null-strings-concatenation"};
+        return new String[] {"all-systems", "value-non-null-strings-concatenation"};
     }
 }

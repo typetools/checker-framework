@@ -17,8 +17,8 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * @checker_framework.manual #interning-checker Interning Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
-@PolymorphicQualifier(UnknownInterned.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@PolymorphicQualifier(UnknownInterned.class)
 public @interface PolyInterned {}

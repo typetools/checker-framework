@@ -50,6 +50,10 @@ Additional type annotations for arrays and strings are
 and \refqualclass{common/value/qual}{MinLen}.
 A polymorphic qualifier (\refqualclass{common/value/qual}{PolyValue})
 is also supported (see Section~\ref{qualifier-polymorphism}).
+In addition, there are separate checkers for
+\refqualclass{common/reflection/qual}{ClassVal} and
+\refqualclass{common/reflection/qual}{MethodVal} annotations
+(see Section~\ref{methodval-and-classval-checkers}).
 
 Each \<*Val> type annotation takes as an argument a set of values, and its
 meaning is that at run time, the expression evaluates to one of the values.  For
@@ -334,30 +338,30 @@ value that is not in its \<@IntRange> qualifier.  You should either accept
 that possibility, or verify the lack of overflow using some other tool or
 manual analysis.
 
-\sectionAndLabel{Strings can be null in concatenations}{null-strings-concats}
 
-By default, the Constant Value Checker is unsound with respect to string
-concatenation.  The \code{-AnullStringsConcatenation} command-line option
-eliminates this unsoundness, though it may lead to false positive warnings.
+\sectionAndLabel{Strings can be null in concatenations}{non-null-strings-concats}
+
+By default, the Constant Value Checker is sound with respect to string
+concatenation and nullness.  It assumes that, in a string concatenation,
+every non-primitive argument might be null, except for String literals
+and compile-time constants. It ignores Nullness Checker annotations.
+(This behavior is conservative but sound.)
 
 Consider a variable declared as
 \<\refqualclass{common/value/qual}{StringVal}("a", "b") String x;>.
 At run time, \<x> evaluates to one of the values \<"a">, \<"b">, or
-\<null>.  By default, the Constant Value
-Checker unsoundly assumes that when such a value is used in string
-concatenation, it expands to \<"a"> or \<"b"> but not \<"null">.
-
-The \code{-AnullStringsConcatenation} command-line option makes
-the checker assume that any value (other than primitive types and
-compile-time constant strings) may be null.  It ignores Nullness Checker
-annotations. (This behavior is conservative, but it is sound.)
-Without the command-line argument, the type of ``\<x + "c">'' is
-\<@StringVal("ac", "bc") String>.
-With the command-line argument, the type of ``\<x + "c">'' is
+\<null>.
+Therefore, the type of ``\<x + "c">'' is
 \<@StringVal("ac", "bc", "nullc") String>.
+
+The \code{-AnonNullStringsConcatenation} command-line option makes the
+Constant Value Checker unsoundly assume that no arguments in a string
+concatenation are null.
+With the command-line argument, the type of ``\<x + "c">'' is
+\<@StringVal("ac", "bc") String>.
 
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %%  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
 %%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange casted
 %%  LocalWords:  qual AignoreRangeOverflow MinLen PolyValue GTENegativeOne
-%%  LocalWords:  staticallyexecutable concats AnullStringsConcatenation
+%%  LocalWords:  staticallyexecutable concats AnonNullStringsConcatenation

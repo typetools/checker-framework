@@ -9,9 +9,9 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
-@SubtypeOf({H1S1.class, H1S2.class, H1Invalid.class})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultFor({TypeUseLocation.LOWER_BOUND})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf({H1S1.class, H1S2.class, H1Invalid.class})
+@DefaultFor({TypeUseLocation.LOWER_BOUND})
 public @interface H1Bot {}

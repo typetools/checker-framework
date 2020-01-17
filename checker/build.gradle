@@ -2,7 +2,7 @@ ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = 'd7f53f36771f8007e617c52aa0e2dcc6213533d7'
+    jdkShaHash = 'c41c8ace5550c03992c0691019a2ce470458c47f'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -20,16 +20,20 @@ sourceSets {
 }
 
 dependencies {
-    compile project(':framework')
-    compile project(':dataflow')
-    compile project(':javacutil')
-    compile project(':checker-qual')
+    implementation project(':framework')
+    implementation project(':dataflow')
+    implementation project(':javacutil')
+    implementation project(':checker-qual')
+    // As of 2019/12/16, the version of reflection-util in the Annotation
+    // File Utilities takes priority over this version, in the fat jar
+    // file. :-( So update it and re-build it locally when updating this.
+    implementation 'org.plumelib:reflection-util:0.2.0'
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile project(':framework-test')
-    testCompile sourceSets.testannotations.output
+    testImplementation group: 'junit', name: 'junit', version: '4.13'
+    testImplementation project(':framework-test')
+    testImplementation sourceSets.testannotations.output
 
-    testannotationsCompile project(':checker-qual')
+    testannotationsImplementation project(':checker-qual')
 }
 
 task cloneTypetoolsJdk() {
@@ -159,6 +163,13 @@ task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
     }
 }
 
+task cleanJdk(type: Exec){
+    description 'Runs \'make clean\' in checker/jdk directory.'
+    workingDir "${projectDir}/jdk"
+    executable 'make'
+    args = ["clean"]
+}
+
 task updateJdk() {
     description 'Downloads or builds jdk8.jar and copies into checker/dist'
     if (jdkShaHash.is('local')) {
@@ -247,6 +258,7 @@ artifacts {
 }
 
 clean {
+    dependsOn cleanJdk
     delete "${projectDir}/dist"
 }
 
@@ -295,12 +307,12 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
     description 'Test that the demos are working as expected.'
     doLast {
         if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
-            File demosDir = new File(projectDir, '../../checker-framework-demos');
+            File demosDir = new File(projectDir, '../../checker-framework.demos');
             if (!demosDir.exists()) {
                 exec {
                     workingDir file(demosDir.toString() + '/../')
                     executable 'git'
-                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git', 'checker-framework-demos']
+                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git']
                 }
             } else {
                 exec {
@@ -321,4 +333,42 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
 task allNullnessTests(type: Test, group: 'Verification') {
     description 'Run all Junit tests for the Nullness Checker.'
     include '**/Nullness*.class'
+}
+
+// These are tests that should only be run with JDK 11.
+task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
+    description 'Run the jtreg tests made for JDK 11.'
+    dependsOn('compileJava')
+    dependsOn('compileTestJava')
+    dependsOn(':checker:updateJdk')
+    dependsOn('shadowJar')
+
+    String jtregOutput = "${buildDir}/jtregJdk11"
+    String name = 'all'
+    doLast {
+        if(isJava8) {
+            println "This test is only run with JDK 11."
+            return;
+        }
+        exec {
+            executable "${jtregHome}/bin/jtreg"
+            args = [
+                    "-dir:${projectDir}/jtregJdk11",
+                    "-workDir:${jtregOutput}/${name}/work",
+                    "-reportDir:${jtregOutput}/${name}/report",
+                    "-verbose:summary",
+                    "-javacoptions:-g",
+                    "-keywords:!ignore",
+                    "-samevm",
+                    "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+                    "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                    "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
+                    // Location of jtreg tests
+                    '.'
+            ]
+        }
+
+
+    }
 }

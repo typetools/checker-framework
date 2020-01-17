@@ -499,7 +499,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 // check all member methods
                 if (s.getKind() == ElementKind.METHOD) {
                     // Check for method name and number of arguments
-                    if (names.fromString(methodName).equals(s.name)
+                    if (names.fromString(methodName) == s.name
                             && ((MethodSymbol) s).getParameters().size() == paramLength) {
                         result.add(s);
                     }

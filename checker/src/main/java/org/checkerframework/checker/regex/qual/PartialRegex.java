@@ -1,5 +1,8 @@
 package org.checkerframework.checker.regex.qual;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -14,9 +17,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #regex-checker Regex Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({}) // empty target prevents programmers from writing this in a program
 @InvisibleQualifier
 @SubtypeOf(org.checkerframework.checker.regex.qual.UnknownRegex.class)
-@Target({}) // empty target prevents programmers from writing this in a program
 public @interface PartialRegex {
 
     /**

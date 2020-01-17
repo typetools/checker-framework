@@ -19,10 +19,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @see org.checkerframework.checker.interning.InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker
  */
-@InvisibleQualifier
-@SubtypeOf({})
-@DefaultQualifierInHierarchy
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@InvisibleQualifier
+@SubtypeOf({})
+@DefaultQualifierInHierarchy
 public @interface UnknownInterned {}

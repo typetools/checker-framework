@@ -147,7 +147,7 @@ public class NullnessVisitor
     private boolean containsSameByName(
             Set<Class<? extends Annotation>> quals, AnnotationMirror anno) {
         for (Class<? extends Annotation> q : quals) {
-            if (AnnotationUtils.areSameByClass(anno, q)) {
+            if (atypeFactory.areSameByClass(anno, q)) {
                 return true;
             }
         }

@@ -89,7 +89,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     protected final Set<Class<? extends Annotation>> initAnnos;
 
     /**
-     * String representation of all initialization annotations
+     * String representation of all initialization annotations.
      *
      * <p>{@link UnknownInitialization} {@link UnderInitialization} {@link Initialized} {@link
      * FBCBottom}
@@ -272,7 +272,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @return true if {@code anno} is {@link UnderInitialization}
      */
     public boolean isFree(AnnotationMirror anno) {
-        return AnnotationUtils.areSameByClass(anno, UnderInitialization.class);
+        return areSameByClass(anno, UnderInitialization.class);
     }
 
     /**
@@ -282,7 +282,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @return true if {@code anno} is {@link UnknownInitialization}
      */
     public boolean isUnclassified(AnnotationMirror anno) {
-        return AnnotationUtils.areSameByClass(anno, UnknownInitialization.class);
+        return areSameByClass(anno, UnknownInitialization.class);
     }
 
     /**
@@ -343,11 +343,6 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     public boolean isCommitted(AnnotatedTypeMirror anno) {
         return anno.hasEffectiveAnnotation(Initialized.class);
-    }
-
-    @Override
-    protected MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
     }
 
     /** Are all fields committed-only? */
@@ -439,7 +434,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             List<? extends Tree> classMembers = enclosingClass.getMembers();
             TreePath searchPath = path;
             while (searchPath.getParentPath() != null
-                    && searchPath.getParentPath() != enclosingClass) {
+                    && searchPath.getParentPath().getLeaf() != enclosingClass) {
                 searchPath = searchPath.getParentPath();
                 if (classMembers.contains(searchPath.getLeaf())) {
                     return searchPath.getLeaf();

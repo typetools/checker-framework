@@ -14,10 +14,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #units-checker Units Checker
  */
-@InvisibleQualifier
-@SubtypeOf({})
-@DefaultQualifierInHierarchy
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@InvisibleQualifier
+@SubtypeOf({})
+@DefaultQualifierInHierarchy
 public @interface UnknownUnits {}

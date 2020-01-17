@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -45,7 +46,7 @@ public class ElementUtils {
      */
     public static TypeElement enclosingClass(final Element elem) {
         Element result = elem;
-        while (result != null && !result.getKind().isClass() && !result.getKind().isInterface()) {
+        while (result != null && !isClassElement(result)) {
             @Nullable Element encl = result.getEnclosingElement();
             result = encl;
         }
@@ -79,9 +80,10 @@ public class ElementUtils {
      * itself again.
      *
      * @param elem the package to start from
-     * @return the parent package element
+     * @return the parent package element or {@code null}
      */
-    public static PackageElement parentPackage(final PackageElement elem, final Elements e) {
+    public static @Nullable PackageElement parentPackage(
+            final PackageElement elem, final Elements e) {
         // The following might do the same thing:
         //   ((Symbol) elt).owner;
         // TODO: verify and see whether the change is worth it.
@@ -145,7 +147,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the qualified name of the inner most class enclosing the provided {@code Element}
+     * Returns the qualified name of the innermost class enclosing the provided {@code Element}.
      *
      * @param element an element enclosed by a class, or a {@code TypeElement}
      * @return the qualified {@code Name} of the innermost class enclosing the element
@@ -166,12 +168,14 @@ public class ElementUtils {
 
     /** Returns a verbose name that identifies the element. */
     public static String getVerboseName(Element elt) {
-        if (elt.getKind() == ElementKind.PACKAGE
-                || elt.getKind().isClass()
-                || elt.getKind().isInterface()) {
-            return getQualifiedClassName(elt).toString();
+        Name n = getQualifiedClassName(elt);
+        if (n == null) {
+            return "Unexpected element: " + elt;
+        }
+        if (elt.getKind() == ElementKind.PACKAGE || isClassElement(elt)) {
+            return n.toString();
         } else {
-            return getQualifiedClassName(elt) + "." + elt;
+            return n + "." + elt;
         }
     }
 
@@ -276,8 +280,8 @@ public class ElementUtils {
         return isElementFromByteCodeHelper(elt.getEnclosingElement());
     }
 
-    /** Returns the field of the class. */
-    public static VariableElement findFieldInType(TypeElement type, String name) {
+    /** Returns the field of the class or {@code null} if not found. */
+    public static @Nullable VariableElement findFieldInType(TypeElement type, String name) {
         for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (field.getSimpleName().contentEquals(name)) {
                 return field;
@@ -350,9 +354,9 @@ public class ElementUtils {
             return;
         }
         TypeElement elt = TypesUtils.getTypeElement(type);
-
+        assert elt != null : "@AssumeAssertion(nullness): assumption";
         Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
-        for (VariableElement field : new HashSet<>(fieldElts)) {
+        for (VariableElement field : new HashSet<VariableElement>(fieldElts)) {
             if (!field.getModifiers().contains(Modifier.PRIVATE)) {
                 notFound.remove(field.getSimpleName().toString());
             } else {
@@ -366,10 +370,13 @@ public class ElementUtils {
         }
     }
 
-    /** @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError" */
+    /**
+     * @param element the element to test
+     * @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError"
+     */
     public static boolean isError(Element element) {
         return element.getClass().getName()
-                == "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError";
+                == "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError"; // interned
     }
 
     /**
@@ -484,20 +491,45 @@ public class ElementUtils {
         return types;
     }
 
-    public static boolean isTypeDeclaration(Element elt) {
-        switch (elt.getKind()) {
-                // These tree kinds are always declarations.  Uses of the declared
-                // types have tree kind IDENTIFIER.
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-            case TYPE_PARAMETER:
-                return true;
+    /** The set of kinds that represent classes. */
+    private static final Set<ElementKind> classElementKinds;
 
-            default:
-                return false;
+    static {
+        classElementKinds = EnumSet.noneOf(ElementKind.class);
+        for (ElementKind kind : ElementKind.values()) {
+            if (kind.isClass() || kind.isInterface()) {
+                classElementKinds.add(kind);
+            }
         }
+    }
+
+    /**
+     * Return the set of kinds that represent classes.
+     *
+     * @return the set of kinds that represent classes
+     */
+    public static Set<ElementKind> classElementKinds() {
+        return classElementKinds;
+    }
+
+    /**
+     * Is the given element kind a class, i.e. a class, enum, interface, or annotation type.
+     *
+     * @param element the element to test
+     * @return true, iff the given kind is a class kind
+     */
+    public static boolean isClassElement(Element element) {
+        return classElementKinds().contains(element.getKind());
+    }
+
+    /**
+     * Return true if the element is a type declaration.
+     *
+     * @param elt the element to test
+     * @return true if the argument is a type declaration
+     */
+    public static boolean isTypeDeclaration(Element elt) {
+        return isClassElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
     }
 
     /**

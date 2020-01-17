@@ -61,7 +61,6 @@ public class CompoundAssignment {
 
     void errorCompundAssignments() {
         @StringVal("hello") String s = "hello";
-        // :: error: (compound.assignment.type.incompatible)
         s += "";
     }
 }

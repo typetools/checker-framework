@@ -821,186 +821,151 @@ public class QualifierDefaults {
                     return super.scan(t, qual);
                 }
 
+                // Some defaults only apply to the top level type.
+                boolean isTopLevelType = t == type;
                 switch (location) {
                     case FIELD:
-                        {
-                            if (scope != null
-                                    && scope.getKind() == ElementKind.FIELD
-                                    && t == type) {
-                                addAnnotation(t, qual);
-                            }
-                            break;
+                        if (scope != null
+                                && scope.getKind() == ElementKind.FIELD
+                                && isTopLevelType) {
+                            addAnnotation(t, qual);
                         }
+                        break;
                     case LOCAL_VARIABLE:
-                        {
-                            if (scope != null
-                                    && scope.getKind() == ElementKind.LOCAL_VARIABLE
-                                    && t == type) {
-                                // TODO: how do we determine that we are in a cast or instanceof
-                                // type?
-                                addAnnotation(t, qual);
-                            }
-                            break;
+                        if (scope != null
+                                && scope.getKind() == ElementKind.LOCAL_VARIABLE
+                                && isTopLevelType) {
+                            // TODO: how do we determine that we are in a cast or instanceof
+                            // type?
+                            addAnnotation(t, qual);
                         }
+                        break;
                     case RESOURCE_VARIABLE:
-                        {
-                            if (scope != null
-                                    && scope.getKind() == ElementKind.RESOURCE_VARIABLE
-                                    && t == type) {
-                                addAnnotation(t, qual);
-                            }
-                            break;
+                        if (scope != null
+                                && scope.getKind() == ElementKind.RESOURCE_VARIABLE
+                                && isTopLevelType) {
+                            addAnnotation(t, qual);
                         }
+                        break;
                     case EXCEPTION_PARAMETER:
-                        {
-                            if (scope != null
-                                    && scope.getKind() == ElementKind.EXCEPTION_PARAMETER
-                                    && t == type) {
-                                addAnnotation(t, qual);
-                                if (t.getKind() == TypeKind.UNION) {
-                                    AnnotatedUnionType aut = (AnnotatedUnionType) t;
-                                    // Also apply the default to the alternative types
-                                    for (AnnotatedDeclaredType anno : aut.getAlternatives()) {
-                                        addAnnotation(anno, qual);
-                                    }
+                        if (scope != null
+                                && scope.getKind() == ElementKind.EXCEPTION_PARAMETER
+                                && isTopLevelType) {
+                            addAnnotation(t, qual);
+                            if (t.getKind() == TypeKind.UNION) {
+                                AnnotatedUnionType aut = (AnnotatedUnionType) t;
+                                // Also apply the default to the alternative types
+                                for (AnnotatedDeclaredType anno : aut.getAlternatives()) {
+                                    addAnnotation(anno, qual);
                                 }
                             }
-                            break;
                         }
+                        break;
                     case PARAMETER:
-                        {
-                            if (scope != null
-                                    && scope.getKind() == ElementKind.PARAMETER
-                                    && t == type) {
-                                addAnnotation(t, qual);
-                            } else if (scope != null
-                                    && (scope.getKind() == ElementKind.METHOD
-                                            || scope.getKind() == ElementKind.CONSTRUCTOR)
-                                    && t.getKind() == TypeKind.EXECUTABLE
-                                    && t == type) {
+                        if (scope != null
+                                && scope.getKind() == ElementKind.PARAMETER
+                                && isTopLevelType) {
+                            addAnnotation(t, qual);
+                        } else if (scope != null
+                                && (scope.getKind() == ElementKind.METHOD
+                                        || scope.getKind() == ElementKind.CONSTRUCTOR)
+                                && t.getKind() == TypeKind.EXECUTABLE
+                                && isTopLevelType) {
 
-                                for (AnnotatedTypeMirror atm :
-                                        ((AnnotatedExecutableType) t).getParameterTypes()) {
-                                    if (shouldBeAnnotated(atm, false)) {
-                                        addAnnotation(atm, qual);
-                                    }
+                            for (AnnotatedTypeMirror atm :
+                                    ((AnnotatedExecutableType) t).getParameterTypes()) {
+                                if (shouldBeAnnotated(atm, false)) {
+                                    addAnnotation(atm, qual);
                                 }
                             }
-                            break;
                         }
+                        break;
                     case RECEIVER:
-                        {
-                            if (scope != null
-                                    && scope.getKind() == ElementKind.PARAMETER
-                                    && t == type
-                                    && scope.getSimpleName().contentEquals("this")) {
-                                // TODO: comparison against "this" is ugly, won't work
-                                // for all possible names for receiver parameter.
-                                // Comparison to Names._this might be a bit faster.
-                                addAnnotation(t, qual);
-                            } else if (scope != null
-                                    && (scope.getKind() == ElementKind.METHOD)
-                                    && t.getKind() == TypeKind.EXECUTABLE
-                                    && t == type) {
+                        if (scope != null
+                                && scope.getKind() == ElementKind.PARAMETER
+                                && isTopLevelType
+                                && scope.getSimpleName().contentEquals("this")) {
+                            // TODO: comparison against "this" is ugly, won't work
+                            // for all possible names for receiver parameter.
+                            // Comparison to Names._this might be a bit faster.
+                            addAnnotation(t, qual);
+                        } else if (scope != null
+                                && (scope.getKind() == ElementKind.METHOD)
+                                && t.getKind() == TypeKind.EXECUTABLE
+                                && isTopLevelType) {
 
-                                final AnnotatedDeclaredType receiver =
-                                        ((AnnotatedExecutableType) t).getReceiverType();
-                                if (shouldBeAnnotated(receiver, false)) {
-                                    addAnnotation(receiver, qual);
-                                }
+                            final AnnotatedDeclaredType receiver =
+                                    ((AnnotatedExecutableType) t).getReceiverType();
+                            if (shouldBeAnnotated(receiver, false)) {
+                                addAnnotation(receiver, qual);
                             }
-                            break;
                         }
+                        break;
                     case RETURN:
-                        {
-                            if (scope != null
-                                    && scope.getKind() == ElementKind.METHOD
-                                    && t.getKind() == TypeKind.EXECUTABLE
-                                    && t == type) {
-                                final AnnotatedTypeMirror returnType =
-                                        ((AnnotatedExecutableType) t).getReturnType();
-                                if (shouldBeAnnotated(returnType, false)) {
-                                    addAnnotation(returnType, qual);
-                                }
+                        if (scope != null
+                                && scope.getKind() == ElementKind.METHOD
+                                && t.getKind() == TypeKind.EXECUTABLE
+                                && isTopLevelType) {
+                            final AnnotatedTypeMirror returnType =
+                                    ((AnnotatedExecutableType) t).getReturnType();
+                            if (shouldBeAnnotated(returnType, false)) {
+                                addAnnotation(returnType, qual);
                             }
-                            break;
                         }
-
+                        break;
                     case CONSTRUCTOR_RESULT:
-                        {
-                            if (scope != null
-                                    && scope.getKind() == ElementKind.CONSTRUCTOR
-                                    && t.getKind() == TypeKind.EXECUTABLE
-                                    && t == type) {
-                                final AnnotatedTypeMirror returnType =
-                                        ((AnnotatedExecutableType) t).getReturnType();
-                                if (shouldBeAnnotated(returnType, false)) {
-                                    addAnnotation(returnType, qual);
-                                }
+                        if (scope != null
+                                && scope.getKind() == ElementKind.CONSTRUCTOR
+                                && t.getKind() == TypeKind.EXECUTABLE
+                                && isTopLevelType) {
+                            final AnnotatedTypeMirror returnType =
+                                    ((AnnotatedExecutableType) t).getReturnType();
+                            if (shouldBeAnnotated(returnType, false)) {
+                                addAnnotation(returnType, qual);
                             }
-                            break;
                         }
-
+                        break;
                     case IMPLICIT_LOWER_BOUND:
-                        {
-                            if (isLowerBound
-                                    && boundType.isOneOf(BoundType.UNBOUNDED, BoundType.UPPER)) {
-                                addAnnotation(t, qual);
-                            }
-                            break;
+                        if (isLowerBound
+                                && boundType.isOneOf(BoundType.UNBOUNDED, BoundType.UPPER)) {
+                            addAnnotation(t, qual);
                         }
-
+                        break;
                     case EXPLICIT_LOWER_BOUND:
-                        {
-                            if (isLowerBound && boundType.isOneOf(BoundType.LOWER)) {
-                                addAnnotation(t, qual);
-                            }
-                            break;
+                        if (isLowerBound && boundType.isOneOf(BoundType.LOWER)) {
+                            addAnnotation(t, qual);
                         }
-
+                        break;
                     case LOWER_BOUND:
-                        {
-                            if (isLowerBound) {
-                                addAnnotation(t, qual);
-                            }
-                            break;
+                        if (isLowerBound) {
+                            addAnnotation(t, qual);
                         }
-
+                        break;
                     case IMPLICIT_UPPER_BOUND:
-                        {
-                            if (isUpperBound
-                                    && boundType.isOneOf(BoundType.UNBOUNDED, BoundType.LOWER)) {
-                                addAnnotation(t, qual);
-                            }
-                            break;
+                        if (isUpperBound
+                                && boundType.isOneOf(BoundType.UNBOUNDED, BoundType.LOWER)) {
+                            addAnnotation(t, qual);
                         }
+                        break;
                     case EXPLICIT_UPPER_BOUND:
-                        {
-                            if (isUpperBound && boundType.isOneOf(BoundType.UPPER)) {
-                                addAnnotation(t, qual);
-                            }
-                            break;
+                        if (isUpperBound && boundType.isOneOf(BoundType.UPPER)) {
+                            addAnnotation(t, qual);
                         }
+                        break;
                     case UPPER_BOUND:
-                        {
-                            if (this.isUpperBound) {
-                                addAnnotation(t, qual);
-                            }
-                            break;
+                        if (this.isUpperBound) {
+                            addAnnotation(t, qual);
                         }
+                        break;
                     case OTHERWISE:
                     case ALL:
-                        {
-                            // TODO: forbid ALL if anything else was given.
-                            addAnnotation(t, qual);
-                            break;
-                        }
+                        // TODO: forbid ALL if anything else was given.
+                        addAnnotation(t, qual);
+                        break;
                     default:
-                        {
-                            throw new BugInCF(
-                                    "QualifierDefaults.DefaultApplierElement: unhandled location: "
-                                            + location);
-                        }
+                        throw new BugInCF(
+                                "QualifierDefaults.DefaultApplierElement: unhandled location: "
+                                        + location);
                 }
 
                 return super.scan(t, qual);

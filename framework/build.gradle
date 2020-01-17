@@ -16,15 +16,19 @@ sourceSets {
 }
 
 dependencies {
-    compile project(':dataflow')
-    compile project(':javacutil')
-    compile files("${stubparserJar}")
-    compile files("${afuJar}")
-    compileOnly project(':checker-qual')
+    implementation project(':dataflow')
+    implementation project(':javacutil')
+    implementation files("${stubparserJar}")
+    implementation files("${afuJar}")
+    implementation project(':checker-qual')
+    // As of 2019/12/16, the version of reflection-util in the Annotation
+    // File Utilities takes priority over this version, in the fat jar
+    // file. :-( So update it and re-build it locally when updating this.
+    implementation 'org.plumelib:reflection-util:0.2.0'
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile project(':framework-test')
-    testCompile sourceSets.testannotations.output
+    testImplementation group: 'junit', name: 'junit', version: '4.13'
+    testImplementation project(':framework-test')
+    testImplementation sourceSets.testannotations.output
 }
 
 task checkDependencies() {

@@ -1,3 +1,43 @@
+Implementation details:
+ * Deprecated QualifierHierarchy#getTypeQualifiers.
+
+---------------------------------------------------------------------------
+
+Version 3.1.0, January 3, 2020
+
+Command-line option -AprintGitProperties prints information about the git
+repository from which the Checker Framework was compiled.
+
+Implementation details:
+ * Removed static cache in AnnotationUtils#areSameByClass and added
+   AnnotatedTypeFactory#areSameByClass that uses an instance cache.
+ * Removed static cache in AnnotationBuilder#fromName and #fromClass.
+ * ContractsUtils#getPreconditions takes an ExecutableElement as an argument.
+ * ContractsUtils#getContracts returns a Set.
+ * Moved ContractUtils.Contract to outer level.
+ * Renamed ConditionalPostcondition#annoResult to ConditionalPostcondition#resultValue.
+
+Closed issues:
+
+2867, 2897, 2972.
+
+---------------------------------------------------------------------------
+
+Version 3.0.1, December 2, 2019
+
+New command-line option for the Constant Value Checker
+`-AnoNullStringsConcatenation` unsoundly assumes that every operand of a String
+concatenation is non-null.
+
+Implementation details:
+ * Moved AnnotatedTypes#hasTypeQualifierElementTypes to AnnotationUtils.
+ * Deprecated AnnotatedTypes#isTypeAnnotation and AnnotatedTypes#hasTypeQualifierElementTypes.
+
+Closed issues:
+
+945, 1224, 2024, 2744, 2809, 2815, 2818, 2830, 2840, 2853, 2854, 2865, 2873,
+2874, 2878, 2880, 2886, 2888, 2900, 2905, 2919, 2923.
+
 ---------------------------------------------------------------------------
 
 Version 3.0.0, November 1, 2019
@@ -69,10 +109,13 @@ Removed meta-annotation @ImplicitFor:
    types).
  * Use the new meta-annotation @UpperBoundFor to specify a qualifier upper
    bound for certain types.
- * You can completely remove @ImplicitFor(typeNames =
-   Void.class, literals = LiteralKind.NULL) on bottom qualifiers.
-   @DefaultFor(types = Void.class) and @QualifierForLiterals(literals =
-   LiteralKind.NULL) are added to the bottom qualifier by default.
+ * You can completely remove
+     @ImplicitFor(typeNames = Void.class, literals = LiteralKind.NULL)
+   on bottom qualifiers.
+     @DefaultFor(types = Void.class)
+   and
+     @QualifierForLiterals(literals = LiteralKind.NULL)
+   are added to the bottom qualifier by default.
 
 Add @DefaultQualifierOnUse and @NoDefaultQualifierOnUse type declaration annotations
 
