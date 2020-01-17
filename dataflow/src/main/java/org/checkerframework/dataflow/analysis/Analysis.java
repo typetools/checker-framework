@@ -143,7 +143,8 @@ public class Analysis<
 
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set later using {@code setTransferFunction}.
+     * flow graph. The transfer function is set by the subclass, e.g., {@link
+     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
      *
      * @deprecated as {@code env} is moved to {@link
      *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this helper constructor will be
@@ -158,7 +159,8 @@ public class Analysis<
 
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set later using {@code setTransferFunction}.
+     * flow graph. The transfer function is set by the subclass, e.g., {@link
+     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
      */
     public Analysis() {
         this(null, -1);
@@ -166,7 +168,8 @@ public class Analysis<
 
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set later using {@code setTransferFunction}.
+     * flow graph. The transfer function is set by the subclass, e.g., {@link
+     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
      *
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
