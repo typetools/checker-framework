@@ -13,6 +13,7 @@ public abstract class WeakHasherMap<K, V> extends AbstractMap<K, V> implements M
     public boolean containsKey(Object key) {
         // :: warning: [unchecked] unchecked cast
         K kkey = (K) key;
+        // :: warning: (argument.type.incompatible)
         hash.containsKey(null);
         // :: error: (contracts.conditional.postcondition.not.satisfied)
         return true;
