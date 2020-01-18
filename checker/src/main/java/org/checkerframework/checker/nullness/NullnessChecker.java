@@ -7,6 +7,7 @@ import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
 /**
@@ -16,6 +17,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
+@StubFiles("collection-object-parameters-may-be-null.astub")
 @SupportedLintOptions({
     NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
     NullnessChecker.LINT_REDUNDANTNULLCOMPARISON,

@@ -491,7 +491,7 @@ public class ConcurrentLinkedQueue<E extends @NonNull Object> extends AbstractQu
      * @param o element to be removed from this queue, if present
      * @return {@code true} if this queue changed as a result of the call
      */
-    public boolean remove(@Nullable Object o) {
+    public boolean remove(Object o) {
         if (o == null) return false;
         Node<E> pred = null;
         for (Node<E> p = first(); p != null; p = succ(p)) {
