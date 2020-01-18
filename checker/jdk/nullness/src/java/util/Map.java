@@ -176,7 +176,7 @@ public interface Map<K, V> {
      */
     @Pure
     @EnsuresKeyForIf(result=true, expression="#1", map="this")
-    boolean containsKey(@Nullable Object key);
+    boolean containsKey(Object key);
 
     /**
      * Returns <tt>true</tt> if this map maps one or more keys to the
@@ -197,7 +197,7 @@ public interface Map<K, V> {
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     @Pure
-    boolean containsValue(@Nullable Object value);
+    boolean containsValue(Object value);
 
     /**
      * Returns the value to which the specified key is mapped,
@@ -233,7 +233,7 @@ public interface Map<K, V> {
     // collections).  Some other implementation do accept nulls and are so
     // annotatied (see ArrayList, LinkedList, HashMap).
     @Pure
-    @Nullable V get(@Nullable Object key);
+    @Nullable V get(Object key);
 
     // Modification Operations
 
@@ -294,7 +294,7 @@ public interface Map<K, V> {
      *         map does not permit null keys
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
-    @Nullable V remove(@Nullable Object key);
+    @Nullable V remove(Object key);
 
 
     // Bulk Operations

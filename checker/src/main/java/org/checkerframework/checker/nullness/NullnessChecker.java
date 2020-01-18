@@ -16,6 +16,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
+// @StubFiles("collection-object-parameters-may-be-null.astub")
 @SupportedLintOptions({
     NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
     NullnessChecker.LINT_REDUNDANTNULLCOMPARISON,

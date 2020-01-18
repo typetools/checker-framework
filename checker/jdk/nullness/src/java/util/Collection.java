@@ -185,7 +185,7 @@ public interface Collection<E> extends Iterable<E> {
      *         (<a href="#optional-restrictions">optional</a>)
      */
     @Pure
-    boolean contains(@Nullable Object o);
+    boolean contains(Object o);
 
     /**
      * Returns an iterator over the elements in this collection.  There are no
@@ -323,7 +323,7 @@ public interface Collection<E> extends Iterable<E> {
      * @throws UnsupportedOperationException if the <tt>remove</tt> operation
      *         is not supported by this collection
      */
-    boolean remove(@Nullable Object o);
+    boolean remove(Object o);
 
 
     // Bulk Operations
