@@ -96,6 +96,20 @@ command-line option.)
   See Section~\ref{nullness-arrays} for a discussion.
   % TODO: this option is temporary and the sound option
   % should become the default.
+
+\item
+  \label{collection-object-parameters-may-be-null}
+  If you supply the
+  \code{-Astubs=collection-object-parameters-may-be-null.astub}
+  command-line option, then in JDK collection classes, the checker
+  unsoundly permits null as an argument for any key or value formal
+  parameter whose type is Object (instead of the element type).
+
+  A null argument may cause some implementations (like ConcurrentHashMap)
+  to throw NullPointerException. However, many other common implementations
+  permit such calls, so some users may wish to sacrifice soundness for
+  convenience.
+
 \end{itemize}
 
 \item

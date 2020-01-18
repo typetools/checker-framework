@@ -1,8 +1,6 @@
-// This stub file implements the following unsound behavior:
-//
-// For any key or value formal parameter whose type is Object (instead of
-// the element type), permit null as an argument.
-//
+// For documentation, see
+// https://checkerframework.org/manual/#collection-object-parameters-may-be-null .
+
 // The affected methods are:
 // containsKey(Object)
 // contains(Object)
@@ -16,15 +14,6 @@
 // removeLastOccurrence(Object )
 // remove(Object)
 // remove(Object, Object)
-//
-// A null argument may cause some implementations (like ConcurrentHashMap) to
-// throw NullPointerException. However, many other common implementations permit
-// such calls, so some users may wish to sacrifice soundness for convenience.
-//
-// To learn how to use this file, see https://checkerframework.org/manual/#stub-using .
-//
-// For further discussion of the challenges presented by Java's mix of
-// null-friendly and null-hostile collections, see https://tinyurl.com/cfissue/3040 .
 
 package java.util;
 
