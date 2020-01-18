@@ -153,7 +153,7 @@ public abstract class AbstractMap<K, V> implements Map<K,V> {
      */
     @Pure
     @EnsuresKeyForIf(result=true, expression="#1", map="this")
-    public boolean containsKey(@Nullable Object key) {
+    public boolean containsKey(Object key) {
         Iterator<Map.Entry<K,V>> i = entrySet().iterator();
         if (key==null) {
             while (i.hasNext()) {
