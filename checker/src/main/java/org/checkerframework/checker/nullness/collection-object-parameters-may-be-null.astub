@@ -5,7 +5,6 @@
 // containsKey(Object)
 // contains(Object)
 // containsValue(Object)
-// frequency(Collection<?>, Object)
 // get(Object)
 // getOrDefault(Object, V)
 // indexOf(Object)
