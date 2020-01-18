@@ -63,8 +63,8 @@ public interface List<E> extends Collection<E> {
 public interface Map<K, V> {
     boolean containsKey(@Nullable Object key);
     boolean containsValue(@Nullable Object value);
-    V get(@Nullable Object key);
-    V remove(@Nullable Object key);
+    @Nullable V get(@Nullable Object key);
+    @Nullable V remove(@Nullable Object key);
     default V getOrDefault(@Nullable Object key, V defaultValue);
     default boolean remove(@Nullable Object key, @Nullable Object value);
     }
@@ -86,8 +86,8 @@ public class TreeMap<K,V>
 {
     public boolean containsKey(@Nullable Object key);
     public boolean containsValue(@Nullable Object value);
-    public V get(@Nullable Object key);
-    public V remove(@Nullable Object key);
+    public @Nullable V get(@Nullable Object key);
+    public @Nullable V remove(@Nullable Object key);
 }
 
 public class TreeSet<E> extends AbstractSet<E>
@@ -115,7 +115,7 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
 }
 
 public interface ConcurrentMap<K,V> extends Map<K,V> {
-    V putIfAbsent(@Nullable K key, @Nullable V value);
+    @Nullable V putIfAbsent(@Nullable K key, @Nullable V value);
     boolean remove(@Nullable Object key, @Nullable Object value);
 }
 
