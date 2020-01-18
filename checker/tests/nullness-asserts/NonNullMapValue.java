@@ -49,12 +49,14 @@ public class NonNullMapValue {
 
     void testMyMap(String key) {
         @NonNull String value;
-        value = myMap.get(key);
+        // :: error: (assignment.type.incompatible)
+        value = myMap.get(key); // should issue warning
         if (myMap.containsKey(key)) {
             value = myMap.get(key);
         }
         for (String keyInMap : myMap.keySet()) {
-            value = myMap.get(key);
+            // :: error: (assignment.type.incompatible)
+            value = myMap.get(key); // should issue warning
         }
         for (String keyInMap : myMap.keySet()) {
             value = myMap.get(keyInMap);
@@ -129,7 +131,6 @@ public class NonNullMapValue {
     }
 
     public static Object testAssertGet(Map<Object, Object> map, Object key) {
-        // :: warning: (known.nonnull)
         assert map.get(key) != null;
         return map.get(key);
     }
@@ -155,7 +156,8 @@ public class NonNullMapValue {
     public void withinElseInvalid(Map<Object, Object> map, Object key) {
         if (map.containsKey(key)) {
         } else {
-            @NonNull Object v = map.get(key);
+            // :: error: (assignment.type.incompatible)
+            @NonNull Object v = map.get(key); // should issue warning
         }
     }
 
