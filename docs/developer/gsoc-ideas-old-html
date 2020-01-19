@@ -343,7 +343,7 @@ This project is to improve support for
 <p>
 Ordinarily, a program variable has
 the same type throughout its lifetime from when the variable is declared
-until it goes out of scope. “Typestate”
+until it goes out of scope. "Typestate"
 permits the type of an object or variable to <em>change</em> in a controlled way.
 Essentially, it is a combination of standard type systems with dataflow
 analysis. For instance, a file object changes from unopened, to opened, to
