@@ -367,7 +367,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the tree with the assignment context for the treePath leaf node. (Handles
+     * Returns the tree with the assignment context for the treePath leaf node. (Handle
      * pseudo-assignment of an argument to a parameter or a receiver expression to a receiver.)
      *
      * <p>The assignment context for the {@code treePath} is the leaf of its parent, if the parent
