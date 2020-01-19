@@ -20,8 +20,7 @@ echo "BUILDJDK=${BUILDJDK}"
 source $SCRIPTDIR/build.sh ${BUILDJDK}
 
 
-# daikon-typecheck: 15 minutes
 /tmp/plume-scripts/git-clone-related typetools guava
 
 cd ../guava
-cd guava && time mvn package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
+cd guava && time mvn -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
