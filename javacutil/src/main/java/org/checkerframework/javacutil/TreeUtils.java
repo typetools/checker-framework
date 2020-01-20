@@ -367,7 +367,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the tree with the assignment context for the treePath leaf node. (Handle
+     * Returns the tree with the assignment context for the treePath leaf node. (Handles
      * pseudo-assignment of an argument to a parameter or a receiver expression to a receiver.)
      *
      * <p>The assignment context for the {@code treePath} is the leaf of its parent, if the parent
@@ -422,6 +422,10 @@ public final class TreeUtils {
             case VARIABLE:
                 return parent;
             case MEMBER_SELECT:
+                // Don't process method().field
+                if (TreeUtils.elementFromTree(parent).getKind().isField()) {
+                    return null;
+                }
                 // Also check case when treepath's leaf tree is used as method
                 // invocation's actual receiver
                 // If so, return that method invocation tree too as the assignment

@@ -159,7 +159,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
             if (assignmentContext != null) {
                 instantiationMapping =
-                        collector.reduce2(
+                        collector.reduceWithUpperBounds(
                                 instantiationMapping,
                                 collector.visit(
                                         // Actual assignment lhs type
@@ -351,7 +351,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
          * Pair<?,?> may be equal, but they both should be visited.
          */
         private final Set<AnnotatedTypeMirror> visitedTypes =
-                Collections.newSetFromMap(new IdentityHashMap<AnnotatedTypeMirror, Boolean>());
+                Collections.newSetFromMap(new IdentityHashMap<>());
 
         /**
          * Returns true if the {@link AnnotatedTypeMirror} has been visited. If it has not, then it
@@ -400,7 +400,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             return res;
         }
 
-        public AnnotationMirrorMap<AnnotationMirrorSet> reduce2(
+        /** Reduces lower bounds r1 with upper bounds r2 */
+        private AnnotationMirrorMap<AnnotationMirrorSet> reduceWithUpperBounds(
                 AnnotationMirrorMap<AnnotationMirrorSet> r1,
                 AnnotationMirrorMap<AnnotationMirrorSet> r2) {
 
@@ -478,6 +479,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
          *
          * @param type AnnotateTypeMirror used to find instantiations
          * @param polyType AnnotatedTypeMirror that may have polymorphic qualifiers
+         * @param polyIsSub boolean indicates whether {@code polyType} is the subtype of {@code
+         *     type}
          * @return a mapping of polymorphic qualifiers to their instantiations
          */
         private AnnotationMirrorMap<AnnotationMirrorSet> visit(
@@ -508,8 +511,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                                     polyType,
                                     null);
                         }
-                    case TYPEVAR:
-                        return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
                     default:
                         return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
                 }
