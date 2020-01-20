@@ -67,7 +67,7 @@ public class Analysis<
      *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this field will be removed in
      *     next major update
      */
-    @Deprecated protected final ProcessingEnvironment env;
+    @Deprecated protected final @Nullable ProcessingEnvironment env;
 
     /**
      * Instance of the types utility.
@@ -76,7 +76,7 @@ public class Analysis<
      *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this field will be removed in
      *     next major update
      */
-    @Deprecated protected final Types types;
+    @Deprecated protected final @Nullable Types types;
 
     /** Then stores before every basic block (assumed to be 'no information' if not present). */
     protected final IdentityHashMap<Block, S> thenStores;
@@ -221,7 +221,6 @@ public class Analysis<
      * @param transfer transfer function
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
-    @SuppressWarnings("nullness")
     public Analysis(@Nullable T transfer, int maxCountBeforeWidening) {
         // The initialization of env and types can be removed in next version.
         this.env = null;
@@ -256,7 +255,7 @@ public class Analysis<
      * @return {@link #types}
      */
     @Deprecated
-    public Types getTypes() {
+    public @Nullable Types getTypes() {
         return types;
     }
 
@@ -269,7 +268,7 @@ public class Analysis<
      * @return {@link #env}
      */
     @Deprecated
-    public ProcessingEnvironment getEnv() {
+    public @Nullable ProcessingEnvironment getEnv() {
         return env;
     }
 

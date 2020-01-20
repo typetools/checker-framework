@@ -60,11 +60,19 @@ public abstract class CFAbstractAnalysis<
     /** Initial abstract types for fields. */
     protected final List<Pair<VariableElement, V>> fieldValues;
 
-    /** The associated processing environment. */
+    /**
+     * The associated processing environment. TODO: Remove {@code @SuppressWarnings("HidingField")}
+     * when field {@code env} in {@link org.checkerframework.dataflow.analysis.Analysis} is being
+     * removed.
+     */
     @SuppressWarnings("HidingField")
     protected final ProcessingEnvironment env;
 
-    /** Instance of the types utility. */
+    /**
+     * Instance of the types utility. TODO: Remove {@code @SuppressWarnings("HidingField")} when
+     * field {@code types} in {@link org.checkerframework.dataflow.analysis.Analysis} is being
+     * removed.
+     */
     @SuppressWarnings("HidingField")
     protected final Types types;
 
@@ -191,7 +199,8 @@ public abstract class CFAbstractAnalysis<
     }
 
     /**
-     * Get the types utility.
+     * Get the types utility. TODO: Remove {@code @SuppressWarnings("deprecation")} when {@code
+     * getTypes()} in {@link org.checkerframework.dataflow.analysis.Analysis} is being removed.
      *
      * @return {@link #types}
      */
@@ -201,7 +210,8 @@ public abstract class CFAbstractAnalysis<
     }
 
     /**
-     * Get the processing environment.
+     * Get the processing environment. TODO: Remove {@code @SuppressWarnings("deprecation")} when
+     * {@code getEnv()} in {@link org.checkerframework.dataflow.analysis.Analysis} is being removed.
      *
      * @return {@link #env}
      */
