@@ -6,6 +6,16 @@ class OverriddenMethodsTestParent {
     public void bar(@Sibling1 OverriddenMethodsTestParent this, @Sibling2 Object obj) {}
 
     public void barz(@Sibling1 OverriddenMethodsTestParent this, @Sibling2 Object obj) {}
+
+    public void qux(Object obj1, Object obj2) {
+        // :: error: argument.type.incompatible
+        foo(obj1, obj2);
+    }
+
+    public void thud(Object obj1, Object obj2) {
+        // :: error: argument.type.incompatible
+        foo(obj1, obj2);
+    }
 }
 
 class OverriddenMethodsTestChild extends OverriddenMethodsTestParent {
@@ -35,5 +45,9 @@ class OverriddenMethodsTestChild extends OverriddenMethodsTestParent {
         // inferred, then the following call to barz will result in a method.invocation.invalid
         // and an argument.type.incompatible type checking errors.
         barz(obj);
+    }
+
+    public void callqux(@Sibling1 Object obj1, @Sibling2 Object obj2) {
+        qux(obj1, obj2);
     }
 }

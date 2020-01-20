@@ -1,5 +1,8 @@
 package org.checkerframework.checker.signature.qual;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -12,7 +15,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({}) // empty target prevents programmers from writing this in a program
 @DefaultQualifierInHierarchy
 @SubtypeOf({})
-@Target({}) // empty target prevents programmers from writing this in a program
 public @interface SignatureUnknown {}

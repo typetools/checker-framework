@@ -13,6 +13,7 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -24,8 +25,8 @@ import scenelib.annotations.field.BasicAFT;
 import scenelib.annotations.field.ScalarAFT;
 
 /**
- * This class has auxiliary methods that performs conversion between {@link
- * scenelib.annotations.Annotation} and {@link javax.lang.model.element.AnnotationMirror}.
+ * This class contains static methods that convert between {@link scenelib.annotations.Annotation}
+ * and {@link javax.lang.model.element.AnnotationMirror}.
  */
 public class AnnotationConverter {
 
@@ -115,9 +116,11 @@ public class AnnotationConverter {
             }
             Type elemType = ((ArrayType) ((Array) defaultValue).type).elemtype;
             try {
-                return new ArrayAFT(BasicAFT.forType(Class.forName(elemType.toString())));
+                @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658: Type.toString
+                @ClassGetName String elemTypeName = elemType.toString();
+                return new ArrayAFT(BasicAFT.forType(Class.forName(elemTypeName)));
             } catch (ClassNotFoundException e) {
-                throw new BugInCF(e.getMessage());
+                throw new BugInCF(e);
             }
         } else if (value instanceof Boolean) {
             return BasicAFT.forType(boolean.class);

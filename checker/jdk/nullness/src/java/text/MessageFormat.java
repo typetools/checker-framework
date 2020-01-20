@@ -1101,7 +1101,7 @@ public class MessageFormat extends Format {
     /**
      * Equality comparison between two message format objects
      */
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj)                      // quick check
             return true;
         if (obj == null || getClass() != obj.getClass())

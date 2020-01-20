@@ -15,6 +15,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(UnknownLocalized.class)
 @QualifierForLiterals({
     // All literals except chars and strings, which may need to be localized.
@@ -25,7 +28,4 @@ import org.checkerframework.framework.qual.SubtypeOf;
     LiteralKind.DOUBLE,
     LiteralKind.BOOLEAN
 })
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Localized {}

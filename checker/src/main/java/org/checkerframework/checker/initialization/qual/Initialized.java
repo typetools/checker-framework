@@ -23,6 +23,9 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(UnknownInitialization.class)
 @DefaultQualifierInHierarchy
 @DefaultFor({
@@ -30,7 +33,4 @@ import org.checkerframework.framework.qual.TypeUseLocation;
     TypeUseLocation.IMPLICIT_LOWER_BOUND,
     TypeUseLocation.EXCEPTION_PARAMETER
 })
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Initialized {}

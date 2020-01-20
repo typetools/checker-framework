@@ -1,5 +1,6 @@
 package org.checkerframework.framework.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,6 +13,7 @@ import java.lang.annotation.Target;
  *
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */
-@Target(ElementType.METHOD)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
 public @interface JavaExpression {}

@@ -2,9 +2,7 @@ package org.checkerframework.checker.formatter;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
-import java.lang.annotation.Annotation;
 import java.util.IllegalFormatException;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
@@ -52,11 +50,6 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
 
         this.postInit();
-    }
-
-    @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiers(UnknownFormat.class, FormatBottom.class);
     }
 
     @Override

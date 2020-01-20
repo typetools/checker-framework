@@ -4,14 +4,19 @@ set -e
 set -o verbose
 set -o xtrace
 export SHELLOPTS
+echo "SHELLOPTS=${SHELLOPTS}"
 
-git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
-  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+if [ -d "/tmp/plume-scripts" ] ; then
+  (cd /tmp/plume-scripts && git pull -q)
+else
+  (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
+fi
 
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+echo "BUILDJDK=${BUILDJDK}"
 source $SCRIPTDIR/build.sh ${BUILDJDK}
 
 
@@ -25,11 +30,11 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
 
 # Documentation
+./gradlew javadoc --console=plain --warning-mode=all --no-daemon
+
 ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon
 make -C docs/manual all
 
-# This comes last, in case we wish to ignore it
-# if [ "$CI_IS_PR" == "true" ] ; then
 (./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
 /tmp/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt
 

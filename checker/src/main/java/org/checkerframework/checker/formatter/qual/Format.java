@@ -1,5 +1,6 @@
 package org.checkerframework.checker.formatter.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -30,9 +31,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @see ConversionCategory
  * @checker_framework.manual #formatter-checker Format String Checker
  */
-@SubtypeOf(UnknownFormat.class)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(UnknownFormat.class)
 public @interface Format {
     /**
      * An array of {@link ConversionCategory}, indicating the types of legal remaining arguments

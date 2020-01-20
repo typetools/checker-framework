@@ -129,7 +129,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 TreeUtils.annotationsFromTypeAnnotationTrees(
                         variableTree.getModifiers().getAnnotations());
         for (AnnotationMirror anno : annos) {
-            if (AnnotationUtils.areSameByClass(anno, GuardedBy.class)
+            if (atypeFactory.areSameByClass(anno, GuardedBy.class)
                     || AnnotationUtils.areSameByName(anno, "net.jcip.annotations.GuardedBy")
                     || AnnotationUtils.areSameByName(
                             anno, "javax.annotation.concurrent.GuardedBy")) {
@@ -285,21 +285,21 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // Consider only a @GuardSatisfied primary annotation - hence use primaryGb instead of
         // effectiveGb.
         if (primaryGb != null
-                && AnnotationUtils.areSameByClass(primaryGb, checkerGuardSatisfiedClass)) {
+                && atypeFactory.areSameByClass(primaryGb, checkerGuardSatisfiedClass)) {
             AnnotationMirror primaryGbOnMethodDefinition =
                     methodDefinitionReceiver.getAnnotationInHierarchy(
                             atypeFactory.GUARDEDBYUNKNOWN);
             if (primaryGbOnMethodDefinition != null
-                    && AnnotationUtils.areSameByClass(
+                    && atypeFactory.areSameByClass(
                             primaryGbOnMethodDefinition, checkerGuardSatisfiedClass)) {
                 return true;
             }
         }
 
-        if (AnnotationUtils.areSameByClass(effectiveGb, checkerGuardedByClass)) {
+        if (atypeFactory.areSameByClass(effectiveGb, checkerGuardedByClass)) {
             Set<AnnotationMirror> annos = methodDefinitionReceiver.getAnnotations();
             AnnotationMirror guardSatisfied =
-                    AnnotationUtils.getAnnotationByClass(annos, checkerGuardSatisfiedClass);
+                    atypeFactory.getAnnotationByClass(annos, checkerGuardSatisfiedClass);
             if (guardSatisfied != null) {
                 ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvocationTree);
                 if (receiverTree == null) {
@@ -722,8 +722,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                         if (arg1Anno != null && arg2Anno != null) {
                             boolean bothAreGSwithNoIndex = false;
 
-                            if (AnnotationUtils.areSameByClass(arg1Anno, checkerGuardSatisfiedClass)
-                                    && AnnotationUtils.areSameByClass(
+                            if (atypeFactory.areSameByClass(arg1Anno, checkerGuardSatisfiedClass)
+                                    && atypeFactory.areSameByClass(
                                             arg2Anno, checkerGuardSatisfiedClass)) {
                                 if (atypeFactory.getGuardSatisfiedIndex(arg1Anno) == -1
                                         && atypeFactory.getGuardSatisfiedIndex(arg2Anno) == -1) {
@@ -961,7 +961,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         if (amList != null) {
             for (AnnotationMirror annotationMirror : amList) {
-                if (AnnotationUtils.areSameByClass(annotationMirror, checkerGuardSatisfiedClass)) {
+                if (atypeFactory.areSameByClass(annotationMirror, checkerGuardSatisfiedClass)) {
                     issueErrorIfGuardSatisfiedAnnotationInUnsupportedLocation(tree);
                 }
             }
@@ -1185,11 +1185,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         if (gbAnno == null) {
             throw new BugInCF("LockVisitor.checkLock: gbAnno cannot be null");
         }
-        if (AnnotationUtils.areSameByClass(gbAnno, GuardedByUnknown.class)
-                || AnnotationUtils.areSameByClass(gbAnno, GuardedByBottom.class)) {
+        if (atypeFactory.areSameByClass(gbAnno, GuardedByUnknown.class)
+                || atypeFactory.areSameByClass(gbAnno, GuardedByBottom.class)) {
             checker.report(Result.failure("lock.not.held", "unknown lock " + gbAnno), tree);
             return;
-        } else if (AnnotationUtils.areSameByClass(gbAnno, GuardSatisfied.class)) {
+        } else if (atypeFactory.areSameByClass(gbAnno, GuardSatisfied.class)) {
             return;
         }
 
@@ -1235,7 +1235,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
         AnnotationMirror lockAnno =
                 hierarchy.findAnnotationInSameHierarchy(annos, atypeFactory.LOCKHELD);
-        return lockAnno != null && AnnotationUtils.areSameByClass(lockAnno, LockHeld.class);
+        return lockAnno != null && atypeFactory.areSameByClass(lockAnno, LockHeld.class);
     }
 
     private List<LockExpression> getLockExpressions(

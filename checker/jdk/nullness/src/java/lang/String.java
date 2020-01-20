@@ -972,6 +972,7 @@ public final class String
      *
      * @since      JDK1.1
      */
+    @SideEffectFree
     public byte[] getBytes() {
         return StringCoding.encode(value, 0, value.length);
     }
@@ -991,8 +992,8 @@ public final class String
      * @see  #compareTo(String)
      * @see  #equalsIgnoreCase(String)
      */
-    @EnsuresNonNullIf(expression="#1", result=true)
     @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object anObject) {
         if (this == anObject) {
             return true;
@@ -1123,8 +1124,8 @@ public final class String
      *
      * @see  #equals(Object)
      */
-    @EnsuresNonNullIf(expression="#1", result=true)
     @Pure
+    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equalsIgnoreCase(@Nullable String anotherString) {
         return (this == anotherString) ? true
                 : (anotherString != null)
@@ -2721,6 +2722,7 @@ public final class String
      * @return  the {@code String}, converted to lowercase.
      * @see     java.lang.String#toLowerCase(Locale)
      */
+    @SideEffectFree
     public String toLowerCase() {
         return toLowerCase(Locale.getDefault());
     }
@@ -2885,6 +2887,7 @@ public final class String
      * @return  the {@code String}, converted to uppercase.
      * @see     java.lang.String#toUpperCase(Locale)
      */
+    @SideEffectFree
     public String toUpperCase() {
         return toUpperCase(Locale.getDefault());
     }
