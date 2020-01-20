@@ -14,13 +14,13 @@ public class GetAssignmentContext {
         t.get1(get().a);
         t.get1(get().bar());
     }
-}
 
-class A {
+    static class A {
 
-    String a = "1";
+        String a = "1";
 
-    String bar(A this) {
-        return "";
+        String bar(A this) {
+            return "";
+        }
     }
 }
