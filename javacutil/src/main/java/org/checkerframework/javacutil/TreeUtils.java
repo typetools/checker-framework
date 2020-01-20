@@ -53,6 +53,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -423,7 +424,7 @@ public final class TreeUtils {
                 return parent;
             case MEMBER_SELECT:
                 // Don't process method().field
-                if (TreeUtils.elementFromTree(parent).getKind().isField()) {
+                if (Objects.requireNonNull(TreeUtils.elementFromTree(parent)).getKind().isField()) {
                     return null;
                 }
                 // Also check case when treepath's leaf tree is used as method
