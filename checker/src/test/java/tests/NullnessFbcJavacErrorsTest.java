@@ -12,7 +12,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessFbcJavacErrorsTest extends CheckerFrameworkPerFileTest {
 
     public NullnessFbcJavacErrorsTest(File testFile) {
-        // TODO: remove forbidnonnullarraycomponents option once it's no
+        // TODO: remove newarrayshavenullcomponents option once it's no
         // longer needed.  See issue #986:
         // https://github.com/typetools/checker-framework/issues/986
         super(
@@ -22,7 +22,7 @@ public class NullnessFbcJavacErrorsTest extends CheckerFrameworkPerFileTest {
                 "-AcheckPurityAnnotations",
                 "-Anomsgtext",
                 "-Xlint:deprecation",
-                "-Alint=forbidnonnullarraycomponents,"
+                "-Alint=newarrayshavenullcomponents,"
                         + NullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }
 

@@ -14,7 +14,7 @@ public class NullnessFbcTestWithAsserts extends CheckerFrameworkPerDirectoryTest
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public NullnessFbcTestWithAsserts(List<File> testFiles) {
-        // TODO: remove forbidnonnullarraycomponents option once it's no
+        // TODO: remove newarrayshavenullcomponents option once it's no
         // longer needed.  See issue #986:
         // https://github.com/typetools/checker-framework/issues/986
         super(
@@ -25,7 +25,7 @@ public class NullnessFbcTestWithAsserts extends CheckerFrameworkPerDirectoryTest
                 "-AassumeAssertionsAreEnabled",
                 "-Anomsgtext",
                 "-Xlint:deprecation",
-                "-Alint=forbidnonnullarraycomponents,"
+                "-Alint=newarrayshavenullcomponents,"
                         + NullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }
 
