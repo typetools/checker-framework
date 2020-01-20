@@ -21,8 +21,8 @@ import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.CFGProcessor.CFGProcessResult;
 
 /**
- * The CFG visualize launcher to generate the DOT or String representation of the control flow graph
- * of a given method in a given class.
+ * Launcher to generate the DOT or String representation of the control flow graph of a given method
+ * in a given class.
  *
  * <p>Usage: Directly run it as the main class to generate the DOT representation of the control
  * flow graph of a given method in a given class. See {@link

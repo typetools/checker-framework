@@ -14,13 +14,16 @@ import org.checkerframework.javacutil.BasicTypeProcessor;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This processor runs during compilation to generate the control flow graph of a given method in a
- * given class. See {@link CFGVisualizeLauncher} for the usage.
+ * Generate the control flow graph of a given method in a given class. See {@link
+ * CFGVisualizeLauncher} for example usage.
  */
 @SupportedAnnotationTypes("*")
 public class CFGProcessor extends BasicTypeProcessor {
 
-    /** Name of a specified class which includes a specified method to generate the CFG for. */
+    /**
+     * Qualified name of a specified class which includes a specified method to generate the CFG
+     * for.
+     */
     private final String className;
     /** Name of a specified method to generate the CFG for. */
     private final String methodName;
@@ -38,9 +41,9 @@ public class CFGProcessor extends BasicTypeProcessor {
     /**
      * Create a CFG processor.
      *
-     * @param className the name of class which includes the specified method to generate the CFG
-     *     for
-     * @param methodName the name of method to generate the CFG for
+     * @param className the qualified name of class which includes the specified method to generate
+     *     the CFG for
+     * @param methodName the name of the method to generate the CFG for
      */
     protected CFGProcessor(String className, String methodName) {
         this.className = className;
@@ -54,20 +57,20 @@ public class CFGProcessor extends BasicTypeProcessor {
      * @return result of cfg process
      */
     public final @Nullable CFGProcessResult getCFGProcessResult() {
-        return this.result;
+        return result;
     }
 
     @Override
     public void typeProcessingOver() {
         if (rootTree == null) {
-            this.result = new CFGProcessResult("Root tree is null.");
+            result = new CFGProcessResult("Root tree is null.");
         } else if (classTree == null) {
-            this.result = new CFGProcessResult("Method tree is null.");
+            result = new CFGProcessResult("Method tree is null.");
         } else if (methodTree == null) {
-            this.result = new CFGProcessResult("Class tree is null.");
+            result = new CFGProcessResult("Class tree is null.");
         } else {
             ControlFlowGraph cfg = CFGBuilder.build(rootTree, methodTree, classTree, processingEnv);
-            this.result = new CFGProcessResult(cfg);
+            result = new CFGProcessResult(cfg);
         }
     }
 
@@ -89,7 +92,7 @@ public class CFGProcessor extends BasicTypeProcessor {
                 ExecutableElement el = TreeUtils.elementFromDeclaration(node);
                 if (el.getSimpleName().contentEquals(methodName)) {
                     methodTree = node;
-                    // stop execution by throwing an exception. this
+                    // Stop execution by throwing an exception. This
                     // makes sure that compilation does not proceed, and
                     // thus the AST is not modified by further phases of
                     // the compilation (and we save the work to do the
@@ -106,17 +109,17 @@ public class CFGProcessor extends BasicTypeProcessor {
         return SourceVersion.latestSupported();
     }
 
-    /** The result of CFG process, contains the control flow graph when it is succeed. */
+    /** The result of the CFG process, contains the control flow graph when successful. */
     public static class CFGProcessResult {
         /** Control flow graph. */
         private final @Nullable ControlFlowGraph controlFlowGraph;
-        /** Is the CFG process succeed or not. */
+        /** Did the CFG process succeed or not. */
         private final boolean isSuccess;
-        /** Error message (When result is failed). */
+        /** Error message (when the CFG process failed). */
         private final @Nullable String errMsg;
 
         /**
-         * Create the result of CFG process. Only called if CFG is built successfully.
+         * Create the result of the CFG process. Only called if the CFG was built successfully.
          *
          * @param cfg control flow graph
          */
@@ -125,9 +128,9 @@ public class CFGProcessor extends BasicTypeProcessor {
         }
 
         /**
-         * Create the result of CFG process. Only called if CFG is built unsuccessfully.
+         * Create the result of the CFG process. Only called if the CFG was not built successfully.
          *
-         * @param errMsg the error message to show
+         * @param errMsg the error message
          */
         CFGProcessResult(final String errMsg) {
             this(null, false, errMsg);
@@ -137,18 +140,20 @@ public class CFGProcessor extends BasicTypeProcessor {
          * Create the result of CFG process.
          *
          * @param cfg Control flow graph
-         * @param isSuccess Is a success or not
-         * @param errMsg Error message (When result is failed)
+         * @param isSuccess Did the CFG process succeed or not
+         * @param errMsg Error message (when the CFG process failed)
          */
-        CFGProcessResult(
+        private CFGProcessResult(
                 @Nullable ControlFlowGraph cfg, boolean isSuccess, @Nullable String errMsg) {
             this.controlFlowGraph = cfg;
             this.isSuccess = isSuccess;
             this.errMsg = errMsg;
         }
 
-        /** Check if the CFG process result is succeed. */
+        /** Check if the CFG process succeeded. */
         @EnsuresNonNullIf(expression = "getCFG()", result = true)
+        // TODO: add once #1307 is fixed
+        // @EnsuresNonNullIf(expression = "getErrMsg()", result = false)
         @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied")
         public boolean isSuccess() {
             return isSuccess;
