@@ -1295,7 +1295,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param tree the type tree
      * @return the (partially) annotated type of the type in the AST
      */
-    /*package private*/ public final AnnotatedTypeMirror fromTypeTree(Tree tree) {
+    public final AnnotatedTypeMirror fromTypeTree(Tree tree) {
         if (shouldCache && fromTypeTreeCache.containsKey(tree)) {
             return fromTypeTreeCache.get(tree).deepCopy();
         }
