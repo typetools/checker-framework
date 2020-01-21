@@ -388,7 +388,7 @@ public abstract class CFAbstractTransfer<
      * @param classTree the class tree
      * @param methodTree the method tree
      */
-    private void addFieldValues(
+    protected void addFieldValues(
             S info, AnnotatedTypeFactory factory, ClassTree classTree, MethodTree methodTree) {
 
         // Add knowledge about final fields, or values of non-final fields
