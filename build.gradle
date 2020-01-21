@@ -67,7 +67,7 @@ switch (JavaVersion.current()) {
     case JavaVersion.VERSION_11:
         break; // Supported versions
     default:
-        logger.error("Build the Checker Framework with JDK 8 or JDK 11." +
+        throw new GradleException("Build the Checker Framework with JDK 8 or JDK 11." +
                 " Found version " + JavaVersion.current().majorVersion);
 }
 
