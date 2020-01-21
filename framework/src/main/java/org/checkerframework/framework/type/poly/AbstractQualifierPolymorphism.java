@@ -400,7 +400,13 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             return res;
         }
 
-        /** Reduces lower bounds r1 with upper bounds r2 */
+        /**
+         * Reduces lower bounds r1 with upper bounds r2.
+         *
+         * @param r1 a map from {@link AnnotationMirror} to {@link AnnotationMirrorSet}
+         * @param r2 a map from {@link AnnotationMirror} to {@link AnnotationMirrorSet}
+         * @return the reduced {@link AnnotationMirrorMap}
+         */
         private AnnotationMirrorMap<AnnotationMirrorSet> reduceWithUpperBounds(
                 AnnotationMirrorMap<AnnotationMirrorSet> r1,
                 AnnotationMirrorMap<AnnotationMirrorSet> r2) {
@@ -523,6 +529,13 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             }
         }
 
+        /**
+         * A helper method of {@link #visit(AnnotatedTypeMirror, AnnotatedTypeMirror, boolean)}.
+         *
+         * @param type AnnotateTypeMirror used to find instantiations
+         * @param polyType AnnotatedTypeMirror that may have polymorphic qualifiers
+         * @return {@code visit(type, polyType, false)}
+         */
         private AnnotationMirrorMap<AnnotationMirrorSet> visit(
                 AnnotatedTypeMirror type, AnnotatedTypeMirror polyType) {
             return visit(type, polyType, false);

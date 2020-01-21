@@ -193,6 +193,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * NullnessAnnotatedTypeFactory#hasFieldInvariantAnnotation(VariableTree)} for an example.
      *
      * @param type of field that might have invariant annotation
+     * @param fieldElement the field element
      * @return whether or not the type has the invariant annotation
      */
     protected abstract boolean hasFieldInvariantAnnotation(

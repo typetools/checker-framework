@@ -39,6 +39,7 @@ import org.checkerframework.javacutil.TypeAnnotationUtils;
  */
 public class QualifierPolymorphismUtil {
 
+    /** A set of {@code TreePath} which contains the visited {@code TreePath}s. */
     private static final Set<TreePath> visitedPaths = new HashSet<>();
 
     /**
@@ -46,6 +47,8 @@ public class QualifierPolymorphismUtil {
      * assignment context. Returns the annotated type that the method invocation at the leaf is
      * assigned to. If the result is a primitive, return the boxed version.
      *
+     * @param atypeFactory the type factory
+     * @param path the tree path
      * @return type that path leaf is assigned to
      */
     public static AnnotatedTypeMirror assignedTo(AnnotatedTypeFactory atypeFactory, TreePath path) {
@@ -138,6 +141,16 @@ public class QualifierPolymorphismUtil {
         return res;
     }
 
+    /**
+     * Return the annotated type that is assigned to executable.
+     *
+     * @param atypeFactory the type factory
+     * @param path the tree path
+     * @param methodElt the method element
+     * @param receiver the receiver
+     * @param arguments the passed arguments
+     * @return the annotated type
+     */
     private static AnnotatedTypeMirror assignedToExecutable(
             AnnotatedTypeFactory atypeFactory,
             TreePath path,
@@ -191,6 +204,10 @@ public class QualifierPolymorphismUtil {
     /**
      * Returns whether argumentTree is the tree at the leaf of path. if tree is a conditional
      * expression, isArgument is called recursively on the true and false expressions.
+     *
+     * @param path the tree path
+     * @param argumentTree the argument tree
+     * @return true if argumentTree is the tree at the leaf of path, else false
      */
     private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
         argumentTree = TreeUtils.withoutParens(argumentTree);
@@ -260,7 +277,13 @@ public class QualifierPolymorphismUtil {
         }
     }
 
-    /** @return true if the type contains a use of a type variable from methodType */
+    /**
+     * Check if the {@code type} contains a use of a type variable from {@code methodType}.
+     *
+     * @param type the annotated type
+     * @param methodType the type of an executable
+     * @return true if the {@code type} contains a use of a type variable from {@code methodType}.
+     */
     private static boolean containsUninferredTypeParameter(
             AnnotatedTypeMirror type, AnnotatedExecutableType methodType) {
         final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
