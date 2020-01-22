@@ -67,6 +67,8 @@ public class Analysis<
      *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this field will be removed in
      *     next major update
      */
+    // TODO: Remove @SuppressWarnings("HidingField") in CFAbstractAnalysis#env when this field is
+    // being removed.
     @Deprecated protected final @Nullable ProcessingEnvironment env;
 
     /**
@@ -76,6 +78,8 @@ public class Analysis<
      *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this field will be removed in
      *     next major update
      */
+    // TODO: Remove @SuppressWarnings("HidingField") in CFAbstractAnalysis#types when this field is
+    // being removed.
     @Deprecated protected final @Nullable Types types;
 
     /** Then stores before every basic block (assumed to be 'no information' if not present). */
@@ -255,6 +259,8 @@ public class Analysis<
      * @return {@link #types}
      */
     @Deprecated
+    // TODO: Remove @SuppressWarnings("deprecation") in CFAbstractAnalysis#getTypes() when this
+    // method is being removed.
     public @Nullable Types getTypes() {
         return types;
     }
@@ -268,6 +274,8 @@ public class Analysis<
      * @return {@link #env}
      */
     @Deprecated
+    // TODO: Remove @SuppressWarnings("deprecation") in CFAbstractAnalysis#getEnv() when this method
+    // is being removed.
     public @Nullable ProcessingEnvironment getEnv() {
         return env;
     }
