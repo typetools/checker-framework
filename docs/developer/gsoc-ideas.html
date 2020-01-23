@@ -47,7 +47,7 @@
       <li><a href="#index-checker-mutable-length">Index checking for mutable length data structures</a></li>
       <li><a href="#nullness-bug-detector">Nullness bug detector</a></li>
     </ul></li>
-  <li><a href="#cf-other">Type system enhancements and tools</a>
+  <li><a href="#cf-other">Enhance the toolset</a>
     <ul>
       <li><a href="#index-errors">Improving error messages</a></li>
       <li><a href="#flow-expression-parser">Flow expression parser</a></li>
@@ -106,7 +106,9 @@
   impact.  It makes code more robust and secure, which is a socially
   important purpose.  Past GSOC students have had great success.
   (David Lazar became a graduate student at MIT; multiple students
-  have published papers in scientific conferences.)  You will
+  have published papers in scientific conferences, such
+  as <a href="https://homes.cs.washington.edu/~mernst/pubs/array-indexing-issta2018-abstract.html">Vlastimil
+  Dort at ISSTA 2018</a>.)  You will
   get to scratch your own itch by creating tools that solve problems that
   frustrate you.  And, we have a lot of fun on this project!
 </p>
@@ -678,7 +680,9 @@ You will do a case study of this type system.
 <p>
 By default, the Checker Framework is
 <a href="https://checkerframework.org/manual/#unsound-by-default">unsound
-in several circumstances</a>.  &ldquo;Unsound&rdquo; means that the Checker Framework
+  in</a> <a href="https://checkerframework.org/manual/#nullness-lint">several</a>
+<a href="https://github.com/typetools/checker-framework/issues/986">circumstances</a>.
+&ldquo;Unsound&rdquo; means that the Checker Framework
 may report no warning even though the program can misbehave at run time.
 </p>
 
@@ -1228,7 +1232,7 @@ differences from the real Nullness checker:
 
 
 
-<h1 id="cf-other">Type system enhancements and tools</h1>
+<h1 id="cf-other">Enhance the toolset</h1>
 
 
 <h2 id="index-errors">Improving error messages</h2>
