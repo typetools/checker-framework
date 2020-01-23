@@ -61,7 +61,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        Set<Class<? extends Annotation>> result = getBundledTypeQualifiersWithoutPolyAll();
+        Set<Class<? extends Annotation>> result = getBundledTypeQualifiers();
         result.remove(SignedPositive.class); // this method should not return aliases
         return result;
     }
@@ -84,7 +84,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * True when the AnnotatedTypeMirror currently being computed is the left hand side of an
-     * assignment or pseudo-assignment
+     * assignment or pseudo-assignment.
      *
      * @see #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)
      * @see #getAnnotatedTypeLhs(Tree)

@@ -1,0 +1,7 @@
+import org.checkerframework.checker.signature.qual.*;
+
+package com.github.javaparser.ast;
+
+class PackageDeclaration {
+  @DotSeparatedIdentifiers String getNameAsString();
+}

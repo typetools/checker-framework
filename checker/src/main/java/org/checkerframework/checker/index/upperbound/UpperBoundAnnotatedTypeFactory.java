@@ -57,7 +57,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -124,7 +123,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(SearchIndexFor.class, LTLengthOf.class, true);
         addAliasedAnnotation(NegativeIndexFor.class, LTLengthOf.class, true);
         addAliasedAnnotation(LengthOf.class, LTEqLengthOf.class, true);
-        addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
         imf = new IndexMethodIdentifier(this);
@@ -222,10 +220,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Checks if valueType contains a {@link org.checkerframework.common.value.qual.BottomVal}
      * annotation. If so, adds an {@link UpperBoundBottom} annotation to type.
+     *
+     * @param valueType annotated type from the {@link ValueAnnotatedTypeFactory}
+     * @param type annotated type from this factory that is side effected
      */
     private void addUpperBoundTypeFromValueType(
             AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
-        if (AnnotationUtils.containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
+        if (containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
             type.replaceAnnotation(BOTTOM);
         }
     }
@@ -323,9 +324,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns true iff the given node has the passed Lower Bound qualifier according to the LBC.
      * The last argument should be Positive.class, NonNegative.class, or GTENegativeOne.class.
+     *
+     * @param node the given node
+     * @param classOfType Positive.class, NonNegative.class, or GTENegativeOne.class
+     * @return true iff the given node has the passed Lower Bound qualifier according to the LBC
      */
     public boolean hasLowerBoundTypeByClass(Node node, Class<? extends Annotation> classOfType) {
-        return AnnotationUtils.areSameByClass(
+        return areSameByClass(
                 getLowerBoundAnnotatedTypeFactory()
                         .getAnnotatedType(node.getTree())
                         .getAnnotationInHierarchy(getLowerBoundAnnotatedTypeFactory().UNKNOWN),
@@ -342,7 +347,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * the relationships within the qualifiers - especially subtyping relations.
      */
     protected final class UpperBoundQualifierHierarchy extends MultiGraphQualifierHierarchy {
-        /** @param factory MultiGraphFactory to use to construct this */
+        /** @param factory the MultiGraphFactory to use to construct this */
         public UpperBoundQualifierHierarchy(
                 MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
@@ -484,8 +489,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private void addAnnotationForBitwiseComplement(
                 AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
-            if (AnnotationUtils.containsSameByClass(
-                    searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
+            if (containsSameByClass(searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
                 AnnotationMirror nif = searchIndexType.getAnnotation(NegativeIndexFor.class);
                 List<String> arrays = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(nif);
                 List<String> negativeOnes = Collections.nCopies(arrays.size(), "-1");

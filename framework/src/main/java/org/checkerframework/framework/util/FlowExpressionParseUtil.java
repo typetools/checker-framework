@@ -92,6 +92,10 @@ public class FlowExpressionParseUtil {
     /** Regular expression for a formal parameter use. */
     protected static final String PARAMETER_REGEX = "#([1-9][0-9]*)";
 
+    /** Anchored pattern for a formal parameter. */
+    protected static final Pattern ANCHORED_PARAMETER_PATTERN =
+            Pattern.compile("^" + PARAMETER_REGEX + "$");
+
     /** Unanchored; can be used to find all formal parameter uses. */
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
 
@@ -132,9 +136,16 @@ public class FlowExpressionParseUtil {
             // superclass.
             throw e.getCheckedException();
         }
-        if (result instanceof ClassName && !expression.endsWith("class")) {
+        if (result instanceof ClassName
+                && !expression.endsWith(".class")
+                // At a call site, "#1" may be transformed to "Something.class", so don't throw an
+                // exception in that case.
+                && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
             throw constructParserException(
-                    expression, "a class name cannot terminate a flow expression string");
+                    expression,
+                    String.format(
+                            "a class name cannot terminate a flow expression string, where result=%s [%s]",
+                            result, result.getClass()));
         }
         return result;
     }
@@ -214,7 +225,7 @@ public class FlowExpressionParseUtil {
             return new ValueLiteral(stringTM, expr.asString());
         }
 
-        /** @return The receiver, {@link FlowExpressionContext#receiver}, of the context. */
+        /** @return the receiver, {@link FlowExpressionContext#receiver}, of the context */
         @Override
         public Receiver visit(ThisExpr n, FlowExpressionContext context) {
             if (context.receiver != null && !context.receiver.containsUnknown()) {
@@ -224,7 +235,7 @@ public class FlowExpressionParseUtil {
             return new ThisReference(context.receiver == null ? null : context.receiver.getType());
         }
 
-        /** @return The receiver of the superclass of the context. */
+        /** @return the receiver of the superclass of the context */
         @Override
         public Receiver visit(SuperExpr n, FlowExpressionContext context) {
             // super literal
@@ -252,7 +263,7 @@ public class FlowExpressionParseUtil {
             return expr.getInner().accept(this, context);
         }
 
-        /** @return The receiver of an array access. */
+        /** @return the receiver of an array access */
         @Override
         public Receiver visit(ArrayAccessExpr expr, FlowExpressionContext context) {
             Receiver array = expr.getName().accept(this, context);
@@ -628,8 +639,8 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * @param s A String that starts with PARAMETER_REPLACEMENT
-         * @return The receiver of the parameter passed
+         * @param s a String that starts with PARAMETER_REPLACEMENT
+         * @return the receiver of the parameter passed
          */
         private static Receiver getParameterReceiver(String s, FlowExpressionContext context) {
             if (context.arguments == null) {

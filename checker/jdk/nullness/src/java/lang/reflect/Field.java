@@ -1,10 +1,11 @@
 package java.lang.reflect;
 
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 public final class Field extends AccessibleObject implements Member {
   protected Field() {}
@@ -15,10 +16,13 @@ public final class Field extends AccessibleObject implements Member {
   @Pure public boolean isSynthetic() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Class<?> getType() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Type getGenericType() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean equals(@Nullable Object obj) { throw new RuntimeException("skeleton method"); }
+  @Pure
+  @EnsuresNonNullIf(expression="#1", result=true)
+  public boolean equals(@Nullable Object obj) { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toGenericString() { throw new RuntimeException("skeleton method"); }
+  // These Object formal parameters can be null if the field is static.
   @SideEffectFree public @Nullable Object get(@UnknownInitialization @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   @Pure public boolean getBoolean(@UnknownInitialization @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   @Pure public byte getByte(@UnknownInitialization @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
@@ -37,6 +41,6 @@ public final class Field extends AccessibleObject implements Member {
   public void setLong(@UnknownInitialization @Nullable Object obj, long value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public void setFloat(@UnknownInitialization @Nullable Object obj, float value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public void setDouble(@UnknownInitialization @Nullable Object obj, double value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public <T extends java.lang.annotation. @Nullable Annotation> @Nullable T getAnnotation(Class<@NonNull T> obj) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public <T extends java.lang.annotation.Annotation> @Nullable T getAnnotation(Class<@NonNull T> obj) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public java.lang.annotation.Annotation[] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
 }

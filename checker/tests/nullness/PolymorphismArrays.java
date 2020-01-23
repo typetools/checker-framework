@@ -1,5 +1,4 @@
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.PolyAll;
 
 public class PolymorphismArrays {
 
@@ -52,7 +51,7 @@ public class PolymorphismArrays {
         return indexOfEq(a);
     }
 
-    public static int indexOfEq(@PolyAll Object[] a) {
+    public static int indexOfEq(@PolyNull Object[] a) {
         return -1;
     }
 }
