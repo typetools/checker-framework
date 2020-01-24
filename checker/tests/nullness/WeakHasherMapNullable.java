@@ -5,12 +5,11 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.regex.qual.*;
 
 // :: error: (initialization.fields.uninitialized)
-public abstract class WeakHasherMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
+public abstract class WeakHasherMapNullable<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     private Map<Object, V> hash;
 
     @org.checkerframework.dataflow.qual.Pure
-    // :: error: (override.param.invalid)
-    public boolean containsKey(@NonNull Object key) {
+    public boolean containsKey(@Nullable Object key) {
         // :: warning: [unchecked] unchecked cast
         K kkey = (K) key;
         // :: error: (argument.type.incompatible)
