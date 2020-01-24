@@ -636,11 +636,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Check method purity if needed.
+     * Check method purity if needed. Note that overriding rules are checked as part of {@link
+     * #checkOverride(MethodTree, AnnotatedExecutableType, AnnotatedDeclaredType,
+     * AnnotatedExecutableType, AnnotatedDeclaredType)}.
      *
      * @param node the method tree to check
-     * @see BaseTypeVisitor#checkOverride(MethodTree, AnnotatedExecutableType,
-     *     AnnotatedDeclaredType, AnnotatedExecutableType, AnnotatedDeclaredType)
      */
     protected void checkPurity(MethodTree node) {
         boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
