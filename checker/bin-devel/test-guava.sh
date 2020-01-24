@@ -23,5 +23,5 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 /tmp/plume-scripts/git-clone-related typetools guava
 
 cd ../guava
-export MAVEN_OPTS="-Xmx4000m"
+export MAVEN_OPTS="-Xmx6000m"
 cd guava && time mvn -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
