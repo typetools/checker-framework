@@ -8,4 +8,4 @@ else
   git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 fi
 
-git-clone-related typetools jdk
+/tmp/plume-scripts/git-clone-related typetools jdk
