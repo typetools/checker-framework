@@ -35,6 +35,9 @@ else
   (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
 fi
 
+# Clone the annotated JDK 11 into ../jdk .
+git-clone-related typetools jdk
+
 # This does not work:
 #   AT=${AFU}/..
 # because `git clone REPO ../annotation-tools/annotation-file-utilities/..`
