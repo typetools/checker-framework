@@ -24,4 +24,4 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 
 cd ../guava
 export MAVEN_OPTS="-Xmx6000m"
-cd guava && time mvn -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
+cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
