@@ -15,8 +15,6 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/clone-jdk.sh
-    displayName: clone-jdk.sh
   - bash: ./checker/bin-devel/test-all-tests.sh
     displayName: test-all-tests.sh
 - job: jdk_jar_jdk8
@@ -44,8 +42,6 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 1000
-  - bash: ./checker/bin-devel/clone-jdk.sh
-    displayName: clone-jdk.sh
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: cf_inference_jdk8
@@ -64,8 +60,6 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/clone-jdk.sh
-    displayName: clone-jdk.sh
   - bash: ./checker/bin-devel/test-plume-lib.sh allJdk11
     displayName: test-plume-lib.sh
 - job: plume_lib_jdk8
@@ -93,8 +87,6 @@ jobs:
 #  steps:
 #  - checkout: self
 #    fetchDepth: 25
-#  - bash: ./checker/bin-devel/clone-jdk.sh
-#    displayName: clone-jdk.sh
 #  - bash: ./checker/bin-devel/test-daikon.sh
 #    displayName: test-daikon.sh
 - job: downstream_jdk11
@@ -104,8 +96,6 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/clone-jdk.sh
-    displayName: clone-jdk.sh
   - bash: ./checker/bin-devel/test-downstream.sh
     displayName: test-downstream.sh
 - job: downstream_jdk8
