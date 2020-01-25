@@ -36,7 +36,7 @@ else
 fi
 
 # Clone the annotated JDK 11 into ../jdk .
-git-clone-related typetools jdk
+/tmp/plume-scripts/git-clone-related typetools jdk
 
 # This does not work:
 #   AT=${AFU}/..
