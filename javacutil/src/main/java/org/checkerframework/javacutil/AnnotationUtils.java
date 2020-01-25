@@ -836,13 +836,14 @@ public class AnnotationUtils {
      * Update a map, to add <code>newQual</code> to the set that <code>key</code> maps to. The
      * mapped-to element is an unmodifiable set.
      *
+     * <p>See
+     * org.checkerframework.framework.type.QualifierHierarchy#updateMappingToMutableSet(QualifierHierarchy,
+     * Map, Object, AnnotationMirror).
+     *
      * @param map the map to update
      * @param key the key whose value to update
      * @param newQual the element to add to the given key's value
      * @param <T> the key type
-     *     <p>See
-     *     org.checkerframework.framework.type.QualifierHierarchy#updateMappingToMutableSet(QualifierHierarchy,
-     *     Map, Object, AnnotationMirror).
      */
     public static <T extends @NonNull Object> void updateMappingToImmutableSet(
             Map<T, Set<AnnotationMirror>> map, T key, Set<AnnotationMirror> newQual) {
