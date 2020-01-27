@@ -637,8 +637,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Check method purity if needed. Note that overriding rules are checked as part of {@link
-     * #checkOverride(MethodTree, AnnotatedExecutableType, AnnotatedDeclaredType,
-     * AnnotatedExecutableType, AnnotatedDeclaredType)}.
+     * #checkOverride(MethodTree, AnnotatedTypeMirror.AnnotatedExecutableType,
+     * AnnotatedTypeMirror.AnnotatedDeclaredType, AnnotatedTypeMirror.AnnotatedExecutableType,
+     * AnnotatedTypeMirror.AnnotatedDeclaredType)}.
      *
      * @param node the method tree to check
      */
