@@ -217,7 +217,7 @@ gradlew assembleCheckTypes
 If you use the \href{http://ant.apache.org/}{Ant} build tool to compile
 your software, then you can add an Ant task that runs a checker.  We assume
 that your Ant file already contains a compilation target that uses the
-\code{javac} task.
+\code{javac} task, and that the \<CHECKERFRAMEWORK> environment variable is set.
 
 \begin{enumerate}
 \item
@@ -906,8 +906,8 @@ latest bug fixes and new features:
 \end{Verbatim}
 
 \item
-  To use a local version of the Checker Framework (for example,
-  one that you have built from source):
+  To use a local version of the Checker Framework that
+  you have built from source (Section~\ref{build-source}):
 
 \begin{alltt}
   <dependencies>

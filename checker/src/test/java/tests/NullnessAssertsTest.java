@@ -10,10 +10,10 @@ import org.junit.runners.Parameterized.Parameters;
  * JUnit tests for the Nullness checker (that uses the Freedom Before Commitment type system for
  * initialization).
  */
-public class NullnessFbcTestWithAsserts extends CheckerFrameworkPerDirectoryTest {
+public class NullnessAssertsTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
-    public NullnessFbcTestWithAsserts(List<File> testFiles) {
+    public NullnessAssertsTest(List<File> testFiles) {
         // TODO: remove newarrayshavenullcomponents option once it's no
         // longer needed.  See issue #986:
         // https://github.com/typetools/checker-framework/issues/986
