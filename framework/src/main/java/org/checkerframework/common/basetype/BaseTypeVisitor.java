@@ -2543,7 +2543,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *     ATM) such that their toStrings are the same but their verbose toStrings differ
      */
     private static boolean shouldPrintVerbose(AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2) {
-        if ((!atm1.toString().contains("@") && !atm2.toString().contains("@"))) {
+        if (!atm1.toString().contains("@") && !atm2.toString().contains("@")) {
             return true;
         }
         return containsSameToString(atm1, atm2);

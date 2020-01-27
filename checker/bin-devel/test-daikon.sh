@@ -6,6 +6,8 @@ set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
+env | sort
+
 if [ -d "/tmp/plume-scripts" ] ; then
   (cd /tmp/plume-scripts && git pull -q)
 else
@@ -22,7 +24,6 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 
 # daikon-typecheck: 15 minutes
 /tmp/plume-scripts/git-clone-related codespecs daikon
-
 cd ../daikon
 make compile
 time make -C java typecheck
