@@ -2,7 +2,7 @@ Renamed -Anocheckjdk to -ApermitMissingJdk.
 The old version still works, for backward compatibility.
 
 Renamed -Alint=forbidnonnullarraycomponents to
--Alint=newarrayshavenullcomponents.  The old version still works, for
+-Alint=soundArrayCreationNullness.  The old version still works, for
 backward compatibility.
 
 Implementation details:
