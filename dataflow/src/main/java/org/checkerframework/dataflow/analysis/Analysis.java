@@ -185,6 +185,21 @@ public class Analysis<
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      *
+     * @deprecated as {@code env} is moved to {@link
+     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this constructor will be removed
+     *     in next major update. Use {@link #Analysis(TransferFunction, int)} instead.
+     * @param transfer transfer function
+     * @param env associated processing environment
+     */
+    @Deprecated
+    public Analysis(T transfer, ProcessingEnvironment env) {
+        this(transfer, -1, env);
+    }
+
+    /**
+     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
+     * flow graph, given a transfer function.
+     *
      * @param transfer transfer function
      */
     public Analysis(T transfer) {
