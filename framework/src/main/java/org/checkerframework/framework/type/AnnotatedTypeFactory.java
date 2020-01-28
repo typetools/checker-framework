@@ -1666,12 +1666,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (tree.getKind() == Kind.NEW_CLASS) {
                     if (typeElt.getEnclosingElement() != null) {
                         typeElt = ElementUtils.enclosingClass(typeElt.getEnclosingElement());
-                        if (typeElt == null) {
-                            // If the typeElt does not have an enclosing class, then the
-                            // NewClassTree does not have an implicit receiver.
-                            return null;
-                        }
                     } else {
+                        typeElt = null;
+                    }
+                    if (typeElt == null) {
                         // If the typeElt does not have an enclosing class, then the NewClassTree
                         // does not have an implicit receiver.
                         return null;
