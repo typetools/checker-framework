@@ -20,7 +20,7 @@ public interface Map<K extends Object, V extends Object> {
   // any of the arguments is a null).  And some implementations do not
   // permit nulls (sorted queues PriorityQueue, Hashtable, most concurrent
   // collections).  Some other implementation do accept nulls and are so
-  // annotatied (see ArrayList, LinkedList, HashMap).
+  // annotated (see ArrayList, LinkedList, HashMap).
    public abstract V get(@GuardSatisfied Map<K,V> this, @GuardSatisfied Object a1);
   @ReleasesNoLocks public abstract V put(@GuardSatisfied Map<K,V> this, K a1, V a2);
   public abstract V remove(@GuardSatisfied Map<K,V> this, Object a1);
