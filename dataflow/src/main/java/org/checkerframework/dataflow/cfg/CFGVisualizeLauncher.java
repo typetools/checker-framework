@@ -34,7 +34,7 @@ public class CFGVisualizeLauncher {
     /**
      * The main entry point of CFGVisualizeLauncher.
      *
-     * @param args the passed arguments
+     * @param args the passed arguments, see {@link #printUsage()} for the usage
      */
     public static void main(String[] args) {
         CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
