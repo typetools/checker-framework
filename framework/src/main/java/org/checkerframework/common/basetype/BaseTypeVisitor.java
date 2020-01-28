@@ -1660,12 +1660,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /* TODO: something similar to visitReturn should be done.
-     * public Void visitThrow(ThrowTree node, Void p) {
-     * return super.visitThrow(node, p);
-     * }
-     */
-
     /**
      * Ensure that the annotation arguments comply to their declarations. This needs some special
      * casing, as annotation arguments form special trees.
@@ -2494,7 +2488,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param typeargs the type arguments from the type or method invocation
      * @param typeargTrees the type arguments as trees, used for error reporting
      */
-    // TODO: see updated version below that performs more well-formedness checks.
     protected void checkTypeArguments(
             Tree toptree,
             List<? extends AnnotatedTypeParameterBounds> paramBounds,
@@ -2590,81 +2583,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return typeArg.getKind() == TypeKind.WILDCARD
                 && bounds.getUpperBound().getKind() == TypeKind.WILDCARD;
     }
-
-    /* Updated version that performs more well-formedness checks.
-
-    protected void checkTypeArguments(Tree toptree,
-            List<? extends AnnotatedTypeVariable> typevars,
-            List<? extends AnnotatedTypeMirror> typeargs,
-            List<? extends Tree> typeargTrees) {
-
-        // System.out.printf("BaseTypeVisitor.checkTypeArguments: %s, TVs: %s, TAs: %s, TATs: %s\n",
-        //         toptree, typevars, typeargs, typeargTrees);
-
-        // If there are no type variables, do nothing.
-        if (typevars.isEmpty()) {
-            return;
-            }
-
-        assert typevars.size() == typeargs.size() :
-            "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: " +
-            typeargs + " and type variables " + typevars;
-
-        assert typeargTrees.isEmpty() ||
-                    typeargTrees.size() == typeargs.size() :
-            "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: " +
-            typeargs + " and their trees " + typeargTrees;
-
-        Iterator<? extends AnnotatedTypeVariable> varIter = typevars.iterator();
-        Iterator<? extends AnnotatedTypeMirror> argIter = typeargs.iterator();
-        Iterator<? extends Tree> argTreeIter = typeargTrees.iterator();
-
-        while (varIter.hasNext()) {
-
-            AnnotatedTypeVariable typeVar = varIter.next();
-            AnnotatedTypeMirror typearg = argIter.next();
-
-            Tree typeArgTree = null;
-            if (argTreeIter.hasNext()) {
-                typeArgTree = argTreeIter.next();
-            }
-
-            if (typeArgTree != null) {
-                boolean valid = validateType(typeArgTree, typearg);
-                if (!valid) {
-                    // validateType already issued an error; check the next argument.
-                    continue;
-                }
-            } else {
-                if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), typearg)) {
-                    continue;
-                }
-                typeArgTree = toptree;
-            }
-
-            if (typeVar.getUpperBound() != null) {
-                if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), typeVar.getUpperBound())) {
-                    continue;
-                }
-
-                commonAssignmentCheck(typeVar.getUpperBound(),
-                        typearg, typeArgTree,
-                        "type.argument.type.incompatible", false);
-            }
-
-            // Should we compare lower bounds instead of the annotations on the
-            // type variables?
-            if (!typeVar.getAnnotations().isEmpty()) {
-                if (!typearg.getEffectiveAnnotations().equals(typeVar.getEffectiveAnnotations())) {
-                    checker.report(Result.failure("type.argument.type.incompatible",
-                            typearg, typeVar),
-                            typeArgTree);
-                }
-            }
-
-        }
-    }
-    */
 
     /**
      * Indicates whether to skip subtype checks on the receiver when checking method invocability. A
