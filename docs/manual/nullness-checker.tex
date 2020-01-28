@@ -101,7 +101,7 @@ command-line option.)
   \label{nullness-lint-trustarraylenzero}%
   If you supply the \code{-Alint=trustArrayLenZero} command-line option, then a
   call to \code{Collection.toArray} will return an array with a non-null
-  component type if the argument is a field accesses where the field declaration
+  component type if the argument is a field access where the field declaration
   has a \refqualclasswithparams{common/value/qual}{ArrayLen}{0} annotation. See
   Section~\ref{nullness-collection-toarray} for a discussion.
 
@@ -490,7 +490,7 @@ hold:
       \item array creation tree of size 0, e.g. \<c.toArray(new String[0])>.
     \end{itemize}
 
-    \item array creation tree of the collection size method invocation
+    \item array creation tree with a collection \<size()> method invocation as argument
       \<c.toArray(new String[c.size()])>.
 \end{itemize}
 
@@ -498,8 +498,8 @@ hold:
 
 Additionally, when you supply the \code{-Alint=trustArrayLenZero} command-line
 option, a call to \code{Collection.toArray} will be estimated to return an array
-with a non-null component type by the Nullness Checker if the argument is a field
-accesses where the field declaration has a \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
+with a non-null component type if the argument is a field access where the field
+declaration has a \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
 annotation.
 
 This trusts the \<@ArrayLen(0)> annotation, but does not verify it. Run the
@@ -507,7 +507,8 @@ Constant Value Checker (see \chapterpageref{constant-value-checker}) to verify
 that annotation.
 
 Note: The nullness of the returned array doesn't depend on the passed array nullness.
-This is a fact about \sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])}.
+This is a fact about \sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])},
+not a limitation of this heuristic.
 
 
 \subsectionAndLabel{Run-time checks for nullness}{nullness-runtime-checks}
