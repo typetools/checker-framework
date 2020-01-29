@@ -23,6 +23,4 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 /tmp/plume-scripts/git-clone-related typetools guava
 
 cd ../guava
-export MAVEN_OPTS="-Xmx6g"
-export JAVA_TOOL_OPTIONS="-Xmx6g"
-cd guava && time mvn --debug -B compile -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
+cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
