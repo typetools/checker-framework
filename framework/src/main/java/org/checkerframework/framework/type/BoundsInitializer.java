@@ -978,20 +978,27 @@ public class BoundsInitializer {
         public abstract BoundPathNode copy();
     }
 
+    /** Represents an enclosing type in a path. */
     private static class EnclosingNode extends BoundPathNode {
 
+        /** Create an enclosing node. */
         EnclosingNode() {
             kind = Kind.Enclosing;
             typeKind = TypeKind.DECLARED;
         }
 
+        /**
+         * Create a copy of the node.
+         *
+         * @param template node to copy
+         */
         EnclosingNode(EnclosingNode template) {
             super(template);
         }
 
         @Override
         public void setType(AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
-            // Do nothing
+            // An enclosing type cannot be a type variable, so do nothing.
         }
 
         @Override
