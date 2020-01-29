@@ -19,8 +19,7 @@ public class BoundsAndDefaults {
 
     @NoDefaultQualifierForUse(TypeDeclDefaultTop.class)
     static @TypeDeclDefaultMiddle class MiddleBoundClass {
-        @TypeDeclDefaultMiddle
-        MiddleBoundClass() {}
+        @TypeDeclDefaultMiddle MiddleBoundClass() {}
     }
 
     @TypeDeclDefaultBottom MiddleBoundClass method(
