@@ -40,6 +40,13 @@ public class PurityChecker {
     /**
      * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
      * result that can be queried.
+     *
+     * @param statement the statement to check
+     * @param annoProvider the annotation provider
+     * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
+     * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
+     * @return information about whether the given statement is side-effect-free, deterministic, or
+     *     both
      */
     public static PurityResult checkPurity(
             TreePath statement,
