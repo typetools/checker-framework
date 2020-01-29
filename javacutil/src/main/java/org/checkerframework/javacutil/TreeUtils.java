@@ -794,6 +794,9 @@ public final class TreeUtils {
             default:
                 return null;
         }
+        if (receiver == null) {
+            return null;
+        }
 
         return TreeUtils.withoutParens(receiver);
     }
