@@ -126,16 +126,16 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameByClass(superAnno, SubstringIndexUnknown.class)) {
+            if (areSameByClass(superAnno, SubstringIndexUnknown.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(subAnno, SubstringIndexBottom.class)) {
+            if (areSameByClass(subAnno, SubstringIndexBottom.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(subAnno, SubstringIndexUnknown.class)) {
+            if (areSameByClass(subAnno, SubstringIndexUnknown.class)) {
                 return false;
             }
-            if (AnnotationUtils.areSameByClass(superAnno, SubstringIndexBottom.class)) {
+            if (areSameByClass(superAnno, SubstringIndexBottom.class)) {
                 return false;
             }
 

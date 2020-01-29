@@ -96,7 +96,6 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.Pair;
@@ -758,8 +757,7 @@ public abstract class GenericAnnotatedTypeFactory<
             Store store = getStoreBefore(tree);
             Value value = store.getValue(receiver);
             if (value != null) {
-                annotationMirror =
-                        AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
+                annotationMirror = getAnnotationByClass(value.getAnnotations(), clazz);
             }
         }
         // If the specific annotation wasn't in the store, look in the type factory.

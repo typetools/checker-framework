@@ -1,5 +1,3 @@
-Version 3.1.0, ??? ?, 2019
-
 All postcondition annotations are repeatable (e.g., `@EnsuresNonNull`,
 `@EnsuresNonNullIf`, ...).
 
@@ -9,12 +7,38 @@ Renamed wrapper annotations (which users should not write):
  * `@EnsuresQualifiers` => `@EnsuresQualifier.List`
  * `@RequiresQualifiers` => `@RequiresQualifier.List`
 
+Renamed -Anocheckjdk to -ApermitMissingJdk.
+The old version still works, for backward compatibility.
+
+Renamed -Alint=forbidnonnullarraycomponents to
+-Alint=soundArrayCreationNullness.  The old version still works, for
+backward compatibility.
+
+Implementation details:
+ * Deprecated QualifierHierarchy#getTypeQualifiers.
+ * Deprecated Analysis#Analysis(ProcessingEnvironment) and Analysis#Analysis(T,
+   int, ProcessingEnvironment); use Analysis#Analysis(), Analysis#Analysis(int),
+   Analysis#Analysis(T), and Analysis#Analysis(T, int) instead.
+
 ---------------------------------------------------------------------------
 
-Version 3.1.0, January 2, 2020
+Version 3.1.0, January 3, 2020
 
 Command-line option -AprintGitProperties prints information about the git
 repository from which the Checker Framework was compiled.
+
+Implementation details:
+ * Removed static cache in AnnotationUtils#areSameByClass and added
+   AnnotatedTypeFactory#areSameByClass that uses an instance cache.
+ * Removed static cache in AnnotationBuilder#fromName and #fromClass.
+ * ContractsUtils#getPreconditions takes an ExecutableElement as an argument.
+ * ContractsUtils#getContracts returns a Set.
+ * Moved ContractUtils.Contract to outer level.
+ * Renamed ConditionalPostcondition#annoResult to ConditionalPostcondition#resultValue.
+
+Closed issues:
+
+2867, 2897, 2972.
 
 ---------------------------------------------------------------------------
 

@@ -281,7 +281,8 @@ import org.checkerframework.javacutil.UserError;
 
     // Whether to check that the annotated JDK is correctly provided
     // org.checkerframework.common.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
-    "nocheckjdk",
+    "permitMissingJdk",
+    "nocheckjdk", // temporary, for backward compatibility
 
     // Whether to print debugging messages while processing the stub files
     // org.checkerframework.framework.stub.StubParser.debugStubParser
@@ -925,9 +926,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.messages = getMessages();
 
         this.visitor = createSourceVisitor();
-
-        // TODO: hack to clear out static caches.
-        AnnotationUtils.clear();
     }
 
     /**
@@ -1148,6 +1146,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 swTree);
     }
 
+    /** The name of the @SuppressWarnings annotation. */
+    private final String suppressWarningsClassName = SuppressWarnings.class.getCanonicalName();
     /**
      * Finds the tree that is a {@code @SuppressWarnings} annotation.
      *
@@ -1165,9 +1165,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         for (AnnotationTree annotationTree : annotations) {
-            if (AnnotationUtils.areSameByClass(
+            if (AnnotationUtils.areSameByName(
                     TreeUtils.annotationFromAnnotationTree(annotationTree),
-                    SuppressWarnings.class)) {
+                    suppressWarningsClassName)) {
                 return annotationTree;
             }
         }
@@ -1206,34 +1206,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
         return sb.toString();
     }
-
-    // Uses private fields, need to rewrite.
-    // public void dumpState() {
-    //     System.out.printf("SourceChecker = %s%n", this);
-    //     System.out.printf("  env = %s%n", env);
-    //     System.out.printf(
-    //             "    env.elementUtils = %s%n", ((JavacProcessingEnvironment) env).elementUtils);
-    //     System.out.printf(
-    //             "      env.elementUtils.types = %s%n",
-    //             ((JavacProcessingEnvironment) env).elementUtils.types);
-    //     System.out.printf(
-    //             "      env.elementUtils.enter = %s%n",
-    //             ((JavacProcessingEnvironment) env).elementUtils.enter);
-    //     System.out.printf(
-    //             "    env.typeUtils = %s%n", ((JavacProcessingEnvironment) env).typeUtils);
-    //     System.out.printf("  trees = %s%n", trees);
-    //     System.out.printf(
-    //             "    trees.enter = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).enter);
-    //     System.out.printf(
-    //             "    trees.elements = %s%n",
-    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements);
-    //     System.out.printf(
-    //             "      trees.elements.types = %s%n",
-    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements.types);
-    //     System.out.printf(
-    //             "      trees.elements.enter = %s%n",
-    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements.enter);
-    // }
 
     /**
      * Returns the localized long message corresponding for this key, and returns the defValue if no

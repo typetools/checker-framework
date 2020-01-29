@@ -509,24 +509,20 @@ equivalent to specifying every file in it whose name ends with
 \code{.astub}.  The stub path entries are delimited by
 \<File.pathSeparator> (`\<:>' for Linux and Mac, `\<;>' for Windows).
 
-The \<-Astubs> argument is for stub files that users create.
-A checker automatically reads some of its own stub files; see
+A checker automatically reads some of its own stub files, even without a
+\<-Astubs> command-line argument; see
 Section~\ref{creating-a-checker-annotated-jdk}.
 
-If a method appears in more than one stub file (or twice in the same
-stub file), then the annotations are merged. If any of the
-methods have different annotations from the same hierarchy on the same type,
-then the annotation from the last declaration is used.
 
-% \textbf{The following is not implemented yet}
-% A library writers should create a file \code{library.astub} on the
-% classpath (in the resources directory or the binary jars).
-% The Checker Framework automatically imports all the stub files named
-% \code{library.astub} found in the classpath.
+\subsectionAndLabel{Multiple specifications for a method}{stub-multiple-specifications}
 
-If both bytecode and a stub file provide information for the same
-element, the stub file information is used. In particular, an
-un-annotated type variable in a stub file is used instead of
+A file being compiled takes precedence over a stub file.  If file \<A.java>
+is being compiled, then any stub for class \<A> is ignored.
+
+A stub file takes precedence over bytecode, for elements in the stub file.
+If a stub file does not mention a method or field, its annotations are
+taken from bytecode.
+An un-annotated type variable in a stub file is used instead of
 annotations on a type variable in bytecode.
 This feature allows stub files to change the effective annotations in
 all possible situations.
@@ -537,11 +533,13 @@ Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get
 a warning whenever a stub file specification is redundant with
 bytecode annotations.
 
-A file being compiled takes precedence over a stub file.  If file \<A.java>
-is being compiled, then any stub for class \<A> is ignored.
+If a method appears in more than one stub file (or twice in the same
+stub file), then the annotations are merged. If any of the
+methods have different annotations from the same hierarchy on the same type,
+then the annotation from the last declaration is used.
 
-When a stub file is provided by the author of a checker, the stub file is used
-automatically, with no need for the user to supply a command-line option.
+% True for JDK 11 now; will soon be true for all JDK versions.
+The annotated JDK is read as a stub file.
 
 
 \subsectionAndLabel{Stub file format}{stub-format}
@@ -771,7 +769,7 @@ read whether the library's annotations are parsed.
 % LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
 % LocalWords:  jdk Astubs skipUses astub AskipUses toArray JDK6 xvzf javax
 % LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
-% LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java pre
+% LocalWords:  Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
 %  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
 %%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex

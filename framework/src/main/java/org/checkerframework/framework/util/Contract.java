@@ -241,7 +241,7 @@ public abstract class Contract {
          * {@code foo} is guaranteed to be {@code @NonNull} after a call to {@code method()} if that
          * call returns {@code false}.
          */
-        public final boolean annoResult;
+        public final boolean resultValue;
 
         /**
          * Create a new conditional postcondition.
@@ -250,15 +250,15 @@ public abstract class Contract {
          * @param annotation the type qualifier that {@code expression} should have
          * @param contractAnnotation the postcondition annotation that the programmer wrote; used
          *     for diagnostic messages
-         * @param annoResult whether the condition is the method returning true or false
+         * @param resultValue whether the condition is the method returning true or false
          */
         public ConditionalPostcondition(
                 String expression,
                 AnnotationMirror annotation,
                 AnnotationMirror contractAnnotation,
-                boolean annoResult) {
+                boolean resultValue) {
             super(Kind.CONDITIONALPOSTCONDITION, expression, annotation, contractAnnotation);
-            this.annoResult = annoResult;
+            this.resultValue = resultValue;
         }
 
         @Override
@@ -274,12 +274,12 @@ public abstract class Contract {
             }
 
             ConditionalPostcondition that = (ConditionalPostcondition) o;
-            return annoResult == that.annoResult;
+            return resultValue == that.resultValue;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(super.hashCode(), annoResult);
+            return Objects.hash(super.hashCode(), resultValue);
         }
 
         @Override
@@ -287,7 +287,7 @@ public abstract class Contract {
             String superToString = super.toString();
             return superToString.substring(0, superToString.length() - 1)
                     + ", annoResult="
-                    + annoResult
+                    + resultValue
                     + "}";
         }
     }

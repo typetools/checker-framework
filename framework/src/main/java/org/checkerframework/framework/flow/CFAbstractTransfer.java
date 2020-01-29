@@ -68,6 +68,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
+import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
@@ -280,14 +281,7 @@ public abstract class CFAbstractTransfer<
                     // on the overridden method.
                     analysis.atypeFactory
                             .getWholeProgramInference()
-                            .updateInferredMethodParameterTypes(
-                                    methodTree,
-                                    methodElem,
-                                    overriddenMethod,
-                                    analysis.getTypeFactory());
-                    analysis.atypeFactory
-                            .getWholeProgramInference()
-                            .updateInferredMethodReceiverType(
+                            .updateFromOverride(
                                     methodTree,
                                     methodElem,
                                     overriddenMethod,
@@ -514,10 +508,9 @@ public abstract class CFAbstractTransfer<
             ExecutableElement methodElement) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         FlowExpressionContext flowExprContext = null;
-        Set<Contract> preconditions = contracts.getPreconditions(methodElement);
+        Set<Precondition> preconditions = contracts.getPreconditions(methodElement);
 
-        for (Contract c : preconditions) {
-            Precondition p = (Precondition) c;
+        for (Precondition p : preconditions) {
             String expression = p.expression;
             AnnotationMirror annotation = p.annotation;
 
@@ -805,7 +798,7 @@ public abstract class CFAbstractTransfer<
                 // Updates inferred field type
                 analysis.atypeFactory
                         .getWholeProgramInference()
-                        .updateInferredFieldType(
+                        .updateFromFieldAssignment(
                                 (FieldAccessNode) lhs,
                                 rhs,
                                 analysis.getContainingClass(n.getTree()),
@@ -814,7 +807,7 @@ public abstract class CFAbstractTransfer<
                     && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
                 analysis.atypeFactory
                         .getWholeProgramInference()
-                        .updateInferredParameterType(
+                        .updateFromLocalAssignment(
                                 (LocalVariableNode) lhs,
                                 rhs,
                                 analysis.getContainingClass(n.getTree()),
@@ -837,7 +830,7 @@ public abstract class CFAbstractTransfer<
             // Updates the inferred return type of the method
             analysis.atypeFactory
                     .getWholeProgramInference()
-                    .updateInferredMethodReturnType(
+                    .updateFromReturn(
                             n,
                             classSymbol,
                             analysis.getContainingMethod(n.getTree()),
@@ -871,7 +864,7 @@ public abstract class CFAbstractTransfer<
             // Updates inferred field type
             analysis.atypeFactory
                     .getWholeProgramInference()
-                    .updateInferredFieldType(
+                    .updateFromFieldAssignment(
                             (FieldAccessNode) lhs,
                             rhs,
                             analysis.getContainingClass(n.getTree()),
@@ -904,8 +897,7 @@ public abstract class CFAbstractTransfer<
                             .getElement();
             analysis.atypeFactory
                     .getWholeProgramInference()
-                    .updateInferredConstructorParameterTypes(
-                            n, constructorElt, analysis.getTypeFactory());
+                    .updateFromObjectCreation(n, constructorElt, analysis.getTypeFactory());
         }
         return super.visitObjectCreation(n, p);
     }
@@ -952,8 +944,7 @@ public abstract class CFAbstractTransfer<
             // Updates the inferred parameter type of the invoked method
             analysis.atypeFactory
                     .getWholeProgramInference()
-                    .updateInferredMethodParameterTypes(
-                            n, receiverTree, method, analysis.getTypeFactory());
+                    .updateFromMethodInvocation(n, receiverTree, method, analysis.getTypeFactory());
         }
 
         return new ConditionalTransferResult<>(
@@ -998,7 +989,7 @@ public abstract class CFAbstractTransfer<
     protected void processPostconditions(
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        Set<Contract> postconditions = contracts.getPostconditions(methodElement);
+        Set<Postcondition> postconditions = contracts.getPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(n, tree, store, null, postconditions);
     }
 
@@ -1013,7 +1004,7 @@ public abstract class CFAbstractTransfer<
             S thenStore,
             S elseStore) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        Set<Contract> conditionalPostconditions =
+        Set<ConditionalPostcondition> conditionalPostconditions =
                 contracts.getConditionalPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(
                 n, tree, thenStore, elseStore, conditionalPostconditions);
@@ -1050,7 +1041,7 @@ public abstract class CFAbstractTransfer<
                 // side-effect-free, then the values that might have been changed by the method call
                 // are removed from the store before this method is called.
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
-                    if (((ConditionalPostcondition) p).annoResult) {
+                    if (((ConditionalPostcondition) p).resultValue) {
                         thenStore.insertOrRefine(r, anno);
                     } else {
                         elseStore.insertOrRefine(r, anno);

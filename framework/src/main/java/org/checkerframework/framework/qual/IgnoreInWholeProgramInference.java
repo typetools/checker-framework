@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
  * annotates.
  *
  * <p>See
- * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes#updateInferredFieldType
+ * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes#updateFromFieldAssignment
  *
  * @checker_framework.manual #whole-program-inference-ignores-some-code Whole-program inference
  *     ignores some code

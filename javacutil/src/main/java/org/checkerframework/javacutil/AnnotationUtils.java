@@ -44,22 +44,6 @@ public class AnnotationUtils {
         throw new AssertionError("Class AnnotationUtils cannot be instantiated.");
     }
 
-    /** Clear the static caches. */
-    // TODO: hack to clear out static state.
-    public static void clear() {
-        annotationClassNames.clear();
-    }
-
-    // **********************************************************************
-    // Factory Methods to create instances of AnnotationMirror
-    // **********************************************************************
-
-    private static final int ANNOTATION_CACHE_SIZE = 500;
-
-    /** Maps classes representing AnnotationMirrors to their names. */
-    private static final Map<Class<? extends Annotation>, String> annotationClassNames =
-            Collections.synchronizedMap(CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE));
-
     // **********************************************************************
     // Helper methods to handle annotations.  mainly workaround
     // AnnotationMirror.equals undesired property
@@ -161,12 +145,8 @@ public class AnnotationUtils {
      */
     public static boolean areSameByClass(
             AnnotationMirror am, Class<? extends Annotation> annoClass) {
-        String canonicalName = annotationClassNames.get(annoClass);
-        if (canonicalName == null) {
-            canonicalName = annoClass.getCanonicalName();
-            assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
-            annotationClassNames.put(annoClass, canonicalName);
-        }
+        String canonicalName = annoClass.getCanonicalName();
+        assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
         return areSameByName(am, canonicalName);
     }
 
@@ -517,20 +497,13 @@ public class AnnotationUtils {
      * type is TYPE_USE, then ElementKinds returned should be the same as those returned for TYPE
      * and TYPE_PARAMETER, but this method returns the empty set instead.
      *
-     * <p>If the Element is MODULE, the empty set is returned. This is so that this method can
-     * compile with Java 8.
-     *
      * @param elementType the elementType to find ElementKinds for
      * @return the set of {@link ElementKind}s corresponding to {@code elementType}
      */
     public static EnumSet<ElementKind> getElementKindsForElementType(ElementType elementType) {
         switch (elementType) {
             case TYPE:
-                return EnumSet.of(
-                        ElementKind.CLASS,
-                        ElementKind.INTERFACE,
-                        ElementKind.ANNOTATION_TYPE,
-                        ElementKind.ENUM);
+                return EnumSet.copyOf(ElementUtils.classElementKinds());
             case FIELD:
                 return EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
             case METHOD:
@@ -553,10 +526,13 @@ public class AnnotationUtils {
             case TYPE_USE:
                 return EnumSet.noneOf(ElementKind.class);
             default:
-                // TODO: Add actual case to check for the enum constant and return Set containing
-                // ElementKind.MODULE.  (Java 11)
-                if (elementType.name().contentEquals("MODULE")) {
-                    return EnumSet.noneOf(ElementKind.class);
+                // TODO: Use MODULE enum constants directly instead of looking them up by name.
+                // (Java 11)
+                if (elementType.name().equals("MODULE")) {
+                    return EnumSet.of(ElementKind.valueOf("MODULE"));
+                }
+                if (elementType.name().equals("RECORD_COMPONENT")) {
+                    return EnumSet.of(ElementKind.valueOf("RECORD_COMPONENT"));
                 }
                 throw new BugInCF("Unrecognized ElementType: " + elementType);
         }
@@ -585,8 +561,8 @@ public class AnnotationUtils {
         for (ExecutableElement meth :
                 ElementFilter.methodsIn(ad.getAnnotationType().asElement().getEnclosedElements())) {
             AnnotationValue defaultValue = meth.getDefaultValue();
-            if (defaultValue != null && !valMap.containsKey(meth)) {
-                valMap.put(meth, defaultValue);
+            if (defaultValue != null) {
+                valMap.putIfAbsent(meth, defaultValue);
             }
         }
         return valMap;
@@ -872,9 +848,17 @@ public class AnnotationUtils {
     // The Javadoc doesn't use @link because framework is a different project than this one
     // (javacutil).
     /**
-     * See
+     * Update a map, to add <code>newQual</code> to the set that <code>key</code> maps to. The
+     * mapped-to element is an unmodifiable set.
+     *
+     * <p>See
      * org.checkerframework.framework.type.QualifierHierarchy#updateMappingToMutableSet(QualifierHierarchy,
      * Map, Object, AnnotationMirror).
+     *
+     * @param map the map to update
+     * @param key the key whose value to update
+     * @param newQual the element to add to the given key's value
+     * @param <T> the key type
      */
     public static <T> void updateMappingToImmutableSet(
             Map<T, Set<AnnotationMirror>> map, T key, Set<AnnotationMirror> newQual) {

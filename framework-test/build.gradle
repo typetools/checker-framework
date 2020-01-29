@@ -8,7 +8,7 @@ sourceSets {
 dependencies {
     // If this version changes, then the version in maven-artifacts/poms/frameworktestPom.xml
     // and maven-artifacts/release/frameworktestReleasePom.xml must be changed, too.
-    implementation  group: 'junit', name: 'junit', version: '4.12'
+    implementation  group: 'junit', name: 'junit', version: '4.13'
     implementation project(':javacutil')
 
     if (Jvm.current().toolsJar) {
