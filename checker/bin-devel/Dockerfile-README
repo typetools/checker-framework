@@ -3,6 +3,31 @@ running Checker Framework tests reproducibly.
 
 The rest of this file explains how to build new Docker images:
 
+For opprop's Docker images building:
+
+# Run ./docker_image_update.py to update opprop's Docker images
+# automatically (pull the latest Docker images from upstream, then
+# rebuild and upload opprop's Docker images to opprop's Docker Hub).
+#
+# Usage: python3 ./docker_image_update.py [-h] names [names ...]
+#
+# Positional arguments:
+#   names       a list of docker images' names waiting for being rebuilt.
+#
+# For example, to update ubuntu-for-cfi-jdk8 and ubuntu-for-cfi-jdk11:
+# python3 ./docker_image_update.py jdk8 jdk11
+#
+# Before executing the script file, open it and check if these information
+# are correct:
+#
+# 1. upstream_dockerhub_username: username for upstream Docker Hub
+# 2. upstream_dockerhub_repository_prefix: prefix for upstream Docker Hub's repos
+# 3. dockerfile_prefix: prefix for Dockerfiles' names
+# 4. opprop_dockerhub_username: username for opprop Docker Hub
+# 5. opprop_dockerhub_repository_prefix: prefix for opprop Docker Hub's repos
+# 5. auth_config: username and password for opprop's Docker Hub
+#
+# Update these fields with the latest information.
 
 Preliminaries:
 
