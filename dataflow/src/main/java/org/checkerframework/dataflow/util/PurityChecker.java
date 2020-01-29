@@ -147,6 +147,13 @@ public class PurityChecker {
          */
         private final boolean assumeDeterministic;
 
+        /**
+         * Create a PurityCheckerHelper.
+         *
+         * @param annoProvider the annotation provider
+         * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
+         * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
+         */
         public PurityCheckerHelper(
                 AnnotationProvider annoProvider,
                 boolean assumeSideEffectFree,
