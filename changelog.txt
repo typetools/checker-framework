@@ -6,6 +6,9 @@ New command-line options:
 Renamed -Anocheckjdk to -ApermitMissingJdk.
 The old version still works, for backward compatibility.
 
+Renamed -Alint=forbidnonnullarraycomponents to
+-Alint=soundArrayCreationNullness.  The old version still works, for
+backward compatibility.
 
 Implementation details:
  * Deprecated QualifierHierarchy#getTypeQualifiers.
