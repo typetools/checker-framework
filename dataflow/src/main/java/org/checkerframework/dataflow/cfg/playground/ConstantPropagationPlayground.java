@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.playground;
 
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.cfg.JavaSource2CFGDOT;
+import org.checkerframework.dataflow.cfg.CFGVisualizeLauncher;
 import org.checkerframework.dataflow.constantpropagation.Constant;
 import org.checkerframework.dataflow.constantpropagation.ConstantPropagationStore;
 import org.checkerframework.dataflow.constantpropagation.ConstantPropagationTransfer;
@@ -21,6 +21,8 @@ public class ConstantPropagationPlayground {
         ConstantPropagationTransfer transfer = new ConstantPropagationTransfer();
         Analysis<Constant, ConstantPropagationStore, ConstantPropagationTransfer> analysis =
                 new Analysis<>(transfer);
-        JavaSource2CFGDOT.generateDOTofCFG(inputFile, outputDir, method, clazz, true, analysis);
+        CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
+        cfgVisualizeLauncher.generateDOTofCFG(
+                inputFile, outputDir, method, clazz, true, false, analysis);
     }
 }
