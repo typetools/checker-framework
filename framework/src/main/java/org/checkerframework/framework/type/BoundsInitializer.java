@@ -329,6 +329,11 @@ public class BoundsInitializer {
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
             initializeTypeArgs(type);
+            if (type.enclosingType != null) {
+                final BoundPathNode node = addPathNode(new EnclosingNode());
+                visit(type.enclosingType);
+                removePathNode(node);
+            }
             return null;
         }
 
@@ -935,7 +940,8 @@ public class BoundsInitializer {
             ArrayComponent,
             Intersection,
             Union,
-            TypeArg
+            TypeArg,
+            Enclosing
         }
 
         public Kind kind;
@@ -970,6 +976,33 @@ public class BoundsInitializer {
         public abstract AnnotatedTypeMirror getType(final AnnotatedTypeMirror parent);
 
         public abstract BoundPathNode copy();
+    }
+
+    private static class EnclosingNode extends BoundPathNode {
+
+        EnclosingNode() {
+            kind = Kind.Enclosing;
+            typeKind = TypeKind.DECLARED;
+        }
+
+        EnclosingNode(EnclosingNode template) {
+            super(template);
+        }
+
+        @Override
+        public void setType(AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
+            // Do nothing
+        }
+
+        @Override
+        public AnnotatedDeclaredType getType(final AnnotatedTypeMirror parent) {
+            return ((AnnotatedDeclaredType) parent).getEnclosingType();
+        }
+
+        @Override
+        public BoundPathNode copy() {
+            return new EnclosingNode(this);
+        }
     }
 
     private static class ExtendsNode extends BoundPathNode {
