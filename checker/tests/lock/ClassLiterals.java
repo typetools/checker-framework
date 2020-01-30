@@ -26,4 +26,7 @@ class ClassLiterals {
 
     @Holding("testpackage.ClassLiterals.method1()")
     static void method6() {}
+
+    @Holding("java.lang.Comparable.class")
+    static void method7() {}
 }

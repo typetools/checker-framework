@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.ArrayDeque;
@@ -135,9 +136,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
 
-        if (assignedTo == null && TreeUtils.getAssignmentContext(pathToExpression) != null) {
+        if (TreeUtils.enclosingNonParen(pathToExpression).first.getKind()
+                        == Tree.Kind.LAMBDA_EXPRESSION
+                || (assignedTo == null
+                        && TreeUtils.getAssignmentContext(pathToExpression) != null)) {
             // If the type of the assignment context isn't found, but the expression is assigned,
-            // then don't attempt to infere type arguments, because the Java type inferred will be
+            // then don't attempt to infer type arguments, because the Java type inferred will be
             // incorrect.  The assignment type is null when it includes uninferred type arguments.
             // For example:
             // <T> T outMethod()
@@ -145,6 +149,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             // inMethod(outMethod())
             // would require solving the constraints for both type argument inferences
             // simultaneously
+            // Also, if the parent of the expression is a lambda, then the type arguments cannot be
+            // inferred.
             Map<TypeVariable, AnnotatedTypeMirror> inferredArgs = new LinkedHashMap<>();
             handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
             return inferredArgs;
