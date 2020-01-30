@@ -42,26 +42,27 @@ import org.checkerframework.javacutil.TreeUtils;
  *                   or
  *               <li value="2">array creation tree of size 0, e.g. {@code c.toArray(new String[0])}.
  *             </ol>
- *         <li value="2">array creation tree of the collection size method invocation {@code
- *             c.toArray(new String[c.size()])}
+ *         <li value="2">array creation tree with a collection {@code size()} method invocation as
+ *             argument {@code c.toArray(new String[c.size()])}
  *       </ol>
  * </ol>
  *
  * <p>Additionally, when the lint option {@link NullnessChecker#LINT_TRUSTARRAYLENZERO} is provided,
  * a call to {@link Collection#toArray(Object[]) Collection.toArray(T[])} will be estimated to
- * return an array with non-null components by the Nullness Checker if the argument is a field
- * accesses where the field declaration has a {@code @ArrayLen(0)} annotation. This trusts the
- * {@code @ArrayLen(0)} annotation, but does not verify it. Run the Constant Value Checker to verify
- * that annotation.
+ * return an array with non-null components if the argument is a field access where the field
+ * declaration has a {@code @ArrayLen(0)} annotation. This trusts the {@code @ArrayLen(0)}
+ * annotation, but does not verify it. Run the Constant Value Checker to verify that annotation.
  *
  * <p>Note: The nullness of the returned array doesn't depend on the passed array nullness. This is
- * a fact about {@link Collection#toArray(Object[]) Collection.toArray(T[])}.
- *
- * <p>Note: Corresponding section in manual should be consistent with this Javadoc.
+ * a fact about {@link Collection#toArray(Object[]) Collection.toArray(T[])}, not a limitation of
+ * this heuristic.
  *
  * @checker_framework.manual #nullness-collection-toarray Nullness and conversions from collections
  *     to arrays
+ * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
+// Note: The {@code nullness-collection-toarray} section in the manual should be kept consistent
+// with this Javadoc.
 public class CollectionToArrayHeuristics {
     /** The processing environment. */
     private final ProcessingEnvironment processingEnv;
