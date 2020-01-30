@@ -290,7 +290,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return <tt>true</tt> if this list contains the specified element
      */
     @Pure
-    public boolean contains(Object o) {
+    public boolean contains(@Nullable Object o) {
         return indexOf(o) >= 0;
     }
 
@@ -302,7 +302,7 @@ public class ArrayList<E> extends AbstractList<E>
      * or -1 if there is no such index.
      */
     @Pure
-    public int indexOf(Object o) {
+    public int indexOf(@Nullable Object o) {
         if (o == null) {
             for (int i = 0; i < size; i++)
                 if (elementData[i]==null)
@@ -323,7 +323,7 @@ public class ArrayList<E> extends AbstractList<E>
      * or -1 if there is no such index.
      */
     @Pure
-    public int lastIndexOf(Object o) {
+    public int lastIndexOf(@Nullable Object o) {
         if (o == null) {
             for (int i = size-1; i >= 0; i--)
                 if (elementData[i]==null)
@@ -516,7 +516,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param o element to be removed from this list, if present
      * @return <tt>true</tt> if this list contained the specified element
      */
-    public boolean remove(Object o) {
+    public boolean remove(@Nullable Object o) {
         if (o == null) {
             for (int index = 0; index < size; index++)
                 if (elementData[index] == null) {
