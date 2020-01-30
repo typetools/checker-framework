@@ -201,35 +201,28 @@ public class LockExpressionIsFinal {
         // Test expressions that are not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
         @GuardedBy("java.lang.String.class") Object guarded4;
         // :: error: (expression.unparsable.type.invalid)
-        @GuardedBy("c1.getFieldPure(b ? c1 : o1, c1)")
-        Object guarded5;
+        @GuardedBy("c1.getFieldPure(b ? c1 : o1, c1)") Object guarded5;
 
         @GuardedBy(
                 "c1.field.field.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field")
         Object guarded6;
 
-        @GuardedBy("c1.field.field.field.getFieldPure2().getFieldDeterministic().field")
-        Object guarded7;
+        @GuardedBy("c1.field.field.field.getFieldPure2().getFieldDeterministic().field") Object guarded7;
 
         // The following negative test cases are the same as the one above but with one modification
         // in each.
 
         // :: error: (lock.expression.not.final)
-        @GuardedBy("c1.field.field2.field.getFieldPure2().getFieldDeterministic().field")
-        Object guarded8;
+        @GuardedBy("c1.field.field2.field.getFieldPure2().getFieldDeterministic().field") Object guarded8;
         // :: error: (lock.expression.not.final)
-        @GuardedBy("c1.field.field.field.getField().getFieldDeterministic().field")
-        Object guarded9;
+        @GuardedBy("c1.field.field.field.getField().getFieldDeterministic().field") Object guarded9;
 
         // Additional test cases to test that method parameters (in this case the parameters to
         // getFieldPure) are parsed.
-        @GuardedBy("c1.field.field.field.getFieldPure(c1, c1).getFieldDeterministic().field")
-        Object guarded10;
-        @GuardedBy("c1.field.field.field.getFieldPure(c1, o1).getFieldDeterministic().field")
-        Object guarded11;
+        @GuardedBy("c1.field.field.field.getFieldPure(c1, c1).getFieldDeterministic().field") Object guarded10;
+        @GuardedBy("c1.field.field.field.getFieldPure(c1, o1).getFieldDeterministic().field") Object guarded11;
         // :: error: (lock.expression.not.final)
-        @GuardedBy("c1.field.field.field.getFieldPure(c1, o2).getFieldDeterministic().field")
-        Object guarded12;
+        @GuardedBy("c1.field.field.field.getFieldPure(c1, o2).getFieldDeterministic().field") Object guarded12;
 
         // Test that @GuardedBy annotations on various tree kinds inside a method are visited
 
