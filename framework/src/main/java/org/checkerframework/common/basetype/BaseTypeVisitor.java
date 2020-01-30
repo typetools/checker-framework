@@ -669,7 +669,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 PurityChecker.checkPurity(
                         atypeFactory.getPath(node.getBody()),
                         atypeFactory,
-                        checker.hasOption("assumeSideEffectFree"));
+                        checker.hasOption("assumeSideEffectFree")
+                                || checker.hasOption("assumePure"),
+                        checker.hasOption("assumeDeterministic")
+                                || checker.hasOption("assumePure"));
         if (!r.isPure(kinds)) {
             reportPurityErrors(r, node, kinds);
         }
