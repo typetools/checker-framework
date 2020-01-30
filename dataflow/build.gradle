@@ -8,3 +8,7 @@ shadowJar {
     relocate 'org.checkerframework.dataflow', 'org.checkerframework.shaded.dataflow'
     relocate 'org.checkerframework.javacutil', 'org.checkerframework.shaded.javacutil'
 }
+
+artifacts {
+    archives shadowJar
+}
