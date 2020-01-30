@@ -46,5 +46,5 @@ public @interface DefaultFor {
     String[] variableNames() default {};
 
     /** @return exceptions to regular exception rules. See {@link #variableNames}. */
-    String[] variableNamesExcept() default {};
+    String[] variableNamesExceptions() default {};
 }
