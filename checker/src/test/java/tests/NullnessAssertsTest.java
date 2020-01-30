@@ -10,11 +10,11 @@ import org.junit.runners.Parameterized.Parameters;
  * JUnit tests for the Nullness checker (that uses the Freedom Before Commitment type system for
  * initialization).
  */
-public class NullnessFbcTestWithAsserts extends CheckerFrameworkPerDirectoryTest {
+public class NullnessAssertsTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
-    public NullnessFbcTestWithAsserts(List<File> testFiles) {
-        // TODO: remove forbidnonnullarraycomponents option once it's no
+    public NullnessAssertsTest(List<File> testFiles) {
+        // TODO: remove soundArrayCreationNullness option once it's no
         // longer needed.  See issue #986:
         // https://github.com/typetools/checker-framework/issues/986
         super(
@@ -25,7 +25,7 @@ public class NullnessFbcTestWithAsserts extends CheckerFrameworkPerDirectoryTest
                 "-AassumeAssertionsAreEnabled",
                 "-Anomsgtext",
                 "-Xlint:deprecation",
-                "-Alint=forbidnonnullarraycomponents,"
+                "-Alint=soundArrayCreationNullness,"
                         + NullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }
 
