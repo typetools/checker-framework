@@ -110,8 +110,10 @@ import org.checkerframework.javacutil.UserError;
     "skipDefs",
     "onlyDefs",
 
-    // Unsoundly ignore side effects
+    // Unsoundly assume all methods have no side effects, are deterministic, or both.
     "assumeSideEffectFree",
+    "assumeDeterministic",
+    "assumePure",
 
     // Whether to assume that assertions are enabled or disabled
     // org.checkerframework.framework.flow.CFCFGBuilder.CFCFGBuilder

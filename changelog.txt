@@ -1,9 +1,20 @@
+New command-line options:
+  -AassumeDeterministic Unsoundly assume that every method is deterministic
+  -AassumePure Unsoundly assume that every method is pure
+
+
 Renamed -Anocheckjdk to -ApermitMissingJdk.
 The old version still works, for backward compatibility.
 
+Renamed -Alint=forbidnonnullarraycomponents to
+-Alint=soundArrayCreationNullness.  The old version still works, for
+backward compatibility.
 
 Implementation details:
  * Deprecated QualifierHierarchy#getTypeQualifiers.
+ * Deprecated Analysis#Analysis(ProcessingEnvironment) and Analysis#Analysis(T,
+   int, ProcessingEnvironment); use Analysis#Analysis(), Analysis#Analysis(int),
+   Analysis#Analysis(T), and Analysis#Analysis(T, int) instead.
 
 ---------------------------------------------------------------------------
 
