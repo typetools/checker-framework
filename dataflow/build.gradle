@@ -2,3 +2,13 @@ dependencies {
     implementation project(':javacutil')
     implementation project(':checker-qual')
 }
+
+shadowJar {
+    archiveFileName = "dataflow-shaded.jar"
+    relocate 'org.checkerframework.dataflow', 'org.checkerframework.shaded.dataflow'
+    relocate 'org.checkerframework.javacutil', 'org.checkerframework.shaded.javacutil'
+}
+
+artifacts {
+    archives shadowJar
+}
