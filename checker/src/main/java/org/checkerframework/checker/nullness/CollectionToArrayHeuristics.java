@@ -49,7 +49,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>Additionally, when the lint option {@link NullnessChecker#LINT_TRUSTARRAYLENZERO} is provided,
  * a call to {@link Collection#toArray(Object[]) Collection.toArray(T[])} will be estimated to
- * return an array with non-null components if the argument is a field access where the field
+ * return an array with a non-null component type if the argument is a field access where the field
  * declaration has a {@code @ArrayLen(0)} annotation. This trusts the {@code @ArrayLen(0)}
  * annotation, but does not verify it. Run the Constant Value Checker to verify that annotation.
  *
@@ -61,8 +61,9 @@ import org.checkerframework.javacutil.TreeUtils;
  *     to arrays
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
-// Note: The {@code nullness-collection-toarray} section in the manual should be kept consistent
-// with this Javadoc.
+// Note: The https://checkerframework.org/manual/#nullness-collection-toarray section in the manual,
+// in file ../../../../../../../docs/manual/nullness-checker.tex, should be kept consistent with
+// this Javadoc.
 public class CollectionToArrayHeuristics {
     /** The processing environment. */
     private final ProcessingEnvironment processingEnv;
