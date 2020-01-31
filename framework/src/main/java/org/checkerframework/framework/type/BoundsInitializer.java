@@ -930,13 +930,20 @@ public class BoundsInitializer {
         }
     }
 
-    // BoundPathNode's are a step in a "type path" that are used to
+    /** BoundPathNode's are a step in a "type path". */
     private abstract static class BoundPathNode {
+
+        /** Kinds of {@link BoundPathNode}s. */
         enum Kind {
+            /** Intersection kind */
             Extends,
+            /** Intersection kind */
             Super,
+            /** Intersection kind */
             UpperBound,
+            /** Intersection kind */
             LowerBound,
+            /** Intersection kind */
             ArrayComponent,
             /** Intersection kind */
             Intersection,
