@@ -419,9 +419,9 @@ public class WholeProgramInferenceScenesStorage {
      * org.checkerframework.framework.qual.InvisibleQualifier} meta-annotation, also return true.
      *
      * <p>TODO: Merge functionality somewhere else with {@link
-     * org.checkerframework.framework.util.defaults.QualifierDefaults}.
-     * Look into the createQualifierDefaults method in {@link GenericAnnotatedTypeFactory}
-     * (which uses the QualifierDefaults class linked above) before changing anything here. See Issue 683
+     * org.checkerframework.framework.util.defaults.QualifierDefaults}. Look into the
+     * createQualifierDefaults method in {@link GenericAnnotatedTypeFactory} (which uses the
+     * QualifierDefaults class linked above) before changing anything here. See Issue 683
      * https://github.com/typetools/checker-framework/issues/683
      */
     private boolean shouldIgnore(
