@@ -598,7 +598,7 @@ then the unification (lub) is \<@Nullable>, and so is the return type.
 
 
 
-\subsectionAndLabel{Relationship to subtyping and generics}{qualifier-polymorhism-vs-subtyping}
+\subsectionAndLabel{Relationship to subtyping and generics}{qualifier-polymorphism-vs-subtyping}
 
 Qualifier polymorphism has the same purpose and plays the same role as
 Java's generics.  You use them in the same cases, such as:
@@ -854,10 +854,19 @@ type-check) than writing just
   void m(@Nullable Object obj)
 \end{Verbatim}
 
-\sectionAndLabel{Classes with implicit qualifier parameters}{class-qualifier-polymorphism}
+\sectionAndLabel{Class qualifier parameters}{class-qualifier-polymorphism}
 
-The Checker Framework supports type \emph{qualifier} polymorphism for classes.  This is similar to
-Java's generic classes, but is used in situations where you cannot use Java generics.
+The Checker Framework supports type \emph{qualifier} polymorphism for classes.
+Java generic classes permit you to supply a type argument to a generic
+class, as in \code{List<@Nullable String>}.
+Class qualifier parameters permit you to supply a type qualifier (only,
+without a Java basetype) to any
+class (generic or not).
+This is useful when the class hard-codes a type internally (as
+\<StringBuffer> hard-codes \<Character>), but you wish to apply a qualifier
+to it, such as to distinguish \<StringBuffer>s that contain tainted
+characters from those that contain untainted characters.  (For a discussion
+of tainting, see \chapterpageref{tainting-checker}.)
 
 To add a qualifier parameter to a class, annotate its declaration with \refqualclass{framework/qual}{HasQualifierParameter}.
 
@@ -866,8 +875,7 @@ To add a qualifier parameter to a class, annotate its declaration with \refqualc
 class StringBuffer { ... }
 \end{Verbatim}
 
-\<@HasQualifierParameter> analogizes \<StringBuffer> to a
-generic collection.  A qualifier on a use of \<StringBuffer> is treated as
+A qualifier on a use of \<StringBuffer> is treated as
 appearing both on the \<StringBuffer> and on its conceptual type argument.  That
 is:\\
 \begin{tt}
@@ -878,47 +886,48 @@ is:\\
 If two types have different qualifier arguments, they have no subtyping
 relationship.  (This is ``invariant subtyping'', also used by Java for
 generic classes.)  In particular, \<@Untainted StringBuffer> is not a
-subtype of \<@Tainted StringBuffer>; an attepmt to cast between them (in
-either direction) will yield an \<invariant.cast.unsafe> error.
+subtype of \<@Tainted StringBuffer>; an attempt to cast between them, in
+either direction, will yield an \<invariant.cast.unsafe> error.
 
-If a class extends a \<@HasQualifierParameter> class (or implements a
-\<@HasQualifierParameter> interface), then that class must also be marked
+If a subclass extends a \<@HasQualifierParameter> class (or implements a
+\<@HasQualifierParameter> interface), then the subclass must also be marked
 \<@HasQualifierParameter>.
 
-The default of qualifier for uses of types with a qualifier parameter is the polymorphic qualifier
-within the class that declares the type.
+Within a class with a qualifier parameter,
+the default qualifier for uses of that class is the polymorphic qualifier.
 
-\subsectionAndLabel{Using class qualifier parameters in method signatures}{class-qual-param-method}
 
-A polymorphic qualifier in a method signature has two different meanings.
-\begin{enumerate}
-  \item If the receiver type has a qualifier parameter and is annotated with a polymorphic qualifier,
-  then at a call site all polymorphic annotations are instantiated to
-  the same qualifier as the type of the receiver expression of the method call.
-  \item If the receiver type does not have a qualifier parameter or if it is not annotated with a
-  polymorphic annotation, then the polymorphic qualifiers are instantiated as explained in
-  Section~\ref{method-qualifier-polymorphism}.
-\end{enumerate}
+\subsectionAndLabel{Resolving polymorphism when the receiver type has a polymorphic qualifier}{class-qual-param-method}
 
-In a class with a class qualifier parameter, a formal parameter type should
-sometimes have the same qualifier as the class qualifier parameter. To express
-this, annotate both the receiver type and the parameter type with the
-polymorphic qualifier for the type system. For example,
+Qualifier polymorphism changes the rules for instantiating polymorphic
+qualifiers (Section~\ref{method-qualifier-polymorphism}).
+If the receiver type has a qualifier parameter and is annotated with a polymorphic qualifier,
+then at a call site all polymorphic annotations are instantiated to
+the same qualifier as the type of the receiver expression of the method call.
+Otherwise, use the rules of Section~\ref{method-qualifier-polymorphism}
+
+For example, consider
+
 \begin{Verbatim}
 @HasQualifierParameter(Tainted.class)
 class Buffer {
   void append(@PolyTainted Buffer this, @PolyTainted String s) { ... }
 }
 \end{Verbatim}
-Because \<@PolyTainted> applies to a type with a qualifier parameter, then all
+
+\noindent
+Because \<@PolyTainted> applies to a type (\<Buffer>) with a qualifier parameter, all
 uses of \<@PolyTainted> are instantiated to the qualifiers on the type of
 the receiver expression at call sites to \<append>.
+This means that the call \<myUntaintedBuffer.append(myTaintedString)> is
+illegal, though \<myTaintedBuffer.append(myUntaintedString)> is permitted.
+
 
 \subsectionAndLabel{Using class qualifier parameters in the type of a field}{class-qual-param-field}
 
-In a class with a class qualifier parameter, sometimes the type of a field
-should have the same qualifier as the class qualifier parameter. To express
-this, annotate the field as with the polymorphic qualifier for the type system.
+To express that the type of a field
+should have the same qualifier as the class qualifier parameter,
+annotate the field type with the polymorphic qualifier for the type system.
 
 \begin{Verbatim}
 @HasQualifierParameter(Tainted.class)
@@ -930,9 +939,10 @@ class Buffer {
 At a field access where the declared type of the field has a polymorphic
 qualifier, that polymorphic qualifier is instantiated to the qualifier on the
 type of the receiver of the field access (or in the case of type variables, the
-qualifier on the upper bound).
+qualifier on the upper bound).  That is, the qualifier on \<myBuffer.field>
+is that same as that on \<myBuffer>.
 
-\subsectionAndLabel{Implicit qualifier parameters by default}{default-has-qualifier-parameter}
+\subsectionAndLabel{Qualifier parameters by default}{default-has-qualifier-parameter}
 
 If many classes in a project should have \<@HasQualifierParameter>, it's
 possible to enable it on all classes in a package by default. Writing
@@ -950,7 +960,7 @@ package mypackage;
 
 When using \<@HasQualifierParameter> on a package, it's possible to disable it
 for a specific class using \refqualclass{framework/qual}{NoQualifierParameter}.
-Writing this on a class indicates it has no implicit qualifier parameter and
+Writing this on a class indicates it has no class qualifier parameter and
 \<@HasQualifierParameter> will not be enabled by default. Like
 \<@HasQualifierParameter>, it takes one or more top annotations. It is illegal
 to explicitly write both \<@HasQualifierParameter> and \<@NoQualifierParameter>
@@ -991,4 +1001,7 @@ on the same class for the same hierarchy.
 % LocalWords:  arg param MethodTaintingParam Util meth value1 h2 TopType
 % LocalWords:  nestedHolder nestedHolder2 extendsHolder PolyTainted Poly
 %%  LocalWords:  BottomType CharSequence SomeType OtherType MyList1a
-%%  LocalWords:  MyList2a
+%%  LocalWords:  MyList2a polymorphism'' bound'' LowerBound UpperBound
+% LocalWords:  JavaUpperBound JavaLowerBound MyTypeAnnotation myBuffer
+% LocalWords:  HasQualifierParameter myUntaintedBuffer myTaintedString
+% LocalWords:  myTaintedBuffer myUntaintedString
