@@ -938,9 +938,13 @@ public class BoundsInitializer {
             UpperBound,
             LowerBound,
             ArrayComponent,
+            /** Intersection kind */
             Intersection,
+            /** Union kind */
             Union,
+            /** TypeArg kind */
             TypeArg,
+            /** Enclosing kind */
             Enclosing
         }
 
@@ -1011,7 +1015,7 @@ public class BoundsInitializer {
             return new EnclosingNode(this);
         }
     }
-
+    /** Represents an extends type in a path. */
     private static class ExtendsNode extends BoundPathNode {
 
         ExtendsNode() {
