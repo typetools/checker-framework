@@ -12,7 +12,7 @@
     </description>
 
     <groupId>org.checkerframework</groupId>
-    <artifactId>dataflow</artifactId>
+    <artifactId>dataflow-shaded</artifactId>
 
     <licenses>
         <license>
