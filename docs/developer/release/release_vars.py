@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding: utf-8
 """
 release_vars.py
@@ -160,6 +160,7 @@ DATAFLOW_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "dataflow", "build", "libs")
 DATAFLOW_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+".jar")
 DATAFLOW_SOURCE_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-source.jar")
 DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-javadoc.jar")
+DATAFLOW_SHADED_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow-shaded.jar")
 
 FRAMEWORKTEST_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework-test", "build", "libs")
 FRAMEWORKTEST_BINARY = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+".jar")
@@ -199,6 +200,7 @@ CHECKER_QUAL_ANDROID_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualA
 JDK8_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml')
 JAVACUTIL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml')
 DATAFLOW_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowReleasePom.xml')
+DATAFLOW_SHADED_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowShadedReleasePom.xml')
 FRAMEWORKTEST_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'frameworktestReleasePom.xml')
 
 BUILD_REPOS = (CHECKER_FRAMEWORK, ANNO_TOOLS)

@@ -28,7 +28,6 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -85,7 +84,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyLength.class, POLY);
 
         this.postInit();
@@ -166,7 +164,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final class SameLenQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
-        /** @param factory MultiGraphFactory to use to construct this */
+        /** @param factory the MultiGraphFactory to use to construct this */
         public SameLenQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
         }
@@ -207,9 +205,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             } else {
                 // the glb is either one of the annotations (if the other is top), or bottom.
-                if (AnnotationUtils.areSameByClass(a1, SameLenUnknown.class)) {
+                if (areSameByClass(a1, SameLenUnknown.class)) {
                     return a2;
-                } else if (AnnotationUtils.areSameByClass(a2, SameLenUnknown.class)) {
+                } else if (areSameByClass(a2, SameLenUnknown.class)) {
                     return a1;
                 } else {
                     return BOTTOM;
@@ -235,12 +233,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             } else {
                 // the lub is either one of the annotations (if the other is bottom), or top.
-                if (AnnotationUtils.areSameByClass(a1, SameLenBottom.class)) {
+                if (areSameByClass(a1, SameLenBottom.class)) {
                     return a2;
-                } else if (AnnotationUtils.areSameByClass(a2, SameLenBottom.class)) {
+                } else if (areSameByClass(a2, SameLenBottom.class)) {
                     return a1;
-                } else if (AnnotationUtils.areSameByClass(a1, PolySameLen.class)
-                        && AnnotationUtils.areSameByClass(a2, PolySameLen.class)) {
+                } else if (areSameByClass(a1, PolySameLen.class)
+                        && areSameByClass(a2, PolySameLen.class)) {
                     return a1;
                 } else {
                     return UNKNOWN;
@@ -250,12 +248,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameByClass(subAnno, SameLenBottom.class)) {
+            if (areSameByClass(subAnno, SameLenBottom.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(superAnno, SameLenUnknown.class)) {
+            } else if (areSameByClass(superAnno, SameLenUnknown.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(subAnno, PolySameLen.class)) {
-                return AnnotationUtils.areSameByClass(superAnno, PolySameLen.class);
+            } else if (areSameByClass(subAnno, PolySameLen.class)) {
+                return areSameByClass(superAnno, PolySameLen.class);
             } else if (AnnotationUtils.hasElementValue(subAnno, "value")
                     && AnnotationUtils.hasElementValue(superAnno, "value")) {
                 List<String> subArrays = getValueOfAnnotationWithStringArgument(subAnno);
@@ -298,9 +296,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     Receiver rec = FlowExpressions.internalReprOf(this.atypeFactory, sequenceTree);
                     if (mayAppearInSameLen(rec)) {
                         String recString = rec.toString();
-                        if (AnnotationUtils.areSameByClass(sequenceAnno, SameLenUnknown.class)) {
+                        if (areSameByClass(sequenceAnno, SameLenUnknown.class)) {
                             sequenceAnno = createSameLen(Collections.singletonList(recString));
-                        } else if (AnnotationUtils.areSameByClass(sequenceAnno, SameLen.class)) {
+                        } else if (areSameByClass(sequenceAnno, SameLen.class)) {
                             // Add the sequence whose length is being used to the annotation.
                             List<String> exprs =
                                     getValueOfAnnotationWithStringArgument(sequenceAnno);
@@ -390,7 +388,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
         for (AnnotationMirror anno : annos) {
-            if (AnnotationUtils.areSameByClass(anno, SameLen.class)) {
+            if (areSameByClass(anno, SameLen.class)) {
                 exprs.addAll(getValueOfAnnotationWithStringArgument(anno));
             }
         }

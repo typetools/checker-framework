@@ -25,7 +25,9 @@ import org.checkerframework.framework.qual.QualifierArgument;
  *      )
  *      public boolean tryShiftIndex(&#64;NonNegative int x) {
  *          int newEnd = end - x;
- *          if (newEnd &#60; 0) return false;
+ *          if (newEnd &#60; 0) {
+ *             return false;
+ *          }
  *          end = newEnd;
  *          return true;
  *      }

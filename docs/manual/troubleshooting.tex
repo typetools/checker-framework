@@ -65,6 +65,11 @@ This section describes some possible problems and solutions.
 
 \begin{itemize}
 \item
+  \label{no-such-field-error-release}
+  An error that includes \<java.lang.NoSuchFieldError: RELEASE"> means that
+  you are not using the correct compiler (you are not using a Java 9+ compiler).
+
+\item
 If you get the error
 
 %BEGIN LATEX
@@ -101,7 +106,7 @@ If you get an error like one of the following,
 
 \noindent
 then the problem may be that you have not set the \code{CHECKERFRAMEWORK} environment
-variable, as described in Section~\ref{javac-installation}.  Or, maybe
+variable, as described in Section~\ref{javac-wrapper}.  Or, maybe
 you made it a user variable instead of a system variable.
 
 \item
@@ -118,7 +123,7 @@ The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
 \noindent
 then you are likely \textbf{not} using the Checker Framework compiler.  Use
 either \code{\$CHECKERFRAMEWORK/checker/bin/javac} or one of the alternatives
-described in Section~\ref{javac-installation}.
+described in Section~\ref{javac-wrapper}.
 \end{sloppypar}
 
 
@@ -200,6 +205,7 @@ the pre-compiled distribution.
 
 
 \item
+\label{no-such-field-error}
 A \<NoSuchFieldError> such as this:
 
 \begin{Verbatim}
@@ -266,7 +272,8 @@ Unfortunately, Error Prone uses an old version of the library, so you
 cannot use both Error Prone and the current Checker Framework (because each
 one depends on a different version of the dataflow library).
 
-You can use an older version of the Checker Framework (the one that Error
+Until the Error Prone tool is \ahref{https://github.com/google/error-prone/issues/1404}{fixed},
+you can use an older version of the Checker Framework (the one that Error
 Prone is built on), or you can use a switch that causes your build to use either
 Error Prone or the Checker Framework, but not both.
 The
@@ -439,7 +446,7 @@ To solve the problem, add the missing annotations to the library (see
 Chapter~\ref{annotating-libraries}).  Depending on the checker, the
 annotations might be expressed in the form of stub files (which appear
 together with the checker's source code, such as in file
-\code{checker/src/org/checkerframework/checker/interning/jdk.astub} for the
+\code{checker/src/org/checkerframework/checker/interning/jdk8.astub} for the
 Interning Checker) or in the form of annotated libraries (which appear
 under \code{checker/jdk/}, such as at \code{checker/jdk/nullness/src/} for
 the Nullness Checker.
@@ -709,17 +716,27 @@ Section~\ref{stub}.
 
 If the library is annotated but has some incorrect or missing annotations,
 then please open a pull request that adds the annotations.
-You can find the annotated source for non-JDK libraries in
-\url{https://github.com/typetools/}.
-You can find the annotated JDK source in the
-\ahref{https://github.com/typetools/checker-framework}{Checker Framework
-  GitHub repository}, either in subdirectories of
-\ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
-or in files named \<jdk.astub> in the checker's implementation directory.
-
-If the library is not annotated at all, you can fork it, add annotations,
-and propose that your annotated version be moved into
-\url{https://github.com/typetools/}.
+\begin{itemize}
+\item
+  Non-JDK libraries:  You can find the annotated source in
+  \url{https://github.com/typetools/}.
+  If the library does not exist there, then it has no annotations yet.
+  You can fork it, add annotations,
+  and propose that your annotated version be moved into
+  \url{https://github.com/typetools/}.
+\item
+  JDK:  You need to open two pull requests, because there are two versions of the
+  annotated JDK.
+  \begin{itemize}
+  \item JDK 8: The annotated JDK source is in the
+    \ahref{https://github.com/typetools/checker-framework}{Checker Framework
+      GitHub repository}, either in a subdirectory of
+    \ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
+    or in files named \<jdk.astub> in the checker's implementation directory.
+  \item
+    JDK 11: The annotated JDK source is in \url{https://github.com/typetools/jdk}.
+  \end{itemize}
+\end{itemize}
 
 For either approach, please see \chapterpageref{annotating-libraries} for
 tips about writing library annotations.
@@ -740,10 +757,7 @@ the Checker Framework, rather than an official release.
 % checkers and of the checker framework.  It may also help you to debug
 % problems more effectively.
 
-The Checker Framework can be easily built on Unix (Linux and Mac).  You
-might have trouble building on Windows.  If so, you can switch to Unix (at
-least for building, if not for running, the Checker Framework) or you can
-report the problems to the Checker Framework developers.
+Note the JDK requirements (Section~\ref{installation}).
 
 
 \subsectionAndLabel{Install prerequisites}{building-prerequisites}
@@ -751,26 +765,31 @@ report the problems to the Checker Framework developers.
 You need to install several packages in order to build the Checker
 Framework.
 Follow the instructions for your operating system.
+If your OS is not listed, adapt the instructions for an existing OS;
+for example, other Linux distributions will be similar to Ubuntu.
 
 \begin{description}
 \item[Ubuntu]
   Run the following commands:
 
-% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk8-plus
+% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk11-plus
 \begin{Verbatim}
 sudo apt-get -qqy update
-sudo apt-get -qqy install ant cpp git gradle junit4 libcurl3-gnutls \
- make maven mercurial unzip wget openjdk-8-jdk \
- dia hevea latexmk librsvg2-bin maven python-pip \
+sudo apt-get -qqy install \
+ openjdk-11-jdk \
+ ant cpp git gradle jq libcurl3-gnutls \
+ make maven mercurial python3-pip python3-requests unzip wget \
+ dia hevea imagemagick latexmk librsvg2-bin maven rsync \
  texlive-font-utils texlive-fonts-recommended \
  texlive-latex-base texlive-latex-extra texlive-latex-recommended
+pip3 install html5validator
 \end{Verbatim}
 
-% Building Checker Framework from source on Mac OS
+  You may have to answer questions about which time zone your computer is in.
 
 \item[Mac OS]
   If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
-  the following commands (you may need to update the version number \<2.31>):
+  the following commands:
 
 \begin{Verbatim}
 brew update
@@ -779,7 +798,7 @@ brew cask install java
 brew cask install mactex
 \end{Verbatim}
 
-Make a \<latex> directory and copy \<hevea.sty> file into it:
+Make a \<latex> directory and copy \<hevea.sty> file into it (you may need to update the version number \<2.31>):
 
 \begin{Verbatim}
 mkdir -p $HOME/Library/texmf/tex/latex
@@ -830,8 +849,7 @@ You might want to add an \<export CHECKERFRAMEWORK=...> line to your
 %  * the location of tools.jar, below.
 %  * the default location of CTSYM, in checker/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK
-8 installation (not the JRE installation, and not JDK 7 or earlier).
-This needs to be an Oracle JDK.
+8 or JDK 11 installation (not the JRE installation, and not JDK 7 or earlier).
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
@@ -974,14 +992,15 @@ then we recommend that you enable CI builds,
 so that you learn quickly of any errors that creep into your fork.
 
 Follow the
-\ahref{https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline}{Azure
+\ahref{https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops}{Azure
   Pipelines getting started directions}.
 
 To save time, by default the CI jobs download a pre-built version of
 the JDK rather than building the JDK from the sources in the Checker
 Framework repository.  This means that if you make a change to the
 annotated JDK, your tests will fail.
-[TODO: Explain how to deal with this issue:]
+To fix your tests, follow the instructions at
+\url{https://github.com/typetools/annotated-libraries}.
 
 
 \subsubsectionAndLabel{Debugging continuous integration builds}{building-ci-debug}
@@ -1002,14 +1021,10 @@ CI configuration files.
 
 \sectionAndLabel{Contributing fixes (creating a pull request)}{pull-request}
 
-Please see the document
-\ahref{https://homes.cs.washington.edu/\%7emernst/advice/github-pull-request.html}{How
-  to create and review a GitHub pull request} for instructions about how to
-create a pull request, which is the way you can contribute code to the
-Checker Framework project.  Thanks in advance for your participation!
-
-For writing new test cases, see file
-\ahref{https://raw.githubusercontent.com/typetools/checker-framework/master/checker/tests/README}{\<checker-framework/checker/tests/README>}.
+Please see the
+\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html#pull-requests}{pull
+  requests} section of the Developer Manual.
+Thanks in advance for your contributions!
 
 
 \sectionAndLabel{Publications}{publications}

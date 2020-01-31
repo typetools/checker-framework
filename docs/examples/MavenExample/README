@@ -8,5 +8,4 @@ You should see output that includes:
 
 MavenExample.java:[25,29] error: [assignment.type.incompatible] incompatible types in assignment.
 
-Note that error-prone only needs to be used in a Java 8 environment.
-For Java 9+ environments, remove mentions of error-prone from pom.xml.
+This example is for use with JDK 8.  For JDK 11, see ../MavenExampleJDK11.

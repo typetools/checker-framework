@@ -4,14 +4,19 @@ set -e
 set -o verbose
 set -o xtrace
 export SHELLOPTS
+echo "SHELLOPTS=${SHELLOPTS}"
 
-git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
-  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+if [ -d "/tmp/plume-scripts" ] ; then
+  (cd /tmp/plume-scripts && git pull -q)
+else
+  (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
+fi
 
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+echo "BUILDJDK=${BUILDJDK}"
 source $SCRIPTDIR/build.sh ${BUILDJDK}
 
 
@@ -28,6 +33,7 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 ./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
 
 # Guava
+# Can't use `git-clone-related` here, since we want slightly different behavior.
 eval `/tmp/plume-scripts/ci-info typetools`
 REPO_URL=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetools guava`
 BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO_URL} ${CI_BRANCH} cf-master`
@@ -35,7 +41,11 @@ if [ $BRANCH = "master" ] ; then
   # ${CI_ORGANIZATION} has a fork of Guava, but no branch that corresponds to the pull-requested branch,
   # nor a cf-master branch.  Use upstream.
   REPO_URL=https://github.com/typetools/guava.git
-  BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO_URL} ${CI_BRANCH} cf-master`
+  if [ $CI_BRANCH = "master" ] ; then
+    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO_URL} cf-master`
+  else
+    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO_URL} ${CI_BRANCH} cf-master`
+  fi
 fi
 git -C .. clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO_URL} guava || git -C .. clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO_URL} guava
 (cd ../guava/guava && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)

@@ -45,7 +45,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -106,17 +105,14 @@ public class NullnessVisitor
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-        // At most a single qualifier on a type, ignoring a possible PolyAll
-        // annotation.
+        // At most, a single qualifier on a type.
         boolean foundInit = false;
         boolean foundNonNull = false;
         Set<Class<? extends Annotation>> initQuals = atypeFactory.getInitializationAnnotations();
         Set<Class<? extends Annotation>> nonNullQuals = atypeFactory.getNullnessAnnotations();
 
         for (AnnotationMirror anno : useType.getAnnotations()) {
-            if (QualifierPolymorphism.isPolyAll(anno)) {
-                // ok.
-            } else if (containsSameByName(initQuals, anno)) {
+            if (containsSameByName(initQuals, anno)) {
                 if (foundInit) {
                     return false;
                 }
@@ -151,7 +147,7 @@ public class NullnessVisitor
     private boolean containsSameByName(
             Set<Class<? extends Annotation>> quals, AnnotationMirror anno) {
         for (Class<? extends Annotation> q : quals) {
-            if (AnnotationUtils.areSameByClass(anno, q)) {
+            if (atypeFactory.areSameByClass(anno, q)) {
                 return true;
             }
         }
@@ -240,7 +236,9 @@ public class NullnessVisitor
                 && !isNewArrayAllZeroDims(node)
                 && !isNewArrayInToArray(node)
                 && !TypesUtils.isPrimitive(componentType.getUnderlyingType())
-                && checker.getLintOption("forbidnonnullarraycomponents", false)) {
+                && (checker.getLintOption("soundArrayCreationNullness", false)
+                        // temporary, for backward compatibility
+                        || checker.getLintOption("forbidnonnullarraycomponents", false))) {
             checker.report(
                     Result.failure(
                             "new.array.type.invalid",

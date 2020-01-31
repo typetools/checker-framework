@@ -2,21 +2,23 @@ package org.checkerframework.dataflow.util;
 
 import java.util.HashSet;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A set that is more efficient than HashSet for 0 and 1 elements. Uses {@code Objects.equals} for
  * object comparison and a {@link HashSet} for backing storage.
  */
-public final class MostlySingleton<T> extends AbstractMostlySingleton<T> {
+public final class MostlySingleton<T extends Object> extends AbstractMostlySingleton<T> {
 
+    /** Create a MostlySingleton. */
     public MostlySingleton() {
-        this.state = State.EMPTY;
+        super(State.EMPTY);
     }
 
+    /** Create a MostlySingleton. */
     public MostlySingleton(T value) {
-        this.state = State.SINGLETON;
-        this.value = value;
+        super(State.SINGLETON, value);
     }
 
     @Override
@@ -30,10 +32,12 @@ public final class MostlySingleton<T> extends AbstractMostlySingleton<T> {
             case SINGLETON:
                 state = State.ANY;
                 set = new HashSet<>();
+                assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
                 set.add(value);
                 value = null;
                 // fallthrough
             case ANY:
+                assert set != null : "@AssumeAssertion(nullness): set initialized before";
                 return set.add(e);
             default:
                 throw new BugInCF("Unhandled state " + state);
@@ -41,13 +45,14 @@ public final class MostlySingleton<T> extends AbstractMostlySingleton<T> {
     }
 
     @Override
-    public boolean contains(Object o) {
+    public boolean contains(@Nullable Object o) {
         switch (state) {
             case EMPTY:
                 return false;
             case SINGLETON:
                 return Objects.equals(o, value);
             case ANY:
+                assert set != null : "@AssumeAssertion(nullness): set initialized before";
                 return set.contains(o);
             default:
                 throw new BugInCF("Unhandled state " + state);

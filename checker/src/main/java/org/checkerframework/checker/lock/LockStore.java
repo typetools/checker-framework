@@ -15,6 +15,7 @@ import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -72,29 +73,39 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
             CFValue current = localVariableValues.get(localVar);
             CFValue value = changeLockAnnoToTop(r, current);
-            localVariableValues.put(localVar, value);
+            if (value != null) {
+                localVariableValues.put(localVar, value);
+            }
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
             CFValue current = fieldValues.get(fieldAcc);
             CFValue value = changeLockAnnoToTop(r, current);
-            fieldValues.put(fieldAcc, value);
+            if (value != null) {
+                fieldValues.put(fieldAcc, value);
+            }
         } else if (r instanceof FlowExpressions.MethodCall) {
             FlowExpressions.MethodCall method = (FlowExpressions.MethodCall) r;
             CFValue current = methodValues.get(method);
             CFValue value = changeLockAnnoToTop(r, current);
-            methodValues.put(method, value);
+            if (value != null) {
+                methodValues.put(method, value);
+            }
         } else if (r instanceof FlowExpressions.ArrayAccess) {
             FlowExpressions.ArrayAccess arrayAccess = (ArrayAccess) r;
             CFValue current = arrayValues.get(arrayAccess);
             CFValue value = changeLockAnnoToTop(r, current);
-            arrayValues.put(arrayAccess, value);
+            if (value != null) {
+                arrayValues.put(arrayAccess, value);
+            }
         } else if (r instanceof FlowExpressions.ThisReference) {
             thisValue = changeLockAnnoToTop(r, thisValue);
         } else if (r instanceof FlowExpressions.ClassName) {
             FlowExpressions.ClassName className = (FlowExpressions.ClassName) r;
             CFValue current = classValues.get(className);
             CFValue value = changeLockAnnoToTop(r, current);
-            classValues.put(className, value);
+            if (value != null) {
+                classValues.put(className, value);
+            }
         } else {
             // No other types of expressions need to be stored.
         }
@@ -159,8 +170,9 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     protected boolean isSideEffectFree(
             AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
         LockAnnotatedTypeFactory lockAnnotatedTypeFactory = (LockAnnotatedTypeFactory) atypeFactory;
-        return ((LockChecker) lockAnnotatedTypeFactory.getContext())
-                        .hasOption("assumeSideEffectFree")
+        SourceChecker checker = lockAnnotatedTypeFactory.getContext().getChecker();
+        return checker.hasOption("assumeSideEffectFree")
+                || checker.hasOption("assumePure")
                 || lockAnnotatedTypeFactory.methodSideEffectAnnotation(method, false)
                         == SideEffectAnnotation.RELEASESNOLOCKS
                 || super.isSideEffectFree(atypeFactory, method);
@@ -178,13 +190,20 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             // method.  So, final fields must be set to @LockPossiblyHeld, but the annotation in
             // the GuardedBy hierarchy should not be changed.
             for (FieldAccess field : new ArrayList<>(fieldValues.keySet())) {
-                fieldValues.put(field, changeLockAnnoToTop(field, fieldValues.get(field)));
+                CFValue newValue = changeLockAnnoToTop(field, fieldValues.get(field));
+                if (newValue != null) {
+                    fieldValues.put(field, newValue);
+                } else {
+                    fieldValues.remove(field);
+                }
             }
 
             // Local variables could also be unlocked via an alias
             for (LocalVariable var : new ArrayList<>(localVariableValues.keySet())) {
                 CFValue newValue = changeLockAnnoToTop(var, localVariableValues.get(var));
-                localVariableValues.put(var, newValue);
+                if (newValue != null) {
+                    localVariableValues.put(var, newValue);
+                }
             }
 
             if (thisValue != null) {

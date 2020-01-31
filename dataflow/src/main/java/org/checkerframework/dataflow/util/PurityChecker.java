@@ -40,10 +40,21 @@ public class PurityChecker {
     /**
      * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
      * result that can be queried.
+     *
+     * @param statement the statement to check
+     * @param annoProvider the annotation provider
+     * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
+     * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
+     * @return information about whether the given statement is side-effect-free, deterministic, or
+     *     both
      */
     public static PurityResult checkPurity(
-            TreePath statement, AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
-        PurityCheckerHelper helper = new PurityCheckerHelper(annoProvider, assumeSideEffectFree);
+            TreePath statement,
+            AnnotationProvider annoProvider,
+            boolean assumeSideEffectFree,
+            boolean assumeDeterministic) {
+        PurityCheckerHelper helper =
+                new PurityCheckerHelper(annoProvider, assumeSideEffectFree, assumeDeterministic);
         if (statement != null) {
             helper.scan(statement, null);
         }
@@ -137,9 +148,26 @@ public class PurityChecker {
          */
         private final boolean assumeSideEffectFree;
 
-        public PurityCheckerHelper(AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
+        /**
+         * True if all methods should be assumed to be @Deterministic, for the purposes of
+         * org.checkerframework.dataflow analysis.
+         */
+        private final boolean assumeDeterministic;
+
+        /**
+         * Create a PurityCheckerHelper.
+         *
+         * @param annoProvider the annotation provider
+         * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
+         * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
+         */
+        public PurityCheckerHelper(
+                AnnotationProvider annoProvider,
+                boolean assumeSideEffectFree,
+                boolean assumeDeterministic) {
             this.annoProvider = annoProvider;
             this.assumeSideEffectFree = assumeSideEffectFree;
+            this.assumeDeterministic = assumeDeterministic;
         }
 
         @Override
@@ -150,11 +178,12 @@ public class PurityChecker {
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree node, Void ignore) {
+            assert TreeUtils.isUseOfElement(node) : "@AssumeAssertion(nullness): tree kind";
             Element elt = TreeUtils.elementFromUse(node);
             if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
                 purityResult.addNotBothReason(node, "call.method");
             } else {
-                boolean det = PurityUtils.isDeterministic(annoProvider, elt);
+                boolean det = assumeDeterministic || PurityUtils.isDeterministic(annoProvider, elt);
                 boolean seFree =
                         (assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, elt));
                 if (!det && !seFree) {
@@ -204,8 +233,9 @@ public class PurityChecker {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
             boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
 
-            Element ctorElement = TreeUtils.elementFromTree(node);
-            boolean deterministic = okThrowDeterministic;
+            assert TreeUtils.isUseOfElement(node) : "@AssumeAssertion(nullness): tree kind";
+            Element ctorElement = TreeUtils.elementFromUse(node);
+            boolean deterministic = assumeDeterministic || okThrowDeterministic;
             boolean sideEffectFree =
                     (assumeSideEffectFree
                             || PurityUtils.isSideEffectFree(annoProvider, ctorElement));

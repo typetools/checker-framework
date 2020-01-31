@@ -8,12 +8,14 @@ import java.lang.annotation.Target;
 
 /**
  * A meta-annotation applied to the declaration of a type qualifier specifies that the given
- * annotation should be upper bound for
+ * annotation should be upper bound for.
  *
  * <ul>
  *   <li>a use of a particular type.
  *   <li>a use of a particular kind of type.
  * </ul>
+ *
+ * @checker_framework.manual #upper-bound-for-use Upper bound of qualifiers on uses of a given type
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

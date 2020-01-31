@@ -1,6 +1,9 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
@@ -8,7 +11,7 @@ import java.lang.annotation.Target;
  * sequence's length.
  *
  * <p>The <a
- * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Arrays.html#binarySearch-java.lang.Object:A-int-int-java.lang.Object-">
+ * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Arrays.html#binarySearch(java.lang.Object%5B%5D,int,int,java.lang.Object)">
  * {@code Arrays.binarySearch}</a> method is declared as
  *
  * <pre>{@code
@@ -26,6 +29,8 @@ import java.lang.annotation.Target;
  * @see LTLengthOf
  * @checker_framework.manual #index-checker Index Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IndexOrHigh {
     /**

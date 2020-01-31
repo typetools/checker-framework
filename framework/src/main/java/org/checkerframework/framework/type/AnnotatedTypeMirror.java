@@ -3,10 +3,12 @@ package org.checkerframework.framework.type;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -28,8 +30,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -331,7 +333,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {
         for (AnnotationMirror annoMirror : annotations) {
-            if (AnnotationUtils.areSameByClass(annoMirror, annoClass)) {
+            if (atypeFactory.areSameByClass(annoMirror, annoClass)) {
                 return annoMirror;
             }
         }
@@ -362,13 +364,9 @@ public abstract class AnnotatedTypeMirror {
         List<? extends AnnotationMirror> typeAnnotations =
                 this.getUnderlyingType().getAnnotationMirrors();
 
-        Set<? extends AnnotationMirror> validAnnotations =
-                atypeFactory.getQualifierHierarchy().getTypeQualifiers();
         for (AnnotationMirror explicitAnno : typeAnnotations) {
-            for (AnnotationMirror validAnno : validAnnotations) {
-                if (AnnotationUtils.areSameByName(explicitAnno, validAnno)) {
-                    explicitAnnotations.add(explicitAnno);
-                }
+            if (atypeFactory.isSupportedQualifier(explicitAnno)) {
+                explicitAnnotations.add(explicitAnno);
             }
         }
 
@@ -412,7 +410,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public AnnotationMirror getEffectiveAnnotation(Class<? extends Annotation> annoClass) {
         for (AnnotationMirror annoMirror : getEffectiveAnnotations()) {
-            if (AnnotationUtils.areSameByClass(annoMirror, annoClass)) {
+            if (atypeFactory.areSameByClass(annoMirror, annoClass)) {
                 return annoMirror;
             }
         }
@@ -540,9 +538,7 @@ public abstract class AnnotatedTypeMirror {
      * @param a the annotation to add
      */
     public void replaceAnnotation(AnnotationMirror a) {
-        if (!AnnotationUtils.areSameByClass(a, PolyAll.class)) {
-            this.removeAnnotationInHierarchy(a);
-        }
+        this.removeAnnotationInHierarchy(a);
         this.addAnnotation(a);
     }
 
@@ -615,9 +611,15 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
+    /**
+     * Removes an annotation of the given class from the type.
+     *
+     * @param a the class of the annotation to remove
+     * @return true if the annotation was removed, false if the type's annotations were unchanged
+     */
     public boolean removeAnnotation(Class<? extends Annotation> a) {
         AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
-        if (anno == null || !atypeFactory.isSupportedQualifier(anno)) {
+        if (!atypeFactory.isSupportedQualifier(anno)) {
             throw new BugInCF(
                     "AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
         }
@@ -752,9 +754,50 @@ public abstract class AnnotatedTypeMirror {
      * always be a call to shallowCopy(true).
      *
      * @see #shallowCopy(boolean)
+     * @return a shallow copy of this type with annotations.
      */
     public abstract AnnotatedTypeMirror shallowCopy();
 
+    /**
+     * @return whether this type or any component type is a wildcard type for which Java 7 type
+     *     inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
+     */
+    public boolean containsUninferredTypeArguments() {
+        return uninferredTypeArgumentScanner.visit(this);
+    }
+
+    /** The implementation of the visitor for #containsUninferredTypeArguments */
+    private final SimpleAnnotatedTypeScanner<Boolean, Void> uninferredTypeArgumentScanner =
+            new SimpleAnnotatedTypeScanner<Boolean, Void>() {
+                @Override
+                protected Boolean defaultAction(AnnotatedTypeMirror type, Void aVoid) {
+                    if (type.getKind() == TypeKind.WILDCARD) {
+                        return ((AnnotatedWildcardType) type).isUninferredTypeArgument();
+                    }
+                    return false;
+                }
+
+                @Override
+                public Boolean reduce(Boolean r1, Boolean r2) {
+                    if (r1 == null && r2 == null) {
+                        return false;
+                    } else if (r1 == null) {
+                        return r2;
+                    } else if (r2 == null) {
+                        return r1;
+                    } else {
+                        return r1 || r2;
+                    }
+                }
+            };
+
+    /**
+     * Create an {@link AnnotatedDeclaredType} with the underlying type of {@link Object}. It
+     * includes any annotations placed by {@link AnnotatedTypeFactory#fromElement(Element)}.
+     *
+     * @param atypeFactory type factory to use
+     * @return AnnotatedDeclaredType for Object
+     */
     protected static AnnotatedDeclaredType createTypeOfObject(AnnotatedTypeFactory atypeFactory) {
         AnnotatedDeclaredType objectType =
                 atypeFactory.fromElement(
@@ -1453,13 +1496,10 @@ public abstract class AnnotatedTypeMirror {
         // The type of "@Nullable X" has to be "@Nullable X extends @Nullable Object",
         // because otherwise the annotations are inconsistent.
         private void fixupBoundAnnotations() {
-
-            // We allow the above replacement first because primary annotations might not have
-            // annotations for all hierarchies, so we don't want to avoid placing bottom on the
-            // lower bound for those hierarchies that don't have a qualifier in primaryAnnotations.
             if (!this.getAnnotationsField().isEmpty()) {
+                Set<AnnotationMirror> newAnnos = this.getAnnotationsField();
                 if (upperBound != null) {
-                    replaceUpperBoundAnnotations();
+                    replaceUpperBoundAnnotations(newAnnos);
                 }
 
                 // Note:
@@ -1470,7 +1510,7 @@ public abstract class AnnotatedTypeMirror {
                 //   primary annotations overwrite the upper and lower bounds of type variables
                 //   when getUpperBound/getLowerBound is called
                 if (lowerBound != null) {
-                    lowerBound.replaceAnnotations(this.getAnnotationsField());
+                    lowerBound.replaceAnnotations(newAnnos);
                 }
             }
         }
@@ -1480,15 +1520,15 @@ public abstract class AnnotatedTypeMirror {
          * the AnnotatedTypeVariable with the annotations provided. The AnnotatedTypeVariable will
          * only have multiple upper bounds if the upper bound is an intersection.
          */
-        private void replaceUpperBoundAnnotations() {
+        private void replaceUpperBoundAnnotations(Collection<? extends AnnotationMirror> newAnnos) {
             if (upperBound.getKind() == TypeKind.INTERSECTION) {
                 final List<AnnotatedDeclaredType> bounds =
                         ((AnnotatedIntersectionType) upperBound).directSuperTypes();
                 for (final AnnotatedDeclaredType bound : bounds) {
-                    bound.replaceAnnotations(this.getAnnotationsField());
+                    bound.replaceAnnotations(newAnnos);
                 }
             } else {
-                upperBound.replaceAnnotations(this.getAnnotationsField());
+                upperBound.replaceAnnotations(newAnnos);
             }
         }
 

@@ -28,7 +28,8 @@ public class TypeVarUseApplier {
     public static void apply(
             final AnnotatedTypeMirror type,
             final Element element,
-            final AnnotatedTypeFactory typeFactory) {
+            final AnnotatedTypeFactory typeFactory)
+            throws UnexpectedAnnotationLocationException {
         new TypeVarUseApplier(type, element, typeFactory).extractAndApply();
     }
 
@@ -109,9 +110,12 @@ public class TypeVarUseApplier {
     /**
      * Applies the bound annotations from the declaration of the type parameter and then applies the
      * explicit annotations written on the type variable.
+     *
+     * @throws UnexpectedAnnotationLocationException if invalid location for an annotation was
+     *     found.
      */
-    public void extractAndApply() {
-        ElementAnnotationUtil.addAnnotationsFromElement(
+    public void extractAndApply() throws UnexpectedAnnotationLocationException {
+        ElementAnnotationUtil.addDeclarationAnnotationsFromElement(
                 typeVariable, useElem.getAnnotationMirrors());
 
         // apply declaration annotations

@@ -1,15 +1,18 @@
 package org.checkerframework.checker.signature.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Represents a {@link FieldDescriptor field descriptor} for a primitive or for an array of whose
- * base type is primitive or in the unnamed package.
+ * Represents a {@link FieldDescriptor field descriptor} for a primitive or for an array whose base
+ * type is primitive or in the unnamed package.
  *
- * <p>Examples: I, [[J, MyClass, [LMyClass;
+ * <p>Examples: I [[J MyClass MyClass$22 [LMyClass; [LMyClass$22
  *
  * <p>Field descriptor (JVM type format) is defined in the <a
  * href="https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.3.2">Java Virtual
@@ -17,7 +20,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@SubtypeOf({ClassGetName.class, FieldDescriptor.class})
-@QualifierForLiterals(stringPatterns = "^([BCDFIJSZ]|\\[+[BCDFIJSZ]|\\[L[A-Za-z_][A-Za-z_0-9]*;)$")
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf({ClassGetName.class, FieldDescriptor.class})
+@QualifierForLiterals(
+        stringPatterns =
+                "^([BCDFIJSZ]|\\[+[BCDFIJSZ]|\\[L[A-Za-z_][A-Za-z_0-9]*(\\$[A-Za-z_0-9]+)*;)$")
 public @interface FieldDescriptorForPrimitiveOrArrayInUnnamedPackage {}

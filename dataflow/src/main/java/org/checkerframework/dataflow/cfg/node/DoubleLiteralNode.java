@@ -4,6 +4,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for a double literal. For example:
@@ -15,9 +16,14 @@ import java.util.Collections;
  */
 public class DoubleLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new DoubleLiteralNode.
+     *
+     * @param t the tree for the literal value
+     */
     public DoubleLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.DOUBLE_LITERAL);
+        assert t.getKind() == Tree.Kind.DOUBLE_LITERAL;
     }
 
     @Override
@@ -31,7 +37,7 @@ public class DoubleLiteralNode extends ValueLiteralNode {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         // test that obj is a DoubleLiteralNode
         if (!(obj instanceof DoubleLiteralNode)) {
             return false;

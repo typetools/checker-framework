@@ -1,6 +1,9 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
@@ -11,7 +14,7 @@ import java.lang.annotation.Target;
  * different lengths.
  *
  * <p>The <a
- * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html#charAt-int-">
+ * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html#charAt(int)">
  * {@code String.charAt(int)}</a> method is declared as
  *
  * <pre>{@code
@@ -29,6 +32,8 @@ import java.lang.annotation.Target;
  * @see LTLengthOf
  * @checker_framework.manual #index-checker Index Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IndexFor {
     /** Sequences that the annotated expression is a valid index for. */
