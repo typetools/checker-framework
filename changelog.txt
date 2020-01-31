@@ -1,3 +1,8 @@
+New command-line options:
+  -AassumeDeterministic Unsoundly assume that every method is deterministic
+  -AassumePure Unsoundly assume that every method is pure
+
+
 Renamed -Anocheckjdk to -ApermitMissingJdk.
 The old version still works, for backward compatibility.
 
