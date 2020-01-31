@@ -52,7 +52,7 @@ public final class SceneToStubWriter {
     /**
      * A map from the {@code description} field of an ATypeElement to the corresponding unqualified
      * Java types, since {@code AScene}s don't carry that information. See the comment on the {@code
-     * basetypes} field of {@link WholeProgramInferenceScenesHelper} for more information.
+     * basetypes} field of {@link WholeProgramInferenceScenesStorage} for more information.
      */
     private Map<String, TypeMirror> basetypes;
 
