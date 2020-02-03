@@ -89,6 +89,26 @@ jobs:
 #    fetchDepth: 25
 #  - bash: ./checker/bin-devel/test-daikon.sh
 #    displayName: test-daikon.sh
+- job: guava_jdk8
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/cf-ubuntu-jdk8:latest
+  timeoutInMinutes: 300
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-guava.sh
+    displayName: test-guava.sh
+- job: guava_jdk11
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/cf-ubuntu-jdk11:latest
+  timeoutInMinutes: 300
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-guava.sh
+    displayName: test-guava.sh
 - job: downstream_jdk11
   pool:
     vmImage: 'ubuntu-16.04'
