@@ -1623,9 +1623,9 @@ public class StubParser {
             // double, too.
             return ((DoubleLiteralExpr) expr).asDouble();
         } else if (expr instanceof IntegerLiteralExpr) {
-            return convert(((IntegerLiteralExpr) expr).asInt(), valueKind);
+            return convert(((IntegerLiteralExpr) expr).asNumber(), valueKind);
         } else if (expr instanceof LongLiteralExpr) {
-            return convert(((LongLiteralExpr) expr).asLong(), valueKind);
+            return convert(((LongLiteralExpr) expr).asNumber(), valueKind);
         } else if (expr instanceof UnaryExpr) {
             switch (expr.toString()) {
                     // Special-case the minimum values.  Separately parsing a "-" and a value
