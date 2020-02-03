@@ -1166,6 +1166,7 @@ public class BoundsInitializer {
     /** Represents a component type of an array type. */
     private static class ArrayComponentNode extends TypePathNode {
 
+        /** Create ArrayComponentNode. */
         ArrayComponentNode() {
             super(TypeKind.ARRAY);
         }
