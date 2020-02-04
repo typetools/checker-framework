@@ -221,12 +221,25 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         boolean error = false;
         // TypeMirror backupTypeMirror;
         Set<AnnotationMirror> backupSet;
-        // AnnotatedTypeVariable backupAtv;
+        /** Set of most specific annotations. Annotations are added by the visitor. */
         Set<AnnotationMirror> mostSpecific;
 
+        /** TypeMirror for the "a" value. */
         TypeMirror aTypeMirror;
+        /** TypeMirror for the "b" value. */
         TypeMirror bTypeMirror;
 
+        /**
+         * Create a {@link MostSpecificVisitor}.
+         *
+         * @param result the most specific type mirror
+         * @param aTypeMirror type of the "a" value
+         * @param bTypeMirror type of the "b" value
+         * @param aSet annotations in the "a" value
+         * @param bSet annotations in the "b" value
+         * @param backup value to use if no most specific value is found
+         * @param mostSpecific set to which the most specific value is added
+         */
         public MostSpecificVisitor(
                 TypeMirror result,
                 TypeMirror aTypeMirror,
