@@ -14,7 +14,13 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
-/** Qualifiers may be represented by annotations with elements. */
+/**
+ * This is a qualifier hierarchy where qualifiers may be represented by annotations with elements.
+ *
+ * <p>It uses a {@link QualifierKindHierarchy} to model the relationships between qualifiers.
+ * Subclasses can override {@link #createQualifierKindHierarchy(Collection)} to return a subclass of
+ * QualifierKindHierarchy.
+ */
 public abstract class ComplexHierarchy extends QualifierHierarchy {
     /** {@link org.checkerframework.javacutil.ElementUtils} */
     private Elements elements;
