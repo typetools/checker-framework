@@ -185,7 +185,7 @@ public class PurityChecker {
             } else {
                 boolean det = assumeDeterministic || PurityUtils.isDeterministic(annoProvider, elt);
                 boolean seFree =
-                        (assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, elt));
+                        assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, elt);
                 if (!det && !seFree) {
                     purityResult.addNotBothReason(node, "call.method");
                 } else if (!det) {
@@ -237,8 +237,7 @@ public class PurityChecker {
             Element ctorElement = TreeUtils.elementFromUse(node);
             boolean deterministic = assumeDeterministic || okThrowDeterministic;
             boolean sideEffectFree =
-                    (assumeSideEffectFree
-                            || PurityUtils.isSideEffectFree(annoProvider, ctorElement));
+                    assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);
             // This does not use "addNotBothReason" because the reasons are different:  one is
             // because the constructor is called at all, and the other is because the constuctor
             // is not side-effect-free.
