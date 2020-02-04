@@ -18,4 +18,17 @@ public class Refine {
         @Tainted Refine local = null;
         @Untainted Refine untaintedLocal = local;
     }
+
+    public static class SuperClass {
+        @Untainted SuperClass() {}
+    }
+
+    @HasQualifierParameter(Tainted.class)
+    public static class SubClass extends SuperClass {}
+
+    static void method2(@Untainted SubClass subClass) {
+        @Untainted SuperClass untainted1 = subClass;
+        @Tainted SuperClass superClass = subClass;
+        @Untainted SuperClass untainted2 = superClass;
+    }
 }

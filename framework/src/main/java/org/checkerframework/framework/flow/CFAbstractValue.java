@@ -224,6 +224,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         // AnnotatedTypeVariable backupAtv;
         Set<AnnotationMirror> mostSpecific;
 
+        TypeMirror aTypeMirror;
+        TypeMirror bTypeMirror;
+
         public MostSpecificVisitor(
                 TypeMirror result,
                 TypeMirror aTypeMirror,
@@ -233,6 +236,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
                 V backup,
                 Set<AnnotationMirror> mostSpecific) {
             super(result, aTypeMirror, bTypeMirror, aSet, bSet);
+            this.aTypeMirror = aTypeMirror;
+            this.bTypeMirror = bTypeMirror;
             this.mostSpecific = mostSpecific;
             if (backup != null) {
                 this.backupSet = backup.getAnnotations();
@@ -261,7 +266,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
                 AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
             QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
             if (analysis.getTypeFactory()
-                    .hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(result), top)) {
+                            .hasQualifierParameterInHierarchy(
+                                    TypesUtils.getTypeElement(aTypeMirror), top)
+                    && (analysis.getTypeFactory()
+                            .hasQualifierParameterInHierarchy(
+                                    TypesUtils.getTypeElement(bTypeMirror), top))) {
                 if (hierarchy.isSubtype(a, b) && hierarchy.isSubtype(b, a)) {
                     mostSpecific.add(b);
                 } else {
