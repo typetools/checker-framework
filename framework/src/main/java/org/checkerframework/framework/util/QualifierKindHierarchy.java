@@ -17,10 +17,17 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.UserError;
 
-/** NO AnnotationMirrors allowed in this class. */
+/**
+ * This class holds information about the relationships between annotation classes, stored as {@link
+ * QualifierKind}s.
+ */
 public class QualifierKindHierarchy {
 
-    /** A class represent a particular class of annotation that is a qualifier. */
+    /**
+     * A class that represent a particular class of annotation that is a qualifier. It holds
+     * information about the relationship between itself and other {@link QualifierKind}s.
+     */
+    // The private non-final fields of this class are set while creating the QualifierKindHierarchy.
     public static @Interned class QualifierKind implements Comparable<QualifierKind> {
 
         /** The canonical name of the annotation class of this kind of qualifier. */
@@ -60,6 +67,7 @@ public class QualifierKindHierarchy {
             this.clazz = clazz;
             this.hasElements = clazz.getDeclaredMethods().length != 0;
             this.name = clazz.getCanonicalName().intern();
+            // The non-final fields in this class are set by QualifierKindHierarchy.
             isPoly = false;
             superTypes = null;
             top = null;
@@ -190,14 +198,29 @@ public class QualifierKindHierarchy {
      */
     private final Map<@Interned String, QualifierKind> qualifierKindMap;
 
-    /** Top -> Poly */
+    /**
+     * A mapping from a top qualifier kind to the polymorphic qualifier kind in the same hierarchy.
+     */
     private final Map<QualifierKind, QualifierKind> polyMap;
 
+    /** All the qualifier kinds that are the top qualifier in their hierarchy. */
     private final Set<QualifierKind> tops;
-    private final Set<QualifierKind> bottoms;
-    private final Map<QualifierClassPair, QualifierKind> lubs;
-    private final Map<QualifierClassPair, QualifierKind> glbs;
 
+    /** All the qualifier kinds that are the bottom qualifier in their hierarchy. */
+    private final Set<QualifierKind> bottoms;
+
+    /** A mapping from a pair of qualifier kinds to their lub. */
+    private final Map<QualifierKindPair, QualifierKind> lubs;
+
+    /** A mapping from a pair of qualifier kinds to their glb. */
+    private final Map<QualifierKindPair, QualifierKind> glbs;
+
+    /**
+     * Creates a {@link QualifierKindHierarchy}. Also, creates and initializes all the qualifier
+     * kinds for the hierarchy.
+     *
+     * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
+     */
     public QualifierKindHierarchy(Collection<Class<? extends Annotation>> qualifierClasses) {
         this.qualifierKindMap = createQualifierKinds(qualifierClasses);
         Map<QualifierKind, Set<QualifierKind>> directSuperMap = createDirectSuperMap();
@@ -209,13 +232,13 @@ public class QualifierKindHierarchy {
         this.lubs = createLubsMap();
         this.glbs = createGlbsMap();
 
-        verify(directSuperMap);
+        verifyHierarchy(directSuperMap);
         // printLubs();
         // printIsSubtype();
     }
 
     private void printLubs() {
-        for (Entry<QualifierClassPair, QualifierKind> entry : lubs.entrySet()) {
+        for (Entry<QualifierKindPair, QualifierKind> entry : lubs.entrySet()) {
             System.out.printf(
                     "LUB(%s, %s): %s%n",
                     entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
@@ -223,7 +246,7 @@ public class QualifierKindHierarchy {
     }
 
     private void printLubsWithElements() {
-        for (Entry<QualifierClassPair, QualifierKind> entry : lubs.entrySet()) {
+        for (Entry<QualifierKindPair, QualifierKind> entry : lubs.entrySet()) {
             if (entry.getValue().hasElements) {
                 System.out.printf(
                         "LUB(%s, %s): %s%n",
@@ -233,7 +256,7 @@ public class QualifierKindHierarchy {
     }
 
     private void printGlbs() {
-        for (Entry<QualifierClassPair, QualifierKind> entry : glbs.entrySet()) {
+        for (Entry<QualifierKindPair, QualifierKind> entry : glbs.entrySet()) {
             System.out.printf(
                     "GLB(%s, %s): %s%n",
                     entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
@@ -252,20 +275,27 @@ public class QualifierKindHierarchy {
         }
     }
 
-    public void verify(Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
+    /**
+     * Verifies that the {@link QualifierKindHierarchy} is a valid hierarchy.
+     *
+     * @param directSuperMap mapping from qualifier kind to its direct super types; used to verify
+     *     that a polymorphic annotation does not have a {@link SubtypeOf} meta-annotation
+     * @throws UserError if the heirarchy isn't valid
+     */
+    public void verifyHierarchy(Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         for (QualifierKind qualifierKind : qualifierKindMap.values()) {
             boolean isPoly = qualifierKind.isPoly;
             boolean hasSubtype = directSuperMap.containsKey(qualifierKind);
             if (isPoly && hasSubtype) {
                 // This is currently not supported. At some point we might add
                 // polymorphic qualifiers with upper and lower bounds.
-                throw new BugInCF(
+                throw new UserError(
                         "AnnotatedTypeFactory: "
                                 + qualifierKind
                                 + " is polymorphic and specifies super qualifiers. "
                                 + "Remove the @org.checkerframework.framework.qual.SubtypeOf or @org.checkerframework.framework.qual.PolymorphicQualifier annotation from it.");
             } else if (!isPoly && !hasSubtype) {
-                throw new BugInCF(
+                throw new UserError(
                         "AnnotatedTypeFactory: %s does not specify its super qualifiers.%n"
                                 + "Add an @org.checkerframework.framework.qual.SubtypeOf annotation to it,%n"
                                 + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.%n",
@@ -274,7 +304,7 @@ public class QualifierKindHierarchy {
                 if (qualifierKind.top == null && tops.size() == 1) {
                     qualifierKind.top = tops.iterator().next();
                 } else if (qualifierKind.top == null) {
-                    throw new BugInCF(
+                    throw new UserError(
                             "PolymorphicQualifier, %s,  has to specify type hierarchy, if more than one exist; top types: [%s] ",
                             qualifierKind, PluginUtil.join(", ", tops));
                 } else if (!tops.contains(qualifierKind.top)) {
@@ -548,20 +578,20 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Creates a mapping from {@link QualifierClassPair} to the least upper bound of both
+     * Creates a mapping from {@link QualifierKindPair} to the least upper bound of both
      * QualifierKinds.
      *
-     * @return a mapping from {@link QualifierClassPair} to their lub.
+     * @return a mapping from {@link QualifierKindPair} to their lub.
      */
-    protected Map<QualifierClassPair, QualifierKind> createLubsMap() {
-        Map<QualifierClassPair, QualifierKind> lubs = new TreeMap<>();
+    protected Map<QualifierKindPair, QualifierKind> createLubsMap() {
+        Map<QualifierKindPair, QualifierKind> lubs = new TreeMap<>();
         for (QualifierKind qual1 : qualifierKindMap.values()) {
             for (QualifierKind qual2 : qualifierKindMap.values()) {
                 if (qual1.top != qual2.top) {
                     continue;
                 }
                 QualifierKind lub = findLub(qual1, qual2);
-                QualifierClassPair pair = new QualifierClassPair(qual1, qual2);
+                QualifierKindPair pair = new QualifierKindPair(qual1, qual2);
                 QualifierKind otherLub = lubs.get(pair);
                 if (otherLub != null) {
                     if (otherLub != lub) {
@@ -622,20 +652,20 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Creates a mapping from {@link QualifierClassPair} to the greatest lower bound of both
+     * Creates a mapping from {@link QualifierKindPair} to the greatest lower bound of both
      * QualifierKinds.
      *
-     * @return a mapping from {@link QualifierClassPair} to their glb.
+     * @return a mapping from {@link QualifierKindPair} to their glb.
      */
-    private Map<QualifierClassPair, QualifierKind> createGlbsMap() {
-        Map<QualifierClassPair, QualifierKind> glbs = new TreeMap<>();
+    private Map<QualifierKindPair, QualifierKind> createGlbsMap() {
+        Map<QualifierKindPair, QualifierKind> glbs = new TreeMap<>();
         for (QualifierKind qual1 : qualifierKindMap.values()) {
             for (QualifierKind qual2 : qualifierKindMap.values()) {
                 if (qual1.top != qual2.top) {
                     continue;
                 }
                 QualifierKind glb = findGlb(qual1, qual2);
-                QualifierClassPair pair = new QualifierClassPair(qual1, qual2);
+                QualifierKindPair pair = new QualifierKindPair(qual1, qual2);
                 QualifierKind otherGlb = glbs.get(pair);
                 if (otherGlb != null) {
                     if (otherGlb != glb) {
@@ -700,10 +730,10 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * A pair of {@link QualifierKind}s. new QualifierClassPair(q1, q2) is equal to new
-     * QualifierClassPair(q2, q1).
+     * A pair of {@link QualifierKind}s. new QualifierKindPair(q1, q2) is equal to new
+     * QualifierKindPair(q2, q1).
      */
-    protected static class QualifierClassPair implements Comparable<QualifierClassPair> {
+    protected static class QualifierKindPair implements Comparable<QualifierKindPair> {
 
         /** The first qualifier of the pair. */
         private final QualifierKind qual1;
@@ -716,7 +746,7 @@ public class QualifierKindHierarchy {
          * @param qual1 a qualifier kind
          * @param qual2 a qualifier kind
          */
-        public QualifierClassPair(QualifierKind qual1, QualifierKind qual2) {
+        public QualifierKindPair(QualifierKind qual1, QualifierKind qual2) {
             // Order the pair.
             if (qual1.compareTo(qual2) <= 0) {
                 this.qual1 = qual1;
@@ -736,7 +766,7 @@ public class QualifierKindHierarchy {
                 return false;
             }
 
-            QualifierClassPair that = (QualifierClassPair) o;
+            QualifierKindPair that = (QualifierKindPair) o;
             return qual1 == that.qual1 && qual2 == that.qual2;
         }
 
@@ -753,7 +783,7 @@ public class QualifierKindHierarchy {
         }
 
         @Override
-        public int compareTo(QualifierClassPair o) {
+        public int compareTo(QualifierKindPair o) {
             if (this.qual1 == o.qual1) {
                 return this.qual2.compareTo(o.qual2);
             }
@@ -770,11 +800,11 @@ public class QualifierKindHierarchy {
     }
 
     public QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2) {
-        return lubs.get(new QualifierClassPair(q1, q2));
+        return lubs.get(new QualifierKindPair(q1, q2));
     }
 
     public QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2) {
-        return glbs.get(new QualifierClassPair(q1, q2));
+        return glbs.get(new QualifierKindPair(q1, q2));
     }
 
     public Map<String, QualifierKind> getQualifierKindMap() {
