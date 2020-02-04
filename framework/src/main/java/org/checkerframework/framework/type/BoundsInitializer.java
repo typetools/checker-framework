@@ -1022,8 +1022,7 @@ public class BoundsInitializer {
         }
 
         /**
-         * Internal implementation of {@link #replaceType(AnnotatedTypeMirror,
-         * AnnotatedTypeVariable)}/
+         * Internal implementation of #replaceType.
          *
          * @param parent type that is sideffected by this method
          * @param replacement the replacement
