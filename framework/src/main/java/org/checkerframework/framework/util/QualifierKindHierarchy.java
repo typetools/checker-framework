@@ -739,7 +739,7 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Returns the higest qualifiers in the passed set.
+     * Returns the highest qualifiers in the passed set.
      *
      * @param qualifierKinds the passed set
      * @return the highest qualifiers in the passed set
