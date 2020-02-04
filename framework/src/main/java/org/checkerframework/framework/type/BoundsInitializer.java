@@ -460,17 +460,17 @@ public class BoundsInitializer {
 
         @Override
         public Void visitPrimitive(AnnotatedPrimitiveType type, Void aVoid) {
-            return invalidType(type);
+            throw new BugInCF("Unexpected AnnotatedPrimitiveType.");
         }
 
         @Override
         public Void visitNoType(AnnotatedNoType type, Void aVoid) {
-            return invalidType(type);
+            throw new BugInCF("Unexpected AnnotatedNoType.");
         }
 
         @Override
         public Void visitExecutable(AnnotatedExecutableType type, Void aVoid) {
-            return invalidType(type);
+            throw new BugInCF("Unexpected AnnotatedExecutableType.");
         }
 
         /**
@@ -511,6 +511,12 @@ public class BoundsInitializer {
 
         // ----------------------------------------------------------------------------------------
         //
+
+        /**
+         * Initialize {@code typeVar}'s upper bound.
+         *
+         * @param typeVar type variable whose upper bound is initialized
+         */
         public void initializeUpperBound(AnnotatedTypeVariable typeVar) {
             AnnotatedTypeMirror upperBound = createAndSetUpperBound(typeVar);
 
@@ -519,7 +525,11 @@ public class BoundsInitializer {
             visit(upperBound);
             currentStructure.removePathNode(pathNode);
         }
-
+        /**
+         * Initialize {@code typeVar}'s lower bound.
+         *
+         * @param typeVar type variable whose lower bound is initialized
+         */
         public void initializeLowerBound(AnnotatedTypeVariable typeVar) {
             AnnotatedTypeMirror lowerBound = createAndSetLowerBound(typeVar);
 
@@ -529,6 +539,11 @@ public class BoundsInitializer {
             currentStructure.removePathNode(pathNode);
         }
 
+        /**
+         * Initialize {@code wildcard}'s super bound.
+         *
+         * @param wildcard wildcard whose super bound is initialized
+         */
         public void initializeSuperBound(AnnotatedWildcardType wildcard) {
             AnnotatedTypeFactory typeFactory = wildcard.atypeFactory;
 
@@ -551,6 +566,11 @@ public class BoundsInitializer {
             currentStructure.removePathNode(superNode);
         }
 
+        /**
+         * Initialize {@code wildcard}'s extends bound.
+         *
+         * @param wildcard wildcard whose extends bound is initialized
+         */
         public void initializeExtendsBound(AnnotatedWildcardType wildcard) {
             AnnotatedTypeFactory typeFactory = wildcard.atypeFactory;
 
@@ -584,6 +604,11 @@ public class BoundsInitializer {
             currentStructure.removePathNode(extendsNode);
         }
 
+        /**
+         * Initialize {@code declaredType}'s type arguments.
+         *
+         * @param declaredType declared type whose type arguments are initialized
+         */
         private void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
             DeclaredType actualType = (DeclaredType) declaredType.actualType;
             if (actualType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
@@ -663,16 +688,6 @@ public class BoundsInitializer {
             }
         }
 
-        public static Void invalidType(AnnotatedTypeMirror atm) {
-            throw new BugInCF(
-                    "Unexpected type in Wildcard bound:\n"
-                            + "kind="
-                            + atm.getKind()
-                            + "\n"
-                            + "atm="
-                            + atm);
-        }
-
         /**
          * Replace all type variables in type with the AnnotatedTypeMirrors created when
          * initializing it.
@@ -711,8 +726,13 @@ public class BoundsInitializer {
         }
     }
 
+    /**
+     * Creates the upper bound type for {@code typeVar} and sets it.
+     *
+     * @param typeVar type variable
+     * @return the newly created upper bound
+     */
     private static AnnotatedTypeMirror createAndSetUpperBound(AnnotatedTypeVariable typeVar) {
-
         AnnotatedTypeMirror upperBound =
                 AnnotatedTypeMirror.createType(
                         typeVar.getUnderlyingType().getUpperBound(), typeVar.atypeFactory, false);
@@ -720,6 +740,13 @@ public class BoundsInitializer {
         return upperBound;
     }
 
+    /**
+     * Creates the lower bound type for {@code typeVar} and sets it. If the type variable does not
+     * have a lower bound, then a null type is created.
+     *
+     * @param typeVar type variable
+     * @return the newly created lower bound
+     */
     private static AnnotatedTypeMirror createAndSetLowerBound(AnnotatedTypeVariable typeVar) {
         TypeMirror lb = typeVar.getUnderlyingType().getLowerBound();
         if (lb == null) {
@@ -976,6 +1003,7 @@ public class BoundsInitializer {
          * Internal implementation of {@link #getType(AnnotatedTypeMirror)}.
          *
          * @param parent type that is sideffected by this method
+         * @return the annotated type at the location represented by this node in {@code type}
          */
         protected abstract AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent);
 
