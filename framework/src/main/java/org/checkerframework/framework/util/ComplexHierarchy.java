@@ -41,6 +41,12 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
      */
     protected final Map<QualifierKind, AnnotationMirror> qualifierMap;
 
+    /**
+     * Creates a type hierarchy from the given classes.
+     *
+     * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+     * @param elements element utils
+     */
     public ComplexHierarchy(
             Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
         this.elements = elements;
