@@ -10,6 +10,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -20,12 +21,34 @@ import org.checkerframework.javacutil.UserError;
 /**
  * This class holds information about the relationships between annotation classes, stored as {@link
  * QualifierKind}s.
+ *
+ * <p>By default, the subtyping information and information about polymorphic qualifiers is read
+ * from meta-annotations on the annotation classes. This information is used to infer further
+ * information such as top and bottom qualifiers. Subclasses can override the following methods to
+ * change this behavior:
+ *
+ * <ul>
+ *   <li>{ @link #createQualifierKinds(Collection)}
+ *   <li>{@link #createDirectSuperMap()}
+ *   <li>{@link #specifyBottom(Map, Class)}
+ *   <li>{@link #initializePolymorphicQualifiers()}
+ *   <li>{@link #initializeQualifierKindFields(Map)}
+ *   <li>{@link #createLubsMap()}
+ *   <li>{@link #createGlbsMap()}
+ * </ul>
+ *
+ * This class is used by {@link SimpleHierarchy} and {@link ComplexHierarchy} classes to implement
+ * methods that compare {@link javax.lang.model.element.AnnotationMirror}s, such as {@link
+ * org.checkerframework.framework.type.QualifierHierarchy#isSubtype(AnnotationMirror,
+ * AnnotationMirror)}.
  */
 public class QualifierKindHierarchy {
 
     /**
      * A class that represent a particular class of annotation that is a qualifier. It holds
      * information about the relationship between itself and other {@link QualifierKind}s.
+     *
+     * <p>Exactly one qualifier kind is created for each annotation class.
      */
     // The private non-final fields of this class are set while creating the QualifierKindHierarchy.
     public static @Interned class QualifierKind implements Comparable<QualifierKind> {
@@ -63,7 +86,7 @@ public class QualifierKindHierarchy {
          *
          * @param clazz annotation class that this qualifier kind represents
          */
-        QualifierKind(Class<? extends Annotation> clazz) {
+        private QualifierKind(Class<? extends Annotation> clazz) {
             this.clazz = clazz;
             this.hasElements = clazz.getDeclaredMethods().length != 0;
             this.name = clazz.getCanonicalName().intern();
@@ -282,7 +305,7 @@ public class QualifierKindHierarchy {
      *     that a polymorphic annotation does not have a {@link SubtypeOf} meta-annotation
      * @throws UserError if the heirarchy isn't valid
      */
-    public void verifyHierarchy(Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
+    protected void verifyHierarchy(Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         for (QualifierKind qualifierKind : qualifierKindMap.values()) {
             boolean isPoly = qualifierKind.isPoly;
             boolean hasSubtype = directSuperMap.containsKey(qualifierKind);
@@ -400,7 +423,7 @@ public class QualifierKindHierarchy {
      * }
      * </pre>
      *
-     * If this method is not overriden, it has no effect.
+     * If this method is not overridden, it has no effect.
      *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifiers
@@ -643,7 +666,7 @@ public class QualifierKindHierarchy {
      * @param qualifierKinds the passed set
      * @return the lowest qualifiers in the passed set
      */
-    protected final Set<QualifierKind> findLowestQualifiers(Set<QualifierKind> qualifierKinds) {
+    private final Set<QualifierKind> findLowestQualifiers(Set<QualifierKind> qualifierKinds) {
         Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
             lowestQualifiers.removeIf(a2 -> a1 != a2 && a1.isSubtype(a2));
@@ -721,12 +744,74 @@ public class QualifierKindHierarchy {
      * @param qualifierKinds the passed set
      * @return the highest qualifiers in the passed set
      */
-    protected final Set<QualifierKind> findHighestQualifiers(Set<QualifierKind> qualifierKinds) {
+    private final Set<QualifierKind> findHighestQualifiers(Set<QualifierKind> qualifierKinds) {
         Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
             lowestQualifiers.removeIf(a2 -> a1 != a2 && a2.isSubtype(a1));
         }
         return lowestQualifiers;
+    }
+
+    /**
+     * Returns the qualifier kinds that are the top qualifier in their hierarchies.
+     *
+     * @return the qualifier kinds that are the top qualifier in their hierarchies
+     */
+    public Set<QualifierKind> getTops() {
+        return tops;
+    }
+
+    /**
+     * Returns the qualifier kinds that are the bottom qualifier in their hierarchies.
+     *
+     * @return the qualifier kinds that are the bottom qualifier in their hierarchies
+     */
+    public Set<QualifierKind> getBottoms() {
+        return bottoms;
+    }
+
+    /**
+     * Returns the least upper bound of {@code q1} and {@code q2}.
+     *
+     * @param q1 a qualifier kind
+     * @param q2 a qualifier kind
+     * @return the least upper bound of {@code q1} and {@code q2}
+     */
+    public QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2) {
+        return lubs.get(new QualifierKindPair(q1, q2));
+    }
+
+    /**
+     * Returns the greatest lower bound of {@code q1} and {@code q2}.
+     *
+     * @param q1 a qualifier kind
+     * @param q2 a qualifier kind
+     * @return the greatest lower bound of {@code q1} and {@code q2}
+     */
+    public QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2) {
+        return glbs.get(new QualifierKindPair(q1, q2));
+    }
+
+    /**
+     * Returns the mapping from the fully-qualified class name of an annotation to its qualifier
+     * kind.
+     *
+     * @return the mapping from the fully-qualified class name of an annotation to its qualifier
+     *     kind
+     */
+    public Map<String, QualifierKind> getQualifierKindMap() {
+        return qualifierKindMap;
+    }
+
+    /**
+     * The mapping from a top qualifier kind to the polymorphic qualifier kind in the same
+     * hierarchy.
+     *
+     * @return the mapping from a top qualifier kind to the polymorphic qualifier kind in the same
+     *     hierarchy
+     */
+    public Map<QualifierKind, QualifierKind> getPolyMap() {
+        return polyMap;
     }
 
     /**
@@ -789,29 +874,5 @@ public class QualifierKindHierarchy {
             }
             return this.qual1.compareTo(o.qual1);
         }
-    }
-
-    public Set<QualifierKind> getTops() {
-        return tops;
-    }
-
-    public Set<QualifierKind> getBottoms() {
-        return bottoms;
-    }
-
-    public QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2) {
-        return lubs.get(new QualifierKindPair(q1, q2));
-    }
-
-    public QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2) {
-        return glbs.get(new QualifierKindPair(q1, q2));
-    }
-
-    public Map<String, QualifierKind> getQualifierKindMap() {
-        return qualifierKindMap;
-    }
-
-    public Map<QualifierKind, QualifierKind> getPolyMap() {
-        return polyMap;
     }
 }
