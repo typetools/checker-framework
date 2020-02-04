@@ -19,21 +19,42 @@ import org.checkerframework.javacutil.UserError;
 
 /** NO AnnotationMirrors allowed in this class. */
 public class QualifierKindHierarchy {
+
+    /** A class represent a particular class of annotation that is a qualifier. */
     public static @Interned class QualifierKind implements Comparable<QualifierKind> {
+
+        /** The canonical name of the annotation class of this kind of qualifier. */
         private final @Interned String name;
+        /** The annotation class for this kind of qualifier. */
         private final Class<? extends Annotation> clazz;
+
+        /** Whether or not this kind of qualifier has elements. */
         private final boolean hasElements;
 
+        /** Whether or not this is a polymorphic kind of qualifier. */
         private boolean isPoly;
+
         /**
-         * All qualifiers that are a super qualifier of this qualifier, except for this qualifier
-         * itself.
+         * All the qualifier kinds that are a super qualifier of this qualifier, except for this
+         * qualifier itself.
          */
         private Set<QualifierKind> superTypes;
 
+        /**
+         * The qualifier kind that is the top of the hierarchy to which this qualifier kind belongs.
+         */
         private QualifierKind top;
+        /**
+         * The qualifier kind that is the bottom of the hierarchy to which this qualifier kind
+         * belongs.
+         */
         private QualifierKind bottom;
 
+        /**
+         * Creates a {@link QualifierKind} for the give annotation class.
+         *
+         * @param clazz annotation class that this qualifier kind represents
+         */
         QualifierKind(Class<? extends Annotation> clazz) {
             this.clazz = clazz;
             this.hasElements = clazz.getDeclaredMethods().length != 0;
@@ -44,22 +65,47 @@ public class QualifierKindHierarchy {
             bottom = null;
         }
 
+        /**
+         * Returns the canonical name of the annotation class of this kind of qualifier.
+         *
+         * @return the canonical name of the annotation class of this kind of qualifier
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Returns the annotation class for this kind of qualifier.
+         *
+         * @return the annotation class for this kind of qualifier
+         */
         public Class<? extends Annotation> getAnnotationClass() {
             return clazz;
         }
 
+        /**
+         * Whether or not this is a polymorphic qualifier kind.
+         *
+         * @return true if this is a polymorphic qualifier kind
+         */
         public boolean isPoly() {
             return isPoly;
         }
 
+        /**
+         * Whether or not this qualifier is the top qualifier of its hierarchy.
+         *
+         * @return true if this qualifier kind is the top qualifier of its hierarchy
+         */
         public boolean isTop() {
             return this.top == this;
         }
 
+        /**
+         * Whether or not this qualifier is the bottom qualifier of its hierarchy.
+         *
+         * @return true if this qualifier kind is the bottom qualifier of its hierarchy
+         */
         public boolean isBottom() {
             return this.bottom == this;
         }
