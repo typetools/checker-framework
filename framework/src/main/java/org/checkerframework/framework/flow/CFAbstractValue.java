@@ -268,9 +268,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             if (analysis.getTypeFactory()
                             .hasQualifierParameterInHierarchy(
                                     TypesUtils.getTypeElement(aTypeMirror), top)
-                    && (analysis.getTypeFactory()
+                    && analysis.getTypeFactory()
                             .hasQualifierParameterInHierarchy(
-                                    TypesUtils.getTypeElement(bTypeMirror), top))) {
+                                    TypesUtils.getTypeElement(bTypeMirror), top)) {
                 if (hierarchy.isSubtype(a, b) && hierarchy.isSubtype(b, a)) {
                     mostSpecific.add(b);
                 } else {
