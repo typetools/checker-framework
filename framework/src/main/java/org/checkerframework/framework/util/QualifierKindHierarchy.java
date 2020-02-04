@@ -25,6 +25,7 @@ public class QualifierKindHierarchy {
 
         /** The canonical name of the annotation class of this kind of qualifier. */
         private final @Interned String name;
+
         /** The annotation class for this kind of qualifier. */
         private final Class<? extends Annotation> clazz;
 
@@ -110,24 +111,62 @@ public class QualifierKindHierarchy {
             return this.bottom == this;
         }
 
+        /**
+         * All the qualifier kinds that are a super qualifier of this qualifier, except for this
+         * qualifier itself.
+         *
+         * @return all the qualifier kinds that are a super qualifier of this qualifier, except for
+         *     this qualifier itself
+         */
         public Set<QualifierKind> getSuperTypes() {
             return superTypes;
         }
 
+        /**
+         * Return the top qualifier kind of the hierarchy to which this qualifier kind belongs.
+         *
+         * @return the top qualifier kind of the hierarchy to which this qualifier kind belongs
+         */
         public QualifierKind getTop() {
             return top;
         }
 
+        /**
+         * Return the bottom qualifier kind of the hierarchy to which this qualifier kind belongs.
+         *
+         * @return the bottom qualifier kind of the hierarchy to which this qualifier kind belongs
+         */
         public QualifierKind getBottom() {
             return bottom;
         }
 
+        /**
+         * Whether or not the annotation class this qualifier kind represents has elements.
+         *
+         * @return true if the annotation class this qualifier kind represents has elements
+         */
         public boolean hasElements() {
             return hasElements;
         }
 
+        /**
+         * Whether or not this qualifier kind and {@code other} are in the same hierarchy.
+         *
+         * @param other an other qualifier kind
+         * @return true if this qualifier kind and {@code other} are in the same hierarchy
+         */
         public boolean areInSameHierarchy(QualifierKind other) {
             return this.top == other.top;
+        }
+
+        /**
+         * Whether or not this qualifier is a subtype of {@code superQual}.
+         *
+         * @param superQual other qualifier
+         * @return true if this qualifier is a subtype of {@code superQual}.
+         */
+        public boolean isSubtype(QualifierKind superQual) {
+            return this == superQual || superTypes.contains(superQual);
         }
 
         @Override
@@ -143,11 +182,8 @@ public class QualifierKindHierarchy {
             }
             return split[split.length - 1];
         }
-
-        public boolean isSubtype(QualifierKind superQual) {
-            return this == superQual || superTypes.contains(superQual);
-        }
     }
+
     /**
      * A mapping from interned, fully-qualified class name of a qualifier to the QualifierKind
      * object representing that class.
