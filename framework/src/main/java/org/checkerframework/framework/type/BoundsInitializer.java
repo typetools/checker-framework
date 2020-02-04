@@ -329,6 +329,11 @@ public class BoundsInitializer {
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
             initializeTypeArgs(type);
+            if (type.enclosingType != null) {
+                final BoundPathNode node = addPathNode(new EnclosingNode());
+                visit(type.enclosingType);
+                removePathNode(node);
+            }
             return null;
         }
 
@@ -925,17 +930,29 @@ public class BoundsInitializer {
         }
     }
 
-    // BoundPathNode's are a step in a "type path" that are used to
+    /** BoundPathNode's are a step in a "type path". */
     private abstract static class BoundPathNode {
+
+        /** Kinds of {@link BoundPathNode}s. */
         enum Kind {
+            /** Intersection kind */
             Extends,
+            /** Intersection kind */
             Super,
+            /** Intersection kind */
             UpperBound,
+            /** Intersection kind */
             LowerBound,
+            /** Intersection kind */
             ArrayComponent,
+            /** Intersection kind */
             Intersection,
+            /** Union kind */
             Union,
-            TypeArg
+            /** TypeArg kind */
+            TypeArg,
+            /** Enclosing kind */
+            Enclosing
         }
 
         public Kind kind;
@@ -972,6 +989,40 @@ public class BoundsInitializer {
         public abstract BoundPathNode copy();
     }
 
+    /** Represents an enclosing type in a path. */
+    private static class EnclosingNode extends BoundPathNode {
+
+        /** Create an enclosing node. */
+        EnclosingNode() {
+            kind = Kind.Enclosing;
+            typeKind = TypeKind.DECLARED;
+        }
+
+        /**
+         * Create a copy of the node.
+         *
+         * @param template node to copy
+         */
+        EnclosingNode(EnclosingNode template) {
+            super(template);
+        }
+
+        @Override
+        public void setType(AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
+            // An enclosing type cannot be a type variable, so do nothing.
+        }
+
+        @Override
+        public AnnotatedDeclaredType getType(final AnnotatedTypeMirror parent) {
+            return ((AnnotatedDeclaredType) parent).getEnclosingType();
+        }
+
+        @Override
+        public BoundPathNode copy() {
+            return new EnclosingNode(this);
+        }
+    }
+    /** Represents an extends type in a path. */
     private static class ExtendsNode extends BoundPathNode {
 
         ExtendsNode() {

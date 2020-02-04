@@ -18,6 +18,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -1667,6 +1668,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             "AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: "
                                     + element);
                 }
+                if (tree.getKind() == Kind.NEW_CLASS) {
+                    if (typeElt.getEnclosingElement() != null) {
+                        typeElt = ElementUtils.enclosingClass(typeElt.getEnclosingElement());
+                    } else {
+                        typeElt = null;
+                    }
+                    if (typeElt == null) {
+                        // If the typeElt does not have an enclosing class, then the NewClassTree
+                        // does not have an implicit receiver.
+                        return null;
+                    }
+                }
                 // TODO: method receiver annotations on outer this
                 return getEnclosingType(typeElt, tree);
             }
@@ -2177,7 +2190,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (newClassTree.getEnclosingExpression() != null) {
             enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
         } else {
-            enclosingType = null;
+            enclosingType = getImplicitReceiverType(newClassTree);
         }
         // Diamond trees that are not anonymous classes.
         if (TreeUtils.isDiamondTree(newClassTree) && newClassTree.getClassBody() == null) {
