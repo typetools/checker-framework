@@ -16,21 +16,31 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.UserError;
 
-/** All qualifiers must be represented by annotations without elements. */
+/**
+ * This is a qualifier hierarchy where no qualifiers are represented by annotations with elements.
+ *
+ * <p>It uses a {@link QualifierKindHierarchy} to model the relationships between qualifiers.
+ * Subclasses can override {@link #createQualifierKindHierarchy(Collection)} to return a subclass of
+ * QualifierKindHierarchy.
+ */
 public class SimpleHierarchy extends QualifierHierarchy {
-    private Elements elements;
     protected final QualifierKindHierarchy qualifierKindHierarchy;
     protected final Set<AnnotationMirror> tops;
     protected final Set<AnnotationMirror> bottoms;
     protected final Map<QualifierKind, AnnotationMirror> qualifierMap;
     protected final Set<? extends AnnotationMirror> qualifiers;
 
+    /**
+     * Creates a type hierarchy from the given classes.
+     *
+     * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+     * @param elements element utils
+     */
     public SimpleHierarchy(
             Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-        this.elements = elements;
         this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);
 
-        this.qualifierMap = createQualifiers();
+        this.qualifierMap = createAnnotationMirrors(elements);
         Set<AnnotationMirror> qualifiers = AnnotationUtils.createAnnotationSet();
         qualifiers.addAll(qualifierMap.values());
         this.qualifiers = Collections.unmodifiableSet(qualifiers);
@@ -39,7 +49,27 @@ public class SimpleHierarchy extends QualifierHierarchy {
         this.bottoms = createBottoms();
     }
 
-    protected Map<QualifierKind, AnnotationMirror> createQualifiers() {
+    /**
+     * Create the {@link QualifierKindHierarchy}. (Subclasses may override to return a subclass of
+     * QualifierKindHierarchy.)
+     *
+     * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+     * @return the newly created qualifier kind hierarchy
+     */
+    protected QualifierKindHierarchy createQualifierKindHierarchy(
+            Collection<Class<? extends Annotation>> qualifierClasses) {
+        return new QualifierKindHierarchy(qualifierClasses);
+    }
+
+    /**
+     * Creates and returns a mapping from qualifier kind to an annotation mirror created from the
+     * qualifier kind's annotation class.
+     *
+     * @param elements element utils
+     * @return a mapping from qualifier kind to an annotation mirror created from the qualifier
+     *     kind's annotation class
+     */
+    protected Map<QualifierKind, AnnotationMirror> createAnnotationMirrors(Elements elements) {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getQualifierKindMap().values()) {
             if (kind.hasElements()) {
@@ -70,11 +100,6 @@ public class SimpleHierarchy extends QualifierHierarchy {
             }
         }
         return Collections.unmodifiableSet(bottoms);
-    }
-
-    protected QualifierKindHierarchy createQualifierKindHierarchy(
-            Collection<Class<? extends Annotation>> qualifierClasses) {
-        return new QualifierKindHierarchy(qualifierClasses);
     }
 
     protected QualifierKind getQualifierKind(AnnotationMirror anno) {
