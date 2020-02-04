@@ -200,12 +200,12 @@ public class FlowExpressionParseUtil {
 
         @Override
         public Receiver visit(IntegerLiteralExpr expr, FlowExpressionContext context) {
-            return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), expr.asInt());
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), expr.asNumber());
         }
 
         @Override
         public Receiver visit(LongLiteralExpr expr, FlowExpressionContext context) {
-            return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), expr.asLong());
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), expr.asNumber());
         }
 
         @Override
