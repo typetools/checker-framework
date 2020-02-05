@@ -231,7 +231,7 @@ public interface Map<K, V> {
     // any of the arguments is a null).  And some implementations do not
     // permit nulls (sorted queues PriorityQueue, Hashtable, most concurrent
     // collections).  Some other implementation do accept nulls and are so
-    // annotatied (see ArrayList, LinkedList, HashMap).
+    // annotated (see ArrayList, LinkedList, HashMap).
     @Pure
     @Nullable V get(@Nullable Object key);
 

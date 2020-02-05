@@ -14,7 +14,7 @@ public class NullnessFbcTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public NullnessFbcTest(List<File> testFiles) {
-        // TODO: remove forbidnonnullarraycomponents option once it's no
+        // TODO: remove soundArrayCreationNullness option once it's no
         // longer needed.  See issue #986:
         // https://github.com/typetools/checker-framework/issues/986
         super(
@@ -24,7 +24,7 @@ public class NullnessFbcTest extends CheckerFrameworkPerDirectoryTest {
                 "-AcheckPurityAnnotations",
                 "-Anomsgtext",
                 "-Xlint:deprecation",
-                "-Alint=forbidnonnullarraycomponents,"
+                "-Alint=soundArrayCreationNullness,"
                         + NullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }
 

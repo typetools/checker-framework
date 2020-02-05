@@ -4,14 +4,15 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
 
-    <name>Dataflow</name>
+    <name>Dataflow (shaded)</name>
     <url>https://checkerframework.org</url>
     <description>
-        Dataflow is a dataflow framework based on the javac compiler.
+        Dataflow is a dataflow framework based on the javac compiler. The packages in this artifact
+        have been renamed to org.checkerframework.shaded.*.
     </description>
 
     <groupId>org.checkerframework</groupId>
-    <artifactId>dataflow</artifactId>
+    <artifactId>dataflow-shaded</artifactId>
 
     <licenses>
         <license>
@@ -27,20 +28,6 @@
         </license>
     </licenses>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>checker-qual</artifactId>
-            <version><!-- checker-framework-version -->3.1.1<!-- /checker-framework-version --></version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>javacutil</artifactId>
-            <version><!-- checker-framework-version -->3.1.1<!-- /checker-framework-version --></version>
-            <type>jar</type>
-        </dependency>
-    </dependencies>
 
     <!-- The comments in the version number are used to do a text substitution. Don't remove them.
          See checker-framework/bin/poms/updateVersion.sh -->
