@@ -334,16 +334,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // on the implementations (in this case) or call-sites (for method parameters) that are
         // available to WPI.
         //
-        // TODO: Performing this for each return statement is inefficient. It would
-        //  be enough to propagate the information once at the end of WPI, for the
-        //  final return type.
-        //
-        // In addition, it's inefficient to propagate (elsewhere) when the overriding
-        // relationship is discovered. More information may be discovered but not propagated.
-        // This could lead to an extra iteration of WPI, which would be very costly.
-        //
-        // It would be better to record overriding relationships as they are discovered,
-        // then do all propagation related to them at the end of one iteration of WPI.
+        // Implementing this inference for each return statement is no more inefficient than
+        // doing so in one pass at the end (in terms of WPI iterations), and is considerably
+        // more convenient than collecting all of this information in a separate data structure
+        // as WPI runs and then updating each overridden method once, which would also require
+        // a second pass of the AST.
         //
         for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
                 overriddenMethods.entrySet()) {
