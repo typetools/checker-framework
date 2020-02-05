@@ -334,7 +334,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // on the implementations (in this case) or call-sites (for method parameters) that are
         // available to WPI.
         //
-        // Implementing this inference for each return statement is no more inefficient than
+        // Implementing this inference for each return statement is no less efficient than
         // doing so in one pass at the end (in terms of WPI iterations), and is considerably
         // more convenient than collecting all of this information in a separate data structure
         // as WPI runs and then updating each overridden method once, which would also require
