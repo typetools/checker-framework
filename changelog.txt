@@ -1,5 +1,15 @@
 Version 3.1.3, March 2, 2020
 
+-Ainfer now takes an argument:
+ * -Ainfer=jaifs uses .jaif files to store the results of whole-program inference.
+   No argument defaults to this behavior for backwards compatibility.
+ * -Ainfer=stubs uses .astub files to store the results of whole-program inference
+
+New command-line option:
+  -AmergeStubsWithSource If both a stub file and a source file are available, use
+                         the GLB of the types in the two. Overrides the default,
+                         which is to ignore the stub file if a source file is present.
+
 ---------------------------------------------------------------------------
 
 Version 3.1.1, February 3, 2020
