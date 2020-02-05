@@ -192,8 +192,8 @@ import org.checkerframework.javacutil.UserError;
     "resolveReflection",
 
     // Whether to use whole-program inference. Optionally takes an argument to specify the
-    // output format: "-Ainfer=stubs" or "-Ainfer=jaif". If no argument is provided, the default
-    // is "-Ainfer=jaif".
+    // output format: "-Ainfer=stubs" or "-Ainfer=jaifs". If no argument is provided, the default
+    // is "-Ainfer=jaifs".
     "infer",
 
     // With each warning, in addition to the concrete error key,

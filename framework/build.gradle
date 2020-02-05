@@ -159,7 +159,7 @@ task wholeProgramInferenceStubTests(dependsOn: 'shadowJar', group: 'Verification
 }
 
 task testWPI(type: Test) {
-    description 'Internal task to run the whole-program-inference tests with -Ainfer to generate .jaif files'
+    description 'Internal task to run the whole-program-inference tests with -Ainfer=jaifs to generate .jaif files'
     doFirst {
         delete("tests/whole-program-inference/annotated")
     }

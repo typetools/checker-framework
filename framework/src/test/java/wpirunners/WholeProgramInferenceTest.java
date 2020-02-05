@@ -17,7 +17,12 @@ public class WholeProgramInferenceTest extends FrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public WholeProgramInferenceTest(List<File> testFiles) {
-        super(testFiles, WholeProgramInferenceTestChecker.class, "value", "-Anomsgtext", "-Ainfer");
+        super(
+                testFiles,
+                WholeProgramInferenceTestChecker.class,
+                "value",
+                "-Anomsgtext",
+                "-Ainfer=jaifs");
     }
 
     @Parameters
