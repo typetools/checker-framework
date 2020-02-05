@@ -217,15 +217,23 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         return analysis.createAbstractValue(mostSpecific, mostSpecifTypeMirror);
     }
 
+    /** Computes the most specific annotations. */
     private class MostSpecificVisitor extends AnnotationSetAndTypeMirrorVisitor {
+        /**
+         * This is set to true, if there is no back up value, but one is required then the resulting
+         * set will not be the most specific.
+         */
         boolean error = false;
-        // TypeMirror backupTypeMirror;
+
+        /** Set of annotations to use if a most specific value cannot be found. */
         Set<AnnotationMirror> backupSet;
+
         /** Set of most specific annotations. Annotations are added by the visitor. */
         Set<AnnotationMirror> mostSpecific;
 
         /** TypeMirror for the "a" value. */
         TypeMirror aTypeMirror;
+
         /** TypeMirror for the "b" value. */
         TypeMirror bTypeMirror;
 
