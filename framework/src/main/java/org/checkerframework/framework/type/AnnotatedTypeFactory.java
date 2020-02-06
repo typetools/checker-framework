@@ -453,10 +453,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         infer = checker.hasOption("infer");
         if (infer) {
             checkInvalidOptionsInferSignatures();
-            wpiOutputKind =
-                    "stubs".equals(checker.getOption("infer"))
-                            ? WholeProgramInference.OutputKind.STUB
-                            : WholeProgramInference.OutputKind.JAIF;
+            String wpiOutputArg = checker.getOption("infer");
+            // continue to support no argument for backwards compatibility
+            if (wpiOutputArg == null) {
+                wpiOutputArg = "jaifs";
+            }
+            switch (wpiOutputArg) {
+                case "stubs":
+                    wpiOutputKind = WholeProgramInference.OutputKind.STUB;
+                    break;
+                case "jaifs":
+                    wpiOutputKind = WholeProgramInference.OutputKind.JAIF;
+                    break;
+                default:
+                    throw new UserError(
+                            "Unexpected option to -Ainfer: "
+                                    + wpiOutputArg
+                                    + "\n"
+                                    + "Available options: -Ainfer=jaifs, -Ainfer=stubs");
+            }
             wholeProgramInference =
                     new WholeProgramInferenceScenes(
                             !"NullnessAnnotatedTypeFactory"
