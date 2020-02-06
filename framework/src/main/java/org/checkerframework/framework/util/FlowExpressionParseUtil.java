@@ -138,6 +138,8 @@ public class FlowExpressionParseUtil {
         }
         if (result instanceof ClassName
                 && !expression.endsWith(".class")
+                // At a call site, "#1" may be transformed to "Something.class", so don't throw an
+                // exception in that case.
                 && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
             throw constructParserException(
                     expression,
@@ -198,12 +200,12 @@ public class FlowExpressionParseUtil {
 
         @Override
         public Receiver visit(IntegerLiteralExpr expr, FlowExpressionContext context) {
-            return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), expr.asInt());
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), expr.asNumber());
         }
 
         @Override
         public Receiver visit(LongLiteralExpr expr, FlowExpressionContext context) {
-            return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), expr.asLong());
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), expr.asNumber());
         }
 
         @Override

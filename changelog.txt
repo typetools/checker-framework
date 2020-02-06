@@ -1,5 +1,29 @@
+Version 3.1.3, March 2, 2020
+
+---------------------------------------------------------------------------
+
+Version 3.1.1, February 3, 2020
+
+New command-line options:
+  -AassumeDeterministic Unsoundly assume that every method is deterministic
+  -AassumePure Unsoundly assume that every method is pure
+
+Renamed -Anocheckjdk to -ApermitMissingJdk.
+The old version still works, for backward compatibility.
+
+Renamed -Alint=forbidnonnullarraycomponents to
+-Alint=soundArrayCreationNullness.  The old version still works, for
+backward compatibility.
+
 Implementation details:
  * Deprecated QualifierHierarchy#getTypeQualifiers.
+ * Deprecated Analysis#Analysis(ProcessingEnvironment) and Analysis#Analysis(T,
+   int, ProcessingEnvironment); use Analysis#Analysis(), Analysis#Analysis(int),
+   Analysis#Analysis(T), and Analysis#Analysis(T, int) instead.
+
+Closed issues:
+
+2181, 2975, 3018, 3022, 3032, 3036, 3037, 3038, 3041, 3049, 3055, 3076.
 
 ---------------------------------------------------------------------------
 

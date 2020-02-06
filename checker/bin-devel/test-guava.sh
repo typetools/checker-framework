@@ -20,12 +20,10 @@ echo "BUILDJDK=${BUILDJDK}"
 source $SCRIPTDIR/build.sh ${BUILDJDK}
 
 
-## checker-framework-inference is a downstream test, but run it in its
-## own group because it is most likely to fail, and it's helpful to see
-## that only it, not other downstream tests, failed.
+/tmp/plume-scripts/git-clone-related typetools guava
+cd ../guava
 
-/tmp/plume-scripts/git-clone-related opprop checker-framework-inference
+## This command works locally, but on Azure it fails with timouts while downloading Maven dependencies.
+# cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
 
-export AFU="${AFU:-$(cd ../annotation-tools/annotation-file-utilities && pwd -P)}"
-export PATH=$AFU/scripts:$PATH
-(cd ../checker-framework-inference && ./.travis-build.sh)
+cd guava && time mvn --debug -B compile -P checkerframework-local

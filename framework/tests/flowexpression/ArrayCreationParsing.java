@@ -9,7 +9,8 @@ public class ArrayCreationParsing {
 
     @FlowExp("new String[2]") Object value3;
 
-    @FlowExp("new String[] {\"a\", \"b\"}") Object value4;
+    @FlowExp("new String[] {\"a\", \"b\"}")
+    Object value4;
 
     int i;
 
@@ -17,11 +18,9 @@ public class ArrayCreationParsing {
 
     @FlowExp("new int[this.i]") Object value6;
 
-    @FlowExp("new int[getI()]")
-    Object value7;
+    @FlowExp("new int[getI()]") Object value7;
 
-    @FlowExp("new int[] {i, this.i, getI()}")
-    Object value8;
+    @FlowExp("new int[] {i, this.i, getI()}") Object value8;
 
     int getI() {
         return i;

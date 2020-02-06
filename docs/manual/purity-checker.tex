@@ -101,9 +101,10 @@ from superclass definitions.
 
 \sectionAndLabel{Suppressing warnings}{purity-suppress-warnings}
 
-The command-line option
-\<-AassumeSideEffectFree> makes the Checker Framework unsoundly
-assume that \emph{every} called method is side-effect-free.  This can make
+The command-line options \<-AassumeSideEffectFree>,
+\<-AassumeDeterministic>, \<-AassumePure> make the Checker Framework unsoundly
+assume that \emph{every} called method is side-effect-free, is
+deterministic, or is both, respectively.  This can make
 flow-sensitive type refinement much more effective, since method calls will
 not cause the analysis to discard information that it has learned.
 However, this option can mask real errors.  It is most appropriate when you
