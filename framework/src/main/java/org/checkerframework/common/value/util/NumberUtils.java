@@ -126,7 +126,7 @@ public class NumberUtils {
     }
 
     /**
-     * Return true if the argument AnnotatedTypeMirror is a (possibly boxed) integral type.
+     * Return true if the argument TypeMirror is a (possibly boxed) integral type.
      *
      * @param type the type to inspect
      * @return true if type is an integral type
@@ -155,7 +155,7 @@ public class NumberUtils {
     }
 
     /**
-     * Return true if the argument AnnotatedTypeMirror is a (possibly boxed) floating point type.
+     * Return true if the argument TypeMirror is a (possibly boxed) floating point type.
      *
      * @param type the type to inspect
      * @return true if type is a floating point type
