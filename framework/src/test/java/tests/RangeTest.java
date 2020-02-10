@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.value.util.Range;
+import org.checkerframework.javacutil.BugInCF;
 import org.junit.Test;
 
 /** This class tests the Range class, independent of the Value Checker. */
@@ -679,7 +680,7 @@ public class RangeTest {
         assertEquals(Range.LONG_EVERYTHING, Range.create(TypeKind.LONG));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = BugInCF.class)
     public void testFactoryTypeKindFailure() {
         Range.create(TypeKind.FLOAT);
     }
