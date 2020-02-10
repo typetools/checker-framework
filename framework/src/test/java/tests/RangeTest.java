@@ -683,4 +683,18 @@ public class RangeTest {
     public void testFactoryTypeKindFailure() {
         Range.create(TypeKind.FLOAT);
     }
+
+    @Test
+    public void testFactoryTypeKind() {
+        assertEquals(Range.BYTE_EVERYTHING, Range.create(TypeKind.BYTE));
+        assertEquals(Range.INT_EVERYTHING, Range.create(TypeKind.INT));
+        assertEquals(Range.SHORT_EVERYTHING, Range.create(TypeKind.SHORT));
+        assertEquals(Range.CHAR_EVERYTHING, Range.create(TypeKind.CHAR));
+        assertEquals(Range.LONG_EVERYTHING, Range.create(TypeKind.LONG));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testFactoryTypeKindFailure() {
+        Range.create(TypeKind.FLOAT);
+    }
 }

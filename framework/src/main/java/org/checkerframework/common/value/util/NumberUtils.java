@@ -5,6 +5,7 @@ import java.util.List;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class NumberUtils {
@@ -99,29 +100,47 @@ public class NumberUtils {
      * @param type a primitive or boxed primitive type
      * @return a primitive type
      */
-    private static TypeKind unboxPrimitive(TypeMirror type) {
-        if (type.getKind() == TypeKind.DECLARED) {
-            String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
-
-            switch (typeString) {
-                case "java.lang.Byte":
-                    return TypeKind.BYTE;
-                case "java.lang.Boolean":
-                    return TypeKind.BOOLEAN;
-                case "java.lang.Character":
-                    return TypeKind.CHAR;
-                case "java.lang.Double":
-                    return TypeKind.DOUBLE;
-                case "java.lang.Float":
-                    return TypeKind.FLOAT;
-                case "java.lang.Integer":
-                    return TypeKind.INT;
-                case "java.lang.Long":
-                    return TypeKind.LONG;
-                case "java.lang.Short":
-                    return TypeKind.SHORT;
-            }
+    public static TypeKind unboxPrimitive(TypeMirror type) {
+        final TypeKind typeKind = type.getKind();
+        if (typeKind.isPrimitive()) {
+            return typeKind;
         }
-        return type.getKind();
+
+        final String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+
+        switch (typeString) {
+            case "java.lang.Byte":
+                return TypeKind.BYTE;
+            case "java.lang.Boolean":
+                return TypeKind.BOOLEAN;
+            case "java.lang.Character":
+                return TypeKind.CHAR;
+            case "java.lang.Double":
+                return TypeKind.DOUBLE;
+            case "java.lang.Float":
+                return TypeKind.FLOAT;
+            case "java.lang.Integer":
+                return TypeKind.INT;
+            case "java.lang.Long":
+                return TypeKind.LONG;
+            case "java.lang.Short":
+                return TypeKind.SHORT;
+            default:
+                throw new BugInCF("Expected primitive wrapper, got " + type + " kind: " + typeKind);
+        }
+    }
+
+    // TODO: use version from other PR
+    public static boolean isPrimitiveIntegral(TypeKind typeKind) {
+        switch (typeKind) {
+            case INT:
+            case SHORT:
+            case BYTE:
+            case CHAR:
+            case LONG:
+                return true;
+            default:
+                return false;
+        }
     }
 }

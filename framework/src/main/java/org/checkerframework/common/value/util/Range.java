@@ -6,7 +6,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
@@ -112,6 +114,30 @@ public class Range {
             if (max < current) max = current;
         }
         return create(min, max);
+    }
+
+    /**
+     * Returns a Range representing all possible values for the given primitive type.
+     *
+     * @param typeKind one of INT, SHORT, BYTE, CHAR, or LONG
+     * @return the range for the given primitive type
+     */
+    public static Range create(TypeKind typeKind) {
+        switch (typeKind) {
+            case INT:
+                return INT_EVERYTHING;
+            case SHORT:
+                return SHORT_EVERYTHING;
+            case BYTE:
+                return BYTE_EVERYTHING;
+            case CHAR:
+                return CHAR_EVERYTHING;
+            case LONG:
+                return LONG_EVERYTHING;
+            default:
+                throw new BugInCF(
+                        "create(" + typeKind + "), expected INT, SHORT, BYTE, CHAR, or LONG");
+        }
     }
 
     /** Long.MIN_VALUE, as a BigInteger. */
