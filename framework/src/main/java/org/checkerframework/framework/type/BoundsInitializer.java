@@ -305,6 +305,7 @@ public class BoundsInitializer {
          */
         private final Map<IntersectionType, AnnotatedIntersectionType> intersections =
                 new HashMap<>();
+
         /**
          * Mapping from {@link TypeVariable} to {@link AnnotatedTypeMirror}. The annotated type
          * mirror should be used for any use of the type variable rather than creating and
@@ -525,6 +526,7 @@ public class BoundsInitializer {
             visit(upperBound);
             currentStructure.removePathNode(pathNode);
         }
+
         /**
          * Initialize {@code typeVar}'s lower bound.
          *
@@ -764,7 +766,7 @@ public class BoundsInitializer {
 
     /**
      * Contains all the type variables and the type path to reach them found when scanning a
-     * particular type variable or wildcard. then uses this information for replace the type
+     * particular type variable or wildcard. Then uses this information to replace the type
      * variables with AnnotatedTypeVariables.
      */
     private static class RecursiveTypeStructure {
@@ -811,14 +813,14 @@ public class BoundsInitializer {
         }
 
         /**
-         * For all type variables contained with in the type variable or wildcard that this
+         * For all type variables contained within the type variable or wildcard that this
          * structure represents, this a list of the replacement {@link AnnotatedTypeVariable} for
          * the location specified by the {@link TypePath}.
          */
         private List<Pair<TypePath, AnnotatedTypeVariable>> replacementList;
 
         /**
-         * Find the AnnotatedTypeVariables the should replace the type variables found in this type.
+         * Find the AnnotatedTypeVariables that should replace the type variables found in this type.
          *
          * @param typeVarToStructure a mapping from TypeVariable to TypeVariableStructure
          */
@@ -956,7 +958,7 @@ public class BoundsInitializer {
     }
 
     /**
-     * A {@link TypePathNode} represents represents a "location" of a composite type. For example,
+     * A {@link TypePathNode} represents a "location" of a composite type. For example,
      * an {@link UpperBoundNode} represents the upper bound type of a type variable.
      */
     private abstract static class TypePathNode {
