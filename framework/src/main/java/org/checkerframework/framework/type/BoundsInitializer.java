@@ -344,7 +344,7 @@ public class BoundsInitializer {
                 return null;
             }
 
-            intersections.put((IntersectionType) type.getUnderlyingType(), type);
+            intersections.put(type.getUnderlyingType(), type);
 
             final List<AnnotatedDeclaredType> supertypes = type.directSuperTypes();
             for (int i = 0; i < supertypes.size(); i++) {
