@@ -276,8 +276,8 @@ public class BoundsInitializer {
      */
     private static class InitializerVisitor implements AnnotatedTypeVisitor<Void, Void> {
         /**
-         * The RecursiveTypeStructure corresponding to the first wildcard or type variable bound
-         * initialization that kicked this visitation off.
+         * The {@link RecursiveTypeStructure} corresponding to the first wildcard or type variable
+         * bound initialization that kicked this visitation off.
          */
         private final RecursiveTypeStructure topLevelStructure;
 
@@ -291,31 +291,30 @@ public class BoundsInitializer {
         private final Map<TypeVariable, TypeVariableStructure> typeVarToStructure = new HashMap<>();
 
         /**
-         * A mapping from WildcardType to its {@link AnnotatedWildcardType}. The first time this
-         * visitor encounters a wildcard it creates an annotated type and adds it to this map. The
-         * next time the wilcard is encounter, the annotated type in this map is returned.
+         * A mapping from WildcardType to its AnnotatedWildcardType. The first time this visitor
+         * encounters a wildcard it creates an annotated type and adds it to this map. The next time
+         * the wilcard is encounter, the annotated type in this map is returned.
          */
         private final Map<WildcardType, AnnotatedWildcardType> wildcards = new HashMap<>();
 
         /**
-         * A mapping from IntersectionType to its {@link AnnotatedIntersectionType}. The first time
-         * this visitor encounters an intersection it creates an annotated type and adds it to this
-         * map. The next time the intersection is encounter, the annotated type in this map is
-         * returned.
+         * A mapping from IntersectionType to its AnnotatedIntersectionType. The first time this
+         * visitor encounters an intersection it creates an annotated type and adds it to this map.
+         * The next time the intersection is encounter, the annotated type in this map is returned.
          */
         private final Map<IntersectionType, AnnotatedIntersectionType> intersections =
                 new HashMap<>();
 
         /**
-         * Mapping from {@link TypeVariable} to {@link AnnotatedTypeMirror}. The annotated type
-         * mirror should be used for any use of the type variable rather than creating and
-         * initializing a new annotated type. This is used for type arguments that have already been
-         * initialized outside of this visitor.
+         * Mapping from TypeVariable to AnnotatedTypeMirror. The annotated type mirror should be
+         * used for any use of the type variable rather than creating and initializing a new
+         * annotated type. This is used for type arguments that have already been initialized
+         * outside of this visitor.
          */
         private final Map<TypeVariable, AnnotatedTypeMirror> typevars;
 
         /**
-         * Creates an {@link InitializerVisitor}.
+         * Creates an InitializerVisitor.
          *
          * @param recursiveTypeStructure structure for the type being initialized
          * @param typevars a mapping from type variable to annotated types that have already been
