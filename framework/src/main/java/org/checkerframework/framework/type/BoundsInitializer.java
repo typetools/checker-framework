@@ -308,7 +308,7 @@ public class BoundsInitializer {
         /**
          * Mapping from {@link TypeVariable} to {@link AnnotatedTypeMirror}. The annotated type
          * mirror should be used for any use of the type variable rather than creating and
-         * initializing a new annotated type. This is used for type variable that have already been
+         * initializing a new annotated type. This is used for type arguments that have already been
          * initialized outside of this visitor.
          */
         private final Map<TypeVariable, AnnotatedTypeMirror> typevars;
@@ -812,7 +812,7 @@ public class BoundsInitializer {
 
         /**
          * For all type variables contained with in the type variable or wildcard that this
-         * structure represents, this a list of the replacement {@link AnnotatedTypeVariable} for
+         * structure represents, this is a list of the replacement {@link AnnotatedTypeVariable} for
          * the location specified by the {@link TypePath}.
          */
         private List<Pair<TypePath, AnnotatedTypeVariable>> replacementList;
@@ -1066,7 +1066,7 @@ public class BoundsInitializer {
         }
 
         @Override
-        public void replaceTypeInternal(
+        protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             // An enclosing type cannot be a type variable, so do nothing.
         }
@@ -1090,13 +1090,13 @@ public class BoundsInitializer {
         }
 
         @Override
-        public void replaceTypeInternal(
+        protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             ((AnnotatedWildcardType) parent).setExtendsBound(replacement);
         }
 
         @Override
-        public AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
+        protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             return ((AnnotatedWildcardType) parent).getExtendsBound();
         }
 
@@ -1114,13 +1114,13 @@ public class BoundsInitializer {
         }
 
         @Override
-        public void replaceTypeInternal(
+        protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             ((AnnotatedWildcardType) parent).setSuperBound(replacement);
         }
 
         @Override
-        public AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
+        protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             return ((AnnotatedWildcardType) parent).getSuperBound();
         }
 
@@ -1139,13 +1139,13 @@ public class BoundsInitializer {
         }
 
         @Override
-        public void replaceTypeInternal(
+        protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             ((AnnotatedTypeVariable) parent).setUpperBound(replacement);
         }
 
         @Override
-        public AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
+        protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedTypeVariable parentAtv = (AnnotatedTypeVariable) parent;
             if (parentAtv.getUpperBoundField() != null) {
                 return parentAtv.getUpperBoundField();
@@ -1168,13 +1168,13 @@ public class BoundsInitializer {
         }
 
         @Override
-        public void replaceTypeInternal(
+        protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             ((AnnotatedTypeVariable) parent).setLowerBound(replacement);
         }
 
         @Override
-        public AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
+        protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
 
             AnnotatedTypeVariable parentAtv = (AnnotatedTypeVariable) parent;
             if (parentAtv.getLowerBoundField() != null) {
@@ -1199,13 +1199,13 @@ public class BoundsInitializer {
         }
 
         @Override
-        public void replaceTypeInternal(
+        protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             ((AnnotatedArrayType) parent).setComponentType(replacement);
         }
 
         @Override
-        public AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
+        protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             return ((AnnotatedArrayType) parent).getComponentType();
         }
 
@@ -1248,7 +1248,7 @@ public class BoundsInitializer {
         }
 
         @Override
-        public void replaceTypeInternal(
+        protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             throw new BugInCF(
                     "Type variables cannot be intersection bounds.\n"
@@ -1260,7 +1260,7 @@ public class BoundsInitializer {
         }
 
         @Override
-        public AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
+        protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedIntersectionType isect = (AnnotatedIntersectionType) parent;
             if (parent.directSuperTypes().size() <= superIndex) {
                 throw new BugInCF(
@@ -1311,7 +1311,7 @@ public class BoundsInitializer {
         }
 
         @Override
-        public void replaceTypeInternal(
+        protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             throw new BugInCF(
                     "Union types cannot be intersection bounds.\n"
@@ -1323,7 +1323,7 @@ public class BoundsInitializer {
         }
 
         @Override
-        public AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
+        protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedUnionType isect = (AnnotatedUnionType) parent;
             if (parent.directSuperTypes().size() <= altIndex) {
                 throw new BugInCF("Invalid altIndex( " + altIndex + " ):\n" + "parent=" + parent);
@@ -1370,7 +1370,7 @@ public class BoundsInitializer {
         }
 
         @Override
-        public void replaceTypeInternal(
+        protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             AnnotatedDeclaredType parentAdt = (AnnotatedDeclaredType) parent;
             List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(parentAdt.getTypeArguments());
@@ -1392,7 +1392,7 @@ public class BoundsInitializer {
         }
 
         @Override
-        public AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
+        protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedDeclaredType parentAdt = (AnnotatedDeclaredType) parent;
 
             List<AnnotatedTypeMirror> typeArgs = parentAdt.getTypeArguments();
