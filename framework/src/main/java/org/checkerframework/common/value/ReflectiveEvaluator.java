@@ -172,7 +172,8 @@ public class ReflectiveEvaluator {
      * Method for reflectively obtaining a method object so it can (potentially) be statically
      * executed by the checker for constant propagation.
      *
-     * @return the Method object corresponding to the method being invoke in tree
+     * @param tree a method invocation tree
+     * @return the Method object corresponding to the method invocation tree
      */
     private Method getMethodObject(MethodInvocationTree tree) {
         final ExecutableElement ele = TreeUtils.elementFromUse(tree);
