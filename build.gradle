@@ -122,6 +122,9 @@ allprojects {
         }
 
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
+
+        // provides backward-compatible packages for IDE to import
+        compileOnly "com.google.errorprone:javac:9+181-r4173-1"
     }
 
     // After all the tasks have been created, modify some of them.
