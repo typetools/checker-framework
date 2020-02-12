@@ -18,6 +18,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -201,10 +202,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected TypeArgumentInference typeArgumentInference;
 
     /**
-     * To cache the supported type qualifiers. call {@link #getSupportedTypeQualifiers()} instead of
-     * using this field directly, as it may not have been initialized.
+     * Caches the supported type qualifier classes. Call {@link #getSupportedTypeQualifiers()}
+     * instead of using this field directly, as it may not have been initialized.
      */
     private final Set<Class<? extends Annotation>> supportedQuals;
+
+    /**
+     * Caches the fully-qualified names of the classes in {@link #supportedQuals}. Call {@link
+     * #getSupportedTypeQualifierNames()} instead of using this field directly, as it may not have
+     * been initialized.
+     */
+    private final Set<String> supportedQualNames;
 
     /** Parses stub files and stores annotations from stub files. */
     public final StubTypes stubTypes;
@@ -401,6 +409,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.visitorState = new VisitorState();
 
         this.supportedQuals = new HashSet<>();
+        this.supportedQualNames = new HashSet<>();
         this.stubTypes = new StubTypes(this);
 
         this.cacheDeclAnnos = new HashMap<>();
@@ -906,7 +915,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an immutable set of the type qualifiers supported by this checker.
+     * Returns an immutable set of the classes corresponding to the type qualifiers supported by
+     * this checker.
      *
      * <p>Subclasses cannot override this method; they should override {@link
      * #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
@@ -921,6 +931,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             checkSupportedQuals();
         }
         return Collections.unmodifiableSet(supportedQuals);
+    }
+
+    /**
+     * Returns an immutable set of the fully qualified names of the type qualifiers supported by
+     * this checker.
+     *
+     * <p>Subclasses cannot override this method; they should override {@link
+     * #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
+     *
+     * @see #createSupportedTypeQualifiers()
+     * @return an immutable set of the supported type qualifiers, or an empty set if no qualifiers
+     *     are supported
+     */
+    public final Set<String> getSupportedTypeQualifierNames() {
+        if (this.supportedQualNames.isEmpty()) {
+            for (Class<?> clazz : getSupportedTypeQualifiers()) {
+                supportedQualNames.add(clazz.getCanonicalName());
+            }
+        }
+        return Collections.unmodifiableSet(supportedQualNames);
     }
 
     // **********************************************************************
@@ -962,15 +992,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return type;
     }
 
-    /**
-     * Return the annotation on {@code tree} that is in the hierarchy that contains the qualifier
-     * {@code target}. Returns null if none exists, or if {@code target} is not a supported
-     * qualifier.
-     */
     @Override
-    public AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target) {
-        AnnotationMirror mirror = AnnotationBuilder.fromClass(elements, target);
-        if (isSupportedQualifier(mirror)) {
+    public @Nullable AnnotationMirror getAnnotationMirror(
+            Tree tree, Class<? extends Annotation> target) {
+        if (isSupportedQualifier(target)) {
             AnnotatedTypeMirror atm = getAnnotatedType(tree);
             return atm.getAnnotation(target);
         }
@@ -1638,6 +1663,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             "AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: "
                                     + element);
                 }
+                if (tree.getKind() == Kind.NEW_CLASS) {
+                    if (typeElt.getEnclosingElement() != null) {
+                        typeElt = ElementUtils.enclosingClass(typeElt.getEnclosingElement());
+                    } else {
+                        typeElt = null;
+                    }
+                    if (typeElt == null) {
+                        // If the typeElt does not have an enclosing class, then the NewClassTree
+                        // does not have an implicit receiver.
+                        return null;
+                    }
+                }
                 // TODO: method receiver annotations on outer this
                 return getEnclosingType(typeElt, tree);
             }
@@ -2161,7 +2198,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (newClassTree.getEnclosingExpression() != null) {
             enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
         } else {
-            enclosingType = null;
+            enclosingType = getImplicitReceiverType(newClassTree);
         }
         // Diamond trees that are not anonymous classes.
         if (TreeUtils.isDiamondTree(newClassTree) && newClassTree.getClassBody() == null) {
@@ -2427,8 +2464,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (a == null) {
             return false;
         }
-        return AnnotationUtils.containsSameByName(
-                this.getQualifierHierarchy().getTypeQualifiers(), a);
+        return isSupportedQualifier(AnnotationUtils.annotationName(a));
+    }
+
+    /**
+     * Determines whether the given class is a part of the type system under which this type factory
+     * operates.
+     *
+     * @param clazz annotation class
+     * @return true if that class is a type qualifier in the type system under which this type
+     *     factory operates, false otherwise
+     */
+    public boolean isSupportedQualifier(Class<? extends Annotation> clazz) {
+        return getSupportedTypeQualifiers().contains(clazz);
+    }
+
+    /**
+     * Determines whether the given class name is a part of the type system under which this type
+     * factory operates.
+     *
+     * @param className fully-qualified annotation class name
+     * @return true if that class name is a type qualifier in the type system under which this type
+     *     factory operates, false otherwise
+     */
+    public boolean isSupportedQualifier(String className) {
+        return getSupportedTypeQualifierNames().contains(className);
     }
 
     /**
@@ -3075,11 +3135,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * files and declaration annotations from overridden methods).
      *
      * @param elt the element for which to determine annotations
+     * @return declaration annotations on this element
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
-        if (cacheDeclAnnos.containsKey(elt)) {
+        Set<AnnotationMirror> cachedValue = cacheDeclAnnos.get(elt);
+        if (cachedValue != null) {
             // Found in cache, return result.
-            return cacheDeclAnnos.get(elt);
+            return cachedValue;
         }
 
         Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();

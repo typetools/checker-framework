@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -30,6 +31,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -752,9 +754,50 @@ public abstract class AnnotatedTypeMirror {
      * always be a call to shallowCopy(true).
      *
      * @see #shallowCopy(boolean)
+     * @return a shallow copy of this type with annotations.
      */
     public abstract AnnotatedTypeMirror shallowCopy();
 
+    /**
+     * @return whether this type or any component type is a wildcard type for which Java 7 type
+     *     inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
+     */
+    public boolean containsUninferredTypeArguments() {
+        return uninferredTypeArgumentScanner.visit(this);
+    }
+
+    /** The implementation of the visitor for #containsUninferredTypeArguments */
+    private final SimpleAnnotatedTypeScanner<Boolean, Void> uninferredTypeArgumentScanner =
+            new SimpleAnnotatedTypeScanner<Boolean, Void>() {
+                @Override
+                protected Boolean defaultAction(AnnotatedTypeMirror type, Void aVoid) {
+                    if (type.getKind() == TypeKind.WILDCARD) {
+                        return ((AnnotatedWildcardType) type).isUninferredTypeArgument();
+                    }
+                    return false;
+                }
+
+                @Override
+                public Boolean reduce(Boolean r1, Boolean r2) {
+                    if (r1 == null && r2 == null) {
+                        return false;
+                    } else if (r1 == null) {
+                        return r2;
+                    } else if (r2 == null) {
+                        return r1;
+                    } else {
+                        return r1 || r2;
+                    }
+                }
+            };
+
+    /**
+     * Create an {@link AnnotatedDeclaredType} with the underlying type of {@link Object}. It
+     * includes any annotations placed by {@link AnnotatedTypeFactory#fromElement(Element)}.
+     *
+     * @param atypeFactory type factory to use
+     * @return AnnotatedDeclaredType for Object
+     */
     protected static AnnotatedDeclaredType createTypeOfObject(AnnotatedTypeFactory atypeFactory) {
         AnnotatedDeclaredType objectType =
                 atypeFactory.fromElement(
@@ -801,8 +844,6 @@ public abstract class AnnotatedTypeMirror {
             if (encl.getKind() == TypeKind.DECLARED) {
                 this.enclosingType =
                         (AnnotatedDeclaredType) createType(encl, atypeFactory, declaration);
-                // Force instantiation of type arguments of enclosing type.
-                this.enclosingType.getTypeArguments();
             } else if (encl.getKind() != TypeKind.NONE) {
                 throw new BugInCF(
                         "AnnotatedDeclaredType: unsupported enclosing type: "
@@ -1978,6 +2019,11 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public <R, P> R accept(AnnotatedTypeVisitor<R, P> v, P p) {
             return v.visitIntersection(this, p);
+        }
+
+        @Override
+        public IntersectionType getUnderlyingType() {
+            return (IntersectionType) super.getUnderlyingType();
         }
 
         @Override
