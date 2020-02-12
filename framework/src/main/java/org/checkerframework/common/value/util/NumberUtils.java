@@ -5,7 +5,6 @@ import java.util.List;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class NumberUtils {
@@ -126,7 +125,13 @@ public class NumberUtils {
             case "java.lang.Short":
                 return TypeKind.SHORT;
             default:
-                throw new BugInCF("Expected primitive wrapper, got " + type + " kind: " + typeKind);
+                // TODO: this method should only be called for primitive or boxed primitive types.
+                // However, it is also used to implement other methods where this condition might
+                // not be met.
+                // Think of a nicer way to structure all these methods.
+                // throw new BugInCF("Expected primitive wrapper, got " + type + " kind: " +
+                // typeKind);
+                return typeKind;
         }
     }
 

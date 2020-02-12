@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.BugInCF;
 
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
@@ -135,8 +134,9 @@ public class Range {
             case LONG:
                 return LONG_EVERYTHING;
             default:
-                throw new BugInCF(
-                        "create(" + typeKind + "), expected INT, SHORT, BYTE, CHAR, or LONG");
+                throw new IllegalArgumentException(
+                        "Invalid TypeKind for Range: expected INT, SHORT, BYTE, CHAR, or LONG, got "
+                                + typeKind);
         }
     }
 
