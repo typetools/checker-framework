@@ -117,14 +117,16 @@ class ComparisionException extends RuntimeException {
         try {
             if (expected != null && found != null) {
                 str +=
-                        "\n\tExpected: "
-                                + expected.size()
-                                + " annotations; but found: "
-                                + found.size()
-                                + " annotations\n"
-                                + "  Expected: "
-                                + expected
-                                + "\n  Found: ";
+                        String.join(
+                                System.lineSeparator(),
+                                "",
+                                "\tExpected: "
+                                        + expected.size()
+                                        + " annotations; but found: "
+                                        + found.size()
+                                        + " annotations",
+                                "  Expected: " + expected,
+                                "  Found: ");
                 for (Annotation anno : found) {
                     str += cf.constant_pool.getUTF8Value(anno.type_index) + ",";
                 }

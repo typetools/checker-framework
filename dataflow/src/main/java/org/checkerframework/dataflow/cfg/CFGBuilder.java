@@ -549,7 +549,8 @@ public class CFGBuilder {
         public String toString() {
             StringBuilder sb = new StringBuilder();
             if (this.catchLabels.isEmpty()) {
-                sb.append("TryCatchFrame: no catch labels.\n");
+                sb.append("TryCatchFrame: no catch labels.");
+                sb.append(System.lineSeparator());
             } else {
                 sb.append("TryCatchFrame: ");
             }
@@ -557,7 +558,7 @@ public class CFGBuilder {
                 sb.append(ptml.first.toString());
                 sb.append(" -> ");
                 sb.append(ptml.second.toString());
-                sb.append('\n');
+                sb.append(System.lineSeparator());
             }
             return sb.toString();
         }
@@ -646,9 +647,7 @@ public class CFGBuilder {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("TryFinallyFrame: finallyLabel: " + finallyLabel + '\n');
-            return sb.toString();
+            return "TryFinallyFrame: finallyLabel: " + finallyLabel + System.lineSeparator();
         }
 
         @Override
@@ -700,9 +699,11 @@ public class CFGBuilder {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append("TryStack: exitLabel: " + this.exitLabel + '\n');
+            sb.append("TryStack: exitLabel: " + this.exitLabel);
+            sb.append(System.lineSeparator());
             if (this.frames.isEmpty()) {
-                sb.append("No TryFrames.\n");
+                sb.append("No TryFrames.");
+                sb.append(System.lineSeparator());
             }
             for (TryFrame tf : this.frames) {
                 sb.append(tf.toString());
@@ -1369,7 +1370,7 @@ public class CFGBuilder {
             StringBuilder sb = new StringBuilder();
             for (ExtendedNode n : nodeList) {
                 sb.append(nodeToString(n));
-                sb.append("\n");
+                sb.append(System.lineSeparator());
             }
             return sb.toString();
         }

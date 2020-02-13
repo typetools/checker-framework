@@ -13,12 +13,12 @@ public class Extends {
     })
     public String m1() {
         StringBuilder sb = new StringBuilder();
-        return TestWrapper.wrap("@Override void setf() { f = new Object(); }\n");
+        return TestWrapper.wrap("@Override void setf() { f = new Object(); }");
     }
 
     @ADescriptions({})
     public String m2() {
-        return TestWrapper.wrap("@Override void setg() {}\n");
+        return TestWrapper.wrap("@Override void setg() {}");
     }
 
     // Issue 342
@@ -29,16 +29,12 @@ public class Extends {
         @ADescription(annotation = "org/checkerframework/dataflow/qual/SideEffectFree")
     })
     public String m3() {
-        return TestWrapper.wrap("@Pure @Override void seth() {}\n");
+        return TestWrapper.wrap("@Pure @Override void seth() {}");
     }
 }
 
 class TestWrapper {
     public static String wrap(String method) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class Test extends Super {\n");
-        sb.append(method);
-        sb.append("}");
-        return sb.toString();
+        return String.join(System.lineSeparator(), "class Test extends Super {", method, "}");
     }
 }

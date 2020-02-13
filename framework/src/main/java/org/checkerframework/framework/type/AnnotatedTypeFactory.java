@@ -1560,7 +1560,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         assert targs.size() == tvars.size()
                 : "Mismatch in type argument size between " + type + " and " + generic;
 
-        // System.err.printf("TVFU\n  type: %s\n  generic: %s\n", type, generic);
+        // System.err.printf("TVFU%n  type: %s%n  generic: %s%n", type, generic);
 
         Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
 
@@ -2056,12 +2056,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 || !(returnType.getKind() == TypeKind.DECLARED)
                 || ((AnnotatedDeclaredType) returnType).getTypeArguments().size() != 1) {
             throw new BugInCF(
-                    "Unexpected type passed to AnnotatedTypes.adaptGetClassReturnTypeToReceiver\n"
-                            + "getClassType="
-                            + getClassType
-                            + "\n"
-                            + "receiverType="
-                            + receiverType);
+                    "Unexpected type passed to AnnotatedTypes.adaptGetClassReturnTypeToReceiver%ngetClassType=%s%nreceiverType=%s",
+                    getClassType, receiverType);
         }
 
         final AnnotatedDeclaredType returnAdt =
@@ -2827,7 +2823,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (path == null) {
             throw new BugInCF(
                     String.format(
-                            "AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s\n  for tree (%s) = %s%n  root=%s",
+                            "AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s%n  for tree (%s) = %s%n  root=%s",
                             TreePath.getPath(root, tree), tree.getClass(), tree, root));
         }
         for (Tree pathTree : path) {

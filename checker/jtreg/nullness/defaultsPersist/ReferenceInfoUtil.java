@@ -158,51 +158,18 @@ public class ReferenceInfoUtil {
 
     public static String positionCompareStr(
             TypeAnnotation.Position p1, TypeAnnotation.Position p2) {
-        return "type = "
-                + p1.type
-                + ", "
-                + p2.type
-                + "\n"
-                + "offset = "
-                + p1.offset
-                + ", "
-                + p2.offset
-                + "\n"
-                + "lvarOffset = "
-                + p1.lvarOffset
-                + ", "
-                + p2.lvarOffset
-                + "\n"
-                + "lvarLength = "
-                + p1.lvarLength
-                + ", "
-                + p2.lvarLength
-                + "\n"
-                + "lvarIndex = "
-                + p1.lvarIndex
-                + ", "
-                + p2.lvarIndex
-                + "\n"
-                + "bound_index = "
-                + p1.bound_index
-                + ", "
-                + p2.bound_index
-                + "\n"
-                + "parameter_index = "
-                + p1.parameter_index
-                + ", "
-                + p2.parameter_index
-                + "\n"
-                + "type_index = "
-                + p1.type_index
-                + ", "
-                + p2.type_index
-                + "\n"
-                + "exception_index = "
-                + p1.exception_index
-                + ", "
-                + p2.exception_index
-                + "\n";
+        return String.join(
+                System.lineSeparator(),
+                "type = " + p1.type + ", " + p2.type,
+                "offset = " + p1.offset + ", " + p2.offset,
+                "lvarOffset = " + p1.lvarOffset + ", " + p2.lvarOffset,
+                "lvarLength = " + p1.lvarLength + ", " + p2.lvarLength,
+                "lvarIndex = " + p1.lvarIndex + ", " + p2.lvarIndex,
+                "bound_index = " + p1.bound_index + ", " + p2.bound_index,
+                "parameter_index = " + p1.parameter_index + ", " + p2.parameter_index,
+                "type_index = " + p1.type_index + ", " + p2.type_index,
+                "exception_index = " + p1.exception_index + ", " + p2.exception_index,
+                "");
     }
 
     private static TypeAnnotation findAnnotation(
@@ -270,15 +237,16 @@ class ComparisionException extends RuntimeException {
         String str = super.toString();
         if (expected != null && found != null) {
             str +=
-                    "\n\tExpected: "
-                            + expected.size()
-                            + " annotations; but found: "
-                            + found.size()
-                            + " annotations\n"
-                            + "  Expected: "
-                            + expected
-                            + "\n  Found: "
-                            + found;
+                    String.join(
+                            System.lineSeparator,
+                            "",
+                            "\tExpected: "
+                                    + expected.size()
+                                    + " annotations; but found: "
+                                    + found.size()
+                                    + " annotations",
+                            "  Expected: " + expected,
+                            "  Found: " + found);
         }
         return str;
     }

@@ -32,8 +32,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
                         + type1
                         + "\n"
                         + "type2="
-                        + type2
-                        + "\n");
+                        + type2);
     }
 
     /** Return true if type1 and type2 have equivalent sets of annotations. */

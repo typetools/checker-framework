@@ -213,8 +213,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                 break;
 
             default:
-                throw new BugInCF(
-                        "Type is not bounded.\n" + "type=" + type + "\n" + "tree=" + tree);
+                throw new BugInCF("Type is not bounded.%ntype=%s%ntree=%s", type, tree);
         }
 
         checker.report(
@@ -385,7 +384,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                 // the parameterized type is the result of some expression tree.
                 // No need to do anything further.
                 break;
-                // System.err.printf("TypeValidator.visitDeclared unhandled tree: %s of kind %s\n",
+                // System.err.printf("TypeValidator.visitDeclared unhandled tree: %s of kind %s%n",
                 //                 tree, tree.getKind());
         }
 
@@ -436,7 +435,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * annotation on generic types.
      */
     protected Void visitParameterizedType(AnnotatedDeclaredType type, ParameterizedTypeTree tree) {
-        // System.out.printf("TypeValidator.visitParameterizedType: type: %s, tree: %s\n",
+        // System.out.printf("TypeValidator.visitParameterizedType: type: %s, tree: %s%n",
         // type, tree);
 
         if (TreeUtils.isDiamondTree(tree)) {

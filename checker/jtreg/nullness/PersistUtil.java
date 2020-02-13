@@ -68,32 +68,33 @@ public class PersistUtil {
     }
 
     public static String wrap(String compact) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(System.lineSeparator());
 
         // Automatically import java.util
-        sb.append("\nimport java.util.*;");
-        sb.append("\nimport java.lang.annotation.*;\n");
+        sb.append("");
+        sb.append("import java.util.*;");
+        sb.append("import java.lang.annotation.*;");
 
         // And the Nullness qualifiers
-        sb.append("import org.checkerframework.framework.qual.DefaultQualifier;\n");
-        sb.append("import org.checkerframework.checker.nullness.qual.*;\n");
-        sb.append("import org.checkerframework.dataflow.qual.*;\n");
+        sb.append("import org.checkerframework.framework.qual.DefaultQualifier;");
+        sb.append("import org.checkerframework.checker.nullness.qual.*;");
+        sb.append("import org.checkerframework.dataflow.qual.*;");
 
-        sb.append("\n");
+        sb.append("");
         boolean isSnippet =
                 !(compact.startsWith("class") || compact.contains(" class"))
                         && !compact.contains("interface")
                         && !compact.contains("enum");
 
         if (isSnippet) {
-            sb.append("class Test {\n");
+            sb.append("class Test {");
         }
 
         sb.append(compact);
-        sb.append("\n");
 
         if (isSnippet) {
-            sb.append("}\n\n");
+            sb.append("}");
+            sb.append("");
         }
 
         return sb.toString();

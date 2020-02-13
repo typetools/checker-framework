@@ -63,7 +63,7 @@ public abstract class UnderlyingAST {
 
         @Override
         public String toString() {
-            return "CFGMethod(\n" + method + "\n)";
+            return "CFGMethod(\n" + method + System.lineSeparator();
         }
     }
 
@@ -88,7 +88,7 @@ public abstract class UnderlyingAST {
 
         @Override
         public String toString() {
-            return "CFGLambda(\n" + lambda + "\n)";
+            return "CFGLambda(\n" + lambda + System.lineSeparator();
         }
     }
 
@@ -117,7 +117,7 @@ public abstract class UnderlyingAST {
 
         @Override
         public String toString() {
-            return "CFGStatement(\n" + code + "\n)";
+            return "CFGStatement(" + System.lineSeparator() + code + System.lineSeparator() + ")";
         }
     }
 }
