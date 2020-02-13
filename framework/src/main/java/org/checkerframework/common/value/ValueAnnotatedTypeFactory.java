@@ -395,10 +395,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Determine the primitive integral TypeKind for the given type.
+     * Determine the primitive integral TypeKind for the given integral type.
      *
-     * @param type the type to convert
-     * @return one of INT, SHORT, BYTE, CHAR, LONG
+     * @param type the type to convert, must be an integral type, boxed or primitive
+     * @return one of INT, SHORT, BYTE, CHAR, or LONG
      */
     private static TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
         TypeKind typeKind = NumberUtils.unboxPrimitive(type);
