@@ -228,7 +228,8 @@ rules are used in order, until one applies.
 \end{enumerate}
 
 If the unannotated type is the type of a local variable, then the first 5 rules are skipped and only
-rules 6 and 7 apply.  This makes the type local variables top so they can be refined.
+rules 6 and 7 apply.  This makes the type of a local variables top so they can be refined (although
+for some type systems, the default qualifier in hierarchy is not necessary to be top).
 
 % (Implementation detail:  setting defaults is implemented by the
 % \refclass{framework/util}{QualifierDefaults} class.)
