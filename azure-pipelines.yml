@@ -53,15 +53,6 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cf-inference.sh
     displayName: test-cf-inference.sh
-- job: plume_lib_jdk11
-  pool:
-    vmImage: 'ubuntu-16.04'
-  container: mdernst/cf-ubuntu-jdk11:latest
-  steps:
-  - checkout: self
-    fetchDepth: 25
-  - bash: ./checker/bin-devel/test-plume-lib.sh allJdk11
-    displayName: test-plume-lib.sh
 - job: plume_lib_jdk8
   pool:
     vmImage: 'ubuntu-16.04'
@@ -70,6 +61,15 @@ jobs:
   - checkout: self
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-plume-lib.sh
+    displayName: test-plume-lib.sh
+- job: plume_lib_jdk11
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/cf-ubuntu-jdk11:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-plume-lib.sh allJdk11
     displayName: test-plume-lib.sh
 - job: daikon_jdk8
   pool:
@@ -89,6 +89,26 @@ jobs:
 #    fetchDepth: 25
 #  - bash: ./checker/bin-devel/test-daikon.sh
 #    displayName: test-daikon.sh
+- job: guava_jdk8
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/cf-ubuntu-jdk8:latest
+  timeoutInMinutes: 300
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-guava.sh
+    displayName: test-guava.sh
+- job: guava_jdk11
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: mdernst/cf-ubuntu-jdk11:latest
+  timeoutInMinutes: 300
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-guava.sh
+    displayName: test-guava.sh
 - job: downstream_jdk11
   pool:
     vmImage: 'ubuntu-16.04'

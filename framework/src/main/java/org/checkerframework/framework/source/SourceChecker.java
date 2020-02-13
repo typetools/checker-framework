@@ -110,8 +110,10 @@ import org.checkerframework.javacutil.UserError;
     "skipDefs",
     "onlyDefs",
 
-    // Unsoundly ignore side effects
+    // Unsoundly assume all methods have no side effects, are deterministic, or both.
     "assumeSideEffectFree",
+    "assumeDeterministic",
+    "assumePure",
 
     // Whether to assume that assertions are enabled or disabled
     // org.checkerframework.framework.flow.CFCFGBuilder.CFCFGBuilder
@@ -281,7 +283,8 @@ import org.checkerframework.javacutil.UserError;
 
     // Whether to check that the annotated JDK is correctly provided
     // org.checkerframework.common.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
-    "nocheckjdk",
+    "permitMissingJdk",
+    "nocheckjdk", // temporary, for backward compatibility
 
     // Whether to print debugging messages while processing the stub files
     // org.checkerframework.framework.stub.StubParser.debugStubParser

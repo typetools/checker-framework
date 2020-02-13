@@ -551,6 +551,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     atm.replaceAnnotation(createArrayLenRangeAnnotation(Range.create(values)));
                 }
             } else if (AnnotationUtils.areSameByName(anno, INTRANGE_NAME)) {
+                if (!NumberUtils.isIntegral(atm.getUnderlyingType())) {
+                    return;
+                }
+
                 // Compute appropriate defaults for integral ranges.
                 long from = getFromValueFromIntRange(atm);
                 long to = getToValueFromIntRange(atm);

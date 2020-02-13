@@ -1140,7 +1140,7 @@ public class StubParser {
      * {@code elt} is a field declaration, the type annotation will be ignored.
      *
      * @param elt the element to be annotated
-     * @param a set of annotations that may be applicable to elt
+     * @param annotations set of annotations that may be applicable to elt
      */
     private void recordDeclAnnotation(Element elt, List<AnnotationExpr> annotations) {
         if (annotations == null) {
@@ -1623,9 +1623,9 @@ public class StubParser {
             // double, too.
             return ((DoubleLiteralExpr) expr).asDouble();
         } else if (expr instanceof IntegerLiteralExpr) {
-            return convert(((IntegerLiteralExpr) expr).asInt(), valueKind);
+            return convert(((IntegerLiteralExpr) expr).asNumber(), valueKind);
         } else if (expr instanceof LongLiteralExpr) {
-            return convert(((LongLiteralExpr) expr).asLong(), valueKind);
+            return convert(((LongLiteralExpr) expr).asNumber(), valueKind);
         } else if (expr instanceof UnaryExpr) {
             switch (expr.toString()) {
                     // Special-case the minimum values.  Separately parsing a "-" and a value
