@@ -38,18 +38,21 @@ dependencies {
 
 task cloneTypetoolsJdk() {
     description 'Obtain or update the jdk'
-    if (file(jdkHome).exists()) {
-        exec {
-            workingDir jdkHome
-            executable 'git'
-            args = ['pull', '-q']
-            ignoreExitValue = true
-        }
-    } else {
-        exec {
-            workingDir "${jdkHome}/../"
-            executable 'git'
-            args = ['clone', '-q', 'https://github.com/typetools/jdk.git', 'jdk']
+    doLast {
+        if (file(jdkHome).exists()) {
+            exec {
+                workingDir jdkHome
+                executable 'git'
+                args = ['pull', '-q']
+                ignoreExitValue = true
+            }
+        } else {
+            println 'Cloning JDK repository.'
+            exec {
+                workingDir "${jdkHome}/../"
+                executable 'git'
+                args = ['clone', '-q', '--depth', '1', 'https://github.com/typetools/jdk.git', 'jdk']
+            }
         }
     }
 }
