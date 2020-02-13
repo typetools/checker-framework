@@ -16,9 +16,10 @@ import org.checkerframework.javacutil.Pair;
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
 public class TestDiagnosticUtils {
 
-    // this regex represents how the diagnostics appear in Java source files
+    /** This regex represents how the diagnostics appear in Java source files. */
     public static final String DIAGNOSTIC_IN_JAVA_REGEX =
-            "\\s*(error|fixable-error|warning|other):\\s*(\\(?.*\\)?)\\s*";
+            "\\s*(error|fixable-error|warning|fixable-warning|other):\\s*(\\(?.*\\)?)\\s*";
+    /** The compiled regex representation of the diagnostics. */
     public static final Pattern DIAGNOSTIC_IN_JAVA_PATTERN =
             Pattern.compile(DIAGNOSTIC_IN_JAVA_REGEX);
 

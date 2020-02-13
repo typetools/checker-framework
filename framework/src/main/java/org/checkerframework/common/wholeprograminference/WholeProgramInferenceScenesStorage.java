@@ -53,7 +53,7 @@ import scenelib.annotations.io.IndexFileWriter;
  * precision achieved by the whole-program inference analysis will be better. {@link
  * #writeScenesToJaif} rewrites the initial .jaif files, and may create new ones.
  */
-public class WholeProgramInferenceScenesHelper {
+public class WholeProgramInferenceScenesStorage {
 
     /**
      * Maps the toString() representation of an ATypeElement and its TypeUseLocation to a set of
@@ -86,7 +86,13 @@ public class WholeProgramInferenceScenesHelper {
      */
     private final Set<String> modifiedScenes = new HashSet<>();
 
-    public WholeProgramInferenceScenesHelper(boolean ignoreNullAssignments) {
+    /**
+     * Default constructor.
+     *
+     * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
+     *     ignored
+     */
+    public WholeProgramInferenceScenesStorage(boolean ignoreNullAssignments) {
         this.ignoreNullAssignments = ignoreNullAssignments;
     }
 

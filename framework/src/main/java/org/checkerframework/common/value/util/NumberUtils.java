@@ -99,7 +99,7 @@ public class NumberUtils {
      * @param type a primitive or boxed primitive type
      * @return a primitive type
      */
-    private static TypeKind unboxPrimitive(TypeMirror type) {
+    public static TypeKind unboxPrimitive(TypeMirror type) {
         if (type.getKind() == TypeKind.DECLARED) {
             String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
 
@@ -123,5 +123,60 @@ public class NumberUtils {
             }
         }
         return type.getKind();
+    }
+
+    /**
+     * Return true if the argument TypeMirror is a (possibly boxed) integral type.
+     *
+     * @param type the type to inspect
+     * @return true if type is an integral type
+     */
+    public static boolean isIntegral(TypeMirror type) {
+        return isPrimitiveIntegral(unboxPrimitive(type));
+    }
+
+    /**
+     * Return true if the argument is one of INT, SHORT, BYTE, CHAR, LONG.
+     *
+     * @param typeKind the TypeKind to inspect
+     * @return true if typeKind is a primitive integral type kind
+     */
+    public static boolean isPrimitiveIntegral(TypeKind typeKind) {
+        switch (typeKind) {
+            case INT:
+            case SHORT:
+            case BYTE:
+            case CHAR:
+            case LONG:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Return true if the argument TypeMirror is a (possibly boxed) floating point type.
+     *
+     * @param type the type to inspect
+     * @return true if type is a floating point type
+     */
+    public static boolean isFloatingPoint(TypeMirror type) {
+        return isPrimitiveFloatingPoint(unboxPrimitive(type));
+    }
+
+    /**
+     * Return true if the argument is one of FLOAT, DOUBLE.
+     *
+     * @param typeKind the TypeKind to inspect
+     * @return true if typeKind is a primitive floating point type kind
+     */
+    public static boolean isPrimitiveFloatingPoint(TypeKind typeKind) {
+        switch (typeKind) {
+            case FLOAT:
+            case DOUBLE:
+                return true;
+            default:
+                return false;
+        }
     }
 }

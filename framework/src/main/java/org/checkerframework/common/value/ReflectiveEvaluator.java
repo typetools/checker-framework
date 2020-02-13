@@ -172,14 +172,16 @@ public class ReflectiveEvaluator {
      * Method for reflectively obtaining a method object so it can (potentially) be statically
      * executed by the checker for constant propagation.
      *
-     * @return the Method object corresponding to the method being invoke in tree
+     * @param tree a method invocation tree
+     * @return the Method object corresponding to the method invocation tree
      */
     private Method getMethodObject(MethodInvocationTree tree) {
+        final ExecutableElement ele = TreeUtils.elementFromUse(tree);
+        List<Class<?>> paramClzz = null;
         try {
-            ExecutableElement ele = TreeUtils.elementFromUse(tree);
             @DotSeparatedIdentifiers Name clazz =
                     TypesUtils.getQualifiedName((DeclaredType) ele.getEnclosingElement().asType());
-            List<Class<?>> paramClzz = getParameterClasses(ele);
+            paramClzz = getParameterClasses(ele);
             @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Class.toString
             Class<?> clzz = Class.forName(clazz.toString());
             Method method =
@@ -194,25 +196,30 @@ public class ReflectiveEvaluator {
         } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {
             if (reportWarnings) {
                 checker.report(
-                        Result.warning(
-                                "class.find.failed",
-                                TreeUtils.elementFromUse(tree).getEnclosingElement()),
-                        tree);
+                        Result.warning("class.find.failed", ele.getEnclosingElement()), tree);
             }
             return null;
 
         } catch (Throwable e) {
             // The class we attempted to getMethod from inside the
             // call to getMethodObject.
-            Element classElem = TreeUtils.elementFromUse(tree).getEnclosingElement();
+            Element classElem = ele.getEnclosingElement();
 
             if (classElem == null) {
                 if (reportWarnings) {
-                    checker.report(Result.warning("method.find.failed"), tree);
+                    checker.report(
+                            Result.warning("method.find.failed", ele.getSimpleName(), paramClzz),
+                            tree);
                 }
             } else {
                 if (reportWarnings) {
-                    checker.report(Result.warning("method.find.failed.in.class", classElem), tree);
+                    checker.report(
+                            Result.warning(
+                                    "method.find.failed.in.class",
+                                    ele.getSimpleName(),
+                                    paramClzz,
+                                    classElem),
+                            tree);
                 }
             }
             return null;

@@ -2,7 +2,7 @@ ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = 'c41c8ace5550c03992c0691019a2ce470458c47f'
+    jdkShaHash = '3e562c3de97e1a65aacf2d83b30e86a5f6acf63f'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -27,7 +27,7 @@ dependencies {
     // As of 2019/12/16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
-    implementation 'org.plumelib:reflection-util:0.2.0'
+    implementation 'org.plumelib:reflection-util:0.2.1'
 
     testImplementation group: 'junit', name: 'junit', version: '4.13'
     testImplementation project(':framework-test')
@@ -38,18 +38,21 @@ dependencies {
 
 task cloneTypetoolsJdk() {
     description 'Obtain or update the jdk'
-    if (file(jdkHome).exists()) {
-        exec {
-            workingDir jdkHome
-            executable 'git'
-            args = ['pull', '-q']
-            ignoreExitValue = true
-        }
-    } else {
-        exec {
-            workingDir "${jdkHome}/../"
-            executable 'git'
-            args = ['clone', '-q', 'https://github.com/typetools/jdk.git', 'jdk']
+    doLast {
+        if (file(jdkHome).exists()) {
+            exec {
+                workingDir jdkHome
+                executable 'git'
+                args = ['pull', '-q']
+                ignoreExitValue = true
+            }
+        } else {
+            println 'Cloning JDK repository.'
+            exec {
+                workingDir "${jdkHome}/../"
+                executable 'git'
+                args = ['clone', '-q', '--depth', '1', 'https://github.com/typetools/jdk.git', 'jdk']
+            }
         }
     }
 }

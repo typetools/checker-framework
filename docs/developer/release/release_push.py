@@ -123,6 +123,10 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             DATAFLOW_SOURCE_JAR, DATAFLOW_JAVADOC_JAR,
                             pgp_user, pgp_passphrase)
 
+    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, DATAFLOW_SHADED_BINARY_RELEASE_POM, DATAFLOW_SHADED_BINARY,
+                            DATAFLOW_SOURCE_JAR, DATAFLOW_JAVADOC_JAR,
+                            pgp_user, pgp_passphrase)
+
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, FRAMEWORKTEST_BINARY_RELEASE_POM, FRAMEWORKTEST_BINARY,
                             FRAMEWORKTEST_SOURCE_JAR, FRAMEWORKTEST_JAVADOC_JAR,
                             pgp_user, pgp_passphrase)
