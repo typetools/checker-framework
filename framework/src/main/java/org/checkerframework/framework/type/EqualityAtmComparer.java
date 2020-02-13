@@ -27,12 +27,11 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void v) {
         throw new UnsupportedOperationException(
-                "Comparing two different subclasses of AnnotatedTypeMirror.\n"
-                        + "type1="
-                        + type1
-                        + "\n"
-                        + "type2="
-                        + type2);
+                String.join(
+                        System.lineSeparator(),
+                        "Comparing two different subclasses of AnnotatedTypeMirror.",
+                        "type1=" + type1,
+                        "type2=" + type2));
     }
 
     /** Return true if type1 and type2 have equivalent sets of annotations. */

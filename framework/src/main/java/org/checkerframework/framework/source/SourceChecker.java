@@ -793,7 +793,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         printMessage(msg);
     }
 
-    /** Log an internal error in the framework or a checker. */
+    /**
+     * Log an internal error in the framework or a checker.
+     *
+     * @param ce the internal error
+     */
     private void logBugInCF(BugInCF ce) {
         StringJoiner msg = new StringJoiner(System.lineSeparator());
         msg.add(ce.getMessage());
@@ -1184,7 +1188,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 t);
     }
 
-    /** Format a list of {@link StackTraceElement}s to be printed out as an error message. */
+    /**
+     * Format a list of {@link StackTraceElement}s to be printed out as an error message.
+     *
+     * @param stackTrace the {@link StackTraceElement}s to be printed
+     * @return a multi-line formatted stack trace
+     */
     protected String formatStackTrace(StackTraceElement[] stackTrace) {
         StringJoiner sb = new StringJoiner(System.lineSeparator());
         if (stackTrace.length == 0) {

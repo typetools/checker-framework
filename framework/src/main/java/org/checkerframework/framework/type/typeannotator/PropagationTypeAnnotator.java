@@ -161,16 +161,12 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
                 final AnnotationMirror typeParamAnno = typeParamBound.getAnnotationInHierarchy(top);
                 if (typeParamAnno == null) {
                     throw new BugInCF(
-                            "Missing annotation on type parameter\n"
-                                    + "top="
-                                    + top
-                                    + "\n"
-                                    + "wildcardBound="
-                                    + wildcardBound
-                                    + "\n"
-                                    + "typeParamBound="
-                                    + typeParamBound
-                                    + "\n");
+                            String.join(
+                                    System.lineSeparator(),
+                                    "Missing annotation on type parameter",
+                                    "top=" + top,
+                                    "wildcardBound=" + wildcardBound,
+                                    "typeParamBound=" + typeParamBound));
                 } // else
                 wildcardBound.addAnnotation(typeParamAnno);
             }

@@ -238,7 +238,7 @@ class ComparisionException extends RuntimeException {
         if (expected != null && found != null) {
             str +=
                     String.join(
-                            System.lineSeparator,
+                            System.lineSeparator(),
                             "",
                             "\tExpected: "
                                     + expected.size()

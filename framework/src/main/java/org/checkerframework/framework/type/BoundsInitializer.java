@@ -1253,7 +1253,7 @@ public class BoundsInitializer {
         protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             throw new BugInCF(
-                    "Type variables cannot be intersection bounds.\nparent=%s\nreplacement=%s",
+                    "Type variables cannot be intersection bounds.%nparent=%s%nreplacement=%s",
                     parent, replacement);
         }
 
@@ -1261,7 +1261,7 @@ public class BoundsInitializer {
         protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedIntersectionType isect = (AnnotatedIntersectionType) parent;
             if (parent.directSuperTypes().size() <= superIndex) {
-                throw new BugInCF("Invalid superIndex( %s ):\nparent=%s", superIndex, parent);
+                throw new BugInCF("Invalid superIndex( %s ):%nparent=%s", superIndex, parent);
             }
 
             return isect.directSuperTypes().get(superIndex);
@@ -1311,7 +1311,7 @@ public class BoundsInitializer {
         protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             throw new BugInCF(
-                    "Union types cannot be intersection bounds.\nparent=%s\nreplacement=%s",
+                    "Union types cannot be intersection bounds.%nparent=%s%nreplacement=%s",
                     parent, replacement);
         }
 
@@ -1319,7 +1319,7 @@ public class BoundsInitializer {
         protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedUnionType isect = (AnnotatedUnionType) parent;
             if (parent.directSuperTypes().size() <= altIndex) {
-                throw new BugInCF("Invalid altIndex( %s ):\nparent=%s", altIndex, parent);
+                throw new BugInCF("Invalid altIndex( %s ):%nparent=%s", altIndex, parent);
             }
 
             return isect.directSuperTypes().get(altIndex);

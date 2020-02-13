@@ -182,11 +182,8 @@ public abstract class QualifierHierarchy {
             Collection<? extends AnnotationMirror> annos2) {
         if (annos1.size() != annos2.size()) {
             throw new BugInCF(
-                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes.\n"
-                            + "    Set 1: "
-                            + annos1
-                            + " Set 2: "
-                            + annos2);
+                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes.%n    Set 1: %s Set 2: %s",
+                    annos1, annos2);
         }
         if (annos1.isEmpty()) {
             throw new BugInCF(
@@ -204,7 +201,8 @@ public abstract class QualifierHierarchy {
         }
 
         assert result.size() == annos1.size()
-                : "QualifierHierarchy.leastUpperBounds: resulting set has incorrect number of annotations.\n"
+                : "QualifierHierarchy.leastUpperBounds: resulting set has incorrect number of annotations."
+                        + System.lineSeparator()
                         + "    Set 1: "
                         + annos1
                         + " Set 2: "
@@ -232,11 +230,8 @@ public abstract class QualifierHierarchy {
             Collection<? extends AnnotationMirror> annos2) {
         if (annos1.size() != annos2.size()) {
             throw new BugInCF(
-                    "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with sets of different sizes.\n"
-                            + "    Set 1: "
-                            + annos1
-                            + " Set 2: "
-                            + annos2);
+                    "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with sets of different sizes.%n    Set 1: %s Set 2: %s",
+                    annos1, annos2);
         }
         if (annos1.isEmpty()) {
             throw new BugInCF(
@@ -254,7 +249,8 @@ public abstract class QualifierHierarchy {
         }
 
         assert result.size() == annos1.size()
-                : "QualifierHierarchy.greatestLowerBounds: resulting set has incorrect number of annotations.\n"
+                : "QualifierHierarchy.greatestLowerBounds: resulting set has incorrect number of annotations."
+                        + System.lineSeparator()
                         + "    Set 1: "
                         + annos1
                         + " Set 2: "

@@ -431,8 +431,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * are within the bounds of the type variables as declared, and issues the
      * "type.argument.type.incompatible" error if they are not.
      *
-     * <p>This method used to be visitParameterizedType, which incorrectly handles the main
-     * annotation on generic types.
+     * @param type the type to check
+     * @param tree the type's tree
      */
     protected Void visitParameterizedType(AnnotatedDeclaredType type, ParameterizedTypeTree tree) {
         // System.out.printf("TypeValidator.visitParameterizedType: type: %s, tree: %s%n",

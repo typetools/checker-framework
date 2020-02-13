@@ -1820,7 +1820,7 @@ public abstract class AnnotatedTypeMirror {
         void setSuperBound(AnnotatedTypeMirror type) {
             if (type == null || type.isDeclaration()) {
                 throw new BugInCF(
-                        "Super bounds should never be null or a declaration.\n  new bound = %s\n  type = %s",
+                        "Super bounds should never be null or a declaration.%n  new bound = %s%n  type = %s",
                         type, this);
             }
             this.superBound = type;
@@ -1851,7 +1851,7 @@ public abstract class AnnotatedTypeMirror {
         void setExtendsBound(AnnotatedTypeMirror type) {
             if (type == null || type.isDeclaration()) {
                 throw new BugInCF(
-                        "Extends bounds should never be null or a declaration.\n  new bound = \n  type = %s",
+                        "Extends bounds should never be null or a declaration.%n  new bound = %n  type = %s",
                         type, this);
             }
             this.extendsBound = type;

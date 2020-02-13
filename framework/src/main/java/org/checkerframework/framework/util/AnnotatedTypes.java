@@ -402,7 +402,7 @@ public class AnnotatedTypes {
             case DECLARED:
                 return substituteTypeVariables(types, atypeFactory, of, member, memberType);
             default:
-                throw new BugInCF("asMemberOf called on unexpected type.\nt: " + of);
+                throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", of);
         }
     }
 
@@ -454,15 +454,12 @@ public class AnnotatedTypes {
         for (final AnnotatedTypeMirror typeParam : enclosingType.getTypeArguments()) {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
                 throw new BugInCF(
-                        "Type arguments of a declaration should be type variables\n"
-                                + "enclosingClassOfElem="
-                                + enclosingClassOfElem
-                                + "\n"
-                                + "enclosingType="
-                                + enclosingType
-                                + "\n"
-                                + "typeMirror="
-                                + t);
+                        String.join(
+                                System.lineSeparator(),
+                                "Type arguments of a declaration should be type variables",
+                                "enclosingClassOfElem=" + enclosingClassOfElem,
+                                "enclosingType=" + enclosingType,
+                                "typeMirror=" + t));
             }
             ownerParams.add((AnnotatedTypeVariable) typeParam);
         }
