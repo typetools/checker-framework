@@ -28,6 +28,7 @@ import javax.tools.Diagnostic;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
+import org.checkerframework.common.purity.PurityChecker;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -176,10 +177,14 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * <p>The BaseTypeChecker will not modify the list returned by this method.
      */
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+        LinkedHashSet<Class<? extends BaseTypeChecker>> checkers = new LinkedHashSet<>();
         if (shouldResolveReflection()) {
-            return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
+            checkers.add(MethodValChecker.class);
         }
-        return new LinkedHashSet<>();
+        if (shouldCheckPurity()) {
+            checkers.add(PurityChecker.class);
+        }
+        return checkers;
     }
 
     /** Returns whether or not reflection should be resolved. */
@@ -188,6 +193,12 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         // this.getOptions or this.hasOption
         // also call getSubcheckers, super.getOptions is called here.
         return super.getOptions().containsKey("resolveReflection");
+    }
+
+    /** Returns whether or not purity checking should be performed. */
+    private boolean shouldCheckPurity() {
+        return super.getOptions().containsKey("checkPurityAnnotations")
+                || super.getOptions().containsKey("suggestPureMethods");
     }
 
     /**

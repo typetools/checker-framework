@@ -43,8 +43,6 @@ import com.sun.tools.javac.tree.TreeInfo;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -74,10 +72,6 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.util.PurityChecker;
-import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
-import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -580,8 +574,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checkConstructorResult(methodType, methodElement);
             }
 
-            checkPurity(node);
-
             // Passing the whole method/constructor validates the return type
             validateTypeOf(node);
 
@@ -636,72 +628,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Check method purity if needed. Note that overriding rules are checked as part of {@link
-     * #checkOverride(MethodTree, AnnotatedTypeMirror.AnnotatedExecutableType,
-     * AnnotatedTypeMirror.AnnotatedDeclaredType, AnnotatedTypeMirror.AnnotatedExecutableType,
-     * AnnotatedTypeMirror.AnnotatedDeclaredType)}.
-     *
-     * @param node the method tree to check
-     */
-    protected void checkPurity(MethodTree node) {
-        boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
-        boolean checkPurityAlways = checker.hasOption("suggestPureMethods");
-        boolean checkPurityAnnotations = checker.hasOption("checkPurityAnnotations");
-
-        if (!checkPurityAnnotations || (!anyPurityAnnotation && !checkPurityAlways)) {
-            return;
-        }
-
-        // check "no" purity
-        List<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
-        // @Deterministic makes no sense for a void method or constructor
-        boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
-        if (isDeterministic) {
-            if (TreeUtils.isConstructor(node)) {
-                checker.report(Result.warning("purity.deterministic.constructor"), node);
-            } else if (TreeUtils.typeOf(node.getReturnType()).getKind() == TypeKind.VOID) {
-                checker.report(Result.warning("purity.deterministic.void.method"), node);
-            }
-        }
-
-        // Report errors if necessary.
-        PurityResult r =
-                PurityChecker.checkPurity(
-                        atypeFactory.getPath(node.getBody()),
-                        atypeFactory,
-                        checker.hasOption("assumeSideEffectFree")
-                                || checker.hasOption("assumePure"),
-                        checker.hasOption("assumeDeterministic")
-                                || checker.hasOption("assumePure"));
-        if (!r.isPure(kinds)) {
-            reportPurityErrors(r, node, kinds);
-        }
-
-        // Issue a warning if the method is pure, but not annotated
-        // as such (if the feature is activated).
-        if (checkPurityAlways) {
-            Collection<Pure.Kind> additionalKinds = new HashSet<>(r.getTypes());
-            additionalKinds.removeAll(kinds);
-            if (TreeUtils.isConstructor(node)) {
-                additionalKinds.remove(Pure.Kind.DETERMINISTIC);
-            }
-            if (!additionalKinds.isEmpty()) {
-                if (additionalKinds.size() == 2) {
-                    checker.report(Result.warning("purity.more.pure", node.getName()), node);
-                } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-                    checker.report(
-                            Result.warning("purity.more.sideeffectfree", node.getName()), node);
-                } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-                    checker.report(
-                            Result.warning("purity.more.deterministic", node.getName()), node);
-                } else {
-                    assert false : "BaseTypeVisitor reached undesirable state";
-                }
-            }
-        }
-    }
-
-    /**
      * Issue a warning if the result type of the constructor is not top. If it is a supertype of the
      * class, then a type.invalid.conflicting.annos error will also be issued by {@link
      * #isValidUse(AnnotatedTypeMirror.AnnotatedDeclaredType,AnnotatedTypeMirror.AnnotatedDeclaredType,Tree)}.
@@ -724,48 +650,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         Result.warning("inconsistent.constructor.type", constructorAnno),
                         constructorElement);
             }
-        }
-    }
-
-    /** Reports errors found during purity checking. */
-    protected void reportPurityErrors(
-            PurityResult result, MethodTree node, Collection<Pure.Kind> expectedTypes) {
-        assert !result.isPure(expectedTypes);
-        Collection<Pure.Kind> t = EnumSet.copyOf(expectedTypes);
-        t.removeAll(result.getTypes());
-        if (t.contains(Pure.Kind.DETERMINISTIC) || t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            String msgPrefix = "purity.not.deterministic.not.sideeffectfree.";
-            if (!t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-                msgPrefix = "purity.not.deterministic.";
-            } else if (!t.contains(Pure.Kind.DETERMINISTIC)) {
-                msgPrefix = "purity.not.sideeffectfree.";
-            }
-            for (Pair<Tree, String> r : result.getNotBothReasons()) {
-                reportPurityError(msgPrefix, r);
-            }
-            if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-                for (Pair<Tree, String> r : result.getNotSEFreeReasons()) {
-                    reportPurityError("purity.not.sideeffectfree.", r);
-                }
-            }
-            if (t.contains(Pure.Kind.DETERMINISTIC)) {
-                for (Pair<Tree, String> r : result.getNotDetReasons()) {
-                    reportPurityError("purity.not.deterministic.", r);
-                }
-            }
-        }
-    }
-
-    /** Reports single purity error. */
-    private void reportPurityError(String msgPrefix, Pair<Tree, String> r) {
-        String reason = r.second;
-        @SuppressWarnings("CompilerMessages")
-        @CompilerMessageKey String msg = msgPrefix + reason;
-        if (reason.equals("call")) {
-            MethodInvocationTree mitree = (MethodInvocationTree) r.first;
-            checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
-        } else {
-            checker.report(Result.failure(msg), r.first);
         }
     }
 
@@ -3127,33 +3011,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 result &= checkReceiverOverride();
             }
             checkPreAndPostConditions();
-            checkPurity();
 
             return result;
-        }
-
-        private void checkPurity() {
-            String msgKey =
-                    methodReference ? "purity.invalid.methodref" : "purity.invalid.overriding";
-
-            // check purity annotations
-            Set<Pure.Kind> superPurity =
-                    new HashSet<>(
-                            PurityUtils.getPurityKinds(atypeFactory, overridden.getElement()));
-            Set<Pure.Kind> subPurity =
-                    new HashSet<>(PurityUtils.getPurityKinds(atypeFactory, overrider.getElement()));
-            if (!subPurity.containsAll(superPurity)) {
-                checker.report(
-                        Result.failure(
-                                msgKey,
-                                overriderMeth,
-                                overriderTyp,
-                                overriddenMeth,
-                                overriddenTyp,
-                                subPurity,
-                                superPurity),
-                        overriderTree);
-            }
         }
 
         private void checkPreAndPostConditions() {
