@@ -1261,7 +1261,7 @@ public class BoundsInitializer {
         protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedIntersectionType isect = (AnnotatedIntersectionType) parent;
             if (parent.directSuperTypes().size() <= superIndex) {
-                throw new BugInCF("Invalid superIndex( %s ):%nparent=%s", superIndex, parent);
+                throw new BugInCF("Invalid superIndex %d: parent=%s", superIndex, parent);
             }
 
             return isect.directSuperTypes().get(superIndex);

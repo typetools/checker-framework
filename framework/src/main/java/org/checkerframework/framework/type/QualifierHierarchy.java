@@ -182,7 +182,8 @@ public abstract class QualifierHierarchy {
             Collection<? extends AnnotationMirror> annos2) {
         if (annos1.size() != annos2.size()) {
             throw new BugInCF(
-                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes.%n    Set 1: %s Set 2: %s",
+                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes.%n"
+                            + "    Set 1: %s Set 2: %s",
                     annos1, annos2);
         }
         if (annos1.isEmpty()) {

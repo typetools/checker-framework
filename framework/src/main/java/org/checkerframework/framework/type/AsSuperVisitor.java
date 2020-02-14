@@ -137,8 +137,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
         return String.format(
-                "AsSuperVisitor: Unexpected combination: type: %s superType: %s.%ntype: %s"
-                        + "%nsuperType: %s",
+                "AsSuperVisitor: Unexpected combination: type: %s superType: %s.%n"
+                        + "type: %s%nsuperType: %s",
                 type.getKind(), superType.getKind(), type, superType);
     }
 

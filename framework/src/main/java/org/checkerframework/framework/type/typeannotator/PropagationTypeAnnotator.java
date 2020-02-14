@@ -163,7 +163,6 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
                 if (typeParamAnno == null) {
                     throw new BugInCF(
                             PluginUtil.joinLines(
-                                    System.lineSeparator(),
                                     "Missing annotation on type parameter",
                                     "top=" + top,
                                     "wildcardBound=" + wildcardBound,

@@ -2056,7 +2056,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 || !(returnType.getKind() == TypeKind.DECLARED)
                 || ((AnnotatedDeclaredType) returnType).getTypeArguments().size() != 1) {
             throw new BugInCF(
-                    "Unexpected type passed to AnnotatedTypes.adaptGetClassReturnTypeToReceiver%ngetClassType=%s%nreceiverType=%s",
+                    "Unexpected type passed to AnnotatedTypes.adaptGetClassReturnTypeToReceiver%n"
+                            + "getClassType=%s%nreceiverType=%s",
                     getClassType, receiverType);
         }
 
@@ -2822,7 +2823,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TreePath path = getPath(tree);
         if (path == null) {
             throw new BugInCF(
-                    "AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s%n  for tree (%s) = %s%n  root=%s",
+                    "AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n"
+                            + "  TreePath.getPath(root, tree)=>%s%n  for tree (%s) = %s%n  root=%s",
                     TreePath.getPath(root, tree), tree.getClass(), tree, root);
         }
         for (Tree pathTree : path) {

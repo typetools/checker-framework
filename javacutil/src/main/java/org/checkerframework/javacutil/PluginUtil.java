@@ -47,7 +47,7 @@ public class PluginUtil {
      */
     public static final String JDK_PATH_OPT = "-jdkJar";
 
-    private static final String lineSep = System.lineSeparator();
+    private static final String LINE_SEPARATOR = System.lineSeparator();
 
     public static List<File> toFiles(final List<String> fileNames) {
         final List<File> files = new ArrayList<>(fileNames.size());
@@ -160,7 +160,7 @@ public class PluginUtil {
         if (objs == null) {
             return "null";
         }
-        final StringJoiner sb = new StringJoiner(lineSep);
+        final StringJoiner sb = new StringJoiner(LINE_SEPARATOR);
         for (final Object obj : objs) {
             sb.add(Objects.toString(obj));
         }
@@ -188,7 +188,7 @@ public class PluginUtil {
     @SafeVarargs
     @SuppressWarnings("varargs")
     public static <T> String joinLines(T... a) {
-        return join(lineSep, a);
+        return join(LINE_SEPARATOR, a);
     }
 
     /**
@@ -200,7 +200,7 @@ public class PluginUtil {
      * @return the concatenation of the string representations of the values, each on its own line
      */
     public static String joinLines(Iterable<? extends Object> v) {
-        return join(lineSep, v);
+        return join(LINE_SEPARATOR, v);
     }
 
     /**

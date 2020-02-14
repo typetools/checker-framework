@@ -1371,6 +1371,22 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Throw an exception if the boundType is null or a declaration.
+     *
+     * @param boundDescription the variety of bound: "Lower", "Super", or "Extends"
+     * @param boundType the type being tested
+     * @param thisType the object for which boundType is a bound
+     */
+    private static void checkBound(
+            String boundDescription, AnnotatedTypeMirror boundType, AnnotatedTypeMirror thisType) {
+        if (boundType == null || boundType.isDeclaration()) {
+            throw new BugInCF(
+                    "%s bounds should never be null or a declaration.%s  new bound = %s%s  type = %s",
+                    boundDescription, boundType, thisType);
+        }
+    }
+
+    /**
      * Represents a type variable. A type variable may be explicitly declared by a type parameter of
      * a type, method, or constructor. A type variable may also be declared implicitly, as by the
      * capture conversion of a wildcard type argument (see chapter 5 of The Java Language
@@ -1445,11 +1461,7 @@ public abstract class AnnotatedTypeMirror {
          * @param type the lower bound type
          */
         void setLowerBound(AnnotatedTypeMirror type) {
-            if (type == null || type.isDeclaration()) {
-                throw new BugInCF(
-                        "Lower bounds should never be null or a declaration.%s  new bound = %s%s  type = %s",
-                        type, this);
-            }
+            checkBound("Lower", type, this);
             this.lowerBound = type;
             fixupBoundAnnotations();
         }
@@ -1533,11 +1545,7 @@ public abstract class AnnotatedTypeMirror {
          * @param type the upper bound type
          */
         void setUpperBound(AnnotatedTypeMirror type) {
-            if (type == null || type.isDeclaration()) {
-                throw new BugInCF(
-                        "Lower bounds should never be null or a declaration.%s  new bound = %s%s  type = %s",
-                        type, this);
-            }
+            checkBound("Upper", type, this);
             this.upperBound = type;
             fixupBoundAnnotations();
         }
@@ -1818,11 +1826,7 @@ public abstract class AnnotatedTypeMirror {
          * @param type the type of the lower bound
          */
         void setSuperBound(AnnotatedTypeMirror type) {
-            if (type == null || type.isDeclaration()) {
-                throw new BugInCF(
-                        "Super bounds should never be null or a declaration.%n  new bound = %s%n  type = %s",
-                        type, this);
-            }
+            checkBound("Super", type, this);
             this.superBound = type;
             fixupBoundAnnotations();
         }
@@ -1849,11 +1853,7 @@ public abstract class AnnotatedTypeMirror {
          * @param type the type of the upper bound
          */
         void setExtendsBound(AnnotatedTypeMirror type) {
-            if (type == null || type.isDeclaration()) {
-                throw new BugInCF(
-                        "Extends bounds should never be null or a declaration.%n  new bound = %n  type = %s",
-                        type, this);
-            }
+            checkBound("Extends", type, this);
             this.extendsBound = type;
             fixupBoundAnnotations();
         }

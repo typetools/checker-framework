@@ -453,6 +453,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private static final String OPTION_SEPARATOR = "_";
 
+    /** The line separator. */
+    private static final String LINE_SEPARATOR = System.lineSeparator().intern();
+
     /**
      * The checker that called this one, whether that be a BaseTypeChecker (used as a compound
      * checker) or an AggregateChecker. Null if this is the checker that calls all others. Note that
@@ -799,7 +802,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param ce the internal error
      */
     private void logBugInCF(BugInCF ce) {
-        StringJoiner msg = new StringJoiner(System.lineSeparator());
+        StringJoiner msg = new StringJoiner(LINE_SEPARATOR);
         msg.add(ce.getMessage());
         boolean noPrintErrorStack =
                 (processingEnv != null
@@ -1195,7 +1198,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return a multi-line formatted stack trace
      */
     protected String formatStackTrace(StackTraceElement[] stackTrace) {
-        StringJoiner sb = new StringJoiner(System.lineSeparator());
+        StringJoiner sb = new StringJoiner(LINE_SEPARATOR);
         if (stackTrace.length == 0) {
             sb.add("no stack trace available.");
         } else {
