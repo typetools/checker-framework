@@ -158,8 +158,7 @@ public class ReferenceInfoUtil {
 
     public static String positionCompareStr(
             TypeAnnotation.Position p1, TypeAnnotation.Position p2) {
-        return String.join(
-                System.lineSeparator(),
+        return UtilPlume.joinLines(
                 "type = " + p1.type + ", " + p2.type,
                 "offset = " + p1.offset + ", " + p2.offset,
                 "lvarOffset = " + p1.lvarOffset + ", " + p2.lvarOffset,
@@ -237,8 +236,7 @@ class ComparisionException extends RuntimeException {
         String str = super.toString();
         if (expected != null && found != null) {
             str +=
-                    String.join(
-                            System.lineSeparator(),
+                    UtilPlume.joinLines(
                             "",
                             "\tExpected: "
                                     + expected.size()

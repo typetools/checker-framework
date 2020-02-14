@@ -117,8 +117,7 @@ class ComparisionException extends RuntimeException {
         try {
             if (expected != null && found != null) {
                 str +=
-                        String.join(
-                                System.lineSeparator(),
+                        UtilPlume.joinLines(
                                 "",
                                 "\tExpected: "
                                         + expected.size()

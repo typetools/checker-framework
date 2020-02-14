@@ -53,6 +53,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This class mimics the class {@link
@@ -454,8 +455,7 @@ public class AnnotatedTypes {
         for (final AnnotatedTypeMirror typeParam : enclosingType.getTypeArguments()) {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
                 throw new BugInCF(
-                        String.join(
-                                System.lineSeparator(),
+                        UtilPlume.joinLines(
                                 "Type arguments of a declaration should be type variables",
                                 "enclosingClassOfElem=" + enclosingClassOfElem,
                                 "enclosingType=" + enclosingType,
@@ -467,8 +467,7 @@ public class AnnotatedTypes {
         List<AnnotatedTypeMirror> baseParams = base.getTypeArguments();
         if (ownerParams.size() != baseParams.size() && !base.wasRaw()) {
             throw new BugInCF(
-                    String.join(
-                            System.lineSeparator(),
+                    UtilPlume.joinLines(
                             "Unexpected number of parameters.",
                             "enclosingType=" + enclosingType,
                             "baseType=" + base));
@@ -1168,8 +1167,7 @@ public class AnnotatedTypes {
                     }
 
                     throw new BugInCF(
-                            String.join(
-                                    System.lineSeparator(),
+                            UtilPlume.joinLines(
                                     "Unexpected AnnotatedTypeMirror with no primary annotation.",
                                     "toSearch=" + toSearch,
                                     "top=" + top,

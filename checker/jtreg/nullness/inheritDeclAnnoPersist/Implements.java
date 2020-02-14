@@ -13,8 +13,7 @@ public class Implements {
     })
     public String m1() {
         return TestWrapper.wrap(
-                String.join(
-                        System.lineSeparator(),
+                UtilPlume.joinLines(
                         "public Test() { f = new Object(); }",
                         "@Override public void setf() { f = new Object(); }",
                         "@Override public void setg() {}"));
@@ -23,7 +22,6 @@ public class Implements {
 
 class TestWrapper {
     public static String wrap(String method) {
-        return String.join(
-                System.lineSeparator(), "class Test extends AbstractClass {", method, "}");
+        return UtilPlume.joinLines("class Test extends AbstractClass {", method, "}");
     }
 }
