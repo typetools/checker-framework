@@ -252,7 +252,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             /* TODO! This should be an error. See framework/tests/all-systems/InitializationVisitor.java
             * for a failure.
                throw new BugInCF(
-                       "Mismatching type argument sizes:%n    type 1: %s (%d)\n    type 2: %s (%d)",
+                       "Mismatching type argument sizes:%n    type 1: %s (%d)%n    type 2: %s (%d)",
                                 type1, type1Args.size(), type2, type2Args.size());
                return false;
                */

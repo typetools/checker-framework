@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -154,33 +155,24 @@ public class PluginUtil {
     }
 
     public static <T> String join(final String delimiter, final T[] objs) {
-
-        boolean notFirst = false;
-        final StringBuilder sb = new StringBuilder();
-
-        for (final Object obj : objs) {
-            if (notFirst) {
-                sb.append(delimiter);
-            }
-            sb.append(Objects.toString(obj));
-            notFirst = true;
+        if (objs == null) {
+            return "null";
         }
-
+        final StringJoiner sb = new StringJoiner(System.lineSeparator());
+        for (final Object obj : objs) {
+            sb.add(Objects.toString(obj));
+        }
         return sb.toString();
     }
 
     public static String join(String delimiter, Iterable<?> values) {
-        StringBuilder sb = new StringBuilder();
-
-        boolean notFirst = false;
-        for (Object value : values) {
-            if (notFirst) {
-                sb.append(delimiter);
-            }
-            sb.append(value);
-            notFirst = true;
+        if (values == null) {
+            return "null";
         }
-
+        StringJoiner sb = new StringJoiner(delimiter);
+        for (Object value : values) {
+            sb.add(Objects.toString(value));
+        }
         return sb.toString();
     }
 
@@ -379,13 +371,9 @@ public class PluginUtil {
             return javaExe.getAbsolutePath();
         } else {
             if (out != null) {
-                out.println(
-                        "Could not find java executable at: ( "
-                                + java.getAbsolutePath()
-                                + ","
-                                + javaExe.getAbsolutePath()
-                                + ")"
-                                + "\n  Using \"java\" command.\n");
+                out.printf(
+                        "Could not find java executable at: (%s,%s)%n  Using \"java\" command.%n",
+                        java.getAbsolutePath(), javaExe.getAbsolutePath());
             }
             return "java";
         }

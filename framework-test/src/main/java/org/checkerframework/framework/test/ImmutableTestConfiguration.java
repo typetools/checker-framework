@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.checkerframework.javacutil.PluginUtil;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Represents all of the information needed to execute the Javac compiler for a given set of test
@@ -89,17 +90,14 @@ public class ImmutableTestConfiguration implements TestConfiguration {
 
     @Override
     public String toString() {
-        return "TestConfigurationBuilder:\n"
-                + "testSourceFiles="
-                + (testSourceFiles == null ? "null" : PluginUtil.join(" ", testSourceFiles))
-                + "\n"
-                + "processors="
-                + (processors == null ? "null" : PluginUtil.join(", ", processors))
-                + "\n"
-                + "options="
-                + (options == null ? "null" : PluginUtil.join(", ", getFlatOptions()))
-                + "\n"
-                + "shouldEmitDebugInfo="
-                + shouldEmitDebugInfo;
+        return UtilPlume.joinLines(
+                "TestConfigurationBuilder:",
+                "testSourceFiles="
+                        + (testSourceFiles == null
+                                ? "null"
+                                : PluginUtil.join(" ", testSourceFiles)),
+                "processors=" + (processors == null ? "null" : PluginUtil.join(", ", processors)),
+                "options=" + (options == null ? "null" : PluginUtil.join(", ", getFlatOptions())),
+                "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
     }
 }

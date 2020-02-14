@@ -467,12 +467,11 @@ public class AnnotatedTypes {
         List<AnnotatedTypeMirror> baseParams = base.getTypeArguments();
         if (ownerParams.size() != baseParams.size() && !base.wasRaw()) {
             throw new BugInCF(
-                    "Unexpected number of parameters.\n"
-                            + "enclosingType="
-                            + enclosingType
-                            + "\n"
-                            + "baseType="
-                            + base);
+                    String.join(
+                            System.lineSeparator(),
+                            "Unexpected number of parameters.",
+                            "enclosingType=" + enclosingType,
+                            "baseType=" + base));
         }
         if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.wasRaw()) {
             List<AnnotatedTypeMirror> newBaseParams = new ArrayList<>();
@@ -1156,7 +1155,8 @@ public class AnnotatedTypes {
                     if (glb == null) {
                         throw new BugInCF(
                                 "AnnotatedIntersectionType has no annotation in hierarchy "
-                                        + "on any of its supertypes.\n"
+                                        + "on any of its supertypes."
+                                        + System.lineSeparator()
                                         + "intersectionType="
                                         + source);
                     }
@@ -1168,15 +1168,12 @@ public class AnnotatedTypes {
                     }
 
                     throw new BugInCF(
-                            "Unexpected AnnotatedTypeMirror with no primary annotation.\n"
-                                    + "toSearch="
-                                    + toSearch
-                                    + "\n"
-                                    + "top="
-                                    + top
-                                    + "\n"
-                                    + "source="
-                                    + source);
+                            String.join(
+                                    System.lineSeparator(),
+                                    "Unexpected AnnotatedTypeMirror with no primary annotation.",
+                                    "toSearch=" + toSearch,
+                                    "top=" + top,
+                                    "source=" + source));
             }
         }
 

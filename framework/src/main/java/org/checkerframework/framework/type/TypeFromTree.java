@@ -103,7 +103,9 @@ class TypeFromTree {
             final AnnotatedTypeMirror type) {
         if (type.getKind() == TypeKind.EXECUTABLE) {
             throw new BugInCF(
-                    "Unexpected Executable typekind:\n" + summarize(typeFactory, tree, type));
+                    "Unexpected Executable typekind:"
+                            + System.lineSeparator()
+                            + summarize(typeFactory, tree, type));
         }
     }
 
