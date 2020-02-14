@@ -630,7 +630,7 @@ public abstract class QualifierHierarchy {
      *
      * @param c1 the first collection
      * @param c2 the second collection
-     * @param c2 the result collection
+     * @param result the result collection
      */
     private static void assertSameSize(Collection<?> c1, Collection<?> c2, Collection<?> result) {
         if (c1.size() != result.size()) {
