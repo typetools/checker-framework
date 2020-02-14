@@ -13,7 +13,7 @@ sourceSets {
             exclude 'tests/SubtypingStringPatternsPartialTest.java'
 
             // Tests that should only be invoked by particular build rules.
-            exclude 'wpirunners/**'
+            exclude 'tests/wpirunners/**'
         }
     }
 }
