@@ -109,6 +109,13 @@ class TypeFromTree {
         }
     }
 
+    /**
+     * Return a string with the two arguments, for diagnostics.
+     *
+     * @param typeFactory a type factory
+     * @param tree a tree
+     * @return a string with the two arguments
+     */
     protected static String summarize(final AnnotatedTypeFactory typeFactory, final Tree tree) {
         return "tree="
                 + tree
