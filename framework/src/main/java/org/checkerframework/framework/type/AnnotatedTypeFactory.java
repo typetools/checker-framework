@@ -2822,9 +2822,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TreePath path = getPath(tree);
         if (path == null) {
             throw new BugInCF(
-                    String.format(
-                            "AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s%n  for tree (%s) = %s%n  root=%s",
-                            TreePath.getPath(root, tree), tree.getClass(), tree, root));
+                    "AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s%n  for tree (%s) = %s%n  root=%s",
+                    TreePath.getPath(root, tree), tree.getClass(), tree, root);
         }
         for (Tree pathTree : path) {
             if (pathTree instanceof MethodTree) {
@@ -3527,10 +3526,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     // We should never reach here: isFunctionalInterface performs the same check
                     // and would have raised an error already.
                     throw new BugInCF(
-                            String.format(
-                                    "Expected the type of a cast tree in an assignment context to contain a functional interface bound. "
-                                            + "Found type: %s for tree: %s in lambda tree: %s",
-                                    castATM, cast, tree));
+                            "Expected the type of a cast tree in an assignment context to contain a functional interface bound. "
+                                    + "Found type: %s for tree: %s in lambda tree: %s",
+                            castATM, cast, tree);
                 }
                 return castATM;
 
@@ -3653,10 +3651,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 }
             }
             throw new BugInCF(
-                    String.format(
-                            "Expected the type of %s tree in assignment context to be a functional interface. "
-                                    + "Found type: %s for tree: %s in lambda tree: %s",
-                            contextTree.getKind(), type, contextTree, tree));
+                    "Expected the type of %s tree in assignment context to be a functional interface. "
+                            + "Found type: %s for tree: %s in lambda tree: %s",
+                    contextTree.getKind(), type, contextTree, tree);
         }
         return true;
     }

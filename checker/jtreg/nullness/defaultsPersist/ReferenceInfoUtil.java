@@ -198,7 +198,7 @@ public class ReferenceInfoUtil {
             ClassFile cf)
             throws InvalidIndex, UnexpectedEntry {
         if (actualAnnos.size() != expectedAnnos.size()) {
-            throw new ComparisionException(
+            throw new ComparisonException(
                     "Wrong number of annotations", expectedAnnos, actualAnnos);
         }
 
@@ -207,7 +207,7 @@ public class ReferenceInfoUtil {
             TypeAnnotation.Position expected = e.second;
             TypeAnnotation actual = findAnnotation(aName, expected, actualAnnos, cf);
             if (actual == null) {
-                throw new ComparisionException(
+                throw new ComparisonException(
                         "Expected annotation not found: " + aName + " position: " + expected,
                         expectedAnnos,
                         actualAnnos);
@@ -217,13 +217,13 @@ public class ReferenceInfoUtil {
     }
 }
 
-class ComparisionException extends RuntimeException {
+class ComparisonException extends RuntimeException {
     private static final long serialVersionUID = -3930499712333815821L;
 
     public final List<Pair<String, TypeAnnotation.Position>> expected;
     public final List<TypeAnnotation> found;
 
-    public ComparisionException(
+    public ComparisonException(
             String message,
             List<Pair<String, TypeAnnotation.Position>> expected,
             List<TypeAnnotation> found) {
@@ -233,19 +233,14 @@ class ComparisionException extends RuntimeException {
     }
 
     public String toString() {
-        String str = super.toString();
-        if (expected != null && found != null) {
-            str +=
-                    UtilPlume.joinLines(
-                            "",
-                            "\tExpected: "
-                                    + expected.size()
-                                    + " annotations; but found: "
-                                    + found.size()
-                                    + " annotations",
-                            "  Expected: " + expected,
-                            "  Found: " + found);
-        }
-        return str;
+        return UtilPlume.joinLines(
+                super.toString(),
+                "\tExpected: "
+                        + expected.size()
+                        + " annotations; but found: "
+                        + found.size()
+                        + " annotations",
+                "  Expected: " + expected,
+                "  Found: " + found);
     }
 }

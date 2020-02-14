@@ -13,10 +13,9 @@ public class Implements {
     })
     public String m1() {
         return TestWrapper.wrap(
-                UtilPlume.joinLines(
-                        "public Test() { f = new Object(); }",
-                        "@Override public void setf() { f = new Object(); }",
-                        "@Override public void setg() {}"));
+                "public Test() { f = new Object(); }",
+                "@Override public void setf() { f = new Object(); }",
+                "@Override public void setg() {}");
     }
 }
 

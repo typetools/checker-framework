@@ -880,16 +880,15 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                     result = anno;
                 } else {
                     throw new BugInCF(
-                            String.format(
-                                    "Bug in checker implementation:  type hierarchy is not a lattice.%n"
-                                            + "There is no unique "
-                                            + (lub ? "lub" : "glb")
-                                            + "(%s, %s).%n"
-                                            + "Two incompatible candidates are: %s %s",
-                                    a1,
-                                    a2,
-                                    result,
-                                    anno));
+                            "Bug in checker implementation:  type hierarchy is not a lattice.%n"
+                                    + "There is no unique "
+                                    + (lub ? "lub" : "glb")
+                                    + "(%s, %s).%n"
+                                    + "Two incompatible candidates are: %s %s",
+                            a1,
+                            a2,
+                            result,
+                            anno);
                 }
             }
             return result;
