@@ -53,7 +53,7 @@ public class PluginUtil {
     /**
      * Convert a list of strings (file names) to a list of files.
      *
-     * @param fileName a list of file names
+     * @param fileNames a list of file names
      * @return a list of File objects
      */
     public static List<File> toFiles(final List<String> fileNames) {
@@ -167,6 +167,7 @@ public class PluginUtil {
      * Returns a new String composed of the string representations of the elements joined together
      * with a copy of the specified delimiter.
      *
+     * @param <T> the type of array elements
      * @param delimiter the delimiter that separates each element
      * @param objs the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
@@ -187,7 +188,7 @@ public class PluginUtil {
      * with a copy of the specified delimiter.
      *
      * @param delimiter the delimiter that separates each element
-     * @param objs the values whose string representations to join together
+     * @param values the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
      */
     public static String join(CharSequence delimiter, Iterable<?> values) {
@@ -205,6 +206,7 @@ public class PluginUtil {
      * Concatenate the string representations of the objects, placing the system-specific line
      * separator between them.
      *
+     * @param <T> the type of array elements
      * @param a array of values to concatenate
      * @return the concatenation of the string representations of the values, each on its own line
      */
