@@ -128,7 +128,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (showInferenceSteps) {
             checker.message(
                     Kind.NOTE,
-                    "DTAI: expression: %s%n  argTypes: %s%n  assignedTo: %s%n",
+                    "DTAI: expression: %s%n  argTypes: %s%n  assignedTo: %s",
                     expressionTree.toString().replace(System.lineSeparator(), " "),
                     argTypes,
                     assignedTo);
