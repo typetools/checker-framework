@@ -175,7 +175,7 @@ public class PluginUtil {
         if (objs == null) {
             return "null";
         }
-        final StringJoiner sb = new StringJoiner(LINE_SEPARATOR);
+        final StringJoiner sb = new StringJoiner(delimiter);
         for (final Object obj : objs) {
             sb.add(Objects.toString(obj));
         }
@@ -218,7 +218,6 @@ public class PluginUtil {
      * Concatenate the string representations of the objects, placing the system-specific line
      * separator between them.
      *
-     * @see java.util.AbstractCollection#toString()
      * @param v list of values to concatenate
      * @return the concatenation of the string representations of the values, each on its own line
      */
