@@ -750,7 +750,7 @@ public class DependentTypesHelper {
             return;
         }
         SourceChecker checker = factory.getContext().getChecker();
-        String error = PluginUtil.join(System.lineSeparator(), errors);
+        String error = PluginUtil.joinLines(errors);
         checker.report(Result.failure("flowexpr.parse.error", error), errorTree);
     }
 
