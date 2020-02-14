@@ -1369,16 +1369,11 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(parentAdt.getTypeArguments());
             if (argIndex >= typeArgs.size()) {
                 throw new BugInCF(
-                        "Invalid type arg index."
-                                + System.lineSeparator()
-                                + "parent="
-                                + parent
-                                + System.lineSeparator()
-                                + "replacement="
-                                + replacement
-                                + System.lineSeparator()
-                                + "argIndex="
-                                + argIndex);
+                        PluginUtil.joinLines(
+                                "Invalid type arg index.",
+                                "parent=" + parent,
+                                "replacement=" + replacement,
+                                "argIndex=" + argIndex));
             }
             typeArgs.add(argIndex, replacement);
             typeArgs.remove(argIndex + 1);
@@ -1392,13 +1387,10 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = parentAdt.getTypeArguments();
             if (argIndex >= typeArgs.size()) {
                 throw new BugInCF(
-                        "Invalid type arg index."
-                                + System.lineSeparator()
-                                + "parent="
-                                + parent
-                                + System.lineSeparator()
-                                + "argIndex="
-                                + argIndex);
+                        PluginUtil.joinLines(
+                                "Invalid type arg index.",
+                                "parent=" + parent,
+                                "argIndex=" + argIndex));
             }
 
             return typeArgs.get(argIndex);
