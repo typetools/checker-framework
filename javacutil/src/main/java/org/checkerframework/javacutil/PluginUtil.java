@@ -47,6 +47,8 @@ public class PluginUtil {
      */
     public static final String JDK_PATH_OPT = "-jdkJar";
 
+    private static final String lineSep = System.lineSeparator();
+
     public static List<File> toFiles(final List<String> fileNames) {
         final List<File> files = new ArrayList<>(fileNames.size());
         for (final String fn : fileNames) {
@@ -154,18 +156,18 @@ public class PluginUtil {
         return lines;
     }
 
-    public static <T> String join(final String delimiter, final T[] objs) {
+    public static <T> String join(final CharSequence delimiter, final T[] objs) {
         if (objs == null) {
             return "null";
         }
-        final StringJoiner sb = new StringJoiner(System.lineSeparator());
+        final StringJoiner sb = new StringJoiner(lineSep);
         for (final Object obj : objs) {
             sb.add(Objects.toString(obj));
         }
         return sb.toString();
     }
 
-    public static String join(String delimiter, Iterable<?> values) {
+    public static String join(CharSequence delimiter, Iterable<?> values) {
         if (values == null) {
             return "null";
         }
@@ -174,6 +176,31 @@ public class PluginUtil {
             sb.add(Objects.toString(value));
         }
         return sb.toString();
+    }
+
+    /**
+     * Concatenate the string representations of the objects, placing the system-specific line
+     * separator between them.
+     *
+     * @param a array of values to concatenate
+     * @return the concatenation of the string representations of the values, each on its own line
+     */
+    @SafeVarargs
+    @SuppressWarnings("varargs")
+    public static <T> String joinLines(T... a) {
+        return join(lineSep, a);
+    }
+
+    /**
+     * Concatenate the string representations of the objects, placing the system-specific line
+     * separator between them.
+     *
+     * @see java.util.AbstractCollection#toString()
+     * @param v list of values to concatenate
+     * @return the concatenation of the string representations of the values, each on its own line
+     */
+    public static String joinLines(Iterable<? extends Object> v) {
+        return join(lineSep, v);
     }
 
     /**

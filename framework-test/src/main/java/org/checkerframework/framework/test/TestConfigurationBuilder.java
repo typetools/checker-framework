@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
-import org.plumelib.util.UtilPlume;
 
 /**
  * Used to create an instance of TestConfiguration, TestConfigurationBuilder follows the standard
@@ -368,7 +367,7 @@ public class TestConfigurationBuilder {
 
     @Override
     public String toString() {
-        return UtilPlume.joinLines(
+        return PluginUtil.joinLines(
                 "TestConfigurationBuilder:",
                 "testSourceFiles=" + PluginUtil.join(" ", testSourceFiles),
                 "processors=" + PluginUtil.join(", ", processors),

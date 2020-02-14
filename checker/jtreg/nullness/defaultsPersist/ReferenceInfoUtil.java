@@ -158,7 +158,7 @@ public class ReferenceInfoUtil {
 
     public static String positionCompareStr(
             TypeAnnotation.Position p1, TypeAnnotation.Position p2) {
-        return UtilPlume.joinLines(
+        return PluginUtil.joinLines(
                 "type = " + p1.type + ", " + p2.type,
                 "offset = " + p1.offset + ", " + p2.offset,
                 "lvarOffset = " + p1.lvarOffset + ", " + p2.lvarOffset,
@@ -233,7 +233,7 @@ class ComparisonException extends RuntimeException {
     }
 
     public String toString() {
-        return UtilPlume.joinLines(
+        return PluginUtil.joinLines(
                 super.toString(),
                 "\tExpected: "
                         + expected.size()

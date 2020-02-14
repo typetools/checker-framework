@@ -19,7 +19,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
 
 /**
  * A visitor used to compare two type mirrors for "structural" equality. Structural equality implies
@@ -77,7 +76,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-        return UtilPlume.joinLines(
+        return PluginUtil.joinLines(
                 "AnnotatedTypeMirrors aren't structurally equal.",
                 "  type1 = " + type1.getClass().getSimpleName() + "( " + type1 + " )",
                 "  type2 = " + type2.getClass().getSimpleName() + "( " + type2 + " )",

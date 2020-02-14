@@ -20,7 +20,8 @@ public class Implements {
 }
 
 class TestWrapper {
-    public static String wrap(String method) {
-        return UtilPlume.joinLines("class Test extends AbstractClass {", method, "}");
+    public static String wrap(String... method) {
+        return PluginUtil.joinLines(
+                "class Test extends AbstractClass {", PluginUtil.joinLines(method), "}");
     }
 }

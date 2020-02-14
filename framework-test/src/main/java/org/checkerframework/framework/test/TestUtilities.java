@@ -24,7 +24,6 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.checkerframework.javacutil.PluginUtil;
 import org.junit.Assert;
-import org.plumelib.util.UtilPlume;
 
 public class TestUtilities {
 
@@ -325,19 +324,19 @@ public class TestUtilities {
             pw.println("#Missing: " + missing.size() + "      #Unexpected: " + unexpected.size());
 
             pw.println("Expected:");
-            pw.println(UtilPlume.joinLines(expected));
+            pw.println(PluginUtil.joinLines(expected));
             pw.println();
 
             pw.println("Actual:");
-            pw.println(UtilPlume.joinLines(actual));
+            pw.println(PluginUtil.joinLines(actual));
             pw.println();
 
             pw.println("Missing:");
-            pw.println(UtilPlume.joinLines(missing));
+            pw.println(PluginUtil.joinLines(missing));
             pw.println();
 
             pw.println("Unexpected:");
-            pw.println(UtilPlume.joinLines(unexpected));
+            pw.println(PluginUtil.joinLines(unexpected));
             pw.println();
 
             pw.println();

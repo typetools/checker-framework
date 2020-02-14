@@ -19,7 +19,6 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
 
 /**
  * Takes a single step in reducing a AFConstraint.
@@ -94,7 +93,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedTypeMirror subtype,
             AnnotatedTypeMirror supertype,
             Set<AFConstraint> constraints) {
-        return UtilPlume.joinLines(
+        return PluginUtil.joinLines(
                 "Unexpected " + reducerType.getSimpleName() + " + Combination:",
                 "subtype=" + subtype,
                 "supertype=" + supertype,

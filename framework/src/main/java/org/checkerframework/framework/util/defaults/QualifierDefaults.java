@@ -48,7 +48,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
 
 /**
  * Determines the default qualifiers on a type. Default qualifiers are specified via the {@link
@@ -1142,7 +1141,7 @@ public class QualifierDefaults {
                 }
             } else {
                 throw new BugInCF(
-                        UtilPlume.joinLines(
+                        PluginUtil.joinLines(
                                 "Unexpected tree type for typeVar Element:",
                                 "typeParamElem=" + typeParamElem,
                                 typeParamDecl));

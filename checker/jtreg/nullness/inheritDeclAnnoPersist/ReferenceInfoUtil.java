@@ -117,7 +117,7 @@ class ComparisonException extends RuntimeException {
         for (Annotation anno : found) {
             foundString.add += cf.constant_pool.getUTF8Value(anno.type_index);
         }
-        return UtilPlume.joinLines(
+        return PluginUtil.joinLines(
                 super.toString(),
                 "\tExpected: "
                         + expected.size()

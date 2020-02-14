@@ -56,7 +56,6 @@ import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7 See
@@ -493,7 +492,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         if (argTypes.size() != paramTypes.size()) {
             throw new BugInCF(
-                    UtilPlume.joinLines(
+                    PluginUtil.joinLines(
                             "Mismatch between formal parameter count and argument count.",
                             "paramTypes=" + PluginUtil.join(",", paramTypes),
                             "argTypes=" + PluginUtil.join(",", argTypes)));
@@ -811,7 +810,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         for (final AFConstraint afConstraint : afConstraints) {
             if (!afConstraint.isIrreducible(targets)) {
                 throw new BugInCF(
-                        UtilPlume.joinLines(
+                        PluginUtil.joinLines(
                                 "All afConstraints should be irreducible before conversion.",
                                 "afConstraints=[ " + PluginUtil.join(", ", afConstraints) + " ]",
                                 "targets=[ " + PluginUtil.join(", ", targets) + "]"));
