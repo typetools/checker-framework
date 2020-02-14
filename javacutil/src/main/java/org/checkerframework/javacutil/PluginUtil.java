@@ -47,8 +47,15 @@ public class PluginUtil {
      */
     public static final String JDK_PATH_OPT = "-jdkJar";
 
+    /** The system-specific line separator. */
     private static final String LINE_SEPARATOR = System.lineSeparator();
 
+    /**
+     * Convert a list of strings (file names) to a list of files.
+     *
+     * @param fileName a list of file names
+     * @return a list of File objects
+     */
     public static List<File> toFiles(final List<String> fileNames) {
         final List<File> files = new ArrayList<>(fileNames.size());
         for (final String fn : fileNames) {
@@ -156,6 +163,14 @@ public class PluginUtil {
         return lines;
     }
 
+    /**
+     * Returns a new String composed of the string representations of the elements joined together
+     * with a copy of the specified delimiter.
+     *
+     * @param delimiter the delimiter that separates each element
+     * @param objs the values whose string representations to join together
+     * @return a new string that concatenates the string representations of the elements
+     */
     public static <T> String join(final CharSequence delimiter, final T[] objs) {
         if (objs == null) {
             return "null";
@@ -167,6 +182,14 @@ public class PluginUtil {
         return sb.toString();
     }
 
+    /**
+     * Returns a new String composed of the string representations of the elements joined together
+     * with a copy of the specified delimiter.
+     *
+     * @param delimiter the delimiter that separates each element
+     * @param objs the values whose string representations to join together
+     * @return a new string that concatenates the string representations of the elements
+     */
     public static String join(CharSequence delimiter, Iterable<?> values) {
         if (values == null) {
             return "null";

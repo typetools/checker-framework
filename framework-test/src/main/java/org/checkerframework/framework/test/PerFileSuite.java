@@ -147,6 +147,7 @@ public class PerFileSuite extends Suite {
         return method;
     }
 
+    /** The message about the required getTestDirs or getTestFiles method. */
     private static final String requiredFormsMessage =
             "Parameter method must have one of the following two forms:%n"
                     + "@Parameters String [] getTestDirs()%n"

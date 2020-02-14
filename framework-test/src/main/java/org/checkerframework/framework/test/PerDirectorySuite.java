@@ -138,6 +138,7 @@ public class PerDirectorySuite extends Suite {
         return method;
     }
 
+    /** The message about the required getTestDirs method. */
     private static final String requiredFormsMessage =
             "Parameter method must the following form:"
                     + System.lineSeparator()

@@ -98,6 +98,11 @@ public class TypecheckResult {
         return errorHeaders;
     }
 
+    /**
+     * Summarize unexpected and missing diagnostics.
+     *
+     * @return summary of failures
+     */
     public String summarize() {
         if (testFailed) {
             StringJoiner summaryBuilder = new StringJoiner(System.lineSeparator());
