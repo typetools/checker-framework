@@ -11,6 +11,8 @@ import com.sun.tools.classfile.Method;
 import com.sun.tools.classfile.RuntimeAnnotations_attribute;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
+import org.checkerframework.javacutil.PluginUtil;
 
 public class ReferenceInfoUtil {
 
@@ -115,7 +117,11 @@ class ComparisonException extends RuntimeException {
     public String toString() {
         StringJoiner foundString = new StringJoiner(",");
         for (Annotation anno : found) {
-            foundString.add += cf.constant_pool.getUTF8Value(anno.type_index);
+            try {
+                foundString.add(cf.constant_pool.getUTF8Value(anno.type_index));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
         return PluginUtil.joinLines(
                 super.toString(),

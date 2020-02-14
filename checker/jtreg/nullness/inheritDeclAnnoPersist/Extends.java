@@ -1,3 +1,5 @@
+import org.checkerframework.javacutil.PluginUtil;
+
 /*
  * @test
  * @summary Test that inherited declaration annotations are stored in bytecode.
