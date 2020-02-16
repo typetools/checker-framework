@@ -172,7 +172,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             }
 
             checkOverridePurity();
-            return super.checkOverride();
+            return true;
         }
 
         /**
