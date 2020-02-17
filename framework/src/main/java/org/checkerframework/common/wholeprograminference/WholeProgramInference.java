@@ -177,15 +177,13 @@ public interface WholeProgramInference {
     enum OutputKind {
         /**
          * Output the results of whole-program inference as a stub file that can be parsed back into
-         * the Checker Framework by the Stub Parser. Use this output kind when the "-Ainfer=stubs"
-         * option is passed.
+         * the Checker Framework by the Stub Parser.
          */
         STUB,
 
         /**
          * Output the results of whole-program inference as a Java annotation index file. The
-         * Annotation File Utilities project contains code for reading and writing .jaif files. This
-         * option is the default, and is used with both "-Ainfer" and "-Ainfer=jaifs".
+         * Annotation File Utilities project contains code for reading and writing .jaif files.
          */
         JAIF
     }

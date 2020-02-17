@@ -539,7 +539,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (checker.useUncheckedCodeDefault("source")
                 || checker.useUncheckedCodeDefault("bytecode")) {
             throw new UserError(
-                    "The option -Ainfer cannot be"
+                    "The option -Ainfer=... cannot be"
                             + " used together with unchecked code defaults.");
         }
     }
