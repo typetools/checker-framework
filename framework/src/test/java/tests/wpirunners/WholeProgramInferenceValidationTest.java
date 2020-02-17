@@ -3,6 +3,8 @@ package tests.wpirunners;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
 
@@ -27,6 +29,11 @@ public class WholeProgramInferenceValidationTest extends FrameworkPerDirectoryTe
         if (new File("tests/whole-program-inference/annotated/").exists()) {
             super.run();
         }
+    }
+
+    @Before
+    public void before() throws Exception {
+        Assume.assumeTrue("running_wpi_tests".equals(System.getProperty("F_WPI_TEST_STATUS")));
     }
 
     @Parameters
