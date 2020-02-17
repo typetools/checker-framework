@@ -323,7 +323,7 @@ public final class SceneToStubWriter {
             basetype = "[]";
         }
 
-        // anonymous static classes shouldn't be generated with the "anonymous" tag that the AScene
+        // anonymous static classes shouldn't be printed with the "anonymous" tag that the AScene
         // library uses
         if (basetype.startsWith("<anonymous ")) {
             basetype = basetype.substring("<anonymous ".length(), basetype.length() - 1);
