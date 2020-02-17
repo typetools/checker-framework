@@ -322,6 +322,19 @@ public final class SceneToStubWriter {
             result.append(" ");
             basetype = "[]";
         }
+
+        // anonymous static classes shouldn't be generated with the "anonymous" tag that the AScene
+        // library uses
+        if (basetype.startsWith("<anonymous ")) {
+            basetype = basetype.substring("<anonymous ".length(), basetype.length() - 1);
+        }
+
+        // fields don't need their generic types, and sometimes they are wrong. Just don't print
+        // them.
+        while (basetype.contains("<")) {
+            basetype = basetype.substring(0, basetype.indexOf('<'));
+        }
+
         result.append(formatAnnotations(aField.type.tlAnnotationsHere));
         result.append(basetype);
         result.append(' ');
