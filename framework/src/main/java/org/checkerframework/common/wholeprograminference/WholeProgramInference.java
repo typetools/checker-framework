@@ -171,10 +171,10 @@ public interface WholeProgramInference {
      *
      * @param kind the file format in which to write the results
      */
-    void writeResultsToFile(OutputKind kind);
+    void writeResultsToFile(OutputFormat kind);
 
     /** The kinds of output that whole-program inference can produce. */
-    enum OutputKind {
+    enum OutputFormat {
         /**
          * Output the results of whole-program inference as a stub file that can be parsed back into
          * the Checker Framework by the Stub Parser.

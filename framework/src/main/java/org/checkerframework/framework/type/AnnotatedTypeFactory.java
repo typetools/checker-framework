@@ -329,7 +329,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Which whole-program inference output mode to use, if doing whole-program inference. Would be
      * final, but not set unless WPI is enabled.
      */
-    private WholeProgramInference.OutputKind wpiOutputKind;
+    private WholeProgramInference.OutputFormat wpiOutputFormat;
 
     /**
      * Should results be cached? This means that ATM.deepCopy() will be called. ATM.deepCopy() used
@@ -460,10 +460,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             switch (wpiOutputArg) {
                 case "stubs":
-                    wpiOutputKind = WholeProgramInference.OutputKind.STUB;
+                    wpiOutputFormat = WholeProgramInference.OutputFormat.STUB;
                     break;
                 case "jaifs":
-                    wpiOutputKind = WholeProgramInference.OutputKind.JAIF;
+                    wpiOutputFormat = WholeProgramInference.OutputFormat.JAIF;
                     break;
                 default:
                     throw new UserError(
@@ -1101,7 +1101,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // Write out the results of whole-program inference.
             // In order to perform the write operation only once for each class, the best location
             // to do so is here.
-            wholeProgramInference.writeResultsToFile(wpiOutputKind);
+            wholeProgramInference.writeResultsToFile(wpiOutputFormat);
         }
     }
 
