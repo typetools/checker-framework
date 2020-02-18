@@ -6,12 +6,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.BugInCF;
@@ -127,9 +124,7 @@ public class ASceneWrapper {
     }
 
     public void writeToStub(
-            String jaifPath,
-            Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore,
-            Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstants) {
+            String jaifPath, Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
         removeIgnoredAnnosFromScene(theScene, annosToIgnore);
         theScene.prune();
         String stubPath = jaifPath.replace(".jaif", ".astub");
@@ -137,7 +132,7 @@ public class ASceneWrapper {
         if (!theScene.isEmpty()) {
             // Only write non-empty scenes into .astub files.
             try {
-                SceneToStubWriter.write(this, enumNamesToEnumConstants, new FileWriter(stubPath));
+                SceneToStubWriter.write(this, new FileWriter(stubPath));
             } catch (IOException e) {
                 throw new UserError("Problem while writing %s: %s", stubPath, e.getMessage());
             }

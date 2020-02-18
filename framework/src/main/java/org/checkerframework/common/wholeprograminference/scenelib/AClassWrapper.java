@@ -1,10 +1,14 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
@@ -14,6 +18,8 @@ public class AClassWrapper {
 
     private final Map<String, AMethodWrapper> methods = new HashMap<>();
     private final Map<String, AFieldWrapper> fields = new HashMap<>();
+
+    private List<VariableElement> enumConstants;
 
     private TypeElement typeElement = null;
 
@@ -62,5 +68,18 @@ public class AClassWrapper {
         if (this.typeElement == null) {
             this.typeElement = typeElement;
         }
+    }
+
+    public boolean isEnum() {
+        return enumConstants != null;
+    }
+
+    public List<VariableElement> getEnumConstants() {
+        return ImmutableList.copyOf(enumConstants);
+    }
+
+    public void markAsEnum(List<VariableElement> enumConstants) {
+        this.enumConstants = new ArrayList<>();
+        this.enumConstants.addAll(enumConstants);
     }
 }

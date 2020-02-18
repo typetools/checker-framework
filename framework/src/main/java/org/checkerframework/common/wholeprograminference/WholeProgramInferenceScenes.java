@@ -14,10 +14,8 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AFieldWrapper;
@@ -369,7 +367,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 storage.writeScenesToJaif();
                 break;
             case STUB:
-                storage.writeScenesToStub(enumNamesToEnumConstants);
+                storage.writeScenesToStub();
                 break;
         }
     }
@@ -403,11 +401,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *
      * @param classSymbol the class for which to update metadata
      */
-    private void updateClassMetadata(
-            ClassSymbol classSymbol, @Nullable AClassWrapper aClassWrapper) {
-        Name qualifiedName = classSymbol.getQualifiedName();
-        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @FullyQualifiedName String qualifiedNameAsString = qualifiedName.toString();
+    private void updateClassMetadata(ClassSymbol classSymbol, AClassWrapper aClassWrapper) {
         if (classSymbol.isEnum()) {
             List<VariableElement> enumConstants = new ArrayList<>();
             for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
@@ -415,7 +409,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     enumConstants.add((VariableElement) e);
                 }
             }
-            enumNamesToEnumConstants.put(qualifiedNameAsString, enumConstants);
+            aClassWrapper.markAsEnum(enumConstants);
         }
         if (aClassWrapper != null) {
             aClassWrapper.setTypeElement(classSymbol);

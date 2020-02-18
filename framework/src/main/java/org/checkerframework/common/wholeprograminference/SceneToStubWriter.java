@@ -21,7 +21,6 @@ import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.reflection.Signatures;
 import scenelib.annotations.Annotation;
-import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AElement;
 import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.AScene;
@@ -39,10 +38,10 @@ import scenelib.annotations.util.Strings;
 
 /**
  * SceneToStubWriter provides two static methods named {@code write} that write a {@link AScene} in
- * stub file format, to a {@link Writer} {@link #write(ASceneWrapper, Map, Writer)}, or to a file
- * {@link #write(ASceneWrapper, Map, Writer)}. This class is the equivalent of {@code
- * IndexFileWriter} from the Annotation File Utilities, but outputs the results in the stub file
- * format instead of jaif format.
+ * stub file format, to a {@link Writer} {@link #write(ASceneWrapper, Writer)}, or to a file {@link
+ * #write(ASceneWrapper, Writer)}. This class is the equivalent of {@code IndexFileWriter} from the
+ * Annotation File Utilities, but outputs the results in the stub file format instead of jaif
+ * format.
  *
  * <p>You can use this writer instead of {@code IndexFileWriter} by passing the {@code
  * -Ainfer=stubs} command-line argument.
@@ -53,57 +52,25 @@ public final class SceneToStubWriter {
     private static final String INDENT = "    ";
 
     /**
-     * Map from the fully-qualified name of each enum to its list of enum constants.
-     *
-     * <p>The stub parser can't parse an enum that's labeled "class", but {@link AClass} doesn't
-     * specify if a class is an enum. So track which classes are enums. In addition, enum constants
-     * need to be present in the stub file.
-     */
-    private Map<@FullyQualifiedName String, List<VariableElement>> enumConstants;
-
-    /**
-     * Create a new SceneToStubWriter.
-     *
-     * @param enumConstants a map from fully-qualified enum names to the enum constants defined in
-     *     that name
-     */
-    private SceneToStubWriter(
-            Map<@FullyQualifiedName String, List<VariableElement>> enumConstants) {
-        this.enumConstants = enumConstants;
-    }
-
-    /**
      * Writes the annotations in {@code scene} to {@code out} in stub file format.
      *
      * @param scene the scene to write out
-     * @param enumConstants a map from fully-qualified enum names to the enum constants defined in
-     *     that name
      * @param out the Writer to output the result to
      */
-    public static void write(
-            ASceneWrapper scene,
-            Map<@FullyQualifiedName String, List<VariableElement>> enumConstants,
-            Writer out) {
-        SceneToStubWriter writer = new SceneToStubWriter(enumConstants);
-        writer.writeImpl(scene, new PrintWriter(out));
+    public static void write(ASceneWrapper scene, Writer out) {
+        writeImpl(scene, new PrintWriter(out));
     }
 
     /**
      * Writes the annotations in {@code scene} to the file {@code filename} in stub file format.
      *
      * @param scene the scene to write out {@code TypeMirror}s that represent their base Java types
-     * @param enumNamesToEnumConstant a map from fully-qualified enum names to the enum constants
-     *     defined in that name
      * @param filename the path of the file to write to
      * @throws IOException if the file doesn't exist
-     * @see #write(ASceneWrapper, Map, Writer)
+     * @see #write(ASceneWrapper, Writer)
      */
-    public static void write(
-            ASceneWrapper scene,
-            Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstant,
-            String filename)
-            throws IOException {
-        write(scene, enumNamesToEnumConstant, new FileWriter(filename));
+    public static void write(ASceneWrapper scene, String filename) throws IOException {
+        write(scene, new FileWriter(filename));
     }
 
     /**
@@ -139,7 +106,7 @@ public final class SceneToStubWriter {
      * @param o the value or values to format
      * @return the String representation of the value
      */
-    private String formatAnnotationValue(AnnotationFieldType aft, Object o) {
+    private static String formatAnnotationValue(AnnotationFieldType aft, Object o) {
         if (aft instanceof AnnotationAFT) {
             return formatAnnotation((Annotation) o);
         } else if (aft instanceof ArrayAFT) {
@@ -183,7 +150,7 @@ public final class SceneToStubWriter {
      * @param a the annotation to print
      * @return the formatted annotation
      */
-    private String formatAnnotation(Annotation a) {
+    private static String formatAnnotation(Annotation a) {
         String annoName = a.def().name.substring(a.def().name.lastIndexOf('.') + 1);
         if (a.fieldValues.isEmpty()) {
             return "@" + annoName;
@@ -209,7 +176,7 @@ public final class SceneToStubWriter {
      * @return all annotations in {@code annos}, separated by spaces, in a form suitable to be
      *     printed as Java source code
      */
-    private String formatAnnotations(Collection<? extends Annotation> annos) {
+    private static String formatAnnotations(Collection<? extends Annotation> annos) {
         StringBuilder sb = new StringBuilder();
         for (Annotation tla : annos) {
             if (!tla.def.name.contains("+")) {
@@ -226,7 +193,7 @@ public final class SceneToStubWriter {
      * @param e the array type
      * @return the array type formatted to be written to Java source code
      */
-    private String formatArrayComponentTypeAnnotation(ATypeElement e) {
+    private static String formatArrayComponentTypeAnnotation(ATypeElement e) {
         StringBuilder result = new StringBuilder();
         for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
             InnerTypeLocation loc = ite.getKey();
@@ -251,7 +218,7 @@ public final class SceneToStubWriter {
      *     an explicit receiver parameter (i.e., a parameter named "this").
      * @return a String suitable to print in a stub file
      */
-    private String formatAField(AFieldWrapper aField, String fieldName, String className) {
+    private static String formatAField(AFieldWrapper aField, String fieldName, String className) {
         StringBuilder result = new StringBuilder();
         String basetype;
         if ("this".equals(fieldName)) {
@@ -330,7 +297,7 @@ public final class SceneToStubWriter {
      * @param printWriter the writer where the class definition should be printed
      * @return the number of outer classes within which this class is nested
      */
-    private int printClassDefinitions(
+    private static int printClassDefinitions(
             String basename,
             @FullyQualifiedName String classname,
             AClassWrapper aClass,
@@ -344,7 +311,7 @@ public final class SceneToStubWriter {
         }
 
         // For any outer class, print "class".  For a leaf class, print "enum" or "class".
-        if ("".equals(remainingInnerClassNames) && enumConstants.containsKey(classname)) {
+        if ("".equals(remainingInnerClassNames) && aClass.isEnum()) {
             printWriter.print("enum ");
         } else {
             printWriter.print("class ");
@@ -369,7 +336,7 @@ public final class SceneToStubWriter {
      * @param fullyQualifiedClassname the fully-qualified name of the class
      * @param printWriter the writer on which to print the fields
      */
-    private void printFields(
+    private static void printFields(
             AClassWrapper aClass,
             @FullyQualifiedName String fullyQualifiedClassname,
             PrintWriter printWriter) {
@@ -392,7 +359,7 @@ public final class SceneToStubWriter {
      * @param fullyQualifiedClassname the fully-qualified name of the containing class
      * @param printWriter where to print the method signature
      */
-    private void printMethodSignature(
+    private static void printMethodSignature(
             AMethodWrapper aMethodWrapper,
             String basename,
             @FullyQualifiedName String fullyQualifiedClassname,
@@ -444,14 +411,14 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * The implementation of {@link #write(ASceneWrapper, Map, Writer)} and {@link
-     * #write(ASceneWrapper, Map, Map, String)}. Prints imports, classes, method signatures, and
-     * fields in stub file format, all with appropriate annotations.
+     * The implementation of {@link #write(ASceneWrapper, Writer)} and {@link #write(ASceneWrapper,
+     * String)}. Prints imports, classes, method signatures, and fields in stub file format, all
+     * with appropriate annotations.
      *
      * @param scene the scene to write
      * @param printWriter where to write the scene to
      */
-    private void writeImpl(ASceneWrapper scene, PrintWriter printWriter) {
+    private static void writeImpl(ASceneWrapper scene, PrintWriter printWriter) {
         // Write out all imports
         ImportDefCollector importDefCollector;
         try {
@@ -502,12 +469,11 @@ public final class SceneToStubWriter {
                                     basename, fullyQualifiedClassname, aClassWrapper, printWriter);
 
             // print fields or enum constants
-            if (!enumConstants.containsKey(fullyQualifiedClassname)) {
+            if (!aClassWrapper.isEnum()) {
                 printFields(aClassWrapper, fullyQualifiedClassname, printWriter);
             } else {
                 // for enums, instead of printing fields print the enum constants
-                List<VariableElement> enumConstants =
-                        this.enumConstants.get(fullyQualifiedClassname);
+                List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
 
                 StringJoiner sj = new StringJoiner(", ");
                 for (VariableElement enumConstant : enumConstants) {
@@ -538,7 +504,7 @@ public final class SceneToStubWriter {
      * @param aClass the class whose type parameters should be printed
      * @param printWriter where to print the type parameters
      */
-    private void printTypeParameters(AClassWrapper aClass, PrintWriter printWriter) {
+    private static void printTypeParameters(AClassWrapper aClass, PrintWriter printWriter) {
         TypeElement type = aClass.getTypeElement();
         if (type == null) {
             return;

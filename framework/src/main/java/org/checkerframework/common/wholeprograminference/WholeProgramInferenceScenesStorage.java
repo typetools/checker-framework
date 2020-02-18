@@ -7,17 +7,14 @@ import java.lang.annotation.Target;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.framework.qual.DefaultFor;
@@ -116,13 +113,8 @@ public class WholeProgramInferenceScenesStorage {
     /**
      * Writes the scenes out to .astub files. This method is an alternative to {@link
      * #writeScenesToJaif}.
-     *
-     * @param enumNamesToEnumConstants a map from all fully-qualified classnames which should be
-     *     output as enums to their enum constants. The stub parser will crash if an enum is output
-     *     as a class (i.e., as "class Foo" rather than "enum Foo").
      */
-    public void writeScenesToStub(
-            Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstants) {
+    public void writeScenesToStub() {
         // Use the same directory that .jaif files would normally be written to.
         File stubDir = new File(JAIF_FILES_PATH);
         if (!stubDir.exists()) {
@@ -131,7 +123,7 @@ public class WholeProgramInferenceScenesStorage {
         // Convert the .jaif file names in modifiedScenes into .astub file names.
         // Then write scenes into .astub files.
         for (String jaifPath : modifiedScenes) {
-            scenes.get(jaifPath).writeToStub(jaifPath, annosToIgnore, enumNamesToEnumConstants);
+            scenes.get(jaifPath).writeToStub(jaifPath, annosToIgnore);
         }
         modifiedScenes.clear();
     }
