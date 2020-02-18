@@ -33,7 +33,7 @@ public class WholeProgramInferenceJaifsValidationTest extends FrameworkPerDirect
 
     @Before
     public void before() throws Exception {
-        Assume.assumeTrue("running_wpi_tests".equals(System.getProperty("F_WPI_TEST_STATUS")));
+        Assume.assumeTrue("running_wpi_tests".equals(System.getProperty("wpiTestStatus")));
     }
 
     @Parameters

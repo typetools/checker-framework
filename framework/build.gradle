@@ -88,7 +88,7 @@ task testWPIStubs(type: Test) {
     // This system property allows the WPI tests to run. To avoid CI failures, they
     // are skipped if this property isn't set (because they need to be sequenced
     // correctly).
-    systemProperty "F_WPI_TEST_STATUS", "running_wpi_tests"
+    systemProperty "wpiTestStatus", "running_wpi_tests"
 
     doFirst {
         delete("tests/whole-program-inference/annotated")
@@ -111,7 +111,7 @@ task testWPIStubsValidate(type: Test) {
     // This system property allows the WPI tests to run. To avoid CI failures, they
     // are skipped if this property isn't set (because they need to be sequenced
     // correctly).
-    systemProperty "F_WPI_TEST_STATUS", "running_wpi_tests"
+    systemProperty "wpiTestStatus", "running_wpi_tests"
 
     outputs.upToDateWhen { false }
     include '**/WholeProgramInferenceStubsValidationTest.class'
@@ -172,7 +172,7 @@ task testWPIJaifs(type: Test) {
     // This system property allows the WPI tests to run. To avoid CI failures, they
     // are skipped if this property isn't set (because they need to be sequenced
     // correctly).
-    systemProperty "F_WPI_TEST_STATUS", "running_wpi_tests"
+    systemProperty "wpiTestStatus", "running_wpi_tests"
 
     doFirst {
         delete("tests/whole-program-inference/annotated")
@@ -195,7 +195,7 @@ task testWPIJaifsValidate(type: Test) {
     // This system property allows the WPI tests to run. To avoid CI failures, they
     // are skipped if this property isn't set (because they need to be sequenced
     // correctly).
-    systemProperty "F_WPI_TEST_STATUS", "running_wpi_tests"
+    systemProperty "wpiTestStatus", "running_wpi_tests"
 
     outputs.upToDateWhen { false }
     include '**/WholeProgramInferenceJaifsValidationTest.class'
