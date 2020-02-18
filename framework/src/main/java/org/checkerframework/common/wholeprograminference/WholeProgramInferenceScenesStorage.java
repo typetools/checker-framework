@@ -309,6 +309,11 @@ public class WholeProgramInferenceScenesStorage {
      * createQualifierDefaults method in {@link GenericAnnotatedTypeFactory} (which uses the
      * QualifierDefaults class linked above) before changing anything here. See
      * https://github.com/typetools/checker-framework/issues/683 .
+     *
+     * @param am an annotation to test for whether it should be inserted into source code
+     * @param location where the location would be inserted; used to determine if {@code am} is the
+     *     default for that location
+     * @param atm its kind is used to determine if {@code am} is the default for that kind
      */
     private boolean shouldIgnore(
             AnnotationMirror am, TypeUseLocation location, AnnotatedTypeMirror atm) {
