@@ -102,7 +102,7 @@ public class WholeProgramInferenceScenesStorage {
      *
      * <p>This is super hacky, because there is no guarantee that two ATypeElement objects won't
      * have the same description. In practice, I haven't observed any problems caused by this. The
-     * ATypeElement_s themselves aren't useful as keys, because their hashes change when annotations
+     * ATypeElements themselves aren't useful as keys, because their hashes change when annotations
      * are added to them.
      *
      * <p>The need to keep this map around at all could be avoided if we didn't go through AScene at
@@ -136,8 +136,8 @@ public class WholeProgramInferenceScenesStorage {
             try {
                 AScene scene = scenes.get(jaifPath).clone();
                 removeIgnoredAnnosFromScene(scene);
-                new File(jaifPath).delete();
                 scene.prune();
+                new File(jaifPath).delete();
                 if (!scene.isEmpty()) {
                     // Only write non-empty scenes into .jaif files.
                     IndexFileWriter.write(scene, new FileWriter(jaifPath));
@@ -162,7 +162,7 @@ public class WholeProgramInferenceScenesStorage {
      *
      * @param enumNamesToEnumConstants a map from all fully-qualified classnames which should be
      *     output as enums to their enum constants. The stub parser will crash if an enum is output
-     *     as a class (i.e. as "class Foo" rather than "enum Foo").
+     *     as a class (i.e., as "class Foo" rather than "enum Foo").
      * @param types mapping from fully-qualified names to Java types
      */
     public void writeScenesToStub(
@@ -173,14 +173,14 @@ public class WholeProgramInferenceScenesStorage {
         if (!stubDir.exists()) {
             stubDir.mkdirs();
         }
-        // Convert the .jaif file names in modifiedScenes into .astub file names..
+        // Convert the .jaif file names in modifiedScenes into .astub file names.
         // Then write scenes into .astub files.
         for (String jaifPath : modifiedScenes) {
-            String stubPath = jaifPath.replace(".jaif", ".astub");
             AScene scene = scenes.get(jaifPath).clone();
             removeIgnoredAnnosFromScene(scene);
-            new File(stubPath).delete();
             scene.prune();
+            String stubPath = jaifPath.replace(".jaif", ".astub");
+            new File(stubPath).delete();
             if (!scene.isEmpty()) {
                 // Only write non-empty scenes into .astub files.
                 try {
@@ -191,12 +191,7 @@ public class WholeProgramInferenceScenesStorage {
                             enumNamesToEnumConstants,
                             new FileWriter(stubPath));
                 } catch (IOException e) {
-                    throw new UserError(
-                            "Problem while writing file: "
-                                    + stubPath
-                                    + ". Exception message: "
-                                    + e.getMessage(),
-                            e);
+                    throw new UserError("Problem while writing %s: %s", stubPath, e.getMessage());
                 }
             }
         }
@@ -230,13 +225,7 @@ public class WholeProgramInferenceScenesStorage {
                 try {
                     IndexFileParser.parseFile(jaifPath, scene);
                 } catch (IOException e) {
-                    throw new UserError(
-                            "Problem while reading file in: "
-                                    + jaifPath
-                                    + "."
-                                    + " Exception message: "
-                                    + e.getMessage(),
-                            e);
+                    throw new UserError("Problem while reading %s: %s", jaifPath, e.getMessage());
                 }
             }
             scenes.put(jaifPath, scene);
@@ -421,8 +410,8 @@ public class WholeProgramInferenceScenesStorage {
      * <p>TODO: Merge functionality somewhere else with {@link
      * org.checkerframework.framework.util.defaults.QualifierDefaults}. Look into the
      * createQualifierDefaults method in {@link GenericAnnotatedTypeFactory} (which uses the
-     * QualifierDefaults class linked above) before changing anything here. See Issue 683
-     * https://github.com/typetools/checker-framework/issues/683
+     * QualifierDefaults class linked above) before changing anything here. See
+     * https://github.com/typetools/checker-framework/issues/683 .
      */
     private boolean shouldIgnore(
             AnnotationMirror am, TypeUseLocation location, AnnotatedTypeMirror atm) {

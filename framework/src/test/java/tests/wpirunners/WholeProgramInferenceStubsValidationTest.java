@@ -26,7 +26,7 @@ public class WholeProgramInferenceStubsValidationTest extends FrameworkPerDirect
                 "whole-program-inference/annotated",
                 "-Anomsgtext",
                 "-Astubs=build/whole-program-inference",
-                /*"-AstubDebug",*/
+                // "-AstubDebug",
                 "-AmergeStubsWithSource");
     }
 

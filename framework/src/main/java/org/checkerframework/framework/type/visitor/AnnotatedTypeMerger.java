@@ -35,7 +35,7 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
             final AnnotatedTypeMirror to,
             final AnnotationMirror top) {
         if (from == to) {
-            throw new BugInCF("From == to");
+            throw new BugInCF("from == to: %s", from);
         }
         new AnnotatedTypeMerger(top).visit(from, to);
     }
@@ -115,7 +115,7 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
             }
         } else {
             throw new BugInCF(
-                    "ResolvePrimaries' from argument should be a type variable OR wildcard\n"
+                    "resolvePrimaries from argument should be a type variable OR wildcard\n"
                             + "from="
                             + from.toString(true)
                             + "\n"

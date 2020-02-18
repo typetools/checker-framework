@@ -125,8 +125,7 @@ task testWPIStubsValidate(type: Test) {
     }
 }
 
-// Common logic for copying and deleting whole-program inference tests,
-// to avoid duplication.
+// Common logic for copying and deleting whole-program inference tests.
 void commonWPIlogic() {
     // Copying all test files to another directory, removing all expected errors that should not
     // occur after inserting inferred annotations from .jaif files.
@@ -137,7 +136,7 @@ void commonWPIlogic() {
             line.contains('// :: error:') ? null : line
         }
     }
-    // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over
+    // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over.
     delete('tests/whole-program-inference/annotated/ExpectedErrors.java')
     copy {
         from file('tests/whole-program-inference/non-annotated/ExpectedErrors.java')

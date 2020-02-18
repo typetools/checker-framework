@@ -13,6 +13,7 @@ interface TypeElement {
 // }
 // Writing those annotations on java.lang.Object does not work either, because
 // then vast numbers of toString overrides fail to typecheck.
+// See https://tinyurl.com/cfissue/3094 .
 
 package com.sun.tools.javac.code;
 

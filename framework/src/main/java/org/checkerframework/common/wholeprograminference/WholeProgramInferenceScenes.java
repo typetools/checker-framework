@@ -92,10 +92,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             new HashMap<>();
 
     /**
-     * This map goes from fully-qualified names to the TypeElement representing a class declaration,
-     * and is passed to the stub file writer to facilitate using the correct type parameters in
-     * class declarations. The stub file format requires that the correct number of type parameters
-     * be written on a class declaration.
+     * This map goes from fully-qualified class names to the TypeElement representing the class's
+     * declaration. It enables the the stub file writer to write the correct number of type
+     * parameters on a class declaration.
      */
     private final Map<@FullyQualifiedName String, TypeElement> types = new HashMap<>();
 
@@ -380,19 +379,15 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the metadata needed for stub output.
+     * Updates {@link #enumNamesToEnumConstants} and {@link #types}.
      *
      * <p>Should be called whenever a new class is processed, if outputting to stubs.
-     *
-     * <p>Metadata kept: - a map from fully-qualified names of each enum to the enum constants for
-     * that enum, used to properly output enums - a map from fully-qualified names to classSymbols,
-     * used later to recover type parameter information.
      *
      * @param classSymbol the class for which to update metadata
      */
     private void updateClassMetadata(ClassSymbol classSymbol) {
         Name qualifiedName = classSymbol.getQualifiedName();
-        @SuppressWarnings("signature") // see note in javac.astub in the signature checker
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @FullyQualifiedName String qualifiedNameAsString = qualifiedName.toString();
         if (classSymbol.isEnum()) {
             List<VariableElement> enumConstants = new ArrayList<>();

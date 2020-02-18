@@ -326,8 +326,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final boolean infer;
 
     /**
-     * Which whole-program inference output mode to use, if doing whole-program inference. Would be
-     * final, but not set unless WPI is enabled.
+     * Which whole-program inference output format to use, if doing whole-program inference. Would
+     * be final, but not set unless WPI is enabled.
      */
     private WholeProgramInference.OutputFormat wpiOutputFormat;
 
@@ -453,12 +453,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         infer = checker.hasOption("infer");
         if (infer) {
             checkInvalidOptionsInferSignatures();
-            String wpiOutputArg = checker.getOption("infer");
+            String inferArg = checker.getOption("infer");
             // continue to support no argument for backwards compatibility
-            if (wpiOutputArg == null) {
-                wpiOutputArg = "jaifs";
+            if (inferArg == null) {
+                inferArg = "jaifs";
             }
-            switch (wpiOutputArg) {
+            switch (inferArg) {
                 case "stubs":
                     wpiOutputFormat = WholeProgramInference.OutputFormat.STUB;
                     break;
@@ -468,14 +468,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 default:
                     throw new UserError(
                             "Unexpected option to -Ainfer: "
-                                    + wpiOutputArg
-                                    + "\n"
+                                    + inferArg
+                                    + System.lineSeparator()
                                     + "Available options: -Ainfer=jaifs, -Ainfer=stubs");
             }
-            wholeProgramInference =
-                    new WholeProgramInferenceScenes(
-                            !"NullnessAnnotatedTypeFactory"
-                                    .equals(this.getClass().getSimpleName()));
+            boolean isNullnessChecker =
+                    "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName());
+            wholeProgramInference = new WholeProgramInferenceScenes(!isNullnessChecker);
         }
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
 
@@ -539,8 +538,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (checker.useUncheckedCodeDefault("source")
                 || checker.useUncheckedCodeDefault("bytecode")) {
             throw new UserError(
-                    "The option -Ainfer=... cannot be"
-                            + " used together with unchecked code defaults.");
+                    "The option -Ainfer=... cannot be used together with unchecked code defaults.");
         }
     }
 
