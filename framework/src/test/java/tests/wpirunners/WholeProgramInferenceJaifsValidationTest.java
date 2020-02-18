@@ -15,17 +15,17 @@ import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
  * relevant. The meaning of this test class is to test if the generated .jaif files are similar to
  * the expected ones. The errors on .java files must be ignored.
  */
-public class WholeProgramInferenceValidationTest extends FrameworkPerDirectoryTest {
+public class WholeProgramInferenceJaifsValidationTest extends FrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
-    public WholeProgramInferenceValidationTest(List<File> testFiles) {
+    public WholeProgramInferenceJaifsValidationTest(List<File> testFiles) {
         super(testFiles, WholeProgramInferenceTestChecker.class, "value", "-Anomsgtext");
     }
 
     @Override
     public void run() {
         // Only run if annotated files have been created.
-        // See wholeProgramInferenceTests task.
+        // See wholeProgramInferenceJaifTests task.
         if (new File("tests/whole-program-inference/annotated/").exists()) {
             super.run();
         }
