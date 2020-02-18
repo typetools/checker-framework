@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
@@ -13,6 +14,8 @@ public class AClassWrapper {
 
     private final Map<String, AMethodWrapper> methods = new HashMap<>();
     private final Map<String, AFieldWrapper> fields = new HashMap<>();
+
+    private TypeElement typeElement = null;
 
     public AClassWrapper(AClass theClass) {
         this.theClass = theClass;
@@ -49,5 +52,15 @@ public class AClassWrapper {
 
     public Collection<? extends Annotation> getAnnotations() {
         return theClass.tlAnnotationsHere;
+    }
+
+    public TypeElement getTypeElement() {
+        return typeElement;
+    }
+
+    public void setTypeElement(TypeElement typeElement) {
+        if (this.typeElement == null) {
+            this.typeElement = typeElement;
+        }
     }
 }

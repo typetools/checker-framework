@@ -39,8 +39,8 @@ import scenelib.annotations.util.Strings;
 
 /**
  * SceneToStubWriter provides two static methods named {@code write} that write a {@link AScene} in
- * stub file format, to a {@link Writer} {@link #write(ASceneWrapper, Map, Map, Writer)}, or to a
- * file {@link #write(ASceneWrapper, Map, Map, Writer)}. This class is the equivalent of {@code
+ * stub file format, to a {@link Writer} {@link #write(ASceneWrapper, Map, Writer)}, or to a file
+ * {@link #write(ASceneWrapper, Map, Writer)}. This class is the equivalent of {@code
  * IndexFileWriter} from the Annotation File Utilities, but outputs the results in the stub file
  * format instead of jaif format.
  *
@@ -51,13 +51,6 @@ public final class SceneToStubWriter {
 
     /** How far to indent when writing members of a stub file. */
     private static final String INDENT = "    ";
-
-    /**
-     * A map from fully-qualified class names to the TypeElement that represents them. Computed by
-     * {@link WholeProgramInferenceScenes}. Used to output the names of generic parameters to
-     * classes.
-     */
-    private Map<@FullyQualifiedName String, TypeElement> types;
 
     /**
      * Map from the fully-qualified name of each enum to its list of enum constants.
@@ -71,15 +64,11 @@ public final class SceneToStubWriter {
     /**
      * Create a new SceneToStubWriter.
      *
-     * @param types a map from fully-qualified names to the {@code TypeElement}s representing their
-     *     declarations
      * @param enumConstants a map from fully-qualified enum names to the enum constants defined in
      *     that name
      */
     private SceneToStubWriter(
-            Map<@FullyQualifiedName String, TypeElement> types,
             Map<@FullyQualifiedName String, List<VariableElement>> enumConstants) {
-        this.types = types;
         this.enumConstants = enumConstants;
     }
 
@@ -87,18 +76,15 @@ public final class SceneToStubWriter {
      * Writes the annotations in {@code scene} to {@code out} in stub file format.
      *
      * @param scene the scene to write out
-     * @param types a map from fully-qualified names to the {@code ATypeElement}s representing their
-     *     declarations
      * @param enumConstants a map from fully-qualified enum names to the enum constants defined in
      *     that name
      * @param out the Writer to output the result to
      */
     public static void write(
             ASceneWrapper scene,
-            Map<@FullyQualifiedName String, TypeElement> types,
             Map<@FullyQualifiedName String, List<VariableElement>> enumConstants,
             Writer out) {
-        SceneToStubWriter writer = new SceneToStubWriter(types, enumConstants);
+        SceneToStubWriter writer = new SceneToStubWriter(enumConstants);
         writer.writeImpl(scene, new PrintWriter(out));
     }
 
@@ -106,21 +92,18 @@ public final class SceneToStubWriter {
      * Writes the annotations in {@code scene} to the file {@code filename} in stub file format.
      *
      * @param scene the scene to write out {@code TypeMirror}s that represent their base Java types
-     * @param types a map from fully-qualified names to the {@code ATypeElement}s representing their
-     *     declarations
      * @param enumNamesToEnumConstant a map from fully-qualified enum names to the enum constants
      *     defined in that name
      * @param filename the path of the file to write to
      * @throws IOException if the file doesn't exist
-     * @see #write(ASceneWrapper, Map, Map, Writer)
+     * @see #write(ASceneWrapper, Map, Writer)
      */
     public static void write(
             ASceneWrapper scene,
-            Map<@FullyQualifiedName String, TypeElement> types,
             Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstant,
             String filename)
             throws IOException {
-        write(scene, types, enumNamesToEnumConstant, new FileWriter(filename));
+        write(scene, enumNamesToEnumConstant, new FileWriter(filename));
     }
 
     /**
@@ -368,7 +351,7 @@ public final class SceneToStubWriter {
         }
         formatAnnotations(aClass.getAnnotations());
         printWriter.print(nameToPrint);
-        printTypeParameters(classname, printWriter);
+        printTypeParameters(aClass, printWriter);
         printWriter.println(" {");
         if ("".equals(remainingInnerClassNames)) {
             return 0;
@@ -461,7 +444,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * The implementation of {@link #write(ASceneWrapper, Map, Map, Writer)} and {@link
+     * The implementation of {@link #write(ASceneWrapper, Map, Writer)} and {@link
      * #write(ASceneWrapper, Map, Map, String)}. Prints imports, classes, method signatures, and
      * fields in stub file format, all with appropriate annotations.
      *
@@ -552,11 +535,11 @@ public final class SceneToStubWriter {
     /**
      * Prints the type parameters of the given class, enclosed in {@code <...>}.
      *
-     * @param classname a fully-qualified class name
+     * @param aClass the class whose type parameters should be printed
      * @param printWriter where to print the type parameters
      */
-    private void printTypeParameters(String classname, PrintWriter printWriter) {
-        TypeElement type = types.get(classname);
+    private void printTypeParameters(AClassWrapper aClass, PrintWriter printWriter) {
+        TypeElement type = aClass.getTypeElement();
         if (type == null) {
             return;
         }

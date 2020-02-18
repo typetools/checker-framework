@@ -17,6 +17,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AFieldWrapper;
@@ -92,13 +93,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     private final Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstants =
             new HashMap<>();
-
-    /**
-     * This map goes from fully-qualified class names to the TypeElement representing the class's
-     * declaration. It enables the the stub file writer to write the correct number of type
-     * parameters on a class declaration.
-     */
-    private final Map<@FullyQualifiedName String, TypeElement> types = new HashMap<>();
 
     /** The interface to the AScene library itself, which stores the inferred annotations. */
     private final WholeProgramInferenceScenesStorage storage;
@@ -311,9 +305,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        String className = getEnclosingClassName(lhs.getElement());
+        ClassSymbol enclosingClass = ((VarSymbol) lhs.getElement()).enclClass();
+        String className = enclosingClass.flatName().toString();
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
+        updateClassMetadata(enclosingClass, clazz);
 
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
         AFieldWrapper field = clazz.vivifyField(lhs.getFieldName(), lhsATM.getUnderlyingType());
@@ -343,11 +339,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         if (classSymbol == null) { // TODO: Handle anonymous classes.
             return;
         }
-        updateClassMetadata(classSymbol);
         String className = classSymbol.flatname.toString();
 
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
+
+        updateClassMetadata(classSymbol, clazz);
 
         AMethodWrapper methodWrapper = clazz.vivifyMethod(JVMNames.getJVMMethodName(methodTree));
         // Method return type
@@ -372,7 +369,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 storage.writeScenesToJaif();
                 break;
             case STUB:
-                storage.writeScenesToStub(enumNamesToEnumConstants, types);
+                storage.writeScenesToStub(enumNamesToEnumConstants);
                 break;
         }
     }
@@ -400,25 +397,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Returns the "flatname" of the class enclosing {@code variableElement}
-     *
-     * @param variableElement the VariableElement
-     * @return the "flatname" of the class enclosing {@code variableElement}
-     */
-    private String getEnclosingClassName(VariableElement variableElement) {
-        ClassSymbol enclosingClass = ((VarSymbol) variableElement).enclClass();
-        updateClassMetadata(enclosingClass);
-        return enclosingClass.flatName().toString();
-    }
-
-    /**
-     * Updates {@link #enumNamesToEnumConstants} and {@link #types}.
+     * Updates {@link #enumNamesToEnumConstants}.
      *
      * <p>Should be called whenever a new class is processed, if outputting to stubs.
      *
      * @param classSymbol the class for which to update metadata
      */
-    private void updateClassMetadata(ClassSymbol classSymbol) {
+    private void updateClassMetadata(
+            ClassSymbol classSymbol, @Nullable AClassWrapper aClassWrapper) {
         Name qualifiedName = classSymbol.getQualifiedName();
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @FullyQualifiedName String qualifiedNameAsString = qualifiedName.toString();
@@ -431,8 +417,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             }
             enumNamesToEnumConstants.put(qualifiedNameAsString, enumConstants);
         }
-        if (!types.containsKey(qualifiedNameAsString)) {
-            types.put(qualifiedNameAsString, classSymbol);
+        if (aClassWrapper != null) {
+            aClassWrapper.setTypeElement(classSymbol);
         }
     }
 }

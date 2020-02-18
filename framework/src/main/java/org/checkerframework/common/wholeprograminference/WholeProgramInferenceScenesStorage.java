@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
@@ -121,11 +120,9 @@ public class WholeProgramInferenceScenesStorage {
      * @param enumNamesToEnumConstants a map from all fully-qualified classnames which should be
      *     output as enums to their enum constants. The stub parser will crash if an enum is output
      *     as a class (i.e., as "class Foo" rather than "enum Foo").
-     * @param types mapping from fully-qualified names to Java types
      */
     public void writeScenesToStub(
-            Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstants,
-            Map<@FullyQualifiedName String, TypeElement> types) {
+            Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstants) {
         // Use the same directory that .jaif files would normally be written to.
         File stubDir = new File(JAIF_FILES_PATH);
         if (!stubDir.exists()) {
@@ -134,8 +131,7 @@ public class WholeProgramInferenceScenesStorage {
         // Convert the .jaif file names in modifiedScenes into .astub file names.
         // Then write scenes into .astub files.
         for (String jaifPath : modifiedScenes) {
-            scenes.get(jaifPath)
-                    .writeToStub(jaifPath, annosToIgnore, types, enumNamesToEnumConstants);
+            scenes.get(jaifPath).writeToStub(jaifPath, annosToIgnore, enumNamesToEnumConstants);
         }
         modifiedScenes.clear();
     }

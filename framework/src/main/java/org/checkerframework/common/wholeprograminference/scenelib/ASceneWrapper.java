@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -130,7 +129,6 @@ public class ASceneWrapper {
     public void writeToStub(
             String jaifPath,
             Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore,
-            Map<@FullyQualifiedName String, TypeElement> types,
             Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstants) {
         removeIgnoredAnnosFromScene(theScene, annosToIgnore);
         theScene.prune();
@@ -139,8 +137,7 @@ public class ASceneWrapper {
         if (!theScene.isEmpty()) {
             // Only write non-empty scenes into .astub files.
             try {
-                SceneToStubWriter.write(
-                        this, types, enumNamesToEnumConstants, new FileWriter(stubPath));
+                SceneToStubWriter.write(this, enumNamesToEnumConstants, new FileWriter(stubPath));
             } catch (IOException e) {
                 throw new UserError("Problem while writing %s: %s", stubPath, e.getMessage());
             }
