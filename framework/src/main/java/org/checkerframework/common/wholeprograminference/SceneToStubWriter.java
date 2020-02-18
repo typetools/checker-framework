@@ -16,6 +16,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.reflection.Signatures;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AElement;
@@ -51,8 +52,9 @@ public final class SceneToStubWriter {
 
     /**
      * A map from the {@code description} field of an ATypeElement to the corresponding unqualified
-     * Java types, since {@code AScene}s don't carry that information. See the comment on the {@code
-     * basetypes} field of {@link WholeProgramInferenceScenesStorage} for more information.
+     * Java types, since {@code AScene}s don't carry that information.
+     *
+     * @see WholeProgramInferenceScenesStorage#basetypes
      */
     private Map<String, TypeMirror> basetypes;
 
@@ -75,8 +77,8 @@ public final class SceneToStubWriter {
     /**
      * Create a new SceneToStubWriter.
      *
-     * @param basetypes a map from the description of {@code ATypeElement}s to the {@code
-     *     TypeMirror}s that represent their base Java types
+     * @param basetypes a map from the {@code description} field of {@code ATypeElement}s to the
+     *     {@code TypeMirror}s that represent their base Java types
      * @param types a map from fully-qualified names to the {@code TypeElement}s representing their
      *     declarations
      * @param enumConstants a map from fully-qualified enum names to the enum constants defined in
@@ -95,8 +97,8 @@ public final class SceneToStubWriter {
      * Writes the annotations in {@code scene} to {@code out} in stub file format.
      *
      * @param scene the scene to write out
-     * @param basetypes a map from the description of {@code ATypeElement}s to the {@code
-     *     TypeMirror}s that represent their base Java types
+     * @param basetypes a map from the {@code description} field of {@code ATypeElement}s to the
+     *     {@code TypeMirror}s that represent their base Java types
      * @param types a map from fully-qualified names to the {@code ATypeElement}s representing their
      *     declarations
      * @param enumConstants a map from fully-qualified enum names to the enum constants defined in
@@ -117,8 +119,8 @@ public final class SceneToStubWriter {
      * Writes the annotations in {@code scene} to the file {@code filename} in stub file format.
      *
      * @param scene the scene to write out
-     * @param basetypes a map from the description of {@code ATypeElement}s to the {@code
-     *     TypeMirror}s that represent their base Java types
+     * @param basetypes a map from the {@code description} field of {@code ATypeElement}s to the
+     *     {@code TypeMirror}s that represent their base Java types
      * @param types a map from fully-qualified names to the {@code ATypeElement}s representing their
      *     declarations
      * @param enumNamesToEnumConstant a map from fully-qualified enum names to the enum constants
@@ -138,7 +140,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * The part of a binary name that specifies the package.
+     * Returns the part of a binary name that specifies the package.
      *
      * @param className the binary name of a class
      * @return the part of the name referring to the package
@@ -149,9 +151,9 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * The part of a binary name that specifies the basename of the class. This method replaces the
-     * {@code $}s in the names of inner classes with {@code .}s, so that they can be printed
-     * correctly in stub files.
+     * Returns the part of a binary name that specifies the basename of the class. This method
+     * replaces the {@code $}s in the names of inner classes with {@code .}s, so that they can be
+     * printed correctly in stub files.
      *
      * @param className a binary name
      * @return the part of the name representing the class's name without its package
@@ -163,22 +165,8 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Converts a binary name of a Java class (i.e. using the $ syntax for Outer$Inner) to the
-     * fully-qualified name (i.e. using a dot to separate inner classes, instead).
-     *
-     * @param binaryName the binary name of a Java class
-     * @return the fully-qualified name of that Java class
-     */
-    @SuppressWarnings("signature") // TODO: replace with a call to an appropriate JDK method
-    private static @FullyQualifiedName String convertBinaryToFullyQualified(
-            @BinaryName String binaryName) {
-        return binaryName.replace('$', '.');
-    }
-
-    /**
-     * Formats a literal; used when printing the arguments of annotations. Similar to {@code
-     * IndexFileWriter#printValue}, but does not print directly. Instead, returns the result to be
-     * printed.
+     * Formats a literal argument of an annotation. Similar to {@link IndexFileWriter#printValue},
+     * but does not print directly. Instead, returns the result to be printed.
      *
      * @param aft the annotation whose values are being formatted, for context
      * @param o the value or values to format
@@ -235,11 +223,8 @@ public final class SceneToStubWriter {
             result.append('(');
             StringJoiner sj = new StringJoiner(",");
             for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
-                sj.add(
-                        f.getKey()
-                                + "="
-                                + formatAnnotationValue(
-                                        a.def().fieldTypes.get(f.getKey()), f.getValue()));
+                AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
+                sj.add(f.getKey() + "=" + formatAnnotationValue(aft, f.getValue()));
             }
             result.append(sj.toString());
             result.append(')');
@@ -248,10 +233,10 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Returns all annotations in {@code annos}, separated by spaces, in a form suitable to be
-     * printed as Java source code.
+     * Returns all annotations in {@code annos} in a form suitable to be printed as Java source
+     * code.
      *
-     * <p>This method also adds a trailing space.
+     * <p>Each annotation is followed by a space, to separate it from following Java code.
      *
      * <p>Internal JDK annotations, such as jdk.Profile+Annotation, are ignored. These annotations
      * are identified using the convention that their names contain "+".
@@ -259,22 +244,22 @@ public final class SceneToStubWriter {
      * @param annos the annotations to format
      * @return all annotations in {@code annos}, separated by spaces, in a form suitable to be
      *     printed as Java source code
-     * @see #formatAnnotation(Annotation)
      */
     private String formatAnnotations(Collection<? extends Annotation> annos) {
-        StringJoiner sj = new StringJoiner(" ");
+        StringBuilder sb = new StringBuilder();
         for (Annotation tla : annos) {
             if (!tla.def.name.contains("+")) {
-                sj.add(formatAnnotation(tla));
+                sb.append(formatAnnotation(tla));
+                sb.append(" ");
             }
         }
-        return sj.toString() + " ";
+        return sb.toString();
     }
 
     /**
      * Formats the annotations on the component type of an array, if there are any.
      *
-     * @param e the array type to format
+     * @param e the array type
      * @return the array type formatted to be written to Java source code
      */
     private String formatArrayComponentTypeAnnotation(ATypeElement e) {
@@ -299,7 +284,7 @@ public final class SceneToStubWriter {
      * @param fieldName the name to use for the declaration in the stub file. This doesn't matter
      *     for parameters, but must be correct for fields.
      * @param className the name of the enclosing class. This is only used for printing the type of
-     *     an explicit receiver parameter (i.e. a parameter named "this").
+     *     an explicit receiver parameter (i.e., a parameter named "this").
      * @return a String suitable to print in a stub file
      */
     private String formatAField(AField aField, String fieldName, String className) {
@@ -377,11 +362,11 @@ public final class SceneToStubWriter {
      * Writing a stub file with that name would be useless to the stub parser, which expects inner
      * classes to be properly nested.
      *
-     * @param basename the simple name of the class (without the package), fully-qualified form
+     * @param basename the simple name of the class (without the package), in fully-qualified form
      *     (that is, without any {@code $}s)
      * @param classname the fully-qualified name of the class in question, so that it can be printed
      *     as an enum if it is one
-     * @param aClass the AClass representing the classname
+     * @param aClass the AClass for {@code classname}
      * @param printWriter the writer where the class definition should be printed
      * @return the number of outer classes within which this class is nested
      */
@@ -419,7 +404,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Prints all the fields of a given class (the AClass).
+     * Prints all the fields of a given class
      *
      * @param aClass the class whose fields should be printed
      * @param fullyQualifiedClassname the fully-qualified name of the class
@@ -440,7 +425,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Prints a method signature in stub file format (i.e. without a method body).
+     * Prints a method signature in stub file format (i.e., without a method body).
      *
      * @param aMethod the method to print
      * @param basename the simple name of the containing class. Used only to determine if the method
@@ -465,24 +450,21 @@ public final class SceneToStubWriter {
                             ? basename.substring(basename.lastIndexOf('.') + 1)
                             : basename;
         } else {
-            // This isn't a constructor, so add a return type if one is available.
+            // This isn't a constructor, so add a return type.
             // Note that the stub file format doesn't require this to be correct,
             // so it would be acceptable to print "java.lang.Object" for every
             // method. A better type is printed if one is available to improve
             // the readability of the resulting stub file.
+            String returnType = "java.lang.Object";
             String descriptionString = aMethod.returnType.description.toString();
-            boolean printedReturnType = false;
             if (basetypes.containsKey(descriptionString)) {
-                String returnTypeString = basetypes.get(descriptionString).toString();
+                String descriptionReturnType = basetypes.get(descriptionString).toString();
                 // do not print return types that start with a ?, because that's not valid Java
-                if (!returnTypeString.startsWith("?")) {
-                    printedReturnType = true;
-                    printWriter.print(returnTypeString);
+                if (!descriptionReturnType.startsWith("?")) {
+                    returnType = descriptionReturnType;
                 }
             }
-            if (!printedReturnType) {
-                printWriter.print("java.lang.Object");
-            }
+            printWriter.print(returnType);
             printWriter.print(" ");
         }
         printWriter.print(methodName);
@@ -525,7 +507,7 @@ public final class SceneToStubWriter {
         try {
             importDefCollector = new ImportDefCollector(scene, printWriter);
         } catch (DefException e) {
-            throw new BugInCF(e.getMessage(), e);
+            throw new BugInCF(e);
         }
         importDefCollector.visit();
         printWriter.println();
@@ -559,7 +541,8 @@ public final class SceneToStubWriter {
             // At this point, we no longer care about the distinction between packages
             // and inner classes, so we should replace the $ in the definition of any
             // inner classes with a ., so that they are printed correctly in stub files.
-            String fullyQualifiedClassname = convertBinaryToFullyQualified(classname);
+
+            String fullyQualifiedClassname = Signatures.binaryNameToFullyQualified(classname);
 
             int curlyCount =
                     1
