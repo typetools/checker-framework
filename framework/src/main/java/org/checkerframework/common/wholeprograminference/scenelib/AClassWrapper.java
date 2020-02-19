@@ -10,23 +10,57 @@ import java.util.Map;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 
+/**
+ * A wrapper for the AClass class from scene-lib that carries additional information that is useful
+ * during WPI.
+ *
+ * <p>This would be better as a subclass of AClass, but it is final.
+ */
 public class AClassWrapper {
+
+    /** The wrapped AClass object. */
     private AClass theClass;
 
+    /**
+     * The methods of the class. Keys are the names of methods, entries are AMethodWrapper objects.
+     * Wraps the "methods" field of AClass.
+     */
     private final Map<String, AMethodWrapper> methods = new HashMap<>();
+
+    /**
+     * The fields of the class. Keys are the names of the fields, entries are AFieldWrapper objects.
+     * Wraps the "fields" field of AClass.
+     */
     private final Map<String, AFieldWrapper> fields = new HashMap<>();
 
+    /** The enum constants of the class, if it has any. */
     private List<VariableElement> enumConstants;
 
+    /** The type element representing the class. */
     private TypeElement typeElement = null;
 
+    /**
+     * Wrap an AClass.
+     *
+     * @param theClass the wrapped object
+     */
     public AClassWrapper(AClass theClass) {
         this.theClass = theClass;
     }
 
+    /**
+     * Call before doing anything with a method. Interacts with scenelib and fetches or creates an
+     * appropriate AMethodWrapper object.
+     *
+     * <p>Results are interened.
+     *
+     * @param methodName the name of the method
+     * @return an AMethodWrapper representing the method
+     */
     public AMethodWrapper vivifyMethod(String methodName) {
         if (methods.containsKey(methodName)) {
             return methods.get(methodName);
@@ -37,10 +71,25 @@ public class AClassWrapper {
         }
     }
 
+    /**
+     * Get all the methods that have been vivified (that is, interacted with) on a class.
+     *
+     * @return a map from method name to the object representing the method
+     */
     public Map<String, AMethodWrapper> getMethods() {
         return ImmutableMap.copyOf(methods);
     }
 
+    /**
+     * Call before doing anything with a field. Interacts with scenelib and fetches or creates an
+     * appropriate AFieldWrapper object.
+     *
+     * <p>Results are interned.
+     *
+     * @param fieldName the name of the field
+     * @param type the type of the field, which scenelib doesn't track
+     * @return an AField object representing the field
+     */
     public AFieldWrapper vivifyField(String fieldName, TypeMirror type) {
         if (fields.containsKey(fieldName)) {
             return fields.get(fieldName);
@@ -52,32 +101,67 @@ public class AClassWrapper {
         }
     }
 
+    /**
+     * Get all the fields that have been vivified (that is, interacted with) on a class.
+     *
+     * @return a map from field name to the object representing the field
+     */
     public Map<String, AFieldWrapper> getFields() {
         return ImmutableMap.copyOf(fields);
     }
 
+    /**
+     * Get the annotations on the class
+     *
+     * @return the annotations, directly from scenelib
+     */
     public Collection<? extends Annotation> getAnnotations() {
         return theClass.tlAnnotationsHere;
     }
 
+    /**
+     * The type of the class
+     *
+     * @return a type element representing this class
+     */
     public TypeElement getTypeElement() {
         return typeElement;
     }
 
+    /**
+     * Set the type element representing the class
+     *
+     * @param typeElement the type element representing the class
+     */
     public void setTypeElement(TypeElement typeElement) {
         if (this.typeElement == null) {
             this.typeElement = typeElement;
         }
     }
 
+    /**
+     * Checks if any enum constants have been provided to this class
+     *
+     * @return true if this class has been marked as an enum
+     */
     public boolean isEnum() {
         return enumConstants != null;
     }
 
-    public List<VariableElement> getEnumConstants() {
+    /**
+     * Returns the set of enum constants for this class, or null if this is not an enum
+     *
+     * @return the enum constants, or null if this is not an enum
+     */
+    public @Nullable List<VariableElement> getEnumConstants() {
         return ImmutableList.copyOf(enumConstants);
     }
 
+    /**
+     * Marks this class as an enum
+     *
+     * @param enumConstants the list of enum constants for the class
+     */
     public void markAsEnum(List<VariableElement> enumConstants) {
         this.enumConstants = new ArrayList<>();
         this.enumConstants.addAll(enumConstants);

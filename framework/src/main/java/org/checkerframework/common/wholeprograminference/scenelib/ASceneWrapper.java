@@ -32,6 +32,8 @@ import scenelib.annotations.io.IndexFileWriter;
  * <p>This class wraps AScene but provides access to that missing information. This allows us to
  * preserve the code that generates .jaif files, while allowing us to sanely and safely keep the
  * information we need to generate stubs.
+ *
+ * <p>TODO: remove the dependency on scene-lib entirely
  */
 public class ASceneWrapper {
 
@@ -47,6 +49,11 @@ public class ASceneWrapper {
         this.classes = new HashMap<>();
     }
 
+    /**
+     * Fetch the classes in this scene, represented as AClassWrapper objects
+     *
+     * @return an immutable map from binary names to AClassWrapper objects
+     */
     public Map<@BinaryName String, AClassWrapper> getClasses() {
         return ImmutableMap.copyOf(classes);
     }
@@ -100,6 +107,12 @@ public class ASceneWrapper {
         }
     }
 
+    /**
+     * Write the scene wrapped by this object to a jaif on the given path
+     *
+     * @param jaifPath the path to the jaif file to be written
+     * @param annosToIgnore which annotations should be ignored in which contexts
+     */
     public void writeToJaif(
             String jaifPath, Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
         try {
@@ -123,6 +136,13 @@ public class ASceneWrapper {
         }
     }
 
+    /**
+     * Write the scene represented by this object to a stub file.
+     *
+     * @param jaifPath a path that ends in ".jaif". The stub file will be created on the same path,
+     *     but the extension will be replaced with ".astub"
+     * @param annosToIgnore which annotations to ignore in which contexts
+     */
     public void writeToStub(
             String jaifPath, Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
         removeIgnoredAnnosFromScene(theScene, annosToIgnore);
@@ -139,6 +159,12 @@ public class ASceneWrapper {
         }
     }
 
+    /**
+     * Interact with scenelib to add a class to the scene
+     *
+     * @param className the binary name of the class to be added to the scene
+     * @return an AClassWrapper representing that class
+     */
     public AClassWrapper vivifyClass(@BinaryName String className) {
         if (classes.containsKey(className)) {
             return classes.get(className);

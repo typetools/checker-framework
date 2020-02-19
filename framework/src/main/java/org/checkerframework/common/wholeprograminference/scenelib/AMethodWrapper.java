@@ -4,45 +4,90 @@ import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
 import javax.lang.model.element.Name;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import scenelib.annotations.el.AMethod;
 
+/**
+ * A wrapper for the AMethod class from scenelib. Keeps more information on the return type, and
+ * wraps the parameter list so that more information can be kept on the parameters.
+ */
 public class AMethodWrapper {
+
+    /** The wrapped AMethod. */
     private final AMethod theMethod;
 
-    private String returnType = "java.lang.Object";
+    /** The return type of the method, as a fully qualified name. */
+    private @FullyQualifiedName String returnType = "java.lang.Object";
 
+    /**
+     * A wrapper for the parameters field of AMethod, but using AFieldWrapper objects as the values.
+     * Keys are parameter indices.
+     */
     private Map<Integer, AFieldWrapper> parameters = new HashMap<>();
 
-    public String getReturnType() {
+    /**
+     * The return type, as a fully-qualified name.
+     *
+     * @return
+     */
+    public @FullyQualifiedName String getReturnType() {
         return returnType;
     }
 
-    public void setReturnType(String returnType) {
+    /**
+     * Provide the AMethodWrapper with a return type
+     *
+     * @param returnType a fully-qualified name
+     */
+    public void setReturnType(@FullyQualifiedName String returnType) {
         // do not keep return types that start with a ?, because that's not valid Java
         if ("java.lang.Object".equals(this.returnType) && !returnType.startsWith("?")) {
             this.returnType = returnType;
         }
     }
 
+    /**
+     * Wrap an AMethod
+     *
+     * @param theMethod the method to wrap
+     */
     public AMethodWrapper(AMethod theMethod) {
         this.theMethod = theMethod;
     }
 
+    /**
+     * Avoid if possible.
+     *
+     * @return the underlying AMethod object that has been wrapped
+     */
     public AMethod getAMethod() {
         return theMethod;
     }
 
-    public AFieldWrapper vivifyParameter(int i, String type, Name simpleName) {
+    /**
+     * Interact with a parameter.
+     *
+     * @param i the parameter index (1st parameter is zero)
+     * @param type a fully-qualified name representing the type of the parameter
+     * @param simpleName the name of the parameter
+     * @return an AFieldWrapper representing the parameter
+     */
+    public AFieldWrapper vivifyParameter(int i, @FullyQualifiedName String type, Name simpleName) {
         if (parameters.containsKey(i)) {
             return parameters.get(i);
         } else {
             AFieldWrapper wrapper = new AFieldWrapper(theMethod.parameters.getVivify(i), type);
             parameters.put(i, wrapper);
-            wrapper.setParameterName(simpleName.toString());
+            wrapper.setName(simpleName.toString());
             return wrapper;
         }
     }
 
+    /**
+     * Get the parameters, if they have been vivified
+     *
+     * @return an immutable copy of the vivified parameters, as a map from index to representation
+     */
     public Map<Integer, AFieldWrapper> getParameters() {
         return ImmutableMap.copyOf(parameters);
     }
