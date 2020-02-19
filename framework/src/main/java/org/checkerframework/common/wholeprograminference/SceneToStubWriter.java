@@ -356,7 +356,7 @@ public final class SceneToStubWriter {
         } else {
             printWriter.print("class ");
         }
-        formatAnnotations(aClass.getAnnotations());
+        printWriter.print(formatAnnotations(aClass.getAnnotations()));
         printWriter.print(nameToPrint);
         printTypeParameters(aClass, printWriter);
         printWriter.println(" {");
