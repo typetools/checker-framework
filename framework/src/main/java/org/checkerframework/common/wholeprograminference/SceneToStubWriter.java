@@ -99,8 +99,9 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Formats a literal argument of an annotation. Similar to {@link IndexFileWriter#printValue},
-     * but does not print directly. Instead, returns the result to be printed.
+     * Formats a literal argument of an annotation. Similar to {@code IndexFileWriter#printValue} in
+     * the AnnotationFileUtilities (which the jaif printer uses), but does not print directly.
+     * Instead, returns the result to be printed.
      *
      * @param aft the annotation whose values are being formatted, for context
      * @param o the value or values to format

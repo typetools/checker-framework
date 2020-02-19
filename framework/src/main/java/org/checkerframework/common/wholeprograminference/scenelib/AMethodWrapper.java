@@ -30,7 +30,8 @@ public class AMethodWrapper {
     /**
      * The return type, as a fully-qualified name.
      *
-     * @return
+     * @return the return type as a fully-qualified name, or "java.lang.Object" if the return type
+     *     is unknown.
      */
     public @FullyQualifiedName String getReturnType() {
         return returnType;

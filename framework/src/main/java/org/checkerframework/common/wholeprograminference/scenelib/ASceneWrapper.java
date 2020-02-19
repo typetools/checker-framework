@@ -43,7 +43,11 @@ public class ASceneWrapper {
     /** The classes in the scene. */
     private Map<@BinaryName String, AClassWrapper> classes;
 
-    /** Constructor. Pass the AScene to wrap. */
+    /**
+     * Constructor. Pass the AScene to wrap.
+     *
+     * @param theScene the scene to wrap
+     */
     public ASceneWrapper(AScene theScene) {
         this.theScene = theScene;
         this.classes = new HashMap<>();
@@ -58,7 +62,14 @@ public class ASceneWrapper {
         return ImmutableMap.copyOf(classes);
     }
 
-    /** Removes all annotations that should be ignored from an AScene.. */
+    /**
+     * Removes all annotations that should be ignored from an AScene.
+     *
+     * @param scene the scene from which to remove annotations
+     * @param annosToIgnore maps the toString() representation of an ATypeElement and its
+     *     TypeUseLocation to a set of names of annotations that should not be added to .jaif files
+     *     for that location.
+     */
     private void removeIgnoredAnnosFromScene(
             AScene scene, Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
         for (AClass aclass : scene.classes.values()) {
@@ -82,7 +93,15 @@ public class ASceneWrapper {
         }
     }
 
-    /** Removes all annotations that should be ignored from an ATypeElement. */
+    /**
+     * Removes all annotations that should be ignored from an ATypeElement.
+     *
+     * @param typeEl the type element from which to remove annotations
+     * @param loc the location where typeEl in used
+     * @param annosToIgnore maps the toString() representation of an ATypeElement and its
+     *     TypeUseLocation to a set of names of annotations that should not be added to .jaif files
+     *     for that location.
+     */
     private void removeIgnoredAnnosFromATypeElement(
             ATypeElement typeEl,
             TypeUseLocation loc,
@@ -179,6 +198,8 @@ public class ASceneWrapper {
     /**
      * Avoid using this if possible; use the other methods of this class unless you absolutely need
      * an AScene.
+     *
+     * @return the representation of this scene using only the AScene. Returns a clone.
      */
     public AScene getAScene() {
         return theScene.clone();

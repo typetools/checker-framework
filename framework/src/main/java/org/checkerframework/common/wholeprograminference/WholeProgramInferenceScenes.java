@@ -389,11 +389,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates {@link #enumNamesToEnumConstants}.
-     *
-     * <p>Should be called whenever a new class is processed, if outputting to stubs.
+     * Updates the metadata stored in AClassWrapper for the given class.
      *
      * @param classSymbol the class for which to update metadata
+     * @param aClassWrapper the class' representation in which the metadata is to be updated
      */
     private void updateClassMetadata(ClassSymbol classSymbol, AClassWrapper aClassWrapper) {
         if (classSymbol.isEnum()) {

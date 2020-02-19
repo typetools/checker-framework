@@ -166,7 +166,14 @@ public class WholeProgramInferenceScenesStorage {
         }
     }
 
-    /** Returns the AClass in an AScene, given a className and a jaifPath. */
+    /**
+     * Returns the AClass in an AScene, given a className and a jaifPath.
+     *
+     * @param className the name of the class to get, in binary form
+     * @param jaifPath the path to the jaif file that would represent that class (must end in
+     *     ".jaif")
+     * @return the scene-lib representation of the class, wrapped with metadata
+     */
     protected AClassWrapper getAClass(@BinaryName String className, String jaifPath) {
         // Possibly reads .jaif file to obtain a Scene.
         ASceneWrapper scene = getScene(jaifPath);
@@ -302,6 +309,7 @@ public class WholeProgramInferenceScenesStorage {
      * @param location where the location would be inserted; used to determine if {@code am} is the
      *     default for that location
      * @param atm its kind is used to determine if {@code am} is the default for that kind
+     * @return true if am should not be inserted into source code, or if am is invisible
      */
     private boolean shouldIgnore(
             AnnotationMirror am, TypeUseLocation location, AnnotatedTypeMirror atm) {
