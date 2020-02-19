@@ -112,21 +112,17 @@ public final class SceneToStubWriter {
         } else if (aft instanceof ArrayAFT) {
             StringJoiner sj = new StringJoiner(",", "{", "}");
             ArrayAFT aaft = (ArrayAFT) aft;
-            if (!(o instanceof List)) {
-                sj.add(formatAnnotationValue(aaft.elementType, o));
+            List<?> l = (List<?>) o;
+            // watch out--could be an empty array of unknown type
+            // (see AnnotationBuilder#addEmptyArrayField)
+            if (aaft.elementType == null) {
+                if (l.size() != 0) {
+                    throw new AssertionError();
+                }
             } else {
-                List<?> l = (List<?>) o;
-                // watch out--could be an empty array of unknown type
-                // (see AnnotationBuilder#addEmptyArrayField)
-                if (aaft.elementType == null) {
-                    if (l.size() != 0) {
-                        throw new AssertionError();
-                    }
-                } else {
 
-                    for (Object o2 : l) {
-                        sj.add(formatAnnotationValue(aaft.elementType, o2));
-                    }
+                for (Object o2 : l) {
+                    sj.add(formatAnnotationValue(aaft.elementType, o2));
                 }
             }
             return sj.toString();
