@@ -111,11 +111,10 @@ public final class SceneToStubWriter {
         if (aft instanceof AnnotationAFT) {
             return formatAnnotation((Annotation) o);
         } else if (aft instanceof ArrayAFT) {
-            StringBuilder result = new StringBuilder();
+            StringJoiner sj = new StringJoiner(",", "{", "}");
             ArrayAFT aaft = (ArrayAFT) aft;
-            result.append('{');
             if (!(o instanceof List)) {
-                result.append(formatAnnotationValue(aaft.elementType, o));
+                sj.add(formatAnnotationValue(aaft.elementType, o));
             } else {
                 List<?> l = (List<?>) o;
                 // watch out--could be an empty array of unknown type
@@ -125,15 +124,13 @@ public final class SceneToStubWriter {
                         throw new AssertionError();
                     }
                 } else {
-                    StringJoiner sj = new StringJoiner(",");
+
                     for (Object o2 : l) {
                         sj.add(formatAnnotationValue(aaft.elementType, o2));
                     }
-                    result.append(sj.toString());
                 }
             }
-            result.append("}");
-            return result.toString();
+            return sj.toString();
         } else if (aft instanceof ClassTokenAFT) {
             return aft.format(o);
         } else if (aft instanceof BasicAFT && o instanceof String) {
@@ -170,9 +167,6 @@ public final class SceneToStubWriter {
      *
      * <p>Each annotation is followed by a space, to separate it from following Java code.
      *
-     * <p>Internal JDK annotations, such as jdk.Profile+Annotation, are ignored. These annotations
-     * are identified using the convention that their names contain "+".
-     *
      * @param annos the annotations to format
      * @return all annotations in {@code annos}, separated by spaces, in a form suitable to be
      *     printed as Java source code
@@ -180,7 +174,7 @@ public final class SceneToStubWriter {
     private static String formatAnnotations(Collection<? extends Annotation> annos) {
         StringBuilder sb = new StringBuilder();
         for (Annotation tla : annos) {
-            if (!tla.def.name.contains("+")) {
+            if (!isInternalJDKAnnotation(tla.def.name)) {
                 sb.append(formatAnnotation(tla));
                 sb.append(" ");
             }
@@ -192,7 +186,7 @@ public final class SceneToStubWriter {
      * Formats the annotations on the component type of an array, if there are any.
      *
      * @param e the array type
-     * @return the array type formatted to be written to Java source code
+     * @return the component type formatted to be written to Java source code
      */
     private static String formatArrayComponentTypeAnnotation(ATypeElement e) {
         StringBuilder result = new StringBuilder();
@@ -211,6 +205,10 @@ public final class SceneToStubWriter {
      * declaration. In practice, {@code aField} should represent either a field declaration or a
      * formal parameter of a method, because stub files should not contain local variable
      * declarations. It is the responsibility of each caller of this method to ensure that is true.
+     *
+     * <p>It is also the responsibility of the caller to place the output of this method in context;
+     * because it is shared between field declarations and formal parameters, it does not add any
+     * trailing semicolons/commas/other syntax.
      *
      * @param aField the field to format
      * @param fieldName the name to use for the declaration in the stub file. This doesn't matter
@@ -249,20 +247,20 @@ public final class SceneToStubWriter {
      * annotations are used in a given AScene. Here, we use that construct to write out the proper
      * import statements into a stub file.
      */
-    private static class ImportDefCollector extends DefCollector {
+    private static class ImportDefWriter extends DefCollector {
 
         /** The writer onto which to write the import statements. */
         private final PrintWriter printWriter;
 
         /**
-         * Constructs a new ImportDefCollector, which will run on the given AScene when its {@code
+         * Constructs a new ImportDefWriter, which will run on the given AScene when its {@code
          * visit} method is called.
          *
          * @param scene the scene whose imported annotations should be printed
          * @param printWriter the writer onto which to write the import statements
          * @throws DefException if the DefCollector does not succeed
          */
-        ImportDefCollector(ASceneWrapper scene, PrintWriter printWriter) throws DefException {
+        ImportDefWriter(ASceneWrapper scene, PrintWriter printWriter) throws DefException {
             super(scene.getAScene());
             this.printWriter = printWriter;
         }
@@ -275,10 +273,20 @@ public final class SceneToStubWriter {
          */
         @Override
         protected void visitAnnotationDef(AnnotationDef d) {
-            if (!d.name.contains("+")) {
+            if (!isInternalJDKAnnotation(d.name)) {
                 printWriter.println("import " + d.name + ";");
             }
         }
+    }
+
+    /**
+     * Do not print internal JDK annotations, which are the only annotations that include a '+'
+     *
+     * @param annotationName the name of the annotation
+     * @return true iff this is an internal JDK annotation that should not be printed
+     */
+    private static boolean isInternalJDKAnnotation(String annotationName) {
+        return annotationName.contains("+");
     }
 
     /**
@@ -334,10 +342,10 @@ public final class SceneToStubWriter {
         for (Map.Entry<String, AFieldWrapper> fieldEntry : aClass.getFields().entrySet()) {
             String fieldName = fieldEntry.getKey();
             AFieldWrapper aField = fieldEntry.getValue();
-            printWriter.println();
             printWriter.print(INDENT);
             printWriter.print(formatAField(aField, fieldName, classname));
             printWriter.println(";");
+            printWriter.println();
         }
     }
 
@@ -357,6 +365,8 @@ public final class SceneToStubWriter {
         printWriter.println();
         printWriter.print(INDENT);
         printWriter.print(formatAnnotations(aMethod.returnType.tlAnnotationsHere));
+        // Needed because AMethod stores the name with the parameters, to differentiate
+        // between different methods in the same class with the same name.
         String methodName = aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
         // Use Java syntax for constructors.
         if ("<init>".equals(methodName)) {
@@ -404,13 +414,13 @@ public final class SceneToStubWriter {
      */
     private static void writeImpl(ASceneWrapper scene, PrintWriter printWriter) {
         // Write out all imports
-        ImportDefCollector importDefCollector;
+        ImportDefWriter importDefWriter;
         try {
-            importDefCollector = new ImportDefCollector(scene, printWriter);
+            importDefWriter = new ImportDefWriter(scene, printWriter);
         } catch (DefException e) {
             throw new BugInCF(e);
         }
-        importDefCollector.visit();
+        importDefWriter.visit();
         printWriter.println();
 
         // For each class
