@@ -20,7 +20,6 @@ import org.checkerframework.common.wholeprograminference.scenelib.AMethodWrapper
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
-import scenelib.annotations.el.AElement;
 import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
@@ -183,21 +182,61 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Formats the annotations on the component type of an array, if there are any.
+     * Formats the component types of an array via recursive descent through the array's scene-lib
+     * structure.
      *
-     * @param e the array type
-     * @return the component type formatted to be written to Java source code
+     * @param e the array's scenelib type element
+     * @param arrayType the string representation of the array's type
+     * @return the type formatted to be written to Java source code
      */
-    private static String formatArrayComponentTypeAnnotation(ATypeElement e) {
+    private static String formatArrayType(ATypeElement e, String arrayType) {
         StringBuilder result = new StringBuilder();
+        return formatArrayTypeImpl(e, arrayType, result);
+    }
+
+    /**
+     * The implementation of formatArrayType. Because of the (insane) structure of scenelib, the
+     * descent order is innermost array type -> outermost array type -> component type. So if we
+     * have the type {@code @Foo int @Bar [] @Baz []}, the iteration order is {@code @Bar []}, then
+     * {@code @Baz []}, and then finally {@code @Foo int}. This implementation therefore passes a
+     * string builder with the result of the array types seen so far, to handle multidimensional
+     * arrays. That builder is appended to the final component type in the base case.
+     *
+     * @param e same as above
+     * @param arrayType same as above
+     * @param result the string builder containing the array types seen so far
+     * @return the formatted string, as above
+     */
+    private static String formatArrayTypeImpl(
+            ATypeElement e, String arrayType, StringBuilder result) {
+        String nextComponentType =
+                arrayType.indexOf('[') == -1
+                        ? null
+                        : arrayType.substring(0, arrayType.lastIndexOf('['));
+        // base case when the component is a non-array type
+        if (nextComponentType == null) {
+            return formatAnnotations(e.tlAnnotationsHere) + arrayType + " " + result.toString();
+        } else {
+            result.append(formatAnnotations(e.tlAnnotationsHere));
+            result.append("[] ");
+        }
+        // find the next array type; this loop should always find something, so throws an
+        // exception afterward if it fails
+        ATypeElement innerType = null;
         for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
             InnerTypeLocation loc = ite.getKey();
-            AElement it = ite.getValue();
+            ATypeElement it = ite.getValue();
             if (loc.location.contains(TypePathEntry.ARRAY)) {
-                result.append(formatAnnotations(it.tlAnnotationsHere));
+                innerType = it;
             }
         }
-        return result.toString();
+
+        if (innerType == null) {
+            throw new BugInCF(
+                    "Encountered a multidimensional array without an inner type. This probably indicates a bug in the Annotation File Utilities.");
+        }
+
+        return formatArrayTypeImpl(innerType, nextComponentType, result);
     }
 
     /**
@@ -227,15 +266,13 @@ public final class SceneToStubWriter {
         }
 
         if (basetype.contains("[")) {
-            String component = basetype.substring(0, basetype.lastIndexOf('['));
-            result.append(formatArrayComponentTypeAnnotation(aField.getTheField().type));
-            result.append(component);
-            result.append(" ");
-            basetype = "[]";
+            String formattedArrayType = formatArrayType(aField.getTheField().type, basetype);
+            result.append(formattedArrayType);
+        } else {
+            result.append(formatAnnotations(aField.getTheField().type.tlAnnotationsHere));
+            result.append(basetype);
+            result.append(' ');
         }
-        result.append(formatAnnotations(aField.getTheField().type.tlAnnotationsHere));
-        result.append(basetype);
-        result.append(' ');
         result.append(fieldName);
         return result.toString();
     }
