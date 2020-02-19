@@ -431,8 +431,8 @@ public final class SceneToStubWriter {
      */
     private static void printClass(
             Map.Entry<@BinaryName String, AClassWrapper> classEntry, PrintWriter printWriter) {
-        @BinaryName String classname = classEntry.getKey();
-        String pkg = packagePart(classname);
+
+        String classname = classEntry.getKey();
         String basename = basenamePart(classname);
 
         // Do not attempt to print stubs for anonymous inner classes, because the stub parser
@@ -452,6 +452,7 @@ public final class SceneToStubWriter {
             return;
         }
 
+        String pkg = packagePart(classname);
         if (!"".equals(pkg)) {
             printWriter.println("package " + pkg + ";");
         }
