@@ -803,10 +803,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                         && processingEnv.getOptions() != null
                         && processingEnv.getOptions().containsKey("noPrintErrorStack"));
 
+        msg.append("; The Checker Framework crashed.  Please report the crash.");
         if (noPrintErrorStack) {
             msg.append(
-                    "; The Checker Framework crashed.  Please report the crash.  To see "
-                            + "the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+                    " To see the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
         } else {
             if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
                 msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
