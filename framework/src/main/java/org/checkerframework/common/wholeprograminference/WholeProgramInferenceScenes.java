@@ -34,7 +34,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
 import scenelib.annotations.util.JVMNames;
 
 /**
@@ -194,7 +193,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String methodName = JVMNames.getJVMMethodName(methodElt);
         AMethodWrapper methodWrapper = clazz.vivifyMethod(methodName);
         methodWrapper.setReturnType(methodElt.getReturnType());
-        AMethod method = methodWrapper.getAMethod();
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
@@ -217,7 +215,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         if (argADT != null) {
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(methodTree).getReceiverType();
             if (paramATM != null) {
-                AField receiver = method.receiver;
+                AField receiver = methodWrapper.getAMethod().receiver;
                 storage.updateAnnotationSetInScene(
                         receiver.type, atf, jaifPath, argADT, paramATM, TypeUseLocation.RECEIVER);
             }
