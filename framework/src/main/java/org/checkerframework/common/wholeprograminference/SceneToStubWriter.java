@@ -196,7 +196,7 @@ public final class SceneToStubWriter {
 
     /**
      * The implementation of formatArrayType. Because of the (insane) structure of scenelib, the
-     * descent order is innermost array type -> outermost array type -> component type. So if we
+     * descent order is innermost array type to outermost array type, then component type. So if we
      * have the type {@code @Foo int @Bar [] @Baz []}, the iteration order is {@code @Bar []}, then
      * {@code @Baz []}, and then finally {@code @Foo int}. This implementation therefore passes a
      * string builder with the result of the array types seen so far, to handle multidimensional
