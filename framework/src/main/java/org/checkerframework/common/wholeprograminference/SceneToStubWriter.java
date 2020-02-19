@@ -9,17 +9,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AFieldWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AMethodWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.reflection.Signatures;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AElement;
 import scenelib.annotations.el.AMethod;
@@ -47,6 +46,9 @@ import scenelib.annotations.util.Strings;
  * -Ainfer=stubs} command-line argument.
  */
 public final class SceneToStubWriter {
+
+    /** A pattern matching one or more digits */
+    private static final Pattern digitPattern = Pattern.compile("\\d+");
 
     /** How far to indent when writing members of a stub file. */
     private static final String INDENT = "    ";
@@ -85,9 +87,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Returns the part of a binary name that specifies the basename of the class. This method
-     * replaces the {@code $}s in the names of inner classes with {@code .}s, so that they can be
-     * printed correctly in stub files.
+     * Returns the part of a binary name that specifies the basename of the class.
      *
      * @param className a binary name
      * @return the part of the name representing the class's name without its package
@@ -95,7 +95,7 @@ public final class SceneToStubWriter {
     private static String basenamePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
         String result = (lastdot == -1) ? className : className.substring(lastdot + 1);
-        return result.replace('$', '.');
+        return result;
     }
 
     /**
@@ -214,8 +214,8 @@ public final class SceneToStubWriter {
      * @param aField the field to format
      * @param fieldName the name to use for the declaration in the stub file. This doesn't matter
      *     for parameters, but must be correct for fields.
-     * @param className the name of the enclosing class. This is only used for printing the type of
-     *     an explicit receiver parameter (i.e., a parameter named "this").
+     * @param className the simple name of the enclosing class. This is only used for printing the
+     *     type of an explicit receiver parameter (i.e., a parameter named "this").
      * @return a String suitable to print in a stub file
      */
     private static String formatAField(AFieldWrapper aField, String fieldName, String className) {
@@ -289,25 +289,19 @@ public final class SceneToStubWriter {
      * Writing a stub file with that name would be useless to the stub parser, which expects inner
      * classes to be properly nested.
      *
-     * @param basename the simple name of the class (without the package), in fully-qualified form
-     *     (that is, without any {@code $}s)
-     * @param classname the fully-qualified name of the class in question, so that it can be printed
-     *     as an enum if it is one
+     * @param basename the binary name of the class with the package part stripped
      * @param aClass the AClass for {@code classname}
      * @param printWriter the writer where the class definition should be printed
      * @return the number of outer classes within which this class is nested
      */
     private static int printClassDefinitions(
-            String basename,
-            @FullyQualifiedName String classname,
-            AClassWrapper aClass,
-            PrintWriter printWriter) {
+            String basename, AClassWrapper aClass, PrintWriter printWriter) {
 
         String nameToPrint = basename;
         String remainingInnerClassNames = "";
-        if (basename.contains(".")) {
-            nameToPrint = basename.substring(0, basename.indexOf('.'));
-            remainingInnerClassNames = basename.substring(basename.indexOf('.') + 1);
+        if (basename.contains("$")) {
+            nameToPrint = basename.substring(0, basename.indexOf('$'));
+            remainingInnerClassNames = basename.substring(basename.indexOf('$') + 1);
         }
 
         // For any outer class, print "class".  For a leaf class, print "enum" or "class".
@@ -323,9 +317,7 @@ public final class SceneToStubWriter {
         if ("".equals(remainingInnerClassNames)) {
             return 0;
         } else {
-            return 1
-                    + printClassDefinitions(
-                            remainingInnerClassNames, classname, aClass, printWriter);
+            return 1 + printClassDefinitions(remainingInnerClassNames, aClass, printWriter);
         }
     }
 
@@ -333,19 +325,17 @@ public final class SceneToStubWriter {
      * Prints all the fields of a given class
      *
      * @param aClass the class whose fields should be printed
-     * @param fullyQualifiedClassname the fully-qualified name of the class
+     * @param classname the simple name of the class, used to print the type of "this"
      * @param printWriter the writer on which to print the fields
      */
     private static void printFields(
-            AClassWrapper aClass,
-            @FullyQualifiedName String fullyQualifiedClassname,
-            PrintWriter printWriter) {
+            AClassWrapper aClass, String classname, PrintWriter printWriter) {
         for (Map.Entry<String, AFieldWrapper> fieldEntry : aClass.getFields().entrySet()) {
             String fieldName = fieldEntry.getKey();
             AFieldWrapper aField = fieldEntry.getValue();
             printWriter.println();
             printWriter.print(INDENT);
-            printWriter.print(formatAField(aField, fieldName, fullyQualifiedClassname));
+            printWriter.print(formatAField(aField, fieldName, classname));
             printWriter.println(";");
         }
     }
@@ -356,14 +346,10 @@ public final class SceneToStubWriter {
      * @param aMethodWrapper the method to print
      * @param basename the simple name of the containing class. Used only to determine if the method
      *     being printed is the constructor of an inner class.
-     * @param fullyQualifiedClassname the fully-qualified name of the containing class
      * @param printWriter where to print the method signature
      */
     private static void printMethodSignature(
-            AMethodWrapper aMethodWrapper,
-            String basename,
-            @FullyQualifiedName String fullyQualifiedClassname,
-            PrintWriter printWriter) {
+            AMethodWrapper aMethodWrapper, String basename, PrintWriter printWriter) {
 
         AMethod aMethod = aMethodWrapper.getAMethod();
 
@@ -397,14 +383,11 @@ public final class SceneToStubWriter {
                 || !aMethod.receiver.type.innerTypes.isEmpty()) {
             // Only output the receiver if it has an annotation.
             parameters.add(
-                    formatAField(
-                            new AFieldWrapper(aMethod.receiver, fullyQualifiedClassname),
-                            "this",
-                            fullyQualifiedClassname));
+                    formatAField(new AFieldWrapper(aMethod.receiver, basename), "this", basename));
         }
         for (Integer index : aMethodWrapper.getParameters().keySet()) {
             AFieldWrapper param = aMethodWrapper.getParameters().get(index);
-            parameters.add(formatAField(param, param.getParameterName(), fullyQualifiedClassname));
+            parameters.add(formatAField(param, param.getParameterName(), basename));
         }
         printWriter.print(parameters.toString());
         printWriter.println(");");
@@ -430,72 +413,77 @@ public final class SceneToStubWriter {
         printWriter.println();
 
         // For each class
+        class_loop:
         for (Map.Entry<@BinaryName String, AClassWrapper> classEntry :
                 scene.getClasses().entrySet()) {
-            @SuppressWarnings("signature") // TODO: annotate AScene library
-            @BinaryName String classname = classEntry.getKey();
-            String pkg = packagePart(classname);
-            String basename = basenamePart(classname);
-
-            // Do not attempt to print stubs for anonymous inner classes, because the stub parser
-            // cannot read them. (An anonymous inner class has a basename like Outer.1, so this
-            // check ensures that the binary name's final segment after its last . is not only
-            // composed of digits.)
-            if (basename.contains(".")) {
-                String innermostClassname = basename.substring(basename.lastIndexOf('.') + 1);
-                if (innermostClassname.matches("\\d+")) {
-                    continue;
-                }
-            }
-
-            if (!"".equals(pkg)) {
-                printWriter.println("package " + pkg + ";");
-            }
-            if ("package-info".equals(basename) || "module-info".equals(basename)) {
-                continue;
-            }
-
-            // At this point, we no longer care about the distinction between packages
-            // and inner classes, so we should replace the $ in the definition of any
-            // inner classes with a ., so that they are printed correctly in stub files.
-
-            String fullyQualifiedClassname = Signatures.binaryNameToFullyQualified(classname);
-
-            AClassWrapper aClassWrapper = classEntry.getValue();
-
-            int curlyCount =
-                    1
-                            + printClassDefinitions(
-                                    basename, fullyQualifiedClassname, aClassWrapper, printWriter);
-
-            // print fields or enum constants
-            if (!aClassWrapper.isEnum()) {
-                printFields(aClassWrapper, fullyQualifiedClassname, printWriter);
-            } else {
-                // for enums, instead of printing fields print the enum constants
-                List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
-
-                StringJoiner sj = new StringJoiner(", ");
-                for (VariableElement enumConstant : enumConstants) {
-                    sj.add(enumConstant.getSimpleName());
-                }
-                if (sj.length() != 0) {
-                    printWriter.print(sj.toString());
-                    printWriter.println(";");
-                }
-            }
-
-            // print method signatures
-            for (Map.Entry<String, AMethodWrapper> methodEntry :
-                    aClassWrapper.getMethods().entrySet()) {
-                printMethodSignature(
-                        methodEntry.getValue(), basename, fullyQualifiedClassname, printWriter);
-            }
-            for (int i = 0; i < curlyCount; i++) {
-                printWriter.println("}");
-            }
+            printClass(classEntry, printWriter);
         }
         printWriter.flush();
+    }
+
+    /**
+     * Print the class body, or nothing if this is an anonymous inner class
+     *
+     * @param classEntry the class to print, as a Map entry. The key is the class name in binary
+     *     form. The value is the AClassWrapper object representing the class.
+     * @param printWriter the writer on which to print
+     */
+    private static void printClass(
+            Map.Entry<@BinaryName String, AClassWrapper> classEntry, PrintWriter printWriter) {
+        @BinaryName String classname = classEntry.getKey();
+        String pkg = packagePart(classname);
+        String basename = basenamePart(classname);
+
+        // Do not attempt to print stubs for anonymous inner classes, because the stub parser
+        // cannot read them. (An anonymous inner class has a basename like Outer.1, so this
+        // check ensures that the binary name's final segment after its last . is not only
+        // composed of digits.)
+        String innermostClassname = basename;
+        while (innermostClassname.contains("$")) {
+            innermostClassname =
+                    innermostClassname.substring(innermostClassname.lastIndexOf('$') + 1);
+            if (digitPattern.matcher(innermostClassname).matches()) {
+                return;
+            }
+        }
+
+        if ("package-info".equals(basename) || "module-info".equals(basename)) {
+            return;
+        }
+
+        if (!"".equals(pkg)) {
+            printWriter.println("package " + pkg + ";");
+        }
+
+        AClassWrapper aClassWrapper = classEntry.getValue();
+
+        int curlyCount = 1 + printClassDefinitions(basename, aClassWrapper, printWriter);
+
+        // print fields or enum constants
+        if (!aClassWrapper.isEnum()) {
+            printFields(aClassWrapper, innermostClassname, printWriter);
+        } else {
+            // for enums, instead of printing fields print the enum constants
+            List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
+
+            StringJoiner sj = new StringJoiner(", ");
+            for (VariableElement enumConstant : enumConstants) {
+                sj.add(enumConstant.getSimpleName());
+            }
+            if (sj.length() != 0) {
+                printWriter.print(sj.toString());
+                printWriter.println(";");
+            }
+        }
+
+        // print method signatures
+        for (Map.Entry<String, AMethodWrapper> methodEntry :
+                aClassWrapper.getMethods().entrySet()) {
+            printMethodSignature(methodEntry.getValue(), innermostClassname, printWriter);
+        }
+        for (int i = 0; i < curlyCount; i++) {
+            printWriter.println("}");
+        }
     }
 
     /**
@@ -510,7 +498,7 @@ public final class SceneToStubWriter {
             return;
         }
         List<? extends TypeParameterElement> typeParameters = type.getTypeParameters();
-        if (typeParameters == null || typeParameters.isEmpty()) {
+        if (typeParameters.isEmpty()) {
             return;
         }
         printWriter.print("<");
