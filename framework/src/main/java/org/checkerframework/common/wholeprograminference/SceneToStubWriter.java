@@ -323,6 +323,7 @@ public final class SceneToStubWriter {
         printWriter.print(nameToPrint);
         printTypeParameters(aClass, printWriter);
         printWriter.println(" {");
+        printWriter.println();
         if ("".equals(remainingInnerClassNames)) {
             return 0;
         } else {
@@ -362,7 +363,6 @@ public final class SceneToStubWriter {
 
         AMethod aMethod = aMethodWrapper.getAMethod();
 
-        printWriter.println();
         printWriter.print(INDENT);
         printWriter.print(formatAnnotations(aMethod.returnType.tlAnnotationsHere));
         // Needed because AMethod stores the name with the parameters, to differentiate
@@ -402,6 +402,7 @@ public final class SceneToStubWriter {
         }
         printWriter.print(parameters.toString());
         printWriter.println(");");
+        printWriter.println();
     }
 
     /**
@@ -471,11 +472,7 @@ public final class SceneToStubWriter {
 
         int curlyCount = 1 + printClassDefinitions(basename, aClassWrapper, printWriter);
 
-        // print fields or enum constants
-        if (!aClassWrapper.isEnum()) {
-            printFields(aClassWrapper, innermostClassname, printWriter);
-        } else {
-            // for enums, instead of printing fields print the enum constants
+        if (aClassWrapper.isEnum()) {
             List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
 
             StringJoiner sj = new StringJoiner(", ");
@@ -483,12 +480,21 @@ public final class SceneToStubWriter {
                 sj.add(enumConstant.getSimpleName());
             }
             if (sj.length() != 0) {
-                printWriter.print(sj.toString());
+                printWriter.println(INDENT + "// enum constants:");
+                printWriter.println();
+                printWriter.print(INDENT + sj.toString());
                 printWriter.println(";");
+                printWriter.println();
             }
         }
 
+        printWriter.println(INDENT + "// fields:");
+        printWriter.println();
+        printFields(aClassWrapper, innermostClassname, printWriter);
+
         // print method signatures
+        printWriter.println(INDENT + "// methods:");
+        printWriter.println();
         for (Map.Entry<String, AMethodWrapper> methodEntry :
                 aClassWrapper.getMethods().entrySet()) {
             printMethodSignature(methodEntry.getValue(), innermostClassname, printWriter);
