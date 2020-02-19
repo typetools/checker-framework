@@ -243,6 +243,13 @@ task wholeProgramInferenceJaifTests(dependsOn: 'shadowJar', group: 'Verification
     finalizedBy(testWPIJaifsValidate)
 }
 
+// empty task that just runs both the jaif and stub WPI tests
+task wholeProgramInferenceTests() {
+    description "Run tests for all whole program inference modes."
+    dependsOn('wholeProgramInferenceJaifTests')
+    dependsOn('wholeProgramInferenceStubTests')
+}
+
 task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for the annotation class loader'
     dependsOn(compileTestJava)
