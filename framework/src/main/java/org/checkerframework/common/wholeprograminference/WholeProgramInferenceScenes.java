@@ -8,9 +8,7 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -18,7 +16,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AFieldWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AMethodWrapper;
@@ -86,13 +83,6 @@ import scenelib.annotations.util.JVMNames;
 //  the whole-program inference on the same set of files can yield different
 //  results (order of annotations).
 public class WholeProgramInferenceScenes implements WholeProgramInference {
-
-    /**
-     * This maps from fully-qualified names of enums to their list of enum constants. The stub file
-     * format requires enums to be output differently than classes.
-     */
-    private final Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstants =
-            new HashMap<>();
 
     /** The interface to the AScene library itself, which stores the inferred annotations. */
     private final WholeProgramInferenceScenesStorage storage;
