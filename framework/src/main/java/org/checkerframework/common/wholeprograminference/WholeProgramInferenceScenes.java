@@ -16,6 +16,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AFieldWrapper;
@@ -144,7 +146,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         String methodName = JVMNames.getJVMMethodName(methodElt);
         AMethodWrapper method = clazz.vivifyMethod(methodName);
-        method.setReturnType(methodElt.getReturnType().toString());
+        method.setReturnType(methodElt.getReturnType());
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
@@ -173,8 +175,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
             AFieldWrapper param =
-                    method.vivifyParameter(
-                            i, argATM.getUnderlyingType().toString(), ve.getSimpleName());
+                    method.vivifyParameter(i, argATM.getUnderlyingType(), ve.getSimpleName());
             storage.updateAnnotationSetInScene(
                     param.getTheField().type,
                     atf,
@@ -202,7 +203,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(methodElt);
         AMethodWrapper methodWrapper = clazz.vivifyMethod(methodName);
-        methodWrapper.setReturnType(methodElt.getReturnType().toString());
+        methodWrapper.setReturnType(methodElt.getReturnType());
         AMethod method = methodWrapper.getAMethod();
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
@@ -212,7 +213,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
             AFieldWrapper param =
                     methodWrapper.vivifyParameter(
-                            i, argATM.getUnderlyingType().toString(), ve.getSimpleName());
+                            i, argATM.getUnderlyingType(), ve.getSimpleName());
             storage.updateAnnotationSetInScene(
                     param.getTheField().type,
                     atf,
@@ -270,8 +271,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
                 VariableElement ve = TreeUtils.elementFromDeclaration(vt);
                 AFieldWrapper param =
-                        method.vivifyParameter(
-                                i, argATM.getUnderlyingType().toString(), ve.getSimpleName());
+                        method.vivifyParameter(i, argATM.getUnderlyingType(), ve.getSimpleName());
                 storage.updateAnnotationSetInScene(
                         param.getTheField().type,
                         atf,
@@ -304,7 +304,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         }
 
         ClassSymbol enclosingClass = ((VarSymbol) lhs.getElement()).enclClass();
-        String className = enclosingClass.flatName().toString();
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @DotSeparatedIdentifiers String className = enclosingClass.flatname.toString();
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
         updateClassMetadata(enclosingClass, clazz);
@@ -337,7 +338,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         if (classSymbol == null) { // TODO: Handle anonymous classes.
             return;
         }
-        String className = classSymbol.flatname.toString();
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @DotSeparatedIdentifiers String className = classSymbol.flatname.toString();
 
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
@@ -347,7 +349,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AMethodWrapper methodWrapper = clazz.vivifyMethod(JVMNames.getJVMMethodName(methodTree));
         // Method return type
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
-        methodWrapper.setReturnType(lhsATM.getUnderlyingType().toString());
+        methodWrapper.setReturnType(lhsATM.getUnderlyingType());
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
         storage.updateAnnotationSetInScene(
@@ -378,7 +380,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param localVariableNode the {@link LocalVariableNode}
      * @return the "flatname" of the class enclosing {@code localVariableNode}
      */
-    private String getEnclosingClassName(LocalVariableNode localVariableNode) {
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
         return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
                 .flatName()
                 .toString();
@@ -390,7 +393,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param executableElement the ExecutableElement
      * @return the "flatname" of the class enclosing {@code executableElement}
      */
-    private String getEnclosingClassName(ExecutableElement executableElement) {
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
         return ((MethodSymbol) executableElement).enclClass().flatName().toString();
     }
 

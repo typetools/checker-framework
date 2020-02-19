@@ -24,7 +24,11 @@ class Type {
 class Symbol {
   @DotSeparatedIdentifiers Name getQualifiedName();
 
+  @BinaryName Name flatname();
+
   class ClassSymbol {
     @DotSeparatedIdentifiers Name getQualifiedName();
+
+    @BinaryName Name flatname();
   }
 }

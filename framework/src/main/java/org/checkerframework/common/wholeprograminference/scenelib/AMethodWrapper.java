@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
 import javax.lang.model.element.Name;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import scenelib.annotations.el.AMethod;
 
@@ -37,9 +39,20 @@ public class AMethodWrapper {
     /**
      * Provide the AMethodWrapper with a return type
      *
+     * @param type the return type as a TypeMirror
+     */
+    public void setReturnType(TypeMirror type) {
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @DotSeparatedIdentifiers String typeAsString = type.toString();
+        setReturnType(typeAsString);
+    }
+
+    /**
+     * Provide the AMethodWrapper with a return type
+     *
      * @param returnType a fully-qualified name
      */
-    public void setReturnType(@FullyQualifiedName String returnType) {
+    private void setReturnType(@FullyQualifiedName String returnType) {
         // do not keep return types that start with a ?, because that's not valid Java
         if ("java.lang.Object".equals(this.returnType) && !returnType.startsWith("?")) {
             this.returnType = returnType;
@@ -68,11 +81,25 @@ public class AMethodWrapper {
      * Interact with a parameter.
      *
      * @param i the parameter index (1st parameter is zero)
+     * @param type the type of the parameter, as a TypeMirror
+     * @param simpleName the name of the parameter
+     * @return an AFieldWrapper representing the parameter
+     */
+    public AFieldWrapper vivifyParameter(int i, TypeMirror type, Name simpleName) {
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @DotSeparatedIdentifiers String typeAsString = type.toString();
+        return vivifyParameter(i, typeAsString, simpleName);
+    }
+
+    /**
+     * Interact with a parameter.
+     *
+     * @param i the parameter index (1st parameter is zero)
      * @param type a fully-qualified name representing the type of the parameter
      * @param simpleName the name of the parameter
      * @return an AFieldWrapper representing the parameter
      */
-    public AFieldWrapper vivifyParameter(int i, @FullyQualifiedName String type, Name simpleName) {
+    private AFieldWrapper vivifyParameter(int i, @FullyQualifiedName String type, Name simpleName) {
         if (parameters.containsKey(i)) {
             return parameters.get(i);
         } else {
