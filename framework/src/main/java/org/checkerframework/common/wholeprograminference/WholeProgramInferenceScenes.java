@@ -390,7 +390,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * Updates the metadata stored in AClassWrapper for the given class.
      *
      * @param classSymbol the class for which to update metadata
-     * @param aClassWrapper the class' representation in which the metadata is to be updated
+     * @param aClassWrapper the class representation in which the metadata is to be updated
      */
     private void updateClassMetadata(ClassSymbol classSymbol, AClassWrapper aClassWrapper) {
         if (classSymbol.isEnum()) {
