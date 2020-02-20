@@ -1212,16 +1212,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         if (checker.hasOption("mergeStubsWithSource")) {
-            AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
-            if (stubType != null) {
-                if (type == null) {
-                    type = stubType;
-                } else {
-                    // Must merge (rather than only take the stub type if it is a subtype)
-                    // to support WPI.
-                    AnnotatedTypeMerger.merge(stubType, type);
-                }
-            }
+            type = mergeStubsWithSource(type, elt);
         }
         // Caching is disabled if stub files are being parsed, because calls to this
         // method before the stub files are fully read can return incorrect results.
@@ -1263,17 +1254,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
 
         if (checker.hasOption("mergeStubsWithSource")) {
-            Element elt = TreeUtils.elementFromTree(tree);
-            AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
-            if (stubType != null) {
-                if (result == null) {
-                    result = stubType;
-                } else {
-                    // Must merge (rather than only take the stub type if it is a subtype)
-                    // to support WPI.
-                    AnnotatedTypeMerger.merge(stubType, result);
-                }
-            }
+            result = mergeStubsWithSource(result, tree);
         }
 
         if (shouldCache) {
@@ -1281,6 +1262,41 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         return result;
+    }
+
+    /**
+     * Finds types from stubs and applies them to type.
+     *
+     * @param type the type to apply stub types to
+     * @param tree the tree from which to read stub types
+     * @return the type
+     */
+    private AnnotatedTypeMirror mergeStubsWithSource(
+            @Nullable AnnotatedTypeMirror type, Tree tree) {
+        Element elt = TreeUtils.elementFromTree(tree);
+        return mergeStubsWithSource(type, elt);
+    }
+
+    /**
+     * Finds types from stubs and applies them to type.
+     *
+     * @param type the type to apply stub types to
+     * @param elt the element from which to read stub types
+     * @return the type
+     */
+    private AnnotatedTypeMirror mergeStubsWithSource(
+            @Nullable AnnotatedTypeMirror type, Element elt) {
+        AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
+        if (stubType != null) {
+            if (type == null) {
+                type = stubType;
+            } else {
+                // Must merge (rather than only take the stub type if it is a subtype)
+                // to support WPI.
+                AnnotatedTypeMerger.merge(stubType, type);
+            }
+        }
+        return type;
     }
 
     /**
