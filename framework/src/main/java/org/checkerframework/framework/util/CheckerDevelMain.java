@@ -26,22 +26,12 @@ public class CheckerDevelMain extends CheckerMain {
         final boolean verbose = PluginUtil.getBooleanSystemProperty(VERBOSE_PROP);
 
         if (verbose) {
-            System.out.print(
-                    "CheckerDevelMain:\n"
-                            + "Prepended to classpath:     "
-                            + cp
-                            + "Prepended to processor classpath:     "
-                            + pp
-                            + "\n"
-                            + "Prepended to compile bootclasspath: "
-                            + compileBcp
-                            + "\n"
-                            + "Prepended to runtime classpath: "
-                            + runtimeCp
-                            + "\n"
-                            + "Binary Dir:                 "
-                            + binDir
-                            + "\n");
+            System.out.println("CheckerDevelMain:");
+            System.out.println("Prepended to classpath:     " + cp);
+            System.out.println("Prepended to processor classpath:   " + pp);
+            System.out.println("Prepended to compile bootclasspath: " + compileBcp);
+            System.out.println("Prepended to runtime classpath:     " + runtimeCp);
+            System.out.println("Binary Dir:                 " + binDir);
         }
 
         assert (binDir != null)

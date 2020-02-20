@@ -9,6 +9,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.checkerframework.javacutil.BugInCF;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
@@ -95,15 +96,11 @@ public class PerDirectorySuite extends Suite {
                 }
             }
 
-            throw new RuntimeException(
-                    "Exactly one of the following methods should be declared:\n"
-                            + requiredFormsMessage
-                            + "\n"
-                            + "testClass="
-                            + testClass.getName()
-                            + "\n"
-                            + "parameterMethods="
-                            + methods);
+            throw new BugInCF(
+                    "Exactly one of the following methods should be declared:%n%s%n"
+                            + "testClass=%s%n"
+                            + "parameterMethods=%s",
+                    requiredFormsMessage, testClass.getName(), methods);
         } // else
 
         FrameworkMethod method = parameterMethods.get(0);
@@ -124,10 +121,10 @@ public class PerDirectorySuite extends Suite {
             default:
                 throw new RuntimeException(
                         requiredFormsMessage
-                                + "\n"
+                                + "%n"
                                 + "testClass="
                                 + testClass.getName()
-                                + "\n"
+                                + "%n"
                                 + "parameterMethods="
                                 + method);
         }
@@ -141,8 +138,11 @@ public class PerDirectorySuite extends Suite {
         return method;
     }
 
+    /** The message about the required getTestDirs method. */
     private static final String requiredFormsMessage =
-            "Parameter method must the following form:\n" + "@Parameters String [] getTestDirs()";
+            "Parameter method must the following form:"
+                    + System.lineSeparator()
+                    + "@Parameters String [] getTestDirs()";
 
     /** Runs the test class for the set of javaFiles passed in the constructor. */
     private static class PerParameterSetTestRunner extends BlockJUnit4ClassRunner {

@@ -811,7 +811,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (tm.getKind() != TypeKind.DECLARED) {
             checker.message(
                     Kind.WARNING,
-                    "InterningVisitor.classIsAnnotated: tm = %s (%s)%n",
+                    "InterningVisitor.classIsAnnotated: tm = %s (%s)",
                     tm,
                     tm.getClass());
         }
@@ -819,7 +819,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (classElt == null) {
             checker.message(
                     Kind.WARNING,
-                    "InterningVisitor.classIsAnnotated: classElt = null for tm = %s (%s)%n",
+                    "InterningVisitor.classIsAnnotated: classElt = null for tm = %s (%s)",
                     tm,
                     tm.getClass());
         }

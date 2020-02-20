@@ -76,16 +76,13 @@ public class FIsAReducer implements AFReducer {
                 AnnotatedTypeMirror argument,
                 AnnotatedTypeMirror parameter,
                 Set<AFConstraint> afConstraints) {
-            return "Unexpected FIsA Combination:\n"
-                    + "argument="
-                    + argument
-                    + "\n"
-                    + "parameter="
-                    + parameter
-                    + "\n"
-                    + "constraints=[\n"
-                    + PluginUtil.join(", ", afConstraints)
-                    + "\n]";
+            return PluginUtil.joinLines(
+                    "Unexpected FIsA Combination:",
+                    "argument=" + argument,
+                    "parameter=" + parameter,
+                    "constraints=[",
+                    PluginUtil.join(", ", afConstraints),
+                    "]");
         }
         // ------------------------------------------------------------------------
         // Arrays as arguments
