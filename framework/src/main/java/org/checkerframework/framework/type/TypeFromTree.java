@@ -90,7 +90,7 @@ class TypeFromTree {
         if (type.getKind() == TypeKind.EXECUTABLE) {
             if (((AnnotatedExecutableType) type).getElement() == null) {
                 throw new BugInCF(
-                        "Executable has no element:\n" + summarize(typeFactory, tree, type));
+                        "Executable has no element:%n%s", summarize(typeFactory, tree, type));
             }
         }
     }
@@ -101,18 +101,26 @@ class TypeFromTree {
             final AnnotatedTypeMirror type) {
         if (type.getKind() == TypeKind.EXECUTABLE) {
             throw new BugInCF(
-                    "Unexpected Executable typekind:\n" + summarize(typeFactory, tree, type));
+                    "Unexpected Executable typekind:%n%s", summarize(typeFactory, tree, type));
         }
     }
 
+    /**
+     * Return a string with the two arguments, for diagnostics.
+     *
+     * @param typeFactory a type factory
+     * @param tree a tree
+     * @return a string with the two arguments
+     */
     protected static String summarize(final AnnotatedTypeFactory typeFactory, final Tree tree) {
-        return "tree=" + tree + "\n" + "typeFactory=" + typeFactory.getClass().getSimpleName();
+        return String.format(
+                "tree=%s%ntypeFactory=%s", tree, typeFactory.getClass().getSimpleName());
     }
 
     protected static String summarize(
             final AnnotatedTypeFactory typeFactory,
             final Tree tree,
             final AnnotatedTypeMirror type) {
-        return "type=" + type + "\n" + summarize(typeFactory, tree);
+        return "type=" + type + System.lineSeparator() + summarize(typeFactory, tree);
     }
 }

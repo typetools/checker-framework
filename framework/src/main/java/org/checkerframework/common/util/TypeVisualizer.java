@@ -255,12 +255,8 @@ public class TypeVisualizer {
                     writer.flush();
                 } catch (IOException e) {
                     throw new BugInCF(
-                            "Exception visualizing type:\n"
-                                    + "file="
-                                    + file
-                                    + "\n"
-                                    + "type="
-                                    + type,
+                            String.format(
+                                    "Exception visualizing type:%nfile=%s%ntype=%s", file, type),
                             e);
                 } finally {
                     if (writer != null) {
@@ -269,7 +265,7 @@ public class TypeVisualizer {
                 }
             } catch (IOException exc) {
                 throw new BugInCF(
-                        "Exception visualizing type:\n" + "file=" + file + "\n" + "type=" + type,
+                        String.format("Exception visualizing type:%nfile=%s%ntype=%s", file, type),
                         exc);
             }
         }
@@ -492,8 +488,7 @@ public class TypeVisualizer {
                     visitAll(type.getThrownTypes());
 
                 } else {
-                    throw new BugInCF(
-                            "Executable types should never be recursive\n" + "type=" + type);
+                    throw new BugInCF("Executable types should never be recursive%ntype=%s", type);
                 }
                 return null;
             }

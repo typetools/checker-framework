@@ -59,11 +59,11 @@ public class JavaCodeStatistics extends SourceChecker {
 
     @Override
     public void typeProcessingOver() {
-        System.out.printf("Found %d generic type uses.\n", generics);
-        System.out.printf("Found %d array accesses and creations.\n", arrayAccesses);
-        System.out.printf("Found %d typecasts.\n", typecasts);
+        System.out.printf("Found %d generic type uses.%n", generics);
+        System.out.printf("Found %d array accesses and creations.%n", arrayAccesses);
+        System.out.printf("Found %d typecasts.%n", typecasts);
         System.out.printf(
-                "Found %d warning suppression annotations for the Index Checker.\n",
+                "Found %d warning suppression annotations for the Index Checker.%n",
                 numberOfIndexWarningSuppressions);
     }
 
