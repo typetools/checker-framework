@@ -169,9 +169,9 @@ public interface WholeProgramInference {
      * Writes the inferred results to a file. Ideally should be called at the end of the
      * type-checking process.
      *
-     * @param kind the file format in which to write the results
+     * @param format the file format in which to write the results
      */
-    void writeResultsToFile(OutputFormat kind);
+    void writeResultsToFile(OutputFormat format);
 
     /** The kinds of output that whole-program inference can produce. */
     enum OutputFormat {

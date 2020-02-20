@@ -1965,8 +1965,8 @@ public class StubParser {
      *
      * @param m a map
      * @param key a key for the map
-     * @param newType a value to merge into the map: merge it with the value at {@code key} and
-     *     replace that value
+     * @param newType a value to merge into the map: merge it with the value currently at {@code
+     *     key} and replace that value
      */
     private void putNew(
             Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror newType) {

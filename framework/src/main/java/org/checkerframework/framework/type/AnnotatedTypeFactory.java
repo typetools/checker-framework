@@ -326,8 +326,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final boolean infer;
 
     /**
-     * Which whole-program inference output format to use, if doing whole-program inference. Would
-     * be final, but not set unless WPI is enabled.
+     * Which whole-program inference output format to use, if doing whole-program inference. This
+     * variable would be final, but it is not set unless WPI is enabled.
      */
     private WholeProgramInference.OutputFormat wpiOutputFormat;
 
