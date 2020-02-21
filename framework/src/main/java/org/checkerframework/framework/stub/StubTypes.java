@@ -203,20 +203,20 @@ public class StubTypes {
                                         + topLevelResource);
                     } else {
                         // When using a compound checker, the target stub file may be found by the
-                        // current checker's ancestor checkers. Also check this to avoid a false
+                        // current checker's parent checkers. Also check this to avoid a false
                         // warning.
                         SourceChecker parentChecker = checker.parentChecker;
-                        boolean findByAncestorCheckers = false;
+                        boolean findByParentCheckers = false;
                         while (parentChecker != null) {
                             if (parentChecker.getClass().getResource(stubPath) != null) {
-                                findByAncestorCheckers = true;
+                                findByParentCheckers = true;
                                 break;
                             }
                             parentChecker = parentChecker.parentChecker;
                         }
-                        // If there exists one ancestor checker which can find this stub file, don't
+                        // If there exists one parent checker which can find this stub file, don't
                         // report an warning.
-                        if (!findByAncestorCheckers) {
+                        if (!findByParentCheckers) {
                             checker.message(
                                     Kind.WARNING,
                                     "Did not find stub file "
