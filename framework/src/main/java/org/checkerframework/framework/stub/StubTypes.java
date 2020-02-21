@@ -190,45 +190,7 @@ public class StubTypes {
                 // level directory of the jar that contains the checker.
                 stubPath = stubPath.replace("checker.jar/", "/");
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
-                if (in == null) {
-                    // Didn't find the stub file.
-                    URL topLevelResource = checker.getClass().getResource("/" + stubPath);
-                    if (topLevelResource != null) {
-                        checker.message(
-                                Kind.WARNING,
-                                stubPath
-                                        + " should be in the same directory as "
-                                        + checker.getClass().getSimpleName()
-                                        + ".class, but is at the top level of a jar file: "
-                                        + topLevelResource);
-                    } else {
-                        // When using a compound checker, the target stub file may be found by the
-                        // current checker's parent checkers. Also check this to avoid a false
-                        // warning.
-                        SourceChecker parentChecker = checker.parentChecker;
-                        boolean findByParentCheckers = false;
-                        while (parentChecker != null) {
-                            if (parentChecker.getClass().getResource(stubPath) != null) {
-                                findByParentCheckers = true;
-                                break;
-                            }
-                            parentChecker = parentChecker.parentChecker;
-                        }
-                        // If there exists one parent checker which can find this stub file, don't
-                        // report an warning.
-                        if (!findByParentCheckers) {
-                            checker.message(
-                                    Kind.WARNING,
-                                    "Did not find stub file "
-                                            + stubPath
-                                            + " on classpath or within directory "
-                                            + new File(stubPath).getAbsolutePath()
-                                            + (stubPathFull.equals(stubPath)
-                                                    ? ""
-                                                    : (" or at " + stubPathFull)));
-                        }
-                    }
-                } else {
+                if (in != null) {
                     StubParser.parse(
                             stubPath,
                             in,
@@ -236,25 +198,57 @@ public class StubTypes {
                             processingEnv,
                             typesFromStubFiles,
                             declAnnosFromStubFiles);
+                } else {
+                    SourceChecker currentChecker = checker;
+                    boolean findByParentCheckers = false;
+                    while (currentChecker != null) {
+                        // Didn't find the stub file.
+                        URL topLevelResource =
+                                currentChecker.getClass().getResource("/" + stubPath);
+                        if (topLevelResource != null) {
+                            currentChecker.message(
+                                    Kind.WARNING,
+                                    stubPath
+                                            + " should be in the same directory as "
+                                            + currentChecker.getClass().getSimpleName()
+                                            + ".class, but is at the top level of a jar file: "
+                                            + topLevelResource);
+                            findByParentCheckers = true;
+                            break;
+                        } else {
+                            currentChecker = currentChecker.getParentChecker();
+                        }
+                    }
+                    if (!findByParentCheckers) {
+                        checker.message(
+                                Kind.WARNING,
+                                "Did not find stub file "
+                                        + stubPath
+                                        + " on classpath or within directory "
+                                        + new File(stubPath).getAbsolutePath()
+                                        + (stubPathFull.equals(stubPath)
+                                                ? ""
+                                                : (" or at " + stubPathFull)));
+                    }
                 }
-            }
-            for (StubResource resource : stubs) {
-                InputStream stubStream;
-                try {
-                    stubStream = resource.getInputStream();
-                } catch (IOException e) {
-                    checker.message(
-                            Kind.NOTE,
-                            "Could not read stub resource: " + resource.getDescription());
-                    continue;
+                for (StubResource resource : stubs) {
+                    InputStream stubStream;
+                    try {
+                        stubStream = resource.getInputStream();
+                    } catch (IOException e) {
+                        checker.message(
+                                Kind.NOTE,
+                                "Could not read stub resource: " + resource.getDescription());
+                        continue;
+                    }
+                    StubParser.parse(
+                            resource.getDescription(),
+                            stubStream,
+                            factory,
+                            processingEnv,
+                            typesFromStubFiles,
+                            declAnnosFromStubFiles);
                 }
-                StubParser.parse(
-                        resource.getDescription(),
-                        stubStream,
-                        factory,
-                        processingEnv,
-                        typesFromStubFiles,
-                        declAnnosFromStubFiles);
             }
         }
         parsing = false;
