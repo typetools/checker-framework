@@ -461,7 +461,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * in the case of a compound checker, the compound checker is the parent, not the checker that
      * was run prior to this one by the compound checker.
      */
-    protected SourceChecker parentChecker;
+    public SourceChecker parentChecker;
 
     /** List of upstream checker names. Includes the current checker. */
     protected List<String> upstreamCheckerNames;

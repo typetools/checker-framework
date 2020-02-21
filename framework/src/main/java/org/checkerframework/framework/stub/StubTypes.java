@@ -191,7 +191,7 @@ public class StubTypes {
                 stubPath = stubPath.replace("checker.jar/", "/");
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 if (in == null) {
-                    // Didn't find the stubfile.
+                    // Didn't find the stub file.
                     URL topLevelResource = checker.getClass().getResource("/" + stubPath);
                     if (topLevelResource != null) {
                         checker.message(
@@ -202,15 +202,31 @@ public class StubTypes {
                                         + ".class, but is at the top level of a jar file: "
                                         + topLevelResource);
                     } else {
-                        checker.message(
-                                Kind.WARNING,
-                                "Did not find stub file "
-                                        + stubPath
-                                        + " on classpath or within directory "
-                                        + new File(stubPath).getAbsolutePath()
-                                        + (stubPathFull.equals(stubPath)
-                                                ? ""
-                                                : (" or at " + stubPathFull)));
+                        // When using a compound checker, the target stub file may be found by the
+                        // current checker's ancestor checkers. Also check this to avoid a false
+                        // warning.
+                        SourceChecker parentChecker = checker.parentChecker;
+                        boolean findByAncestorCheckers = false;
+                        while (parentChecker != null) {
+                            if (parentChecker.getClass().getResource(stubPath) != null) {
+                                findByAncestorCheckers = true;
+                                break;
+                            }
+                            parentChecker = parentChecker.parentChecker;
+                        }
+                        // If there exists one ancestor checker which can find this stub file, don't
+                        // report an warning.
+                        if (!findByAncestorCheckers) {
+                            checker.message(
+                                    Kind.WARNING,
+                                    "Did not find stub file "
+                                            + stubPath
+                                            + " on classpath or within directory "
+                                            + new File(stubPath).getAbsolutePath()
+                                            + (stubPathFull.equals(stubPath)
+                                                    ? ""
+                                                    : (" or at " + stubPathFull)));
+                        }
                     }
                 } else {
                     StubParser.parse(
