@@ -231,24 +231,24 @@ public class StubTypes {
                                                 : (" or at " + stubPathFull)));
                     }
                 }
-                for (StubResource resource : stubs) {
-                    InputStream stubStream;
-                    try {
-                        stubStream = resource.getInputStream();
-                    } catch (IOException e) {
-                        checker.message(
-                                Kind.NOTE,
-                                "Could not read stub resource: " + resource.getDescription());
-                        continue;
-                    }
-                    StubParser.parse(
-                            resource.getDescription(),
-                            stubStream,
-                            factory,
-                            processingEnv,
-                            typesFromStubFiles,
-                            declAnnosFromStubFiles);
+            }
+            for (StubResource resource : stubs) {
+                InputStream stubStream;
+                try {
+                    stubStream = resource.getInputStream();
+                } catch (IOException e) {
+                    checker.message(
+                            Kind.NOTE,
+                            "Could not read stub resource: " + resource.getDescription());
+                    continue;
                 }
+                StubParser.parse(
+                        resource.getDescription(),
+                        stubStream,
+                        factory,
+                        processingEnv,
+                        typesFromStubFiles,
+                        declAnnosFromStubFiles);
             }
         }
         parsing = false;
