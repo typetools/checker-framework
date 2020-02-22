@@ -190,6 +190,7 @@ public class StubTypes {
                 // level directory of the jar that contains the checker.
                 stubPath = stubPath.replace("checker.jar/", "/");
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
+                // Didn't find the stub file.
                 if (in == null) {
                     // When using a compound checker, the target stub file may be found by the
                     // current checker's parent checkers. Also check this to avoid a false
@@ -197,7 +198,6 @@ public class StubTypes {
                     SourceChecker currentChecker = checker;
                     boolean findByParentCheckers = false;
                     while (currentChecker != null) {
-                        // Didn't find the stub file.
                         URL topLevelResource =
                                 currentChecker.getClass().getResource("/" + stubPath);
                         if (topLevelResource != null) {
