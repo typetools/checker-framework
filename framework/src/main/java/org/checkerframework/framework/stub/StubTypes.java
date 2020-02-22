@@ -190,15 +190,10 @@ public class StubTypes {
                 // level directory of the jar that contains the checker.
                 stubPath = stubPath.replace("checker.jar/", "/");
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
-                if (in != null) {
-                    StubParser.parse(
-                            stubPath,
-                            in,
-                            factory,
-                            processingEnv,
-                            typesFromStubFiles,
-                            declAnnosFromStubFiles);
-                } else {
+                if (in == null) {
+                    // When using a compound checker, the target stub file may be found by the
+                    // current checker's parent checkers. Also check this to avoid a false
+                    // warning.
                     SourceChecker currentChecker = checker;
                     boolean findByParentCheckers = false;
                     while (currentChecker != null) {
@@ -219,6 +214,8 @@ public class StubTypes {
                             currentChecker = currentChecker.getParentChecker();
                         }
                     }
+                    // If there exists one parent checker which can find this stub file, don't
+                    // report an warning.
                     if (!findByParentCheckers) {
                         checker.message(
                                 Kind.WARNING,
@@ -230,6 +227,14 @@ public class StubTypes {
                                                 ? ""
                                                 : (" or at " + stubPathFull)));
                     }
+                } else {
+                    StubParser.parse(
+                            stubPath,
+                            in,
+                            factory,
+                            processingEnv,
+                            typesFromStubFiles,
+                            declAnnosFromStubFiles);
                 }
             }
             for (StubResource resource : stubs) {
