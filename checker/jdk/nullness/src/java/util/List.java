@@ -252,7 +252,7 @@ public interface List<E> extends Collection<E> {
      * @throws IllegalArgumentException if some property of this element
      *         prevents it from being added to this list
      */
-    boolean add(E e);
+    boolean add(@Nullable E e);
 
     /**
      * Removes the first occurrence of the specified element from this list,
