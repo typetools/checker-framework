@@ -191,9 +191,8 @@ import org.checkerframework.javacutil.UserError;
     // to be output.
     "resolveReflection",
 
-    // Whether to use whole-program inference. Optionally takes an argument to specify the
-    // output format: "-Ainfer=stubs" or "-Ainfer=jaifs". If no argument is provided, the default
-    // is "-Ainfer=jaifs".
+    // Whether to use whole-program inference. Takes an argument to specify the output format:
+    // "-Ainfer=stubs" or "-Ainfer=jaifs".
     "infer",
 
     // With each warning, in addition to the concrete error key,
@@ -241,11 +240,10 @@ import org.checkerframework.javacutil.UserError;
     // Whether to print warnings about stub files that are redundant with the annotations from
     // bytecode.
     "stubWarnIfRedundantWithBytecode",
-    // With this option, annotations in stub files are used EVEN IF THE SOURCE FILE
-    // IS PRESENT. Only use this option when you intend to store types in stub files rather
-    // than directly in source code, such as during whole-program inference. The annotations
-    // in the stub files will be merged (glb'd) with those in the source code before local
-    // inference begins.
+    // With this option, annotations in stub files are used EVEN IF THE SOURCE FILE IS
+    // PRESENT. Only use this option when you intend to store types in stub files rather than
+    // directly in source code, such as during whole-program inference. The annotations in the
+    // stub files will be glb'd with those in the source code before local inference begins.
     "mergeStubsWithSource",
     // Already listed above, but worth noting again in this section:
     // "useDefaultsForUncheckedCode"
@@ -811,10 +809,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                         && processingEnv.getOptions() != null
                         && processingEnv.getOptions().containsKey("noPrintErrorStack"));
 
+        msg.append("; The Checker Framework crashed.  Please report the crash.");
         if (noPrintErrorStack) {
             msg.append(
-                    "; The Checker Framework crashed.  Please report the crash.  To see "
-                            + "the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+                    " To see the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
         } else {
             if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
                 msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());

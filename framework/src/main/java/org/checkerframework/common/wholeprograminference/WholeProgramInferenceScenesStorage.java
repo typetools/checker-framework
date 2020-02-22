@@ -2,23 +2,21 @@ package org.checkerframework.common.wholeprograminference;
 
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.annotation.Target;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
+import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
@@ -30,19 +28,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
-import scenelib.annotations.el.AClass;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.DefException;
 import scenelib.annotations.el.InnerTypeLocation;
 import scenelib.annotations.io.IndexFileParser;
-import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * This class stores annotations for fields, method return types, and method parameters.
@@ -77,7 +69,7 @@ public class WholeProgramInferenceScenesStorage {
     private final boolean ignoreNullAssignments;
 
     /** Maps .jaif file paths (Strings) to Scenes. Relative to JAIF_FILES_PATH. */
-    private final Map<String, AScene> scenes = new HashMap<>();
+    private final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
     /**
      * Set representing Scenes that were modified since the last time all Scenes were written into
@@ -90,26 +82,6 @@ public class WholeProgramInferenceScenesStorage {
      * #updateAnnotationSetInScene}.)
      */
     private final Set<String> modifiedScenes = new HashSet<>();
-
-    /**
-     * A map from the string representation of the {@code description} field of an ATypeElement to
-     * the corresponding TypeMirror.
-     *
-     * <p>AScene doesn't carry around the basetypes of annotated types, but this is needed to output
-     * stub files, such as when outputting the parameters of a method. {@link
-     * #updateTypeElementFromATM} populates this map every time an annotation is added to an
-     * ATypeElement.
-     *
-     * <p>This is super hacky, because there is no guarantee that two ATypeElement objects won't
-     * have the same description. In practice, I haven't observed any problems caused by this. The
-     * ATypeElement_s themselves aren't useful as keys, because their hashes change when annotations
-     * are added to them.
-     *
-     * <p>The need to keep this map around at all could be avoided if we didn't go through AScene at
-     * all. TODO: entirely remove the dependence on AScene, so that this map (and the hack that goes
-     * along with it) can be removed.
-     */
-    private final Map<String, TypeMirror> basetypes = new HashMap<>();
 
     /**
      * Default constructor.
@@ -133,25 +105,7 @@ public class WholeProgramInferenceScenesStorage {
         }
         // Write scenes into .jaif files.
         for (String jaifPath : modifiedScenes) {
-            try {
-                AScene scene = scenes.get(jaifPath).clone();
-                removeIgnoredAnnosFromScene(scene);
-                new File(jaifPath).delete();
-                scene.prune();
-                if (!scene.isEmpty()) {
-                    // Only write non-empty scenes into .jaif files.
-                    IndexFileWriter.write(scene, new FileWriter(jaifPath));
-                }
-            } catch (IOException e) {
-                throw new UserError(
-                        "Problem while reading file in: "
-                                + jaifPath
-                                + ". Exception message: "
-                                + e.getMessage(),
-                        e);
-            } catch (DefException e) {
-                throw new BugInCF(e);
-            }
+            scenes.get(jaifPath).writeToJaif(jaifPath, annosToIgnore);
         }
         modifiedScenes.clear();
     }
@@ -159,46 +113,17 @@ public class WholeProgramInferenceScenesStorage {
     /**
      * Writes the scenes out to .astub files. This method is an alternative to {@link
      * #writeScenesToJaif}.
-     *
-     * @param enumNamesToEnumConstants a map from all fully-qualified classnames which should be
-     *     output as enums to their enum constants. The stub parser will crash if an enum is output
-     *     as a class (i.e. as "class Foo" rather than "enum Foo").
-     * @param types mapping from fully-qualified names to Java types
      */
-    public void writeScenesToStub(
-            Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstants,
-            Map<@FullyQualifiedName String, TypeElement> types) {
+    public void writeScenesToStub() {
         // Use the same directory that .jaif files would normally be written to.
         File stubDir = new File(JAIF_FILES_PATH);
         if (!stubDir.exists()) {
             stubDir.mkdirs();
         }
-        // Convert the .jaif file names in modifiedScenes into .astub file names..
+        // Convert the .jaif file names in modifiedScenes into .astub file names.
         // Then write scenes into .astub files.
         for (String jaifPath : modifiedScenes) {
-            String stubPath = jaifPath.replace(".jaif", ".astub");
-            AScene scene = scenes.get(jaifPath).clone();
-            removeIgnoredAnnosFromScene(scene);
-            new File(stubPath).delete();
-            scene.prune();
-            if (!scene.isEmpty()) {
-                // Only write non-empty scenes into .astub files.
-                try {
-                    SceneToStubWriter.write(
-                            scene,
-                            basetypes,
-                            types,
-                            enumNamesToEnumConstants,
-                            new FileWriter(stubPath));
-                } catch (IOException e) {
-                    throw new UserError(
-                            "Problem while writing file: "
-                                    + stubPath
-                                    + ". Exception message: "
-                                    + e.getMessage(),
-                            e);
-                }
-            }
+            scenes.get(jaifPath).writeToStub(jaifPath, annosToIgnore);
         }
         modifiedScenes.clear();
     }
@@ -221,7 +146,7 @@ public class WholeProgramInferenceScenesStorage {
      * @param jaifPath the .jaif file
      * @return the Scene read from the file, or an empty Scene if the file does not exist
      */
-    protected AScene getScene(String jaifPath) {
+    protected ASceneWrapper getScene(String jaifPath) {
         AScene scene;
         if (!scenes.containsKey(jaifPath)) {
             File jaifFile = new File(jaifPath);
@@ -230,27 +155,29 @@ public class WholeProgramInferenceScenesStorage {
                 try {
                     IndexFileParser.parseFile(jaifPath, scene);
                 } catch (IOException e) {
-                    throw new UserError(
-                            "Problem while reading file in: "
-                                    + jaifPath
-                                    + "."
-                                    + " Exception message: "
-                                    + e.getMessage(),
-                            e);
+                    throw new UserError("Problem while reading %s: %s", jaifPath, e.getMessage());
                 }
             }
-            scenes.put(jaifPath, scene);
+            ASceneWrapper wrapper = new ASceneWrapper(scene);
+            scenes.put(jaifPath, wrapper);
+            return wrapper;
         } else {
-            scene = scenes.get(jaifPath);
+            return scenes.get(jaifPath);
         }
-        return scene;
     }
 
-    /** Returns the AClass in an AScene, given a className and a jaifPath. */
-    protected AClass getAClass(String className, String jaifPath) {
+    /**
+     * Returns the AClass in an AScene, given a className and a jaifPath.
+     *
+     * @param className the name of the class to get, in binary form
+     * @param jaifPath the path to the jaif file that would represent that class (must end in
+     *     ".jaif")
+     * @return the scene-lib representation of the class, wrapped with metadata
+     */
+    protected AClassWrapper getAClass(@BinaryName String className, String jaifPath) {
         // Possibly reads .jaif file to obtain a Scene.
-        AScene scene = getScene(jaifPath);
-        return scene.classes.getVivify(className);
+        ASceneWrapper scene = getScene(jaifPath);
+        return scene.vivifyClass(className);
     }
 
     /**
@@ -297,52 +224,6 @@ public class WholeProgramInferenceScenesStorage {
         }
         updateTypeElementFromATM(rhsATM, lhsATM, atf, type, 1, defLoc);
         modifiedScenes.add(jaifPath);
-    }
-
-    /**
-     * Removes all annotations that should be ignored from an AScene. (See {@link #shouldIgnore}).
-     */
-    private void removeIgnoredAnnosFromScene(AScene scene) {
-        for (AClass aclass : scene.classes.values()) {
-            for (AField field : aclass.fields.values()) {
-                removeIgnoredAnnosFromATypeElement(field.type, TypeUseLocation.FIELD);
-            }
-            for (AMethod method : aclass.methods.values()) {
-                // Return type
-                removeIgnoredAnnosFromATypeElement(method.returnType, TypeUseLocation.RETURN);
-                // Receiver type
-                removeIgnoredAnnosFromATypeElement(method.receiver.type, TypeUseLocation.RECEIVER);
-                // Parameter type
-                for (AField param : method.parameters.values()) {
-                    removeIgnoredAnnosFromATypeElement(param.type, TypeUseLocation.PARAMETER);
-                }
-            }
-        }
-    }
-
-    /**
-     * Removes all annotations that should be ignored from an ATypeElement. (See {@link
-     * #shouldIgnore}).
-     */
-    private void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl, TypeUseLocation loc) {
-        String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere;
-        Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(firstKey, loc));
-        if (annosToIgnoreForLocation != null) {
-            Set<Annotation> annosToRemove = new HashSet<>();
-            for (Annotation anno : typeEl.tlAnnotationsHere) {
-                if (annosToIgnoreForLocation.contains(anno.def().toString())) {
-                    annosToRemove.add(anno);
-                }
-            }
-            typeEl.tlAnnotationsHere.removeAll(annosToRemove);
-        }
-
-        // Recursively remove ignored annotations from inner types
-        if (!typeEl.innerTypes.isEmpty()) {
-            for (ATypeElement innerType : typeEl.innerTypes.values()) {
-                removeIgnoredAnnosFromATypeElement(innerType, loc);
-            }
-        }
     }
 
     /**
@@ -421,8 +302,14 @@ public class WholeProgramInferenceScenesStorage {
      * <p>TODO: Merge functionality somewhere else with {@link
      * org.checkerframework.framework.util.defaults.QualifierDefaults}. Look into the
      * createQualifierDefaults method in {@link GenericAnnotatedTypeFactory} (which uses the
-     * QualifierDefaults class linked above) before changing anything here. See Issue 683
-     * https://github.com/typetools/checker-framework/issues/683
+     * QualifierDefaults class linked above) before changing anything here. See
+     * https://github.com/typetools/checker-framework/issues/683 .
+     *
+     * @param am an annotation to test for whether it should be inserted into source code
+     * @param location where the location would be inserted; used to determine if {@code am} is the
+     *     default for that location
+     * @param atm its kind is used to determine if {@code am} is the default for that kind
+     * @return true if am should not be inserted into source code, or if am is invisible
      */
     private boolean shouldIgnore(
             AnnotationMirror am, TypeUseLocation location, AnnotatedTypeMirror atm) {
@@ -592,7 +479,6 @@ public class WholeProgramInferenceScenesStorage {
             // estimate for the ATypeElement. Therefore, it is not a problem to remove
             // all annotations before inserting the new annotations.
             typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
-            basetypes.put(typeToUpdate.description.toString(), newATM.getUnderlyingType());
         }
 
         // Only update the ATypeElement if there are no explicit annotations

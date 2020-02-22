@@ -8,16 +8,17 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
+import org.checkerframework.common.wholeprograminference.scenelib.AFieldWrapper;
+import org.checkerframework.common.wholeprograminference.scenelib.AMethodWrapper;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -32,9 +33,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
 import scenelib.annotations.util.JVMNames;
 
 /**
@@ -84,21 +83,6 @@ import scenelib.annotations.util.JVMNames;
 //  results (order of annotations).
 public class WholeProgramInferenceScenes implements WholeProgramInference {
 
-    /**
-     * This maps from fully-qualified names of enums to their list of enum constants. The stub file
-     * format requires enums to be output differently than classes.
-     */
-    private final Map<@FullyQualifiedName String, List<VariableElement>> enumNamesToEnumConstants =
-            new HashMap<>();
-
-    /**
-     * This map goes from fully-qualified names to the TypeElement representing a class declaration,
-     * and is passed to the stub file writer to facilitate using the correct type parameters in
-     * class declarations. The stub file format requires that the correct number of type parameters
-     * be written on a class declaration.
-     */
-    private final Map<@FullyQualifiedName String, TypeElement> types = new HashMap<>();
-
     /** The interface to the AScene library itself, which stores the inferred annotations. */
     private final WholeProgramInferenceScenesStorage storage;
 
@@ -125,9 +109,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         String className = getEnclosingClassName(constructorElt);
         String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(constructorElt);
-        AMethod method = clazz.methods.getVivify(methodName);
+        AMethodWrapper method = clazz.vivifyMethod(methodName);
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
@@ -147,10 +131,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         String className = getEnclosingClassName(methodElt);
         String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath);
 
         String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethod method = clazz.methods.getVivify(methodName);
+        AMethodWrapper method = clazz.vivifyMethod(methodName);
+        method.setReturnType(methodElt.getReturnType());
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
@@ -161,7 +146,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ExecutableElement methodElt,
             AnnotatedTypeFactory atf,
             String jaifPath,
-            AMethod method,
+            AMethodWrapper method,
             List<Node> arguments) {
         for (int i = 0; i < arguments.size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
@@ -178,9 +163,15 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 continue;
             }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-            AField param = method.parameters.getVivify(i);
+            AFieldWrapper param =
+                    method.vivifyParameter(i, argATM.getUnderlyingType(), ve.getSimpleName());
             storage.updateAnnotationSetInScene(
-                    param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
+                    param.getTheField().type,
+                    atf,
+                    jaifPath,
+                    argATM,
+                    paramATM,
+                    TypeUseLocation.PARAMETER);
         }
     }
 
@@ -198,25 +189,33 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         String className = getEnclosingClassName(methodElt);
         String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethod method = clazz.methods.getVivify(methodName);
+        AMethodWrapper methodWrapper = clazz.vivifyMethod(methodName);
+        methodWrapper.setReturnType(methodElt.getReturnType());
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
 
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
-            AField param = method.parameters.getVivify(i);
+            AFieldWrapper param =
+                    methodWrapper.vivifyParameter(
+                            i, argATM.getUnderlyingType(), ve.getSimpleName());
             storage.updateAnnotationSetInScene(
-                    param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
+                    param.getTheField().type,
+                    atf,
+                    jaifPath,
+                    argATM,
+                    paramATM,
+                    TypeUseLocation.PARAMETER);
         }
 
         AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
         if (argADT != null) {
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(methodTree).getReceiverType();
             if (paramATM != null) {
-                AField receiver = method.receiver;
+                AField receiver = methodWrapper.getAMethod().receiver;
                 storage.updateAnnotationSetInScene(
                         receiver.type, atf, jaifPath, argADT, paramATM, TypeUseLocation.RECEIVER);
             }
@@ -238,9 +237,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         String className = getEnclosingClassName(lhs);
         String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(methodTree);
-        AMethod method = clazz.methods.getVivify(methodName);
+        AMethodWrapper method = clazz.vivifyMethod(methodName);
 
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
@@ -258,9 +257,16 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 }
                 AnnotatedTypeMirror paramATM = atf.getAnnotatedType(vt);
                 AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-                AField param = method.parameters.getVivify(i);
+                VariableElement ve = TreeUtils.elementFromDeclaration(vt);
+                AFieldWrapper param =
+                        method.vivifyParameter(i, argATM.getUnderlyingType(), ve.getSimpleName());
                 storage.updateAnnotationSetInScene(
-                        param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
+                        param.getTheField().type,
+                        atf,
+                        jaifPath,
+                        argATM,
+                        paramATM,
+                        TypeUseLocation.PARAMETER);
                 break;
             }
         }
@@ -285,17 +291,20 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        String className = getEnclosingClassName(lhs.getElement());
+        ClassSymbol enclosingClass = ((VarSymbol) lhs.getElement()).enclClass();
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @DotSeparatedIdentifiers String className = enclosingClass.flatname.toString();
         String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath);
+        updateClassMetadata(enclosingClass, clazz);
 
-        AField field = clazz.fields.getVivify(lhs.getFieldName());
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
+        AFieldWrapper field = clazz.vivifyField(lhs.getFieldName(), lhsATM.getUnderlyingType());
         // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
         // @GuardedBy({}).
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         storage.updateAnnotationSetInScene(
-                field.type, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.FIELD);
+                field.getTheField().type, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.FIELD);
     }
 
     @Override
@@ -317,30 +326,38 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         if (classSymbol == null) { // TODO: Handle anonymous classes.
             return;
         }
-        updateClassMetadata(classSymbol);
-        String className = classSymbol.flatname.toString();
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @DotSeparatedIdentifiers String className = classSymbol.flatname.toString();
 
         String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath);
 
-        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodName(methodTree));
+        updateClassMetadata(classSymbol, clazz);
+
+        AMethodWrapper methodWrapper = clazz.vivifyMethod(JVMNames.getJVMMethodName(methodTree));
         // Method return type
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
+        methodWrapper.setReturnType(lhsATM.getUnderlyingType());
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
         storage.updateAnnotationSetInScene(
-                method.returnType, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.RETURN);
+                methodWrapper.getAMethod().returnType,
+                atf,
+                jaifPath,
+                rhsATM,
+                lhsATM,
+                TypeUseLocation.RETURN);
     }
 
     /** Write all modified scenes into .jaif files or stub files, depending on the input. */
     @Override
-    public void writeResultsToFile(OutputKind kind) {
+    public void writeResultsToFile(OutputFormat kind) {
         switch (kind) {
             case JAIF:
                 storage.writeScenesToJaif();
                 break;
             case STUB:
-                storage.writeScenesToStub(enumNamesToEnumConstants, types);
+                storage.writeScenesToStub();
                 break;
         }
     }
@@ -351,7 +368,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param localVariableNode the {@link LocalVariableNode}
      * @return the "flatname" of the class enclosing {@code localVariableNode}
      */
-    private String getEnclosingClassName(LocalVariableNode localVariableNode) {
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
         return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
                 .flatName()
                 .toString();
@@ -363,37 +381,18 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param executableElement the ExecutableElement
      * @return the "flatname" of the class enclosing {@code executableElement}
      */
-    private String getEnclosingClassName(ExecutableElement executableElement) {
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
         return ((MethodSymbol) executableElement).enclClass().flatName().toString();
     }
 
     /**
-     * Returns the "flatname" of the class enclosing {@code variableElement}
-     *
-     * @param variableElement the VariableElement
-     * @return the "flatname" of the class enclosing {@code variableElement}
-     */
-    private String getEnclosingClassName(VariableElement variableElement) {
-        ClassSymbol enclosingClass = ((VarSymbol) variableElement).enclClass();
-        updateClassMetadata(enclosingClass);
-        return enclosingClass.flatName().toString();
-    }
-
-    /**
-     * Updates the metadata needed for stub output.
-     *
-     * <p>Should be called whenever a new class is processed, if outputting to stubs.
-     *
-     * <p>Metadata kept: - a map from fully-qualified names of each enum to the enum constants for
-     * that enum, used to properly output enums - a map from fully-qualified names to classSymbols,
-     * used later to recover type parameter information.
+     * Updates the metadata stored in AClassWrapper for the given class.
      *
      * @param classSymbol the class for which to update metadata
+     * @param aClassWrapper the class representation in which the metadata is to be updated
      */
-    private void updateClassMetadata(ClassSymbol classSymbol) {
-        Name qualifiedName = classSymbol.getQualifiedName();
-        @SuppressWarnings("signature") // see note in javac.astub in the signature checker
-        @FullyQualifiedName String qualifiedNameAsString = qualifiedName.toString();
+    private void updateClassMetadata(ClassSymbol classSymbol, AClassWrapper aClassWrapper) {
         if (classSymbol.isEnum()) {
             List<VariableElement> enumConstants = new ArrayList<>();
             for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
@@ -401,10 +400,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     enumConstants.add((VariableElement) e);
                 }
             }
-            enumNamesToEnumConstants.put(qualifiedNameAsString, enumConstants);
+            aClassWrapper.markAsEnum(enumConstants);
         }
-        if (!types.containsKey(qualifiedNameAsString)) {
-            types.put(qualifiedNameAsString, classSymbol);
+        if (aClassWrapper != null) {
+            aClassWrapper.setTypeElement(classSymbol);
         }
     }
 }

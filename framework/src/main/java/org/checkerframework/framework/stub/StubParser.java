@@ -1960,8 +1960,13 @@ public class StubParser {
     }
 
     /**
-     * Just like Map.put, but merges with any existing annotated type for the given key, instead of
-     * replacing it.
+     * Just like Map.put, but merges (using {@link AnnotatedTypeMerger#merge}) with any existing
+     * annotated type for the given key, instead of replacing it.
+     *
+     * @param m a map
+     * @param key a key for the map
+     * @param newType a value to merge into the map: merge it with the value currently at {@code
+     *     key} and replace that value
      */
     private void putNew(
             Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror newType) {

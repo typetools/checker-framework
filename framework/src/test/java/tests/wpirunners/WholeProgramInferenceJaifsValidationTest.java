@@ -9,23 +9,20 @@ import org.junit.runners.Parameterized.Parameters;
 import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
 
 /**
- * Tests whole-program type inference with the aid of .jaif files.
- *
- * <p>IMPORTANT: The errors captured in the tests located in tests/whole-program-inference/ are not
- * relevant. The meaning of this test class is to test if the generated .jaif files are similar to
- * the expected ones. The errors on .java files must be ignored.
+ * Tests whole-program type inference with the aid of .jaif files. This test is the second pass,
+ * which ensures that with the annotations inserted, the errors are no longer issued.
  */
-public class WholeProgramInferenceValidationTest extends FrameworkPerDirectoryTest {
+public class WholeProgramInferenceJaifsValidationTest extends FrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
-    public WholeProgramInferenceValidationTest(List<File> testFiles) {
+    public WholeProgramInferenceJaifsValidationTest(List<File> testFiles) {
         super(testFiles, WholeProgramInferenceTestChecker.class, "value", "-Anomsgtext");
     }
 
     @Override
     public void run() {
         // Only run if annotated files have been created.
-        // See wholeProgramInferenceTests task.
+        // See wholeProgramInferenceJaifTests task.
         if (new File("tests/whole-program-inference/annotated/").exists()) {
             super.run();
         }
@@ -33,7 +30,7 @@ public class WholeProgramInferenceValidationTest extends FrameworkPerDirectoryTe
 
     @Before
     public void before() throws Exception {
-        Assume.assumeTrue("running_wpi_tests".equals(System.getProperty("F_WPI_TEST_STATUS")));
+        Assume.assumeTrue("running_wpi_tests".equals(System.getProperty("wpiTestStatus")));
     }
 
     @Parameters

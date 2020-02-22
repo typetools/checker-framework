@@ -15,10 +15,10 @@ import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
  * relevant. The meaning of this test class is to test if the generated .jaif files are similar to
  * the expected ones. The errors on .java files must be ignored.
  */
-public class WholeProgramInferenceTest extends FrameworkPerDirectoryTest {
+public class WholeProgramInferenceJaifsTest extends FrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
-    public WholeProgramInferenceTest(List<File> testFiles) {
+    public WholeProgramInferenceJaifsTest(List<File> testFiles) {
         super(
                 testFiles,
                 WholeProgramInferenceTestChecker.class,
@@ -29,7 +29,7 @@ public class WholeProgramInferenceTest extends FrameworkPerDirectoryTest {
 
     @Before
     public void before() throws Exception {
-        Assume.assumeTrue("running_wpi_tests".equals(System.getProperty("F_WPI_TEST_STATUS")));
+        Assume.assumeTrue("running_wpi_tests".equals(System.getProperty("wpiTestStatus")));
     }
 
     @Parameters

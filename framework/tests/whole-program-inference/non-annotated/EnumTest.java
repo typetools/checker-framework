@@ -23,7 +23,7 @@ public class EnumTest {
                 }
             }
 
-            throw new IllegalArgumentException("Cannot create enum from " + value + " value!");
+            throw new IllegalArgumentException("Cannot create enum from: " + value);
         }
     }
 }

@@ -11,10 +11,6 @@ import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
 /**
  * Tests whole-program type inference with stub files. This test is the second pass, which ensures
  * that with the stubs in place, the errors that those annotations remove are no longer issued.
- *
- * <p>IMPORTANT: The errors captured in the tests located in tests/whole-program-inference/ are not
- * relevant. The meaning of this test class is to test if the generated stub files are similar to
- * the expected ones. The errors on .java files must be ignored.
  */
 public class WholeProgramInferenceStubsValidationTest extends FrameworkPerDirectoryTest {
 
@@ -26,13 +22,13 @@ public class WholeProgramInferenceStubsValidationTest extends FrameworkPerDirect
                 "whole-program-inference/annotated",
                 "-Anomsgtext",
                 "-Astubs=build/whole-program-inference",
-                /*"-AstubDebug",*/
+                // "-AstubDebug",
                 "-AmergeStubsWithSource");
     }
 
     @Before
     public void before() throws Exception {
-        Assume.assumeTrue("running_wpi_tests".equals(System.getProperty("F_WPI_TEST_STATUS")));
+        Assume.assumeTrue("running_wpi_tests".equals(System.getProperty("wpiTestStatus")));
     }
 
     @Parameters

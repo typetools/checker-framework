@@ -326,10 +326,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final boolean infer;
 
     /**
-     * Which whole-program inference output mode to use, if doing whole-program inference. Would be
-     * final, but not set unless WPI is enabled.
+     * Which whole-program inference output format to use, if doing whole-program inference. This
+     * variable would be final, but it is not set unless WPI is enabled.
      */
-    private WholeProgramInference.OutputKind wpiOutputKind;
+    private WholeProgramInference.OutputFormat wpiOutputFormat;
 
     /**
      * Should results be cached? This means that ATM.deepCopy() will be called. ATM.deepCopy() used
@@ -453,29 +453,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         infer = checker.hasOption("infer");
         if (infer) {
             checkInvalidOptionsInferSignatures();
-            String wpiOutputArg = checker.getOption("infer");
+            String inferArg = checker.getOption("infer");
             // continue to support no argument for backwards compatibility
-            if (wpiOutputArg == null) {
-                wpiOutputArg = "jaifs";
+            if (inferArg == null) {
+                inferArg = "jaifs";
             }
-            switch (wpiOutputArg) {
+            switch (inferArg) {
                 case "stubs":
-                    wpiOutputKind = WholeProgramInference.OutputKind.STUB;
+                    wpiOutputFormat = WholeProgramInference.OutputFormat.STUB;
                     break;
                 case "jaifs":
-                    wpiOutputKind = WholeProgramInference.OutputKind.JAIF;
+                    wpiOutputFormat = WholeProgramInference.OutputFormat.JAIF;
                     break;
                 default:
                     throw new UserError(
                             "Unexpected option to -Ainfer: "
-                                    + wpiOutputArg
-                                    + "\n"
+                                    + inferArg
+                                    + System.lineSeparator()
                                     + "Available options: -Ainfer=jaifs, -Ainfer=stubs");
             }
-            wholeProgramInference =
-                    new WholeProgramInferenceScenes(
-                            !"NullnessAnnotatedTypeFactory"
-                                    .equals(this.getClass().getSimpleName()));
+            boolean isNullnessChecker =
+                    "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName());
+            wholeProgramInference = new WholeProgramInferenceScenes(!isNullnessChecker);
         }
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
 
@@ -539,8 +538,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (checker.useUncheckedCodeDefault("source")
                 || checker.useUncheckedCodeDefault("bytecode")) {
             throw new UserError(
-                    "The option -Ainfer cannot be"
-                            + " used together with unchecked code defaults.");
+                    "The option -Ainfer=... cannot be used together with unchecked code defaults.");
         }
     }
 
@@ -1101,7 +1099,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // Write out the results of whole-program inference.
             // In order to perform the write operation only once for each class, the best location
             // to do so is here.
-            wholeProgramInference.writeResultsToFile(wpiOutputKind);
+            wholeProgramInference.writeResultsToFile(wpiOutputFormat);
         }
     }
 
@@ -1214,16 +1212,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         if (checker.hasOption("mergeStubsWithSource")) {
-            AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
-            if (stubType != null) {
-                if (type == null) {
-                    type = stubType;
-                } else {
-                    // Must merge (rather than only take the stub type if it is a subtype)
-                    // to support WPI.
-                    AnnotatedTypeMerger.merge(stubType, type);
-                }
-            }
+            type = mergeStubsWithSource(type, elt);
         }
         // Caching is disabled if stub files are being parsed, because calls to this
         // method before the stub files are fully read can return incorrect results.
@@ -1265,17 +1254,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
 
         if (checker.hasOption("mergeStubsWithSource")) {
-            Element elt = TreeUtils.elementFromTree(tree);
-            AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
-            if (stubType != null) {
-                if (result == null) {
-                    result = stubType;
-                } else {
-                    // Must merge (rather than only take the stub type if it is a subtype)
-                    // to support WPI.
-                    AnnotatedTypeMerger.merge(stubType, result);
-                }
-            }
+            result = mergeStubsWithSource(result, tree);
         }
 
         if (shouldCache) {
@@ -1283,6 +1262,41 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         return result;
+    }
+
+    /**
+     * Finds types from stubs and applies them to type.
+     *
+     * @param type the type to apply stub types to
+     * @param tree the tree from which to read stub types
+     * @return the type
+     */
+    private AnnotatedTypeMirror mergeStubsWithSource(
+            @Nullable AnnotatedTypeMirror type, Tree tree) {
+        Element elt = TreeUtils.elementFromTree(tree);
+        return mergeStubsWithSource(type, elt);
+    }
+
+    /**
+     * Finds types from stubs and applies them to type.
+     *
+     * @param type the type to apply stub types to
+     * @param elt the element from which to read stub types
+     * @return the type
+     */
+    private AnnotatedTypeMirror mergeStubsWithSource(
+            @Nullable AnnotatedTypeMirror type, Element elt) {
+        AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
+        if (stubType != null) {
+            if (type == null) {
+                type = stubType;
+            } else {
+                // Must merge (rather than only take the stub type if it is a subtype)
+                // to support WPI.
+                AnnotatedTypeMerger.merge(stubType, type);
+            }
+        }
+        return type;
     }
 
     /**
