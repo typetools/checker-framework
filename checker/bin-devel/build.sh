@@ -46,8 +46,11 @@ fi
 #   fatal: destination path '../annotation-tools/annotation-file-utilities/..' already exists and is not an empty directory.
 # even if the directory does not exist!
 # The reason is that git creates each element of the path:
-#  .. , ../annotation-tools, ../annotation-tools/annotation-file-utilities
-#  (this is the problem), and../annotation-tools/annotation-file-utilities/.. .
+#  ..
+#  ../annotation-tools
+#  ../annotation-tools/annotation-file-utilities (this is the problem),
+#  ../annotation-tools/annotation-file-utilities/..
+#  etc.
 
 AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 AT=$(dirname "${AFU}")
