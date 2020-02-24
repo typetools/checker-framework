@@ -466,6 +466,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     @Override
     public Boolean visitDeclared_Declared(
             AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype, Void p) {
+        if (!isPrimarySubtype(subtype, supertype)) {
+            return false;
+        }
         if (subtype.atypeFactory.ignoreUninferredTypeArguments
                 && (subtype.containsUninferredTypeArguments()
                         || supertype.containsUninferredTypeArguments())) {
@@ -475,10 +478,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         }
         AnnotatedDeclaredType subtypeAsSuper =
                 AnnotatedTypes.castedAsSuper(subtype.atypeFactory, subtype, supertype);
-
-        if (!isPrimarySubtype(subtypeAsSuper, supertype)) {
-            return false;
-        }
 
         if (visitHistory.contains(subtypeAsSuper, supertype, currentTop)) {
             return true;

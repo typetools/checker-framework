@@ -706,7 +706,7 @@ public class DependentTypesHelper {
         if (errors.isEmpty()) {
             return;
         }
-        StringJoiner errorsFormatted = new StringJoiner("\n");
+        StringJoiner errorsFormatted = new StringJoiner(System.lineSeparator());
         for (DependentTypesError dte : errors) {
             errorsFormatted.add(dte.format());
         }
@@ -750,7 +750,7 @@ public class DependentTypesHelper {
             return;
         }
         SourceChecker checker = factory.getContext().getChecker();
-        String error = PluginUtil.join("\n", errors);
+        String error = PluginUtil.joinLines(errors);
         checker.report(Result.failure("flowexpr.parse.error", error), errorTree);
     }
 

@@ -89,17 +89,11 @@ public class ImmutableTestConfiguration implements TestConfiguration {
 
     @Override
     public String toString() {
-        return "TestConfigurationBuilder:\n"
-                + "testSourceFiles="
-                + (testSourceFiles == null ? "null" : PluginUtil.join(" ", testSourceFiles))
-                + "\n"
-                + "processors="
-                + (processors == null ? "null" : PluginUtil.join(", ", processors))
-                + "\n"
-                + "options="
-                + (options == null ? "null" : PluginUtil.join(", ", getFlatOptions()))
-                + "\n"
-                + "shouldEmitDebugInfo="
-                + shouldEmitDebugInfo;
+        return PluginUtil.joinLines(
+                "TestConfigurationBuilder:",
+                "testSourceFiles=" + PluginUtil.join(" ", testSourceFiles),
+                "processors=" + PluginUtil.join(", ", processors),
+                "options=" + PluginUtil.join(", ", getFlatOptions()),
+                "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
     }
 }
