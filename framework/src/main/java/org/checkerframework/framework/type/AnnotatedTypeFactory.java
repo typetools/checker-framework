@@ -3386,7 +3386,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public Set<AnnotationMirror> getQualifierParameterHierarchies(
             AnnotatedTypeMirror annotatedType) {
         if (annotatedType.getKind() != TypeKind.DECLARED) {
-            return AnnotationUtils.createAnnotationSet();
+            return Collections.emptySet();
         }
 
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) annotatedType;
@@ -3446,17 +3446,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private Set<AnnotationMirror> getSupportedAnnotationsInElementAnnotation(
             @Nullable Element element, Class<? extends Annotation> annoClass) {
-        Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
-
         if (element == null) {
-            return found;
+            return Collections.emptySet();
         }
         // TODO: caching
         AnnotationMirror annotation = getDeclAnnotation(element, annoClass);
         if (annotation == null) {
-            return found;
+            return Collections.emptySet();
         }
 
+        Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
         List<Name> qualClasses =
                 AnnotationUtils.getElementValueClassNames(annotation, "value", true);
         for (Name qual : qualClasses) {
