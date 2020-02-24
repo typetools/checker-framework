@@ -3404,7 +3404,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public Set<AnnotationMirror> getQualifierParameterHierarchies(@Nullable Element element) {
         if (element == null || !ElementUtils.isTypeDeclaration(element)) {
-            return AnnotationUtils.createAnnotationSet();
+            return Collections.emptySet();
         }
 
         Set<AnnotationMirror> found =
