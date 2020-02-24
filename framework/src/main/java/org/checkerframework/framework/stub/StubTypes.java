@@ -194,7 +194,8 @@ public class StubTypes {
                 if (in == null) {
                     // When using a compound checker, the target stub file may be found by the
                     // current checker's parent checkers. Also check this to avoid a false
-                    // warning.
+                    // warning. Currently, only the original checker will try to parse the target
+                    // stub file, the parent checkers are only used to reduce false warnings.
                     SourceChecker currentChecker = checker;
                     boolean findByParentCheckers = false;
                     while (currentChecker != null) {
