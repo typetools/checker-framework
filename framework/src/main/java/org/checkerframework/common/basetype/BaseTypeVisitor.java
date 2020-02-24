@@ -375,7 +375,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         checkExtendsImplements(classTree);
 
-        checkQualifierParam(classTree);
+        checkQualifierParameter(classTree);
 
         super.visitClass(classTree, null);
     }
@@ -388,10 +388,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>Issues an error if (@code classTree} extends or implements a class/interface that has a
      * qualifier parameter, but this class does not.
      *
-     * @param classTree the ClassTree to check foor polymorphic fields
+     * @param classTree the ClassTree to check for polymorphic fields
      */
-    private void checkQualifierParam(ClassTree classTree) {
-        Set<AnnotationMirror> polyWithOutQualiferParam = AnnotationUtils.createAnnotationSet();
+    protected void checkQualifierParameter(ClassTree classTree) {
+        Set<AnnotationMirror> polyWithOutQualifierParam = AnnotationUtils.createAnnotationSet();
         Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
 
         boolean conflictingErrorReported = false;
@@ -414,7 +414,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 continue;
             }
             if (poly != null) {
-                polyWithOutQualiferParam.add(poly);
+                polyWithOutQualifierParam.add(poly);
             }
             Element extendsEle = TypesUtils.getTypeElement(classElement.getSuperclass());
             if (extendsEle != null
@@ -438,7 +438,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration((VariableTree) mem))) {
                     polyAnnos = polys;
                 } else {
-                    polyAnnos = polyWithOutQualiferParam;
+                    polyAnnos = polyWithOutQualifierParam;
                 }
                 if (polyScanner.visit(fieldType, polyAnnos)) {
                     checker.report(Result.failure("invalid.polymorphic.qualifier.use"), mem);
@@ -2092,7 +2092,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Return whether or not casting the exprType to castType is legal.
      *
      * @param castType an invariant type
-     * @param exprType type of the expressions that is cast may or may not be invariant
+     * @param exprType type of the expressions that is cast which may or may not be invariant
      * @param top the top qualifier of the hierarchy to check
      * @return whether or not casting the exprType to castType is legal.
      */
@@ -2103,7 +2103,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         AnnotationMirror castTypeAnno = castType.getEffectiveAnnotationInHierarchy(top);
         AnnotationMirror exprTypeAnno = exprType.getEffectiveAnnotationInHierarchy(top);
-        ;
+
         if (atypeFactory.hasQualifierParameterInHierarchy(exprType, top)) {
             // The isTypeCastSafe call above checked that the exprType is a subtype of castType,
             // so just check the reverse to check that the qualifiers are equivalent.

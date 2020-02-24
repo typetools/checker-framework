@@ -868,7 +868,8 @@ to it, such as to distinguish \<StringBuffer>s that contain tainted
 characters from those that contain untainted characters.  (For a discussion
 of tainting, see \chapterpageref{tainting-checker}.)
 
-To add a qualifier parameter to a class, annotate its declaration with \refqualclass{framework/qual}{HasQualifierParameter}.
+To add a qualifier parameter to a class, annotate its declaration with \refqualclass{framework/qual}{HasQualifierParameter}
+and write the class of the top qualifier as its element.
 
 \begin{Verbatim}
 @HasQualifierParameter(Tainted.class)
@@ -892,6 +893,8 @@ either direction, will yield an \<invariant.cast.unsafe> error.
 If a subclass extends a \<@HasQualifierParameter> class (or implements a
 \<@HasQualifierParameter> interface), then the subclass must also be marked
 \<@HasQualifierParameter>.
+
+%% TODO: Inheritance of classes with a qualifier parameter below.
 
 Within a class with a qualifier parameter,
 the default qualifier for uses of that class is the polymorphic qualifier.

@@ -3317,6 +3317,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         return result;
     }
+
     /**
      * Whether or not the {@code annotatedTypeMirror} has an implicit qualifier parameter.
      *
@@ -3329,6 +3330,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return AnnotationUtils.containsSame(
                 getQualifierParameterHierarchies(annotatedTypeMirror), top);
     }
+
     /**
      * Whether or not the {@code element} has an implicit qualifier parameter.
      *
