@@ -93,18 +93,13 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedTypeMirror subtype,
             AnnotatedTypeMirror supertype,
             Set<AFConstraint> constraints) {
-        return "Unexpected "
-                + reducerType.getSimpleName()
-                + " + Combination:\n"
-                + "subtype="
-                + subtype
-                + "\n"
-                + "supertype="
-                + supertype
-                + "\n"
-                + "constraints=[\n"
-                + PluginUtil.join(", ", constraints)
-                + "\n]";
+        return PluginUtil.joinLines(
+                "Unexpected " + reducerType.getSimpleName() + " + Combination:",
+                "subtype=" + subtype,
+                "supertype=" + supertype,
+                "constraints=[",
+                PluginUtil.join(", ", constraints),
+                "]");
     }
 
     // ------------------------------------------------------------------------

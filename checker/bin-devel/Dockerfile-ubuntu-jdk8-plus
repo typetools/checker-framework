@@ -40,7 +40,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   imagemagick \
   latexmk \
   librsvg2-bin \
-  maven \
   rsync \
   texlive-font-utils \
   texlive-fonts-recommended \

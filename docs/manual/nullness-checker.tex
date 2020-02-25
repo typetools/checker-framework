@@ -545,6 +545,8 @@ though that case could be handled as well, if desired.
 library that your code calls, or your code itself, could perversely change
 the system properties; the Nullness Checker assumes this bizarre coding
 pattern does not happen.)
+(It is better style to use \<System.lineSeparator()> than the call to
+\<System.getProperty("line.separator")> anyway.)
 
 
 \subsectionAndLabel{Inference of \code{@NonNull} and \code{@Nullable} annotations}{nullness-inference}

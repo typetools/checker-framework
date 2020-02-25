@@ -313,7 +313,7 @@ public class Analysis<
             }
         } finally {
             assert isRunning;
-            // In case preformatAnalysisHelper crashed, reset isRunning to false.
+            // In case performAnalysisBlock crashed, reset isRunning to false.
             isRunning = false;
         }
     }
