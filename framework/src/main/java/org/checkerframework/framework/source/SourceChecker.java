@@ -520,7 +520,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return this.parentChecker;
     }
 
-    /** Invoked when the current compilation unit root changes. */
+    /**
+     * Invoked when the current compilation unit root changes.
+     *
+     * @param newRoot the new compilation unit root
+     */
     protected void setRoot(CompilationUnitTree newRoot) {
         this.currentRoot = newRoot;
         visitor.setRoot(currentRoot);
