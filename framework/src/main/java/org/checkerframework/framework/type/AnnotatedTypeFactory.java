@@ -3407,8 +3407,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return Collections.emptySet();
         }
 
-        Set<AnnotationMirror> found =
-                getSupportedAnnotationsInElementAnnotation(element, HasQualifierParameter.class);
+        Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
+        found.addAll(
+                getSupportedAnnotationsInElementAnnotation(element, HasQualifierParameter.class));
         Set<AnnotationMirror> hasQualifierParameterTops = AnnotationUtils.createAnnotationSet();
         PackageElement packageElement = ElementUtils.enclosingPackage(element);
 
