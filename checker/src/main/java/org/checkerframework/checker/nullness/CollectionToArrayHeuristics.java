@@ -61,9 +61,6 @@ import org.checkerframework.javacutil.TreeUtils;
  *     to arrays
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
-// Note: The https://checkerframework.org/manual/#nullness-collection-toarray section in the manual,
-// in file ../../../../../../../docs/manual/nullness-checker.tex, should be kept consistent with
-// this Javadoc.
 public class CollectionToArrayHeuristics {
     /** The processing environment. */
     private final ProcessingEnvironment processingEnv;
@@ -119,6 +116,10 @@ public class CollectionToArrayHeuristics {
             boolean receiverIsNonNull = isNonNullReceiver(tree);
             boolean argIsHandled =
                     isHandledArrayCreation(argument, receiverName(tree.getMethodSelect()))
+                            // case 3: lint option {@link NullnessChecker#LINT_TRUSTARRAYLENZERO} is
+                            // provided, while the argument of {@code toArray} is a field access
+                            // expression which has a {@code ArrayLen(0)} annotation.
+                            // see case 1 and 2 at {@link #isHandledArrayCreation}.
                             || (trustArrayLenZero && isArrayLenZeroFieldAccess(argument));
             setComponentNullness(receiverIsNonNull && argIsHandled, method.getReturnType());
 
@@ -195,12 +196,12 @@ public class CollectionToArrayHeuristics {
         assert !newArr.getDimensions().isEmpty();
         Tree dimension = newArr.getDimensions().get(newArr.getDimensions().size() - 1);
 
-        // case 2: 0-length array creation
+        // case 1: 0-length array creation
         if (dimension.toString().equals("0")) {
             return true;
         }
 
-        // case 3: size()-length array creation
+        // case 2: size()-length array creation
         if (TreeUtils.isMethodInvocation(dimension, size, processingEnv)) {
             MethodInvocationTree invok = (MethodInvocationTree) dimension;
             String invokReceiver = receiverName(invok.getMethodSelect());
