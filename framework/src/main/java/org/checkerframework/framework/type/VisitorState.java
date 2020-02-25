@@ -97,8 +97,8 @@ public class VisitorState {
     @Override
     public String toString() {
         return String.format(
-                "VisitorState: method %s (%s) / class %s (%s)\n"
-                        + "    assignment context %s (%s)\n"
+                "VisitorState: method %s (%s) / class %s (%s)%n"
+                        + "    assignment context %s (%s)%n"
                         + "    path is non-null: %s",
                 (mt != null ? mt.getName() : "null"),
                 mrt,
