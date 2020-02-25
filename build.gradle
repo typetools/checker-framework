@@ -121,7 +121,7 @@ allprojects {
             javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
 
             // provides backward-compatible com.sun.* packages for IDE to import
-            compileOnly "com.google.errorprone:javac:9+181-r4173-1"
+            compileOnly configurations.javacJar
         }
 
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
