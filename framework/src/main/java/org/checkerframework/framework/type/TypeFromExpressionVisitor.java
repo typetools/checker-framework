@@ -36,6 +36,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -224,8 +225,17 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             f.visitorState.setAssignmentContext(null);
 
             AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
-            assert type instanceof AnnotatedArrayType;
-            return ((AnnotatedArrayType) type).getComponentType();
+            if (type instanceof AnnotatedArrayType) {
+                return ((AnnotatedArrayType) type).getComponentType();
+            } else if (type instanceof AnnotatedWildcardType) {
+                // Clean-up after Issue #979.
+                AnnotatedWildcardType wc = (AnnotatedWildcardType) type;
+                AnnotatedTypeMirror wcbound = wc.getExtendsBound();
+                if (wcbound instanceof AnnotatedArrayType) {
+                    return ((AnnotatedArrayType) wcbound).getComponentType();
+                }
+            }
+            throw new BugInCF("Unexpected type: " + type);
         } finally {
             f.visitorState.setAssignmentContext(preAssCtxt);
         }
