@@ -89,6 +89,7 @@ task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
 
 allprojects {
     apply plugin: 'java'
+    apply plugin: 'maven-publish'
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: "de.undercouch.download"
     apply plugin: 'net.ltgt.errorprone'
