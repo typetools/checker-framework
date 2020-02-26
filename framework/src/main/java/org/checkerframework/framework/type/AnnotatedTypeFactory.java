@@ -2136,7 +2136,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ExecutableElement ctor = TreeUtils.constructor(tree);
         AnnotatedTypeMirror type = fromNewClass(tree);
         addComputedTypeAnnotations(tree, type);
-        AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
+        AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
+        constructorFromUsePreSubstitution(tree, con);
+
+        con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
 
         if (tree.getArguments().size() == con.getParameterTypes().size() + 1
                 && isSyntheticArgument(tree.getArguments().get(0))) {
@@ -2161,6 +2164,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         return new ParameterizedExecutableType(con, typeargs);
     }
+
+    protected void constructorFromUsePreSubstitution(
+            NewClassTree tree, AnnotatedExecutableType type) {}
 
     /** Returns the return type of the method {@code m}. */
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
@@ -3509,6 +3515,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         return Pair.of(functionalInterfaceType, functionType);
     }
+
+    //    void getFnInterfaceFromTreePreSubstitution()
 
     /**
      * Get the AnnotatedDeclaredType for the FunctionalInterface from assignment context of the
