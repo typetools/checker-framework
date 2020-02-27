@@ -1,5 +1,5 @@
 // A library to be compiled with
-//   -AuseDefaultsForUncheckedCode=source,bytecode
+//   -AuseConservativeDefaultsForUncheckedCode=source,bytecode
 // and then to be read from bytecode.
 
 import org.checkerframework.checker.nullness.qual.*;

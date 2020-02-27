@@ -11,9 +11,10 @@ import java.lang.annotation.Target;
  * default for unannotated type uses (in bytecode or source code) at the given location(s).
  *
  * <p>Unchecked code defaults are only applied if they are enabled via the {@code
- * -AuseDefaultsForUncheckedCode} command-line option. They can be enabled for source and bytecode
- * separately. If the unchecked code defaults are enabled for source code, they will only be applied
- * to source code not annotated with {@link AnnotatedFor} for the checker being executed.
+ * -AuseConservativeDefaultsForUncheckedCode} command-line option. They can be enabled for source
+ * and bytecode separately. If the unchecked code defaults are enabled for source code, they will
+ * only be applied to source code not annotated with {@link AnnotatedFor} for the checker being
+ * executed.
  *
  * <p>Note, this annotation is analogous to {@link DefaultFor} but for unannotated type uses in code
  * that has not been type-checked. This qualifier is for type system developers, not end-users.

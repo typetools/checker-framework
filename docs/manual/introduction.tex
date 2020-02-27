@@ -666,7 +666,7 @@ More sound (strict) checking: enable errors that are disabled by default
   are the same.  By default, the Checker Framework unsoundly permits them
   to differ, just as Java does.  See Section~\ref{covariant-type-parameters}
   and Section~\ref{invariant-arrays}.
-\item \<-AuseDefaultsForUncheckedCode>
+\item \<-AuseConservativeDefaultsForUncheckedCode>
   Enables/disables unchecked code defaults.  Takes arguments ``source,bytecode''.
   ``-source,-bytecode'' is the (unsound) default setting.
   ``bytecode'' specifies
@@ -751,7 +751,7 @@ Partially-annotated libraries
   Warn if a stub file entry is redundant with bytecode information; see
   Section~\ref{stub-using}.
 % This item is repeated above:
-\item \<-AuseDefaultsForUncheckedCode=source>
+\item \<-AuseConservativeDefaultsForUncheckedCode=source>
   Outside the scope of any relevant
   \refqualclass{framework/qual}{AnnotatedFor} annotation, use unchecked code
   default annotations and suppress all type-checking warnings; see
@@ -1514,7 +1514,7 @@ same methodology in different words.
 % LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
 % LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror
 % LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode beingConstructed
-% LocalWords:  AuseDefaultsForUncheckedCode AresolveReflection Ainfer
+% LocalWords:  AuseConservativeDefaultsForUncheckedCode AresolveReflection Ainfer
 % LocalWords:  AconservativeUninferredTypeArguments Averbosecfg Acfgviz
 % LocalWords:  AstubWarnIfOverwritesBytecode AprintVerboseGenerics
 % LocalWords:  AatfDoNotCache AatfCacheSize IntRange AwarnIfNotFound

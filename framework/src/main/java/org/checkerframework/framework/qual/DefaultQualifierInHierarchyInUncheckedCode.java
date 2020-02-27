@@ -10,10 +10,10 @@ import java.lang.annotation.Target;
  * Indicates that the annotated qualifier is the default qualifier on unannotated type uses (in
  * bytecode or source code that has not been type-checked).
  *
- * <p>This qualifier only applies if the {@code -AuseDefaultsForUncheckedCode} command-line option
- * enables unchecked code defaults. They can be enabled for source and bytecode separately. If the
- * unchecked code defaults are enabled for source code, they will only be applied to source code not
- * annotated with {@link AnnotatedFor} for the checker being executed.
+ * <p>This qualifier only applies if the {@code -AuseConservativeDefaultsForUncheckedCode}
+ * command-line option enables unchecked code defaults. They can be enabled for source and bytecode
+ * separately. If the unchecked code defaults are enabled for source code, they will only be applied
+ * to source code not annotated with {@link AnnotatedFor} for the checker being executed.
  *
  * <p>Each type qualifier hierarchy may have at most one qualifier marked as {@code
  * DefaultQualifierInHierarchyInUncheckedCode}.

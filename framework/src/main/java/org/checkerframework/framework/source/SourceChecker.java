@@ -158,6 +158,8 @@ import org.checkerframework.javacutil.UserError;
     // "Default qualifiers for \<.class> files (conservative library defaults)"
     // sections in the manual for more details
     // org.checkerframework.framework.source.SourceChecker.useUncheckedCodeDefault
+    "useConservativeDefaultsForUncheckedCode",
+    // Temporary, for backward compatibility
     "useDefaultsForUncheckedCode",
 
     // Whether to assume sound concurrent semantics or
@@ -241,7 +243,7 @@ import org.checkerframework.javacutil.UserError;
     // bytecode.
     "stubWarnIfRedundantWithBytecode",
     // Already listed above, but worth noting again in this section:
-    // "useDefaultsForUncheckedCode"
+    // "useConservativeDefaultsForUncheckedCode"
 
     ///
     /// Debugging
@@ -1611,7 +1613,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     public boolean useUncheckedCodeDefault(String kindOfCode) {
         final boolean useUncheckedDefaultsForSource = false;
         final boolean useUncheckedDefaultsForByteCode = false;
-        String option = this.getOption("useDefaultsForUncheckedCode");
+        String option = this.getOption("useConservativeDefaultsForUncheckedCode");
+        // Temporary, for backward compatibility.
+        if (option == null) {
+            this.getOption("useDefaultsForUncheckedCode");
+        }
 
         String[] args = option != null ? option.split(",") : new String[0];
         for (String arg : args) {
