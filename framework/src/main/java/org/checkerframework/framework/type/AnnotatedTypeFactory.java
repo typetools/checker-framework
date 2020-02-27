@@ -2171,11 +2171,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected void constructorFromUsePreSubstitution(
             NewClassTree tree, AnnotatedExecutableType type) {}
 
-    /** 
+    /**
      * Returns the return type of the method {@code m}.
+     *
      * @param m a tree of method
      * @return the return type of the method
-    */
+     */
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
         AnnotatedExecutableType methodType = getAnnotatedType(m);
         AnnotatedTypeMirror ret = methodType.getReturnType();
