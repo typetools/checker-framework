@@ -515,7 +515,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.parentChecker = parentChecker;
     }
 
-    /** Invoked when the current compilation unit root changes. */
+    /** @return the parent checker of the current checker */
+    public SourceChecker getParentChecker() {
+        return this.parentChecker;
+    }
+
+    /**
+     * Invoked when the current compilation unit root changes.
+     *
+     * @param newRoot the new compilation unit root
+     */
     protected void setRoot(CompilationUnitTree newRoot) {
         this.currentRoot = newRoot;
         visitor.setRoot(currentRoot);
