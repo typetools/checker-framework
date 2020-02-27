@@ -23,5 +23,6 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 # daikon-typecheck: 15 minutes
 /tmp/plume-scripts/git-clone-related codespecs daikon
 cd ../daikon
+git log HEAD^1..HEAD
 make compile
 time make -C java typecheck
