@@ -391,10 +391,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param classTree the ClassTree to check for polymorphic fields
      */
     protected void checkQualifierParameter(ClassTree classTree) {
-        Set<AnnotationMirror> polyWithOutQualifierParam = AnnotationUtils.createAnnotationSet();
+        // Set of polymorphic qualifiers for hierarchies that doe not have a qualifier parameter and
+        // therefor cannot appear on a field.
+        Set<AnnotationMirror> illegalOnFieldsPolyQual = AnnotationUtils.createAnnotationSet();
+        // Set of polymorphic annotations for all hierarchies
         Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
 
-        boolean conflictingErrorReported = false;
         for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
             TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
             AnnotationMirror poly =
@@ -403,18 +405,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 polys.add(poly);
             }
 
-            if (!conflictingErrorReported
-                    && atypeFactory.hasExplicitQualifierParameterInHierarchy(classElement, top)
+            if (atypeFactory.hasExplicitQualifierParameterInHierarchy(classElement, top)
                     && atypeFactory.hasExplicitNoQualifierParameterInHierarchy(classElement, top)) {
                 checker.report(Result.failure("conflicting.qual.param", top), classTree);
-                conflictingErrorReported = true;
             }
 
             if (atypeFactory.hasQualifierParameterInHierarchy(classElement, top)) {
                 continue;
             }
             if (poly != null) {
-                polyWithOutQualifierParam.add(poly);
+                illegalOnFieldsPolyQual.add(poly);
             }
             Element extendsEle = TypesUtils.getTypeElement(classElement.getSuperclass());
             if (extendsEle != null
@@ -434,13 +434,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Tree mem : classTree.getMembers()) {
             if (mem.getKind() == Tree.Kind.VARIABLE) {
                 AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(mem);
-                Set<AnnotationMirror> polyAnnos;
+                boolean hasIllegalPoly;
                 if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration((VariableTree) mem))) {
-                    polyAnnos = polys;
+                    // A polymorphic qualifier is not allowed on a static field even if the class
+                    // has a qualifier parameter.
+                    hasIllegalPoly = polyScanner.visit(fieldType, polys);
                 } else {
-                    polyAnnos = polyWithOutQualifierParam;
+                    hasIllegalPoly = polyScanner.visit(fieldType, illegalOnFieldsPolyQual);
                 }
-                if (polyScanner.visit(fieldType, polyAnnos)) {
+                if (hasIllegalPoly) {
                     checker.report(Result.failure("invalid.polymorphic.qualifier.use"), mem);
                 }
             }
