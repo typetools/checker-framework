@@ -2165,6 +2165,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return new ParameterizedExecutableType(con, typeargs);
     }
 
+    /**
+     * Callback to handle the declared constructor type before type variable substitution.
+     *
+     * @param tree a NewClassTree from constructorFromUse()
+     * @param type declared method type before type variable substitution
+     */
     protected void constructorFromUsePreSubstitution(
             NewClassTree tree, AnnotatedExecutableType type) {}
 
