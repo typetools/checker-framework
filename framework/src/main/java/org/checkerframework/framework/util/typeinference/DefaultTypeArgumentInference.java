@@ -128,8 +128,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (showInferenceSteps) {
             checker.message(
                     Kind.NOTE,
-                    "DTAI: expression: %s\n  argTypes: %s\n  assignedTo: %s\n",
-                    expressionTree.toString().replace("\n", " "),
+                    "DTAI: expression: %s%n  argTypes: %s%n  assignedTo: %s",
+                    expressionTree.toString().replace(System.lineSeparator(), " "),
                     argTypes,
                     assignedTo);
         }
@@ -163,7 +163,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             inferredArgs =
                     infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
             if (showInferenceSteps) {
-                checker.message(Kind.NOTE, "  after infer: %s\n", inferredArgs);
+                checker.message(Kind.NOTE, "  after infer: %s", inferredArgs);
             }
             handleNullTypeArguments(
                     typeFactory,
@@ -174,20 +174,20 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     targets,
                     inferredArgs);
             if (showInferenceSteps) {
-                checker.message(Kind.NOTE, "  after handleNull: %s\n", inferredArgs);
+                checker.message(Kind.NOTE, "  after handleNull: %s", inferredArgs);
             }
         } catch (Exception ex) {
             // Catch any errors thrown by inference.
             inferredArgs = new LinkedHashMap<>();
             if (showInferenceSteps) {
-                checker.message(Kind.NOTE, "  exception: %s\n", ex.getLocalizedMessage());
+                checker.message(Kind.NOTE, "  exception: %s", ex.getLocalizedMessage());
             }
         }
 
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
 
         if (showInferenceSteps) {
-            checker.message(Kind.NOTE, "  results: %s\n", inferredArgs);
+            checker.message(Kind.NOTE, "  results: %s", inferredArgs);
         }
         try {
             return TypeArgInferenceUtil.correctResults(
@@ -492,12 +492,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         if (argTypes.size() != paramTypes.size()) {
             throw new BugInCF(
-                    "Mismatch between formal parameter count and argument count.\n"
-                            + "paramTypes="
-                            + PluginUtil.join(",", paramTypes)
-                            + "\n"
-                            + "argTypes="
-                            + PluginUtil.join(",", argTypes));
+                    PluginUtil.joinLines(
+                            "Mismatch between formal parameter count and argument count.",
+                            "paramTypes=" + PluginUtil.join(",", paramTypes),
+                            "argTypes=" + PluginUtil.join(",", argTypes)));
         }
 
         final int numberOfParams = paramTypes.size();
@@ -812,13 +810,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         for (final AFConstraint afConstraint : afConstraints) {
             if (!afConstraint.isIrreducible(targets)) {
                 throw new BugInCF(
-                        "All afConstraints should be irreducible before conversion.\n"
-                                + "afConstraints=[ "
-                                + PluginUtil.join(", ", afConstraints)
-                                + " ]\n"
-                                + "targets=[ "
-                                + PluginUtil.join(", ", targets)
-                                + "]");
+                        PluginUtil.joinLines(
+                                "All afConstraints should be irreducible before conversion.",
+                                "afConstraints=[ " + PluginUtil.join(", ", afConstraints) + " ]",
+                                "targets=[ " + PluginUtil.join(", ", targets) + "]"));
             }
 
             outgoing.add(afConstraint.toTUConstraint());

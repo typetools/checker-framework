@@ -449,7 +449,7 @@ public class BoundsInitializer {
                 initializeExtendsBound(wildcard);
             } else {
                 throw new BugInCF(
-                        "Wildcard extends field should not be initialized:\n"
+                        "Wildcard extends field should not be initialized:%n"
                                 + "wildcard=%s%n"
                                 + "currentStructure=%s%n",
                         wildcard, currentStructure);
@@ -1253,20 +1253,15 @@ public class BoundsInitializer {
         protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             throw new BugInCF(
-                    "Type variables cannot be intersection bounds.\n"
-                            + "parent="
-                            + parent
-                            + "\n"
-                            + "replacement="
-                            + replacement);
+                    "Type variables cannot be intersection bounds.%nparent=%s%nreplacement=%s",
+                    parent, replacement);
         }
 
         @Override
         protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedIntersectionType isect = (AnnotatedIntersectionType) parent;
             if (parent.directSuperTypes().size() <= superIndex) {
-                throw new BugInCF(
-                        "Invalid superIndex( " + superIndex + " ):\n" + "parent=" + parent);
+                throw new BugInCF("Invalid superIndex %d: parent=%s", superIndex, parent);
             }
 
             return isect.directSuperTypes().get(superIndex);
@@ -1316,19 +1311,15 @@ public class BoundsInitializer {
         protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
             throw new BugInCF(
-                    "Union types cannot be intersection bounds.\n"
-                            + "parent="
-                            + parent
-                            + "\n"
-                            + "replacement="
-                            + replacement);
+                    "Union types cannot be intersection bounds.%nparent=%s%nreplacement=%s",
+                    parent, replacement);
         }
 
         @Override
         protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedUnionType isect = (AnnotatedUnionType) parent;
             if (parent.directSuperTypes().size() <= altIndex) {
-                throw new BugInCF("Invalid altIndex( " + altIndex + " ):\n" + "parent=" + parent);
+                throw new BugInCF("Invalid altIndex( %s ):%nparent=%s", altIndex, parent);
             }
 
             return isect.directSuperTypes().get(altIndex);
@@ -1378,15 +1369,11 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(parentAdt.getTypeArguments());
             if (argIndex >= typeArgs.size()) {
                 throw new BugInCF(
-                        "Invalid type arg index.\n"
-                                + "parent="
-                                + parent
-                                + "\n"
-                                + "replacement="
-                                + replacement
-                                + "\n"
-                                + "argIndex="
-                                + argIndex);
+                        PluginUtil.joinLines(
+                                "Invalid type arg index.",
+                                "parent=" + parent,
+                                "replacement=" + replacement,
+                                "argIndex=" + argIndex));
             }
             typeArgs.add(argIndex, replacement);
             typeArgs.remove(argIndex + 1);
@@ -1400,12 +1387,10 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = parentAdt.getTypeArguments();
             if (argIndex >= typeArgs.size()) {
                 throw new BugInCF(
-                        "Invalid type arg index.\n"
-                                + "parent="
-                                + parent
-                                + "\n"
-                                + "argIndex="
-                                + argIndex);
+                        PluginUtil.joinLines(
+                                "Invalid type arg index.",
+                                "parent=" + parent,
+                                "argIndex=" + argIndex));
             }
 
             return typeArgs.get(argIndex);

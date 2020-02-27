@@ -24,7 +24,7 @@ dependencies {
     // As of 2019/12/16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
-    implementation 'org.plumelib:reflection-util:0.2.1'
+    implementation 'org.plumelib:reflection-util:0.2.2'
 
     testImplementation group: 'junit', name: 'junit', version: '4.13'
     testImplementation project(':framework-test')

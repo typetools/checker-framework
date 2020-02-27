@@ -362,8 +362,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotatedTypeMirror lub) {
         return String.format(
-                "AtmLubVisitor: Unexpected combination: type1: %s type2: %s.\ntype1: %s"
-                        + "\ntype2: %s\nlub: %s",
+                "AtmLubVisitor: Unexpected combination: type1: %s type2: %s.%n"
+                        + "type1: %s%ntype2: %s%nlub: %s",
                 type1.getKind(), type2.getKind(), type1, type2, lub);
     }
 
