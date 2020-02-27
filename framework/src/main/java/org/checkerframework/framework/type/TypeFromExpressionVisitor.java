@@ -225,12 +225,12 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             f.visitorState.setAssignmentContext(null);
 
             AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
-            if (type instanceof AnnotatedArrayType) {
+            if (type.getKind() == TypeKind.ARRAY) {
                 return ((AnnotatedArrayType) type).getComponentType();
-            } else if (type instanceof AnnotatedWildcardType) {
+            } else if (type.getKind() == TypeKind.WILDCARD
+                    && ((AnnotatedWildcardType) type).isUninferredTypeArgument()) {
                 // Clean-up after Issue #979.
-                AnnotatedWildcardType wc = (AnnotatedWildcardType) type;
-                AnnotatedTypeMirror wcbound = wc.getExtendsBound();
+                AnnotatedTypeMirror wcbound = ((AnnotatedWildcardType) type).getExtendsBound();
                 if (wcbound instanceof AnnotatedArrayType) {
                     return ((AnnotatedArrayType) wcbound).getComponentType();
                 }
