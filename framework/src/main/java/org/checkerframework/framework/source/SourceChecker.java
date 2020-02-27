@@ -1243,7 +1243,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Prints a message (error, warning, note, etc.) via JSR-269.
      *
      * @param kind the type of message to print
-     * @param source the object from which to obtain source position information
+     * @param source the object from which to obtain source position information; may be an Element,
+     *     a Tree, or null
      * @param msgKey the message key to print
      * @param args arguments for interpolation in the string corresponding to the given message key
      * @see Diagnostic
@@ -1252,7 +1253,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private void message(
             Diagnostic.Kind kind,
-            Object source,
+            @Nullable Object source,
             @CompilerMessageKey String msgKey,
             Object... args) {
 
@@ -1317,8 +1318,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 tree = trees.getTree((Element) source);
             } else if (source instanceof Tree) {
                 tree = (Tree) source;
-            } else {
+            } else if (source == null) {
                 tree = null;
+            } else {
+                throw new BugInCF("Unexpected source %s [%s]", source, source.getClass());
             }
             sb.append(treeToFilePositionString(tree, currentRoot, processingEnv));
             sb.append(DETAILS_SEPARATOR);
