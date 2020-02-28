@@ -36,6 +36,7 @@ source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
 
 # Guava
 # Can't use `git-clone-related` here, since we want slightly different behavior.
+# shellcheck disable=SC2046
 eval $(/tmp/plume-scripts/ci-info typetools)
 REPO_URL=$(/tmp/plume-scripts/git-find-fork "${CI_ORGANIZATION}" typetools guava)
 BRANCH=$(/tmp/plume-scripts/git-find-branch "${REPO_URL}" "${CI_BRANCH}" cf-master)
