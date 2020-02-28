@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in "$(pwd)"
+echo "${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}"
 
 # Fail the whole script if any command fails
 set -e
