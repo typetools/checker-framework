@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`
+echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in "$(pwd)"
 
 # Fail the whole script if any command fails
 set -e
@@ -25,7 +25,8 @@ echo "SHELLOPTS=${SHELLOPTS}"
 if [ "$(uname)" == "Darwin" ] ; then
   export JAVA_HOME=${JAVA_HOME:-$(/usr/libexec/java_home)}
 else
-  export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(readlink -f $(which javac))))}
+  # shellcheck disable=SC2230
+  export JAVA_HOME=${JAVA_HOME:-$(dirname "$(dirname "$(readlink -f "$(which javac)")")")}
 fi
 echo "JAVA_HOME=${JAVA_HOME}"
 
@@ -56,13 +57,13 @@ AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 AT=$(dirname "${AFU}")
 
 ## Build annotation-tools (Annotation File Utilities)
-/tmp/plume-scripts/git-clone-related typetools annotation-tools ${AT}
+/tmp/plume-scripts/git-clone-related typetools annotation-tools "${AT}"
 if [ ! -d ../annotation-tools ] ; then
-  ln -s ${AT} ../annotation-tools
+  ln -s "${AT}" ../annotation-tools
 fi
 
 echo "Running:  (cd ${AT} && ./.travis-build-without-test.sh)"
-(cd ${AT} && ./.travis-build-without-test.sh)
+(cd "${AT}" && ./.travis-build-without-test.sh)
 echo "... done: (cd ${AT} && ./.travis-build-without-test.sh)"
 
 
@@ -85,4 +86,4 @@ else
   ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
 fi
 
-echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`
+echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in "$(pwd)"

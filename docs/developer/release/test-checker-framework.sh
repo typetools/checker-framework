@@ -14,39 +14,46 @@ if [ $# -eq 0 ]; then
     exit 6
 fi
 
-rm -f checker-framework-$1.zip
-rm -rf checker-framework-$1/
+rm -f "checker-framework-$1.zip"
+rm -rf "checker-framework-$1/"
 
-wget https://checkerframework.org/checker-framework-$1.zip
-unzip -q checker-framework-$1.zip
+wget "https://checkerframework.org/checker-framework-$1.zip"
+unzip -q "checker-framework-$1.zip"
 
 export CHECKERFRAMEWORK=checker-framework-$1
 export ORIG_PATH=$PATH
 
 
 function cfruntest() {
-  echo `which java`
+  # shellcheck disable=SC2230
+  which java
+  command -v java
   java -version
 
-  chmod +x $CHECKERFRAMEWORK/checker/bin/javac
-  $CHECKERFRAMEWORK/checker/bin/javac -version
-  if (($?)); then exit 6; fi
+  chmod +x "$CHECKERFRAMEWORK"/checker/bin/javac
+  if ! "$CHECKERFRAMEWORK"/checker/bin/javac -version ; then
+    exit 6
+  fi
 
-  java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" -version
-  if (($?)); then exit 6; fi
+  if ! java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" -version ; then
+    exit 6
+  fi
 
-  "$CHECKERFRAMEWORK/checker/bin/javac" -processor org.checkerframework.checker.nullness.NullnessChecker \
-      "$CHECKERFRAMEWORK/docs/examples/NullnessReleaseTests.java"
-  if (($?)); then exit 6; fi
+  if ! "$CHECKERFRAMEWORK/checker/bin/javac" -processor org.checkerframework.checker.nullness.NullnessChecker \
+      "$CHECKERFRAMEWORK/docs/examples/NullnessReleaseTests.java" ; then
+    exit 6
+  fi
 
-  java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" \
+  if ! java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" \
       -processor org.checkerframework.checker.nullness.NullnessChecker \
-      "$CHECKERFRAMEWORK/docs/examples/NullnessReleaseTests.java"
-  if (($?)); then exit 6; fi
+      "$CHECKERFRAMEWORK/docs/examples/NullnessReleaseTests.java" ; then
+    exit 6
+  fi
 }
 
 echo "Testing with Java 8:"
 
+# shellcheck disable=SC2153
 export JAVA_HOME=$JAVA8_HOME
 export PATH=$JAVA_HOME/bin:$ORIG_PATH
 

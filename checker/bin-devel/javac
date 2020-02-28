@@ -12,10 +12,10 @@
 
 # When editing, keep this file in sync with javac-debug in this directory.
 
-mydir="`dirname $0`"
-case `uname -s` in
+mydir="$(dirname "$0")"
+case $(uname -s) in
     CYGWIN*)
-      mydir=`cygpath -m $mydir`
+      mydir=$(cygpath -m "$mydir")
       ;;
 esac
 
@@ -31,7 +31,7 @@ stubparserDir="${cfDir}"/../stubparser
 classes="build/classes/java/main"
 resources="build/resources/main"
 
-buildDirs="${cfDir}"/dataflow/"${classes}":"${cfDir}"/javacutil/"${classes}":"${cfDir}"/framework/"${classes}":"${cfDir}"/framework/"${resources}":"${cfDir}"/checker/"${classes}":"${cfDir}"/checker/"${resources}":"${stubparserDir}"/javaparser-core/stubparser.jar:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities-all.jar:`(cd ${cfDir} && ./gradlew -q :checker:printPlumeUtilJarPath)`
+buildDirs="${cfDir}"/dataflow/"${classes}":"${cfDir}"/javacutil/"${classes}":"${cfDir}"/framework/"${classes}":"${cfDir}"/framework/"${resources}":"${cfDir}"/checker/"${classes}":"${cfDir}"/checker/"${resources}":"${stubparserDir}"/javaparser-core/stubparser.jar:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities-all.jar:$( (cd "${cfDir}" && ./gradlew -q :checker:printPlumeUtilJarPath))
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.
@@ -63,4 +63,4 @@ eval "java" \
      "-DCheckerDevelMain.binary=${binaryDir} " \
      "-classpath ${buildDirs} " \
      "org.checkerframework.framework.util.CheckerDevelMain" \
-     ${args}
+     "${args}"

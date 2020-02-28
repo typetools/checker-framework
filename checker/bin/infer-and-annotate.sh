@@ -87,6 +87,7 @@ read_input() {
     extra_args=""
     java_files=""
     jaif_files=""
+    # shellcheck disable=SC2034
     for i in "$@"
     do
         # This function makes the assumption that every extra argument
@@ -116,7 +117,7 @@ infer_and_annotate() {
     # If there are .jaif files as input, copy them.
     for file in $jaif_files;
     do
-        cp $file $WHOLE_PROGRAM_INFERENCE_DIR/
+        cp "$file" "$WHOLE_PROGRAM_INFERENCE_DIR/"
     done
 
     # Perform inference and add annotations from .jaif to .java files until
@@ -133,7 +134,7 @@ infer_and_annotate() {
         echo "About to run: ${command}"
         if [ $interactive ]; then
             echo "Press any key to run command... "
-            read _
+            IFS="" read -r _
         fi
         ${command} || true
         # Deletes .unannotated backup files. This is necessary otherwise the
@@ -144,10 +145,10 @@ infer_and_annotate() {
         do
             rm -f "${file}.unannotated"
         done
-        if [ ! `find $WHOLE_PROGRAM_INFERENCE_DIR -prune -empty` ]
+        if [ ! "$(find $WHOLE_PROGRAM_INFERENCE_DIR -prune -empty)" ]
         then
             # Only insert annotations if there is at least one .jaif file.
-            insert-annotations-to-source $insert_to_source_args -i `find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif"` $java_files
+            insert-annotations-to-source "$insert_to_source_args" -i "$(find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif")" "$java_files"
         fi
         # Updates DIFF_JAIF variable.
         # diff returns exit-value 1 when there are differences between files.
@@ -175,7 +176,7 @@ clean() {
 # Main
 if [ "$#" -lt 3 ]; then
     echo "Aborting infer-and-annotate.sh: Expected at least 3 arguments, received $#."
-    echo "Received the following arguments: $@"
+    echo "Received the following arguments: $*"
     exit 1
 fi
 
