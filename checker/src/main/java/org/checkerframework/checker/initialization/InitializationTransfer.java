@@ -129,7 +129,8 @@ public class InitializationTransfer<
             List<VariableElement> result, TypeElement clazzElem) {
         List<VariableElement> fields = ElementFilter.fieldsIn(clazzElem.getEnclosedElements());
         for (VariableElement field : fields) {
-            if (((Symbol) field).type.tsym.completer != Symbol.Completer.NULL_COMPLETER) {
+            if (((Symbol) field).type.tsym.completer != Symbol.Completer.NULL_COMPLETER
+                    || ((Symbol) field).type.getKind() == TypeKind.ERROR) {
                 // If the type is not completed yet, we might run
                 // into trouble. Skip the field.
                 // TODO: is there a nicer solution?
