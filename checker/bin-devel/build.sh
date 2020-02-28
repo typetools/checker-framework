@@ -1,7 +1,6 @@
 #!/bin/bash
 
-echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in "$(pwd)"
-echo "${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}"
+echo Entering checker/bin-devel/build.sh in "$(pwd)"
 
 # Fail the whole script if any command fails
 set -e
@@ -87,4 +86,4 @@ else
   ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
 fi
 
-echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in "$(pwd)"
+echo Exiting checker/bin-devel/build.sh in "$(pwd)"
