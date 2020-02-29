@@ -21,8 +21,8 @@ import java.lang.annotation.Target;
  * <p>Note, this annotation is analogous to {@code @}{@link DefaultQualifierInHierarchy} but for
  * unannotated type uses in code that has not been type-checked.
  *
- * <p>If a checker does not specify a default qualifier for unchecked code, then the defaults for
- * checked code will be used.
+ * <p>If a checker does not specify a conservative default qualifier, then the defaults for checked
+ * code will be used.
  *
  * <p>This qualifier is for type system developers, not end-users.
  *

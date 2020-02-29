@@ -592,10 +592,10 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Adds default qualifiers for code that is not type-checked by reading
      * {@code @ConservativeDefaultFor} and {@code @ConservativeDefaultQualifierInHierarchy}
-     * meta-annotations. Then it applies the standard unchecked code defaults, if a default was not
+     * meta-annotations. Then it applies the standard conservative defaults, if a default was not
      * specified for a particular location.
      *
-     * <p>Standard unchecked code defaults are: <br>
+     * <p>Standard conservative defaults are: <br>
      * top: {@code TypeUseLocation.RETURN,TypeUseLocation.FIELD,TypeUseLocation.UPPER_BOUND}<br>
      * bottom: {@code TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND}<br>
      *
@@ -611,11 +611,11 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void addUncheckedCodeDefaults(QualifierDefaults defs) {
         for (Class<? extends Annotation> annotation : getSupportedTypeQualifiers()) {
-            ConservativeDefaultFor defaultInUncheckedCodeFor =
+            ConservativeDefaultFor conservativeDefaultFor =
                     annotation.getAnnotation(ConservativeDefaultFor.class);
 
-            if (defaultInUncheckedCodeFor != null) {
-                final TypeUseLocation[] locations = defaultInUncheckedCodeFor.value();
+            if (conservativeDefaultFor != null) {
+                final TypeUseLocation[] locations = conservativeDefaultFor.value();
                 defs.addUncheckedCodeDefaults(
                         AnnotationBuilder.fromClass(elements, annotation), locations);
             }

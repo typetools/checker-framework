@@ -623,11 +623,11 @@ public class QualifierDefaults {
     }
 
     /**
-     * Given an element, returns whether the unchecked code default (i.e. conservative defaults)
-     * should be applied for it. Handles elements from bytecode or source code.
+     * Given an element, returns whether the conservative default should be applied for it. Handles
+     * elements from bytecode or source code.
      *
-     * @param annotationScope the element that the unchecked code default might apply to
-     * @return whether the unchecked code default applies to the given element
+     * @param annotationScope the element that the conservative default might apply to
+     * @return whether the conservative default applies to the given element
      */
     public boolean applyConservativeDefaults(final Element annotationScope) {
         if (annotationScope == null) {

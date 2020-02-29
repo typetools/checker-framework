@@ -149,7 +149,7 @@ import org.checkerframework.javacutil.UserError;
     "checkCastElementType",
 
     // Whether to use conservative defaults for bytecode and/or source code; these are configured
-    // by the specific type checker using @Default[QualifierInHierarchy]InUncheckedCode[For].
+    // by the specific type checker using @ConservativeDefault{For,QualifierInHierarchy}.
     // This option takes arguments "source" and/or "bytecode".
     // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").
     // Note, in source code, conservative defaults are never
@@ -1621,7 +1621,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * parameter?
      *
      * @param kindOfCode source or bytecode
-     * @return whether unchecked code defaults should be used
+     * @return whether conservative defaults should be used
      */
     public boolean useConservativeDefault(String kindOfCode) {
         final boolean useUncheckedDefaultsForSource = false;
