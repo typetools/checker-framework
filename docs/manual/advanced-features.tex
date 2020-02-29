@@ -1170,13 +1170,18 @@ The set of permitted expressions is a subset of all Java expressions:
 \item
   a formal parameter, represented as \<\#> followed by the \textbf{one-based} parameter
   index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0> to
-  refer to the receiver object; use \<this> instead.  (A side note:
+  refer to the receiver object; use \<this> instead.
+
   The formal parameter syntax \<\#1> is less natural in source code
   than writing the formal parameter name.  This syntax is necessary for
   separate compilation, when an annotated method has already been compiled
   into a \<.class> file and a client of that method is later compiled.
   In the \<.class> file, no formal parameter name information is available,
-  so it is necessary to use a number to indicate a formal parameter.)
+  so it is necessary to use a number to indicate a formal parameter.
+  If all your annotated code is always provided to the checker in source
+  code format (this also implies that you will never provide \<.class>
+  files to clients who might want to do type-checking), then you can use
+  the formal parameter name instead of the numeric index.
 %% At some point, we will start assuming that the .class file was created
 %% by the Checker Framework and this justification, and the #n syntax
 %% itself, will not be necessary.

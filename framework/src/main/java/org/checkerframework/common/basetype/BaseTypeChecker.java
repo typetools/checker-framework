@@ -532,7 +532,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     @Override
     protected void warnUnneededSuppressions() {
-        if (parentChecker != null || !hasOption("warnUnneededSuppressions")) {
+        if (parentChecker != null) {
+            return;
+        }
+
+        if (!hasOption("warnUnneededSuppressions")) {
             return;
         }
         Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);

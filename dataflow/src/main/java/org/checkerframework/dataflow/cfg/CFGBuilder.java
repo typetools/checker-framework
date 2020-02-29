@@ -73,6 +73,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -547,19 +548,15 @@ public class CFGBuilder {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
             if (this.catchLabels.isEmpty()) {
-                sb.append("TryCatchFrame: no catch labels.\n");
+                return "TryCatchFrame: no catch labels.";
             } else {
-                sb.append("TryCatchFrame: ");
+                StringJoiner sb = new StringJoiner(System.lineSeparator(), "TryCatchFrame: ", "");
+                for (Pair<TypeMirror, Label> ptml : this.catchLabels) {
+                    sb.add(ptml.first.toString() + " -> " + ptml.second.toString());
+                }
+                return sb.toString();
             }
-            for (Pair<TypeMirror, Label> ptml : this.catchLabels) {
-                sb.append(ptml.first.toString());
-                sb.append(" -> ");
-                sb.append(ptml.second.toString());
-                sb.append('\n');
-            }
-            return sb.toString();
         }
 
         /**
@@ -646,9 +643,7 @@ public class CFGBuilder {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("TryFinallyFrame: finallyLabel: " + finallyLabel + '\n');
-            return sb.toString();
+            return "TryFinallyFrame: finallyLabel: " + finallyLabel;
         }
 
         @Override
@@ -699,15 +694,15 @@ public class CFGBuilder {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("TryStack: exitLabel: " + this.exitLabel + '\n');
+            StringJoiner sj = new StringJoiner(System.lineSeparator());
+            sj.add("TryStack: exitLabel: " + this.exitLabel);
             if (this.frames.isEmpty()) {
-                sb.append("No TryFrames.\n");
+                sj.add("No TryFrames.");
             }
             for (TryFrame tf : this.frames) {
-                sb.append(tf.toString());
+                sj.add(tf.toString());
             }
-            return sb.toString();
+            return sj.toString();
         }
     }
 
@@ -1366,12 +1361,11 @@ public class CFGBuilder {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
+            StringJoiner sj = new StringJoiner(System.lineSeparator());
             for (ExtendedNode n : nodeList) {
-                sb.append(nodeToString(n));
-                sb.append("\n");
+                sj.add(nodeToString(n));
             }
-            return sb.toString();
+            return sj.toString();
         }
 
         protected String nodeToString(ExtendedNode n) {

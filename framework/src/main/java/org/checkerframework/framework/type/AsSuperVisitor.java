@@ -68,7 +68,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
         if (result == null) {
             throw new BugInCF(
-                    "AsSuperVisitor returned null.\ntype: %s\nsuperType: %s", type, copySuperType);
+                    "AsSuperVisitor returned null.%ntype: %s%nsuperType: %s", type, copySuperType);
         }
 
         return (T) result;
@@ -137,8 +137,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
         return String.format(
-                "AsSuperVisitor: Unexpected combination: type: %s superType: %s.\ntype: %s"
-                        + "\nsuperType: %s",
+                "AsSuperVisitor: Unexpected combination: type: %s superType: %s.%n"
+                        + "type: %s%nsuperType: %s",
                 type.getKind(), superType.getKind(), type, superType);
     }
 
@@ -153,7 +153,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         throw new BugInCF(
                 "AsSuperVisitor: type is not an erased subtype of supertype."
-                        + "\ntype: %s\nsuperType: %s",
+                        + "%ntype: %s%nsuperType: %s",
                 type, superType);
     }
 
@@ -443,7 +443,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             }
             if (found == null) {
                 throw new BugInCF(
-                        "AsSuperVisitor visitIntersection_Intersection:\ntype: %s superType: %s",
+                        "AsSuperVisitor visitIntersection_Intersection:%ntype: %s superType: %s",
                         type, superType);
             }
         }
@@ -468,7 +468,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         // Cannot happen: one of the types in the intersection must be a subtype of superType.
         throw new BugInCF(
-                "AsSuperVisitor visitIntersection_Primitive:\ntype: %s superType: %s",
+                "AsSuperVisitor visitIntersection_Primitive:%ntype: %s superType: %s",
                 type, superType);
     }
 
@@ -495,7 +495,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         // Cannot happen: one of the types in the intersection must be a subtype of superType.
         throw new BugInCF(
-                "AsSuperVisitor visitIntersection_Union:\ntype: %s\nsuperType: %s",
+                "AsSuperVisitor visitIntersection_Union:%ntype: %s%nsuperType: %s",
                 type, superType);
     }
 
