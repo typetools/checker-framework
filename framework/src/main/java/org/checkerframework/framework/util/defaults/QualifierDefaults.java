@@ -139,8 +139,8 @@ public class QualifierDefaults {
         TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND
     };
 
-    private final boolean useUncheckedCodeDefaultsSource;
-    private final boolean useUncheckedCodeDefaultsBytecode;
+    private final boolean useConservativeDefaultsSource;
+    private final boolean useConservativeDefaultsBytecode;
 
     /**
      * Returns an array of locations that are valid for the unchecked value defaults. These are
@@ -160,10 +160,10 @@ public class QualifierDefaults {
         this.atypeFactory = atypeFactory;
         this.upstreamCheckerNames =
                 atypeFactory.getContext().getChecker().getUpstreamCheckerNames();
-        this.useUncheckedCodeDefaultsBytecode =
-                atypeFactory.getContext().getChecker().useUncheckedCodeDefault("bytecode");
-        this.useUncheckedCodeDefaultsSource =
-                atypeFactory.getContext().getChecker().useUncheckedCodeDefault("source");
+        this.useConservativeDefaultsBytecode =
+                atypeFactory.getContext().getChecker().useConservativeDefault("bytecode");
+        this.useConservativeDefaultsSource =
+                atypeFactory.getContext().getChecker().useConservativeDefault("source");
     }
 
     @Override
@@ -174,8 +174,8 @@ public class QualifierDefaults {
                 PluginUtil.joinLines(checkedCodeDefaults),
                 "Unchecked code defaults: ",
                 PluginUtil.joinLines(uncheckedCodeDefaults),
-                "useUncheckedCodeDefaultsSource: " + useUncheckedCodeDefaultsSource,
-                "useUncheckedCodeDefaultsBytecode: " + useUncheckedCodeDefaultsBytecode);
+                "useConservativeDefaultsSource: " + useConservativeDefaultsSource,
+                "useConservativeDefaultsBytecode: " + useConservativeDefaultsBytecode);
     }
 
     /**
@@ -624,7 +624,7 @@ public class QualifierDefaults {
      * Given an element, returns whether the unchecked code default (i.e. conservative defaults)
      * should be applied for it. Handles elements from bytecode or source code.
      */
-    public boolean applyUncheckedCodeDefaults(final Element annotationScope) {
+    public boolean applyConservativeDefaults(final Element annotationScope) {
         if (annotationScope == null) {
             return false;
         }
@@ -645,7 +645,7 @@ public class QualifierDefaults {
                         && atypeFactory.declarationFromElement(annotationScope) == null
                         && !isFromStubFile;
         if (isBytecode) {
-            return useUncheckedCodeDefaultsBytecode
+            return useConservativeDefaultsBytecode
                     && !isElementAnnotatedForThisChecker(annotationScope);
         } else if (isFromStubFile) {
             // TODO: Types in stub files not annotated for a particular checker should be
@@ -655,7 +655,7 @@ public class QualifierDefaults {
             // be treated like unchecked code except for methods in the scope for an
             // @AnnotatedFor.
             return false;
-        } else if (useUncheckedCodeDefaultsSource) {
+        } else if (useConservativeDefaultsSource) {
             return !isElementAnnotatedForThisChecker(annotationScope);
         }
         return false;
@@ -685,7 +685,7 @@ public class QualifierDefaults {
             applier.applyDefault(def);
         }
 
-        if (applyUncheckedCodeDefaults(annotationScope)) {
+        if (applyConservativeDefaults(annotationScope)) {
             for (Default def : uncheckedCodeDefaults) {
                 applier.applyDefault(def);
             }

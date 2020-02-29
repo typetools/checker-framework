@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * <p>This annotation has no effect unless the {@code
  * -AuseConservativeDefaultsForUncheckedCode=source} command-line argument is supplied. Ordinarily,
  * the {@code -AuseConservativeDefaultsForUncheckedCode=source} command-line argument causes
- * unannotated locations to be defaulted using unchecked code defaults, and it suppresses all
+ * unannotated locations to be defaulted using conservative defaults, and it suppresses all
  * warnings. However, a class with a relevant {@code @AnnotatedFor} annotation is always defaulted
  * normally (typically using the CLIMB-to-top rule), and typechecking warnings are issued.
  *

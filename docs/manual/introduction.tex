@@ -667,16 +667,20 @@ More sound (strict) checking: enable errors that are disabled by default
   to differ, just as Java does.  See Section~\ref{covariant-type-parameters}
   and Section~\ref{invariant-arrays}.
 \item \<-AuseConservativeDefaultsForUncheckedCode>
-  Enables/disables unchecked code defaults.  Takes arguments ``source,bytecode''.
+  Enables/disables conservative defaults in unchecked code.  Takes arguments ``source,bytecode''.
   ``-source,-bytecode'' is the (unsound) default setting.
+  \begin{itemize}
+  \item
   ``bytecode'' specifies
-  whether the checker should apply unchecked code defaults to
+  whether the checker should apply conservative defaults to
   bytecode (that is, to already-compiled libraries); see
   Section~\ref{defaults-classfile}.
+  \item
   Outside the scope of any relevant
-  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source'' specifies whether unchecked code
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source'' specifies whether conservative
   default annotations are applied to source code and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
+  \end{itemize}
 \item \<-AconcurrentSemantics>
   Whether to assume concurrent semantics (field values may change at any
   time) or sequential semantics; see Section~\ref{faq-concurrency}.
@@ -753,7 +757,7 @@ Partially-annotated libraries
 % This item is repeated above:
 \item \<-AuseConservativeDefaultsForUncheckedCode=source>
   Outside the scope of any relevant
-  \refqualclass{framework/qual}{AnnotatedFor} annotation, use unchecked code
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, use conservative
   default annotations and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
 \end{itemize}

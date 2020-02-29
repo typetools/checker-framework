@@ -11,12 +11,12 @@ import java.lang.annotation.Target;
  * bytecode or source code that has not been type-checked).
  *
  * <p>This qualifier only applies if the {@code -AuseConservativeDefaultsForUncheckedCode}
- * command-line option enables unchecked code defaults. They can be enabled for source and bytecode
- * separately. If the unchecked code defaults are enabled for source code, they will only be applied
+ * command-line option enables conservative defaults. They can be enabled for source and bytecode
+ * separately. If the conservative defaults are enabled for source code, they will only be applied
  * to source code not annotated with {@link AnnotatedFor} for the checker being executed.
  *
  * <p>Each type qualifier hierarchy may have at most one qualifier marked as {@code
- * DefaultQualifierInHierarchyInUncheckedCode}.
+ * ConservativeDefaultQualifierInHierarchy}.
  *
  * <p>Note, this annotation is analogous to {@code @}{@link DefaultQualifierInHierarchy} but for
  * unannotated type uses in code that has not been type-checked.
@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * <p>This qualifier is for type system developers, not end-users.
  *
  * @see AnnotatedFor
- * @see DefaultInUncheckedCodeFor
+ * @see ConservativeDefaultFor
  * @checker_framework.manual #defaults-classfile Default qualifiers for .class files (conservative
  *     library defaults)
  * @checker_framework.manual #compiling-libraries Compiling partially-annotated libraries
@@ -35,4 +35,4 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
-public @interface DefaultQualifierInHierarchyInUncheckedCode {}
+public @interface ConservativeDefaultQualifierInHierarchy {}

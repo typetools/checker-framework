@@ -1,7 +1,14 @@
 Version 3.2.0, March 2, 2020
 
-Renamed -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
-The old name works temporarily but will be removed in a future release.
+Renamed "unchecked code defaults" to "conservative defaults"
+
+Renamings:
+  -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
+    The old name works temporarily but will be removed in a future release.
+  @DefaultQualifierInHierarchyInUncheckedCode to @ConservativeDefaultQualifierInHierarchy
+  @DefaultInUncheckedCodeFor to @ConservativeDefaultFor
+  applyUncheckedCodeDefaults() to applyConservativeDefaults()
+  useUncheckedCodeDefault() to useConservativeDefault()
 
 ---------------------------------------------------------------------------
 
