@@ -76,6 +76,10 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
 ## Compile
 
+# Downloading the gradle wrapper sometimes fails.
+# If so, the next command gets another chance to try the download.
+(./gradlew help || sleep 10) > /dev/null 2>&1
+
 # Two options: download a prebuilt JDK or rebuild the JDK.
 if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   echo "running \"./gradlew assemble\" for checker-framework"
