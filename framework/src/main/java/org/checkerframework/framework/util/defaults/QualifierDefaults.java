@@ -139,7 +139,9 @@ public class QualifierDefaults {
         TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND
     };
 
+    /** True if conservative defaults should be used in unannotated source code. */
     private final boolean useConservativeDefaultsSource;
+    /** True if conservative defaults should be used for bytecode. */
     private final boolean useConservativeDefaultsBytecode;
 
     /**
