@@ -721,10 +721,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     qualifierHierarchy.findAnnotationInHierarchy(constructorAnnotations, top);
             if (!qualifierHierarchy.isSubtype(top, constructorAnno)) {
                 checker.report(
-                        Result.warning(
-                                "inconsistent.constructor.type",
-                                constructorAnno,
-                                qualifierHierarchy.getTopAnnotation(constructorAnno)),
+                        Result.warning("inconsistent.constructor.type", constructorAnno, top),
                         constructorElement);
             }
         }
