@@ -1,7 +1,6 @@
-Version 3.2.0, March 2, 2020
+Version 3.3.0, April 1, 2020
 
-Renamed "unchecked code defaults" to "conservative defaults"
-
+Renamed "unchecked code defaults" to "conservative defaults".
 Renamings:
   -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
     The old name works temporarily but will be removed in a future release.
@@ -9,6 +8,14 @@ Renamings:
   @DefaultInUncheckedCodeFor to @ConservativeDefaultFor
   applyUncheckedCodeDefaults() to applyConservativeDefaults()
   useUncheckedCodeDefault() to useConservativeDefault()
+
+---------------------------------------------------------------------------
+
+Version 3.2.0, March 2, 2020
+
+@SuppressWarnings("initialization") suppresses only warnings whose key
+contains "initialization".  Previously, it suppressed all warnings issued
+by the Nullness Checker or the Initialization Checker.
 
 ---------------------------------------------------------------------------
 
