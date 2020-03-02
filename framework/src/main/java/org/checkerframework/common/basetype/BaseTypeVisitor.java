@@ -437,7 +437,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Tree mem : classTree.getMembers()) {
             if (mem.getKind() == Tree.Kind.VARIABLE) {
                 AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(mem);
-                boolean hasIllegalPoly;
+                Result hasIllegalPoly;
                 if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration((VariableTree) mem))) {
                     // A polymorphic qualifier is not allowed on a static field even if the class
                     // has a qualifier parameter.
@@ -445,8 +445,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 } else {
                     hasIllegalPoly = polyScanner.visit(fieldType, illegalOnFieldsPolyQual);
                 }
-                if (hasIllegalPoly) {
-                    checker.report(Result.failure("invalid.polymorphic.qualifier.use"), mem);
+                if (hasIllegalPoly.isFailure()) {
+                    checker.report(hasIllegalPoly, mem);
                 }
             }
         }
@@ -460,28 +460,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * A scanner that indicates whether any part of an annotated type has a polymorphic annotation.
      */
-    static class PolyTypeScanner
-            extends SimpleAnnotatedTypeScanner<Boolean, Set<AnnotationMirror>> {
+    static class PolyTypeScanner extends SimpleAnnotatedTypeScanner<Result, Set<AnnotationMirror>> {
 
         @Override
-        protected Boolean reduce(Boolean r1, Boolean r2) {
-            r1 = r1 == null ? false : r1;
-            r2 = r2 == null ? false : r2;
-            return r1 || r2;
+        protected Result reduce(Result r1, Result r2) {
+            r1 = r1 == null ? Result.SUCCESS : r1;
+            r2 = r2 == null ? Result.SUCCESS : r2;
+            return r1.merge(r2);
         }
 
         @Override
-        protected Boolean defaultAction(AnnotatedTypeMirror type, Set<AnnotationMirror> polys) {
+        protected Result defaultAction(AnnotatedTypeMirror type, Set<AnnotationMirror> polys) {
             if (type == null) {
-                return false;
+                return Result.SUCCESS;
             }
 
             for (AnnotationMirror poly : polys) {
                 if (type.hasAnnotationRelaxed(poly)) {
-                    return true;
+                    return Result.failure("invalid.polymorphic.qualifier.use", poly);
                 }
             }
-            return false;
+            return Result.SUCCESS;
         }
     }
 
