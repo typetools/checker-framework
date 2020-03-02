@@ -47,15 +47,15 @@
 # 2. copy the newly created jdk8.jar to checker/dist; and
 # 3. run "./gradlew build" from Checker Framework's base directory.
 
-export SCRIPTDIR=`cd \`dirname $0\` && pwd`
-export WD="`pwd`"            # run from top directory of jdk8u clone
+export SCRIPTDIR=$(cd \`dirname $0\` && pwd)
+export WD="$(pwd)"            # run from top directory of jdk8u clone
 export JDK="${WD}/jdk"       # JDK to be annotated
 export TMPDIR="${WD}/tmp"    # directory for temporary files
 export JAIFDIR="${WD}/jaifs" # directory for generated JAIFs
 export PATCH=${SCRIPTDIR}/ad-hoc.diff
 
 # parameters derived from environment
-export PARENTDIR=`readlink -e "${CHECKERFRAMEWORK}/.."`
+export PARENTDIR=$(readlink -e "${CHECKERFRAMEWORK}/..")
 export AFU="${PARENTDIR}/annotation-tools"
 export AFUJAR="${AFU}/annotation-file-utilities/annotation-file-utilities-all.jar"
 export CFJAR="${CHECKERFRAMEWORK}/checker/dist/checker.jar"
@@ -76,7 +76,7 @@ addAnnotatedFor() {
 # annotations into corresponding source files
 annotateSourceFile() {
     R=0
-    BASE="${JAIFDIR}/`dirname "$1"`/`basename "$1" .java`"
+    BASE="${JAIFDIR}/$(dirname "$1")/$(basename "$1" .java)"
     # must insert annotations on inner classes as well
     for f in ${BASE}.jaif ${BASE}\$*.jaif ; do
         if [ -r "$f" ] ; then
@@ -98,12 +98,12 @@ convertStub() {
 convertStubs() {
     R=0
     cd "${CHECKERFRAMEWORK}"
-    [ -z "`ls`" ] && echo "no files" 1>&2 && exit 1
+    [ -z "$(ls)" ] && echo "no files" 1>&2 && exit 1
 
-    for f in `find * -name 'jdk\.astub' -print` ; do
+    for f in $(find * -name 'jdk\.astub' -print) ; do
         convertStub "$f"
         [ $R -ne 0 ] || R=$?
-        g="`dirname $f`/`basename $f .astub`.jaif"
+        g="$(dirname $f)/$(basename $f .astub).jaif"
         [ -r "$g" ] && cat "$g" && rm -f "$g"
     done
     return $R
@@ -172,20 +172,20 @@ mkdir "${TMPDIR}"
 
 (
     cd "${CHECKERFRAMEWORK}/checker/jdk/nullness/src" || exit 1
-    [ -z "`ls`" ] && echo "no files" 1>&2 && exit 1
+    [ -z "$(ls)" ] && echo "no files" 1>&2 && exit 1
 
     mkdir -p ../build
     find * -name google -prune -o -name '*\.java' -print | xargs javac -d ../build ${JFLAGS}
     [ ${RET} -eq 0 ] && RET=$?
     cd ../build || exit 1
 
-    for f in `find * -name '*\.class' -print` ; do
+    for f in $(find * -name '*\.class' -print) ; do
         extract-annotations "$f" 1>&2
         [ ${RET} -eq 0 ] && RET=$?
     done
 
-    for f in `find * -name '*\.jaif' -print` ; do
-        mkdir -p "${TMPDIR}/`dirname $f`" && mv "$f" "${TMPDIR}/$f"
+    for f in $(find * -name '*\.jaif' -print) ; do
+        mkdir -p "${TMPDIR}/$(dirname $f)" && mv "$f" "${TMPDIR}/$f"
         [ ${RET} -eq 0 ] && RET=$?
     done
 )
@@ -206,9 +206,9 @@ echo "stage 2 complete" 1>&2
 
 rm -rf "${JAIFDIR}"
 # write out JAIFs from TMPDIR, replacing (bogus) annotation defs
-for f in `(cd "${TMPDIR}" && find * -name '*\.jaif' -print)` ; do
+for f in $((cd "${TMPDIR}" && find * -name '*\.jaif' -print)) ; do
     g="${JAIFDIR}/$f"
-    mkdir -p `dirname $g`
+    mkdir -p $(dirname $g)
     echo "$g" 1>&2
     cp "${WD}/annotation-defs.jaif" "$g"
 
@@ -231,7 +231,7 @@ echo "stage 3 complete" 1>&2
     hg revert -C com java javax jdk org sun
     rm -rf annotated
 
-    for f in `find * -name '*\.java' -print` ; do
+    for f in $(find * -name '*\.java' -print) ; do
         annotateSourceFile $f
         [ ${RET} -ne 0 ] || RET=$?
     done
