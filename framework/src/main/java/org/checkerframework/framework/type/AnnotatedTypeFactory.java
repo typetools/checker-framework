@@ -3357,6 +3357,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public boolean hasExplicitQualifierParameterInHierarchy(
             @Nullable Element element, AnnotationMirror top) {
+        if (element == null) {
+            return false;
+        }
         return AnnotationUtils.containsSame(
                 getSupportedAnnotationsInElementAnnotation(element, HasQualifierParameter.class),
                 top);
