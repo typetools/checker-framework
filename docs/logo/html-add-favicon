@@ -16,30 +16,31 @@
 #  * The mktemp command is not portable (it doesn't work on Mac OS, for example).
 #  * It does not preserve file permissions.
 #  * It changes file timestamps even on files that are not changed.
+#  * It does not hasdle file names containing spaces.
 # This version corrects these issues.
 
 patchIt () {
-  for f in $1/*.html ; do
+  for f in "$1"/*.html ; do
     if [ -f "$f" ]; then     # if no .html files exist, f is literal "*.html"
-      tmpfile=`mktemp patch_favicon_XXXXX`
+      tmpfile=$(mktemp patch_favicon_XXXXX)
       # This creates tmpfile, with the same permissions as $f.
       # The next command will overwrite it but preserve the permissions.
       # Hat tip to http://superuser.com/questions/170226/standard-way-to-duplicate-a-files-permissions for this trick.
-      \cp -p $f $tmpfile
-      sed -e " s%<head>\$%<head><link rel=\"icon\" href=\"$2\" type=\"image/png\"/>%" $f > $tmpfile
-      if ! cmp $f $tmpfile >/dev/null 2>&1
+      \cp -p "$f" "$tmpfile"
+      sed -e " s%<head>\$%<head><link rel=\"icon\" href=\"$2\" type=\"image/png\"/>%" "$f" > "$tmpfile"
+      if ! cmp "$f" "$tmpfile" >/dev/null 2>&1
       then
-        mv -f $tmpfile $f
+        mv -f "$tmpfile" "$f"
       else
-        rm -f $tmpfile
+        rm -f "$tmpfile"
       fi
     fi;
   done ;
-  for d in $1/* ; do
-    if [ -d $d ]; then echo "descending to "$d ; patchIt $d ../$2 ; fi ;
+  for d in "$1"/* ; do
+    if [ -d "$d" ]; then echo "descending to $d" ; patchIt "$d" "../$2" ; fi ;
   done
 }
 
-patchIt $1 $2
+patchIt "$1" "$2"
 
 #eof

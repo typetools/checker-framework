@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -226,53 +227,39 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     @SideEffectFree
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Supertypes Graph: ");
+        StringJoiner sj = new StringJoiner(System.lineSeparator());
+        sj.add("Supertypes Graph: ");
 
         for (Entry<AnnotationMirror, Set<AnnotationMirror>> qual : supertypesDirect.entrySet()) {
-            sb.append("\n\t");
-            sb.append(qual.getKey());
-            sb.append(" = ");
-            sb.append(qual.getValue());
+            sj.add("\t" + qual.getKey() + " = " + qual.getValue());
         }
 
-        sb.append("\nSupertypes Map: ");
+        sj.add("Supertypes Map: ");
 
         for (Entry<AnnotationMirror, Set<AnnotationMirror>> qual :
                 supertypesTransitive.entrySet()) {
-            sb.append("\n\t");
-            sb.append(qual.getKey());
-            sb.append(" = [");
+            String keyOpen = "\t" + qual.getKey() + " = [";
 
             Set<AnnotationMirror> supertypes = qual.getValue();
 
             if (supertypes.size() == 1) {
-                // if there's only 1 supertype for this qual, then directly display that in the same
-                // row
-                sb.append(supertypes.iterator().next());
+                // If there's only 1 supertype for this qual, then display that in the same row.
+                sj.add(keyOpen + supertypes.iterator().next() + "]");
             } else {
                 // otherwise, display each supertype in its own row
+                sj.add(keyOpen);
                 for (Iterator<AnnotationMirror> iterator = supertypes.iterator();
                         iterator.hasNext(); ) {
-                    // new line and tabbing
-                    sb.append("\n\t\t");
-                    // display the supertype
-                    sb.append(iterator.next());
-                    // add a comma delimiter if it isn't the last value
-                    sb.append(iterator.hasNext() ? ", " : "");
+                    sj.add("\t\t" + iterator.next() + (iterator.hasNext() ? ", " : ""));
                 }
-                sb.append("\n\t\t"); // new line and tab indentation for the trailing bracket
+                sj.add("\t\t]");
             }
-
-            sb.append("]");
         }
 
-        sb.append("\nTops: ");
-        sb.append(tops);
-        sb.append("\nBottoms: ");
-        sb.append(bottoms);
+        sj.add("Tops: " + tops);
+        sj.add("Bottoms: " + bottoms);
 
-        return sb.toString();
+        return sj.toString();
     }
 
     @Override
@@ -893,16 +880,15 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                     result = anno;
                 } else {
                     throw new BugInCF(
-                            String.format(
-                                    "Bug in checker implementation:  type hierarchy is not a lattice.%n"
-                                            + "There is no unique "
-                                            + (lub ? "lub" : "glb")
-                                            + "(%s, %s).%n"
-                                            + "Two incompatible candidates are: %s %s",
-                                    a1,
-                                    a2,
-                                    result,
-                                    anno));
+                            "Bug in checker implementation:  type hierarchy is not a lattice.%n"
+                                    + "There is no unique "
+                                    + (lub ? "lub" : "glb")
+                                    + "(%s, %s).%n"
+                                    + "Two incompatible candidates are: %s %s",
+                            a1,
+                            a2,
+                            result,
+                            anno);
                 }
             }
             return result;

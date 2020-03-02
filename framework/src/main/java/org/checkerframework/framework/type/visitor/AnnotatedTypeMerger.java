@@ -115,12 +115,9 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
             }
         } else {
             throw new BugInCF(
-                    "ResolvePrimaries' from argument should be a type variable OR wildcard\n"
-                            + "from="
-                            + from.toString(true)
-                            + "\n"
-                            + "to="
-                            + to.toString(true));
+                    "ResolvePrimaries's from argument should be a type variable OR wildcard%n"
+                            + "from=%s%nto=%s",
+                    from.toString(true), to.toString(true));
         }
     }
 }

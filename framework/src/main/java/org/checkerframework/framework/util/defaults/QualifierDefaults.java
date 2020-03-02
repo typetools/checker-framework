@@ -169,22 +169,13 @@ public class QualifierDefaults {
     @Override
     public String toString() {
         // displays the checked and unchecked code defaults
-        StringBuilder sb = new StringBuilder();
-        sb.append("Checked code defaults: ");
-        sb.append(System.lineSeparator());
-        sb.append(PluginUtil.join(System.lineSeparator(), checkedCodeDefaults));
-        sb.append(System.lineSeparator());
-        sb.append("Unchecked code defaults: ");
-        sb.append(System.lineSeparator());
-        sb.append(PluginUtil.join(System.lineSeparator(), uncheckedCodeDefaults));
-        sb.append(System.lineSeparator());
-        sb.append("useUncheckedCodeDefaultsSource: ");
-        sb.append(useUncheckedCodeDefaultsSource);
-        sb.append(System.lineSeparator());
-        sb.append("useUncheckedCodeDefaultsBytecode: ");
-        sb.append(useUncheckedCodeDefaultsBytecode);
-        sb.append(System.lineSeparator());
-        return sb.toString();
+        return PluginUtil.joinLines(
+                "Checked code defaults: ",
+                PluginUtil.joinLines(checkedCodeDefaults),
+                "Unchecked code defaults: ",
+                PluginUtil.joinLines(uncheckedCodeDefaults),
+                "useUncheckedCodeDefaultsSource: " + useUncheckedCodeDefaultsSource,
+                "useUncheckedCodeDefaultsBytecode: " + useUncheckedCodeDefaultsBytecode);
     }
 
     /**
@@ -1141,11 +1132,10 @@ public class QualifierDefaults {
                 }
             } else {
                 throw new BugInCF(
-                        "Unexpected tree type for typeVar Element:\n"
-                                + "typeParamElem="
-                                + typeParamElem
-                                + "\n"
-                                + typeParamDecl);
+                        PluginUtil.joinLines(
+                                "Unexpected tree type for typeVar Element:",
+                                "typeParamElem=" + typeParamElem,
+                                typeParamDecl));
             }
         }
 

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.annotation.processing.AbstractProcessor;
@@ -514,7 +515,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.parentChecker = parentChecker;
     }
 
-    /** Invoked when the current compilation unit root changes. */
+    /** @return the parent checker of the current checker */
+    public SourceChecker getParentChecker() {
+        return this.parentChecker;
+    }
+
+    /**
+     * Invoked when the current compilation unit root changes.
+     *
+     * @param newRoot the new compilation unit root
+     */
     protected void setRoot(CompilationUnitTree newRoot) {
         this.currentRoot = newRoot;
         visitor.setRoot(currentRoot);
@@ -795,21 +805,26 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         printMessage(msg);
     }
 
-    /** Log an internal error in the framework or a checker. */
+    /**
+     * Log an internal error in the framework or a checker.
+     *
+     * @param ce the internal error
+     */
     private void logBugInCF(BugInCF ce) {
-        StringBuilder msg = new StringBuilder(ce.getMessage());
+        StringJoiner msg = new StringJoiner(LINE_SEPARATOR);
+        msg.add(ce.getMessage());
         boolean noPrintErrorStack =
                 (processingEnv != null
                         && processingEnv.getOptions() != null
                         && processingEnv.getOptions().containsKey("noPrintErrorStack"));
 
+        msg.add("; The Checker Framework crashed.  Please report the crash.");
         if (noPrintErrorStack) {
-            msg.append(
-                    "; The Checker Framework crashed.  Please report the crash.  To see "
-                            + "the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+            msg.add(
+                    " To see the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
         } else {
             if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
-                msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
+                msg.add("Compilation unit: " + this.currentRoot.getSourceFile().getName());
             }
 
             if (this.visitor != null) {
@@ -821,26 +836,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     int col = source.getColumnNumber(pos.getStartPosition(), true);
                     String line = source.getLine(pos.getStartPosition());
 
-                    msg.append(
-                            "\nLast visited tree at line "
-                                    + linenr
-                                    + " column "
-                                    + col
-                                    + ":\n"
-                                    + line);
+                    msg.add("Last visited tree at line " + linenr + " column " + col + ":");
+                    msg.add(line);
                 }
             }
 
-            msg.append(
-                    "\nException: "
+            msg.add(
+                    "Exception: "
                             + ce.getCause()
                             + "; "
                             + formatStackTrace(ce.getCause().getStackTrace()));
             boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
             Throwable cause = ce.getCause().getCause();
             while (cause != null) {
-                msg.append(
-                        "\nUnderlying Exception: "
+                msg.add(
+                        "Underlying Exception: "
                                 + cause
                                 + "; "
                                 + formatStackTrace(cause.getStackTrace()));
@@ -849,11 +859,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
 
             if (printClasspath) {
-                msg.append("\nClasspath:");
+                msg.add("Classpath:");
                 ClassLoader cl = ClassLoader.getSystemClassLoader();
                 URL[] urls = ((URLClassLoader) cl).getURLs();
                 for (URL url : urls) {
-                    msg.append("\n" + url.getFile());
+                    msg.add(url.getFile());
                 }
             }
         }
@@ -1190,21 +1200,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 t);
     }
 
-    /** Format a list of {@link StackTraceElement}s to be printed out as an error message. */
+    /**
+     * Format a list of {@link StackTraceElement}s to be printed out as an error message.
+     *
+     * @param stackTrace the {@link StackTraceElement}s to be printed
+     * @return a multi-line formatted stack trace
+     */
     protected String formatStackTrace(StackTraceElement[] stackTrace) {
-        boolean first = true;
-        StringBuilder sb = new StringBuilder();
+        StringJoiner sb = new StringJoiner(LINE_SEPARATOR);
         if (stackTrace.length == 0) {
-            sb.append("no stack trace available.");
+            sb.add("no stack trace available.");
         } else {
-            sb.append("Stack trace: ");
+            sb.add("Stack trace: ");
         }
         for (StackTraceElement ste : stackTrace) {
-            if (!first) {
-                sb.append("\n");
-            }
-            first = false;
-            sb.append(ste.toString());
+            sb.add(ste.toString());
         }
         return sb.toString();
     }
@@ -1233,7 +1243,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Prints a message (error, warning, note, etc.) via JSR-269.
      *
      * @param kind the type of message to print
-     * @param source the object from which to obtain source position information
+     * @param source the object from which to obtain source position information; may be an Element,
+     *     a Tree, or null
      * @param msgKey the message key to print
      * @param args arguments for interpolation in the string corresponding to the given message key
      * @see Diagnostic
@@ -1242,7 +1253,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private void message(
             Diagnostic.Kind kind,
-            Object source,
+            @Nullable Object source,
             @CompilerMessageKey String msgKey,
             Object... args) {
 
@@ -1307,8 +1318,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 tree = trees.getTree((Element) source);
             } else if (source instanceof Tree) {
                 tree = (Tree) source;
-            } else {
+            } else if (source == null) {
                 tree = null;
+            } else {
+                throw new BugInCF("Unexpected source %s [%s]", source, source.getClass());
             }
             sb.append(treeToFilePositionString(tree, currentRoot, processingEnv));
             sb.append(DETAILS_SEPARATOR);
@@ -1354,11 +1367,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } catch (Exception e) {
             messageText =
                     "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args);
-        }
-
-        if (LINE_SEPARATOR != "\n") { // interned
-            // Replace '\n' with the proper line separator
-            messageText = messageText.replaceAll("\n", LINE_SEPARATOR);
         }
 
         if (source instanceof Element) {
@@ -1420,12 +1428,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param currentRoot the current compilation unit
      * @param processingEnv the current processing environment
      * @return a tuple string representing the range of characters that tree occupies in the source
-     *     file
+     *     file, or the empty string if {@code tree} is null
      */
     public String treeToFilePositionString(
             Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
         if (tree == null) {
-            return null;
+            return "";
         }
 
         SourcePositions sourcePositions = trees.getSourcePositions();

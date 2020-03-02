@@ -53,7 +53,7 @@ public class Fields {
                 type = FIELD),
     })
     public String fieldWithDefaultQualifier() {
-        return "@DefaultQualifier(Nullable.class)\n " + "Object f;";
+        return "@DefaultQualifier(Nullable.class)" + System.lineSeparator() + " Object f;";
     }
 
     @TADescriptions({

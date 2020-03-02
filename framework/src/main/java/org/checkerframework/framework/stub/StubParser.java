@@ -1741,9 +1741,8 @@ public class StubParser {
                 // casting a negative value to char is illegal.
                 if (negate) {
                     throw new BugInCF(
-                            String.format(
-                                    "convert(%s, %s, %s): can't negate a char",
-                                    number, expectedKind, negate));
+                            "convert(%s, %s, %s): can't negate a char",
+                            number, expectedKind, negate);
                 }
                 return (char) number.intValue();
             case FLOAT:
