@@ -1564,7 +1564,12 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
-        Set<AnnotationMirror> tops = getQualifierParameterHierarchies(enclosingClass);
+        Set<AnnotationMirror> tops;
+        if (enclosingClass != null) {
+            tops = getQualifierParameterHierarchies(enclosingClass);
+        } else {
+            return;
+        }
         if (tops.isEmpty()) {
             return;
         }

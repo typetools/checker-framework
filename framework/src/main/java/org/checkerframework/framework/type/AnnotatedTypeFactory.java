@@ -3340,6 +3340,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public boolean hasQualifierParameterInHierarchy(
             @Nullable Element element, AnnotationMirror top) {
+        if (element == null) {
+            return false;
+        }
         return AnnotationUtils.containsSame(getQualifierParameterHierarchies(element), top);
     }
 
@@ -3391,6 +3394,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) annotatedType;
         Element element = declaredType.getUnderlyingType().asElement();
+        if (element == null) {
+            return Collections.emptySet();
+        }
         return getQualifierParameterHierarchies(element);
     }
 
@@ -3402,8 +3408,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the set of top annotations representing all the hierarchies for which this element
      *     has a qualifier parameter
      */
-    public Set<AnnotationMirror> getQualifierParameterHierarchies(@Nullable Element element) {
-        if (element == null || !ElementUtils.isTypeDeclaration(element)) {
+    public Set<AnnotationMirror> getQualifierParameterHierarchies(Element element) {
+        if (!ElementUtils.isTypeDeclaration(element)) {
             return Collections.emptySet();
         }
 
