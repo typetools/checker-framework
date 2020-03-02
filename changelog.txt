@@ -4,6 +4,10 @@ Version 3.2.0, March 2, 2020
 contains "initialization".  Previously, it suppressed all warnings issued
 by the Nullness Checker or the Initialization Checker.
 
+Closed issues:
+
+2719, 3001, 3020, 3069, 3093, 3120.
+
 ---------------------------------------------------------------------------
 
 Version 3.1.1, February 3, 2020
