@@ -28,6 +28,7 @@ package java.util;
 import java.util.function.Consumer;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.Covariant;
 
 /**
@@ -65,6 +66,7 @@ public interface Iterator<E> {
      *
      * @return {@code true} if the iteration has more elements
      */
+    @Pure
     boolean hasNext();
 
     /**

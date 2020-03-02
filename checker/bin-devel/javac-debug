@@ -12,10 +12,10 @@
 
 # When editing, keep this file in sync with javac-debug in this directory.
 
-mydir="`dirname $0`"
-case `uname -s` in
+mydir="$(dirname "$0")"
+case $(uname -s) in
     CYGWIN*)
-      mydir=`cygpath -m $mydir`
+      mydir=$(cygpath -m "$mydir")
       ;;
 esac
 
@@ -63,4 +63,4 @@ eval "java" \
      "-DCheckerDevelMain.binary=${binaryDir} " \
      "-classpath ${buildDirs} " \
      "org.checkerframework.framework.util.CheckerDevelMain" \
-     ${args}
+     "${args}"
