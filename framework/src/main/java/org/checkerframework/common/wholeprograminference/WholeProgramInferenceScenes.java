@@ -329,16 +329,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         storage.updateAnnotationSetInScene(
                 method.returnType, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.RETURN);
 
-        // Now, update overridden methods based on the implementation we just saw.  This inference
-        // is similar to the inference procedure for method parameters: both are updated based only
-        // on the implementations (in this case) or call-sites (for method parameters) that are
-        // available to WPI.
+        // Now, update return types of overridden methods based on the implementation we just saw.
+        // This inference is similar to the inference procedure for method parameters: both are
+        // updated based only on the implementations (in this case) or call-sites (for method
+        // parameters) that are available to WPI.
         //
-        // Implementing this inference for each return statement is no less efficient than
-        // doing so in one pass at the end (in terms of WPI iterations), and is considerably
-        // more convenient than collecting all of this information in a separate data structure
-        // as WPI runs and then updating each overridden method once, which would also require
-        // a second pass of the AST.
+        // An alternative implementation would be to:
+        //  * update only the method (not overridden methods)
+        //  * when finished, propagate the final result to overridden methods
         //
         for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
                 overriddenMethods.entrySet()) {
