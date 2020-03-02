@@ -167,7 +167,7 @@ public class AnnotatedTypes {
                     AnnotatedTypeVariable resultTypeArgTV = (AnnotatedTypeVariable) resultTypeArg;
                     resultTypeArgTV.getUpperBound().addAnnotations(sourceTypeArg.getAnnotations());
                 } else {
-                    resultTypeArg.addAnnotations(sourceTypeArg.getAnnotations());
+                    resultTypeArg.addAnnotations(sourceTypeArg.getEffectiveAnnotations());
                 }
                 @SuppressWarnings("unchecked")
                 T result = (T) resultAtd;
