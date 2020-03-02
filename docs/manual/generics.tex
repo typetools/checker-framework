@@ -921,10 +921,16 @@ class Buffer {
 \noindent
 Because \<@PolyTainted> applies to a type (\<Buffer>) with a qualifier parameter, all
 uses of \<@PolyTainted> are instantiated to the qualifiers on the type of
-the receiver expression at call sites to \<append>.
-This means that the call \<myUntaintedBuffer.append(myTaintedString)> is
-illegal, though \<myTaintedBuffer.append(myUntaintedString)> is permitted.
+the receiver expression at call sites to \<append>. For example,
 
+\begin{Verbatim}
+@Untainted Buffer untaintedBuffer = ...;
+@Tainted String taintedString = ...;
+untaintedBuffer.append(taintedString); // error: argument.type.incompatible
+\end{Verbatim}
+The above \<append> call is illegal because the \<@PolyTainted> is instantiated to \<@Untainted> and
+the type of the argument is \<@Tainted> which is a supertype of \<@Untainted>.  If the type of
+\<untaintedBuffer> were \<@Tainted> then the call would be legal.
 
 \subsectionAndLabel{Using class qualifier parameters in the type of a field}{class-qual-param-field}
 
