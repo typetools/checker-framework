@@ -399,6 +399,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
             TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
+            if (classElement == null) {
+                continue;
+            }
             AnnotationMirror poly =
                     atypeFactory.getQualifierHierarchy().getPolymorphicAnnotation(top);
             if (poly != null) {

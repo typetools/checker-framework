@@ -3355,11 +3355,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return whether the class given by {@code element} has been explicitly annotated with {@code
      *     HasQualifierParameter} for the given hierarchy
      */
-    public boolean hasExplicitQualifierParameterInHierarchy(
-            @Nullable Element element, AnnotationMirror top) {
-        if (element == null) {
-            return false;
-        }
+    public boolean hasExplicitQualifierParameterInHierarchy(Element element, AnnotationMirror top) {
         return AnnotationUtils.containsSame(
                 getSupportedAnnotationsInElementAnnotation(element, HasQualifierParameter.class),
                 top);
@@ -3375,7 +3371,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     NoQualifierParameter} for the given hierarchy
      */
     public boolean hasExplicitNoQualifierParameterInHierarchy(
-            @Nullable Element element, AnnotationMirror top) {
+            Element element, AnnotationMirror top) {
         return AnnotationUtils.containsSame(
                 getSupportedAnnotationsInElementAnnotation(element, NoQualifierParameter.class),
                 top);
