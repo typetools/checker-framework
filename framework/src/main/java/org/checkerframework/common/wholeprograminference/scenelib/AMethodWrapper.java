@@ -83,7 +83,7 @@ public class AMethodWrapper {
     /**
      * Interact with a parameter.
      *
-     * @param i the parameter index (1st parameter is zero)
+     * @param i the parameter index (zero-indexed)
      * @param type the type of the parameter, as a TypeMirror
      * @param simpleName the name of the parameter
      * @return an AFieldWrapper representing the parameter
@@ -114,7 +114,7 @@ public class AMethodWrapper {
     }
 
     /**
-     * Get the parameters, if they have been vivified.
+     * Get the parameters that have been vivified.
      *
      * @return an immutable copy of the vivified parameters, as a map from index to representation
      */
