@@ -17,11 +17,14 @@ echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo "BUILDJDK=${BUILDJDK}"
-source $SCRIPTDIR/build.sh ${BUILDJDK}
+# In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
+# shellcheck disable=SC1090
+source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
 
 
 # daikon-typecheck: 15 minutes
 /tmp/plume-scripts/git-clone-related codespecs daikon
 cd ../daikon
+git log | head -n 5
 make compile
 time make -C java typecheck

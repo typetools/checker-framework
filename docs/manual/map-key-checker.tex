@@ -15,8 +15,9 @@ more precisely by refining its result to \<@NonNull> in some cases.
 You will not typically run the Map Key Checker.  It is automatically run by
 other checkers, in particular the Nullness Checker.
 
-You can suppress warnings related to map keys with
-\<@SuppressWarnings("keyfor")>; see \chapterpageref{suppressing-warnings}.
+You can unsoundly suppress warnings related to map keys with
+\<@SuppressWarnings("keyfor")>, or everywhere by using command-line option
+\<-AsuppressWarnings=keyfor>; see \chapterpageref{suppressing-warnings}.
 
 \sectionAndLabel{Map key annotations}{map-key-annotations}
 

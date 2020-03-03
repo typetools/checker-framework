@@ -9,7 +9,7 @@ copied to ../dist/ .  The Checker Framework always uses a jdk8.jar file
 from checker/dist/, never from here.
 
 If you make a change within this directory, see
-https://github.com/typetools/annotated-libraries
+https://github.com/typetools/annotated-libraries .
 In particular, to rebuild the annotated JDK, run (from the
 checker-framework directory):
 ./gradlew buildJdk -PuseLocalJdk
