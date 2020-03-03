@@ -551,12 +551,14 @@ public final class SceneToStubWriter {
 
         printFields(aClassWrapper, printWriter);
 
-        // print method signatures
-        printWriter.println(INDENT + "// methods:");
-        printWriter.println();
-        for (Map.Entry<String, AMethodWrapper> methodEntry :
-                aClassWrapper.getMethods().entrySet()) {
-            printMethodSignature(methodEntry.getValue(), innermostClassname, printWriter);
+        if (aClassWrapper.getMethods().keySet().size() != 0) {
+            // print method signatures
+            printWriter.println(INDENT + "// methods:");
+            printWriter.println();
+            for (Map.Entry<String, AMethodWrapper> methodEntry :
+                    aClassWrapper.getMethods().entrySet()) {
+                printMethodSignature(methodEntry.getValue(), innermostClassname, printWriter);
+            }
         }
         for (int i = 0; i < curlyCount; i++) {
             printWriter.println("}");
