@@ -10,7 +10,7 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import scenelib.annotations.el.AMethod;
 
 /**
- * A wrapper for the AMethod class from scenelib. Keeps more information on the return type, and
+ * A wrapper for the AMethod class from scenelib. Keeps more information about the return type, and
  * wraps the parameter list so that more information can be kept on the parameters.
  */
 public class AMethodWrapper {
