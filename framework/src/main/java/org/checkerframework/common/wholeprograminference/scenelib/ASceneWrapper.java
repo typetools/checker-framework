@@ -24,10 +24,10 @@ import scenelib.annotations.el.DefException;
 import scenelib.annotations.io.IndexFileWriter;
 
 /**
- * The Annotation File Utilities scene-lib library is a bit of a dumpster fire. Its classes are all
- * final, so they cannot be extended. However, it also doesn't provide enough information to
- * usefully print stub files: it lacks information about what is and is not an enum, about the base
- * types of variables, and more.
+ * Every class in scene-lib (from the Annotation File Utilities) is final, so none of them can be
+ * extended. However, scene-lib also doesn't provide enough information to usefully print stub
+ * files: it lacks information about what is and is not an enum, about the base types of variables,
+ * and more.
  *
  * <p>This class wraps AScene but provides access to that missing information. This allows us to
  * preserve the code that generates .jaif files, while allowing us to sanely and safely keep the

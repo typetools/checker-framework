@@ -65,7 +65,7 @@ public final class SceneToStubWriter {
     /**
      * Writes the annotations in {@code scene} to the file {@code filename} in stub file format.
      *
-     * @param scene the scene to write out {@code TypeMirror}s that represent their base Java types
+     * @param scene the scene to write out
      * @param filename the path of the file to write to
      * @throws IOException if the file doesn't exist
      * @see #write(ASceneWrapper, Writer)
@@ -191,12 +191,14 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * The implementation of formatArrayType. Because of the (insane) structure of scenelib, the
-     * descent order is innermost array type to outermost array type, then component type. So if we
-     * have the type {@code @Foo int @Bar [] @Baz []}, the iteration order is {@code @Bar []}, then
-     * {@code @Baz []}, and then finally {@code @Foo int}. This implementation therefore passes a
-     * string builder with the result of the array types seen so far, to handle multidimensional
-     * arrays. That builder is appended to the final component type in the base case.
+     * The implementation of formatArrayType. Java array types have a somewhat unintuitive syntax:
+     * see <a
+     * href="https://checkerframework.org/jsr308/specification/java-annotation-design.html#array-syntax">this
+     * explanation</a>. Basically, given the type {@code @Foo int @Bar [] @Baz []}, the iteration
+     * order in the scene-lib representation is {@code @Bar []}, then {@code @Baz []}, and then
+     * finally {@code @Foo int}. This implementation therefore passes a string builder with the
+     * result of the array types seen so far, to handle multidimensional arrays. That builder is
+     * appended to the final component type in the base case.
      *
      * @param e same as above
      * @param arrayType same as above
@@ -235,6 +237,11 @@ public final class SceneToStubWriter {
         return formatArrayTypeImpl(innerType, nextComponentType, result);
     }
 
+    private static String formatParameter(
+            AFieldWrapper param, String parameterName, String basename) {
+        return formatAFieldImpl(param, parameterName, basename);
+    }
+
     /**
      * Formats an AField so that it can be printed in a stub. An AField represents a variable
      * declaration. In practice, {@code aField} should represent either a field declaration or a
@@ -245,14 +252,20 @@ public final class SceneToStubWriter {
      * because it is shared between field declarations and formal parameters, it does not add any
      * trailing semicolons/commas/other syntax.
      *
-     * @param aField the field to format
+     * <p>Usually, {@link #formatParameter(AFieldWrapper, String, String)} should be called to
+     * format method parameters, and {@link #printField(AFieldWrapper, String, PrintWriter)} should
+     * be called to print field declarations. Both use this method as their underlying
+     * implementation.
+     *
+     * @param aField the field declaration or formal parameter declaration to format
      * @param fieldName the name to use for the declaration in the stub file. This doesn't matter
      *     for parameters, but must be correct for fields.
      * @param className the simple name of the enclosing class. This is only used for printing the
      *     type of an explicit receiver parameter (i.e., a parameter named "this").
      * @return a String suitable to print in a stub file
      */
-    private static String formatAField(AFieldWrapper aField, String fieldName, String className) {
+    private static String formatAFieldImpl(
+            AFieldWrapper aField, String fieldName, String className) {
         StringBuilder result = new StringBuilder();
         String basetype;
         if ("this".equals(fieldName)) {
@@ -368,19 +381,35 @@ public final class SceneToStubWriter {
      * Prints all the fields of a given class
      *
      * @param aClass the class whose fields should be printed
-     * @param classname the simple name of the class, used to print the type of "this"
      * @param printWriter the writer on which to print the fields
      */
-    private static void printFields(
-            AClassWrapper aClass, String classname, PrintWriter printWriter) {
+    private static void printFields(AClassWrapper aClass, PrintWriter printWriter) {
+
+        if (aClass.getFields().keySet().size() != 0) {
+            printWriter.println(INDENT + "// fields:");
+            printWriter.println();
+        }
+
         for (Map.Entry<String, AFieldWrapper> fieldEntry : aClass.getFields().entrySet()) {
             String fieldName = fieldEntry.getKey();
             AFieldWrapper aField = fieldEntry.getValue();
-            printWriter.print(INDENT);
-            printWriter.print(formatAField(aField, fieldName, classname));
-            printWriter.println(";");
-            printWriter.println();
+            printField(aField, fieldName, printWriter);
         }
+    }
+
+    /**
+     * Prints a field declaration, including a trailing semi-colon and a newline.
+     *
+     * @param aField the field declaration
+     * @param fieldName the name of the field
+     * @param printWriter the writer on which to print
+     */
+    private static void printField(
+            AFieldWrapper aField, String fieldName, PrintWriter printWriter) {
+        printWriter.print(INDENT);
+        printWriter.print(formatAFieldImpl(aField, fieldName, null));
+        printWriter.println(";");
+        printWriter.println();
     }
 
     /**
@@ -427,11 +456,12 @@ public final class SceneToStubWriter {
                 || !aMethod.receiver.type.innerTypes.isEmpty()) {
             // Only output the receiver if it has an annotation.
             parameters.add(
-                    formatAField(new AFieldWrapper(aMethod.receiver, basename), "this", basename));
+                    formatParameter(
+                            new AFieldWrapper(aMethod.receiver, basename), "this", basename));
         }
         for (Integer index : aMethodWrapper.getParameters().keySet()) {
             AFieldWrapper param = aMethodWrapper.getParameters().get(index);
-            parameters.add(formatAField(param, param.getParameterName(), basename));
+            parameters.add(formatParameter(param, param.getParameterName(), basename));
         }
         printWriter.print(parameters.toString());
         printWriter.println(");");
@@ -521,9 +551,7 @@ public final class SceneToStubWriter {
             }
         }
 
-        printWriter.println(INDENT + "// fields:");
-        printWriter.println();
-        printFields(aClassWrapper, innermostClassname, printWriter);
+        printFields(aClassWrapper, printWriter);
 
         // print method signatures
         printWriter.println(INDENT + "// methods:");
