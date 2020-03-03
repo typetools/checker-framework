@@ -1472,19 +1472,16 @@ Framework's annotations.
 
 \subsectionAndLabel{Why do \<.class> files contain more annotations than the source code?}{faq-classfile-annotations}
 
-You may notice annotations such as \<@Pure> and \<@SideEffectFree> in
-compiled \<.class> files even though the source code contains no
-annotations.  These annotations are propagated from annotated libraries,
-such as the JDK, to your code.
+A \<.class> file contains an annotation on every type, as computed by
+defaulting rules; see Section~\ref{effective-qualifier}.
 
 When an overridden method has a side effect annotation, the overriding
-method must have one too.  If you do not write one explicitly, the Checker
-Framework could issue a warning, or it could automatically add the missing
-annotation.  It does the latter, for annotations declared with the
-\refqualclass{framework/qual}{InheritedAnnotation} meta-annotation.
-
-In addition, defaulted and inferred type qualifiers are written into
-\<.class> files; see Section~\ref{effective-qualifier}.
+method must have one too.  However, if the side effect annotation is
+declared with the \refqualclass{framework/qual}{InheritedAnnotation}
+meta-annotation, the Checker Framework automatically adds the missing
+annotation.  This is the case for most side effect annotations --- these
+annotations are propagated from annotated libraries, such as the JDK, to
+your code.
 
 
 \subsectionAndLabel{Is there a type-checker for managing checked and unchecked exceptions?}{faq-checked-exceptions}
