@@ -427,8 +427,8 @@ public final class SceneToStubWriter {
 
         printWriter.print(INDENT);
         printWriter.print(formatAnnotations(aMethod.returnType.tlAnnotationsHere));
-        // Needed because AMethod stores the name with the parameters, to differentiate
-        // between different methods in the same class with the same name.
+        // Needed because AMethod stores the name with the parameters, to distinguish
+        // between overloaded methods.
         String methodName = aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
         // Use Java syntax for constructors.
         if ("<init>".equals(methodName)) {
