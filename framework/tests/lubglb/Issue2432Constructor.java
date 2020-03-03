@@ -5,16 +5,19 @@ import lubglb.quals.*;
 
 class Issue2432C {
 
+    // reason for suppressing:
     // super.invocation.invalid: Object is @A by default and it is unreasonable to change jdk stub
-    // just because of this.
-    // inconsistent.constructor.type: just because the qualifier on the returning type is not top.
+    // just because of this
+    // inconsistent.constructor.type: the qualifier on returning type is expected not to be top
     @SuppressWarnings({"super.invocation.invalid", "inconsistent.constructor.type"})
     @Poly Issue2432C(@Poly Object dummy) {}
 
     @SuppressWarnings({"super.invocation.invalid", "inconsistent.constructor.type"})
     @Poly Issue2432C(@Poly Object dummy1, @Poly Object dummy2) {}
 
+    // class for test cases using type parameter
     static class TypeParamClass<T> {
+
         // @Poly on T shouldn't be in the poly resolving process
         @SuppressWarnings({"super.invocation.invalid", "inconsistent.constructor.type"})
         @Poly TypeParamClass(@Poly Object dummy, T t) {}
@@ -24,15 +27,7 @@ class Issue2432C {
         @Poly TypeParamClass(@Poly Object dummy1, @Poly Object dummy2, T t) {}
     }
 
-    // This class is useful because only non-static inner class have a recevier in constructors
-    // Useful links on how to use the explicit receiver type on nested class constructors:
-    // https://docs.oracle.com/javase/tutorial/java/javaOO/nested.html
-    // https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-ReceiverParameter
-    // "In an inner class's constructor, the type of the receiver parameter must be the class or
-    // interface which is the immediately enclosing type declaration of the inner class, and the
-    // name of the receiver parameter must be Identifier . this where Identifier is the simple name
-    // of the class or interface which is the immediately enclosing type declaration of the inner
-    // class; otherwise, a compile-time error occurs."
+    // class for test cases using type parameter
     class ReceiverClass {
 
         // if the qualifier on receiver is @Poly, it should not be involved in poly resolve process
@@ -46,7 +41,7 @@ class Issue2432C {
 
     void invokeConstructors(@A Object top, @F Object bottom, @Poly Object poly) {
         // :: error: (assignment.type.incompatible)
-        @F Issue2432C bottomOuter = new Issue2432C(top); // B4C  // AFC
+        @F Issue2432C bottomOuter = new Issue2432C(top);
         @A Issue2432C topOuter = new Issue2432C(top);
 
         // lub test
@@ -63,7 +58,7 @@ class Issue2432C {
             @A Issue2432C topOuter, @Poly Issue2432C polyOuter, @F Object bottom, @A Object top) {
         Issue2432C.@F ReceiverClass ref1 = polyOuter.new ReceiverClass(bottom);
         // :: error: (assignment.type.incompatible)
-        Issue2432C.@B ReceiverClass ref2 = polyOuter.new ReceiverClass(top); // B4C  // AFC
+        Issue2432C.@B ReceiverClass ref2 = polyOuter.new ReceiverClass(top);
 
         // lub tests
         Issue2432C.@A ReceiverClass ref3 = polyOuter.new ReceiverClass(top, bottom);
@@ -75,9 +70,9 @@ class Issue2432C {
 
     // invoke constructors with a type parameter to test poly resolving
     void invokeTypeVarConstructors(@A Object top, @F Object bottom, @Poly Object poly) {
-        @F TypeParamClass<@Poly Object> ref1 = new TypeParamClass<>(bottom, poly); // B4C
+        @F TypeParamClass<@Poly Object> ref1 = new TypeParamClass<>(bottom, poly);
         // :: error: (assignment.type.incompatible)
-        @B TypeParamClass<@Poly Object> ref2 = new TypeParamClass<>(top, poly); // B4C  // AFC
+        @B TypeParamClass<@Poly Object> ref2 = new TypeParamClass<>(top, poly);
 
         // lub tests
         @A TypeParamClass<@Poly Object> ref3 = new TypeParamClass<>(bottom, top, poly);
