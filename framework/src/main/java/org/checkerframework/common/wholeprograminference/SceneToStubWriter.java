@@ -580,12 +580,10 @@ public final class SceneToStubWriter {
         if (typeParameters.isEmpty()) {
             return;
         }
-        printWriter.print("<");
-        StringJoiner sj = new StringJoiner(", ");
+        StringJoiner sj = new StringJoiner(", ", "<", ">");
         for (TypeParameterElement t : typeParameters) {
             sj.add(t.getSimpleName().toString());
         }
         printWriter.print(sj.toString());
-        printWriter.print(">");
     }
 }
