@@ -544,8 +544,7 @@ public final class SceneToStubWriter {
 
                 printWriter.println(INDENT + "// enum constants:");
                 printWriter.println();
-                printWriter.print(INDENT + sj.toString());
-                printWriter.println(";");
+                printWriter.println(INDENT + sj.toString() + ";");
                 printWriter.println();
             }
         }
