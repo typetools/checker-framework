@@ -125,18 +125,14 @@ public class AClassWrapper {
     }
 
     /**
-     * Get the type of the class. Should only be called if the type has been set; throws a BugInCF
-     * exception if not.
+     * Get the type of the class, or null if it is unknown. Callers should ensure that either: -
+     * {@link #setTypeElement(TypeElement)} has been called, or - the return value is checked
+     * against null
      *
      * @return a type element representing this class
      */
-    public TypeElement getTypeElement() {
-        if (typeElement != null) {
-            return typeElement;
-        } else {
-            throw new BugInCF(
-                    "Tried to get the base type of an AClassWrapper when the type is unknown.");
-        }
+    public @Nullable TypeElement getTypeElement() {
+        return typeElement;
     }
 
     /**
@@ -147,6 +143,10 @@ public class AClassWrapper {
     public void setTypeElement(TypeElement typeElement) {
         if (this.typeElement == null) {
             this.typeElement = typeElement;
+        } else if (!this.typeElement.equals(typeElement)) {
+            throw new BugInCF(
+                    "Set the base type of an AClassWrapper to a different type than the previous"
+                            + "base type.");
         }
     }
 
@@ -160,12 +160,16 @@ public class AClassWrapper {
     }
 
     /**
-     * Returns the set of enum constants for this class, or null if this is not an enum/
+     * Returns the set of enum constants for this class, or null if this is not an enum.
      *
      * @return the enum constants, or null if this is not an enum
      */
     public @Nullable List<VariableElement> getEnumConstants() {
-        return ImmutableList.copyOf(enumConstants);
+        if (this.isEnum()) {
+            return ImmutableList.copyOf(enumConstants);
+        } else {
+            return null;
+        }
     }
 
     /**
