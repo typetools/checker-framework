@@ -508,21 +508,21 @@ public final class SceneToStubWriter {
         String classname = classEntry.getKey();
         String basename = basenamePart(classname);
 
+        if ("package-info".equals(basename) || "module-info".equals(basename)) {
+            return;
+        }
+
         // Do not attempt to print stubs for anonymous inner classes, because the stub parser
         // cannot read them. (An anonymous inner class has a basename like Outer$1, so this
         // check ensures that the binary name's final segment after its last $ is not only
         // composed of digits.)
         String innermostClassname = basename;
-        while (innermostClassname.contains("$")) {
+        if (innermostClassname.contains("$")) {
             innermostClassname =
                     innermostClassname.substring(innermostClassname.lastIndexOf('$') + 1);
             if (digitPattern.matcher(innermostClassname).matches()) {
                 return;
             }
-        }
-
-        if ("package-info".equals(basename) || "module-info".equals(basename)) {
-            return;
         }
 
         String pkg = packagePart(classname);
