@@ -394,16 +394,17 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     private void updateClassMetadata(ClassSymbol classSymbol, AClassWrapper aClassWrapper) {
         if (classSymbol.isEnum()) {
-            List<VariableElement> enumConstants = new ArrayList<>();
-            for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
-                if (e.getKind() == ElementKind.ENUM_CONSTANT) {
-                    enumConstants.add((VariableElement) e);
+            if (!aClassWrapper.isEnum()) {
+                List<VariableElement> enumConstants = new ArrayList<>();
+                for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
+                    if (e.getKind() == ElementKind.ENUM_CONSTANT) {
+                        enumConstants.add((VariableElement) e);
+                    }
                 }
+                aClassWrapper.markAsEnum(enumConstants);
             }
-            aClassWrapper.markAsEnum(enumConstants);
         }
-        if (aClassWrapper != null) {
-            aClassWrapper.setTypeElement(classSymbol);
-        }
+
+        aClassWrapper.setTypeElement(classSymbol);
     }
 }

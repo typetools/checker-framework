@@ -54,7 +54,7 @@ public class ASceneWrapper {
     }
 
     /**
-     * Fetch the classes in this scene, represented as AClassWrapper objects
+     * Fetch the classes in this scene, represented as AClassWrapper objects.
      *
      * @return an immutable map from binary names to AClassWrapper objects
      */
@@ -127,7 +127,7 @@ public class ASceneWrapper {
     }
 
     /**
-     * Write the scene wrapped by this object to a jaif on the given path
+     * Write the scene wrapped by this object to a jaif on the given path.
      *
      * @param jaifPath the path to the jaif file to be written
      * @param annosToIgnore which annotations should be ignored in which contexts
@@ -179,7 +179,7 @@ public class ASceneWrapper {
     }
 
     /**
-     * Interact with scenelib to add a class to the scene
+     * Interact with scenelib to add a class to the scene.
      *
      * @param className the binary name of the class to be added to the scene
      * @return an AClassWrapper representing that class

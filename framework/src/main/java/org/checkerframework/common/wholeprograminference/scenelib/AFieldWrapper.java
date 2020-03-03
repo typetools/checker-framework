@@ -8,7 +8,7 @@ public class AFieldWrapper {
     /** The wrapped object. */
     private final AField theField;
 
-    /** A String representing the type of the field */
+    /** A String representing the type of the field. */
     private final String type;
 
     /**
@@ -17,7 +17,7 @@ public class AFieldWrapper {
     private String parameterName;
 
     /**
-     * Construct an AFieldWrapper
+     * Construct an AFieldWrapper.
      *
      * @param theField the wrapped AField
      * @param type a String representing the underlying type of the field, which AField doesn't
@@ -38,7 +38,7 @@ public class AFieldWrapper {
     }
 
     /**
-     * Returns the type of the field, as a String
+     * Returns the type of the field, as a String.
      *
      * @return the type of the field, as a String
      */
@@ -56,7 +56,7 @@ public class AFieldWrapper {
     }
 
     /**
-     * Provide a name
+     * Provide a name.
      *
      * @param name the name of the field
      */

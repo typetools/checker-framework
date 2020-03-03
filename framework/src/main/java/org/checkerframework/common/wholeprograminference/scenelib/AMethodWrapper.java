@@ -23,7 +23,9 @@ public class AMethodWrapper {
 
     /**
      * A mirror of the parameters field of AMethod, but using AFieldWrapper objects as the values.
-     * Keys are parameter indices.
+     * Keys are parameter indices. Like the parameters field of AMethod, this map starts empty and
+     * is vivified by calls to {@link #vivifyParameter(int, String, Name)} or {@link
+     * #vivifyParameter(int, TypeMirror, Name)}.
      */
     private Map<Integer, AFieldWrapper> parameters = new HashMap<>();
 
@@ -38,7 +40,7 @@ public class AMethodWrapper {
     }
 
     /**
-     * Provide the AMethodWrapper with a return type
+     * Provide the AMethodWrapper with a return type.
      *
      * @param type the return type as a TypeMirror
      */
@@ -49,7 +51,7 @@ public class AMethodWrapper {
     }
 
     /**
-     * Provide the AMethodWrapper with a return type
+     * Provide the AMethodWrapper with a return type.
      *
      * @param returnType a fully-qualified name
      */
@@ -61,7 +63,7 @@ public class AMethodWrapper {
     }
 
     /**
-     * Wrap an AMethod
+     * Wrap an AMethod.
      *
      * @param theMethod the method to wrap
      */
@@ -112,7 +114,7 @@ public class AMethodWrapper {
     }
 
     /**
-     * Get the parameters, if they have been vivified
+     * Get the parameters, if they have been vivified.
      *
      * @return an immutable copy of the vivified parameters, as a map from index to representation
      */

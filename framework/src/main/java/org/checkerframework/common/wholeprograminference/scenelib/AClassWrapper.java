@@ -11,6 +11,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 
@@ -18,7 +19,7 @@ import scenelib.annotations.el.AClass;
  * A wrapper for the AClass class from scene-lib that carries additional information that is useful
  * during WPI.
  *
- * <p>This would be better as a subclass of AClass, but it is final.
+ * <p>This might be better as a subclass of AClass, but AClass is final.
  */
 public class AClassWrapper {
 
@@ -27,7 +28,7 @@ public class AClassWrapper {
 
     /**
      * The methods of the class. Keys are the names of methods, entries are AMethodWrapper objects.
-     * Wraps the "methods" field of AClass.
+     * Mirrors the "methods" field of AClass.
      */
     private final Map<String, AMethodWrapper> methods = new HashMap<>();
 
@@ -56,7 +57,7 @@ public class AClassWrapper {
      * Call before doing anything with a method. Interacts with scenelib and fetches or creates an
      * appropriate AMethodWrapper object.
      *
-     * <p>Results are interened.
+     * <p>Results are interned.
      *
      * @param methodName the name of the method
      * @return an AMethodWrapper representing the method
@@ -111,7 +112,7 @@ public class AClassWrapper {
     }
 
     /**
-     * Get the annotations on the class
+     * Get the annotations on the class.
      *
      * @return the annotations, directly from scenelib
      */
@@ -120,7 +121,7 @@ public class AClassWrapper {
     }
 
     /**
-     * The type of the class
+     * Get the type of the class.
      *
      * @return a type element representing this class
      */
@@ -129,7 +130,7 @@ public class AClassWrapper {
     }
 
     /**
-     * Set the type element representing the class
+     * Set the type element representing the class.
      *
      * @param typeElement the type element representing the class
      */
@@ -140,7 +141,7 @@ public class AClassWrapper {
     }
 
     /**
-     * Checks if any enum constants have been provided to this class
+     * Checks if any enum constants have been provided to this class/
      *
      * @return true if this class has been marked as an enum
      */
@@ -149,7 +150,7 @@ public class AClassWrapper {
     }
 
     /**
-     * Returns the set of enum constants for this class, or null if this is not an enum
+     * Returns the set of enum constants for this class, or null if this is not an enum/
      *
      * @return the enum constants, or null if this is not an enum
      */
@@ -158,12 +159,14 @@ public class AClassWrapper {
     }
 
     /**
-     * Marks this class as an enum
+     * Marks this class as an enum.
      *
      * @param enumConstants the list of enum constants for the class
      */
     public void markAsEnum(List<VariableElement> enumConstants) {
-        this.enumConstants = new ArrayList<>();
-        this.enumConstants.addAll(enumConstants);
+        if (this.enumConstants != null) {
+            throw new BugInCF("WPI marked the same class as an enum multiple times");
+        }
+        this.enumConstants = new ArrayList<>(enumConstants);
     }
 }
