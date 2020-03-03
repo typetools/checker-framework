@@ -341,7 +341,7 @@ public final class SceneToStubWriter {
      *
      * <p>When an inner class is present in an AScene, its name is something like "Outer$Inner".
      * Writing a stub file with that name would be useless to the stub parser, which expects inner
-     * classes to be properly nested.
+     * classes to be properly nested, as in Java source code.
      *
      * @param basename the binary name of the class with the package part stripped
      * @param aClass the AClass for {@code classname}
