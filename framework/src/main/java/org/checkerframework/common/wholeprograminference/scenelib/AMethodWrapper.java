@@ -11,7 +11,7 @@ import scenelib.annotations.el.AMethod;
 
 /**
  * A wrapper for the AMethod class from scenelib. Keeps more information about the return type, and
- * wraps the parameter list so that more information can be kept on the parameters.
+ * mirrors the parameter list so that more information can be kept on the parameters.
  */
 public class AMethodWrapper {
 
@@ -22,7 +22,7 @@ public class AMethodWrapper {
     private @FullyQualifiedName String returnType = "java.lang.Object";
 
     /**
-     * A wrapper for the parameters field of AMethod, but using AFieldWrapper objects as the values.
+     * A mirror of the parameters field of AMethod, but using AFieldWrapper objects as the values.
      * Keys are parameter indices.
      */
     private Map<Integer, AFieldWrapper> parameters = new HashMap<>();
