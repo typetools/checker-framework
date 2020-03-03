@@ -536,12 +536,12 @@ public final class SceneToStubWriter {
 
         if (aClassWrapper.isEnum()) {
             List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
+            if (enumConstants.size() != 0) {
+                StringJoiner sj = new StringJoiner(", ");
+                for (VariableElement enumConstant : enumConstants) {
+                    sj.add(enumConstant.getSimpleName());
+                }
 
-            StringJoiner sj = new StringJoiner(", ");
-            for (VariableElement enumConstant : enumConstants) {
-                sj.add(enumConstant.getSimpleName());
-            }
-            if (sj.length() != 0) {
                 printWriter.println(INDENT + "// enum constants:");
                 printWriter.println();
                 printWriter.print(INDENT + sj.toString());
