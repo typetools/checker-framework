@@ -237,6 +237,17 @@ public final class SceneToStubWriter {
         return formatArrayTypeImpl(innerType, nextComponentType, result);
     }
 
+    /**
+     * Formats a single formal parameter declaration.
+     *
+     * @param param the AFieldWrapper that represents the parameter
+     * @param parameterName the name of the parameter to display in the stub file. Stub files
+     *     disregard formal parameter names, so this is aesthetic in almost all cases. The exception
+     *     is the receiver parameter, whose name must be "this".
+     * @param basename the type name to use for the receiver parameter. Only used when the previous
+     *     argument is exactly the String "this".
+     * @return the formatted formal parameter, as if it were written in Java source code
+     */
     private static String formatParameter(
             AFieldWrapper param, String parameterName, String basename) {
         return formatAFieldImpl(param, parameterName, basename);
