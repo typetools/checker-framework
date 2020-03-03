@@ -203,7 +203,7 @@ public final class SceneToStubWriter {
      * @param e same as above
      * @param arrayType same as above
      * @param result the string builder containing the array types seen so far
-     * @return the formatted string, as above
+     * @return the formatted string, as above, with a trailing space
      */
     private static String formatArrayTypeImpl(
             ATypeElement e, String arrayType, StringBuilder result) {
@@ -276,11 +276,10 @@ public final class SceneToStubWriter {
 
         if (basetype.contains("[")) {
             String formattedArrayType = formatArrayType(aField.getTheField().type, basetype);
-            result.append(formattedArrayType);
+            result.append(formattedArrayType); // formatArrayType adds a trailing space
         } else {
             result.append(formatAnnotations(aField.getTheField().type.tlAnnotationsHere));
-            result.append(basetype);
-            result.append(' ');
+            result.append(basetype + " "); // must add trailing space directly
         }
         result.append(fieldName);
         return result.toString();
@@ -336,11 +335,11 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * For a given class, this prints the hierarchy of outer classes, and returns the number of
-     * curly braces to close with. The classes are printed with appropriate opening curly braces, in
-     * standard Java style. This routine does not attempt to indent them correctly.
+     * Print the hierarchy of outer classes up to and including the given class, and return the
+     * number of curly braces to close with. The classes are printed with appropriate opening curly
+     * braces, in standard Java style. This routine does not attempt to indent them correctly.
      *
-     * <p>When an inner class is present in an AScene, its name is something like "Outer.Inner".
+     * <p>When an inner class is present in an AScene, its name is something like "Outer$Inner".
      * Writing a stub file with that name would be useless to the stub parser, which expects inner
      * classes to be properly nested.
      *
@@ -371,7 +370,8 @@ public final class SceneToStubWriter {
         printWriter.println(" {");
         printWriter.println();
         if ("".equals(remainingInnerClassNames)) {
-            return 0;
+            return 1; // once no inner classes are left,
+            // one curly brace is still required for the original class
         } else {
             return 1 + printClassDefinitions(remainingInnerClassNames, aClass, printWriter);
         }
@@ -533,7 +533,7 @@ public final class SceneToStubWriter {
 
         AClassWrapper aClassWrapper = classEntry.getValue();
 
-        int curlyCount = 1 + printClassDefinitions(basename, aClassWrapper, printWriter);
+        int curlyCount = printClassDefinitions(basename, aClassWrapper, printWriter);
 
         if (aClassWrapper.isEnum()) {
             List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
