@@ -3,7 +3,10 @@ package org.checkerframework.common.wholeprograminference.scenelib;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import scenelib.annotations.el.AField;
 
-/** Wraps an AField from scenelib, and keeps additional information. */
+/**
+ * Wraps an AField from scenelib, and keeps additional information: the base type, and the name of
+ * the parameter (if this AField represents a formal parameter).
+ */
 public class AFieldWrapper {
     /** The wrapped object. */
     private final AField theField;
@@ -12,9 +15,10 @@ public class AFieldWrapper {
     private final String type;
 
     /**
-     * The name of the field. Used only for method formal parameters, which AScene fails to save.
+     * The name of the method formal parameters; null if this AField does not represent a method
+     * formal parameter.
      */
-    private String parameterName;
+    private @Nullable String parameterName;
 
     /**
      * Construct an AFieldWrapper.
