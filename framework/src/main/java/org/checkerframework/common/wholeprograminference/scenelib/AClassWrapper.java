@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
@@ -38,11 +39,14 @@ public class AClassWrapper {
      */
     private final Map<String, AFieldWrapper> fields = new HashMap<>();
 
-    /** The enum constants of the class, if it has any. */
-    private List<VariableElement> enumConstants;
+    /** The enum constants of the class, or null if this class is not an enum. */
+    private @MonotonicNonNull List<VariableElement> enumConstants = null;
 
-    /** The type element representing the class. */
-    private TypeElement typeElement = null;
+    /**
+     * The type element representing the class. Clients must call {@link
+     * #setTypeElement(TypeElement)} before interacting with this field.
+     */
+    private @MonotonicNonNull TypeElement typeElement = null;
 
     /**
      * Wrap an AClass.
@@ -121,12 +125,18 @@ public class AClassWrapper {
     }
 
     /**
-     * Get the type of the class.
+     * Get the type of the class. Should only be called if the type has been set; throws a BugInCF
+     * exception if not.
      *
      * @return a type element representing this class
      */
     public TypeElement getTypeElement() {
-        return typeElement;
+        if (typeElement != null) {
+            return typeElement;
+        } else {
+            throw new BugInCF(
+                    "Tried to get the base type of an AClassWrapper when the type is unknown.");
+        }
     }
 
     /**
