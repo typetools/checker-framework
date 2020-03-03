@@ -452,8 +452,7 @@ public final class SceneToStubWriter {
 
         StringJoiner parameters = new StringJoiner(", ");
 
-        if (!aMethod.receiver.type.tlAnnotationsHere.isEmpty()
-                || !aMethod.receiver.type.innerTypes.isEmpty()) {
+        if (!aMethod.receiver.type.tlAnnotationsHere.isEmpty()) {
             // Only output the receiver if it has an annotation.
             parameters.add(
                     formatParameter(
