@@ -64,13 +64,15 @@ public class AClassWrapper {
      * <p>Results are interned.
      *
      * @param methodName the name of the method
+     * @param returnType the return type of the method, which the AMethodWrapper must store
      * @return an AMethodWrapper representing the method
      */
-    public AMethodWrapper vivifyMethod(String methodName) {
+    public AMethodWrapper vivifyMethod(String methodName, TypeMirror returnType) {
         if (methods.containsKey(methodName)) {
             return methods.get(methodName);
         } else {
-            AMethodWrapper wrapper = new AMethodWrapper(theClass.methods.getVivify(methodName));
+            AMethodWrapper wrapper =
+                    new AMethodWrapper(theClass.methods.getVivify(methodName), returnType);
             methods.put(methodName, wrapper);
             return wrapper;
         }

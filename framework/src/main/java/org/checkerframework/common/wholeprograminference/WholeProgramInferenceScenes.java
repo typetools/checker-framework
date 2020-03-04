@@ -111,7 +111,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(constructorElt);
-        AMethodWrapper method = clazz.vivifyMethod(methodName);
+        AMethodWrapper method = clazz.vivifyMethod(methodName, constructorElt.getReturnType());
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
@@ -134,8 +134,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
 
         String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethodWrapper method = clazz.vivifyMethod(methodName);
-        method.setReturnType(methodElt.getReturnType());
+        AMethodWrapper method = clazz.vivifyMethod(methodName, methodElt.getReturnType());
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
@@ -191,8 +190,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethodWrapper methodWrapper = clazz.vivifyMethod(methodName);
-        methodWrapper.setReturnType(methodElt.getReturnType());
+        AMethodWrapper methodWrapper = clazz.vivifyMethod(methodName, methodElt.getReturnType());
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
@@ -239,7 +237,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
         String methodName = JVMNames.getJVMMethodName(methodTree);
-        AMethodWrapper method = clazz.vivifyMethod(methodName);
+        AMethodWrapper method =
+                clazz.vivifyMethod(
+                        methodName, TreeUtils.elementFromDeclaration(methodTree).getReturnType());
 
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
@@ -334,10 +334,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         updateClassMetadata(classSymbol, clazz);
 
-        AMethodWrapper methodWrapper = clazz.vivifyMethod(JVMNames.getJVMMethodName(methodTree));
-        // Method return type
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
-        methodWrapper.setReturnType(lhsATM.getUnderlyingType());
+        AMethodWrapper methodWrapper =
+                clazz.vivifyMethod(
+                        JVMNames.getJVMMethodName(methodTree), lhsATM.getUnderlyingType());
+
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
         storage.updateAnnotationSetInScene(
