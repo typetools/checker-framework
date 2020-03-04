@@ -10,6 +10,7 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Represents the outcome of a type-checking operation (success, warning, or failure, plus a list of
@@ -26,7 +27,7 @@ public final class Result {
         FAILURE,
         WARNING;
 
-        /** @return whichever of the given types is most serious */
+        /** @return whichever of the given types is most severe */
         public static final Type merge(Type a, Type b) {
             if (a == FAILURE || b == FAILURE) {
                 return FAILURE;
@@ -59,7 +60,7 @@ public final class Result {
     }
 
     /**
-     * Creates a new warning result with the given message.
+     * Creates a new warning result with the given message key.
      *
      * @param messageKey the key for the warning message
      * @param args optional arguments to be included in the message
@@ -87,10 +88,13 @@ public final class Result {
     /**
      * Merges two results into one.
      *
+     * <p>If both this and {@code r} are success results, returns the success result.
+     *
+     * <p>Otherwise, returns a result with the more severe type (failure &gt; warning &gt; success)
+     * and the union of the messages.
+     *
      * @param r the result to merge with this result
-     * @return a result that is the success result if both this and {@code r} are success results,
-     *     or a result that has the more significant type (failure &gt; warning &gt; success) and
-     *     the message keys of both this result and {@code r}
+     * @return the merge of the two results
      */
     public Result merge(Result r) {
         if (r == null) {
@@ -146,25 +150,22 @@ public final class Result {
             case WARNING:
                 return "WARNING: " + messages;
             case SUCCESS:
-            default:
                 return "SUCCESS";
+            default:
+                throw new BugInCF("Unhandled Result type %s in %s", type, this);
         }
     }
 
     /**
-     * A class that represents diagnostic messages.
-     *
-     * <p>{@code DiagMessage} encapsulates the message key which would identify the relevant
-     * standard error message according to the user locale.
-     *
-     * <p>The optional arguments are possible custom strings for the error message.
+     * A {@code DiagMessage} is a message key plus arguments. The message key will be expanded
+     * according to the user locale. Any arguments will then be inserted into the localized message.
      */
     public static class DiagMessage {
-        private final @CompilerMessageKey String message;
+        private final @CompilerMessageKey String messageKey;
         private Object[] args;
 
-        protected DiagMessage(@CompilerMessageKey String message, Object[] args) {
-            this.message = message;
+        protected DiagMessage(@CompilerMessageKey String messageKey, Object[] args) {
+            this.messageKey = messageKey;
             if (args == null) {
                 this.args = new Object[0]; /*null->nn*/
             } else {
@@ -174,7 +175,7 @@ public final class Result {
 
         /** @return the message key of this DiagMessage */
         public @CompilerMessageKey String getMessageKey() {
-            return this.message;
+            return this.messageKey;
         }
 
         /** @return the customized optional arguments for the message */
@@ -190,23 +191,23 @@ public final class Result {
 
             DiagMessage other = (DiagMessage) obj;
 
-            return (message.equals(other.message) && Arrays.equals(args, other.args));
+            return (messageKey.equals(other.messageKey) && Arrays.equals(args, other.args));
         }
 
         @Pure
         @Override
         public int hashCode() {
-            return Objects.hash(this.message, Arrays.hashCode(this.args));
+            return Objects.hash(this.messageKey, Arrays.hashCode(this.args));
         }
 
         @SideEffectFree
         @Override
         public String toString() {
             if (args.length == 0) {
-                return message;
+                return messageKey;
             }
 
-            return message + " : " + Arrays.toString(args);
+            return messageKey + " : " + Arrays.toString(args);
         }
     }
 }

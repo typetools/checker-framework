@@ -531,12 +531,12 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);
         this.elementsWithSuppressedWarnings.clear();
         Set<String> checkerKeys = new HashSet<>(getSuppressWarningsKeys());
-        Set<String> errorKeys = new HashSet<>(messages.stringPropertyNames());
+        Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
         for (BaseTypeChecker subChecker : subcheckers) {
             elementsSuppress.addAll(subChecker.elementsWithSuppressedWarnings);
             subChecker.elementsWithSuppressedWarnings.clear();
             checkerKeys.addAll(subChecker.getSuppressWarningsKeys());
-            errorKeys.addAll(subChecker.messages.stringPropertyNames());
+            errorKeys.addAll(subChecker.messagesProperties.stringPropertyNames());
             subChecker.getVisitor().treesWithSuppressWarnings.clear();
         }
         warnUnneedSuppressions(elementsSuppress, checkerKeys, errorKeys);

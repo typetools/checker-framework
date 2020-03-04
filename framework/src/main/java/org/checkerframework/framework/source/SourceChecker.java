@@ -370,7 +370,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected static final String MSGS_FILE = "messages.properties";
 
     /** Maps error keys to localized/custom error messages. */
-    protected Properties messages;
+    protected Properties messagesProperties;
 
     /** Used to report error messages and warnings via the compiler. */
     protected Messager messager;
@@ -607,12 +607,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @return a {@link Properties} that maps error keys to error message text
      */
-    public Properties getMessages() {
-        if (this.messages != null) {
-            return this.messages;
+    public Properties getMessagesProperties() {
+        if (messagesProperties != null) {
+            return messagesProperties;
         }
 
-        this.messages = new Properties();
+        messagesProperties = new Properties();
         ArrayDeque<Class<?>> checkers = new ArrayDeque<>();
 
         Class<?> currClass = this.getClass();
@@ -623,9 +623,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         checkers.addFirst(SourceChecker.class);
 
         while (!checkers.isEmpty()) {
-            messages.putAll(getProperties(checkers.removeFirst(), MSGS_FILE));
+            messagesProperties.putAll(getProperties(checkers.removeFirst(), MSGS_FILE));
         }
-        return this.messages;
+        return messagesProperties;
     }
 
     private Pattern getSkipPattern(String patternName, Map<String, String> options) {
@@ -935,7 +935,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.trees = trees;
 
         this.messager = processingEnv.getMessager();
-        this.messages = getMessages();
+        this.messagesProperties = getMessagesProperties();
 
         this.visitor = createSourceVisitor();
     }
@@ -1077,7 +1077,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);
         this.elementsWithSuppressedWarnings.clear();
         Set<String> checkerKeys = new HashSet<>(getSuppressWarningsKeys());
-        Set<String> errorKeys = new HashSet<>(messages.stringPropertyNames());
+        Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
         warnUnneedSuppressions(elementsSuppress, checkerKeys, errorKeys);
         getVisitor().treesWithSuppressWarnings.clear();
     }
@@ -1227,8 +1227,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         String key = messageKey;
 
         do {
-            if (messages.containsKey(key)) {
-                return messages.getProperty(key);
+            if (messagesProperties.containsKey(key)) {
+                return messagesProperties.getProperty(key);
             }
 
             int dot = key.indexOf('.');
@@ -1257,7 +1257,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             @CompilerMessageKey String msgKey,
             Object... args) {
 
-        assert messages != null : "null messages";
+        assert messagesProperties != null : "null messages";
 
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
@@ -1396,7 +1396,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     protected Object processArg(Object arg) {
         // Check to see if the argument itself is a property to be expanded
-        return messages.getProperty(arg.toString(), arg.toString());
+        return messagesProperties.getProperty(arg.toString(), arg.toString());
     }
 
     /**
