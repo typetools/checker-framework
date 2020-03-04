@@ -2046,6 +2046,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return shouldSuppressWarnings(elt.getEnclosingElement(), errKey);
     }
 
+    /**
+     * Return true if the element has an {@code @AnnotatedFor} annotation, for this checker or an
+     * upstream checker that called this one.
+     *
+     * @param elt the source code element to check
+     * @return true if the element is annotated for this checker or an upstream checker
+     */
     private boolean isAnnotatedForThisCheckerOrUpstreamChecker(@Nullable Element elt) {
 
         if (elt == null || !useUncheckedCodeDefault("source")) {

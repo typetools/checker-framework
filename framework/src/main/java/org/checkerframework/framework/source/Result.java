@@ -22,10 +22,14 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public final class Result {
 
+    /** The kinds of results: SUCCESS, WARNING, or FAILURE. */
     private static enum Type {
+        /** A successful result. */
         SUCCESS,
-        FAILURE,
-        WARNING;
+        /** A result containing a warning but no failures. */
+        WARNING,
+        /** A result containing a failure. */
+        FAILURE;
 
         /** @return whichever of the given types is most severe */
         public static final Type merge(Type a, Type b) {
@@ -158,12 +162,21 @@ public final class Result {
 
     /**
      * A {@code DiagMessage} is a message key plus arguments. The message key will be expanded
-     * according to the user locale. Any arguments will then be inserted into the localized message.
+     * according to the user locale. Any arguments will then be interpolated into the localized
+     * message.
      */
     public static class DiagMessage {
+        /** The message key. */
         private final @CompilerMessageKey String messageKey;
+        /** The arguments that will be interpolated into the localized message. */
         private Object[] args;
 
+        /**
+         * Create a DiagMessage.
+         *
+         * @arg messageKey the message key.
+         * @param args the arguments that will be interpolated into the localized message.
+         */
         protected DiagMessage(@CompilerMessageKey String messageKey, Object[] args) {
             this.messageKey = messageKey;
             if (args == null) {
