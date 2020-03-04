@@ -189,7 +189,12 @@ public class ASceneWrapper {
     /**
      * Interact with scenelib to add a class to the scene.
      *
+     * <p>Results are interned.
+     *
      * @param className the binary name of the class to be added to the scene
+     * @param classSymbol the element representing the class, used for adding data to the
+     *     AClassWrapper returned by this method. If it is null, the AClassWrapper's data will not
+     *     be updated.
      * @return an AClassWrapper representing that class
      */
     public AClassWrapper vivifyClass(
