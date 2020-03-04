@@ -1229,445 +1229,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return "( " + start + ", " + end + " )";
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    /// Warning suppression and unneeded warnings
-    ///
-
-    /**
-     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
-     * contains a key that would suppress a warning from this checker.
-     */
-    protected void warnUnneededSuppressions() {
-        if (!hasOption("warnUnneededSuppressions")) {
-            return;
-        }
-
-        Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);
-        this.elementsWithSuppressedWarnings.clear();
-        Set<String> checkerKeys = new HashSet<>(getSuppressWarningsKeys());
-        Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
-        warnUnneedSuppressions(elementsSuppress, checkerKeys, errorKeys);
-        getVisitor().treesWithSuppressWarnings.clear();
-    }
-
-    /**
-     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
-     * contains a key that would suppress a warning from this checker.
-     *
-     * @param elementsSuppress elements with a {@code @SuppressWarnings} that actually suppressed a
-     *     warning
-     * @param checkerKeys suppress warning keys that suppress any warning from this checker
-     * @param errorKeys error keys that can be issued by this checker
-     */
-    protected void warnUnneedSuppressions(
-            Set<Element> elementsSuppress, Set<String> checkerKeys, Set<String> errorKeys) {
-        // It's not clear for which checker "all" is intended, so never report it as unused.
-        checkerKeys.remove(SourceChecker.SUPPRESS_ALL_KEY);
-
-        // Is the name of the checker required to suppress a warning?
-        boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
-
-        for (Tree tree : getVisitor().treesWithSuppressWarnings) {
-            Element elt = TreeUtils.elementFromTree(tree);
-            // TODO: This test is too coarse.  The fact that this @SuppressWarnings suppressed
-            // *some* warning doesn't mean that every value in it did so.
-            if (elementsSuppress.contains(elt)) {
-                continue;
-            }
-            SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
-            // Check each value of the user-written @SuppressWarnings annotation.
-            for (String userKey : suppressAnno.value()) {
-                String fullUserKey = userKey;
-                int colonPos = userKey.indexOf(":");
-                if (colonPos == -1) {
-                    // User-written error key contains no ":".
-                    if (checkerKeys.contains(userKey)) {
-                        reportUnneededSuppression(tree, userKey);
-                    }
-                    if (requirePrefix) {
-                        // This user-written key is not for the Checker Framework
-                        continue;
-                    }
-                } else {
-                    // User-written error key contains ":".
-                    String userCheckerKey = userKey.substring(0, colonPos);
-                    if (userCheckerKey.equals(SourceChecker.SUPPRESS_ALL_KEY)
-                            || !checkerKeys.contains(userCheckerKey)) {
-                        // This user-written key is for some other checker
-                        continue;
-                    }
-                    userKey = userKey.substring(colonPos + 1);
-                }
-                for (String errorKey : errorKeys) {
-                    // The userKey may only be a part of an error key.
-                    // For example, @SuppressWarnings("purity") suppresses errors with keys:
-                    // purity.deterministic.void.method, purity.deterministic.constructor, etc.
-                    if (errorKey.contains(userKey)) {
-                        reportUnneededSuppression(tree, fullUserKey);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Issues a warning that the key in a {@code @SuppressWarnings} on {@code tree} isn't needed.
-     *
-     * @param tree has unneeded {@code @SuppressWarnings}
-     * @param key suppress warning key that isn't needed
-     */
-    private void reportUnneededSuppression(Tree tree, String key) {
-        Tree swTree = findSuppressWarningsTree(tree);
-        report(
-                Result.warning(
-                        SourceChecker.UNNEEDED_SUPPRESSION_KEY,
-                        "\"" + key + "\"",
-                        getClass().getSimpleName()),
-                swTree);
-    }
-
-    /** The name of the @SuppressWarnings annotation. */
-    private final String suppressWarningsClassName = SuppressWarnings.class.getCanonicalName();
-    /**
-     * Finds the tree that is a {@code @SuppressWarnings} annotation.
-     *
-     * @param tree a class, method, or variable tree annotated with {@code @SuppressWarnings}
-     * @return tree for {@code @SuppressWarnings} or {@code default} if one isn't found
-     */
-    private Tree findSuppressWarningsTree(Tree tree) {
-        List<? extends AnnotationTree> annotations;
-        if (TreeUtils.isClassTree(tree)) {
-            annotations = ((ClassTree) tree).getModifiers().getAnnotations();
-        } else if (tree.getKind() == Tree.Kind.METHOD) {
-            annotations = ((MethodTree) tree).getModifiers().getAnnotations();
-        } else {
-            annotations = ((VariableTree) tree).getModifiers().getAnnotations();
-        }
-
-        for (AnnotationTree annotationTree : annotations) {
-            if (AnnotationUtils.areSameByName(
-                    TreeUtils.annotationFromAnnotationTree(annotationTree),
-                    suppressWarningsClassName)) {
-                return annotationTree;
-            }
-        }
-        throw new BugInCF("Did not find @SuppressWarnings: " + tree);
-    }
-
-    /**
-     * Determines whether an error (whose error key is {@code errKey}) should be suppressed,
-     * according to the user's explicitly-written SuppressWarnings annotation {@code anno} or the
-     * {@code -AsuppressWarnings} command-line argument.
-     *
-     * <p>A @SuppressWarnings value may be of the following pattern:
-     *
-     * <ol>
-     *   <li>{@code "suppress-key"}, where suppress-key is a supported warnings key, as specified by
-     *       {@link #getSuppressWarningsKeys()} (e.g., {@code "nullness"} for Nullness, {@code
-     *       "regex"} for Regex)
-     *   <li>{@code "suppress-key:error-key}, where the suppress-key is as above, and error-key is a
-     *       prefix or suffix of the errors that it may suppress. So "nullness:generic.argument",
-     *       would suppress any errors in the Nullness Checker related to generic.argument.
-     * </ol>
-     *
-     * @param anno the @SuppressWarnings annotation written by the user
-     * @param errKey the error key the checker is emitting
-     * @return true if one of {@code anno}'s keys is returned by {@link
-     *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
-     */
-    private boolean checkSuppressWarnings(@Nullable SuppressWarnings anno, String errKey) {
-
-        // Don't suppress warnings if this checker provides no key to do so.
-        Collection<String> checkerSwKeys = this.getSuppressWarningsKeys();
-        if (checkerSwKeys.isEmpty()) {
-            return false;
-        }
-
-        if (this.suppressWarnings == null) {
-            this.suppressWarnings = createSuppressWarnings(getOptions());
-        }
-        String[] cmdLineSwKeys = this.suppressWarnings;
-        if (checkSuppressWarnings(cmdLineSwKeys, errKey)) {
-            return true;
-        }
-
-        if (anno != null) {
-            String[] userSwKeys = arrayToLowerCase(anno.value());
-            if (checkSuppressWarnings(userSwKeys, errKey)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Return true if the given error should be suppressed, based on the given @SuppressWarnings
-     * keys.
-     *
-     * @param userSwKeys the @SuppressWarnings keys supplied by the user (in a @SuppressWarnings
-     *     annotation or on the command line). May be null, in which case this method returns false.
-     * @param errKey the error key the checker is emitting; a lowercase string
-     * @return true if one of the {@code userSwKeys} is returned by {@link
-     *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
-     */
-    private boolean checkSuppressWarnings(String @Nullable [] userSwKeys, String errKey) {
-        if (userSwKeys == null) {
-            return false;
-        }
-        // Is the name of the checker required to suppress a warning?
-        boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
-
-        Collection<String> checkerKeys = this.getSuppressWarningsKeys();
-
-        // Check each value of the user-written @SuppressWarnings annotation.
-        for (String userKey : userSwKeys) {
-            int colonPos = userKey.indexOf(":");
-            if (colonPos == -1) {
-                // User-written error key contains no ":".
-                if (checkerKeys.contains(userKey)) {
-                    // Emitted error is exactly a @SuppressWarnings key: "nullness", for example.
-                    return true;
-                }
-                if (requirePrefix) {
-                    continue;
-                }
-            } else {
-                // User-written error key contains ":".
-                String userCheckerKey = userKey.substring(0, colonPos);
-                if (!checkerKeys.contains(userCheckerKey)) {
-                    continue;
-                }
-                userKey = userKey.substring(colonPos + 1);
-            }
-            if (errKey.contains(userKey)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
-     * true if the tree is within the scope of a @SuppressWarnings annotation, one of whose values
-     * suppresses the checker's warnings. The list of keys that suppress a checker's warnings is
-     * provided by the {@link SourceChecker#getSuppressWarningsKeys} method.
-     *
-     * @param tree the tree that might be a source of a warning
-     * @param errKey the error key the checker is emitting
-     * @return true if no warning should be emitted for the given tree because it is contained by a
-     *     declaration with an appropriately-valued {@literal @}SuppressWarnings annotation; false
-     *     otherwise
-     */
-    // Public so it can be called from a few places in
-    // org.checkerframework.framework.flow.CFAbstractTransfer
-    public boolean shouldSuppressWarnings(Tree tree, String errKey) {
-        // Don't suppress warnings if this checker provides no key to do so.
-        Collection<String> checkerKeys = this.getSuppressWarningsKeys();
-        if (checkerKeys.isEmpty()) {
-            return false;
-        }
-
-        // trees.getPath might be slow, but this is only used in error reporting
-        // TODO: #1586 this might return null within a cloned finally block and
-        // then a warning that should be suppressed isn't. Fix this when fixing #1586.
-        @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
-        if (path == null) {
-            return false;
-        }
-
-        @Nullable VariableTree var = TreeUtils.enclosingVariable(path);
-        if (var != null && shouldSuppressWarnings(TreeUtils.elementFromTree(var), errKey)) {
-            return true;
-        }
-
-        @Nullable MethodTree method = TreeUtils.enclosingMethod(path);
-        if (method != null) {
-            @Nullable Element elt = TreeUtils.elementFromTree(method);
-
-            if (shouldSuppressWarnings(elt, errKey)) {
-                return true;
-            }
-
-            if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-                // Return false immediately. Do NOT check for AnnotatedFor in
-                // the enclosing elements, because they may not have an
-                // @AnnotatedFor.
-                return false;
-            }
-        }
-
-        @Nullable ClassTree cls = TreeUtils.enclosingClass(path);
-        if (cls != null) {
-            @Nullable Element elt = TreeUtils.elementFromTree(cls);
-
-            if (shouldSuppressWarnings(elt, errKey)) {
-                return true;
-            }
-
-            if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-                // Return false immediately. Do NOT check for AnnotatedFor in
-                // the enclosing elements, because they may not have an
-                // @AnnotatedFor.
-                return false;
-            }
-        }
-
-        if (useUncheckedCodeDefault("source")) {
-            // If we got this far without hitting an @AnnotatedFor and returning
-            // false, we DO suppress the warning.
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Should unchecked code defaults be used for the kind of code indicated by the parameter.
-     *
-     * @param kindOfCode source or bytecode
-     * @return whether unchecked code defaults should be used
-     */
-    public boolean useUncheckedCodeDefault(String kindOfCode) {
-        final boolean useUncheckedDefaultsForSource = false;
-        final boolean useUncheckedDefaultsForByteCode = false;
-        String option = this.getOption("useDefaultsForUncheckedCode");
-
-        String[] args = option != null ? option.split(",") : new String[0];
-        for (String arg : args) {
-            boolean value = arg.indexOf("-") != 0;
-            arg = value ? arg : arg.substring(1);
-            if (arg.equals(kindOfCode)) {
-                return value;
-            }
-        }
-        if (kindOfCode.equals("source")) {
-            return useUncheckedDefaultsForSource;
-        } else if (kindOfCode.equals("bytecode")) {
-            return useUncheckedDefaultsForByteCode;
-        } else {
-            throw new UserError(
-                    "SourceChecker: unexpected argument to useUncheckedCodeDefault: " + kindOfCode);
-        }
-    }
-
-    /**
-     * Elements with a {@code @SuppressWarnings} that actually suppressed a warning for this
-     * checker.
-     */
-    protected final Set<Element> elementsWithSuppressedWarnings = new HashSet<>();
-
-    /**
-     * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
-     * true if the element is within the scope of a @SuppressWarnings annotation, one of whose
-     * values suppresses the checker's warnings. The list of keys that suppress a checker's warnings
-     * is provided by the {@link SourceChecker#getSuppressWarningsKeys} method.
-     *
-     * @param elt the Element that might be a source of, or related to, a warning
-     * @param errKey the error key the checker is emitting
-     * @return true if no warning should be emitted for the given Element because it is contained by
-     *     a declaration with an appropriately-valued {@code @SuppressWarnings} annotation; false
-     *     otherwise
-     */
-    // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
-    public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
-        if (UNNEEDED_SUPPRESSION_KEY.equals(errKey)) {
-            // Never suppress an unneeded suppression key warning.
-            // TODO: This choice is questionable, because these warnings should be suppressable just
-            // like any others.  The reason for the choice is that if a user writes
-            // `@SuppressWarnings("nullness")` that isn't needed, then that annotation would
-            // suppress the unneeded suppression warning.  It would take extra work to permit more
-            // desirable behavior in that case.
-            return false;
-        }
-
-        if (elt == null) {
-            return false;
-        }
-
-        if (checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), errKey)) {
-            if (hasOption("warnUnneededSuppressions")) {
-                elementsWithSuppressedWarnings.add(elt);
-            }
-            return true;
-        }
-
-        if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-            // Return false immediately. Do NOT check for AnnotatedFor in the
-            // enclosing elements, because they may not have an @AnnotatedFor.
-            return false;
-        }
-
-        return shouldSuppressWarnings(elt.getEnclosingElement(), errKey);
-    }
-
-    private boolean isAnnotatedForThisCheckerOrUpstreamChecker(@Nullable Element elt) {
-
-        if (elt == null || !useUncheckedCodeDefault("source")) {
-            return false;
-        }
-
-        @Nullable AnnotatedFor anno = elt.getAnnotation(AnnotatedFor.class);
-
-        String[] userAnnotatedFors = (anno == null ? null : anno.value());
-
-        if (userAnnotatedFors != null) {
-            List<String> upstreamCheckerNames = getUpstreamCheckerNames();
-
-            for (String userAnnotatedFor : userAnnotatedFors) {
-                if (CheckerMain.matchesCheckerOrSubcheckerFromList(
-                        userAnnotatedFor, upstreamCheckerNames)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Determine the standard set of suppress warning keys usable for any checker.
-     *
-     * @see #getSuppressWarningsKeys()
-     * @return collection of warning keys
-     */
-    protected final Collection<String> getStandardSuppressWarningsKeys() {
-        // TreeSet ensures keys are returned in a consistent order.
-        Set<String> result = new TreeSet<>();
-        result.add(SUPPRESS_ALL_KEY);
-
-        SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
-        if (annotation != null) {
-            // Add from annotation
-            for (String key : annotation.value()) {
-                result.add(key.toLowerCase());
-            }
-
-        } else {
-            // No @SuppressWarningsKeys annotation, by default infer key from class name
-            String key = getDefaultWarningSuppressionKey();
-            result.add(key);
-        }
-
-        return result;
-    }
-
-    /** @return the default warning suppression key for this checker based on the checker name */
-    private String getDefaultWarningSuppressionKey() {
-        String className = this.getClass().getSimpleName();
-        int indexOfChecker = className.lastIndexOf("Checker");
-        if (indexOfChecker == -1) {
-            indexOfChecker = className.lastIndexOf("Subchecker");
-        }
-        String result = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
-        return result.toLowerCase();
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    /// Reporting
-    ///
-
     /**
      * Print the given message.
      *
@@ -2113,6 +1674,441 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    /// Warning suppression and unneeded warnings
+    ///
+
+    /**
+     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
+     * contains a key that would suppress a warning from this checker.
+     */
+    protected void warnUnneededSuppressions() {
+        if (!hasOption("warnUnneededSuppressions")) {
+            return;
+        }
+
+        Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);
+        this.elementsWithSuppressedWarnings.clear();
+        Set<String> checkerKeys = new HashSet<>(getSuppressWarningsKeys());
+        Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
+        warnUnneedSuppressions(elementsSuppress, checkerKeys, errorKeys);
+        getVisitor().treesWithSuppressWarnings.clear();
+    }
+
+    /**
+     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
+     * contains a key that would suppress a warning from this checker.
+     *
+     * @param elementsSuppress elements with a {@code @SuppressWarnings} that actually suppressed a
+     *     warning
+     * @param checkerKeys suppress warning keys that suppress any warning from this checker
+     * @param errorKeys error keys that can be issued by this checker
+     */
+    protected void warnUnneedSuppressions(
+            Set<Element> elementsSuppress, Set<String> checkerKeys, Set<String> errorKeys) {
+        // It's not clear for which checker "all" is intended, so never report it as unused.
+        checkerKeys.remove(SourceChecker.SUPPRESS_ALL_KEY);
+
+        // Is the name of the checker required to suppress a warning?
+        boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
+
+        for (Tree tree : getVisitor().treesWithSuppressWarnings) {
+            Element elt = TreeUtils.elementFromTree(tree);
+            // TODO: This test is too coarse.  The fact that this @SuppressWarnings suppressed
+            // *some* warning doesn't mean that every value in it did so.
+            if (elementsSuppress.contains(elt)) {
+                continue;
+            }
+            SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
+            // Check each value of the user-written @SuppressWarnings annotation.
+            for (String userKey : suppressAnno.value()) {
+                String fullUserKey = userKey;
+                int colonPos = userKey.indexOf(":");
+                if (colonPos == -1) {
+                    // User-written error key contains no ":".
+                    if (checkerKeys.contains(userKey)) {
+                        reportUnneededSuppression(tree, userKey);
+                    }
+                    if (requirePrefix) {
+                        // This user-written key is not for the Checker Framework
+                        continue;
+                    }
+                } else {
+                    // User-written error key contains ":".
+                    String userCheckerKey = userKey.substring(0, colonPos);
+                    if (userCheckerKey.equals(SourceChecker.SUPPRESS_ALL_KEY)
+                            || !checkerKeys.contains(userCheckerKey)) {
+                        // This user-written key is for some other checker
+                        continue;
+                    }
+                    userKey = userKey.substring(colonPos + 1);
+                }
+                for (String errorKey : errorKeys) {
+                    // The userKey may only be a part of an error key.
+                    // For example, @SuppressWarnings("purity") suppresses errors with keys:
+                    // purity.deterministic.void.method, purity.deterministic.constructor, etc.
+                    if (errorKey.contains(userKey)) {
+                        reportUnneededSuppression(tree, fullUserKey);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Issues a warning that the key in a {@code @SuppressWarnings} on {@code tree} isn't needed.
+     *
+     * @param tree has unneeded {@code @SuppressWarnings}
+     * @param key suppress warning key that isn't needed
+     */
+    private void reportUnneededSuppression(Tree tree, String key) {
+        Tree swTree = findSuppressWarningsTree(tree);
+        report(
+                Result.warning(
+                        SourceChecker.UNNEEDED_SUPPRESSION_KEY,
+                        "\"" + key + "\"",
+                        getClass().getSimpleName()),
+                swTree);
+    }
+
+    /** The name of the @SuppressWarnings annotation. */
+    private final String suppressWarningsClassName = SuppressWarnings.class.getCanonicalName();
+    /**
+     * Finds the tree that is a {@code @SuppressWarnings} annotation.
+     *
+     * @param tree a class, method, or variable tree annotated with {@code @SuppressWarnings}
+     * @return tree for {@code @SuppressWarnings} or {@code default} if one isn't found
+     */
+    private Tree findSuppressWarningsTree(Tree tree) {
+        List<? extends AnnotationTree> annotations;
+        if (TreeUtils.isClassTree(tree)) {
+            annotations = ((ClassTree) tree).getModifiers().getAnnotations();
+        } else if (tree.getKind() == Tree.Kind.METHOD) {
+            annotations = ((MethodTree) tree).getModifiers().getAnnotations();
+        } else {
+            annotations = ((VariableTree) tree).getModifiers().getAnnotations();
+        }
+
+        for (AnnotationTree annotationTree : annotations) {
+            if (AnnotationUtils.areSameByName(
+                    TreeUtils.annotationFromAnnotationTree(annotationTree),
+                    suppressWarningsClassName)) {
+                return annotationTree;
+            }
+        }
+        throw new BugInCF("Did not find @SuppressWarnings: " + tree);
+    }
+
+    /**
+     * Determines whether an error (whose error key is {@code errKey}) should be suppressed,
+     * according to the user's explicitly-written SuppressWarnings annotation {@code anno} or the
+     * {@code -AsuppressWarnings} command-line argument.
+     *
+     * <p>A @SuppressWarnings value may be of the following pattern:
+     *
+     * <ol>
+     *   <li>{@code "suppress-key"}, where suppress-key is a supported warnings key, as specified by
+     *       {@link #getSuppressWarningsKeys()} (e.g., {@code "nullness"} for Nullness, {@code
+     *       "regex"} for Regex)
+     *   <li>{@code "suppress-key:error-key}, where the suppress-key is as above, and error-key is a
+     *       prefix or suffix of the errors that it may suppress. So "nullness:generic.argument",
+     *       would suppress any errors in the Nullness Checker related to generic.argument.
+     * </ol>
+     *
+     * @param anno the @SuppressWarnings annotation written by the user
+     * @param errKey the error key the checker is emitting
+     * @return true if one of {@code anno}'s keys is returned by {@link
+     *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
+     */
+    private boolean checkSuppressWarnings(@Nullable SuppressWarnings anno, String errKey) {
+
+        // Don't suppress warnings if this checker provides no key to do so.
+        Collection<String> checkerSwKeys = this.getSuppressWarningsKeys();
+        if (checkerSwKeys.isEmpty()) {
+            return false;
+        }
+
+        if (this.suppressWarnings == null) {
+            this.suppressWarnings = createSuppressWarnings(getOptions());
+        }
+        String[] cmdLineSwKeys = this.suppressWarnings;
+        if (checkSuppressWarnings(cmdLineSwKeys, errKey)) {
+            return true;
+        }
+
+        if (anno != null) {
+            String[] userSwKeys = arrayToLowerCase(anno.value());
+            if (checkSuppressWarnings(userSwKeys, errKey)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Return true if the given error should be suppressed, based on the given @SuppressWarnings
+     * keys.
+     *
+     * @param userSwKeys the @SuppressWarnings keys supplied by the user (in a @SuppressWarnings
+     *     annotation or on the command line). May be null, in which case this method returns false.
+     * @param errKey the error key the checker is emitting; a lowercase string
+     * @return true if one of the {@code userSwKeys} is returned by {@link
+     *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
+     */
+    private boolean checkSuppressWarnings(String @Nullable [] userSwKeys, String errKey) {
+        if (userSwKeys == null) {
+            return false;
+        }
+        // Is the name of the checker required to suppress a warning?
+        boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
+
+        Collection<String> checkerKeys = this.getSuppressWarningsKeys();
+
+        // Check each value of the user-written @SuppressWarnings annotation.
+        for (String userKey : userSwKeys) {
+            int colonPos = userKey.indexOf(":");
+            if (colonPos == -1) {
+                // User-written error key contains no ":".
+                if (checkerKeys.contains(userKey)) {
+                    // Emitted error is exactly a @SuppressWarnings key: "nullness", for example.
+                    return true;
+                }
+                if (requirePrefix) {
+                    continue;
+                }
+            } else {
+                // User-written error key contains ":".
+                String userCheckerKey = userKey.substring(0, colonPos);
+                if (!checkerKeys.contains(userCheckerKey)) {
+                    continue;
+                }
+                userKey = userKey.substring(colonPos + 1);
+            }
+            if (errKey.contains(userKey)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
+     * true if the tree is within the scope of a @SuppressWarnings annotation, one of whose values
+     * suppresses the checker's warnings. The list of keys that suppress a checker's warnings is
+     * provided by the {@link SourceChecker#getSuppressWarningsKeys} method.
+     *
+     * @param tree the tree that might be a source of a warning
+     * @param errKey the error key the checker is emitting
+     * @return true if no warning should be emitted for the given tree because it is contained by a
+     *     declaration with an appropriately-valued {@literal @}SuppressWarnings annotation; false
+     *     otherwise
+     */
+    // Public so it can be called from a few places in
+    // org.checkerframework.framework.flow.CFAbstractTransfer
+    public boolean shouldSuppressWarnings(Tree tree, String errKey) {
+        // Don't suppress warnings if this checker provides no key to do so.
+        Collection<String> checkerKeys = this.getSuppressWarningsKeys();
+        if (checkerKeys.isEmpty()) {
+            return false;
+        }
+
+        // trees.getPath might be slow, but this is only used in error reporting
+        // TODO: #1586 this might return null within a cloned finally block and
+        // then a warning that should be suppressed isn't. Fix this when fixing #1586.
+        @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
+        if (path == null) {
+            return false;
+        }
+
+        @Nullable VariableTree var = TreeUtils.enclosingVariable(path);
+        if (var != null && shouldSuppressWarnings(TreeUtils.elementFromTree(var), errKey)) {
+            return true;
+        }
+
+        @Nullable MethodTree method = TreeUtils.enclosingMethod(path);
+        if (method != null) {
+            @Nullable Element elt = TreeUtils.elementFromTree(method);
+
+            if (shouldSuppressWarnings(elt, errKey)) {
+                return true;
+            }
+
+            if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+                // Return false immediately. Do NOT check for AnnotatedFor in
+                // the enclosing elements, because they may not have an
+                // @AnnotatedFor.
+                return false;
+            }
+        }
+
+        @Nullable ClassTree cls = TreeUtils.enclosingClass(path);
+        if (cls != null) {
+            @Nullable Element elt = TreeUtils.elementFromTree(cls);
+
+            if (shouldSuppressWarnings(elt, errKey)) {
+                return true;
+            }
+
+            if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+                // Return false immediately. Do NOT check for AnnotatedFor in
+                // the enclosing elements, because they may not have an
+                // @AnnotatedFor.
+                return false;
+            }
+        }
+
+        if (useUncheckedCodeDefault("source")) {
+            // If we got this far without hitting an @AnnotatedFor and returning
+            // false, we DO suppress the warning.
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Should unchecked code defaults be used for the kind of code indicated by the parameter.
+     *
+     * @param kindOfCode source or bytecode
+     * @return whether unchecked code defaults should be used
+     */
+    public boolean useUncheckedCodeDefault(String kindOfCode) {
+        final boolean useUncheckedDefaultsForSource = false;
+        final boolean useUncheckedDefaultsForByteCode = false;
+        String option = this.getOption("useDefaultsForUncheckedCode");
+
+        String[] args = option != null ? option.split(",") : new String[0];
+        for (String arg : args) {
+            boolean value = arg.indexOf("-") != 0;
+            arg = value ? arg : arg.substring(1);
+            if (arg.equals(kindOfCode)) {
+                return value;
+            }
+        }
+        if (kindOfCode.equals("source")) {
+            return useUncheckedDefaultsForSource;
+        } else if (kindOfCode.equals("bytecode")) {
+            return useUncheckedDefaultsForByteCode;
+        } else {
+            throw new UserError(
+                    "SourceChecker: unexpected argument to useUncheckedCodeDefault: " + kindOfCode);
+        }
+    }
+
+    /**
+     * Elements with a {@code @SuppressWarnings} that actually suppressed a warning for this
+     * checker.
+     */
+    protected final Set<Element> elementsWithSuppressedWarnings = new HashSet<>();
+
+    /**
+     * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
+     * true if the element is within the scope of a @SuppressWarnings annotation, one of whose
+     * values suppresses the checker's warnings. The list of keys that suppress a checker's warnings
+     * is provided by the {@link SourceChecker#getSuppressWarningsKeys} method.
+     *
+     * @param elt the Element that might be a source of, or related to, a warning
+     * @param errKey the error key the checker is emitting
+     * @return true if no warning should be emitted for the given Element because it is contained by
+     *     a declaration with an appropriately-valued {@code @SuppressWarnings} annotation; false
+     *     otherwise
+     */
+    // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
+    public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
+        if (UNNEEDED_SUPPRESSION_KEY.equals(errKey)) {
+            // Never suppress an unneeded suppression key warning.
+            // TODO: This choice is questionable, because these warnings should be suppressable just
+            // like any others.  The reason for the choice is that if a user writes
+            // `@SuppressWarnings("nullness")` that isn't needed, then that annotation would
+            // suppress the unneeded suppression warning.  It would take extra work to permit more
+            // desirable behavior in that case.
+            return false;
+        }
+
+        if (elt == null) {
+            return false;
+        }
+
+        if (checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), errKey)) {
+            if (hasOption("warnUnneededSuppressions")) {
+                elementsWithSuppressedWarnings.add(elt);
+            }
+            return true;
+        }
+
+        if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+            // Return false immediately. Do NOT check for AnnotatedFor in the
+            // enclosing elements, because they may not have an @AnnotatedFor.
+            return false;
+        }
+
+        return shouldSuppressWarnings(elt.getEnclosingElement(), errKey);
+    }
+
+    private boolean isAnnotatedForThisCheckerOrUpstreamChecker(@Nullable Element elt) {
+
+        if (elt == null || !useUncheckedCodeDefault("source")) {
+            return false;
+        }
+
+        @Nullable AnnotatedFor anno = elt.getAnnotation(AnnotatedFor.class);
+
+        String[] userAnnotatedFors = (anno == null ? null : anno.value());
+
+        if (userAnnotatedFors != null) {
+            List<String> upstreamCheckerNames = getUpstreamCheckerNames();
+
+            for (String userAnnotatedFor : userAnnotatedFors) {
+                if (CheckerMain.matchesCheckerOrSubcheckerFromList(
+                        userAnnotatedFor, upstreamCheckerNames)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine the standard set of suppress warning keys usable for any checker.
+     *
+     * @see #getSuppressWarningsKeys()
+     * @return collection of warning keys
+     */
+    protected final Collection<String> getStandardSuppressWarningsKeys() {
+        // TreeSet ensures keys are returned in a consistent order.
+        Set<String> result = new TreeSet<>();
+        result.add(SUPPRESS_ALL_KEY);
+
+        SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
+        if (annotation != null) {
+            // Add from annotation
+            for (String key : annotation.value()) {
+                result.add(key.toLowerCase());
+            }
+
+        } else {
+            // No @SuppressWarningsKeys annotation, by default infer key from class name
+            String key = getDefaultWarningSuppressionKey();
+            result.add(key);
+        }
+
+        return result;
+    }
+
+    /** @return the default warning suppression key for this checker based on the checker name */
+    private String getDefaultWarningSuppressionKey() {
+        String className = this.getClass().getSimpleName();
+        int indexOfChecker = className.lastIndexOf("Checker");
+        if (indexOfChecker == -1) {
+            indexOfChecker = className.lastIndexOf("Subchecker");
+        }
+        String result = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
+        return result.toLowerCase();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     /// Skipping uses and defs
     ///
 
@@ -2206,62 +2202,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     public final boolean shouldSkipDefs(ClassTree cls, MethodTree meth) {
         return shouldSkipDefs(cls);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    /// Miscellaneous
-    ///
-
-    /**
-     * A helper function to parse a Properties file.
-     *
-     * @param cls the class whose location is the base of the file path
-     * @param filePath the name/path of the file to be read
-     * @return the properties
-     */
-    protected Properties getProperties(Class<?> cls, String filePath) {
-        Properties prop = new Properties();
-        try {
-            InputStream base = cls.getResourceAsStream(filePath);
-
-            if (base == null) {
-                // No message customization file was given
-                return prop;
-            }
-
-            prop.load(base);
-        } catch (IOException e) {
-            message(Kind.WARNING, "Couldn't parse properties file: " + filePath);
-            // e.printStackTrace();
-            // ignore the possible customization file
-        }
-        return prop;
-    }
-
-    @Override
-    public final SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.latest();
-    }
-
-    /** True if the git.properties file has been printed. */
-    private static boolean gitPropertiesPrinted = false;
-
-    /** Print information about the git repository from which the Checker Framework was compiled. */
-    void printGitProperties() {
-        if (gitPropertiesPrinted) {
-            return;
-        }
-        gitPropertiesPrinted = true;
-
-        try (InputStream in = getClass().getResourceAsStream("/git.properties");
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in)); ) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
-            }
-        } catch (IOException e) {
-            System.out.println("IOException while reading git.properties: " + e.getMessage());
-        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -2368,5 +2308,61 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                         + p.getCompilationUnit().getSourceFile().getName())
                         + (t.getMessage() == null ? "" : "; message: " + t.getMessage()),
                 t);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    /// Miscellaneous
+    ///
+
+    /**
+     * A helper function to parse a Properties file.
+     *
+     * @param cls the class whose location is the base of the file path
+     * @param filePath the name/path of the file to be read
+     * @return the properties
+     */
+    protected Properties getProperties(Class<?> cls, String filePath) {
+        Properties prop = new Properties();
+        try {
+            InputStream base = cls.getResourceAsStream(filePath);
+
+            if (base == null) {
+                // No message customization file was given
+                return prop;
+            }
+
+            prop.load(base);
+        } catch (IOException e) {
+            message(Kind.WARNING, "Couldn't parse properties file: " + filePath);
+            // e.printStackTrace();
+            // ignore the possible customization file
+        }
+        return prop;
+    }
+
+    @Override
+    public final SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latest();
+    }
+
+    /** True if the git.properties file has been printed. */
+    private static boolean gitPropertiesPrinted = false;
+
+    /** Print information about the git repository from which the Checker Framework was compiled. */
+    void printGitProperties() {
+        if (gitPropertiesPrinted) {
+            return;
+        }
+        gitPropertiesPrinted = true;
+
+        try (InputStream in = getClass().getResourceAsStream("/git.properties");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in)); ) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            System.out.println("IOException while reading git.properties: " + e.getMessage());
+        }
     }
 }
