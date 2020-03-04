@@ -203,7 +203,7 @@ public class ASceneWrapper {
             classes.put(className, wrapper);
         }
         if (classSymbol != null) {
-            updateClassMetadata(classSymbol, wrapper);
+            updateClassMetadata(wrapper, classSymbol);
         }
         return wrapper;
     }
@@ -211,10 +211,10 @@ public class ASceneWrapper {
     /**
      * Updates the metadata stored in AClassWrapper for the given class.
      *
-     * @param classSymbol the class for which to update metadata
      * @param aClassWrapper the class representation in which the metadata is to be updated
+     * @param classSymbol the class for which to update metadata
      */
-    private void updateClassMetadata(ClassSymbol classSymbol, AClassWrapper aClassWrapper) {
+    private void updateClassMetadata(AClassWrapper aClassWrapper, ClassSymbol classSymbol) {
         if (classSymbol.isEnum()) {
             if (!aClassWrapper.isEnum()) {
                 List<VariableElement> enumConstants = new ArrayList<>();
