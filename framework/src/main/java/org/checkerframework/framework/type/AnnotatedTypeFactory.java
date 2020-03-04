@@ -543,6 +543,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotationBuilder.fromClass(
                         elements, org.checkerframework.dataflow.qual.Pure.class));
 
+        // Accommodate the inability to write @InheritedAnnotation on these annotations.
         addInheritedAnnotation(
                 AnnotationBuilder.fromClass(
                         elements, org.checkerframework.dataflow.qual.Pure.class));
