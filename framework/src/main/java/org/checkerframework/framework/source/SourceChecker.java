@@ -1430,12 +1430,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param currentRoot the current compilation unit
      * @param processingEnv the current processing environment
      * @return a tuple string representing the range of characters that tree occupies in the source
-     *     file
+     *     file, or the empty string if {@code tree} is null
      */
     public String treeToFilePositionString(
             Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
         if (tree == null) {
-            return null;
+            return "";
         }
 
         SourcePositions sourcePositions = trees.getSourcePositions();

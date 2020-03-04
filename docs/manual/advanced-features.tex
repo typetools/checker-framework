@@ -222,13 +222,14 @@ rules are used in order, until one applies.
 \item
   The qualifier in the meta-annotation \<@DefaultFor> for the location of the use of \<MyClass>.
   These are defaults specified by the type system designer (Section~\ref{creating-typesystem-defaults});
-  this is usually CLIMB-to-top (Section~\ref{climb-to-top}).
+  this is usually CLIMB-to-top (Section~\ref{climb-to-top}) (CLIMB means \textbf{C}asts, \textbf{L}ocals,
+  \textbf{I}nstanceof, and (some) i\textbf{M}plicit \textbf{B}ounds).
 \item
   The qualifier with the meta-annotation \<@DefaultQualifierInHierarchy>
 \end{enumerate}
 
 If the unannotated type is the type of a local variable, then the first 5 rules are skipped and only
-rules 6 and 7 apply.  This makes the type local variables top so they can be refined.
+rules 6 and 7 apply. If rule 6 applies, it makes the type of local variables top so they can be refined.
 
 % (Implementation detail:  setting defaults is implemented by the
 % \refclass{framework/util}{QualifierDefaults} class.)
