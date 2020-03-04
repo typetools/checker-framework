@@ -4,8 +4,6 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.ConservativeDefaultFor;
-import org.checkerframework.framework.qual.ConservativeDefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
@@ -31,6 +29,4 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @DefaultQualifierInHierarchy
 @DefaultFor(value = TypeUseLocation.LOWER_BOUND, types = Void.class)
 @QualifierForLiterals(LiteralKind.NULL)
-@ConservativeDefaultQualifierInHierarchy
-@ConservativeDefaultFor({TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND})
 public @interface LockPossiblyHeld {}

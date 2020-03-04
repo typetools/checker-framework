@@ -6,8 +6,14 @@ Renamings:
     The old name works temporarily but will be removed in a future release.
   @DefaultQualifierInHierarchyInUncheckedCode to @ConservativeDefaultQualifierInHierarchy
   @DefaultInUncheckedCodeFor to @ConservativeDefaultFor
-  applyUncheckedCodeDefaults() to applyConservativeDefaults()
-  useUncheckedCodeDefault() to useConservativeDefault()
+
+Implementation details:
+ * Removed `@DefaultInUncheckedCodeFor` and
+   `@DefaultQualifierInHierarchyInUncheckedCode`.  The conservative default
+   cannot be overridden by the type system designer.
+ * Renamings:
+   applyUncheckedCodeDefaults() to applyConservativeDefaults()
+   useUncheckedCodeDefault() to useConservativeDefault()
 
 ---------------------------------------------------------------------------
 

@@ -148,8 +148,7 @@ import org.checkerframework.javacutil.UserError;
     // casting to an array or generic type. This will be the new default soon.
     "checkCastElementType",
 
-    // Whether to use conservative defaults for bytecode and/or source code; these are configured
-    // by the specific type checker using @ConservativeDefault{For,QualifierInHierarchy}.
+    // Whether to use conservative defaults for bytecode and/or source code.
     // This option takes arguments "source" and/or "bytecode".
     // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").
     // Note, in source code, conservative defaults are never
