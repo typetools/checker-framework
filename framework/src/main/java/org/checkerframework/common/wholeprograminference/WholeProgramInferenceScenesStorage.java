@@ -1,5 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +15,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
@@ -172,12 +174,27 @@ public class WholeProgramInferenceScenesStorage {
      * @param className the name of the class to get, in binary form
      * @param jaifPath the path to the jaif file that would represent that class (must end in
      *     ".jaif")
+     * @param classSymbol optionally, the ClassSymbol representing the class. Used to set the extra
+     *     data stored on an AClassWrapper.
+     * @return the scene-lib representation of the class, wrapped with metadata
+     */
+    protected AClassWrapper getAClass(
+            @BinaryName String className, String jaifPath, @Nullable ClassSymbol classSymbol) {
+        // Possibly reads .jaif file to obtain a Scene.
+        ASceneWrapper scene = getScene(jaifPath);
+        return scene.vivifyClass(className, classSymbol);
+    }
+
+    /**
+     * Returns the AClass in an AScene, given a className and a jaifPath.
+     *
+     * @param className the name of the class to get, in binary form
+     * @param jaifPath the path to the jaif file that would represent that class (must end in
+     *     ".jaif")
      * @return the scene-lib representation of the class, wrapped with metadata
      */
     protected AClassWrapper getAClass(@BinaryName String className, String jaifPath) {
-        // Possibly reads .jaif file to obtain a Scene.
-        ASceneWrapper scene = getScene(jaifPath);
-        return scene.vivifyClass(className);
+        return getAClass(className, jaifPath, null);
     }
 
     /**

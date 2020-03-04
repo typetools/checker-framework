@@ -7,12 +7,8 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -288,8 +284,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @DotSeparatedIdentifiers String className = enclosingClass.flatname.toString();
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz = storage.getAClass(className, jaifPath);
-        updateClassMetadata(enclosingClass, clazz);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath, enclosingClass);
 
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
         AFieldWrapper field = clazz.vivifyField(lhs.getFieldName(), lhsATM.getUnderlyingType());
@@ -323,9 +318,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         @DotSeparatedIdentifiers String className = classSymbol.flatname.toString();
 
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz = storage.getAClass(className, jaifPath);
-
-        updateClassMetadata(classSymbol, clazz);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath, classSymbol);
 
         AMethodWrapper methodWrapper =
                 clazz.vivifyMethod(TreeUtils.elementFromDeclaration(methodTree));
@@ -378,27 +371,5 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
         return ((MethodSymbol) executableElement).enclClass().flatName().toString();
-    }
-
-    /**
-     * Updates the metadata stored in AClassWrapper for the given class.
-     *
-     * @param classSymbol the class for which to update metadata
-     * @param aClassWrapper the class representation in which the metadata is to be updated
-     */
-    private void updateClassMetadata(ClassSymbol classSymbol, AClassWrapper aClassWrapper) {
-        if (classSymbol.isEnum()) {
-            if (!aClassWrapper.isEnum()) {
-                List<VariableElement> enumConstants = new ArrayList<>();
-                for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
-                    if (e.getKind() == ElementKind.ENUM_CONSTANT) {
-                        enumConstants.add((VariableElement) e);
-                    }
-                }
-                aClassWrapper.markAsEnum(enumConstants);
-            }
-        }
-
-        aClassWrapper.setTypeElement(classSymbol);
     }
 }

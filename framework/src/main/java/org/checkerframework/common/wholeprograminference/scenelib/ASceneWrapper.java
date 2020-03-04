@@ -1,13 +1,21 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
 import com.google.common.collect.ImmutableMap;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -184,15 +192,42 @@ public class ASceneWrapper {
      * @param className the binary name of the class to be added to the scene
      * @return an AClassWrapper representing that class
      */
-    public AClassWrapper vivifyClass(@BinaryName String className) {
+    public AClassWrapper vivifyClass(
+            @BinaryName String className, @Nullable ClassSymbol classSymbol) {
+        AClassWrapper wrapper;
         if (classes.containsKey(className)) {
-            return classes.get(className);
+            wrapper = classes.get(className);
         } else {
             AClass aClass = theScene.classes.getVivify(className);
-            AClassWrapper wrapper = new AClassWrapper(aClass);
+            wrapper = new AClassWrapper(aClass);
             classes.put(className, wrapper);
-            return wrapper;
         }
+        if (classSymbol != null) {
+            updateClassMetadata(classSymbol, wrapper);
+        }
+        return wrapper;
+    }
+
+    /**
+     * Updates the metadata stored in AClassWrapper for the given class.
+     *
+     * @param classSymbol the class for which to update metadata
+     * @param aClassWrapper the class representation in which the metadata is to be updated
+     */
+    private void updateClassMetadata(ClassSymbol classSymbol, AClassWrapper aClassWrapper) {
+        if (classSymbol.isEnum()) {
+            if (!aClassWrapper.isEnum()) {
+                List<VariableElement> enumConstants = new ArrayList<>();
+                for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
+                    if (e.getKind() == ElementKind.ENUM_CONSTANT) {
+                        enumConstants.add((VariableElement) e);
+                    }
+                }
+                aClassWrapper.markAsEnum(enumConstants);
+            }
+        }
+
+        aClassWrapper.setTypeElement(classSymbol);
     }
 
     /**
