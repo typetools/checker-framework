@@ -7,12 +7,8 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -34,7 +30,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AField;
-import scenelib.annotations.util.JVMNames;
 
 /**
  * WholeProgramInferenceScenes is an implementation of {@link
@@ -110,8 +105,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String className = getEnclosingClassName(constructorElt);
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
-        String methodName = JVMNames.getJVMMethodName(constructorElt);
-        AMethodWrapper method = clazz.vivifyMethod(methodName);
+        AMethodWrapper method = clazz.vivifyMethod(constructorElt);
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
@@ -133,9 +127,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
 
-        String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethodWrapper method = clazz.vivifyMethod(methodName);
-        method.setReturnType(methodElt.getReturnType());
+        AMethodWrapper method = clazz.vivifyMethod(methodElt);
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
@@ -190,9 +182,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String className = getEnclosingClassName(methodElt);
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
-        String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethodWrapper methodWrapper = clazz.vivifyMethod(methodName);
-        methodWrapper.setReturnType(methodElt.getReturnType());
+        AMethodWrapper methodWrapper = clazz.vivifyMethod(methodElt);
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
@@ -238,8 +228,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String className = getEnclosingClassName(lhs);
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
-        String methodName = JVMNames.getJVMMethodName(methodTree);
-        AMethodWrapper method = clazz.vivifyMethod(methodName);
+        AMethodWrapper method = clazz.vivifyMethod(TreeUtils.elementFromDeclaration(methodTree));
 
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
@@ -295,8 +284,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @DotSeparatedIdentifiers String className = enclosingClass.flatname.toString();
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz = storage.getAClass(className, jaifPath);
-        updateClassMetadata(enclosingClass, clazz);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath, enclosingClass);
 
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
         AFieldWrapper field = clazz.vivifyField(lhs.getFieldName(), lhsATM.getUnderlyingType());
@@ -330,14 +318,13 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         @DotSeparatedIdentifiers String className = classSymbol.flatname.toString();
 
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz = storage.getAClass(className, jaifPath);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath, classSymbol);
 
-        updateClassMetadata(classSymbol, clazz);
+        AMethodWrapper methodWrapper =
+                clazz.vivifyMethod(TreeUtils.elementFromDeclaration(methodTree));
 
-        AMethodWrapper methodWrapper = clazz.vivifyMethod(JVMNames.getJVMMethodName(methodTree));
-        // Method return type
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
-        methodWrapper.setReturnType(lhsATM.getUnderlyingType());
+
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
         storage.updateAnnotationSetInScene(
@@ -384,27 +371,5 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
         return ((MethodSymbol) executableElement).enclClass().flatName().toString();
-    }
-
-    /**
-     * Updates the metadata stored in AClassWrapper for the given class.
-     *
-     * @param classSymbol the class for which to update metadata
-     * @param aClassWrapper the class representation in which the metadata is to be updated
-     */
-    private void updateClassMetadata(ClassSymbol classSymbol, AClassWrapper aClassWrapper) {
-        if (classSymbol.isEnum()) {
-            if (!aClassWrapper.isEnum()) {
-                List<VariableElement> enumConstants = new ArrayList<>();
-                for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
-                    if (e.getKind() == ElementKind.ENUM_CONSTANT) {
-                        enumConstants.add((VariableElement) e);
-                    }
-                }
-                aClassWrapper.markAsEnum(enumConstants);
-            }
-        }
-
-        aClassWrapper.setTypeElement(classSymbol);
     }
 }

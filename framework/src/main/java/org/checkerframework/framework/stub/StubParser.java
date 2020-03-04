@@ -308,7 +308,7 @@ public class StubParser {
                         if (element != null) {
                             // Find nested annotations
                             // Find compile time constant fields, or values of an enum
-                            putAllNew(result, annosInType(element));
+                            putAllMerge(result, annosInType(element));
                             importedConstants.addAll(getImportableMembers(element));
                             addEnclosingTypesToImportedTypes(element);
                         }
@@ -317,7 +317,7 @@ public class StubParser {
                         // Wildcard import of members of a package
                         PackageElement element = findPackage(imported);
                         if (element != null) {
-                            putAllNew(result, annosInPackage(element));
+                            putAllMerge(result, annosInPackage(element));
                             addEnclosingTypesToImportedTypes(element);
                         }
                     }
@@ -657,7 +657,7 @@ public class StubParser {
 
         annotateTypeParameters(decl, elt, atypes, typeArguments, typeParameters);
         annotateSupertypes(decl, type);
-        putNew(atypes, elt, type);
+        putMerge(atypes, elt, type);
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
@@ -687,7 +687,7 @@ public class StubParser {
         AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
         annotate(type, decl.getAnnotations());
 
-        putNew(atypes, elt, type);
+        putMerge(atypes, elt, type);
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
@@ -817,7 +817,7 @@ public class StubParser {
         }
 
         // Store the type.
-        putNew(atypes, elt, methodType);
+        putMerge(atypes, elt, methodType);
         typeParameters.removeAll(methodType.getTypeVariables());
     }
 
@@ -857,7 +857,7 @@ public class StubParser {
                 annotate(paramType, param.getVarArgsAnnotations());
             } else {
                 annotate(paramType, param.getType(), param.getAnnotations());
-                putNew(atypes, paramElt, paramType);
+                putMerge(atypes, paramElt, paramType);
             }
         }
     }
@@ -1078,7 +1078,7 @@ public class StubParser {
         }
         assert fieldVarDecl != null;
         annotate(fieldType, fieldVarDecl.getType(), decl.getAnnotations());
-        putNew(atypes, elt, fieldType);
+        putMerge(atypes, elt, fieldType);
     }
 
     /**
@@ -1090,7 +1090,7 @@ public class StubParser {
         recordDeclAnnotation(elt, decl.getAnnotations());
         AnnotatedTypeMirror enumConstType = atypeFactory.fromElement(elt);
         annotate(enumConstType, decl.getAnnotations());
-        putNew(atypes, elt, enumConstType);
+        putMerge(atypes, elt, enumConstType);
     }
 
     /**
@@ -1219,7 +1219,7 @@ public class StubParser {
                     stubWarnNotFound("Annotations on intersection types are not yet supported");
                 }
             }
-            putNew(atypes, paramType.getUnderlyingType().asElement(), paramType);
+            putMerge(atypes, paramType.getUnderlyingType().asElement(), paramType);
         }
     }
 
@@ -1967,7 +1967,7 @@ public class StubParser {
      * @param newType a value to merge into the map: merge it with the value currently at {@code
      *     key} and replace that value
      */
-    private void putNew(
+    private void putMerge(
             Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror newType) {
         if (key == null) {
             throw new BugInCF("StubParser: key is null");
@@ -1989,8 +1989,15 @@ public class StubParser {
         }
     }
 
-    /** Just like Map.putAll, but merges with existing values using {@link #putNew}. */
-    private static <K, V> void putAllNew(Map<K, V> m, Map<K, V> m2) {
+    /**
+     * Just like Map.putAll, but merges with existing values using {@link #putMerge}.
+     *
+     * @param <K> the key type for the maps
+     * @param <V> the value type for the maps
+     * @param m the map to merge into
+     * @param m2 the map to merge from
+     */
+    private static <K, V> void putAllMerge(Map<K, V> m, Map<K, V> m2) {
         for (Map.Entry<K, V> e2 : m2.entrySet()) {
             putNoOverride(m, e2.getKey(), e2.getValue());
         }

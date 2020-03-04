@@ -42,17 +42,6 @@ public class AMethodWrapper {
     /**
      * Provide the AMethodWrapper with a return type.
      *
-     * @param type the return type as a TypeMirror
-     */
-    public void setReturnType(TypeMirror type) {
-        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @DotSeparatedIdentifiers String typeAsString = type.toString();
-        setReturnType(typeAsString);
-    }
-
-    /**
-     * Provide the AMethodWrapper with a return type.
-     *
      * @param returnType a fully-qualified name
      */
     private void setReturnType(@FullyQualifiedName String returnType) {
@@ -66,9 +55,13 @@ public class AMethodWrapper {
      * Wrap an AMethod.
      *
      * @param theMethod the method to wrap
+     * @param returnType the return type of the method
      */
-    public AMethodWrapper(AMethod theMethod) {
+    public AMethodWrapper(AMethod theMethod, TypeMirror returnType) {
         this.theMethod = theMethod;
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @DotSeparatedIdentifiers String typeAsString = returnType.toString();
+        setReturnType(typeAsString);
     }
 
     /**
