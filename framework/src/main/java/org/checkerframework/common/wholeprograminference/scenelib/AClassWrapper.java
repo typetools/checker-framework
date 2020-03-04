@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -15,6 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
+import scenelib.annotations.util.JVMNames;
 
 /**
  * A wrapper for the AClass class from scene-lib that carries additional information that is useful
@@ -63,16 +65,17 @@ public class AClassWrapper {
      *
      * <p>Results are interned.
      *
-     * @param methodName the name of the method
-     * @param returnType the return type of the method, which the AMethodWrapper must store
+     * @param methodElt the executable element representing the method
      * @return an AMethodWrapper representing the method
      */
-    public AMethodWrapper vivifyMethod(String methodName, TypeMirror returnType) {
+    public AMethodWrapper vivifyMethod(ExecutableElement methodElt) {
+        String methodName = JVMNames.getJVMMethodName(methodElt);
         if (methods.containsKey(methodName)) {
             return methods.get(methodName);
         } else {
             AMethodWrapper wrapper =
-                    new AMethodWrapper(theClass.methods.getVivify(methodName), returnType);
+                    new AMethodWrapper(
+                            theClass.methods.getVivify(methodName), methodElt.getReturnType());
             methods.put(methodName, wrapper);
             return wrapper;
         }
