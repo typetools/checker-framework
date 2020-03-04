@@ -308,7 +308,7 @@ public class StubParser {
                         if (element != null) {
                             // Find nested annotations
                             // Find compile time constant fields, or values of an enum
-                            putAllNew(result, annosInType(element));
+                            putAllMerge(result, annosInType(element));
                             importedConstants.addAll(getImportableMembers(element));
                             addEnclosingTypesToImportedTypes(element);
                         }
@@ -317,7 +317,7 @@ public class StubParser {
                         // Wildcard import of members of a package
                         PackageElement element = findPackage(imported);
                         if (element != null) {
-                            putAllNew(result, annosInPackage(element));
+                            putAllMerge(result, annosInPackage(element));
                             addEnclosingTypesToImportedTypes(element);
                         }
                     }
@@ -1989,8 +1989,15 @@ public class StubParser {
         }
     }
 
-    /** Just like Map.putAll, but merges with existing values using {@link #putMerge}. */
-    private static <K, V> void putAllNew(Map<K, V> m, Map<K, V> m2) {
+    /**
+     * Just like Map.putAll, but merges with existing values using {@link #putMerge}.
+     *
+     * @param <K> the key type for the maps
+     * @param <V> the value type for the maps
+     * @param m the map to merge into
+     * @param m2 the map to merge from
+     */
+    private static <K, V> void putAllMerge(Map<K, V> m, Map<K, V> m2) {
         for (Map.Entry<K, V> e2 : m2.entrySet()) {
             putNoOverride(m, e2.getKey(), e2.getValue());
         }
