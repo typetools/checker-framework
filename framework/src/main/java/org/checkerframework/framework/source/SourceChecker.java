@@ -77,7 +77,6 @@ import org.plumelib.util.UtilPlume;
  * <p>Subclasses must implement the following methods: (TODO: update the list)
  *
  * <ul>
- *   <li>{@link SourceChecker#getMessagesProperties} (for type-qualifier specific error messages)
  *   <li>{@link SourceChecker#createSourceVisitor} (for a custom {@link SourceVisitor})
  *   <li>{@link SourceChecker#getSuppressWarningsKeys} (for honoring {@literal @}{link
  *       SuppressWarnings} annotations)
@@ -372,7 +371,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** File name of the localized messages. */
     protected static final String MSGS_FILE = "messages.properties";
 
-    /** Maps error keys to localized/custom error messages. */
+    /**
+     * Maps error keys to localized/custom error messages. Do not use directly; call {@link
+     * #fullMessageOf} or {@link #processArg}.
+     */
     protected Properties messagesProperties;
 
     /** Used to report error messages and warnings via the compiler. */
@@ -935,7 +937,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             @CompilerMessageKey String msgKey,
             Object... args) {
 
-        assert messagesProperties != null : "null messages";
+        assert messagesProperties != null : "null messagesProperties";
 
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
@@ -1010,34 +1012,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             fmtString = sb.toString();
 
         } else {
-            // The key for the warning/error being printed, in brackets; prefixes the error message.
-            final String suppressing;
-            if (this.processingEnv.getOptions().containsKey("showSuppressWarningKeys")) {
-                suppressing = String.format("[%s:%s] ", this.getSuppressWarningsKeys(), msgKey);
-            } else if (this.processingEnv
-                    .getOptions()
-                    .containsKey("requirePrefixInWarningSuppressions")) {
-                // If the warning key must be prefixed with a checker key, then add that to the
-                // warning key that is printed.
-                String defaultKey = getDefaultWarningSuppressionKey();
-                Collection<String> keys = getSuppressWarningsKeys();
-                if (keys.contains(defaultKey)) {
-                    suppressing = String.format("[%s:%s] ", defaultKey, msgKey);
-                } else if (keys.isEmpty()) {
-                    keys.remove(SUPPRESS_ALL_KEY);
-                    if (keys.isEmpty()) {
-                        suppressing = String.format("[%s:%s] ", SUPPRESS_ALL_KEY, msgKey);
-                    } else {
-                        String firstKey = keys.iterator().next();
-                        suppressing = String.format("[%s:%s] ", firstKey, msgKey);
-                    }
-                } else {
-                    suppressing = String.format("[%s] ", msgKey);
-                }
-            } else {
-                suppressing = String.format("[%s] ", msgKey);
-            }
-            fmtString = suppressing + fullMessageOf(msgKey, defaultFormat);
+            final String suppressing = suppressionKey(msgKey);
+            fmtString = "[" + suppressing + "] " + fullMessageOf(msgKey, defaultFormat);
         }
         String messageText;
         try {
@@ -1160,7 +1136,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Process an argument to an error message before it is passed to String.format.
      *
-     * <p>This implementation expands the argument if it is a message key.
+     * <p>This implementation expands the argument if it is exactly a message key.
+     *
+     * <p>By contrast, {@link #fullMessageOf} processes the message key itself but not the
+     * arguments, and tries suffixes.
      *
      * @param arg the argument
      * @return the result after processing
@@ -1171,6 +1150,41 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return messagesProperties.getProperty((String) arg, (String) arg);
         } else {
             return arg;
+        }
+    }
+
+    /**
+     * Returns the most specific warning suppression key for the warning/error being printed. This
+     * is {@code msg} prefixed by a checker name (or "all") and a colon.
+     *
+     * @param msgKey the simple, checker-specific error message key
+     * @return the most specific warning suppression key for the warning/error being printed
+     */
+    private String suppressionKey(String msgKey) {
+        if (this.processingEnv.getOptions().containsKey("showSuppressWarningKeys")) {
+            return this.getSuppressWarningsKeys() + ":" + msgKey;
+        } else if (this.processingEnv
+                .getOptions()
+                .containsKey("requirePrefixInWarningSuppressions")) {
+            // If the warning key must be prefixed with a checker key, then add that to the
+            // warning key that is printed.
+            String defaultKey = getDefaultWarningSuppressionKey();
+            Collection<String> keys = getSuppressWarningsKeys();
+            if (keys.contains(defaultKey)) {
+                return defaultKey + ":" + msgKey;
+            } else if (keys.isEmpty()) {
+                keys.remove(SUPPRESS_ALL_KEY);
+                if (keys.isEmpty()) {
+                    return SUPPRESS_ALL_KEY + ":" + msgKey;
+                } else {
+                    String firstKey = keys.iterator().next();
+                    return firstKey + ":" + msgKey;
+                }
+            } else {
+                return msgKey;
+            }
+        } else {
+            return msgKey;
         }
     }
 
@@ -1424,6 +1438,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /// Regular (non-lint) options ("-Axxxx")
     ///
 
+    /**
+     * Determine which options are active.
+     *
+     * @param options all provided options
+     * @return a value for {@link #activeOptions}
+     */
     private Map<String, String> createActiveOptions(Map<String, String> options) {
         if (options.isEmpty()) {
             return Collections.emptyMap();
