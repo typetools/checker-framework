@@ -32,10 +32,11 @@ public final class Result {
         FAILURE;
 
         /**
-         * @return whichever of the given types is most severe
+         * Return whichever of the given types is most severe.
+         *
          * @param a the first result kind to compare
-         * @param a the second result kind to compare
-         * @return whichever of {@code a} and {@code b} is more severe
+         * @param b the second result kind to compare
+         * @return whichever of the given types is most severe
          */
         public static final Type merge(Type a, Type b) {
             if (a == FAILURE || b == FAILURE) {
