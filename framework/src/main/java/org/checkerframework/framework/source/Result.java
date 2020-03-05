@@ -31,7 +31,12 @@ public final class Result {
         /** A result containing a failure. */
         FAILURE;
 
-        /** @return whichever of the given types is most severe */
+        /**
+         * @return whichever of the given types is most severe
+         * @param a the first result kind to compare
+         * @param a the second result kind to compare
+         * @return whichever of {@code a} and {@code b} is more severe
+         */
         public static final Type merge(Type a, Type b) {
             if (a == FAILURE || b == FAILURE) {
                 return FAILURE;
@@ -174,7 +179,7 @@ public final class Result {
         /**
          * Create a DiagMessage.
          *
-         * @arg messageKey the message key.
+         * @param messageKey the message key.
          * @param args the arguments that will be interpolated into the localized message.
          */
         protected DiagMessage(@CompilerMessageKey String messageKey, Object[] args) {

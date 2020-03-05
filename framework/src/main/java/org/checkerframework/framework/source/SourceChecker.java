@@ -885,6 +885,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Return true to indicate that method {@link #shutdownHook} should be added as a shutdownHook
      * of the JVM.
+     *
+     * @return true to add {@link #shutdownHook} as a shutdown hook of the JVM
      */
     protected boolean shouldAddShutdownHook() {
         return hasOption("resourceStats");
@@ -1072,6 +1074,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Returns the localized long message corresponding for this key. If not found, tries suffixes
      * of this key, stripping off dot-separated prefixes. If still not found, returns {@code
      * defaultValue}.
+     *
+     * @param messageKey a message key
+     * @param defaultValue a default value to use if {@code messageKey} is not a message key
+     * @return the localized long message corresponding to this key or a suffix, or {@code
+     *     defaultValue}
      */
     protected String fullMessageOf(String messageKey, String defaultValue) {
         String key = messageKey;
@@ -1226,7 +1233,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Determine which lint options are artive.
      *
-     * @param the command-line options
+     * @param options the command-line options
      * @return the active lint options
      */
     private Set<String> createActiveLints(Map<String, String> options) {
@@ -1712,7 +1719,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return getStandardSuppressWarningsKeys();
     }
 
-    /** Only ever called once; the value is cached in field {@link #suppressWarnings}. */
+    /**
+     * Only ever called once; the value is cached in field {@link #suppressWarnings}.
+     *
+     * @param options the command-line options
+     * @return the argument to -AsuppressWarnings, split on commas, or null if no such argument
+     */
     private String @Nullable [] createSuppressWarnings(Map<String, String> options) {
         if (!options.containsKey("suppressWarnings")) {
             return null;
@@ -2264,7 +2276,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /// Errors other than type-checking errors
     ///
 
-    /** Log (that is, print) a user error. */
+    /**
+     * Log (that is, print) a user error.
+     *
+     * @param ce the user error to output
+     */
     private void logUserError(UserError ce) {
         String msg = ce.getMessage();
         printMessage(msg);
@@ -2273,7 +2289,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Log (that is, print) an internal error in the framework or a checker.
      *
-     * @param ce the internal error
+     * @param ce the internal error to output
      */
     private void logBugInCF(BugInCF ce) {
         StringJoiner msg = new StringJoiner(LINE_SEPARATOR);
@@ -2336,7 +2352,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         printMessage(msg.toString());
     }
 
-    /** Side-effects the array to make each string lowercase, then returns the array. */
+    /**
+     * Side-effects the array to make each string lowercase, then returns the array.
+     *
+     * @param a an array of strings
+     * @return {@code a}, but each element has been lowercased
+     */
     private static String[] arrayToLowerCase(String[] a) {
         for (int i = 0; i < a.length; i++) {
             a[i] = a[i].toLowerCase();
