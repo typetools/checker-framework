@@ -1,7 +1,7 @@
 Version 3.3.0, April 1, 2020
 
-Renamed "unchecked code defaults" to "conservative defaults".
 Renamings:
+  "unchecked code defaults" to "conservative defaults".
   -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
     The old name works temporarily but will be removed in a future release.
   @DefaultQualifierInHierarchyInUncheckedCode to @ConservativeDefaultQualifierInHierarchy
@@ -9,8 +9,7 @@ Renamings:
 
 Implementation details:
  * Removed `@DefaultInUncheckedCodeFor` and
-   `@DefaultQualifierInHierarchyInUncheckedCode`.  The conservative default
-   cannot be overridden by the type system designer.
+   `@DefaultQualifierInHierarchyInUncheckedCode`.
  * Renamings:
    applyUncheckedCodeDefaults() to applyConservativeDefaults()
    useUncheckedCodeDefault() to useConservativeDefault()
