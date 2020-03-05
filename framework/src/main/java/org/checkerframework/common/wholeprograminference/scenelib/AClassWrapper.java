@@ -130,9 +130,12 @@ public class AClassWrapper {
     }
 
     /**
-     * Get the type of the class, or null if it is unknown. Callers should ensure that either: -
-     * {@link #setTypeElement(TypeElement)} has been called, or - the return value is checked
-     * against null
+     * Get the type of the class, or null if it is unknown. Callers should ensure that either:
+     *
+     * <ul>
+     *   <li>{@link #setTypeElement(TypeElement)} has been called, or
+     *   <li>the return value is checked against null.
+     * </ul>
      *
      * @return a type element representing this class
      */
@@ -150,8 +153,10 @@ public class AClassWrapper {
             this.typeElement = typeElement;
         } else if (!this.typeElement.equals(typeElement)) {
             throw new BugInCF(
-                    "Set the base type of an AClassWrapper to a different type than the previous"
-                            + "base type.");
+                    "Tried to set the base type of an AClassWrapper to "
+                            + typeElement
+                            + ", but it was already"
+                            + this.typeElement);
         }
     }
 

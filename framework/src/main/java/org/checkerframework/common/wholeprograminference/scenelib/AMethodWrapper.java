@@ -74,7 +74,7 @@ public class AMethodWrapper {
     }
 
     /**
-     * Interact with a parameter.
+     * Add the given parameter to the scene-lib representation.
      *
      * @param i the parameter index (zero-indexed)
      * @param type the type of the parameter, as a TypeMirror
@@ -82,32 +82,32 @@ public class AMethodWrapper {
      * @return an AFieldWrapper representing the parameter
      */
     public AFieldWrapper vivifyParameter(int i, TypeMirror type, Name simpleName) {
-        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @DotSeparatedIdentifiers String typeAsString = type.toString();
+        String typeAsString = type.toString();
         return vivifyParameter(i, typeAsString, simpleName);
     }
 
     /**
-     * Interact with a parameter.
+     * Add the given parameter to the scene-lib representation.
      *
-     * @param i the parameter index (1st parameter is zero)
-     * @param type a fully-qualified name representing the type of the parameter
+     * @param i the parameter index (first parameter is zero)
+     * @param type the type of the parameter, printable in Java source code
      * @param simpleName the name of the parameter
      * @return an AFieldWrapper representing the parameter
      */
-    private AFieldWrapper vivifyParameter(int i, @FullyQualifiedName String type, Name simpleName) {
+    private AFieldWrapper vivifyParameter(int i, String type, Name simpleName) {
         if (parameters.containsKey(i)) {
             return parameters.get(i);
         } else {
-            AFieldWrapper wrapper = new AFieldWrapper(theMethod.parameters.getVivify(i), type);
+            AFieldWrapper wrapper =
+                    new AFieldWrapper(
+                            theMethod.parameters.getVivify(i), type, simpleName.toString());
             parameters.put(i, wrapper);
-            wrapper.setName(simpleName.toString());
             return wrapper;
         }
     }
 
     /**
-     * Get the parameters that have been vivified.
+     * Get the parameters, as a map from parameter index (0 -> first parameter) to representation.
      *
      * @return an immutable copy of the vivified parameters, as a map from index to representation
      */
