@@ -10,8 +10,8 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import scenelib.annotations.el.AMethod;
 
 /**
- * A wrapper for the AMethod class from scenelib. Keeps more information about the return type, and
- * mirrors the parameter list so that more information can be kept on the parameters.
+ * A wrapper for the AMethod class from scenelib. Keeps more information about the return type and
+ * formal parameters.
  */
 public class AMethodWrapper {
 
@@ -33,7 +33,7 @@ public class AMethodWrapper {
      * The return type, as a fully-qualified name.
      *
      * @return the return type as a fully-qualified name, or "java.lang.Object" if the return type
-     *     is unknown.
+     *     is unknown
      */
     public @FullyQualifiedName String getReturnType() {
         return returnType;
@@ -65,7 +65,7 @@ public class AMethodWrapper {
     }
 
     /**
-     * Avoid if possible.
+     * Avoid calling this if possible.
      *
      * @return the underlying AMethod object that has been wrapped
      */
@@ -107,7 +107,7 @@ public class AMethodWrapper {
     }
 
     /**
-     * Get the parameters that have been vivified.
+     * Get the parameters that have been vivified so far.
      *
      * @return an immutable copy of the vivified parameters, as a map from index to representation
      */

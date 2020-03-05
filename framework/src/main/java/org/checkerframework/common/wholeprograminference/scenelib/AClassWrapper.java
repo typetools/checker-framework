@@ -60,8 +60,7 @@ public class AClassWrapper {
     }
 
     /**
-     * Call before doing anything with a method. Interacts with scenelib and fetches or creates an
-     * appropriate AMethodWrapper object.
+     * Call before doing anything with a method. Fetches or creates an AMethodWrapper object.
      *
      * <p>Results are interned.
      *
@@ -91,8 +90,7 @@ public class AClassWrapper {
     }
 
     /**
-     * Call before doing anything with a field. Interacts with scenelib and fetches or creates an
-     * appropriate AFieldWrapper object.
+     * Call before doing anything with a field. fetches or creates an AFieldWrapper object.
      *
      * <p>Results are interned.
      *
@@ -156,7 +154,7 @@ public class AClassWrapper {
     }
 
     /**
-     * Checks if any enum constants have been provided to this class/
+     * Checks if any enum constants have been provided to this class.
      *
      * @return true if this class has been marked as an enum
      */
