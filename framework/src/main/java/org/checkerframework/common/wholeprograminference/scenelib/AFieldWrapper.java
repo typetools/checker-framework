@@ -15,7 +15,7 @@ public class AFieldWrapper {
     private final String type;
 
     /**
-     * The name of the method formal parameters; null if this AField does not represent a method
+     * The name of the method formal parameter; null if this AField does not represent a method
      * formal parameter.
      */
     private @Nullable String parameterName;
@@ -24,8 +24,7 @@ public class AFieldWrapper {
      * Construct an AFieldWrapper.
      *
      * @param theField the wrapped AField
-     * @param type a String representing the underlying type of the field, which AField doesn't
-     *     include
+     * @param type a String representing the underlying type of the field
      */
     public AFieldWrapper(AField theField, String type) {
         this.theField = theField;
