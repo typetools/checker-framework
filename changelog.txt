@@ -2,8 +2,7 @@ Version 3.3.0, April 1, 2020
 
 Implementation details:
  * Removed `@DefaultInUncheckedCodeFor` and
-   `@DefaultQualifierInHierarchyInUncheckedCode`.  The conservative default
-   cannot be overridden by the type system designer.
+   `@DefaultQualifierInHierarchyInUncheckedCode`.
 
 ---------------------------------------------------------------------------
 
