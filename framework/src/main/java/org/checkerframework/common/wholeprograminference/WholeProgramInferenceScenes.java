@@ -336,7 +336,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 TypeUseLocation.RETURN);
     }
 
-    /** Write all modified scenes into .jaif files or stub files, depending on the input. */
+    /** Write all modified scenes into .jaif files or stub files. */
     @Override
     public void writeResultsToFile(OutputFormat kind) {
         switch (kind) {

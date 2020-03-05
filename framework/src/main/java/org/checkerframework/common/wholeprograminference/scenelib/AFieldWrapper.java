@@ -17,7 +17,7 @@ public class AFieldWrapper {
     private final String type;
 
     /**
-     * The name of the method formal parameters; null if this AField does not represent a method
+     * The name of the method formal parameter; null if this AField does not represent a method
      * formal parameter.
      */
     private final @Nullable String parameterName;
@@ -68,7 +68,7 @@ public class AFieldWrapper {
     }
 
     /**
-     * The name of the field, if it is a method formal parameter, or null if not.
+     * The identifier name, if it is a method formal parameter, or null if not.
      *
      * @return the name of the field or null
      */

@@ -454,7 +454,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (infer) {
             checkInvalidOptionsInferSignatures();
             String inferArg = checker.getOption("infer");
-            // continue to support no argument for backwards compatibility
+            // No argument means "jaifs", for backwards compatibility.
             if (inferArg == null) {
                 inferArg = "jaifs";
             }
@@ -1097,9 +1097,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
         if (infer && wholeProgramInference != null) {
-            // Write out the results of whole-program inference.
-            // In order to perform the write operation only once for each class, the best location
-            // to do so is here.
+            // Write out the results of whole-program inference, just once for each class.
             wholeProgramInference.writeResultsToFile(wpiOutputFormat);
         }
     }

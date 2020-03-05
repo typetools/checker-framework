@@ -253,7 +253,7 @@ public interface PreparedStatement extends Statement {
      * marker in the SQL statement; if a database access error occurs or
      * this method is called on a closed <code>PreparedStatement</code>
      */
-    void setBytes(int parameterIndex, @Nullable byte x[]) throws SQLException;
+    void setBytes(int parameterIndex, byte x @Nullable []) throws SQLException;
 
     /**
      * Sets the designated parameter to the given <code>java.sql.Date</code> value
