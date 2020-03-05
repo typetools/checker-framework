@@ -50,7 +50,7 @@ public class AFieldWrapper {
     }
 
     /**
-     * The name of the field, if it is a method formal parameter, or null if not.
+     * The identifier name, if it is a method formal parameter, or null if not.
      *
      * @return the name of the field or null
      */
