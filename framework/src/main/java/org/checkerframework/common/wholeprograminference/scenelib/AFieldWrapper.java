@@ -11,29 +11,46 @@ public class AFieldWrapper {
     /** The wrapped object. */
     private final AField theField;
 
-    /** A String representing the type of the field. */
+    /**
+     * A String representing the type of the field, formatted to be printable in Java source code.
+     */
     private final String type;
 
     /**
-     * The name of the method formal parameters; null if this AField does not represent a method
+     * The name of the method formal parameter; null if this AField does not represent a method
      * formal parameter.
      */
-    private @Nullable String parameterName;
+    private final @Nullable String parameterName;
 
     /**
      * Construct an AFieldWrapper.
      *
      * @param theField the wrapped AField
-     * @param type a String representing the underlying type of the field, which AField doesn't
-     *     include
+     * @param type a String representing the underlying type of the field in a form printable in
+     *     Java source, which AField doesn't include
+     * @param parameterName the name, if this AField object represents a formal parameter, or null
+     *     if it does not
      */
-    public AFieldWrapper(AField theField, String type) {
+    public AFieldWrapper(AField theField, String type, @Nullable String parameterName) {
         this.theField = theField;
         this.type = type;
+        this.parameterName = parameterName;
     }
 
     /**
-     * Avoid using this method if possible.
+     * Construct an AFieldWrapper.
+     *
+     * @param theField the wrapped AField
+     * @param type a String representing the underlying type of the field in a form printable in
+     *     Java source, which AField doesn't include
+     */
+    public AFieldWrapper(AField theField, String type) {
+        this(theField, type, null);
+    }
+
+    /**
+     * Returns a reference to the underlying AField object. It is preferable to use the methods of
+     * this class to using the underlying object, if possible.
      *
      * @return the wrapped AField object.
      */
@@ -42,29 +59,20 @@ public class AFieldWrapper {
     }
 
     /**
-     * Returns the type of the field or formal, as a String.
+     * Returns the type of the field or formal, formatted to be printable in Java source code
      *
-     * @return the type of the field or formal, as a String
+     * @return the type of the field or formal, formatted to be printable in Java source code
      */
     public String getType() {
         return type;
     }
 
     /**
-     * The name of the field, if it is a method formal parameter, or null if not.
+     * The identifier name, if it is a method formal parameter, or null if not.
      *
      * @return the name of the field or null
      */
     public @Nullable String getParameterName() {
         return parameterName;
-    }
-
-    /**
-     * Provide a name.
-     *
-     * @param name the name of the field
-     */
-    public void setName(String name) {
-        this.parameterName = name;
     }
 }

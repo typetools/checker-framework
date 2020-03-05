@@ -41,7 +41,7 @@ import scenelib.annotations.io.IndexFileWriter;
  * preserve the code that generates .jaif files, while allowing us to sanely and safely keep the
  * information we need to generate stubs.
  *
- * <p>TODO: remove the dependency on scene-lib entirely
+ * <p>TODO: Remove the dependency on scene-lib entirely.
  */
 public class ASceneWrapper {
 
@@ -49,7 +49,7 @@ public class ASceneWrapper {
     private AScene theScene;
 
     /** The classes in the scene. */
-    private Map<@BinaryName String, AClassWrapper> classes;
+    private Map<@BinaryName String, AClassWrapper> classes = new HashMap<>();
 
     /**
      * Constructor. Pass the AScene to wrap.
@@ -58,7 +58,6 @@ public class ASceneWrapper {
      */
     public ASceneWrapper(AScene theScene) {
         this.theScene = theScene;
-        this.classes = new HashMap<>();
     }
 
     /**
@@ -92,7 +91,7 @@ public class ASceneWrapper {
                 // Receiver type
                 removeIgnoredAnnosFromATypeElement(
                         method.receiver.type, TypeUseLocation.RECEIVER, annosToIgnore);
-                // Parameter type
+                // Parameter types
                 for (AField param : method.parameters.values()) {
                     removeIgnoredAnnosFromATypeElement(
                             param.type, TypeUseLocation.PARAMETER, annosToIgnore);
@@ -104,33 +103,36 @@ public class ASceneWrapper {
     /**
      * Removes all annotations that should be ignored from an ATypeElement.
      *
-     * @param typeEl the type element from which to remove annotations
+     * @param typeElt the type element from which to remove annotations
      * @param loc the location where typeEl in used
-     * @param annosToIgnore maps the toString() representation of an ATypeElement and its
-     *     TypeUseLocation to a set of names of annotations that should not be added to .jaif files
-     *     for that location.
+     * @param annosToIgnore maps a pair of
+     *     <ul>
+     *       <li>the toString() representation of an ATypeElement's description concatenated with
+     *           its annotations
+     *       <li>the ATypeElement's TypeUseLocation
+     *     </ul>
+     *     to a set of names of annotations that should not be added to .jaif files for that
+     *     location.
      */
     private void removeIgnoredAnnosFromATypeElement(
-            ATypeElement typeEl,
+            ATypeElement typeElt,
             TypeUseLocation loc,
             Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
-        String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere;
-        Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(firstKey, loc));
+        String annosToIgnoreKey = typeElt.description.toString() + typeElt.tlAnnotationsHere;
+        Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(annosToIgnoreKey, loc));
         if (annosToIgnoreForLocation != null) {
             Set<Annotation> annosToRemove = new HashSet<>();
-            for (Annotation anno : typeEl.tlAnnotationsHere) {
+            for (Annotation anno : typeElt.tlAnnotationsHere) {
                 if (annosToIgnoreForLocation.contains(anno.def().toString())) {
                     annosToRemove.add(anno);
                 }
             }
-            typeEl.tlAnnotationsHere.removeAll(annosToRemove);
+            typeElt.tlAnnotationsHere.removeAll(annosToRemove);
         }
 
         // Recursively remove ignored annotations from inner types
-        if (!typeEl.innerTypes.isEmpty()) {
-            for (ATypeElement innerType : typeEl.innerTypes.values()) {
-                removeIgnoredAnnosFromATypeElement(innerType, loc, annosToIgnore);
-            }
+        for (ATypeElement innerType : typeElt.innerTypes.values()) {
+            removeIgnoredAnnosFromATypeElement(innerType, loc, annosToIgnore);
         }
     }
 
@@ -142,24 +144,18 @@ public class ASceneWrapper {
      */
     public void writeToJaif(
             String jaifPath, Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
-        try {
-            AScene scene = theScene.clone();
-            removeIgnoredAnnosFromScene(scene, annosToIgnore);
-            scene.prune();
-            new File(jaifPath).delete();
-            if (!scene.isEmpty()) {
-                // Only write non-empty scenes into .jaif files.
-                IndexFileWriter.write(scene, new FileWriter(jaifPath));
+        removeIgnoredAnnosFromScene(theScene, annosToIgnore);
+        theScene.prune();
+        new File(jaifPath).delete();
+        if (!theScene.isEmpty()) {
+            // Only write non-empty scenes into .jaif files.
+            try {
+                IndexFileWriter.write(theScene, new FileWriter(jaifPath));
+            } catch (IOException e) {
+                throw new UserError("Problem while writing %s: %s", jaifPath, e.getMessage());
+            } catch (DefException e) {
+                throw new BugInCF(e);
             }
-        } catch (IOException e) {
-            throw new UserError(
-                    "Problem while reading file in: "
-                            + jaifPath
-                            + ". Exception message: "
-                            + e.getMessage(),
-                    e);
-        } catch (DefException e) {
-            throw new BugInCF(e);
         }
     }
 
@@ -239,9 +235,9 @@ public class ASceneWrapper {
      * Avoid using this if possible; use the other methods of this class unless you absolutely need
      * an AScene.
      *
-     * @return the representation of this scene using only the AScene. Returns a clone.
+     * @return the representation of this scene using only the AScene.
      */
     public AScene getAScene() {
-        return theScene.clone();
+        return theScene;
     }
 }

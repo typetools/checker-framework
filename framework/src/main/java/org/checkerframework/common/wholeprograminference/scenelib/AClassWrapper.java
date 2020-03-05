@@ -60,8 +60,7 @@ public class AClassWrapper {
     }
 
     /**
-     * Call before doing anything with a method. Interacts with scenelib and fetches or creates an
-     * appropriate AMethodWrapper object.
+     * Call before doing anything with a method. Fetches or creates an AMethodWrapper object.
      *
      * <p>Results are interned.
      *
@@ -90,8 +89,7 @@ public class AClassWrapper {
     }
 
     /**
-     * Call before doing anything with a field. Interacts with scenelib and fetches or creates an
-     * appropriate AFieldWrapper object.
+     * Call before doing anything with a field. fetches or creates an AFieldWrapper object.
      *
      * <p>Results are interned.
      *
@@ -129,9 +127,12 @@ public class AClassWrapper {
     }
 
     /**
-     * Get the type of the class, or null if it is unknown. Callers should ensure that either: -
-     * {@link #setTypeElement(TypeElement)} has been called, or - the return value is checked
-     * against null
+     * Get the type of the class, or null if it is unknown. Callers should ensure that either:
+     *
+     * <ul>
+     *   <li>{@link #setTypeElement(TypeElement)} has been called, or
+     *   <li>the return value is checked against null.
+     * </ul>
      *
      * @return a type element representing this class
      */
@@ -149,13 +150,15 @@ public class AClassWrapper {
             this.typeElement = typeElement;
         } else if (!this.typeElement.equals(typeElement)) {
             throw new BugInCF(
-                    "Set the base type of an AClassWrapper to a different type than the previous"
-                            + "base type.");
+                    "Tried to set the base type of an AClassWrapper to "
+                            + typeElement
+                            + ", but it was already"
+                            + this.typeElement);
         }
     }
 
     /**
-     * Checks if any enum constants have been provided to this class/
+     * Checks if any enum constants have been provided to this class.
      *
      * @return true if this class has been marked as an enum
      */
