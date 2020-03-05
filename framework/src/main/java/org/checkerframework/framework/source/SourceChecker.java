@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -955,7 +956,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return;
         }
 
-        final String defaultFormat = String.format("(%s)", msgKey);
+        final String defaultFormat = "(" + msgKey + ")";
         String fmtString;
         if (this.processingEnv.getOptions() != null /*nnbug*/
                 && this.processingEnv.getOptions().containsKey("nomsgtext")) {
@@ -964,56 +965,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 && this.processingEnv.getOptions().containsKey("detailedmsgtext")) {
             // The -Adetailedmsgtext command-line option was given, so output
             // a stylized error message for easy parsing by a tool.
-
-            StringBuilder sb = new StringBuilder();
-
-            // The parts, separated by " $$ " (DETAILS_SEPARATOR), are:
-
-            // (1) error key
-            // TODO: should we also have some type system identifier here?
-            // E.g. Which subclass of SourceChecker we are? Or also the SuppressWarnings keys?
-            sb.append(defaultFormat);
-            sb.append(DETAILS_SEPARATOR);
-
-            // (2) number of additional tokens, and those tokens; this
-            // depends on the error message, and an example is the found
-            // and expected types
-            if (args != null) {
-                sb.append(args.length);
-                sb.append(DETAILS_SEPARATOR);
-                for (Object arg : args) {
-                    sb.append(arg);
-                    sb.append(DETAILS_SEPARATOR);
-                }
-            } else {
-                // Output 0 for null arguments.
-                sb.append(0);
-                sb.append(DETAILS_SEPARATOR);
-            }
-
-            // (3) The error position, as starting and ending characters in
-            // the source file.
-            final Tree tree;
-            if (source instanceof Element) {
-                tree = trees.getTree((Element) source);
-            } else if (source instanceof Tree) {
-                tree = (Tree) source;
-            } else if (source == null) {
-                tree = null;
-            } else {
-                throw new BugInCF("Unexpected source %s [%s]", source, source.getClass());
-            }
-            sb.append(treeToFilePositionString(tree, currentRoot, processingEnv));
-            sb.append(DETAILS_SEPARATOR);
-
-            // (4) The human-readable error message.
-            sb.append(fullMessageOf(msgKey, defaultFormat));
-
-            fmtString = sb.toString();
-
+            fmtString =
+                    detailedMsgTextPrefix(source, defaultFormat, args)
+                            + fullMessageOf(msgKey, defaultFormat);
         } else {
-            final String suppressing = suppressionKey(msgKey);
-            fmtString = "[" + suppressing + "] " + fullMessageOf(msgKey, defaultFormat);
+            fmtString = "[" + suppressionKey(msgKey) + "] " + fullMessageOf(msgKey, defaultFormat);
         }
         String messageText;
         try {
@@ -1151,6 +1107,57 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } else {
             return arg;
         }
+    }
+
+    /**
+     * Returns all but the message key part of the message format output by -Adetailedmsgtext.
+     *
+     * @param source the object from which to obtain source position information; may be an Element,
+     *     a Tree, or null
+     * @param defaultFormat the message key, in parentheses
+     * @param args arguments for interpolation in the string corresponding to the given message key
+     * @return the first part of the message format output by -Adetailedmsgtext.
+     */
+    private String detailedMsgTextPrefix(Object source, String defaultFormat, Object[] args) {
+        StringJoiner sj = new StringJoiner(DETAILS_SEPARATOR);
+
+        // The parts, separated by " $$ " (DETAILS_SEPARATOR), are:
+
+        // (1) error key
+        // TODO: should we also have some type system identifier here?
+        // E.g. Which subclass of SourceChecker we are? Or also the SuppressWarnings keys?
+        sj.add(defaultFormat);
+
+        // (2) number of additional tokens, and those tokens; this
+        // depends on the error message, and an example is the found
+        // and expected types
+        if (args != null) {
+            sj.add(Integer.toString(args.length));
+            for (Object arg : args) {
+                sj.add(Objects.toString(arg));
+            }
+        } else {
+            // Output 0 for null arguments.
+            sj.add(Integer.toString(0));
+        }
+
+        // (3) The error position, as starting and ending characters in
+        // the source file.
+        final Tree tree;
+        if (source instanceof Element) {
+            tree = trees.getTree((Element) source);
+        } else if (source instanceof Tree) {
+            tree = (Tree) source;
+        } else if (source == null) {
+            tree = null;
+        } else {
+            throw new BugInCF("Unexpected source %s [%s]", source, source.getClass());
+        }
+        sj.add(treeToFilePositionString(tree, currentRoot, processingEnv));
+
+        // (4) The human-readable error message will be added by the caller.
+        sj.add(""); // Add DETAILS_SEPARATOR at the end.
+        return sj.toString();
     }
 
     /**
