@@ -42,9 +42,9 @@ public class AFieldWrapper {
     }
 
     /**
-     * Returns the type of the field, as a String.
+     * Returns the type of the field or formal, as a String.
      *
-     * @return the type of the field, as a String
+     * @return the type of the field or formal, as a String
      */
     public String getType() {
         return type;

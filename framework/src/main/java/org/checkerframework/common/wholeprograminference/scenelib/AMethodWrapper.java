@@ -2,8 +2,12 @@ package org.checkerframework.common.wholeprograminference.scenelib;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -29,6 +33,9 @@ public class AMethodWrapper {
      */
     private Map<Integer, AFieldWrapper> parameters = new HashMap<>();
 
+    /** The type parameters of this method. */
+    private List<? extends TypeParameterElement> typeParameters;
+
     /**
      * The return type, as a fully-qualified name.
      *
@@ -37,6 +44,15 @@ public class AMethodWrapper {
      */
     public @FullyQualifiedName String getReturnType() {
         return returnType;
+    }
+
+    /**
+     * Get the type parameters of this method.
+     *
+     * @return the list of type parameters
+     */
+    public List<? extends TypeParameterElement> getTypeParameters() {
+        return typeParameters;
     }
 
     /**
@@ -55,13 +71,29 @@ public class AMethodWrapper {
      * Wrap an AMethod.
      *
      * @param theMethod the method to wrap
-     * @param returnType the return type of the method
      */
-    public AMethodWrapper(AMethod theMethod, TypeMirror returnType) {
+    public AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
         this.theMethod = theMethod;
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @DotSeparatedIdentifiers String typeAsString = returnType.toString();
+        @DotSeparatedIdentifiers String typeAsString = methodElt.getReturnType().toString();
         setReturnType(typeAsString);
+        vivifyParameters(methodElt);
+        this.typeParameters = methodElt.getTypeParameters();
+    }
+
+    /**
+     * Populates the method parameter map for the method. This is called from the constructor, so
+     * that the method parameter map always has an entry for each parameter.
+     *
+     * @param methodElt the method whose parameters should be vivified
+     */
+    private void vivifyParameters(ExecutableElement methodElt) {
+        for (int i = 0; i < methodElt.getParameters().size(); i++) {
+            VariableElement ve = methodElt.getParameters().get(i);
+            TypeMirror type = ve.asType();
+            Name name = ve.getSimpleName();
+            this.vivifyParameter(i, type, name);
+        }
     }
 
     /**
