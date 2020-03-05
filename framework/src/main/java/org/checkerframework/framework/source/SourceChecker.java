@@ -148,8 +148,7 @@ import org.checkerframework.javacutil.UserError;
     // casting to an array or generic type. This will be the new default soon.
     "checkCastElementType",
 
-    // Whether to use unchecked code defaults for bytecode and/or source code; these are configured
-    // by the specific type checker using @Default[QualifierInHierarchy]InUncheckedCode[For].
+    // Whether to use unchecked code defaults for bytecode and/or source code.
     // This option takes arguments "source" and/or "bytecode".
     // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").
     // Note, if unchecked code defaults are turned on for source code, the unchecked
