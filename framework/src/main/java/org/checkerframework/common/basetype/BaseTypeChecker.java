@@ -539,7 +539,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             errorKeys.addAll(subChecker.messagesProperties.stringPropertyNames());
             subChecker.getVisitor().treesWithSuppressWarnings.clear();
         }
-        warnUnneedSuppressions(elementsSuppress, checkerKeys, errorKeys);
+        warnUnneededSuppressions(elementsSuppress, checkerKeys, errorKeys);
 
         getVisitor().treesWithSuppressWarnings.clear();
     }
