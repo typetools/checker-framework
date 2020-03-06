@@ -657,6 +657,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return messagesProperties;
     }
 
+    /**
+     * Return the given skip pattern if supplied by the user, or else a pattern that matches
+     * nothing.
+     *
+     * @param patternName "skipUses" or "skipDefs"
+     * @param options the command-line options
+     * @return the user-supplied regex for the given pattern, or a regex that matches nothing
+     */
     private Pattern getSkipPattern(String patternName, Map<String, String> options) {
         // Default is an illegal Java identifier substring
         // so that it won't match anything.
@@ -664,6 +672,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return getPattern(patternName, options, "\\]'\"\\]");
     }
 
+    /**
+     * Return the given only pattern if supplied by the user, or else a pattern that matches
+     * everything.
+     *
+     * @param patternName "onlyUses" or "onlyDefs"
+     * @param options the command-line options
+     * @return the user-supplied regex for the given pattern, or a regex that matches everything
+     */
     private Pattern getOnlyPattern(String patternName, Map<String, String> options) {
         // default matches everything
         return getPattern(patternName, options, ".");
