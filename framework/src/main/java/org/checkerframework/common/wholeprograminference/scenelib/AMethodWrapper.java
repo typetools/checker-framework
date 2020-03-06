@@ -107,7 +107,7 @@ public class AMethodWrapper {
     }
 
     /**
-     * Get the parameters, as a map from parameter index (0 -> first parameter) to representation.
+     * Get the parameters, as a map from parameter index (0-indexed) to representation.
      *
      * @return an immutable copy of the vivified parameters, as a map from index to representation
      */

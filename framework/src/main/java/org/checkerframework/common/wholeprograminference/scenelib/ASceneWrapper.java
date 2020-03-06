@@ -187,14 +187,13 @@ public class ASceneWrapper {
      *
      * <p>Results are interned.
      *
-     * <p>{@link #updateClassMetadata(AClassWrapper, ClassSymbol)} has to be called on both paths
-     * (cache hit and cache miss) because the second parameter could have been null when the first
-     * miss occurred, so the data would never have been written. In general, the design of WPI
-     * forces this: this cache is used by several different hooks into the visitor (that is,
-     * CFAbstractTransfer), but the information needed to fully populate it is only available at
-     * some of those hooks. Since the information isn't used until the end of WPI when stubs/jaifs
-     * are printed, what's important is that it is eventually collected: it doesn't have to be on
-     * the first cache miss.
+     * <p>updateClassMetadata has to be called on both paths (cache hit and cache miss) because the
+     * second parameter could have been null when the first miss occurred, so the data would never
+     * have been written. In general, the design of WPI forces this: this cache is used by several
+     * different hooks into the visitor (that is, CFAbstractTransfer), but the information needed to
+     * fully populate it is only available at some of those hooks. Since the information isn't used
+     * until the end of WPI when stubs/jaifs are printed, what's important is that it is eventually
+     * collected: it doesn't have to be on the first cache miss.
      *
      * @param className the binary name of the class to be added to the scene
      * @param classSymbol the element representing the class, used for adding data to the
