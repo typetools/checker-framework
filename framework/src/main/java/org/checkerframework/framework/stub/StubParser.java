@@ -1007,7 +1007,7 @@ public class StubParser {
                     stubWarn(
                             "Wildcard type <"
                                     + atype
-                                    + "> doesn't match type in stubs file"
+                                    + "> does not match type in stubs file"
                                     + filename
                                     + ": <"
                                     + typeDef
