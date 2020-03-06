@@ -4,8 +4,6 @@ Renamings:
   "unchecked code defaults" to "conservative defaults".
   -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
     The old name works temporarily but will be removed in a future release.
-  @DefaultQualifierInHierarchyInUncheckedCode to @ConservativeDefaultQualifierInHierarchy
-  @DefaultInUncheckedCodeFor to @ConservativeDefaultFor
 
 Implementation details:
  * Removed `@DefaultInUncheckedCodeFor` and
