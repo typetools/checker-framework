@@ -9,6 +9,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
 import java.util.List;
@@ -239,7 +240,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
-        if (node.getExpression().getKind() == Tree.Kind.NULL_LITERAL) {
+        if (node.getExpression().getKind() == Kind.NULL_LITERAL) {
             return null;
         }
 
