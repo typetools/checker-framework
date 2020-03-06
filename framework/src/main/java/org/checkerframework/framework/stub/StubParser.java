@@ -1654,7 +1654,7 @@ public class StubParser {
 
             return typeElement.asType();
         } else if (expr instanceof NullLiteralExpr) {
-            stubWarn("Ilegal annotation value null, for %s", name);
+            stubWarn("Illegal annotation value null, for %s", name);
             return null;
         } else {
             stubWarn("Unexpected annotation expression: " + expr);
