@@ -931,11 +931,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return;
         }
 
-        String errKey = r.getMessageKeys().iterator().next();
-        if (src instanceof Tree && shouldSuppressWarnings((Tree) src, errKey)) {
-            return;
-        }
-        if (src instanceof Element && shouldSuppressWarnings((Element) src, errKey)) {
+        if (shouldSuppressWarnings(src, r.getMessageKeys().iterator().next())) {
             return;
         }
 
@@ -1064,8 +1060,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Returns the localized long message corresponding for this key. If not found, tries suffixes
-     * of this key, stripping off dot-separated prefixes. If still not found, returns {@code
+     * Returns the localized long message corresponding to this key. If not found, tries suffixes of
+     * this key, stripping off dot-separated prefixes. If still not found, returns {@code
      * defaultValue}.
      *
      * @param messageKey a message key
@@ -1156,7 +1152,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } else {
             throw new BugInCF("Unexpected source %s [%s]", source, source.getClass());
         }
-        sj.add(treeToFilePositionString(tree, currentRoot, processingEnv));
+        sj.add(detailedMsgTextPositionString(tree, currentRoot, processingEnv));
 
         // (4) The human-readable error message will be added by the caller.
         sj.add(""); // Add DETAILS_SEPARATOR at the end.
@@ -1199,9 +1195,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * For the given tree, compute the source positions for that tree. Return a "tuple" like string
+     * For the given tree, compute the source positions for that tree. Return a "tuple"-like string
      * (e.g. "( 1, 200 )" ) that contains the start and end position of the tree in the current
-     * compilation unit.
+     * compilation unit. Used only by the -Adetailedmsgtext output format.
      *
      * @param tree tree to locate within the current compilation unit
      * @param currentRoot the current compilation unit
@@ -1209,7 +1205,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return a tuple string representing the range of characters that tree occupies in the source
      *     file, or the empty string if {@code tree} is null
      */
-    public String treeToFilePositionString(
+    private String detailedMsgTextPositionString(
             Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
         if (tree == null) {
             return "";
@@ -1947,6 +1943,28 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         return false;
+    }
+
+    /**
+     * Returns true if all the warnings pertaining to the given source should be suppressed. This
+     * implementation just that delegates to an overloaded, more specific version of {@code
+     * shouldSuppressWarnings()}.
+     *
+     * @param src the position object to test; may be an Element, a Tree, or null
+     * @return true if all warnings pertaining to the given source should be suppressed
+     * @see #shouldSuppressWarnings(Element, String)
+     * @see #shouldSuppressWarnings(Tree, String)
+     */
+    public boolean shouldSuppressWarnings(Object src, String errKey) {
+        if (src instanceof Element) {
+            return shouldSuppressWarnings((Element) src, errKey);
+        } else if (src instanceof Tree) {
+            return shouldSuppressWarnings((Tree) src, errKey);
+        } else if (src == null) {
+            return false;
+        } else {
+            throw new BugInCF("Unexpected source " + src);
+        }
     }
 
     /**
