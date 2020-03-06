@@ -220,7 +220,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.1.1.zip}
+  \url{https://checkerframework.org/checker-framework-3.2.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -407,12 +407,12 @@ Additional topics that apply to all checkers are covered later in the manual:
 \end{itemize}
 
 
-Finally, there is a
+There is a
 \ahreforurl{https://checkerframework.org/tutorial/}{tutorial}
 that walks you through using the Checker Framework on the
-command line, and a separate
+command line.  There is also a
 \ahreforurl{https://github.com/glts/safer-spring-petclinic/wiki}{Nullness
-  Checker tutorial} by David B\"urgin.
+  Checker tutorial} by David B\"urgin (last updated in April 2016).
 
 % The annotations have to be on your classpath even when you are not using
 % the -processor, because of the existence of the import statement for
@@ -587,7 +587,8 @@ For the Javadoc classes in the JDK's \<com.sun.javadoc> package,
 % are not exposed by ct.sym and therefore cannot be part of an
 % annotated JDK
 use the stub file \<checker/resources/javadoc.astub> by using \<-Astubs=checker.jar/javadoc.astub>.
-% Note: that this syntax only works for checker.jar.
+The ``\<checker.jar>'' should be literal --- don't provide a path.
+(This special syntax only works for ``\<checker.jar>''.)
 \end{itemize}
 
 
@@ -666,17 +667,21 @@ More sound (strict) checking: enable errors that are disabled by default
   are the same.  By default, the Checker Framework unsoundly permits them
   to differ, just as Java does.  See Section~\ref{covariant-type-parameters}
   and Section~\ref{invariant-arrays}.
-\item \<-AuseDefaultsForUncheckedCode>
-  Enables/disables unchecked code defaults.  Takes arguments ``source,bytecode''.
+\item \<-AuseConservativeDefaultsForUncheckedCode>
+  Enables/disables conservative defaults in unchecked code.  Takes arguments ``source,bytecode''.
   ``-source,-bytecode'' is the (unsound) default setting.
+  \begin{itemize}
+  \item
   ``bytecode'' specifies
-  whether the checker should apply unchecked code defaults to
-  bytecode; see
+  whether the checker should apply conservative defaults to
+  bytecode (that is, to already-compiled libraries); see
   Section~\ref{defaults-classfile}.
+  \item
   Outside the scope of any relevant
-  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source'' specifies whether unchecked code
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source'' specifies whether conservative
   default annotations are applied to source code and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
+  \end{itemize}
 \item \<-AconcurrentSemantics>
   Whether to assume concurrent semantics (field values may change at any
   time) or sequential semantics; see Section~\ref{faq-concurrency}.
@@ -751,9 +756,9 @@ Partially-annotated libraries
   Warn if a stub file entry is redundant with bytecode information; see
   Section~\ref{stub-using}.
 % This item is repeated above:
-\item \<-AuseDefaultsForUncheckedCode=source>
+\item \<-AuseConservativeDefaultsForUncheckedCode=source>
   Outside the scope of any relevant
-  \refqualclass{framework/qual}{AnnotatedFor} annotation, use unchecked code
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, use conservative
   default annotations and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
 \end{itemize}
@@ -1514,7 +1519,7 @@ same methodology in different words.
 % LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
 % LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror
 % LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode beingConstructed
-% LocalWords:  AuseDefaultsForUncheckedCode AresolveReflection Ainfer
+% LocalWords:  AuseConservativeDefaultsForUncheckedCode AresolveReflection Ainfer
 % LocalWords:  AconservativeUninferredTypeArguments Averbosecfg Acfgviz
 % LocalWords:  AstubWarnIfOverwritesBytecode AprintVerboseGenerics
 % LocalWords:  AatfDoNotCache AatfCacheSize IntRange AwarnIfNotFound

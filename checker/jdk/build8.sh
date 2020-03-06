@@ -6,7 +6,7 @@
 # ensure CHECKERFRAMEWORK set
 if [ -z "$CHECKERFRAMEWORK" ] ; then
     if [ -z "$CHECKER_FRAMEWORK" ] ; then
-        export CHECKERFRAMEWORK=`(cd "$0/../.." && pwd)`
+        export CHECKERFRAMEWORK=$((cd "$0/../.." && pwd))
     else
         export CHECKERFRAMEWORK=${CHECKER_FRAMEWORK}
     fi
@@ -18,7 +18,7 @@ PRESERVE=1  # option to preserve intermediate files
 
 # parameters derived from environment
 # TOOLSJAR and CTSYM derived from JAVA_HOME, rest from CHECKERFRAMEWORK
-PARENTDIR="`cd $CHECKERFRAMEWORK/.. && pwd`"   # base directory
+PARENTDIR="$(cd $CHECKERFRAMEWORK/.. && pwd)"   # base directory
 WORKDIR="${CHECKERFRAMEWORK}/checker/jdk"   # working directory
 AJDK="${PARENTDIR}/annotated-jdk8u-jdk"        # annotated JDK
 SRCDIR="${AJDK}/src/share/classes"
@@ -33,7 +33,7 @@ CP="${BINDIR}:${BOOTDIR}:${TOOLSJAR}:${CF_BIN}:${CF_JAR}"
 JFLAGS="-XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000\
  -source 8 -target 8 -encoding ascii -cp ${CP}"
 PROCESSORS="fenum,formatter,guieffect,i18n,i18nformatter,interning,nullness,signature"
-PFLAGS="-ApermitMissingJdk -Aignorejdkastub -AuseDefaultsForUncheckedCode=source -Awarns"
+PFLAGS="-ApermitMissingJdk -Aignorejdkastub -AuseConservativeDefaultsForUncheckedCode=source -Awarns"
 JAIFDIR="${WORKDIR}/jaifs"
 SYMDIR="${WORKDIR}/sym"
 
@@ -79,9 +79,9 @@ find ${SI_DIRS} -maxdepth 1 -name '*\.java' -print | xargs\
 echo "build one package at a time w/processors on"
 for d in ${DIRS} ; do
     ls $d/*.java 2>/dev/null || continue
-    echo :$d: `echo $d/*.java | wc -w` files
+    echo :$d: $(echo $d/*.java | wc -w) files
     ${CF_JAVAC} -g -d ${BINDIR} ${JFLAGS} -processor ${PROCESSORS} ${PFLAGS}\
- "$d"/*.java 2>&1 | tee ${WORKDIR}/log/`echo "$d" | tr / .`.log
+ "$d"/*.java 2>&1 | tee ${WORKDIR}/log/$(echo "$d" | tr / .).log
 done
 
 # Check logfiles for errors and list any source files that failed to
