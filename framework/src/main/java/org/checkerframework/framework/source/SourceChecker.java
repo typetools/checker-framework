@@ -1223,7 +1223,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @param tree tree to locate within the current compilation unit
      * @param currentRoot the current compilation unit
-     * @param processingEnv the current processing environment
      * @return a tuple string representing the range of characters that tree occupies in the source
      *     file, or the empty string if {@code tree} is null
      */
