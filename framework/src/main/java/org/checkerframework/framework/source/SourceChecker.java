@@ -1169,7 +1169,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } else {
             throw new BugInCF("Unexpected source %s [%s]", source, source.getClass());
         }
-        sj.add(detailedMsgTextPositionString(tree, currentRoot, processingEnv));
+        sj.add(detailedMsgTextPositionString(tree, currentRoot));
 
         // (4) The human-readable error message will be added by the caller.
         sj.add(""); // Add DETAILS_SEPARATOR at the end.
@@ -1222,8 +1222,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return a tuple string representing the range of characters that tree occupies in the source
      *     file, or the empty string if {@code tree} is null
      */
-    private String detailedMsgTextPositionString(
-            Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
+    private String detailedMsgTextPositionString(Tree tree, CompilationUnitTree currentRoot) {
         if (tree == null) {
             return "";
         }
