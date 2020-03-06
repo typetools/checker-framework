@@ -372,6 +372,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedDeclaredType superclassDecl = pair.getKey();
             ExecutableElement overriddenMethodElement = pair.getValue();
 
+            // do not infer types for code that isn't presented as source
+            if (ElementUtils.isElementFromByteCode(overriddenMethodElement)) {
+                continue;
+            }
+
             AnnotatedExecutableType overriddenMethod =
                     AnnotatedTypes.asMemberOf(
                             atf.getProcessingEnv().getTypeUtils(),

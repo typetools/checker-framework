@@ -437,7 +437,6 @@ public final class SceneToStubWriter {
         AMethod aMethod = aMethodWrapper.getAMethod();
 
         printWriter.print(INDENT);
-        printWriter.print(formatAnnotations(aMethod.returnType.tlAnnotationsHere));
         // Needed because AMethod stores the name with the parameters, to distinguish
         // between overloaded methods.
         String methodName = aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
@@ -454,6 +453,7 @@ public final class SceneToStubWriter {
             // so it would be acceptable to print "java.lang.Object" for every
             // method. A better type is printed if one is available to improve
             // the readability of the resulting stub file.
+            printWriter.print(formatAnnotations(aMethod.returnType.tlAnnotationsHere));
             String returnType = aMethodWrapper.getReturnType();
             printWriter.print(returnType);
             printWriter.print(" ");
@@ -467,7 +467,9 @@ public final class SceneToStubWriter {
             // Only output the receiver if it has an annotation.
             parameters.add(
                     formatParameter(
-                            new AFieldWrapper(aMethod.receiver, basename), "this", basename));
+                            AFieldWrapper.createReceiverParameter(aMethod.receiver, basename),
+                            "this",
+                            basename));
         }
         for (Integer index : aMethodWrapper.getParameters().keySet()) {
             AFieldWrapper param = aMethodWrapper.getParameters().get(index);

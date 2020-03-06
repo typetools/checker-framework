@@ -52,12 +52,12 @@ public class AMethodWrapper {
     }
 
     /**
-     * Wrap an AMethod.
+     * Wrap an AMethod. Package-private, because it should only be called from AClassWrapper.
      *
      * @param theMethod the method to wrap
      * @param returnType the return type of the method
      */
-    public AMethodWrapper(AMethod theMethod, TypeMirror returnType) {
+    AMethodWrapper(AMethod theMethod, TypeMirror returnType) {
         this.theMethod = theMethod;
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @DotSeparatedIdentifiers String typeAsString = returnType.toString();
@@ -65,7 +65,7 @@ public class AMethodWrapper {
     }
 
     /**
-     * Avoid calling this if possible.
+     * Avoid calling this if possible; prefer the methods of this class.
      *
      * @return the underlying AMethod object that has been wrapped
      */
