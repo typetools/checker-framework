@@ -916,11 +916,46 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    /// Reporting type-checking errors
+    /// Reporting type-checking errors; the main entry point is report()
     ///
 
-    /** Separates parts of a "detailed message", to permit easier parsing. */
-    public static final String DETAILS_SEPARATOR = " $$ ";
+    /**
+     * Reports a result. By default, it prints it to the screen via the compiler's internal messager
+     * if the result is non-success; otherwise, the method returns with no side effects.
+     *
+     * @param r the result to report
+     * @param src the position object associated with the result; may be an Element, a Tree, or null
+     */
+    public void report(final Result r, final Object src) {
+        if (r.isSuccess()) {
+            return;
+        }
+
+        String errKey = r.getMessageKeys().iterator().next();
+        if (src instanceof Tree && shouldSuppressWarnings((Tree) src, errKey)) {
+            return;
+        }
+        if (src instanceof Element && shouldSuppressWarnings((Element) src, errKey)) {
+            return;
+        }
+
+        for (Result.DiagMessage msg : r.getDiagMessages()) {
+            if (r.isFailure()) {
+                this.message(
+                        hasOption("warns")
+                                ? Diagnostic.Kind.MANDATORY_WARNING
+                                : Diagnostic.Kind.ERROR,
+                        src,
+                        msg.getMessageKey(),
+                        msg.getArgs());
+            } else if (r.isWarning()) {
+                this.message(
+                        Diagnostic.Kind.MANDATORY_WARNING, src, msg.getMessageKey(), msg.getArgs());
+            } else {
+                this.message(Diagnostic.Kind.NOTE, src, msg.getMessageKey(), msg.getArgs());
+            }
+        }
+    }
 
     /**
      * Prints a message (error, warning, note, etc.) via JSR-269.
@@ -1018,44 +1053,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Reports a result. By default, it prints it to the screen via the compiler's internal messager
-     * if the result is non-success; otherwise, the method returns with no side effects.
-     *
-     * @param r the result to report
-     * @param src the position object associated with the result; may be an Element, a Tree, or null
-     */
-    public void report(final Result r, final Object src) {
-        if (r.isSuccess()) {
-            return;
-        }
-
-        String errKey = r.getMessageKeys().iterator().next();
-        if (src instanceof Tree && shouldSuppressWarnings((Tree) src, errKey)) {
-            return;
-        }
-        if (src instanceof Element && shouldSuppressWarnings((Element) src, errKey)) {
-            return;
-        }
-
-        for (Result.DiagMessage msg : r.getDiagMessages()) {
-            if (r.isFailure()) {
-                this.message(
-                        hasOption("warns")
-                                ? Diagnostic.Kind.MANDATORY_WARNING
-                                : Diagnostic.Kind.ERROR,
-                        src,
-                        msg.getMessageKey(),
-                        msg.getArgs());
-            } else if (r.isWarning()) {
-                this.message(
-                        Diagnostic.Kind.MANDATORY_WARNING, src, msg.getMessageKey(), msg.getArgs());
-            } else {
-                this.message(Diagnostic.Kind.NOTE, src, msg.getMessageKey(), msg.getArgs());
-            }
-        }
-    }
-
-    /**
      * Do not call this method directly. Call {@link #report(Result, Object)} instead.
      *
      * <p>This method exists so that the BaseTypeChecker can override it. For compound checkers, it
@@ -1111,6 +1108,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return arg;
         }
     }
+
+    /** Separates parts of a "detailed message", to permit easier parsing. */
+    public static final String DETAILS_SEPARATOR = " $$ ";
 
     /**
      * Returns all but the message key part of the message format output by -Adetailedmsgtext.
