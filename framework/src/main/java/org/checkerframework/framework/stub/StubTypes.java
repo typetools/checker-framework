@@ -84,8 +84,7 @@ public class StubTypes {
 
         this.shouldParseJdk =
                 !factory.getContext().getChecker().hasOption("ignorejdkastub")
-                        && PluginUtil.getJreVersion() != 8
-                        && annotatedJdkVersion.equals("11");
+                        && Integer.valueOf(annotatedJdkVersion) > 8;
     }
 
     /** @return true if stub files are currently being parsed; otherwise, false. */
