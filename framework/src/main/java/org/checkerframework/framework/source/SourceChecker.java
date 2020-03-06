@@ -389,8 +389,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected CompilationUnitTree currentRoot;
 
     /**
-     * If an error is detected in a CompilationUnitTree, skip all future calls of typeProcess with
-     * that same CompilationUnitTree.
+     * If an error is detected in a CompilationUnitTree, skip all future calls of {@link
+     * #typeProcess} with that same CompilationUnitTree.
      */
     private CompilationUnitTree previousErrorCompilationUnit;
 
