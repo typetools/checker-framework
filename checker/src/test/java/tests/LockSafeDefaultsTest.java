@@ -14,7 +14,7 @@ public class LockSafeDefaultsTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.checker.lock.LockChecker.class,
                 "lock",
-                "-AuseDefaultsForUncheckedCode=source",
+                "-AuseConservativeDefaultsForUncheckedCode=source",
                 "-Anomsgtext");
     }
 

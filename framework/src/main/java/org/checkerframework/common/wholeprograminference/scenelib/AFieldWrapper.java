@@ -23,7 +23,8 @@ public class AFieldWrapper {
     private final @Nullable String parameterName;
 
     /**
-     * Construct an AFieldWrapper.
+     * Construct an AFieldWrapper. Package-private, because it should only be called by
+     * AMethodWrapper or AClassWrapper.
      *
      * @param theField the wrapped AField
      * @param type a String representing the underlying type of the field in a form printable in
@@ -31,20 +32,21 @@ public class AFieldWrapper {
      * @param parameterName the name, if this AField object represents a formal parameter, or null
      *     if it does not
      */
-    public AFieldWrapper(AField theField, String type, @Nullable String parameterName) {
+    AFieldWrapper(AField theField, String type, @Nullable String parameterName) {
         this.theField = theField;
         this.type = type;
         this.parameterName = parameterName;
     }
 
     /**
-     * Construct an AFieldWrapper.
+     * Construct an AFieldWrapper. Package-private, because it should only be called by
+     * AMethodWrapper or AClassWrapper.
      *
      * @param theField the wrapped AField
      * @param type a String representing the underlying type of the field in a form printable in
      *     Java source, which AField doesn't include
      */
-    public AFieldWrapper(AField theField, String type) {
+    AFieldWrapper(AField theField, String type) {
         this(theField, type, null);
     }
 
@@ -74,5 +76,16 @@ public class AFieldWrapper {
      */
     public @Nullable String getParameterName() {
         return parameterName;
+    }
+
+    /**
+     * Create a new AField representing a receiver parameter; only for use by SceneToStubWriter.
+     *
+     * @param receiver the AField to wrap
+     * @param basename the name of the type of the receiver parameter, as a Java source string
+     * @return an AFieldWrapper with the name "this" representing the given receiver
+     */
+    public static AFieldWrapper createReceiverParameter(AField receiver, String basename) {
+        return new AFieldWrapper(receiver, basename, "this");
     }
 }

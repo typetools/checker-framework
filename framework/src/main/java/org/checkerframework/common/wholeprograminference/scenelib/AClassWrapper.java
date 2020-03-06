@@ -51,11 +51,11 @@ public class AClassWrapper {
     private @MonotonicNonNull TypeElement typeElement = null;
 
     /**
-     * Wrap an AClass.
+     * Wrap an AClass. Package-private, because it should only be called from ASceneWrapper.
      *
      * @param theClass the wrapped object
      */
-    public AClassWrapper(AClass theClass) {
+    AClassWrapper(AClass theClass) {
         this.theClass = theClass;
     }
 
@@ -80,16 +80,16 @@ public class AClassWrapper {
     }
 
     /**
-     * Get all the methods that have been vivified (that is, interacted with) on a class.
+     * Get all the methods that have been vivified (had their types updated by WPI) on a class.
      *
-     * @return a map from method name to the object representing the method
+     * @return a map from method name (in JVM name format) to the object representing the method
      */
     public Map<String, AMethodWrapper> getMethods() {
         return ImmutableMap.copyOf(methods);
     }
 
     /**
-     * Call before doing anything with a field. fetches or creates an AFieldWrapper object.
+     * Call before doing anything with a field. Fetches or creates an AFieldWrapper object.
      *
      * <p>Results are interned.
      *
