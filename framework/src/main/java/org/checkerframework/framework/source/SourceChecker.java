@@ -152,12 +152,14 @@ import org.plumelib.util.UtilPlume;
     // Whether to use conservative defaults for bytecode and/or source code.
     // This option takes arguments "source" and/or "bytecode".
     // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").
-    // Note, if conservative defaults are turned on for source code, the unchecked
-    // defaults are not applied to code in scope of an @AnnotatedFor.
+    // Note, in source code, conservative defaults are never
+    // applied to code in the scope of an @AnnotatedFor.
     // See the "Compiling partially-annotated libraries" and
     // "Default qualifiers for \<.class> files (conservative library defaults)"
     // sections in the manual for more details
     // org.checkerframework.framework.source.SourceChecker.useConservativeDefault
+    "useConservativeDefaultsForUncheckedCode",
+    // Temporary, for backward compatibility
     "useDefaultsForUncheckedCode",
 
     // Whether to assume sound concurrent semantics or
@@ -241,7 +243,7 @@ import org.plumelib.util.UtilPlume;
     // bytecode.
     "stubWarnIfRedundantWithBytecode",
     // Already listed above, but worth noting again in this section:
-    // "useDefaultsForUncheckedCode"
+    // "useConservativeDefaultsForUncheckedCode"
 
     ///
     /// Debugging
@@ -2058,7 +2060,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Should conservative defaults be used for the kind of code indicated by the parameter.
+     * Should conservative defaults be used for the kind of unchecked code indicated by the
+     * parameter?
      *
      * @param kindOfCode source or bytecode
      * @return whether conservative defaults should be used
@@ -2144,7 +2147,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Return true if the element has an {@code @AnnotatedFor} annotation, for this checker or an
      * upstream checker that called this one.
      *
-     * @param elt the source code element to check
+     * @param elt the source code element to check, or null
      * @return true if the element is annotated for this checker or an upstream checker
      */
     private boolean isAnnotatedForThisCheckerOrUpstreamChecker(@Nullable Element elt) {

@@ -14,7 +14,7 @@ public class I18nFormatterUncheckedDefaultsTest extends CheckerFrameworkPerDirec
                 org.checkerframework.checker.i18nformatter.I18nFormatterChecker.class,
                 "i18n-formatter",
                 "-Anomsgtext",
-                "-AuseDefaultsForUncheckedCode=-source,bytecode");
+                "-AuseConservativeDefaultsForUncheckedCode=-source,bytecode");
     }
 
     @Parameters
