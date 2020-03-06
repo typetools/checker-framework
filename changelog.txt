@@ -27,6 +27,7 @@ Implementation details:
  * Deprecated Analysis#Analysis(ProcessingEnvironment) and Analysis#Analysis(T,
    int, ProcessingEnvironment); use Analysis#Analysis(), Analysis#Analysis(int),
    Analysis#Analysis(T), and Analysis#Analysis(T, int) instead.
+ * Renamed SourceChecker#getMessages() to getMessagesProperties().
 
 Closed issues:
 2181, 2975, 3018, 3022, 3032, 3036, 3037, 3038, 3041, 3049, 3055, 3076.
