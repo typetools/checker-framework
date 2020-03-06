@@ -149,15 +149,15 @@ import org.plumelib.util.UtilPlume;
     // casting to an array or generic type. This will be the new default soon.
     "checkCastElementType",
 
-    // Whether to use unchecked code defaults for bytecode and/or source code.
+    // Whether to use conservative defaults for bytecode and/or source code.
     // This option takes arguments "source" and/or "bytecode".
     // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").
-    // Note, if unchecked code defaults are turned on for source code, the unchecked
+    // Note, if conservative defaults are turned on for source code, the unchecked
     // defaults are not applied to code in scope of an @AnnotatedFor.
     // See the "Compiling partially-annotated libraries" and
     // "Default qualifiers for \<.class> files (conservative library defaults)"
     // sections in the manual for more details
-    // org.checkerframework.framework.source.SourceChecker.useUncheckedCodeDefault
+    // org.checkerframework.framework.source.SourceChecker.useConservativeDefault
     "useDefaultsForUncheckedCode",
 
     // Whether to assume sound concurrent semantics or
@@ -2048,7 +2048,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
         }
 
-        if (useUncheckedCodeDefault("source")) {
+        if (useConservativeDefault("source")) {
             // If we got this far without hitting an @AnnotatedFor and returning
             // false, we DO suppress the warning.
             return true;
@@ -2058,15 +2058,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Should unchecked code defaults be used for the kind of code indicated by the parameter.
+     * Should conservative defaults be used for the kind of code indicated by the parameter.
      *
      * @param kindOfCode source or bytecode
-     * @return whether unchecked code defaults should be used
+     * @return whether conservative defaults should be used
      */
-    public boolean useUncheckedCodeDefault(String kindOfCode) {
+    public boolean useConservativeDefault(String kindOfCode) {
         final boolean useUncheckedDefaultsForSource = false;
         final boolean useUncheckedDefaultsForByteCode = false;
-        String option = this.getOption("useDefaultsForUncheckedCode");
+        String option = this.getOption("useConservativeDefaultsForUncheckedCode");
+        // Temporary, for backward compatibility.
+        if (option == null) {
+            this.getOption("useDefaultsForUncheckedCode");
+        }
 
         String[] args = option != null ? option.split(",") : new String[0];
         for (String arg : args) {
@@ -2082,7 +2086,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return useUncheckedDefaultsForByteCode;
         } else {
             throw new UserError(
-                    "SourceChecker: unexpected argument to useUncheckedCodeDefault: " + kindOfCode);
+                    "SourceChecker: unexpected argument to useConservativeDefault: " + kindOfCode);
         }
     }
 
@@ -2145,7 +2149,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private boolean isAnnotatedForThisCheckerOrUpstreamChecker(@Nullable Element elt) {
 
-        if (elt == null || !useUncheckedCodeDefault("source")) {
+        if (elt == null || !useConservativeDefault("source")) {
             return false;
         }
 
