@@ -1070,6 +1070,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * <p>This method exists so that the BaseTypeChecker can override it. For compound checkers, it
      * stores all messages and sorts them by location before outputting them.
+     *
+     * @param kind the kind of message to print
+     * @param message the message text
+     * @param source the souce code position of the diagnostic message
+     * @param root the compilation unit
      */
     protected void printOrStoreMessage(
             Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
@@ -1402,6 +1407,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *    cast        &rarr; all
      *    all         &rarr; {@code null}
      * </pre>
+     *
+     * @param name the lint key whose parest to find
+     * @return the parent of the lint key
      */
     private String parentOfOption(String name) {
         if (name.equals("all")) {
@@ -1967,6 +1975,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * shouldSuppressWarnings()}.
      *
      * @param src the position object to test; may be an Element, a Tree, or null
+     * @param errKey the error key the checker is emitting
      * @return true if all warnings pertaining to the given source should be suppressed
      * @see #shouldSuppressWarnings(Element, String)
      * @see #shouldSuppressWarnings(Tree, String)
