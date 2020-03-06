@@ -504,27 +504,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
     }
 
-    /** True if the git.properties file has been printed. */
-    private static boolean gitPropertiesPrinted = false;
-
-    /** Print information about the git repository from which the Checker Framework was compiled. */
-    void printGitProperties() {
-        if (gitPropertiesPrinted) {
-            return;
-        }
-        gitPropertiesPrinted = true;
-
-        try (InputStream in = getClass().getResourceAsStream("/git.properties");
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in)); ) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
-            }
-        } catch (IOException e) {
-            System.out.println("IOException while reading git.properties: " + e.getMessage());
-        }
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     /// Getters and setters
     ///
@@ -892,43 +871,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             // Also add possibly deferred diagnostics, which will get published back in
             // AbstractTypeProcessor.
             this.errsOnLastExit = log.nerrors;
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    /// Shutdown
-    ///
-
-    /**
-     * Return true to indicate that method {@link #shutdownHook} should be added as a shutdownHook
-     * of the JVM.
-     *
-     * @return true to add {@link #shutdownHook} as a shutdown hook of the JVM
-     */
-    protected boolean shouldAddShutdownHook() {
-        return hasOption("resourceStats");
-    }
-
-    /**
-     * Method that gets called exactly once at shutdown time of the JVM. Checkers can override this
-     * method to customize the behavior.
-     */
-    protected void shutdownHook() {
-        if (hasOption("resourceStats")) {
-            // Check for the "resourceStats" option and don't call shouldAddShutdownHook
-            // to allow subclasses to override shouldXXX and shutdownHook and simply
-            // call the super implementations.
-            printStats();
-        }
-    }
-
-    /** Print resource usage statistics. */
-    protected void printStats() {
-        List<MemoryPoolMXBean> memoryPools = ManagementFactory.getMemoryPoolMXBeans();
-        for (MemoryPoolMXBean memoryPool : memoryPools) {
-            System.out.println("Memory pool " + memoryPool.getName() + " statistics");
-            System.out.println("  Pool type: " + memoryPool.getType());
-            System.out.println("  Peak usage: " + memoryPool.getPeakUsage());
         }
     }
 
@@ -1766,7 +1708,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.elementsWithSuppressedWarnings.clear();
         Set<String> checkerKeys = new HashSet<>(getSuppressWarningsKeys());
         Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
-        warnUnneedSuppressions(elementsSuppress, checkerKeys, errorKeys);
+        warnUnneededSuppressions(elementsSuppress, checkerKeys, errorKeys);
         getVisitor().treesWithSuppressWarnings.clear();
     }
 
@@ -1779,7 +1721,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param checkerKeys suppress warning keys that suppress any warning from this checker
      * @param errorKeys error keys that can be issued by this checker
      */
-    protected void warnUnneedSuppressions(
+    protected void warnUnneededSuppressions(
             Set<Element> elementsSuppress, Set<String> checkerKeys, Set<String> errorKeys) {
         // It's not clear for which checker "all" is intended, so never report it as unused.
         checkerKeys.remove(SourceChecker.SUPPRESS_ALL_KEY);
@@ -2431,6 +2373,43 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    /// Shutdown
+    ///
+
+    /**
+     * Return true to indicate that method {@link #shutdownHook} should be added as a shutdownHook
+     * of the JVM.
+     *
+     * @return true to add {@link #shutdownHook} as a shutdown hook of the JVM
+     */
+    protected boolean shouldAddShutdownHook() {
+        return hasOption("resourceStats");
+    }
+
+    /**
+     * Method that gets called exactly once at shutdown time of the JVM. Checkers can override this
+     * method to customize the behavior.
+     */
+    protected void shutdownHook() {
+        if (hasOption("resourceStats")) {
+            // Check for the "resourceStats" option and don't call shouldAddShutdownHook
+            // to allow subclasses to override shouldXXX and shutdownHook and simply
+            // call the super implementations.
+            printStats();
+        }
+    }
+
+    /** Print resource usage statistics. */
+    protected void printStats() {
+        List<MemoryPoolMXBean> memoryPools = ManagementFactory.getMemoryPoolMXBeans();
+        for (MemoryPoolMXBean memoryPool : memoryPools) {
+            System.out.println("Memory pool " + memoryPool.getName() + " statistics");
+            System.out.println("  Pool type: " + memoryPool.getType());
+            System.out.println("  Peak usage: " + memoryPool.getPeakUsage());
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     /// Miscellaneous
     ///
 
@@ -2463,5 +2442,26 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     @Override
     public final SourceVersion getSupportedSourceVersion() {
         return SourceVersion.latest();
+    }
+
+    /** True if the git.properties file has been printed. */
+    private static boolean gitPropertiesPrinted = false;
+
+    /** Print information about the git repository from which the Checker Framework was compiled. */
+    private void printGitProperties() {
+        if (gitPropertiesPrinted) {
+            return;
+        }
+        gitPropertiesPrinted = true;
+
+        try (InputStream in = getClass().getResourceAsStream("/git.properties");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in)); ) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            System.out.println("IOException while reading git.properties: " + e.getMessage());
+        }
     }
 }
