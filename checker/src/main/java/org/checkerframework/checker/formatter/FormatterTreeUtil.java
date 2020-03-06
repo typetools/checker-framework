@@ -18,8 +18,8 @@ import javax.lang.model.type.NullType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.SimpleElementVisitor7;
-import javax.lang.model.util.SimpleTypeVisitor7;
+import javax.lang.model.util.SimpleElementVisitor8;
+import javax.lang.model.util.SimpleTypeVisitor8;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
@@ -227,7 +227,7 @@ public class FormatterTreeUtil {
                 // figure out if argType is an array
                 type =
                         argType.accept(
-                                new SimpleTypeVisitor7<InvocationType, Class<Void>>() {
+                                new SimpleTypeVisitor8<InvocationType, Class<Void>>() {
                                     @Override
                                     protected InvocationType defaultAction(
                                             TypeMirror e, Class<Void> p) {
@@ -334,7 +334,7 @@ public class FormatterTreeUtil {
         public final boolean isParameterNull(TypeMirror type) {
             // is it the null literal
             return type.accept(
-                    new SimpleTypeVisitor7<Boolean, Class<Void>>() {
+                    new SimpleTypeVisitor8<Boolean, Class<Void>>() {
                         @Override
                         protected Boolean defaultAction(TypeMirror e, Class<Void> p) {
                             // it's not the null literal
@@ -416,7 +416,7 @@ public class FormatterTreeUtil {
 
     /** Converts a TypeMirror to a Class. */
     private static class TypeMirrorToClassVisitor
-            extends SimpleTypeVisitor7<Class<? extends Object>, Class<Void>> {
+            extends SimpleTypeVisitor8<Class<? extends Object>, Class<Void>> {
         @Override
         public Class<? extends Object> visitPrimitive(PrimitiveType t, Class<Void> v) {
             switch (t.getKind()) {
@@ -445,7 +445,7 @@ public class FormatterTreeUtil {
         public Class<? extends Object> visitDeclared(DeclaredType dt, Class<Void> v) {
             return dt.asElement()
                     .accept(
-                            new SimpleElementVisitor7<Class<? extends Object>, Class<Void>>() {
+                            new SimpleElementVisitor8<Class<? extends Object>, Class<Void>>() {
                                 @Override
                                 public Class<? extends Object> visitType(
                                         TypeElement e, Class<Void> v) {
