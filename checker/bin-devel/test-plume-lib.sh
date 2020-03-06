@@ -45,7 +45,7 @@ if [ -d "$CHECKERFRAMEWORK" ] ; then
   git -C "$CHECKERFRAMEWORK" pull || true
 else
   JSR308="$(cd "$CHECKERFRAMEWORK/.." && pwd -P)"
-  (cd "$JSR308" && git clone https://github.com/typetools/checker-framework.git) || (cd "$JSR308" && git clone https://github.com/typetools/checker-framework.git)
+  (cd "$JSR308" && git clone https://github.com/opprop/checker-framework.git) || (cd "$JSR308" && git clone https://github.com/opprop/checker-framework.git)
 fi
 # This also builds annotation-tools
 (cd "$CHECKERFRAMEWORK" && ./checker/bin-devel/build.sh downloadjdk)

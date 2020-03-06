@@ -1,0 +1,27 @@
+# Rebuild it when typetools' corresponding docker image updates
+
+FROM mdernst/cf-ubuntu-jdk11
+
+LABEL MAINTAINER="w23xing@uwaterloo.ca"
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get -qqy update \
+&& apt-get -qqy install \
+  binutils \
+  build-essential \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
+
+RUN apt-get -qqy update \
+&& apt-get -qqy install \
+  python3 \
+  python3-pip \
+  python-pip \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --no-cache-dir lithium-reducer PyGithub pyyaml \
+&& pip install --no-cache-dir subprocess32 lithium-reducer PyGithub pyyaml
+
+RUN export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8

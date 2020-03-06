@@ -33,7 +33,7 @@ env:
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
 before_script:
-- timeout 5m docker pull mdernst/cf-$OS-$JDKVER || true
+- timeout 5m docker pull xingweitian/$OS-for-cfi-$JDKVER || true
 
 # Using travis_wait here seems to cause the job to terminate after 1 minute
 # with no error (!).
@@ -57,7 +57,9 @@ script:
 - echo "TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG}"
 - echo "TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}"
 - >-
-  docker run -v $HOME/.gradle:/root/.gradle -v $HOME/.m2:/root/.m2 mdernst/cf-$OS-$JDKVER /bin/bash -c "true &&
+  DOCKERIMAGE=xingweitian/$OS-for-cfi-$JDKVER &&
+  echo "Using docker image: " $DOCKERIMAGE &&
+  docker run -v $HOME/.gradle:/root/.gradle -v $HOME/.m2:/root/.m2 $DOCKERIMAGE /bin/bash -c "true &&
      if [ $TRAVIS_EVENT_TYPE = pull_request ] ; then
        git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO || git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO
        cd $THIS_REPO

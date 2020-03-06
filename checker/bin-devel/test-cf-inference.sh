@@ -26,7 +26,7 @@ source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
 ## own group because it is most likely to fail, and it's helpful to see
 ## that only it, not other downstream tests, failed.
 
-/tmp/plume-scripts/git-clone-related typetools checker-framework-inference
+/tmp/plume-scripts/git-clone-related opprop checker-framework-inference
 
 export AFU="${AFU:-$(cd ../annotation-tools/annotation-file-utilities && pwd -P)}"
 export PATH=$AFU/scripts:$PATH
