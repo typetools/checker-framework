@@ -509,7 +509,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     ///
 
     /** @return the {@link ProcessingEnvironment} that was supplied to this checker */
-    @Override // from CFChecker
+    @Override
     public ProcessingEnvironment getProcessingEnvironment() {
         return this.processingEnv;
     }
