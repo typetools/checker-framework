@@ -620,37 +620,35 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      *     context, or null if resolution fails
      */
     private @BinaryName String resolve(@BinaryName String className) {
-        @BinaryName String qualifiedName;
-        Class<?> resolved = null;
 
-        if (pkgName == null) {
-            qualifiedName = className;
-            resolved = loadClass(qualifiedName);
-            if (resolved == null) {
-                // Every Java program implicitly does "import java.lang.*",
-                // so see whether this class is in that package.
-                qualifiedName = Signatures.addPackage("java.lang", className);
-                resolved = loadClass(qualifiedName);
-            }
-        } else {
-            qualifiedName = Signatures.addPackage(pkgName, className);
-            resolved = loadClass(qualifiedName);
-            if (resolved == null) {
-                qualifiedName = className;
-                resolved = loadClass(qualifiedName);
+        if (pkgName != null) {
+            String qualifiedName = Signatures.addPackage(pkgName, className);
+            if (loadClass(qualifiedName) != null) {
+                return qualifiedName;
             }
         }
 
-        if (resolved == null) {
-            for (String declName : imports) {
-                qualifiedName = mergeImport(declName, className);
-                if (qualifiedName != null) {
-                    return qualifiedName;
-                }
+        {
+            // Every Java program implicitly does "import java.lang.*",
+            // so see whether this class is in that package.
+            String qualifiedName = Signatures.addPackage("java.lang", className);
+            if (loadClass(qualifiedName) != null) {
+                return qualifiedName;
             }
+        }
+
+        for (String declName : imports) {
+            String qualifiedName = mergeImport(declName, className);
+            if (loadClass(qualifiedName) != null) {
+                return qualifiedName;
+            }
+        }
+
+        if (loadClass(className) != null) {
             return className;
         }
-        return qualifiedName;
+
+        return null;
     }
 
     /**

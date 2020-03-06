@@ -706,7 +706,7 @@ public class DependentTypesHelper {
         if (errors.isEmpty()) {
             return;
         }
-        StringJoiner errorsFormatted = new StringJoiner("\n");
+        StringJoiner errorsFormatted = new StringJoiner(System.lineSeparator());
         for (DependentTypesError dte : errors) {
             errorsFormatted.add(dte.format());
         }
@@ -750,7 +750,7 @@ public class DependentTypesHelper {
             return;
         }
         SourceChecker checker = factory.getContext().getChecker();
-        String error = PluginUtil.join("\n", errors);
+        String error = PluginUtil.joinLines(errors);
         checker.report(Result.failure("flowexpr.parse.error", error), errorTree);
     }
 
@@ -805,9 +805,16 @@ public class DependentTypesHelper {
         }
     }
 
+    /**
+     * Returns true if {@code am} is an expression annotation, that is an annotation whose value is
+     * a Java expression.
+     *
+     * @param am an annotation
+     * @return true if {@code am} is an expression annotation
+     */
     private boolean isExpressionAnno(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
-            if (AnnotationUtils.areSameByClass(am, clazz)) {
+            if (factory.areSameByClass(am, clazz)) {
                 return true;
             }
         }
@@ -954,7 +961,7 @@ public class DependentTypesHelper {
      */
     private List<String> getListOfExpressionElements(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
-            if (AnnotationUtils.areSameByClass(am, clazz)) {
+            if (factory.areSameByClass(am, clazz)) {
                 return annoToElements.get(clazz);
             }
         }

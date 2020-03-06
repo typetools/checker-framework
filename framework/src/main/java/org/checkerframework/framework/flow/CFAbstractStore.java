@@ -186,6 +186,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
         // case 1: remove information if necessary
         if (!(analysis.checker.hasOption("assumeSideEffectFree")
+                || analysis.checker.hasOption("assumePure")
                 || isSideEffectFree(atypeFactory, method))) {
             // update field values
             Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
@@ -848,9 +849,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // other are discarded, as one of store implicitly contains 'top'
             // for that variable.
             FlowExpressions.LocalVariable localVar = e.getKey();
-            if (localVariableValues.containsKey(localVar)) {
+            V thisVal = localVariableValues.get(localVar);
+            if (thisVal != null) {
                 V otherVal = e.getValue();
-                V thisVal = localVariableValues.get(localVar);
                 V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
 
                 if (mergedVal != null) {
@@ -874,9 +875,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // the other are discarded, as one store implicitly contains 'top'
             // for that field.
             FlowExpressions.FieldAccess el = e.getKey();
-            if (fieldValues.containsKey(el)) {
+            V thisVal = fieldValues.get(el);
+            if (thisVal != null) {
                 V otherVal = e.getValue();
-                V thisVal = fieldValues.get(el);
                 V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
                 if (mergedVal != null) {
                     newStore.fieldValues.put(el, mergedVal);
@@ -888,9 +889,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // the other are discarded, as one store implicitly contains 'top'
             // for that array access.
             FlowExpressions.ArrayAccess el = e.getKey();
-            if (arrayValues.containsKey(el)) {
+            V thisVal = arrayValues.get(el);
+            if (thisVal != null) {
                 V otherVal = e.getValue();
-                V thisVal = arrayValues.get(el);
                 V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
                 if (mergedVal != null) {
                     newStore.arrayValues.put(el, mergedVal);
@@ -902,9 +903,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // not the other are discarded, as one store implicitly contains
             // 'top' for that field.
             FlowExpressions.MethodCall el = e.getKey();
-            if (methodValues.containsKey(el)) {
+            V thisVal = methodValues.get(el);
+            if (thisVal != null) {
                 V otherVal = e.getValue();
-                V thisVal = methodValues.get(el);
                 V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
                 if (mergedVal != null) {
                     newStore.methodValues.put(el, mergedVal);
@@ -913,9 +914,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
         for (Entry<FlowExpressions.ClassName, V> e : other.classValues.entrySet()) {
             FlowExpressions.ClassName el = e.getKey();
-            if (classValues.containsKey(el)) {
+            V thisVal = classValues.get(el);
+            if (thisVal != null) {
                 V otherVal = e.getValue();
-                V thisVal = classValues.get(el);
                 V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
                 if (mergedVal != null) {
                     newStore.classValues.put(el, mergedVal);
@@ -938,32 +939,36 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected boolean supersetOf(CFAbstractStore<V, S> other) {
         for (Entry<FlowExpressions.LocalVariable, V> e : other.localVariableValues.entrySet()) {
             FlowExpressions.LocalVariable key = e.getKey();
-            if (!localVariableValues.containsKey(key)
-                    || !localVariableValues.get(key).equals(e.getValue())) {
+            V value = localVariableValues.get(key);
+            if (value == null || !value.equals(e.getValue())) {
                 return false;
             }
         }
         for (Entry<FlowExpressions.FieldAccess, V> e : other.fieldValues.entrySet()) {
             FlowExpressions.FieldAccess key = e.getKey();
-            if (!fieldValues.containsKey(key) || !fieldValues.get(key).equals(e.getValue())) {
+            V value = fieldValues.get(key);
+            if (value == null || !value.equals(e.getValue())) {
                 return false;
             }
         }
         for (Entry<FlowExpressions.ArrayAccess, V> e : other.arrayValues.entrySet()) {
             FlowExpressions.ArrayAccess key = e.getKey();
-            if (!arrayValues.containsKey(key) || !arrayValues.get(key).equals(e.getValue())) {
+            V value = arrayValues.get(key);
+            if (value == null || !value.equals(e.getValue())) {
                 return false;
             }
         }
         for (Entry<MethodCall, V> e : other.methodValues.entrySet()) {
             FlowExpressions.MethodCall key = e.getKey();
-            if (!methodValues.containsKey(key) || !methodValues.get(key).equals(e.getValue())) {
+            V value = methodValues.get(key);
+            if (value == null || !value.equals(e.getValue())) {
                 return false;
             }
         }
         for (Entry<FlowExpressions.ClassName, V> e : other.classValues.entrySet()) {
             FlowExpressions.ClassName key = e.getKey();
-            if (!classValues.containsKey(key) || !classValues.get(key).equals(e.getValue())) {
+            V value = classValues.get(key);
+            if (value == null || !value.equals(e.getValue())) {
                 return false;
             }
         }

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.annotation.processing.AbstractProcessor;
@@ -110,8 +111,10 @@ import org.checkerframework.javacutil.UserError;
     "skipDefs",
     "onlyDefs",
 
-    // Unsoundly ignore side effects
+    // Unsoundly assume all methods have no side effects, are deterministic, or both.
     "assumeSideEffectFree",
+    "assumeDeterministic",
+    "assumePure",
 
     // Whether to assume that assertions are enabled or disabled
     // org.checkerframework.framework.flow.CFCFGBuilder.CFCFGBuilder
@@ -145,16 +148,17 @@ import org.checkerframework.javacutil.UserError;
     // casting to an array or generic type. This will be the new default soon.
     "checkCastElementType",
 
-    // Whether to use unchecked code defaults for bytecode and/or source code; these are configured
-    // by the specific type checker using @Default[QualifierInHierarchy]InUncheckedCode[For].
+    // Whether to use conservative defaults for bytecode and/or source code.
     // This option takes arguments "source" and/or "bytecode".
     // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").
-    // Note, if unchecked code defaults are turned on for source code, the unchecked
-    // defaults are not applied to code in scope of an @AnnotatedFor.
+    // Note, in source code, conservative defaults are never
+    // applied to code in scope of an @AnnotatedFor.
     // See the "Compiling partially-annotated libraries" and
     // "Default qualifiers for \<.class> files (conservative library defaults)"
     // sections in the manual for more details
-    // org.checkerframework.framework.source.SourceChecker.useUncheckedCodeDefault
+    // org.checkerframework.framework.source.SourceChecker.useConservativeDefault
+    "useConservativeDefaultsForUncheckedCode",
+    // Temporary, for backward compatibility
     "useDefaultsForUncheckedCode",
 
     // Whether to assume sound concurrent semantics or
@@ -238,7 +242,7 @@ import org.checkerframework.javacutil.UserError;
     // bytecode.
     "stubWarnIfRedundantWithBytecode",
     // Already listed above, but worth noting again in this section:
-    // "useDefaultsForUncheckedCode"
+    // "useConservativeDefaultsForUncheckedCode"
 
     ///
     /// Debugging
@@ -281,7 +285,8 @@ import org.checkerframework.javacutil.UserError;
 
     // Whether to check that the annotated JDK is correctly provided
     // org.checkerframework.common.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
-    "nocheckjdk",
+    "permitMissingJdk",
+    "nocheckjdk", // temporary, for backward compatibility
 
     // Whether to print debugging messages while processing the stub files
     // org.checkerframework.framework.stub.StubParser.debugStubParser
@@ -511,7 +516,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.parentChecker = parentChecker;
     }
 
-    /** Invoked when the current compilation unit root changes. */
+    /** @return the parent checker of the current checker */
+    public SourceChecker getParentChecker() {
+        return this.parentChecker;
+    }
+
+    /**
+     * Invoked when the current compilation unit root changes.
+     *
+     * @param newRoot the new compilation unit root
+     */
     protected void setRoot(CompilationUnitTree newRoot) {
         this.currentRoot = newRoot;
         visitor.setRoot(currentRoot);
@@ -792,21 +806,26 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         printMessage(msg);
     }
 
-    /** Log an internal error in the framework or a checker. */
+    /**
+     * Log an internal error in the framework or a checker.
+     *
+     * @param ce the internal error
+     */
     private void logBugInCF(BugInCF ce) {
-        StringBuilder msg = new StringBuilder(ce.getMessage());
+        StringJoiner msg = new StringJoiner(LINE_SEPARATOR);
+        msg.add(ce.getMessage());
         boolean noPrintErrorStack =
                 (processingEnv != null
                         && processingEnv.getOptions() != null
                         && processingEnv.getOptions().containsKey("noPrintErrorStack"));
 
+        msg.add("; The Checker Framework crashed.  Please report the crash.");
         if (noPrintErrorStack) {
-            msg.append(
-                    "; The Checker Framework crashed.  Please report the crash.  To see "
-                            + "the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+            msg.add(
+                    " To see the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
         } else {
             if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
-                msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
+                msg.add("Compilation unit: " + this.currentRoot.getSourceFile().getName());
             }
 
             if (this.visitor != null) {
@@ -818,26 +837,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     int col = source.getColumnNumber(pos.getStartPosition(), true);
                     String line = source.getLine(pos.getStartPosition());
 
-                    msg.append(
-                            "\nLast visited tree at line "
-                                    + linenr
-                                    + " column "
-                                    + col
-                                    + ":\n"
-                                    + line);
+                    msg.add("Last visited tree at line " + linenr + " column " + col + ":");
+                    msg.add(line);
                 }
             }
 
-            msg.append(
-                    "\nException: "
+            msg.add(
+                    "Exception: "
                             + ce.getCause()
                             + "; "
                             + formatStackTrace(ce.getCause().getStackTrace()));
             boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
             Throwable cause = ce.getCause().getCause();
             while (cause != null) {
-                msg.append(
-                        "\nUnderlying Exception: "
+                msg.add(
+                        "Underlying Exception: "
                                 + cause
                                 + "; "
                                 + formatStackTrace(cause.getStackTrace()));
@@ -846,11 +860,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
 
             if (printClasspath) {
-                msg.append("\nClasspath:");
+                msg.add("Classpath:");
                 ClassLoader cl = ClassLoader.getSystemClassLoader();
                 URL[] urls = ((URLClassLoader) cl).getURLs();
                 for (URL url : urls) {
-                    msg.append("\n" + url.getFile());
+                    msg.add(url.getFile());
                 }
             }
         }
@@ -925,9 +939,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.messages = getMessages();
 
         this.visitor = createSourceVisitor();
-
-        // TODO: hack to clear out static caches.
-        AnnotationUtils.clear();
     }
 
     /**
@@ -1148,6 +1159,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 swTree);
     }
 
+    /** The name of the @SuppressWarnings annotation. */
+    private final String suppressWarningsClassName = SuppressWarnings.class.getCanonicalName();
     /**
      * Finds the tree that is a {@code @SuppressWarnings} annotation.
      *
@@ -1165,9 +1178,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         for (AnnotationTree annotationTree : annotations) {
-            if (AnnotationUtils.areSameByClass(
+            if (AnnotationUtils.areSameByName(
                     TreeUtils.annotationFromAnnotationTree(annotationTree),
-                    SuppressWarnings.class)) {
+                    suppressWarningsClassName)) {
                 return annotationTree;
             }
         }
@@ -1188,52 +1201,24 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 t);
     }
 
-    /** Format a list of {@link StackTraceElement}s to be printed out as an error message. */
+    /**
+     * Format a list of {@link StackTraceElement}s to be printed out as an error message.
+     *
+     * @param stackTrace the {@link StackTraceElement}s to be printed
+     * @return a multi-line formatted stack trace
+     */
     protected String formatStackTrace(StackTraceElement[] stackTrace) {
-        boolean first = true;
-        StringBuilder sb = new StringBuilder();
+        StringJoiner sb = new StringJoiner(LINE_SEPARATOR);
         if (stackTrace.length == 0) {
-            sb.append("no stack trace available.");
+            sb.add("no stack trace available.");
         } else {
-            sb.append("Stack trace: ");
+            sb.add("Stack trace: ");
         }
         for (StackTraceElement ste : stackTrace) {
-            if (!first) {
-                sb.append("\n");
-            }
-            first = false;
-            sb.append(ste.toString());
+            sb.add(ste.toString());
         }
         return sb.toString();
     }
-
-    // Uses private fields, need to rewrite.
-    // public void dumpState() {
-    //     System.out.printf("SourceChecker = %s%n", this);
-    //     System.out.printf("  env = %s%n", env);
-    //     System.out.printf(
-    //             "    env.elementUtils = %s%n", ((JavacProcessingEnvironment) env).elementUtils);
-    //     System.out.printf(
-    //             "      env.elementUtils.types = %s%n",
-    //             ((JavacProcessingEnvironment) env).elementUtils.types);
-    //     System.out.printf(
-    //             "      env.elementUtils.enter = %s%n",
-    //             ((JavacProcessingEnvironment) env).elementUtils.enter);
-    //     System.out.printf(
-    //             "    env.typeUtils = %s%n", ((JavacProcessingEnvironment) env).typeUtils);
-    //     System.out.printf("  trees = %s%n", trees);
-    //     System.out.printf(
-    //             "    trees.enter = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).enter);
-    //     System.out.printf(
-    //             "    trees.elements = %s%n",
-    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements);
-    //     System.out.printf(
-    //             "      trees.elements.types = %s%n",
-    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements.types);
-    //     System.out.printf(
-    //             "      trees.elements.enter = %s%n",
-    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements.enter);
-    // }
 
     /**
      * Returns the localized long message corresponding for this key, and returns the defValue if no
@@ -1259,7 +1244,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Prints a message (error, warning, note, etc.) via JSR-269.
      *
      * @param kind the type of message to print
-     * @param source the object from which to obtain source position information
+     * @param source the object from which to obtain source position information; may be an Element,
+     *     a Tree, or null
      * @param msgKey the message key to print
      * @param args arguments for interpolation in the string corresponding to the given message key
      * @see Diagnostic
@@ -1268,7 +1254,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private void message(
             Diagnostic.Kind kind,
-            Object source,
+            @Nullable Object source,
             @CompilerMessageKey String msgKey,
             Object... args) {
 
@@ -1333,8 +1319,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 tree = trees.getTree((Element) source);
             } else if (source instanceof Tree) {
                 tree = (Tree) source;
-            } else {
+            } else if (source == null) {
                 tree = null;
+            } else {
+                throw new BugInCF("Unexpected source %s [%s]", source, source.getClass());
             }
             sb.append(treeToFilePositionString(tree, currentRoot, processingEnv));
             sb.append(DETAILS_SEPARATOR);
@@ -1380,11 +1368,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } catch (Exception e) {
             messageText =
                     "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args);
-        }
-
-        if (LINE_SEPARATOR != "\n") { // interned
-            // Replace '\n' with the proper line separator
-            messageText = messageText.replaceAll("\n", LINE_SEPARATOR);
         }
 
         if (source instanceof Element) {
@@ -1446,12 +1429,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param currentRoot the current compilation unit
      * @param processingEnv the current processing environment
      * @return a tuple string representing the range of characters that tree occupies in the source
-     *     file
+     *     file, or the empty string if {@code tree} is null
      */
     public String treeToFilePositionString(
             Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
         if (tree == null) {
-            return null;
+            return "";
         }
 
         SourcePositions sourcePositions = trees.getSourcePositions();
@@ -1623,7 +1606,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
         }
 
-        if (useUncheckedCodeDefault("source")) {
+        if (useConservativeDefault("source")) {
             // If we got this far without hitting an @AnnotatedFor and returning
             // false, we DO suppress the warning.
             return true;
@@ -1633,15 +1616,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Should unchecked code defaults be used for the kind of code indicated by the parameter.
+     * Should conservative defaults be used for the kind of unchecked code indicated by the
+     * parameter?
      *
      * @param kindOfCode source or bytecode
-     * @return whether unchecked code defaults should be used
+     * @return whether conservative defaults should be used
      */
-    public boolean useUncheckedCodeDefault(String kindOfCode) {
+    public boolean useConservativeDefault(String kindOfCode) {
         final boolean useUncheckedDefaultsForSource = false;
         final boolean useUncheckedDefaultsForByteCode = false;
-        String option = this.getOption("useDefaultsForUncheckedCode");
+        String option = this.getOption("useConservativeDefaultsForUncheckedCode");
+        // Temporary, for backward compatibility.
+        if (option == null) {
+            this.getOption("useDefaultsForUncheckedCode");
+        }
 
         String[] args = option != null ? option.split(",") : new String[0];
         for (String arg : args) {
@@ -1657,7 +1645,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return useUncheckedDefaultsForByteCode;
         } else {
             throw new UserError(
-                    "SourceChecker: unexpected argument to useUncheckedCodeDefault: " + kindOfCode);
+                    "SourceChecker: unexpected argument to useConservativeDefault: " + kindOfCode);
         }
     }
 
@@ -1711,9 +1699,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return shouldSuppressWarnings(elt.getEnclosingElement(), errKey);
     }
 
+    /**
+     * Return true if the given element is annotated for this checker or an upstream checker.
+     *
+     * @param elt the elmeent to cehck, or null
+     * @return true if the given element is annotated for this checker or an upstream checker
+     */
     private boolean isAnnotatedForThisCheckerOrUpstreamChecker(@Nullable Element elt) {
 
-        if (elt == null || !useUncheckedCodeDefault("source")) {
+        if (elt == null || !useConservativeDefault("source")) {
             return false;
         }
 

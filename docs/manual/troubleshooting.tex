@@ -65,6 +65,11 @@ This section describes some possible problems and solutions.
 
 \begin{itemize}
 \item
+  \label{no-such-field-error-release}
+  An error that includes \<java.lang.NoSuchFieldError: RELEASE"> means that
+  you are not using the correct compiler (you are not using a Java 9+ compiler).
+
+\item
 If you get the error
 
 %BEGIN LATEX
@@ -200,6 +205,7 @@ the pre-compiled distribution.
 
 
 \item
+\label{no-such-field-error}
 A \<NoSuchFieldError> such as this:
 
 \begin{Verbatim}
@@ -626,6 +632,7 @@ Checker Framework.  See
 \url{https://bugs.openjdk.java.net/browse/JDK-7101822} and \url{https://bugs.openjdk.java.net/browse/JDK-8169095}.
 % Also see https://github.com/typetools/checker-framework/issues/1304
 
+
 \sectionAndLabel{How to report problems (bug reporting)}{reporting-bugs}
 
 If you have a problem with any checker, or with the Checker Framework,
@@ -663,17 +670,29 @@ helpful if you:
   includes every file that is used by any of the commands you reported, and
   possibly other files as well.  Please attach the files, rather than
   pasting their contents into the body of your bug report or email message,
-  because some mailers mangle formatting of pasted text.  If you
+  because some mailers mangle formatting of pasted text.
+
+  If you
   encountered a problem while using tool integration such as
   Maven integration, then try to reproduce the problem from the
   command line as well --- this will indicate whether the problem is with
-  the checker itself or with the tool integration.
+  the checker itself or with the tool integration.  If you use an invasive
+  annotation processor such as Lombok, then try to repoduce the problem
+  without it --- this will indicate whether the problem is in the Checker
+  Framework proper or in its interaction with Lombok.
+
+  If you cannot share your code, create a new, small test case.  (This is
+  helpful even if your code is not secret!)  The progress tracing options
+  (Section~\ref{creating-debugging-options-progress}) can be helpful in
+  determining which file the Checker Framework was processing when it
+  crashed.
 \item
   Indicate exactly what the result was by attaching a file or using
   cut-and-paste from your command shell (don't merely describe it in
-  words, and don't use a screenshot).
+  words, don't use a screenshot, and don't provide just part of the output).
 \item
-  Indicate what you expected the result to be, since a bug is a difference
+  If the problem is not a crash, then
+  indicate what you expected the result to be, since a bug is a difference
   between desired and actual outcomes.  Also, please indicate \textbf{why}
   you expected that result --- explaining your reasoning can help you
   understand how your reasoning is different than the checker's and which
@@ -683,8 +702,8 @@ helpful if you:
 \item
   Indicate what you have already done to try to understand the problem.
   Did you do any additional experiments?  What parts of the manual did
-  read, and what else did you search for in the manual?  This information
-  will prevent you from being given redundant suggestions.
+  read, and what else did you search for in the manual?  Without this
+  information, the maintainers may give you redundant suggestions.
 \end{itemize}
 
 A particularly useful format for a test case is as a new file, or a diff to
@@ -751,10 +770,7 @@ the Checker Framework, rather than an official release.
 % checkers and of the checker framework.  It may also help you to debug
 % problems more effectively.
 
-The Checker Framework can be easily built on Unix (Linux and Mac).  You
-might have trouble building on Windows.  If so, you can switch to Unix (at
-least for building, if not for running, the Checker Framework) or you can
-report the problems to the Checker Framework developers.
+Note the JDK requirements (Section~\ref{installation}).
 
 
 \subsectionAndLabel{Install prerequisites}{building-prerequisites}
@@ -762,26 +778,31 @@ report the problems to the Checker Framework developers.
 You need to install several packages in order to build the Checker
 Framework.
 Follow the instructions for your operating system.
+If your OS is not listed, adapt the instructions for an existing OS;
+for example, other Linux distributions will be similar to Ubuntu.
 
 \begin{description}
 \item[Ubuntu]
   Run the following commands:
 
-% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk8-plus
+% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk11-plus
 \begin{Verbatim}
 sudo apt-get -qqy update
-sudo apt-get -qqy install ant cpp git gradle junit4 libcurl3-gnutls \
- make maven mercurial unzip wget openjdk-8-jdk \
- dia hevea latexmk librsvg2-bin maven python-pip \
+sudo apt-get -qqy install \
+ openjdk-11-jdk \
+ ant cpp git gradle jq libcurl3-gnutls \
+ make maven mercurial python3-pip python3-requests unzip wget \
+ dia hevea imagemagick latexmk librsvg2-bin maven rsync \
  texlive-font-utils texlive-fonts-recommended \
  texlive-latex-base texlive-latex-extra texlive-latex-recommended
+pip3 install html5validator
 \end{Verbatim}
 
-% Building Checker Framework from source on Mac OS
+  You may have to answer questions about which time zone your computer is in.
 
 \item[Mac OS]
   If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
-  the following commands (you may need to update the version number \<2.31>):
+  the following commands:
 
 \begin{Verbatim}
 brew update
@@ -790,7 +811,7 @@ brew cask install java
 brew cask install mactex
 \end{Verbatim}
 
-Make a \<latex> directory and copy \<hevea.sty> file into it:
+Make a \<latex> directory and copy \<hevea.sty> file into it (you may need to update the version number \<2.31>):
 
 \begin{Verbatim}
 mkdir -p $HOME/Library/texmf/tex/latex

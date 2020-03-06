@@ -4,6 +4,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import org.checkerframework.javacutil.PluginUtil;
 
 /**
  * Represents an abstract syntax tree of type {@link Tree} that underlies a given control flow
@@ -63,7 +64,7 @@ public abstract class UnderlyingAST {
 
         @Override
         public String toString() {
-            return "CFGMethod(\n" + method + "\n)";
+            return PluginUtil.joinLines("CFGMethod(", method, ")");
         }
     }
 
@@ -88,7 +89,7 @@ public abstract class UnderlyingAST {
 
         @Override
         public String toString() {
-            return "CFGLambda(\n" + lambda + "\n)";
+            return PluginUtil.joinLines("CFGLambda(", lambda, ")");
         }
     }
 
@@ -117,7 +118,7 @@ public abstract class UnderlyingAST {
 
         @Override
         public String toString() {
-            return "CFGStatement(\n" + code + "\n)";
+            return PluginUtil.joinLines("CFGStatement(", code, ")");
         }
     }
 }

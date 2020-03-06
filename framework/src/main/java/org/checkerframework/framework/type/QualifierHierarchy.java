@@ -69,7 +69,10 @@ public abstract class QualifierHierarchy {
      * Returns all type qualifiers in this type qualifier hierarchy.
      *
      * @return the fully qualified name represented in this hierarchy
+     * @deprecated use {@link AnnotatedTypeFactory#getSupportedTypeQualifierNames()} or {@link
+     *     AnnotatedTypeFactory#getSupportedTypeQualifiers()} instead
      */
+    @Deprecated
     public abstract Set<? extends AnnotationMirror> getTypeQualifiers();
 
     // **********************************************************************
@@ -177,14 +180,7 @@ public abstract class QualifierHierarchy {
     public Set<? extends AnnotationMirror> leastUpperBounds(
             Collection<? extends AnnotationMirror> annos1,
             Collection<? extends AnnotationMirror> annos2) {
-        if (annos1.size() != annos2.size()) {
-            throw new BugInCF(
-                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes.\n"
-                            + "    Set 1: "
-                            + annos1
-                            + " Set 2: "
-                            + annos2);
-        }
+        assertSameSize(annos1, annos2);
         if (annos1.isEmpty()) {
             throw new BugInCF(
                     "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets");
@@ -200,14 +196,7 @@ public abstract class QualifierHierarchy {
             }
         }
 
-        assert result.size() == annos1.size()
-                : "QualifierHierarchy.leastUpperBounds: resulting set has incorrect number of annotations.\n"
-                        + "    Set 1: "
-                        + annos1
-                        + " Set 2: "
-                        + annos2
-                        + " LUB: "
-                        + result;
+        assertSameSize(result, annos1);
 
         return result;
     }
@@ -227,14 +216,7 @@ public abstract class QualifierHierarchy {
     public Set<? extends AnnotationMirror> greatestLowerBounds(
             Collection<? extends AnnotationMirror> annos1,
             Collection<? extends AnnotationMirror> annos2) {
-        if (annos1.size() != annos2.size()) {
-            throw new BugInCF(
-                    "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with sets of different sizes.\n"
-                            + "    Set 1: "
-                            + annos1
-                            + " Set 2: "
-                            + annos2);
-        }
+        assertSameSize(annos1, annos2);
         if (annos1.isEmpty()) {
             throw new BugInCF(
                     "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets");
@@ -250,14 +232,7 @@ public abstract class QualifierHierarchy {
             }
         }
 
-        assert result.size() == annos1.size()
-                : "QualifierHierarchy.greatestLowerBounds: resulting set has incorrect number of annotations.\n"
-                        + "    Set 1: "
-                        + annos1
-                        + " Set 2: "
-                        + annos2
-                        + " GLB: "
-                        + result;
+        assertSameSize(annos1, annos2, result);
 
         return result;
     }
@@ -634,5 +609,34 @@ public abstract class QualifierHierarchy {
             map.put(key, prevs);
         }
         return true;
+    }
+
+    /**
+     * Throws an exception if the given collections do not have the same size.
+     *
+     * @param c1 the first collection
+     * @param c2 the second collection
+     */
+    private static void assertSameSize(Collection<?> c1, Collection<?> c2) {
+        if (c1.size() != c2.size()) {
+            throw new BugInCF(
+                    "inconsistent sizes (%d, %d):%n  %s%n  %s", c1.size(), c2.size(), c1, c2);
+        }
+    }
+
+    /**
+     * Throws an exception if the result does not have the same size as the inputs (which are
+     * assumed to have the same size as one another).
+     *
+     * @param c1 the first collection
+     * @param c2 the second collection
+     * @param result the result collection
+     */
+    private static void assertSameSize(Collection<?> c1, Collection<?> c2, Collection<?> result) {
+        if (c1.size() != result.size()) {
+            throw new BugInCF(
+                    "inconsistent sizes (%d, %d, %d):%n  %s%n  %s%n  %s",
+                    c1.size(), c2.size(), result.size(), c1, c2, result);
+        }
     }
 }

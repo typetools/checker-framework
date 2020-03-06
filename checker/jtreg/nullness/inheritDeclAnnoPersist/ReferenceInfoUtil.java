@@ -11,6 +11,8 @@ import com.sun.tools.classfile.Method;
 import com.sun.tools.classfile.RuntimeAnnotations_attribute;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
+import org.checkerframework.javacutil.PluginUtil;
 
 public class ReferenceInfoUtil {
 
@@ -65,13 +67,13 @@ public class ReferenceInfoUtil {
             List<String> expectedAnnos, List<Annotation> actualAnnos, ClassFile cf)
             throws InvalidIndex, UnexpectedEntry {
         if (actualAnnos.size() != expectedAnnos.size()) {
-            throw new ComparisionException(
+            throw new ComparisonException(
                     "Wrong number of annotations", expectedAnnos, actualAnnos, cf);
         }
         for (String annoName : expectedAnnos) {
             Annotation anno = findAnnotation(annoName, actualAnnos, cf);
             if (anno == null) {
-                throw new ComparisionException(
+                throw new ComparisonException(
                         "Expected annotation not found: " + annoName,
                         expectedAnnos,
                         actualAnnos,
@@ -97,14 +99,14 @@ public class ReferenceInfoUtil {
     }
 }
 
-class ComparisionException extends RuntimeException {
+class ComparisonException extends RuntimeException {
     private static final long serialVersionUID = -3930499712333815821L;
 
     public final List<String> expected;
     public final List<Annotation> found;
     public final ClassFile cf;
 
-    public ComparisionException(
+    public ComparisonException(
             String message, List<String> expected, List<Annotation> found, ClassFile cf) {
         super(message);
         this.expected = expected;
@@ -113,25 +115,22 @@ class ComparisionException extends RuntimeException {
     }
 
     public String toString() {
-        String str = super.toString();
-        try {
-            if (expected != null && found != null) {
-                str +=
-                        "\n\tExpected: "
-                                + expected.size()
-                                + " annotations; but found: "
-                                + found.size()
-                                + " annotations\n"
-                                + "  Expected: "
-                                + expected
-                                + "\n  Found: ";
-                for (Annotation anno : found) {
-                    str += cf.constant_pool.getUTF8Value(anno.type_index) + ",";
-                }
+        StringJoiner foundString = new StringJoiner(",");
+        for (Annotation anno : found) {
+            try {
+                foundString.add(cf.constant_pool.getUTF8Value(anno.type_index));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException();
         }
-        return str;
+        return PluginUtil.joinLines(
+                super.toString(),
+                "\tExpected: "
+                        + expected.size()
+                        + " annotations; but found: "
+                        + found.size()
+                        + " annotations",
+                "  Expected: " + expected,
+                "  Found: " + foundString);
     }
 }

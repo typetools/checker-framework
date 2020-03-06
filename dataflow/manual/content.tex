@@ -216,6 +216,16 @@ package org.checkerframework.framework.flow;
 class CFCFGBuilder extends CFGBuilder
 \end{verbatim}
 
+\subsubsubsection{CFGVisualizeLauncher}
+\label{sec:cfg_visualize_launcher_class}
+
+The CFGVisualizeLauncher generates a DOT or String representation of
+the control flow graph for a given method in a given class.
+
+\begin{verbatim}
+package org.checkerframework.dataflow.cfg;
+class CFGVisualizeLauncher
+\end{verbatim}
 
 \subsubsection{FlowExpressions}
 \label{sec:flow_expressions_class}
@@ -1803,9 +1813,15 @@ For a given node \code{n}
 
 \end{itemize}
 
+The \code{AnnotatedTypeFactory} and helper classes need to be prepared to work
+even when dataflow analysis is not finished yet. Code should either check
+whether dataflow analysis is still in progress (using
+\code{analysis.isRunning()}) or handle possible null values. The factory should
+return conservative, flow-insensitive types if the analysis is still in
+progress.
 
 
-\subsection{The Checker-Framework Store and Dealing with Aliasing}
+\subsection{The Checker Framework Store and Dealing with Aliasing}
 
 \begin{workinprogress}
     Word of caution: The exact rules of what information is

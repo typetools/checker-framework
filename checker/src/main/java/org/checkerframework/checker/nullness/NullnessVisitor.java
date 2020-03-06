@@ -147,7 +147,7 @@ public class NullnessVisitor
     private boolean containsSameByName(
             Set<Class<? extends Annotation>> quals, AnnotationMirror anno) {
         for (Class<? extends Annotation> q : quals) {
-            if (AnnotationUtils.areSameByClass(anno, q)) {
+            if (atypeFactory.areSameByClass(anno, q)) {
                 return true;
             }
         }
@@ -236,7 +236,9 @@ public class NullnessVisitor
                 && !isNewArrayAllZeroDims(node)
                 && !isNewArrayInToArray(node)
                 && !TypesUtils.isPrimitive(componentType.getUnderlyingType())
-                && checker.getLintOption("forbidnonnullarraycomponents", false)) {
+                && (checker.getLintOption("soundArrayCreationNullness", false)
+                        // temporary, for backward compatibility
+                        || checker.getLintOption("forbidnonnullarraycomponents", false))) {
             checker.report(
                     Result.failure(
                             "new.array.type.invalid",

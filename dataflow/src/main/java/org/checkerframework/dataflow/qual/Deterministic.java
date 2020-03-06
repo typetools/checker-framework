@@ -75,9 +75,14 @@ import java.lang.annotation.Target;
  * <p>In fact, the rules are so conservative that checking is currently disabled by default, but can
  * be enabled via the {@code -AcheckPurityAnnotations} command-line option.
  *
+ * <p>This annotation is inherited by subtypes, just as if it were meta-annotated with
+ * {@code @InheritedAnnotation}.
+ *
  * @checker_framework.manual #type-refinement-purity Side effects, determinism, purity, and
  *     flow-sensitive analysis
  */
+// @InheritedAnnotation cannot be written here, because "dataflow" project cannot depend on
+// "framework" project.
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})

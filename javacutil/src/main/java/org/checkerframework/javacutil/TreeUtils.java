@@ -456,15 +456,6 @@ public final class TreeUtils {
         }
 
         switch (tree.getKind()) {
-            case VARIABLE:
-            case METHOD:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-            case ANNOTATION_TYPE:
-            case TYPE_PARAMETER:
-                return TreeInfo.symbolFor((JCTree) tree);
-
                 // symbol() only works on MethodSelects, so we need to get it manually
                 // for method invocations.
             case METHOD_INVOCATION:
@@ -485,6 +476,11 @@ public final class TreeUtils {
                 return ((JCMemberReference) tree).sym;
 
             default:
+                if (isTypeDeclaration(tree)
+                        || tree.getKind() == Tree.Kind.VARIABLE
+                        || tree.getKind() == Tree.Kind.METHOD) {
+                    return TreeInfo.symbolFor((JCTree) tree);
+                }
                 return TreeInfo.symbol((JCTree) tree);
         }
     }
@@ -798,6 +794,9 @@ public final class TreeUtils {
             default:
                 return null;
         }
+        if (receiver == null) {
+            return null;
+        }
 
         return TreeUtils.withoutParens(receiver);
     }
@@ -806,13 +805,23 @@ public final class TreeUtils {
     // Adding Tree.Kind.NEW_CLASS here doesn't work, because then a
     // tree gets cast to ClassTree when it is actually a NewClassTree,
     // for example in enclosingClass above.
-    private static final Set<Tree.Kind> classTreeKinds =
-            EnumSet.of(
-                    Tree.Kind.CLASS,
-                    Tree.Kind.ENUM,
-                    Tree.Kind.INTERFACE,
-                    Tree.Kind.ANNOTATION_TYPE);
+    /** The set of kinds that represent classes. */
+    private static final Set<Tree.Kind> classTreeKinds;
 
+    static {
+        classTreeKinds = EnumSet.noneOf(Tree.Kind.class);
+        for (Tree.Kind kind : Tree.Kind.values()) {
+            if (kind.asInterface() == ClassTree.class) {
+                classTreeKinds.add(kind);
+            }
+        }
+    }
+
+    /**
+     * Return the set of kinds that represent classes.
+     *
+     * @return the set of kinds that represent classes
+     */
     public static Set<Tree.Kind> classTreeKinds() {
         return classTreeKinds;
     }
@@ -1174,19 +1183,7 @@ public final class TreeUtils {
      * @return true if the tree is a type declaration
      */
     public static boolean isTypeDeclaration(Tree node) {
-        switch (node.getKind()) {
-                // These tree kinds are always declarations.  Uses of the declared
-                // types have tree kind IDENTIFIER.
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-            case TYPE_PARAMETER:
-                return true;
-
-            default:
-                return false;
-        }
+        return isClassTree(node) || node.getKind() == Tree.Kind.TYPE_PARAMETER;
     }
 
     /**

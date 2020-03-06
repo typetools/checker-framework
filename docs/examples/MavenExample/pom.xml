@@ -15,7 +15,7 @@
     <!-- These properties will be set by the Maven Dependency plugin -->
     <annotatedJdk>${io.github.eisop:jdk8:jar}</annotatedJdk>
     <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
-    <checkerFrameworkVersion><!-- checker-framework-version -->3.0.0-b2<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.2.0-eisop1<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
