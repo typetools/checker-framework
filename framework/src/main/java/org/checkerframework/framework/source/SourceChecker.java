@@ -944,11 +944,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
-                if (args[i] == null) {
-                    continue;
-                }
-
-                // Try to process the arguments
                 args[i] = processArg(args[i]);
             }
         }
@@ -984,20 +979,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (source instanceof Element) {
             messager.printMessage(kind, messageText, (Element) source);
         } else if (source instanceof Tree) {
-            printMessage(kind, messageText, (Tree) source, currentRoot);
+            printOrStoreMessage(kind, messageText, (Tree) source, currentRoot);
         } else {
             throw new BugInCF("invalid position source: " + source.getClass().getName());
         }
-    }
-
-    /**
-     * Do not call this method directly. Call {@link #report(Result, Object)} instead. (This method
-     * exists so that the BaseTypeChecker can override it and treat messages from compound checkers
-     * differently.)
-     */
-    protected void printMessage(
-            Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
-        Trees.instance(processingEnv).printMessage(kind, message, source, root);
     }
 
     /**
@@ -1033,11 +1018,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Reports a result. By default, it prints it to the screen via the compiler's internal
-     * messenger if the result is non-success; otherwise, the method returns with no side effects.
+     * Reports a result. By default, it prints it to the screen via the compiler's internal messager
+     * if the result is non-success; otherwise, the method returns with no side effects.
      *
      * @param r the result to report
-     * @param src the position object associated with the result
+     * @param src the position object associated with the result; may be an Element, a Tree, or null
      */
     public void report(final Result r, final Object src) {
         if (r.isSuccess()) {
@@ -1068,6 +1053,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 this.message(Diagnostic.Kind.NOTE, src, msg.getMessageKey(), msg.getArgs());
             }
         }
+    }
+
+    /**
+     * Do not call this method directly. Call {@link #report(Result, Object)} instead.
+     *
+     * <p>This method exists so that the BaseTypeChecker can override it. For compound checkers, it
+     * stores all messages and sorts them by location before outputting them.
+     */
+    protected void printOrStoreMessage(
+            Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
+        Trees.instance(processingEnv).printMessage(kind, message, source, root);
     }
 
     /**
