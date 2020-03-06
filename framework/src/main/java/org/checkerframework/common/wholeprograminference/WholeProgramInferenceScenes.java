@@ -384,7 +384,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             superclassDecl,
                             overriddenMethodElement);
 
-            String superClassName = superclassDecl.getUnderlyingType().toString();
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+            @DotSeparatedIdentifiers String superClassName = superclassDecl.getUnderlyingType().toString();
             String superJaifPath = storage.getJaifPath(superClassName);
             AClassWrapper superClazz = storage.getAClass(superClassName, superJaifPath);
             AMethodWrapper overriddenMethodInSuperclass =
