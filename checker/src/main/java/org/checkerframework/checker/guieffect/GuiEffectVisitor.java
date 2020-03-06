@@ -1,5 +1,8 @@
 package org.checkerframework.checker.guieffect;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -29,7 +32,6 @@ import org.checkerframework.checker.guieffect.qual.UI;
 import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -125,15 +127,15 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                     return true;
                 }
                 checker.report(
-                        Result.failure(
-                                "override.receiver.invalid",
-                                overriderMeth,
-                                overriderTyp,
-                                overriddenMeth,
-                                overriddenTyp,
-                                overrider.getReceiverType(),
-                                overridden.getReceiverType()),
-                        overriderTree);
+                        overriderTree,
+                        ERROR,
+                        "override.receiver.invalid",
+                        overriderMeth,
+                        overriderTyp,
+                        overriddenMeth,
+                        overriddenTyp,
+                        overrider.getReceiverType(),
+                        overridden.getReceiverType());
                 return false;
             }
             return true;
@@ -341,7 +343,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         assert callerEffect != null;
 
         if (!Effect.lessThanOrEqualTo(targetEffect, callerEffect)) {
-            checker.report(Result.failure("call.invalid.ui", targetEffect, callerEffect), node);
+            checker.report(node, ERROR, "call.invalid.ui", targetEffect, callerEffect);
             if (debugSpew) {
                 System.err.println("Issuing error for node: " + node);
             }
@@ -385,13 +387,13 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         if ((targetUIP != null && (targetSafeP != null || targetPolyP != null))
                 || (targetSafeP != null && targetPolyP != null)) {
-            checker.report(Result.failure("annotations.conflicts"), node);
+            checker.report(node, ERROR, "annotations.conflicts");
         }
         if (targetPolyP != null && !atypeFactory.isPolymorphicType(targetClassElt)) {
-            checker.report(Result.failure("polymorphism.invalid"), node);
+            checker.report(node, ERROR, "polymorphism.invalid");
         }
         if (targetUIP != null && atypeFactory.isUIType(targetClassElt)) {
-            checker.report(Result.warning("effects.redundant.uitype"), node);
+            checker.report(node, MANDATORY_WARNING, "effects.redundant.uitype");
         }
 
         // TODO: Report an error for polymorphic method bodies??? Until we fix the receiver

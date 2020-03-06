@@ -1,5 +1,8 @@
 package org.checkerframework.checker.optional;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
@@ -24,7 +27,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TreeUtils;
@@ -147,15 +149,15 @@ public class OptionalVisitor
             ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
 
             checker.report(
-                    Result.warning(
-                            "prefer.map.and.orelse",
-                            receiver,
-                            // The literal "CONTAININGCLASS::" is gross.
-                            // TODO: add this to the error message.
-                            // ElementUtils.getQualifiedClassName(ele);
-                            ele.getSimpleName(),
-                            falseExpr),
-                    node);
+                    node,
+                    MANDATORY_WARNING,
+                    "prefer.map.and.orelse",
+                    receiver,
+                    // The literal "CONTAININGCLASS::" is gross.
+                    // TODO: add this to the error message.
+                    // ElementUtils.getQualifiedClassName(ele);
+                    ele.getSimpleName(),
+                    falseExpr);
         }
     }
 
@@ -228,7 +230,7 @@ public class OptionalVisitor
                     methodString.substring(0, dotPos) + "::" + methodString.substring(dotPos + 1);
         }
 
-        checker.report(Result.warning("prefer.ifpresent", receiver, methodString), node);
+        checker.report(node, MANDATORY_WARNING, "prefer.ifpresent", receiver, methodString);
     }
 
     @Override
@@ -254,7 +256,7 @@ public class OptionalVisitor
             return;
         }
 
-        checker.report(Result.warning("introduce.eliminate"), node);
+        checker.report(node, MANDATORY_WARNING, "introduce.eliminate");
     }
 
     /**
@@ -269,9 +271,9 @@ public class OptionalVisitor
         if (isOptionalType(tm)) {
             ElementKind ekind = TreeUtils.elementFromDeclaration(node).getKind();
             if (ekind.isField()) {
-                checker.report(Result.warning("optional.field"), node);
+                checker.report(node, MANDATORY_WARNING, "optional.field");
             } else if (ekind == ElementKind.PARAMETER) {
-                checker.report(Result.warning("optional.parameter"), node);
+                checker.report(node, MANDATORY_WARNING, "optional.parameter");
             }
         }
         return super.visitVariable(node, p);
@@ -305,7 +307,7 @@ public class OptionalVisitor
                     // TODO: handle collections that have more than one type parameter
                     TypeMirror typeArg = typeArgs.get(0);
                     if (isOptionalType(typeArg)) {
-                        checker.report(Result.warning("optional.as.element.type"), tree);
+                        checker.report(tree, MANDATORY_WARNING, "optional.as.element.type");
                     }
                 }
             } else if (isOptionalType(tm)) {
@@ -313,7 +315,7 @@ public class OptionalVisitor
                 assert typeArgs.size() == 1;
                 TypeMirror typeArg = typeArgs.get(0);
                 if (isCollectionType(typeArg)) {
-                    checker.report(Result.failure("optional.collection"), tree);
+                    checker.report(tree, ERROR, "optional.collection");
                 }
             }
             return super.isValid(type, tree);

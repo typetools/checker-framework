@@ -1,5 +1,8 @@
 package org.checkerframework.checker.index.upperbound;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ClassTree;
@@ -28,7 +31,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -88,11 +90,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                         AnnotationUtils.getElementValueArray(anno, "offset", String.class, true);
                 if (sequences.size() != offsets.size() && !offsets.isEmpty()) {
                     checker.report(
-                            Result.failure(
-                                    "different.length.sequences.offsets",
-                                    sequences.size(),
-                                    offsets.size()),
-                            node);
+                            node,
+                            ERROR,
+                            "different.length.sequences.offsets",
+                            sequences.size(),
+                            offsets.size());
                     return null;
                 }
             }
@@ -125,7 +127,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         try {
             rec = FlowExpressionParseUtil.parse(s, context, getCurrentPath(), false);
         } catch (FlowExpressionParseException e) {
-            checker.report(e.getResult(), error);
+            checker.report(error, e.getDiagMessage());
             return;
         }
         Element element = null;
@@ -137,7 +139,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
         if (element == null || !ElementUtils.isEffectivelyFinal(element)) {
-            checker.report(Result.failure(NOT_FINAL, rec), error);
+            checker.report(error, ERROR, NOT_FINAL, rec);
         }
     }
 
@@ -168,28 +170,27 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         if (ValueCheckerUtils.getExactValue(indexTree, valueFactory) != null) {
             // Note that valMax is equal to the exact value in this case.
             checker.report(
-                    Result.failure(
-                            UPPER_BOUND_CONST,
-                            valMax,
-                            valueFactory.getAnnotatedType(arrTree).toString(),
-                            valMax + 1,
-                            valMax + 1),
-                    indexTree);
+                    indexTree,
+                    ERROR,
+                    UPPER_BOUND_CONST,
+                    valMax,
+                    valueFactory.getAnnotatedType(arrTree).toString(),
+                    valMax + 1,
+                    valMax + 1);
         } else if (valMax != null && qualifier.isUnknown() && valMax != Integer.MAX_VALUE) {
 
             checker.report(
-                    Result.failure(
-                            UPPER_BOUND_RANGE,
-                            valueFactory.getAnnotatedType(indexTree).toString(),
-                            valueFactory.getAnnotatedType(arrTree).toString(),
-                            arrName,
-                            arrName,
-                            valMax + 1),
-                    indexTree);
+                    indexTree,
+                    ERROR,
+                    UPPER_BOUND_RANGE,
+                    valueFactory.getAnnotatedType(indexTree).toString(),
+                    valueFactory.getAnnotatedType(arrTree).toString(),
+                    arrName,
+                    arrName,
+                    valMax + 1);
         } else {
             checker.report(
-                    Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName, arrName),
-                    indexTree);
+                    indexTree, ERROR, UPPER_BOUND, indexType.toString(), arrName, arrName, arrName);
         }
     }
 
@@ -220,27 +221,27 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             if (ltelCheckFailed) {
                 // issue an error
                 checker.report(
-                        Result.failure(
-                                TO_NOT_LTEL,
-                                subSeq.to,
-                                subSeq.array,
-                                anm == null ? "@UpperBoundUnknown" : anm,
-                                subSeq.array,
-                                subSeq.array,
-                                subSeq.array),
-                        valueTree);
+                        valueTree,
+                        ERROR,
+                        TO_NOT_LTEL,
+                        subSeq.to,
+                        subSeq.array,
+                        anm == null ? "@UpperBoundUnknown" : anm,
+                        subSeq.array,
+                        subSeq.array,
+                        subSeq.array);
             } else {
                 checker.report(
-                        Result.warning(
-                                HSS,
-                                subSeq.array,
-                                subSeq.from,
-                                subSeq.from,
-                                subSeq.to,
-                                subSeq.to,
-                                subSeq.array,
-                                subSeq.array),
-                        valueTree);
+                        valueTree,
+                        MANDATORY_WARNING,
+                        HSS,
+                        subSeq.array,
+                        subSeq.from,
+                        subSeq.from,
+                        subSeq.to,
+                        subSeq.to,
+                        subSeq.array,
+                        subSeq.array);
             }
         }
 

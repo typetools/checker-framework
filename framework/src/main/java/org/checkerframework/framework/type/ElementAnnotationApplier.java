@@ -1,5 +1,7 @@
 package org.checkerframework.framework.type;
 
+import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -11,7 +13,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
@@ -98,10 +99,10 @@ public class ElementAnnotationApplier {
         // TODO: Issue an error if this annotation is from Java 9+ bytecode.
         if (!typeFactory.checker.hasOption("ignoreInvalidAnnotationLocations")) {
             typeFactory.checker.report(
-                    Result.warning(
-                            "invalid.annotation.location.bytecode",
-                            ElementUtils.getVerboseName(report)),
-                    element);
+                    element,
+                    MANDATORY_WARNING,
+                    "invalid.annotation.location.bytecode",
+                    ElementUtils.getVerboseName(report));
         }
     }
 

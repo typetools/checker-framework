@@ -1,5 +1,8 @@
 package org.checkerframework.checker.nullness;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -40,7 +43,6 @@ import org.checkerframework.checker.initialization.InitializationVisitor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFCFGBuilder;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -240,11 +242,11 @@ public class NullnessVisitor
                         // temporary, for backward compatibility
                         || checker.getLintOption("forbidnonnullarraycomponents", false))) {
             checker.report(
-                    Result.failure(
-                            "new.array.type.invalid",
-                            componentType.getAnnotations(),
-                            type.toString()),
-                    node);
+                    node,
+                    ERROR,
+                    "new.array.type.invalid",
+                    componentType.getAnnotations(),
+                    type.toString());
         }
 
         return super.visitNewArray(node, p);
@@ -376,10 +378,10 @@ public class NullnessVisitor
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
             if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
                     && right.hasEffectiveAnnotation(NONNULL)) {
-                checker.report(Result.warning(KNOWN_NONNULL, rightOp.toString()), node);
+                checker.report(node, MANDATORY_WARNING, KNOWN_NONNULL, rightOp.toString());
             } else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
                     && left.hasEffectiveAnnotation(NONNULL)) {
-                checker.report(Result.warning(KNOWN_NONNULL, leftOp.toString()), node);
+                checker.report(node, MANDATORY_WARNING, KNOWN_NONNULL, leftOp.toString());
             }
         }
     }
@@ -455,7 +457,7 @@ public class NullnessVisitor
     private boolean checkForNullability(
             AnnotatedTypeMirror type, Tree tree, @CompilerMessageKey String errMsg) {
         if (!type.hasEffectiveAnnotation(NONNULL)) {
-            checker.report(Result.failure(errMsg, tree), tree);
+            checker.report(tree, ERROR, errMsg, tree);
             return false;
         }
         return true;
@@ -539,7 +541,10 @@ public class NullnessVisitor
                 if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
                     // The type is not non-null => warning
                     checker.report(
-                            Result.warning("new.class.type.invalid", type.getAnnotations()), node);
+                            node,
+                            MANDATORY_WARNING,
+                            "new.class.type.invalid",
+                            type.getAnnotations());
                     // Note that other consistency checks are made by isValid.
                 }
             }
@@ -547,7 +552,7 @@ public class NullnessVisitor
                 // TODO: this is a hack, but PolyNull gets substituted
                 // afterwards
                 checker.report(
-                        Result.warning("new.class.type.invalid", type.getAnnotations()), node);
+                        node, MANDATORY_WARNING, "new.class.type.invalid", type.getAnnotations());
             }
         }
         // TODO: It might be nicer to introduce a framework-level

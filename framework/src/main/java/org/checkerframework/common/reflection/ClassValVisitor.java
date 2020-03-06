@@ -1,5 +1,7 @@
 package org.checkerframework.common.reflection;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+
 import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -8,7 +10,6 @@ import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.reflection.qual.ClassBound;
 import org.checkerframework.common.reflection.qual.ClassVal;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
@@ -51,7 +52,7 @@ class ClassNameValidator extends BaseTypeValidator {
                             .getClassNamesFromAnnotation(classVal);
             for (String className : classNames) {
                 if (!isLegalClassName(className)) {
-                    checker.report(Result.failure("illegal.classname", className, type), tree);
+                    checker.report(tree, ERROR, "illegal.classname", className, type);
                 }
             }
         }

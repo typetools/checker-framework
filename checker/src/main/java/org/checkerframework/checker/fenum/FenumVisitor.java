@@ -1,5 +1,7 @@
 package org.checkerframework.checker.fenum;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ExpressionTree;
@@ -12,7 +14,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -38,7 +39,7 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
             Set<AnnotationMirror> rhs = rhsAtm.getEffectiveAnnotations();
             QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
             if (!(qualHierarchy.isSubtype(lhs, rhs) || qualHierarchy.isSubtype(rhs, lhs))) {
-                checker.report(Result.failure("binary.type.incompatible", lhsAtm, rhsAtm), node);
+                checker.report(node, ERROR, "binary.type.incompatible", lhsAtm, rhsAtm);
             }
         }
         return super.visitBinary(node, p);

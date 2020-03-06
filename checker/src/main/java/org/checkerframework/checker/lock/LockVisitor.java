@@ -1,5 +1,6 @@
 package org.checkerframework.checker.lock;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
 import static org.checkerframework.javacutil.TreeUtils.getReceiverTree;
 
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -51,7 +52,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractValue;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -100,7 +100,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     || atm.hasExplicitAnnotationRelaxed(atypeFactory.GUARDEDBY)
                     || atm.hasExplicitAnnotation(atypeFactory.GUARDEDBYUNKNOWN)
                     || atm.hasExplicitAnnotation(atypeFactory.GUARDEDBYBOTTOM)) {
-                checker.report(Result.failure("immutable.type.guardedby"), node);
+                checker.report(node, ERROR, "immutable.type.guardedby");
             }
         }
 
@@ -135,7 +135,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                             anno, "javax.annotation.concurrent.GuardedBy")) {
                 guardedByAnnotationCount++;
                 if (guardedByAnnotationCount > 1) {
-                    checker.report(Result.failure("multiple.guardedby.annotations"), variableTree);
+                    checker.report(variableTree, ERROR, "multiple.guardedby.annotations");
                     return;
                 }
             }
@@ -187,7 +187,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
 
             if (issueGSwithMRLWarning) {
-                checker.report(Result.failure("guardsatisfied.with.mayreleaselocks"), node);
+                checker.report(node, ERROR, "guardsatisfied.with.mayreleaselocks");
             }
         }
 
@@ -200,14 +200,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 int returnGuardSatisfiedIndex = atypeFactory.getGuardSatisfiedIndex(returnTypeATM);
 
                 if (returnGuardSatisfiedIndex == -1) {
-                    checker.report(Result.failure("guardsatisfied.return.must.have.index"), node);
+                    checker.report(node, ERROR, "guardsatisfied.return.must.have.index");
                 }
             }
         }
 
         if (!sea.isWeakerThan(SideEffectAnnotation.LOCKINGFREE)
                 && methodElement.getModifiers().contains(Modifier.SYNCHRONIZED)) {
-            checker.report(Result.failure("lockingfree.synchronized.method", sea), node);
+            checker.report(node, ERROR, "lockingfree.synchronized.method", sea);
         }
 
         return super.visitMethod(node, p);
@@ -251,9 +251,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         if (lockPreconditionAnnotationCount > 1) {
-            checker.report(
-                    Result.failure("multiple.lock.precondition.annotations"),
-                    treeForErrorReporting);
+            checker.report(treeForErrorReporting, ERROR, "multiple.lock.precondition.annotations");
         }
     }
 
@@ -404,9 +402,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
                     if (varTypeGuardSatisfiedIndex == -1 && valueTypeGuardSatisfiedIndex == -1) {
                         checker.report(
-                                Result.failure(
-                                        "guardsatisfied.assignment.disallowed", varType, valueType),
-                                valueTree);
+                                valueTree,
+                                ERROR,
+                                "guardsatisfied.assignment.disallowed",
+                                varType,
+                                valueType);
                     }
                 } else {
                     // The RHS can be @GuardSatisfied with a different index when matching method
@@ -475,20 +475,24 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         if (overriderLocks == null || overriddenLocks == null) {
             checker.report(
-                    Result.failure(
-                            messageKey, overriderMeth, overriderTyp, overriddenMeth, overriddenTyp),
-                    overriderTree);
+                    overriderTree,
+                    ERROR,
+                    messageKey,
+                    overriderMeth,
+                    overriderTyp,
+                    overriddenMeth,
+                    overriddenTyp);
         } else {
             checker.report(
-                    Result.failure(
-                            messageKey,
-                            overriderMeth,
-                            overriderTyp,
-                            overriddenMeth,
-                            overriddenTyp,
-                            overriderLocks,
-                            overriddenLocks),
-                    overriderTree);
+                    overriderTree,
+                    ERROR,
+                    messageKey,
+                    overriderMeth,
+                    overriderTyp,
+                    overriddenMeth,
+                    overriddenTyp,
+                    overriderLocks,
+                    overriddenLocks);
         }
     }
 
@@ -583,13 +587,13 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             if (seaOfInvokedMethod.isWeakerThan(seaOfContainingMethod)) {
                 checker.report(
-                        Result.failure(
-                                "method.guarantee.violated",
-                                seaOfContainingMethod.getNameOfSideEffectAnnotation(),
-                                enclosingMethodElement.toString(),
-                                methodElement.toString(),
-                                seaOfInvokedMethod.getNameOfSideEffectAnnotation()),
-                        node);
+                        node,
+                        ERROR,
+                        "method.guarantee.violated",
+                        seaOfContainingMethod.getNameOfSideEffectAnnotation(),
+                        enclosingMethodElement.toString(),
+                        methodElement.toString(),
+                        seaOfInvokedMethod.getNameOfSideEffectAnnotation());
             }
         }
 
@@ -758,15 +762,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                                         "parameter #" + j; // j, not j-1, so the index is 1-based
 
                                 checker.report(
-                                        Result.failure(
-                                                "guardsatisfied.parameters.must.match",
-                                                formalParam1,
-                                                formalParam2,
-                                                invokedMethod.toString(),
-                                                guardSatisfiedIndex[i],
-                                                arg1Anno,
-                                                arg2Anno),
-                                        node);
+                                        node,
+                                        ERROR,
+                                        "guardsatisfied.parameters.must.match",
+                                        formalParam1,
+                                        formalParam2,
+                                        invokedMethod.toString(),
+                                        guardSatisfiedIndex[i],
+                                        arg1Anno,
+                                        arg2Anno);
                             }
                         }
                     }
@@ -848,7 +852,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                         atypeFactory.getAnnotatedType(synchronizedExpression).getUnderlyingType());
 
         if (types.isSubtype(expressionType, lockInterfaceTypeMirror)) {
-            checker.report(Result.failure("explicit.lock.synchronized"), node);
+            checker.report(node, ERROR, "explicit.lock.synchronized");
         }
 
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(node));
@@ -862,9 +866,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             if (!seaOfContainingMethod.isWeakerThan(SideEffectAnnotation.LOCKINGFREE)) {
                 checker.report(
-                        Result.failure(
-                                "synchronized.block.in.lockingfree.method", seaOfContainingMethod),
-                        node);
+                        node,
+                        ERROR,
+                        "synchronized.block.in.lockingfree.method",
+                        seaOfContainingMethod);
             }
         }
 
@@ -900,8 +905,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 case MEMBER_SELECT:
                     if (!isTreeSymbolEffectivelyFinalOrUnmodifiable(tree)) {
                         checker.report(
-                                Result.failure("lock.expression.not.final", lockExpressionTree),
-                                tree);
+                                tree, ERROR, "lock.expression.not.final", lockExpressionTree);
                         return;
                     }
                     tree = ((MemberSelectTree) tree).getExpression();
@@ -909,8 +913,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 case IDENTIFIER:
                     if (!isTreeSymbolEffectivelyFinalOrUnmodifiable(tree)) {
                         checker.report(
-                                Result.failure("lock.expression.not.final", lockExpressionTree),
-                                tree);
+                                tree, ERROR, "lock.expression.not.final", lockExpressionTree);
                     }
                     return;
                 case METHOD_INVOCATION:
@@ -918,8 +921,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     if (atypeFactory.getDeclAnnotationNoAliases(elem, Deterministic.class) == null
                             && atypeFactory.getDeclAnnotationNoAliases(elem, Pure.class) == null) {
                         checker.report(
-                                Result.failure("lock.expression.not.final", lockExpressionTree),
-                                tree);
+                                tree, ERROR, "lock.expression.not.final", lockExpressionTree);
                         return;
                     }
 
@@ -933,9 +935,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     break;
                 default:
                     checker.report(
-                            Result.failure(
-                                    "lock.expression.possibly.not.final", lockExpressionTree),
-                            tree);
+                            tree, ERROR, "lock.expression.possibly.not.final", lockExpressionTree);
                     return;
             }
         }
@@ -947,8 +947,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             Tree treeForErrorReporting) {
         if (!atypeFactory.isExpressionEffectivelyFinal(lockExpr)) {
             checker.report(
-                    Result.failure("lock.expression.not.final", expressionForErrorReporting),
-                    treeForErrorReporting);
+                    treeForErrorReporting,
+                    ERROR,
+                    "lock.expression.not.final",
+                    expressionForErrorReporting);
         }
     }
 
@@ -1017,7 +1019,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
         }
 
-        checker.report(Result.failure("guardsatisfied.location.disallowed"), annotationTree);
+        checker.report(annotationTree, ERROR, "guardsatisfied.location.disallowed");
     }
 
     /**
@@ -1187,7 +1189,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
         if (atypeFactory.areSameByClass(gbAnno, GuardedByUnknown.class)
                 || atypeFactory.areSameByClass(gbAnno, GuardedByBottom.class)) {
-            checker.report(Result.failure("lock.not.held", "unknown lock " + gbAnno), tree);
+            checker.report(tree, ERROR, "lock.not.held", "unknown lock " + gbAnno);
             return;
         } else if (atypeFactory.areSameByClass(gbAnno, GuardSatisfied.class)) {
             return;
@@ -1202,18 +1204,18 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         for (LockExpression expression : expressions) {
             if (expression.error != null) {
                 checker.report(
-                        Result.failure(
-                                "expression.unparsable.type.invalid", expression.error.toString()),
-                        tree);
+                        tree,
+                        ERROR,
+                        "expression.unparsable.type.invalid",
+                        expression.error.toString());
             } else if (expression.lockExpression == null) {
                 checker.report(
-                        Result.failure(
-                                "expression.unparsable.type.invalid", expression.expressionString),
-                        tree);
+                        tree,
+                        ERROR,
+                        "expression.unparsable.type.invalid",
+                        expression.expressionString);
             } else if (!isLockHeld(expression.lockExpression, store)) {
-                checker.report(
-                        Result.failure("lock.not.held", expression.lockExpression.toString()),
-                        tree);
+                checker.report(tree, ERROR, "lock.not.held", expression.lockExpression.toString());
             }
 
             if (expression.error != null && expression.lockExpression != null) {
@@ -1293,9 +1295,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     lockExpression.lockExpression = itself;
                     if (!atypeFactory.isExpressionEffectivelyFinal(lockExpression.lockExpression)) {
                         checker.report(
-                                Result.failure(
-                                        "lock.expression.not.final", lockExpression.lockExpression),
-                                path.getLeaf());
+                                path.getLeaf(),
+                                ERROR,
+                                "lock.expression.not.final",
+                                lockExpression.lockExpression);
                     }
                     return lockExpression;
                 } else {
@@ -1318,9 +1321,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                                     true);
                     if (!atypeFactory.isExpressionEffectivelyFinal(lockExpression.lockExpression)) {
                         checker.report(
-                                Result.failure(
-                                        "lock.expression.not.final", lockExpression.lockExpression),
-                                path.getLeaf());
+                                path.getLeaf(),
+                                ERROR,
+                                "lock.expression.not.final",
+                                lockExpression.lockExpression);
                     }
                     return lockExpression;
                 }

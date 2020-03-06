@@ -1,5 +1,8 @@
 package org.checkerframework.checker.interning;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -36,7 +39,6 @@ import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -191,11 +193,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         // if neither @Interned or @UsesObjectEquals, report error
         if (!(left.hasEffectiveAnnotation(INTERNED)
                 || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null))) {
-            checker.report(Result.failure("not.interned", left), leftOp);
+            checker.report(leftOp, ERROR, "not.interned", left);
         }
         if (!(right.hasEffectiveAnnotation(INTERNED)
                 || (rightElt != null && rightElt.getAnnotation(UsesObjectEquals.class) != null))) {
-            checker.report(Result.failure("not.interned", right), rightOp);
+            checker.report(rightOp, ERROR, "not.interned", right);
         }
         return super.visitBinary(node, p);
     }
@@ -213,7 +215,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             if (this.checker.getLintOption("dotequals", true)
                     && recv.hasEffectiveAnnotation(INTERNED)
                     && comp.hasEffectiveAnnotation(INTERNED)) {
-                checker.report(Result.warning("unnecessary.equals"), node);
+                checker.report(node, MANDATORY_WARNING, "unnecessary.equals");
             }
         }
 
@@ -249,7 +251,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (annotation != null) {
             // Check methods to ensure no .equals
             if (overridesEquals(classTree)) {
-                checker.report(Result.failure("overrides.equals"), classTree);
+                checker.report(classTree, ERROR, "overrides.equals");
             }
             TypeMirror superClass = elt.getSuperclass();
             if (superClass != null
@@ -260,7 +262,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                         && !ElementUtils.isObject(superClassElement)
                         && atypeFactory.getDeclAnnotation(superClassElement, UsesObjectEquals.class)
                                 == null) {
-                    checker.report(Result.failure("superclass.notannotated"), classTree);
+                    checker.report(classTree, ERROR, "superclass.notannotated");
                 }
             }
         }
@@ -333,7 +335,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             }
         }
 
-        checker.report(Result.failure("interned.object.creation"), newInternedObject);
+        checker.report(newInternedObject, ERROR, "interned.object.creation");
         return false;
     }
 

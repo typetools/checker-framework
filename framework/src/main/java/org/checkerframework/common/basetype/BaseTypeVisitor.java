@@ -1,5 +1,8 @@
 package org.checkerframework.common.basetype;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
@@ -82,7 +85,7 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.Unused;
-import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
@@ -407,11 +410,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         qualifierHierarchy.findAnnotationInSameHierarchy(extendsAnnos, classAnno);
                 if (!qualifierHierarchy.isSubtype(classAnno, extendsAnno)) {
                     checker.report(
-                            Result.failure(
-                                    "declaration.inconsistent.with.extends.clause",
-                                    classAnno,
-                                    extendsAnno),
-                            classTree.getExtendsClause());
+                            classTree.getExtendsClause(),
+                            ERROR,
+                            "declaration.inconsistent.with.extends.clause",
+                            classAnno,
+                            extendsAnno);
                 }
             }
         }
@@ -426,11 +429,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 implementsClauseAnnos, classAnno);
                 if (!qualifierHierarchy.isSubtype(classAnno, implementsAnno)) {
                     checker.report(
-                            Result.failure(
-                                    "declaration.inconsistent.with.implements.clause",
-                                    classAnno,
-                                    implementsAnno),
-                            implementsClause);
+                            implementsClause,
+                            ERROR,
+                            "declaration.inconsistent.with.implements.clause",
+                            classAnno,
+                            implementsAnno);
                 }
             }
         }
@@ -476,7 +479,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Checks #4 (see method Javadoc)
         if (!invariants.isWellFormed()) {
-            checker.report(Result.failure("field.invariant.not.wellformed"), errorTree);
+            checker.report(errorTree, ERROR, "field.invariant.not.wellformed");
             return;
         }
 
@@ -488,16 +491,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Checks that fields are declared in super class. (#2b)
         if (!fieldsNotFound.isEmpty()) {
             String notFoundString = String.join(", ", fieldsNotFound);
-            checker.report(Result.failure("field.invariant.not.found", notFoundString), errorTree);
+            checker.report(errorTree, ERROR, "field.invariant.not.found", notFoundString);
         }
 
         FieldInvariants superInvar =
                 atypeFactory.getFieldInvariants(TypesUtils.getTypeElement(superClass));
         if (superInvar != null) {
             // Checks #3 (see method Javadoc)
-            Result superError = invariants.isSuperInvariant(superInvar, atypeFactory);
+            DiagMessage superError = invariants.isSuperInvariant(superInvar, atypeFactory);
             if (superError != null) {
-                checker.report(superError, errorTree);
+                checker.report(errorTree, superError);
             }
         }
 
@@ -521,12 +524,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 if (!atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno, declaredAnno)) {
                     // Checks #3
                     checker.report(
-                            Result.failure(
-                                    "field.invariant.not.subtype",
-                                    fieldName,
-                                    invariantAnno,
-                                    declaredAnno),
-                            errorTree);
+                            errorTree,
+                            ERROR,
+                            "field.invariant.not.subtype",
+                            fieldName,
+                            invariantAnno,
+                            declaredAnno);
                 }
             }
         }
@@ -534,7 +537,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Checks #2a
         if (!notFinal.isEmpty()) {
             String notFinalString = String.join(", ", notFinal);
-            checker.report(Result.failure("field.invariant.not.final", notFinalString), errorTree);
+            checker.report(errorTree, ERROR, "field.invariant.not.final", notFinalString);
         }
     }
 
@@ -658,9 +661,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
         if (isDeterministic) {
             if (TreeUtils.isConstructor(node)) {
-                checker.report(Result.warning("purity.deterministic.constructor"), node);
+                checker.report(node, MANDATORY_WARNING, "purity.deterministic.constructor");
             } else if (TreeUtils.typeOf(node.getReturnType()).getKind() == TypeKind.VOID) {
-                checker.report(Result.warning("purity.deterministic.void.method"), node);
+                checker.report(node, MANDATORY_WARNING, "purity.deterministic.void.method");
             }
         }
 
@@ -687,13 +690,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             if (!additionalKinds.isEmpty()) {
                 if (additionalKinds.size() == 2) {
-                    checker.report(Result.warning("purity.more.pure", node.getName()), node);
+                    checker.report(node, MANDATORY_WARNING, "purity.more.pure", node.getName());
                 } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
                     checker.report(
-                            Result.warning("purity.more.sideeffectfree", node.getName()), node);
+                            node, MANDATORY_WARNING, "purity.more.sideeffectfree", node.getName());
                 } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
                     checker.report(
-                            Result.warning("purity.more.deterministic", node.getName()), node);
+                            node, MANDATORY_WARNING, "purity.more.deterministic", node.getName());
                 } else {
                     assert false : "BaseTypeVisitor reached undesirable state";
                 }
@@ -721,8 +724,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     qualifierHierarchy.findAnnotationInHierarchy(constructorAnnotations, top);
             if (!qualifierHierarchy.isSubtype(top, constructorAnno)) {
                 checker.report(
-                        Result.warning("inconsistent.constructor.type", constructorAnno, top),
-                        constructorElement);
+                        constructorElement,
+                        MANDATORY_WARNING,
+                        "inconsistent.constructor.type",
+                        constructorAnno,
+                        top);
             }
         }
     }
@@ -763,9 +769,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         @CompilerMessageKey String msg = msgPrefix + reason;
         if (reason.equals("call")) {
             MethodInvocationTree mitree = (MethodInvocationTree) r.first;
-            checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
+            checker.report(r.first, ERROR, msg, mitree.getMethodSelect());
         } else {
-            checker.report(Result.failure(msg), r.first);
+            checker.report(r.first, ERROR, msg);
         }
     }
 
@@ -798,11 +804,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, getCurrentPath(), false);
             } catch (FlowExpressionParseException e) {
-                checker.report(e.getResult(), node);
+                checker.report(node, e.getDiagMessage());
             }
             // If expr is null, then an error was issued above.
             if (expr != null && !CFAbstractStore.canInsertReceiver(expr)) {
-                checker.report(Result.failure("flowexpr.parse.error", expression), node);
+                checker.report(node, ERROR, "flowexpr.parse.error", expression);
                 expr = null;
             }
             if (expr != null && !abstractMethod) {
@@ -828,17 +834,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 @SuppressWarnings("CompilerMessages")
                 @CompilerMessageKey String key = "contracts." + contract.kind.errorKey + ".expression.parameter.name";
                 checker.report(
-                        Result.warning(
-                                key,
-                                contract.contractAnnotation
-                                        .getAnnotationType()
-                                        .asElement()
-                                        .getSimpleName(),
-                                node.getName().toString(),
-                                expression,
-                                formalParamNames.indexOf(expression) + 1,
-                                expression),
-                        node);
+                        node,
+                        MANDATORY_WARNING,
+                        key,
+                        contract.contractAnnotation.getAnnotationType().asElement().getSimpleName(),
+                        node.getName().toString(),
+                        expression,
+                        formalParamNames.indexOf(expression) + 1,
+                        expression);
             }
 
             checkParametersAreEffectivelyFinal(node, methodElement, expression);
@@ -879,9 +882,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             VariableElement parameter = method.getParameters().get(idx - 1);
             if (!ElementUtils.isEffectivelyFinal(parameter)) {
-                checker.report(
-                        Result.failure("flowexpr.parameter.not.final", "#" + idx, stringExpr),
-                        node);
+                checker.report(node, ERROR, "flowexpr.parameter.not.final", "#" + idx, stringExpr);
             }
         }
     }
@@ -916,11 +917,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
                 checker.report(
-                        Result.failure(
-                                "contracts.postcondition.not.satisfied",
-                                contractAnnotation.getAnnotationType().asElement().getSimpleName(),
-                                expression.toString()),
-                        methodTree);
+                        methodTree,
+                        ERROR,
+                        "contracts.postcondition.not.satisfied",
+                        contractAnnotation.getAnnotationType().asElement().getSimpleName(),
+                        expression.toString());
             }
         }
     }
@@ -945,8 +946,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         boolean booleanReturnType =
                 TypesUtils.isBooleanType(TreeUtils.typeOf(node.getReturnType()));
         if (!booleanReturnType) {
-            checker.report(
-                    Result.failure("contracts.conditional.postcondition.invalid.returntype"), node);
+            checker.report(node, ERROR, "contracts.conditional.postcondition.invalid.returntype");
             // No reason to go ahead with further checking. The
             // annotation is invalid.
             return;
@@ -987,11 +987,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
                 checker.report(
-                        Result.failure(
-                                "contracts.conditional.postcondition.not.satisfied",
-                                contractAnnotation.getAnnotationType().asElement().getSimpleName(),
-                                expression.toString()),
-                        returnStmt.getTree());
+                        returnStmt.getTree(),
+                        ERROR,
+                        "contracts.conditional.postcondition.not.satisfied",
+                        contractAnnotation.getAnnotationType().asElement().getSimpleName(),
+                        expression.toString());
             }
         }
     }
@@ -1094,11 +1094,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             if (!badTypeAnnos.isEmpty()) {
                 checker.report(
-                        Result.warning(
-                                "type.anno.before.decl.anno",
-                                badTypeAnnos,
-                                annotations.get(lastDeclAnnoIndex)),
-                        node);
+                        node,
+                        MANDATORY_WARNING,
+                        "type.anno.before.decl.anno",
+                        badTypeAnnos,
+                        annotations.get(lastDeclAnnoIndex));
             }
         }
 
@@ -1119,7 +1119,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             int varStartPos = ((JCTree) node).getStartPosition();
             if (annoStartPos < varStartPos + precedingTextLength) {
                 checker.report(
-                        Result.warning("type.anno.before.modifier", firstAnno, modifierSet), node);
+                        node,
+                        MANDATORY_WARNING,
+                        "type.anno.before.modifier",
+                        firstAnno,
+                        modifierSet);
             }
         }
     }
@@ -1236,10 +1240,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 if (typearg.getKind() == TypeKind.WILDCARD
                         && ((AnnotatedWildcardType) typearg).isUninferredTypeArgument()) {
                     checker.report(
-                            Result.failure(
-                                    "type.arguments.not.inferred",
-                                    invokedMethod.getElement().getSimpleName()),
-                            node);
+                            node,
+                            ERROR,
+                            "type.arguments.not.inferred",
+                            invokedMethod.getElement().getSimpleName());
                     break; // only issue error once per method
                 }
             }
@@ -1328,8 +1332,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     .getQualifierHierarchy()
                     .isSubtype(superTypeMirror, constructorTypeMirror)) {
                 checker.report(
-                        Result.failure(errorKey, constructorTypeMirror, superCall, superTypeMirror),
-                        superCall);
+                        superCall,
+                        ERROR,
+                        errorKey,
+                        constructorTypeMirror,
+                        superCall,
+                        superTypeMirror);
             }
         }
     }
@@ -1419,7 +1427,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 FlowExpressionContext.buildContextForMethodUse(tree, checker.getContext());
 
         if (flowExprContext == null) {
-            checker.report(Result.failure("flowexpr.parse.context.not.determined", tree), tree);
+            checker.report(tree, ERROR, "flowexpr.parse.context.not.determined", tree);
             return;
         }
 
@@ -1437,7 +1445,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 expression, flowExprContext, getCurrentPath(), false);
             } catch (FlowExpressionParseException e) {
                 // report errors here
-                checker.report(e.getResult(), tree);
+                checker.report(tree, e.getDiagMessage());
                 return;
             }
 
@@ -1456,11 +1464,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 String expressionString =
                         (expr == null || expr.containsUnknown()) ? expression : expr.toString();
                 checker.report(
-                        Result.failure(
-                                "contracts.precondition.not.satisfied",
-                                tree.getMethodSelect().toString(),
-                                expressionString),
-                        tree);
+                        tree,
+                        ERROR,
+                        "contracts.precondition.not.satisfied",
+                        tree.getMethodSelect().toString(),
+                        expressionString);
             }
         }
     }
@@ -1528,9 +1536,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     "vector.copyinto.type.incompatible");
         } else {
             checker.report(
-                    Result.failure(
-                            "vector.copyinto.type.incompatible", vectorTypeArg, argComponent),
-                    errorLocation);
+                    errorLocation,
+                    ERROR,
+                    "vector.copyinto.type.incompatible",
+                    vectorTypeArg,
+                    argComponent);
         }
     }
 
@@ -1856,7 +1866,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
 
         if (castType.equals(exprType)) {
-            checker.report(Result.warning("cast.redundant", castType), typeCastTree);
+            checker.report(typeCastTree, MANDATORY_WARNING, "cast.redundant", castType);
         }
     }
 
@@ -1876,8 +1886,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // the input types to be subtypes according to Java
         if (!isTypeCastSafe(castType, exprType)) {
             checker.report(
-                    Result.warning("cast.unsafe", exprType.toString(true), castType.toString(true)),
-                    typeCastTree);
+                    typeCastTree,
+                    MANDATORY_WARNING,
+                    "cast.unsafe",
+                    exprType.toString(true),
+                    castType.toString(true));
         }
     }
 
@@ -2070,8 +2083,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             assert found != null;
             if (!atypeFactory.getQualifierHierarchy().isSubtype(required, found)) {
                 checker.report(
-                        Result.failure("exception.parameter.invalid", found, required),
-                        node.getParameter());
+                        node.getParameter(), ERROR, "exception.parameter.invalid", found, required);
             }
 
             if (exPar.getKind() == TypeKind.UNION) {
@@ -2080,9 +2092,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     AnnotationMirror foundAltern = alterntive.getAnnotationInHierarchy(required);
                     if (!atypeFactory.getQualifierHierarchy().isSubtype(required, foundAltern)) {
                         checker.report(
-                                Result.failure(
-                                        "exception.parameter.invalid", foundAltern, required),
-                                node.getParameter());
+                                node.getParameter(),
+                                ERROR,
+                                "exception.parameter.invalid",
+                                foundAltern,
+                                required);
                     }
                 }
             }
@@ -2129,8 +2143,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 Set<AnnotationMirror> found = throwType.getAnnotations();
                 if (!atypeFactory.getQualifierHierarchy().isSubtype(found, required)) {
                     checker.report(
-                            Result.failure("throw.type.invalid", found, required),
-                            node.getExpression());
+                            node.getExpression(), ERROR, "throw.type.invalid", found, required);
                 }
                 break;
             case TYPEVAR:
@@ -2139,8 +2152,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 Set<AnnotationMirror> foundEffective = throwType.getEffectiveAnnotations();
                 if (!atypeFactory.getQualifierHierarchy().isSubtype(foundEffective, required)) {
                     checker.report(
-                            Result.failure("throw.type.invalid", foundEffective, required),
-                            node.getExpression());
+                            node.getExpression(),
+                            ERROR,
+                            "throw.type.invalid",
+                            foundEffective,
+                            required);
                 }
                 break;
             case UNION:
@@ -2148,17 +2164,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 Set<AnnotationMirror> foundPrimary = unionType.getAnnotations();
                 if (!atypeFactory.getQualifierHierarchy().isSubtype(foundPrimary, required)) {
                     checker.report(
-                            Result.failure("throw.type.invalid", foundPrimary, required),
-                            node.getExpression());
+                            node.getExpression(),
+                            ERROR,
+                            "throw.type.invalid",
+                            foundPrimary,
+                            required);
                 }
                 for (AnnotatedTypeMirror altern : unionType.getAlternatives()) {
                     if (!atypeFactory
                             .getQualifierHierarchy()
                             .isSubtype(altern.getAnnotations(), required)) {
                         checker.report(
-                                Result.failure(
-                                        "throw.type.invalid", altern.getAnnotations(), required),
-                                node.getExpression());
+                                node.getExpression(),
+                                ERROR,
+                                "throw.type.invalid",
+                                altern.getAnnotations(),
+                                required);
                     }
                 }
                 break;
@@ -2327,12 +2348,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     atypeFactory.getSupportedMonotonicTypeQualifiers()) {
                 if (valueType.hasAnnotation(mono) && varType.hasAnnotation(mono)) {
                     checker.report(
-                            Result.failure(
-                                    "monotonic.type.incompatible",
-                                    mono.getSimpleName(),
-                                    mono.getSimpleName(),
-                                    valueType.toString()),
-                            valueTree);
+                            valueTree,
+                            ERROR,
+                            "monotonic.type.incompatible",
+                            mono.getSimpleName(),
+                            mono.getSimpleName(),
+                            valueType.toString());
                     return;
                 }
             }
@@ -2345,7 +2366,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             FoundRequired pair = FoundRequired.of(valueType, varType);
             String valueTypeString = pair.found;
             String varTypeString = pair.required;
-            checker.report(Result.failure(errorKey, valueTypeString, varTypeString), valueTree);
+            checker.report(valueTree, ERROR, errorKey, valueTypeString, varTypeString);
         }
     }
 
@@ -2561,14 +2582,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 if (typeargTrees == null || typeargTrees.isEmpty()) {
                     // The type arguments were inferred and we mark the whole method.
                     checker.report(
-                            Result.failure(
-                                    "type.argument.type.incompatible", fr.found, fr.required),
-                            toptree);
+                            toptree,
+                            ERROR,
+                            "type.argument.type.incompatible",
+                            fr.found,
+                            fr.required);
                 } else {
                     checker.report(
-                            Result.failure(
-                                    "type.argument.type.incompatible", fr.found, fr.required),
-                            typeargTrees.get(typeargs.indexOf(typeArg)));
+                            typeargTrees.get(typeargs.indexOf(typeArg)),
+                            ERROR,
+                            "type.argument.type.incompatible",
+                            fr.found,
+                            fr.required);
                 }
             }
         }
@@ -2649,12 +2674,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, node);
             if (!success) {
                 checker.report(
-                        Result.failure(
-                                "method.invocation.invalid",
-                                TreeUtils.elementFromUse(node),
-                                treeReceiver.toString(),
-                                methodReceiver.toString()),
-                        node);
+                        node,
+                        ERROR,
+                        "method.invocation.invalid",
+                        TreeUtils.elementFromUse(node),
+                        treeReceiver.toString(),
+                        methodReceiver.toString());
             }
         }
     }
@@ -2691,19 +2716,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!(atypeFactory.getQualifierHierarchy().isSubtype(explicit, resultAnno)
                     || atypeFactory.getQualifierHierarchy().isSubtype(resultAnno, explicit))) {
                 checker.report(
-                        Result.failure(
-                                "constructor.invocation.invalid",
-                                constructor.toString(),
-                                explicit,
-                                resultAnno),
-                        newClassTree);
+                        newClassTree,
+                        ERROR,
+                        "constructor.invocation.invalid",
+                        constructor.toString(),
+                        explicit,
+                        resultAnno);
                 return;
             } else if (!atypeFactory.getQualifierHierarchy().isSubtype(resultAnno, explicit)) {
                 // Issue a warning if the annotations on the constructor invocation is a subtype of
                 // the constructor result type. This is equivalent to down-casting.
                 checker.report(
-                        Result.warning("cast.unsafe.constructor.invocation", resultAnno, explicit),
-                        newClassTree);
+                        newClassTree,
+                        MANDATORY_WARNING,
+                        "cast.unsafe.constructor.invocation",
+                        resultAnno,
+                        explicit);
                 return;
             }
         }
@@ -3021,7 +3049,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (requiresInference) {
             if (checker.hasOption("conservativeUninferredTypeArguments")) {
                 checker.report(
-                        Result.warning("methodref.inference.unimplemented"), memberReferenceTree);
+                        memberReferenceTree,
+                        MANDATORY_WARNING,
+                        "methodref.inference.unimplemented");
             }
             return true;
         }
@@ -3144,15 +3174,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     new HashSet<>(PurityUtils.getPurityKinds(atypeFactory, overrider.getElement()));
             if (!subPurity.containsAll(superPurity)) {
                 checker.report(
-                        Result.failure(
-                                msgKey,
-                                overriderMeth,
-                                overriderTyp,
-                                overriddenMeth,
-                                overriddenTyp,
-                                subPurity,
-                                superPurity),
-                        overriderTree);
+                        overriderTree,
+                        ERROR,
+                        msgKey,
+                        overriderMeth,
+                        overriderTyp,
+                        overriddenMeth,
+                        overriddenTyp,
+                        subPurity,
+                        superPurity);
             }
         }
 
@@ -3264,15 +3294,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 .isSubtype(overriddenReceiver, overriderReceiver);
                 if (!success) {
                     checker.report(
-                            Result.failure(
-                                    "methodref.receiver.invalid",
-                                    overriderMeth,
-                                    overriderTyp,
-                                    overriddenMeth,
-                                    overriddenTyp,
-                                    overriderReceiver,
-                                    overriddenReceiver),
-                            overriderTree);
+                            overriderTree,
+                            ERROR,
+                            "methodref.receiver.invalid",
+                            overriderMeth,
+                            overriderTyp,
+                            overriddenMeth,
+                            overriddenTyp,
+                            overriderReceiver,
+                            overriddenReceiver);
                 }
                 return success;
             }
@@ -3327,14 +3357,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             boolean success = atypeFactory.getTypeHierarchy().isSubtype(receiverArg, receiverDecl);
             if (!success) {
                 checker.report(
-                        Result.failure(
-                                "methodref.receiver.bound.invalid",
-                                receiverArg,
-                                overriderMeth,
-                                overriderTyp,
-                                receiverArg,
-                                receiverDecl),
-                        overriderTree);
+                        overriderTree,
+                        ERROR,
+                        "methodref.receiver.bound.invalid",
+                        receiverArg,
+                        overriderMeth,
+                        overriderTyp,
+                        receiverArg,
+                        receiverDecl);
             }
 
             return success;
@@ -3368,15 +3398,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
                 FoundRequired pair = FoundRequired.of(overriderReceiver, overriddenReceiver);
                 checker.report(
-                        Result.failure(
-                                "override.receiver.invalid",
-                                overriderMeth,
-                                overriderTyp,
-                                overriddenMeth,
-                                overriddenTyp,
-                                pair.found,
-                                pair.required),
-                        overriderTree);
+                        overriderTree,
+                        ERROR,
+                        "override.receiver.invalid",
+                        overriderMeth,
+                        overriderTyp,
+                        overriddenMeth,
+                        overriddenTyp,
+                        pair.found,
+                        pair.required);
                 return false;
             }
             return true;
@@ -3458,16 +3488,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 FoundRequired pair =
                         FoundRequired.of(overriderParams.get(index), overriddenParams.get(index));
                 checker.report(
-                        Result.failure(
-                                msgKey,
-                                overrider.getElement().getParameters().get(index).toString(),
-                                overriderMeth,
-                                overriderTyp,
-                                overriddenMeth,
-                                overriddenTyp,
-                                pair.found,
-                                pair.required),
-                        posTree);
+                        posTree,
+                        ERROR,
+                        msgKey,
+                        overrider.getElement().getParameters().get(index).toString(),
+                        overriderMeth,
+                        overriderTyp,
+                        overriddenMeth,
+                        overriddenTyp,
+                        pair.found,
+                        pair.required);
             }
         }
 
@@ -3546,15 +3576,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!success) {
                 FoundRequired pair = FoundRequired.of(overridingReturnType, overriddenReturnType);
                 checker.report(
-                        Result.failure(
-                                msgKey,
-                                overriderMeth,
-                                overriderTyp,
-                                overriddenMeth,
-                                overriddenTyp,
-                                pair.found,
-                                pair.required),
-                        posTree);
+                        posTree,
+                        ERROR,
+                        msgKey,
+                        overriderMeth,
+                        overriderTyp,
+                        overriddenMeth,
+                        overriddenTyp,
+                        pair.found,
+                        pair.required);
             }
         }
     }
@@ -3613,15 +3643,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!found) {
                 MethodTree method = visitorState.getMethodTree();
                 checker.report(
-                        Result.failure(
-                                messageKey,
-                                overriderMeth,
-                                overriderTyp,
-                                overriddenMeth,
-                                overriddenTyp,
-                                weak.second,
-                                weak.first),
-                        method);
+                        method,
+                        ERROR,
+                        messageKey,
+                        overriderMeth,
+                        overriderTyp,
+                        overriddenMeth,
+                        overriddenTyp,
+                        weak.second,
+                        weak.first);
             }
         }
     }
@@ -3658,7 +3688,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 result.add(Pair.of(expr, annotation));
             } catch (FlowExpressionParseException e) {
                 // report errors here
-                checker.report(e.getResult(), methodTree);
+                checker.report(methodTree, e.getDiagMessage());
             }
         }
         return result;
@@ -3720,7 +3750,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
 
         if (!isAccessAllowed(elem, receiver, tree)) {
-            checker.report(Result.failure("unallowed.access", elem, receiver), node);
+            checker.report(node, ERROR, "unallowed.access", elem, receiver);
         }
     }
 

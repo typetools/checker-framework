@@ -1,5 +1,7 @@
 package org.checkerframework.checker.index.inequality;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
@@ -11,7 +13,6 @@ import org.checkerframework.checker.index.Subsequence;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 
@@ -44,14 +45,14 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
             if (anm == null || !LessThanAnnotatedTypeFactory.isLessThanOrEqual(anm, subSeq.to)) {
                 // issue an error
                 checker.report(
-                        Result.failure(
-                                FROM_GT_TO,
-                                subSeq.from,
-                                subSeq.to,
-                                anm == null ? "@LessThanUnknown" : anm,
-                                subSeq.to,
-                                subSeq.to),
-                        valueTree);
+                        valueTree,
+                        ERROR,
+                        FROM_GT_TO,
+                        subSeq.from,
+                        subSeq.to,
+                        anm == null ? "@LessThanUnknown" : anm,
+                        subSeq.to,
+                        subSeq.to);
             }
         }
 

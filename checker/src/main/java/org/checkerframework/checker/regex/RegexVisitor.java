@@ -1,5 +1,8 @@
 package org.checkerframework.checker.regex;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -12,7 +15,6 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -107,12 +109,10 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
                 }
                 if (paramGroups > annoGroups) {
                     checker.report(
-                            Result.failure(
-                                    "group.count.invalid", paramGroups, annoGroups, receiver),
-                            group);
+                            group, ERROR, "group.count.invalid", paramGroups, annoGroups, receiver);
                 }
             } else {
-                checker.report(Result.warning("group.count.unknown"), group);
+                checker.report(group, MANDATORY_WARNING, "group.count.unknown");
             }
         }
         return super.visitMethodInvocation(node, p);

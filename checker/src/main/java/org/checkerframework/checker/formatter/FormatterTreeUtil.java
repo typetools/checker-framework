@@ -1,5 +1,8 @@
 package org.checkerframework.checker.formatter;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -353,14 +356,12 @@ public class FormatterTreeUtil {
 
     /** Reports an error. Takes a {@link Result} to report the location. */
     public final <E> void failure(Result<E> res, @CompilerMessageKey String msg, Object... args) {
-        checker.report(
-                org.checkerframework.framework.source.Result.failure(msg, args), res.location);
+        checker.report(res.location, ERROR, msg, args);
     }
 
     /** Reports an warning. Takes a {@link Result} to report the location. */
     public final <E> void warning(Result<E> res, @CompilerMessageKey String msg, Object... args) {
-        checker.report(
-                org.checkerframework.framework.source.Result.warning(msg, args), res.location);
+        checker.report(res.location, MANDATORY_WARNING, msg, args);
     }
 
     /**

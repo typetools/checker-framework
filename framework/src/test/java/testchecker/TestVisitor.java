@@ -2,10 +2,10 @@ package testchecker;
 
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
+import javax.tools.Diagnostic;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -37,13 +37,13 @@ public class TestVisitor extends BaseTypeVisitor<TestAnnotatedTypeFactory> {
             AnnotationMirror h1Invalid = AnnotationBuilder.fromClass(elements, H1Invalid.class);
             if (AnnotatedTypes.containsModifier(type, h1Invalid)) {
                 checker.report(
-                        Result.failure(
-                                // An error specific to this type system, with no corresponding text
-                                // in a messages.properties file; this checker is just for testing.
-                                "testchecker.h1invalid.forbidden",
-                                type.getAnnotations(),
-                                type.toString()),
-                        p);
+                        p,
+                        Diagnostic.Kind.ERROR,
+                        // An error specific to this type system, with no corresponding text
+                        // in a messages.properties file; this checker is just for testing.
+                        "testchecker.h1invalid.forbidden",
+                        type.getAnnotations(),
+                        type.toString());
             }
             return super.visitDeclared(type, p);
         }

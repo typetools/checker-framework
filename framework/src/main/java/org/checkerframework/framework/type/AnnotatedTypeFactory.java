@@ -3,6 +3,9 @@ package org.checkerframework.framework.type;
 // The imports from com.sun are all @jdk.Exported and therefore somewhat safe to use.
 // Try to avoid using non-@jdk.Exported classes.
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
@@ -18,7 +21,6 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -70,7 +72,6 @@ import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.StubTypes;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -1663,7 +1664,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             "AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: "
                                     + element);
                 }
-                if (tree.getKind() == Kind.NEW_CLASS) {
+                if (tree.getKind() == Tree.Kind.NEW_CLASS) {
                     if (typeElt.getEnclosingElement() != null) {
                         typeElt = ElementUtils.enclosingClass(typeElt.getEnclosingElement());
                     } else {
@@ -3137,11 +3138,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                 // If a CompletionFailure occurs, issue a warning.
                 checker.report(
-                        Result.warning(
-                                "annotation.not.completed",
-                                ElementUtils.getVerboseName(elt),
-                                annotation),
-                        annotation.getAnnotationType().asElement());
+                        annotation.getAnnotationType().asElement(),
+                        MANDATORY_WARNING,
+                        "annotation.not.completed",
+                        ElementUtils.getVerboseName(elt),
+                        annotation);
             }
         }
 
@@ -3189,11 +3190,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         // Fix for Issue 348: If a CompletionFailure occurs,
                         // issue a warning.
                         checker.report(
-                                Result.warning(
-                                        "annotation.not.completed",
-                                        ElementUtils.getVerboseName(elt),
-                                        annotation),
-                                annotation.getAnnotationType().asElement());
+                                annotation.getAnnotationType().asElement(),
+                                MANDATORY_WARNING,
+                                "annotation.not.completed",
+                                ElementUtils.getVerboseName(elt),
+                                annotation);
                         continue;
                     }
                     if (containsSameByClass(annotationsOnAnnotation, InheritedAnnotation.class)
@@ -3259,11 +3260,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // The completer field of a Symbol might be non-null also in successful cases.
                 // Issue a warning (exception only happens once) and continue.
                 checker.report(
-                        Result.warning(
-                                "annotation.not.completed",
-                                ElementUtils.getVerboseName(element),
-                                annotation),
-                        annotation.getAnnotationType().asElement());
+                        annotation.getAnnotationType().asElement(),
+                        MANDATORY_WARNING,
+                        "annotation.not.completed",
+                        ElementUtils.getVerboseName(element),
+                        annotation);
                 continue;
             }
             // First call copier, if exception, continue normal modula laws.

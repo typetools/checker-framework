@@ -1,5 +1,7 @@
 package org.checkerframework.framework.source;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -14,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic.Kind;
 
 /**
  * An aggregate checker that packages multiple checkers together. The resulting checker invokes the
@@ -49,7 +50,7 @@ public abstract class AggregateChecker extends SourceChecker {
                 instance.setParentChecker(this);
                 checkers.add(instance);
             } catch (Exception e) {
-                message(Kind.ERROR, "Couldn't instantiate an instance of " + checkerClass);
+                message(ERROR, "Couldn't instantiate an instance of " + checkerClass);
             }
         }
     }
