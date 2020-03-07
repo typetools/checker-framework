@@ -1,8 +1,5 @@
 package org.checkerframework.checker.guieffect;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
-
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -443,9 +440,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     // found a safe override
                     safeOverride = overrides;
                     if (isUI && issueConflictWarning) {
-                        checker.report(
+                        checker.reportError(
                                 errorNode,
-                                ERROR,
                                 "override.effect.invalid",
                                 overridingMethod,
                                 declaringType,
@@ -453,9 +449,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                                 superclass);
                     }
                     if (isPolyUI && issueConflictWarning) {
-                        checker.report(
+                        checker.reportError(
                                 errorNode,
-                                ERROR,
                                 "override.effect.invalid.polymorphic",
                                 overridingMethod,
                                 declaringType,
@@ -482,7 +477,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     // TypesUtils.isAnonymousType(ElementUtils.getType(declaringType)) &&
                     // getDeclAnnotation(declaringType, UI.class) != null;
                     //    if (!isAnonInstantiation && !hasAnnotationByName(supdecl, UI.class)) {
-                    //        checker.report(errorNode, ERROR, "override.effect.invalid",
+                    //        checker.reportError(errorNode, "override.effect.invalid",
                     //            "non-UI instantiation of "+supdecl);
                     //        If uncommenting this, change the above line to match other calls of
                     //            checker.report(..., "override.effect.invalid", ...)
@@ -504,9 +499,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     // found a safe override
                     safeOverride = overrides;
                     if (isUI && issueConflictWarning) {
-                        checker.report(
+                        checker.reportError(
                                 errorNode,
-                                ERROR,
                                 "override.effect.invalid",
                                 overridingMethod,
                                 declaringType,
@@ -514,9 +508,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                                 ty);
                     }
                     if (isPolyUI && issueConflictWarning) {
-                        checker.report(
+                        checker.reportError(
                                 errorNode,
-                                ERROR,
                                 "override.effect.invalid.polymorphic",
                                 overridingMethod,
                                 declaringType,
@@ -539,9 +532,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                                         && (fromElement(declaringType).hasAnnotation(UI.class)
                                                 || uiAnonClasses.contains(declaringType));
                         if (!isAnonInstantiation && !supdecl.hasAnnotation(UI.class)) {
-                            checker.report(
+                            checker.reportError(
                                     errorNode,
-                                    ERROR,
                                     "override.effect.invalid.nonui",
                                     overridingMethod,
                                     declaringType,
@@ -557,9 +549,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         if (uiOverride != null && safeOverride != null && issueConflictWarning) {
             // There may be more than two parent methods, but for now it's
             // enough to know there are at least 2 in conflict
-            checker.report(
+            checker.reportWarning(
                     errorNode,
-                    MANDATORY_WARNING,
                     "override.effect.warning.inheritance",
                     overridingMethod,
                     declaringType,

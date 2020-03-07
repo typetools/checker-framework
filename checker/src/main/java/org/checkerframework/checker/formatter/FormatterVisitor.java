@@ -1,7 +1,5 @@
 package org.checkerframework.checker.formatter;
 
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -193,9 +191,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                     atypeFactory.treeUtil.formatAnnotationToCategories(lhs);
 
             if (rhsArgTypes.length < lhsArgTypes.length) {
-                checker.report(
+                checker.reportWarning(
                         valueTree,
-                        MANDATORY_WARNING,
                         "format.missing.arguments",
                         varType.toString(),
                         valueType.toString());

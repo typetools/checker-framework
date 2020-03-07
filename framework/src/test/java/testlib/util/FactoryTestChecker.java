@@ -1,7 +1,5 @@
 package testlib.util;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
@@ -278,8 +276,8 @@ public class FactoryTestChecker extends BaseTypeChecker {
                         // by the CompilerMessageChecker
                         @SuppressWarnings("compilermessages")
                         @CompilerMessageKey String key = "type.unexpected";
-                        FactoryTestChecker.this.report(
-                                tree, ERROR, key, tree.toString(), actualType, expectedType);
+                        FactoryTestChecker.this.reportError(
+                                tree, key, tree.toString(), actualType, expectedType);
                     }
                 }
             }

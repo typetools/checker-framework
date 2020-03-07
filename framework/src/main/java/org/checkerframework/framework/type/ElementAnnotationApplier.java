@@ -1,7 +1,5 @@
 package org.checkerframework.framework.type;
 
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
-
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -98,9 +96,8 @@ public class ElementAnnotationApplier {
         // might be on the classpath, catch this exception and ignore the type.
         // TODO: Issue an error if this annotation is from Java 9+ bytecode.
         if (!typeFactory.checker.hasOption("ignoreInvalidAnnotationLocations")) {
-            typeFactory.checker.report(
+            typeFactory.checker.reportWarning(
                     element,
-                    MANDATORY_WARNING,
                     "invalid.annotation.location.bytecode",
                     ElementUtils.getVerboseName(report));
         }

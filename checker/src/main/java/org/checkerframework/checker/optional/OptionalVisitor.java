@@ -1,8 +1,5 @@
 package org.checkerframework.checker.optional;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
-
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
@@ -148,9 +145,8 @@ public class OptionalVisitor
         if (sameExpression(receiver, getReceiver)) {
             ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
 
-            checker.report(
+            checker.reportWarning(
                     node,
-                    MANDATORY_WARNING,
                     "prefer.map.and.orelse",
                     receiver,
                     // The literal "CONTAININGCLASS::" is gross.
@@ -230,7 +226,7 @@ public class OptionalVisitor
                     methodString.substring(0, dotPos) + "::" + methodString.substring(dotPos + 1);
         }
 
-        checker.report(node, MANDATORY_WARNING, "prefer.ifpresent", receiver, methodString);
+        checker.reportWarning(node, "prefer.ifpresent", receiver, methodString);
     }
 
     @Override
@@ -256,7 +252,7 @@ public class OptionalVisitor
             return;
         }
 
-        checker.report(node, MANDATORY_WARNING, "introduce.eliminate");
+        checker.reportWarning(node, "introduce.eliminate");
     }
 
     /**
@@ -271,9 +267,9 @@ public class OptionalVisitor
         if (isOptionalType(tm)) {
             ElementKind ekind = TreeUtils.elementFromDeclaration(node).getKind();
             if (ekind.isField()) {
-                checker.report(node, MANDATORY_WARNING, "optional.field");
+                checker.reportWarning(node, "optional.field");
             } else if (ekind == ElementKind.PARAMETER) {
-                checker.report(node, MANDATORY_WARNING, "optional.parameter");
+                checker.reportWarning(node, "optional.parameter");
             }
         }
         return super.visitVariable(node, p);
@@ -307,7 +303,7 @@ public class OptionalVisitor
                     // TODO: handle collections that have more than one type parameter
                     TypeMirror typeArg = typeArgs.get(0);
                     if (isOptionalType(typeArg)) {
-                        checker.report(tree, MANDATORY_WARNING, "optional.as.element.type");
+                        checker.reportWarning(tree, "optional.as.element.type");
                     }
                 }
             } else if (isOptionalType(tm)) {
@@ -315,7 +311,7 @@ public class OptionalVisitor
                 assert typeArgs.size() == 1;
                 TypeMirror typeArg = typeArgs.get(0);
                 if (isCollectionType(typeArg)) {
-                    checker.report(tree, ERROR, "optional.collection");
+                    checker.reportError(tree, "optional.collection");
                 }
             }
             return super.isValid(type, tree);

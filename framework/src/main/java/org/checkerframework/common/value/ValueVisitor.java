@@ -1,7 +1,5 @@
 package org.checkerframework.common.value;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValue;
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
@@ -182,7 +180,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     long from = getElementValue(anno, "from", Long.class, true);
                     long to = getElementValue(anno, "to", Long.class, true);
                     if (from > to) {
-                        checker.report(node, ERROR, "from.greater.than.to");
+                        checker.reportError(node, "from.greater.than.to");
                         return null;
                     }
                 }
@@ -195,12 +193,11 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 List<Object> values = getElementValueArray(anno, "value", Object.class, true);
 
                 if (values.isEmpty()) {
-                    checker.report(node, MANDATORY_WARNING, "no.values.given");
+                    checker.reportWarning(node, "no.values.given");
                     return null;
                 } else if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
-                    checker.report(
+                    checker.reportWarning(
                             node,
-                            MANDATORY_WARNING,
                             (AnnotationUtils.areSameByName(
                                             anno, ValueAnnotatedTypeFactory.INTVAL_NAME)
                                     ? "too.many.values.given.int"
@@ -211,11 +208,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                         anno, ValueAnnotatedTypeFactory.ARRAYLEN_NAME)) {
                     List<Integer> arrayLens = ValueAnnotatedTypeFactory.getArrayLength(anno);
                     if (Collections.min(arrayLens) < 0) {
-                        checker.report(
-                                node,
-                                MANDATORY_WARNING,
-                                "negative.arraylen",
-                                Collections.min(arrayLens));
+                        checker.reportWarning(
+                                node, "negative.arraylen", Collections.min(arrayLens));
                         return null;
                     }
                 }
@@ -224,10 +218,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 int from = getElementValue(anno, "from", Integer.class, true);
                 int to = getElementValue(anno, "to", Integer.class, true);
                 if (from > to) {
-                    checker.report(node, ERROR, "from.greater.than.to");
+                    checker.reportError(node, "from.greater.than.to");
                     return null;
                 } else if (from < 0) {
-                    checker.report(node, MANDATORY_WARNING, "negative.arraylen", from);
+                    checker.reportWarning(node, "negative.arraylen", from);
                     return null;
                 }
                 break;
@@ -320,7 +314,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 long from = atypeFactory.getFromValueFromIntRange(type);
                 long to = atypeFactory.getToValueFromIntRange(type);
                 if (from > to) {
-                    checker.report(tree, ERROR, "from.greater.than.to");
+                    checker.reportError(tree, "from.greater.than.to");
                     return false;
                 }
             } else {
@@ -328,7 +322,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 if (!TypesUtils.isObject(utype)
                         && !TypesUtils.isDeclaredOfName(utype, "java.lang.Number")
                         && !NumberUtils.isFloatingPoint(utype)) {
-                    checker.report(tree, ERROR, "annotation.intrange.on.noninteger");
+                    checker.reportError(tree, "annotation.intrange.on.noninteger");
                     return false;
                 }
             }
@@ -337,7 +331,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             int from = getElementValue(anno, "from", Integer.class, true);
             int to = getElementValue(anno, "to", Integer.class, true);
             if (from > to) {
-                checker.report(tree, ERROR, "from.greater.than.to");
+                checker.reportError(tree, "from.greater.than.to");
                 return false;
             }
         }

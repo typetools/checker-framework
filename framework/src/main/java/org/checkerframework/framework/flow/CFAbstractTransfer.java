@@ -1,7 +1,5 @@
 package org.checkerframework.framework.flow;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -1067,8 +1065,7 @@ public abstract class CFAbstractTransfer<
                     Object[] args = new Object[e.args.length + 1];
                     args[0] = ElementUtils.getSimpleName(TreeUtils.elementFromUse(n.getTree()));
                     System.arraycopy(e.args, 0, args, 1, e.args.length);
-                    analysis.checker.report(
-                            tree, ERROR, "flowexpr.parse.error.postcondition", args);
+                    analysis.checker.reportError(tree, "flowexpr.parse.error.postcondition", args);
                 } else {
                     analysis.checker.report(tree, e.getDiagMessage());
                 }

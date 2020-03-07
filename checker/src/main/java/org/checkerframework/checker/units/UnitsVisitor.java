@@ -1,7 +1,5 @@
 package org.checkerframework.checker.units;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree.Kind;
@@ -31,12 +29,12 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
 
         if ((kind == Kind.PLUS_ASSIGNMENT || kind == Kind.MINUS_ASSIGNMENT)) {
             if (!atypeFactory.getTypeHierarchy().isSubtype(exprType, varType)) {
-                checker.report(
-                        node, ERROR, "compound.assignment.type.incompatible", varType, exprType);
+                checker.reportError(
+                        node, "compound.assignment.type.incompatible", varType, exprType);
             }
         } else if (exprType.getAnnotation(UnknownUnits.class) == null) {
             // Only allow mul/div with unqualified units
-            checker.report(node, ERROR, "compound.assignment.type.incompatible", varType, exprType);
+            checker.reportError(node, "compound.assignment.type.incompatible", varType, exprType);
         }
 
         return null; // super.visitCompoundAssignment(node, p);

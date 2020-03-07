@@ -1,7 +1,5 @@
 package org.checkerframework.checker.index.inequality;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
@@ -44,9 +42,8 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
 
             if (anm == null || !LessThanAnnotatedTypeFactory.isLessThanOrEqual(anm, subSeq.to)) {
                 // issue an error
-                checker.report(
+                checker.reportError(
                         valueTree,
-                        ERROR,
                         FROM_GT_TO,
                         subSeq.from,
                         subSeq.to,

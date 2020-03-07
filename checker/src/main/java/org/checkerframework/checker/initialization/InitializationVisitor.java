@@ -1,7 +1,5 @@
 package org.checkerframework.checker.initialization;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -138,7 +136,7 @@ public class InitializationVisitor<
                     } else {
                         err = COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION;
                     }
-                    checker.report(varTree, ERROR, err, varTree);
+                    checker.reportError(varTree, err, varTree);
                     return; // prevent issuing another errow about subtyping
                 }
             }
@@ -159,7 +157,7 @@ public class InitializationVisitor<
                         continue; // unclassified is allowed
                     }
                     if (atypeFactory.areSameByClass(a, c)) {
-                        checker.report(node, ERROR, COMMITMENT_INVALID_FIELD_TYPE, node);
+                        checker.reportError(node, COMMITMENT_INVALID_FIELD_TYPE, node);
                         break;
                     }
                 }
@@ -259,9 +257,8 @@ public class InitializationVisitor<
         }
 
         if (!isSubtype) {
-            checker.report(
+            checker.reportError(
                     node,
-                    ERROR,
                     COMMITMENT_INVALID_CAST,
                     annoFormatter.formatAnnotationMirror(exprAnno),
                     annoFormatter.formatAnnotationMirror(castAnno));
@@ -320,8 +317,7 @@ public class InitializationVisitor<
                     atypeFactory.getInvalidConstructorReturnTypeAnnotations()) {
                 for (AnnotationMirror a : returnTypeAnnotations) {
                     if (atypeFactory.areSameByClass(a, c)) {
-                        checker.report(
-                                node, ERROR, COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE, node);
+                        checker.reportError(node, COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE, node);
                         break;
                     }
                 }
@@ -416,7 +412,7 @@ public class InitializationVisitor<
                 first = false;
                 fieldsString.append(f.getName());
             }
-            checker.report(blockNode, ERROR, COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString);
+            checker.reportError(blockNode, COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString);
         }
     }
 }

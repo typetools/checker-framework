@@ -1,7 +1,5 @@
 package org.checkerframework.framework.util.dependenttypes;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -712,8 +710,8 @@ public class DependentTypesHelper {
             errorsFormatted.add(dte.format());
         }
         SourceChecker checker = factory.getContext().getChecker();
-        checker.report(
-                errorTree, ERROR, "expression.unparsable.type.invalid", errorsFormatted.toString());
+        checker.reportError(
+                errorTree, "expression.unparsable.type.invalid", errorsFormatted.toString());
     }
 
     /**
@@ -751,7 +749,7 @@ public class DependentTypesHelper {
         }
         SourceChecker checker = factory.getContext().getChecker();
         String error = PluginUtil.joinLines(errors);
-        checker.report(errorTree, ERROR, "flowexpr.parse.error", error);
+        checker.reportError(errorTree, "flowexpr.parse.error", error);
     }
 
     /**

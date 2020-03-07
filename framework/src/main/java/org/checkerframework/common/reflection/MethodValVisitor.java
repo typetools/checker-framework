@@ -1,7 +1,5 @@
 package org.checkerframework.common.reflection;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -52,12 +50,12 @@ class MethodNameValidator extends BaseTypeValidator {
                     AnnotationUtils.getElementValueArray(
                             methodVal, "methodName", String.class, true);
             if (!(params.size() == methodNames.size() && params.size() == classNames.size())) {
-                checker.report(tree, ERROR, "invalid.methodval", methodVal);
+                checker.reportError(tree, "invalid.methodval", methodVal);
             }
 
             for (String methodName : methodNames) {
                 if (!legalMethodName(methodName)) {
-                    checker.report(tree, ERROR, "illegal.methodname", methodName, type);
+                    checker.reportError(tree, "illegal.methodname", methodName, type);
                 }
             }
         }

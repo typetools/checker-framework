@@ -1,7 +1,5 @@
 package org.checkerframework.checker.lock;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -157,8 +155,8 @@ public class LockAnnotatedTypeFactory
                 List<DependentTypesError> superErrors = new ArrayList<>();
                 for (DependentTypesError error : errors) {
                     if (error.error.equals(NOT_EFFECTIVELY_FINAL)) {
-                        checker.report(
-                                errorTree, ERROR, "lock.expression.not.final", error.expression);
+                        checker.reportError(
+                                errorTree, "lock.expression.not.final", error.expression);
                     } else {
                         superErrors.add(error);
                     }
@@ -533,7 +531,7 @@ public class LockAnnotatedTypeFactory
 
             if (count > 1 && issueErrorIfMoreThanOnePresent) {
                 // TODO: Turn on after figuring out how this interacts with inherited annotations.
-                // checker.report(element, ERROR, "multiple.sideeffect.annotations");
+                // checker.reportError(element, "multiple.sideeffect.annotations");
             }
 
             SideEffectAnnotation weakest = sideEffectAnnotationPresent.get(0);

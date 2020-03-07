@@ -1,8 +1,5 @@
 package org.checkerframework.checker.nullness;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
-
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -241,9 +238,8 @@ public class NullnessVisitor
                 && (checker.getLintOption("soundArrayCreationNullness", false)
                         // temporary, for backward compatibility
                         || checker.getLintOption("forbidnonnullarraycomponents", false))) {
-            checker.report(
+            checker.reportError(
                     node,
-                    ERROR,
                     "new.array.type.invalid",
                     componentType.getAnnotations(),
                     type.toString());
@@ -378,10 +374,10 @@ public class NullnessVisitor
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
             if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
                     && right.hasEffectiveAnnotation(NONNULL)) {
-                checker.report(node, MANDATORY_WARNING, KNOWN_NONNULL, rightOp.toString());
+                checker.reportWarning(node, KNOWN_NONNULL, rightOp.toString());
             } else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
                     && left.hasEffectiveAnnotation(NONNULL)) {
-                checker.report(node, MANDATORY_WARNING, KNOWN_NONNULL, leftOp.toString());
+                checker.reportWarning(node, KNOWN_NONNULL, leftOp.toString());
             }
         }
     }
@@ -457,7 +453,7 @@ public class NullnessVisitor
     private boolean checkForNullability(
             AnnotatedTypeMirror type, Tree tree, @CompilerMessageKey String errMsg) {
         if (!type.hasEffectiveAnnotation(NONNULL)) {
-            checker.report(tree, ERROR, errMsg, tree);
+            checker.reportError(tree, errMsg, tree);
             return false;
         }
         return true;
@@ -540,19 +536,14 @@ public class NullnessVisitor
                         containsSameByName(atypeFactory.getNullnessAnnotations(), a);
                 if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
                     // The type is not non-null => warning
-                    checker.report(
-                            node,
-                            MANDATORY_WARNING,
-                            "new.class.type.invalid",
-                            type.getAnnotations());
+                    checker.reportWarning(node, "new.class.type.invalid", type.getAnnotations());
                     // Note that other consistency checks are made by isValid.
                 }
             }
             if (t.toString().contains("@PolyNull")) {
                 // TODO: this is a hack, but PolyNull gets substituted
                 // afterwards
-                checker.report(
-                        node, MANDATORY_WARNING, "new.class.type.invalid", type.getAnnotations());
+                checker.reportWarning(node, "new.class.type.invalid", type.getAnnotations());
             }
         }
         // TODO: It might be nicer to introduce a framework-level

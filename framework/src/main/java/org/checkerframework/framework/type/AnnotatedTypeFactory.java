@@ -4,7 +4,6 @@ package org.checkerframework.framework.type;
 // Try to avoid using non-@jdk.Exported classes.
 
 import static javax.tools.Diagnostic.Kind.ERROR;
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
@@ -3138,9 +3137,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 results.add(annotation);
             } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                 // If a CompletionFailure occurs, issue a warning.
-                checker.report(
+                checker.reportWarning(
                         annotation.getAnnotationType().asElement(),
-                        MANDATORY_WARNING,
                         "annotation.not.completed",
                         ElementUtils.getVerboseName(elt),
                         annotation);
@@ -3190,9 +3188,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                         // Fix for Issue 348: If a CompletionFailure occurs,
                         // issue a warning.
-                        checker.report(
+                        checker.reportWarning(
                                 annotation.getAnnotationType().asElement(),
-                                MANDATORY_WARNING,
                                 "annotation.not.completed",
                                 ElementUtils.getVerboseName(elt),
                                 annotation);
@@ -3260,9 +3257,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // I didn't find a nicer alternative to check whether the Symbol can be completed.
                 // The completer field of a Symbol might be non-null also in successful cases.
                 // Issue a warning (exception only happens once) and continue.
-                checker.report(
+                checker.reportWarning(
                         annotation.getAnnotationType().asElement(),
-                        MANDATORY_WARNING,
                         "annotation.not.completed",
                         ElementUtils.getVerboseName(element),
                         annotation);

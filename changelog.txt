@@ -11,7 +11,8 @@ Implementation details:
    applyUncheckedCodeDefaults() to applyConservativeDefaults()
    useUncheckedCodeDefault() to useConservativeDefault()
  * Removed the `framework.source.Result` class.
-    * Changed the arguments to `SourceChecker.report`, which took a `Result`.
+ * Changed the signature of methods that took or returned a Result, notably:
+    * `SourceChecker.report` (prefer `reportError` and `reportWarning`)
 
 ---------------------------------------------------------------------------
 

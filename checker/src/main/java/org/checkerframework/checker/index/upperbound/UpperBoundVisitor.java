@@ -1,8 +1,5 @@
 package org.checkerframework.checker.index.upperbound;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ClassTree;
@@ -89,9 +86,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 List<String> offsets =
                         AnnotationUtils.getElementValueArray(anno, "offset", String.class, true);
                 if (sequences.size() != offsets.size() && !offsets.isEmpty()) {
-                    checker.report(
+                    checker.reportError(
                             node,
-                            ERROR,
                             "different.length.sequences.offsets",
                             sequences.size(),
                             offsets.size());
@@ -139,7 +135,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
         if (element == null || !ElementUtils.isEffectivelyFinal(element)) {
-            checker.report(error, ERROR, NOT_FINAL, rec);
+            checker.reportError(error, NOT_FINAL, rec);
         }
     }
 
@@ -169,9 +165,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
         if (ValueCheckerUtils.getExactValue(indexTree, valueFactory) != null) {
             // Note that valMax is equal to the exact value in this case.
-            checker.report(
+            checker.reportError(
                     indexTree,
-                    ERROR,
                     UPPER_BOUND_CONST,
                     valMax,
                     valueFactory.getAnnotatedType(arrTree).toString(),
@@ -179,9 +174,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     valMax + 1);
         } else if (valMax != null && qualifier.isUnknown() && valMax != Integer.MAX_VALUE) {
 
-            checker.report(
+            checker.reportError(
                     indexTree,
-                    ERROR,
                     UPPER_BOUND_RANGE,
                     valueFactory.getAnnotatedType(indexTree).toString(),
                     valueFactory.getAnnotatedType(arrTree).toString(),
@@ -189,8 +183,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     arrName,
                     valMax + 1);
         } else {
-            checker.report(
-                    indexTree, ERROR, UPPER_BOUND, indexType.toString(), arrName, arrName, arrName);
+            checker.reportError(
+                    indexTree, UPPER_BOUND, indexType.toString(), arrName, arrName, arrName);
         }
     }
 
@@ -220,9 +214,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
             if (ltelCheckFailed) {
                 // issue an error
-                checker.report(
+                checker.reportError(
                         valueTree,
-                        ERROR,
                         TO_NOT_LTEL,
                         subSeq.to,
                         subSeq.array,
@@ -231,9 +224,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                         subSeq.array,
                         subSeq.array);
             } else {
-                checker.report(
+                checker.reportWarning(
                         valueTree,
-                        MANDATORY_WARNING,
                         HSS,
                         subSeq.array,
                         subSeq.from,

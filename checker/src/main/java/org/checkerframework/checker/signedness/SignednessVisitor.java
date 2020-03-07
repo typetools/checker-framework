@@ -1,7 +1,5 @@
 package org.checkerframework.checker.signedness;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -327,9 +325,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
             case DIVIDE:
             case REMAINDER:
                 if (hasUnsignedAnnotation(leftOpType)) {
-                    checker.report(leftOp, ERROR, "operation.unsignedlhs", kind);
+                    checker.reportError(leftOp, "operation.unsignedlhs", kind);
                 } else if (hasUnsignedAnnotation(rightOpType)) {
-                    checker.report(rightOp, ERROR, "operation.unsignedrhs", kind);
+                    checker.reportError(rightOp, "operation.unsignedrhs", kind);
                 }
                 break;
 
@@ -337,7 +335,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 if (hasUnsignedAnnotation(leftOpType)
                         && !isMaskedShiftEitherSignedness(node)
                         && !isCastedShiftEitherSignedness(node)) {
-                    checker.report(leftOp, ERROR, "shift.signed", kind);
+                    checker.reportError(leftOp, "shift.signed", kind);
                 }
                 break;
 
@@ -345,7 +343,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 if (hasSignedAnnotation(leftOpType)
                         && !isMaskedShiftEitherSignedness(node)
                         && !isCastedShiftEitherSignedness(node)) {
-                    checker.report(leftOp, ERROR, "shift.unsigned", kind);
+                    checker.reportError(leftOp, "shift.unsigned", kind);
                 }
                 break;
 
@@ -357,9 +355,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
             case LESS_THAN:
             case LESS_THAN_EQUAL:
                 if (hasUnsignedAnnotation(leftOpType)) {
-                    checker.report(leftOp, ERROR, "comparison.unsignedlhs");
+                    checker.reportError(leftOp, "comparison.unsignedlhs");
                 } else if (hasUnsignedAnnotation(rightOpType)) {
-                    checker.report(rightOp, ERROR, "comparison.unsignedrhs");
+                    checker.reportError(rightOp, "comparison.unsignedrhs");
                 }
                 break;
 
@@ -367,20 +365,20 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
             case NOT_EQUAL_TO:
                 if (leftOpType.hasAnnotation(Unsigned.class)
                         && rightOpType.hasAnnotation(Signed.class)) {
-                    checker.report(node, ERROR, "comparison.mixed.unsignedlhs");
+                    checker.reportError(node, "comparison.mixed.unsignedlhs");
                 } else if (leftOpType.hasAnnotation(Signed.class)
                         && rightOpType.hasAnnotation(Unsigned.class)) {
-                    checker.report(node, ERROR, "comparison.mixed.unsignedrhs");
+                    checker.reportError(node, "comparison.mixed.unsignedrhs");
                 }
                 break;
 
             default:
                 if (leftOpType.hasAnnotation(Unsigned.class)
                         && rightOpType.hasAnnotation(Signed.class)) {
-                    checker.report(node, ERROR, "operation.mixed.unsignedlhs", kind);
+                    checker.reportError(node, "operation.mixed.unsignedlhs", kind);
                 } else if (leftOpType.hasAnnotation(Signed.class)
                         && rightOpType.hasAnnotation(Unsigned.class)) {
-                    checker.report(node, ERROR, "operation.mixed.unsignedrhs", kind);
+                    checker.reportError(node, "operation.mixed.unsignedrhs", kind);
                 }
                 break;
         }
@@ -424,15 +422,13 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
             case DIVIDE_ASSIGNMENT:
             case REMAINDER_ASSIGNMENT:
                 if (hasUnsignedAnnotation(varType)) {
-                    checker.report(
+                    checker.reportError(
                             var,
-                            ERROR,
                             "compound.assignment.unsigned.variable",
                             kindWithoutAssignment(kind));
                 } else if (hasUnsignedAnnotation(exprType)) {
-                    checker.report(
+                    checker.reportError(
                             expr,
-                            ERROR,
                             "compound.assignment.unsigned.expression",
                             kindWithoutAssignment(kind));
                 }
@@ -440,9 +436,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
             case RIGHT_SHIFT_ASSIGNMENT:
                 if (hasUnsignedAnnotation(varType)) {
-                    checker.report(
+                    checker.reportError(
                             var,
-                            ERROR,
                             "compound.assignment.shift.signed",
                             kindWithoutAssignment(kind),
                             "unsigned");
@@ -451,9 +446,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
             case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
                 if (hasSignedAnnotation(varType)) {
-                    checker.report(
+                    checker.reportError(
                             var,
-                            ERROR,
                             "compound.assignment.shift.unsigned",
                             kindWithoutAssignment(kind),
                             "signed");
@@ -465,16 +459,14 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
             default:
                 if (varType.hasAnnotation(Unsigned.class) && exprType.hasAnnotation(Signed.class)) {
-                    checker.report(
+                    checker.reportError(
                             expr,
-                            ERROR,
                             "compound.assignment.mixed.unsigned.variable",
                             kindWithoutAssignment(kind));
                 } else if (varType.hasAnnotation(Signed.class)
                         && exprType.hasAnnotation(Unsigned.class)) {
-                    checker.report(
+                    checker.reportError(
                             expr,
-                            ERROR,
                             "compound.assignment.mixed.unsigned.expression",
                             kindWithoutAssignment(kind));
                 }

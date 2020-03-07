@@ -1,8 +1,5 @@
 package org.checkerframework.checker.i18nformatter;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
-
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
@@ -145,9 +142,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                 // From the manual:
                 // It is legal to use a format string with fewer format specifiers
                 // than required, but a warning is issued.
-                checker.report(
+                checker.reportWarning(
                         valueTree,
-                        MANDATORY_WARNING,
                         "i18nformat.missing.arguments",
                         varType.toString(),
                         valueType.toString());
@@ -155,9 +151,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                 // Since it is known that too many conversion categories were provided,
                 // issue a more specific error message to that effect than
                 // assignment.type.incompatible.
-                checker.report(
+                checker.reportError(
                         valueTree,
-                        ERROR,
                         "i18nformat.excess.arguments",
                         varType.toString(),
                         valueType.toString());

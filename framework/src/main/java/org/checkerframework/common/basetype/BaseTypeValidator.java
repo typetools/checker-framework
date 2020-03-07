@@ -186,7 +186,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             final @CompilerMessageKey String errorType,
             final AnnotatedTypeMirror type,
             final Tree p) {
-        checker.report(p, ERROR, errorType, type.getAnnotations(), type.toString());
+        checker.reportError(p, errorType, type.getAnnotations(), type.toString());
         isValid = false;
     }
 
@@ -204,7 +204,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             final Tree p) {
         TypeMirror underlying =
                 TypeAnnotationUtils.unannotatedType(type.getErased().getUnderlyingType());
-        checker.report(p, ERROR, errorType, type.getAnnotations(), underlying.toString());
+        checker.reportError(p, errorType, type.getAnnotations(), underlying.toString());
         isValid = false;
     }
 
@@ -238,9 +238,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                 throw new BugInCF("Type is not bounded.%ntype=%s%ntree=%s", type, tree);
         }
 
-        checker.report(
+        checker.reportError(
                 tree,
-                ERROR,
                 "bound.type.incompatible",
                 label,
                 type.toString(),

@@ -1,7 +1,5 @@
 package org.checkerframework.checker.index.lowerbound;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
@@ -41,7 +39,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(index);
         if (!(indexType.hasAnnotation(NonNegative.class)
                 || indexType.hasAnnotation(Positive.class))) {
-            checker.report(index, ERROR, LOWER_BOUND, indexType.toString(), arrName);
+            checker.reportError(index, LOWER_BOUND, indexType.toString(), arrName);
         }
 
         return super.visitArrayAccess(tree, type);
@@ -54,7 +52,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
                 AnnotatedTypeMirror dimType = atypeFactory.getAnnotatedType(dim);
                 if (!(dimType.hasAnnotation(NonNegative.class)
                         || dimType.hasAnnotation(Positive.class))) {
-                    checker.report(dim, ERROR, NEGATIVE_ARRAY, dimType.toString());
+                    checker.reportError(dim, NEGATIVE_ARRAY, dimType.toString());
                 }
             }
         }
@@ -82,9 +80,8 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
             if (anm == null
                     || !(atypeFactory.areSameByClass(anm, NonNegative.class)
                             || atypeFactory.areSameByClass(anm, Positive.class))) {
-                checker.report(
+                checker.reportError(
                         valueTree,
-                        ERROR,
                         FROM_NOT_NN,
                         subSeq.from,
                         anm == null ? "@LowerBoundUnknown" : anm);

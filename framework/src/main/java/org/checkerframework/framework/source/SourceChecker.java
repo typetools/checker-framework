@@ -52,6 +52,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -873,12 +874,39 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    /// Reporting type-checking errors; the main entry point is report()
+    /// Reporting type-checking errors; most clients use reportError() or reportWarning()
     ///
+
+    /**
+     * Reports an error. By default, it prints it to the screen via the compiler's internal
+     * messager.
+     *
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @param messageKey the message key
+     * @param args arguments for interpolation in the string corresponding to the given message key
+     */
+    public void reportError(Object source, @CompilerMessageKey String messageKey, Object... args) {
+        report(source, Diagnostic.Kind.ERROR, messageKey, args);
+    }
+
+    /**
+     * Reports a warning. By default, it prints it to the screen via the compiler's internal
+     * messager.
+     *
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @param messageKey the message key
+     * @param args arguments for interpolation in the string corresponding to the given message key
+     */
+    public void reportWarning(
+            Object source, @CompilerMessageKey String messageKey, Object... args) {
+        report(source, Diagnostic.Kind.MANDATORY_WARNING, messageKey, args);
+    }
 
     /**
      * Reports a diagnostic message. By default, it prints it to the screen via the compiler's
      * internal messager; otherwise, the method returns with no side effects.
+     *
+     * <p>Most clients should use {@link #reportError} or {@link #reportWarning}.
      *
      * @param source the source position information; may be an Element, a Tree, or null
      * @param kind the type of message

@@ -1,8 +1,5 @@
 package org.checkerframework.checker.regex;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -108,11 +105,11 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
                             atypeFactory.getGroupCount(receiverType.getAnnotation(Regex.class));
                 }
                 if (paramGroups > annoGroups) {
-                    checker.report(
-                            group, ERROR, "group.count.invalid", paramGroups, annoGroups, receiver);
+                    checker.reportError(
+                            group, "group.count.invalid", paramGroups, annoGroups, receiver);
                 }
             } else {
-                checker.report(group, MANDATORY_WARNING, "group.count.unknown");
+                checker.reportWarning(group, "group.count.unknown");
             }
         }
         return super.visitMethodInvocation(node, p);

@@ -1,7 +1,5 @@
 package testlib.wholeprograminference;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
@@ -29,7 +27,7 @@ public class WholeProgramInferenceTestVisitor
     public Void visitAnnotation(AnnotationTree node, Void p) {
         Element anno = TreeInfo.symbol((JCTree) node.getAnnotationType());
         if (anno.toString().equals(DefaultType.class.getName())) {
-            checker.report(node, ERROR, "annotation.not.allowed.in.src", anno.toString());
+            checker.reportError(node, "annotation.not.allowed.in.src", anno.toString());
         }
         return super.visitAnnotation(node, p);
     }

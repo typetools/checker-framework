@@ -1,7 +1,5 @@
 package org.checkerframework.common.value;
 
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
-
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
@@ -96,9 +94,8 @@ public class ReflectiveEvaluator {
                     results.add(method.invoke(receiver, arguments));
                 } catch (InvocationTargetException e) {
                     if (reportWarnings) {
-                        checker.report(
+                        checker.reportWarning(
                                 tree,
-                                MANDATORY_WARNING,
                                 "method.evaluation.exception",
                                 method,
                                 e.getTargetException().toString());
@@ -108,9 +105,8 @@ public class ReflectiveEvaluator {
                     return null;
                 } catch (ExceptionInInitializerError e) {
                     if (reportWarnings) {
-                        checker.report(
+                        checker.reportWarning(
                                 tree,
-                                MANDATORY_WARNING,
                                 "method.evaluation.exception",
                                 method,
                                 e.getCause().toString());
@@ -119,9 +115,8 @@ public class ReflectiveEvaluator {
                 } catch (IllegalArgumentException e) {
                     if (reportWarnings) {
                         String args = PluginUtil.join(", ", arguments);
-                        checker.report(
+                        checker.reportWarning(
                                 tree,
-                                MANDATORY_WARNING,
                                 "method.evaluation.exception",
                                 method,
                                 e.getLocalizedMessage() + ": " + args);
@@ -130,7 +125,7 @@ public class ReflectiveEvaluator {
                 } catch (Throwable e) {
                     // Catch any exception thrown because they shouldn't crash the type checker.
                     if (reportWarnings) {
-                        checker.report(tree, MANDATORY_WARNING, "method.evaluation.failed", method);
+                        checker.reportWarning(tree, "method.evaluation.failed", method);
                     }
                     return null;
                 }
@@ -196,8 +191,7 @@ public class ReflectiveEvaluator {
             return method;
         } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {
             if (reportWarnings) {
-                checker.report(
-                        tree, MANDATORY_WARNING, "class.find.failed", ele.getEnclosingElement());
+                checker.reportWarning(tree, "class.find.failed", ele.getEnclosingElement());
             }
             return null;
 
@@ -208,18 +202,13 @@ public class ReflectiveEvaluator {
 
             if (classElem == null) {
                 if (reportWarnings) {
-                    checker.report(
-                            tree,
-                            MANDATORY_WARNING,
-                            "method.find.failed",
-                            ele.getSimpleName(),
-                            paramClzz);
+                    checker.reportWarning(
+                            tree, "method.find.failed", ele.getSimpleName(), paramClzz);
                 }
             } else {
                 if (reportWarnings) {
-                    checker.report(
+                    checker.reportWarning(
                             tree,
-                            MANDATORY_WARNING,
                             "method.find.failed.in.class",
                             ele.getSimpleName(),
                             paramClzz,
@@ -288,14 +277,13 @@ public class ReflectiveEvaluator {
 
         } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {
             if (reportWarnings) {
-                checker.report(tree, MANDATORY_WARNING, "class.find.failed", classname);
+                checker.reportWarning(tree, "class.find.failed", classname);
             }
             return null;
         } catch (Throwable e) {
             // Catch all exception so that the checker doesn't crash
             if (reportWarnings) {
-                checker.report(
-                        tree, MANDATORY_WARNING, "field.access.failed", fieldName, classname);
+                checker.reportWarning(tree, "field.access.failed", fieldName, classname);
             }
             return null;
         }
@@ -310,7 +298,7 @@ public class ReflectiveEvaluator {
         } catch (Throwable e) {
             // Catch all exception so that the checker doesn't crash
             if (reportWarnings) {
-                checker.report(tree, MANDATORY_WARNING, "constructor.invocation.failed");
+                checker.reportWarning(tree, "constructor.invocation.failed");
             }
             return null;
         }
@@ -334,9 +322,8 @@ public class ReflectiveEvaluator {
                 results.add(constructor.newInstance(arguments));
             } catch (Throwable e) {
                 if (reportWarnings) {
-                    checker.report(
+                    checker.reportWarning(
                             tree,
-                            MANDATORY_WARNING,
                             "constructor.evaluation.failed",
                             typeToCreate,
                             PluginUtil.join(", ", arguments));

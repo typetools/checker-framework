@@ -1,8 +1,5 @@
 package org.checkerframework.checker.guieffect;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
-
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -126,9 +123,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 if (safeParent && polyParentDecl && safeReceiverOverride) {
                     return true;
                 }
-                checker.report(
+                checker.reportError(
                         overriderTree,
-                        ERROR,
                         "override.receiver.invalid",
                         overriderMeth,
                         overriderTyp,
@@ -343,7 +339,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         assert callerEffect != null;
 
         if (!Effect.lessThanOrEqualTo(targetEffect, callerEffect)) {
-            checker.report(node, ERROR, "call.invalid.ui", targetEffect, callerEffect);
+            checker.reportError(node, "call.invalid.ui", targetEffect, callerEffect);
             if (debugSpew) {
                 System.err.println("Issuing error for node: " + node);
             }
@@ -387,13 +383,13 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         if ((targetUIP != null && (targetSafeP != null || targetPolyP != null))
                 || (targetSafeP != null && targetPolyP != null)) {
-            checker.report(node, ERROR, "annotations.conflicts");
+            checker.reportError(node, "annotations.conflicts");
         }
         if (targetPolyP != null && !atypeFactory.isPolymorphicType(targetClassElt)) {
-            checker.report(node, ERROR, "polymorphism.invalid");
+            checker.reportError(node, "polymorphism.invalid");
         }
         if (targetUIP != null && atypeFactory.isUIType(targetClassElt)) {
-            checker.report(node, MANDATORY_WARNING, "effects.redundant.uitype");
+            checker.reportWarning(node, "effects.redundant.uitype");
         }
 
         // TODO: Report an error for polymorphic method bodies??? Until we fix the receiver
