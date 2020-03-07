@@ -11,7 +11,7 @@ public enum DiagnosticSeverity {
     /** Reports a hint. */
     HINT(4);
 
-    public int value;
+    public final int value;
 
     DiagnosticSeverity(int value) {
         this.value = value;

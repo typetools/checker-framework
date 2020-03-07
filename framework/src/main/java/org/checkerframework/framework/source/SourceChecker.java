@@ -488,8 +488,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * The diagnostic messages to be output at the end of the run, or null if the user did not
      * supply -AjsonOutput.
      */
-    // Map<URI, List<Diagnostic>> diagnostics = null;
-    Map<URI, List<Diagnostic>> diagnostics = new HashMap<>();
+    Map<URI, List<Diagnostic>> diagnostics;
 
     /**
      * The checker that called this one, whether that be a BaseTypeChecker (used as a compound
@@ -531,6 +530,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (hasOption("printGitProperties")) {
             printGitProperties();
         }
+
+        diagnostics = getOption("jsonOutput") == null ? null : new HashMap<>();
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1301,7 +1302,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private Range sourceToJsonRange(Object source) {
         Tree tree = sourceToTree(source);
-        if (tree == null) {
+        if (tree == null || currentRoot == null) {
             return Range.NONE;
         }
 
@@ -1325,7 +1326,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     public String getCheckerName() {
         if (checkerName == null) {
-            String.join(" ", this.getClass().getSimpleName().split("(?<=[a-z])(?=[A-Z])"));
+            return String.join(" ", this.getClass().getSimpleName().split("(?<=[a-z])(?=[A-Z])"));
         }
         return checkerName;
     }
@@ -1343,8 +1344,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             for (URI file : files) {
                 jsonDiagnostics.add(new PublishDiagnosticsParams(file, diagnostics.get(file)));
             }
-            // No need for a BufferedWriter:  all the data is already available.
-            String filename = "/tmp/compilation-errors.json";
+            String filename = getOption("jsonOutput");
             try (FileWriter writer = new FileWriter(filename)) {
                 writer.write(gson.toJson(jsonDiagnostics));
             } catch (IOException e) {
@@ -1360,7 +1360,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /** Compare two values according to their toString() representations. */
-    private class ToStringComparator<T> implements Comparator<T> {
+    private static class ToStringComparator<T> implements Comparator<T> {
         @Override
         public int compare(T a, T b) {
             return a.toString().compareTo(b.toString());
