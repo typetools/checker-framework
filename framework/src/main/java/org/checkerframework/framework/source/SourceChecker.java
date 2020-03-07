@@ -5,6 +5,7 @@ import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
 import static javax.tools.Diagnostic.Kind.NOTE;
 import static javax.tools.Diagnostic.Kind.WARNING;
 
+import com.google.gson.Gson;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -22,6 +23,7 @@ import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
 import java.io.BufferedReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -35,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -64,6 +67,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.source.json.Diagnostic;
 import org.checkerframework.framework.source.json.DiagnosticSeverity;
 import org.checkerframework.framework.source.json.Position;
+import org.checkerframework.framework.source.json.PublishDiagnosticsParams;
 import org.checkerframework.framework.source.json.Range;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
@@ -483,7 +487,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * The diagnostic messages to be output at the end of the run, or null if the user did not
      * supply -AjsonOutput.
      */
-    Map<URI, List<Diagnostic>> diagnostics = null;
+    // Map<URI, List<Diagnostic>> diagnostics = null;
+    Map<URI, List<Diagnostic>> diagnostics = new HashMap<>();
 
     /**
      * The checker that called this one, whether that be a BaseTypeChecker (used as a compound
@@ -1061,6 +1066,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         Trees.instance(processingEnv).printMessage(kind, message, source, root);
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    /// Diagnostic message formatting
+    ///
+
     /**
      * Returns the localized long message corresponding to this key. If not found, tries suffixes of
      * this key, stripping off dot-separated prefixes. If still not found, returns {@code
@@ -1105,100 +1114,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } else {
             return arg;
         }
-    }
-
-    /**
-     * Augment the {@code diagnostics} field, which collects all diagnostics issued.
-     *
-     * @param source the source position information; may be an Element, a Tree, or null
-     * @param kind the type of message
-     * @param messageKey the message key
-     * @param messageText the formatted message
-     */
-    private void addToDiagnostics(
-            Object source,
-            javax.tools.Diagnostic.Kind kind,
-            String messageKey,
-            String messageText) {
-
-        if (diagnostics == null) {
-            return;
-        }
-
-        Range range = sourceToJsonRange(source);
-
-        DiagnosticSeverity severity;
-        switch (kind) {
-            case ERROR:
-                severity = DiagnosticSeverity.ERROR;
-                break;
-            case WARNING:
-            case MANDATORY_WARNING:
-                severity = DiagnosticSeverity.WARNING;
-                break;
-            case NOTE:
-            case OTHER:
-                severity = DiagnosticSeverity.WARNING;
-                break;
-            default:
-                throw new BugInCF("Unexpected Diagnostic.Kind: " + kind);
-        }
-
-        // Diagnostic d = new Diagnostic
-
-        Diagnostic d =
-                new Diagnostic(
-                        range,
-                        severity.value,
-                        suppressionKey(messageKey),
-                        getCheckerName(),
-                        messageText,
-                        null);
-
-        URI file = currentRoot.getSourceFile().toUri();
-        List<Diagnostic> dlist = diagnostics.get(file);
-        if (dlist == null) {
-            dlist = new ArrayList<>();
-            diagnostics.put(file, dlist);
-        }
-        dlist.add(d);
-    }
-
-    /**
-     * Convert an Element or Tree into a JSON position object.
-     *
-     * @param source the source position information; may be an Element, a Tree, or null
-     * @return a JSON position object for the source position
-     */
-    private Range sourceToJsonRange(Object source) {
-        Tree tree = sourceToTree(source);
-        if (tree == null) {
-            return Range.NONE;
-        }
-
-        int startPos = (int) trees.getSourcePositions().getStartPosition(currentRoot, tree);
-        int endPos = (int) trees.getSourcePositions().getEndPosition(currentRoot, tree);
-        LineMap lineMap = currentRoot.getLineMap();
-        int startLine = (int) lineMap.getLineNumber(startPos);
-        int startCol = (int) lineMap.getColumnNumber(startPos);
-        int endLine = (int) lineMap.getLineNumber(endPos);
-        int endCol = (int) lineMap.getColumnNumber(startPos);
-        return new Range(new Position(startLine, startCol), new Position(endLine, endCol));
-    }
-
-    /** The human-friendly name for this checker. */
-    private @MonotonicNonNull String checkerName = null;
-
-    /**
-     * Return the human-friendly name for this checker.
-     *
-     * @return the human-friendly name for this checker
-     */
-    public String getCheckerName() {
-        if (checkerName == null) {
-            String.join(" ", this.getClass().getSimpleName().split("(?<=[a-z])(?=[A-Z])"));
-        }
-        return checkerName;
     }
 
     /** Separates parts of a "detailed message", to permit easier parsing. */
@@ -1318,6 +1233,137 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         long end = sourcePositions.getEndPosition(currentRoot, tree);
 
         return "( " + start + ", " + end + " )";
+    }
+
+    /**
+     * Augment the {@code diagnostics} field, which collects all diagnostics issued.
+     *
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @param kind the type of message
+     * @param messageKey the message key
+     * @param messageText the formatted message
+     */
+    private void addToDiagnostics(
+            Object source,
+            javax.tools.Diagnostic.Kind kind,
+            String messageKey,
+            String messageText) {
+
+        if (diagnostics == null) {
+            return;
+        }
+
+        Range range = sourceToJsonRange(source);
+
+        DiagnosticSeverity severity;
+        switch (kind) {
+            case ERROR:
+                severity = DiagnosticSeverity.ERROR;
+                break;
+            case WARNING:
+            case MANDATORY_WARNING:
+                severity = DiagnosticSeverity.WARNING;
+                break;
+            case NOTE:
+            case OTHER:
+                severity = DiagnosticSeverity.WARNING;
+                break;
+            default:
+                throw new BugInCF("Unexpected Diagnostic.Kind: " + kind);
+        }
+
+        // Diagnostic d = new Diagnostic
+
+        Diagnostic d =
+                new Diagnostic(
+                        range,
+                        severity.value,
+                        suppressionKey(messageKey),
+                        getCheckerName(),
+                        messageText,
+                        null);
+
+        URI file = currentRoot.getSourceFile().toUri();
+        List<Diagnostic> dlist = diagnostics.get(file);
+        if (dlist == null) {
+            dlist = new ArrayList<>();
+            diagnostics.put(file, dlist);
+        }
+        dlist.add(d);
+    }
+
+    /**
+     * Convert an Element or Tree into a JSON position object.
+     *
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @return a JSON position object for the source position
+     */
+    private Range sourceToJsonRange(Object source) {
+        Tree tree = sourceToTree(source);
+        if (tree == null) {
+            return Range.NONE;
+        }
+
+        int startPos = (int) trees.getSourcePositions().getStartPosition(currentRoot, tree);
+        int endPos = (int) trees.getSourcePositions().getEndPosition(currentRoot, tree);
+        LineMap lineMap = currentRoot.getLineMap();
+        int startLine = (int) lineMap.getLineNumber(startPos);
+        int startCol = (int) lineMap.getColumnNumber(startPos);
+        int endLine = (int) lineMap.getLineNumber(endPos);
+        int endCol = (int) lineMap.getColumnNumber(startPos);
+        return new Range(new Position(startLine, startCol), new Position(endLine, endCol));
+    }
+
+    /** The human-friendly name for this checker. */
+    private @MonotonicNonNull String checkerName = null;
+
+    /**
+     * Return the human-friendly name for this checker.
+     *
+     * @return the human-friendly name for this checker
+     */
+    public String getCheckerName() {
+        if (checkerName == null) {
+            String.join(" ", this.getClass().getSimpleName().split("(?<=[a-z])(?=[A-Z])"));
+        }
+        return checkerName;
+    }
+
+    /**
+     * Write the diagnostics to a file, in JSON format. Does nothing if diagnostics are not being
+     * accumulated.
+     */
+    private void writeJsonDiagnostics() {
+        if (diagnostics != null) {
+            Gson gson = new Gson();
+            List<PublishDiagnosticsParams> jsonDiagnostics = new ArrayList<>();
+            List<URI> files = new ArrayList<>(diagnostics.keySet());
+            Collections.sort(files, new ToStringComparator<>());
+            for (URI file : files) {
+                jsonDiagnostics.add(new PublishDiagnosticsParams(file, diagnostics.get(file)));
+            }
+            // No need for a BufferedWriter:  all the data is already available.
+            String filename = "/tmp/compilation-errors.json";
+            try (FileWriter writer = new FileWriter(filename)) {
+                writer.write(gson.toJson(jsonDiagnostics));
+            } catch (IOException e) {
+                throw new UserError("Problem writing file " + filename, e);
+            }
+        }
+    }
+
+    @Override
+    public void typeProcessingOver() {
+        writeJsonDiagnostics();
+        super.typeProcessingOver();
+    }
+
+    /** Compare two values according to their toString() representations. */
+    private class ToStringComparator<T> implements Comparator<T> {
+        @Override
+        public int compare(T a, T b) {
+            return a.toString().compareTo(b.toString());
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////

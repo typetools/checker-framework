@@ -21,6 +21,7 @@ dependencies {
     implementation files("${stubparserJar}")
     implementation files("${afuJar}")
     implementation project(':checker-qual')
+    implementation 'com.google.code.gson:gson:2.8.6'
     // As of 2019/12/16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.

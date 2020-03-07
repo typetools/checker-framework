@@ -124,6 +124,7 @@ public abstract class AggregateChecker extends SourceChecker {
         for (SourceChecker checker : checkers) {
             checker.typeProcessingOver();
         }
+        super.typeProcessingOver();
     }
 
     @Override
