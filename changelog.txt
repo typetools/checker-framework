@@ -1,5 +1,8 @@
 Version 3.3.0, April 1, 2020
 
+New command-line option -AjsonOutput, to output type-checking warnings to a
+JSON file for easy parsing by IDE plugins and other tools.
+
 Renamings:
   -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
     The old name works temporarily but will be removed in a future release.
