@@ -8,6 +8,7 @@ import static javax.tools.Diagnostic.Kind.WARNING;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.LineMap;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -56,6 +57,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -997,9 +999,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // (this.processingEnv.getOptions() != null /*nnbug*/
         //         && this.processingEnv.getOptions().containsKey("jsonOutput"))
 
-        if (diagnostics != null) {
-            addToDiagnostics(kind);
-        }
+        addToDiagnostics(sourceToTree(source), kind, messageKey, messageText);
 
         if (source instanceof Element) {
             messager.printMessage(kind, messageText, (Element) source);
@@ -1108,14 +1108,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     // TODO
-    private void addToDiagnostics(javax.tools.Diagnostic.Kind kind) {
+    private void addToDiagnostics(
+            Object source,
+            javax.tools.Diagnostic.Kind kind,
+            String messageKey,
+            String messageText) {
 
-        URI file = currentRoot.getSourceFile().toUri();
-        if (!diagnostics.containsKey(file)) {
-            diagnostics.put(file, new ArrayList<>());
+        if (diagnostics == null) {
+            return;
         }
 
-        Range range;
+        Range range = sourceToJsonRange(source);
 
         DiagnosticSeverity severity;
         switch (kind) {
@@ -1136,9 +1139,52 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         // Diagnostic d = new Diagnostic
 
-        Position p = null;
-        Range r = null;
-        Diagnostic d = null;
+        Diagnostic d =
+                new Diagnostic(
+                        range,
+                        severity.value,
+                        suppressionKey(messageKey),
+                        getCheckerName(),
+                        messageText,
+                        null);
+
+        URI file = currentRoot.getSourceFile().toUri();
+        List<Diagnostic> dlist = diagnostics.get(file);
+        if (dlist == null) {
+            dlist = new ArrayList<>();
+            diagnostics.put(file, dlist);
+        }
+        dlist.add(d);
+    }
+
+    private Range sourceToJsonRange(Object source) {
+        Tree tree = sourceToTree(source);
+        if (tree == null) {
+            return Range.NONE;
+        }
+
+        int startPos = (int) trees.getSourcePositions().getStartPosition(currentRoot, tree);
+        int endPos = (int) trees.getSourcePositions().getEndPosition(currentRoot, tree);
+        LineMap lineMap = currentRoot.getLineMap();
+        int startLine = (int) lineMap.getLineNumber(startPos);
+        int startCol = (int) lineMap.getColumnNumber(startPos);
+        int endLine = (int) lineMap.getLineNumber(endPos);
+        int endCol = (int) lineMap.getColumnNumber(startPos);
+        return new Range(new Position(startLine, startCol), new Position(endLine, endCol));
+    }
+
+    private @MonotonicNonNull String checkerName = null;
+
+    /**
+     * Return the human-friendly name for this checker.
+     *
+     * @return the human-friendly name for this checker
+     */
+    public String getCheckerName() {
+        if (checkerName == null) {
+            String.join(" ", this.getClass().getSimpleName().split("(?<=[a-z])(?=[A-Z])"));
+        }
+        return checkerName;
     }
 
     /** Separates parts of a "detailed message", to permit easier parsing. */

@@ -1,9 +1,11 @@
 package org.checkerframework.framework.source.json;
 
 public class Range {
-    public Position start, end;
 
-    public Range() {}
+    public static final Range NONE = new Range(Position.START, Position.START);
+
+    public Position start;
+    public Position end;
 
     public Range(Position start, Position end) {
         this.start = start;
@@ -14,6 +16,4 @@ public class Range {
     public String toString() {
         return start + "-" + end;
     }
-
-    public static final Range NONE = new Range(Position.NONE, Position.NONE);
 }
