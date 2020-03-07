@@ -1107,7 +1107,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
     }
 
-    // TODO
+    /**
+     * Augment the {@code diagnostics} field, which collects all diagnostics issued.
+     *
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @param kind the type of message
+     * @param messageKey the message key
+     * @param messageText the formatted message
+     */
     private void addToDiagnostics(
             Object source,
             javax.tools.Diagnostic.Kind kind,
@@ -1157,6 +1164,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         dlist.add(d);
     }
 
+    /**
+     * Convert an Element or Tree into a JSON position object.
+     *
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @return a JSON position object for the source position
+     */
     private Range sourceToJsonRange(Object source) {
         Tree tree = sourceToTree(source);
         if (tree == null) {
@@ -1173,6 +1186,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return new Range(new Position(startLine, startCol), new Position(endLine, endCol));
     }
 
+    /** The human-friendly name for this checker. */
     private @MonotonicNonNull String checkerName = null;
 
     /**
