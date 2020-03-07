@@ -23,6 +23,7 @@ public class Main {
                 if (actual == null) {
                     throw new Error("Actual file ended, expected " + expected);
                 }
+                actual = actual.replaceAll("\"file:///.*/checker/jtreg/", "\"file:/checker/jtreg/");
                 if (!expected.equals(actual)) {
                     throw new Error(
                             "Expected: "
@@ -47,7 +48,7 @@ public class Main {
             new String[] {
                 "[",
                 "  {",
-                "    \"uri\": \"file:///home/mernst/research/types/checker-framework-fork-mernst-branch-json-output-2/checker/jtreg/nullness/jsonOutput/JsonOutputTestCase.java\",",
+                "    \"uri\": \"file:/checker/jtreg/nullness/jsonOutput/JsonOutputTestCase.java\",",
                 "    \"diagnostics\": [",
                 "      {",
                 "        \"range\": {",
