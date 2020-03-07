@@ -506,18 +506,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * This method is called only when {@code -Ainfer} is passed as an option. It checks if another
      * option that should not occur simultaneously with the whole-program inference is also passed
      * as argument, and aborts the process if that is the case. For example, the whole-program
-     * inference process was not designed to work with unchecked code defaults.
+     * inference process was not designed to work with conservative defaults.
      *
      * <p>Subclasses may override this method to add more options.
      */
     protected void checkInvalidOptionsInferSignatures() {
         // See Issue 683
         // https://github.com/typetools/checker-framework/issues/683
-        if (checker.useUncheckedCodeDefault("source")
-                || checker.useUncheckedCodeDefault("bytecode")) {
+        if (checker.useConservativeDefault("source")
+                || checker.useConservativeDefault("bytecode")) {
             throw new UserError(
-                    "The option -Ainfer cannot be"
-                            + " used together with unchecked code defaults.");
+                    "The option -Ainfer cannot be" + " used together with conservative defaults.");
         }
     }
 
@@ -544,6 +543,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotationBuilder.fromClass(
                         elements, org.checkerframework.dataflow.qual.Pure.class));
 
+        // Accommodate the inability to write @InheritedAnnotation on these annotations.
         addInheritedAnnotation(
                 AnnotationBuilder.fromClass(
                         elements, org.checkerframework.dataflow.qual.Pure.class));
@@ -1575,7 +1575,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         assert targs.size() == tvars.size()
                 : "Mismatch in type argument size between " + type + " and " + generic;
 
-        // System.err.printf("TVFU\n  type: %s\n  generic: %s\n", type, generic);
+        // System.err.printf("TVFU%n  type: %s%n  generic: %s%n", type, generic);
 
         Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
 
@@ -2078,12 +2078,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 || !(returnType.getKind() == TypeKind.DECLARED)
                 || ((AnnotatedDeclaredType) returnType).getTypeArguments().size() != 1) {
             throw new BugInCF(
-                    "Unexpected type passed to AnnotatedTypes.adaptGetClassReturnTypeToReceiver\n"
-                            + "getClassType="
-                            + getClassType
-                            + "\n"
-                            + "receiverType="
-                            + receiverType);
+                    "Unexpected type passed to AnnotatedTypes.adaptGetClassReturnTypeToReceiver%n"
+                            + "getClassType=%s%nreceiverType=%s",
+                    getClassType, receiverType);
         }
 
         final AnnotatedDeclaredType returnAdt =
@@ -2851,9 +2848,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TreePath path = getPath(tree);
         if (path == null) {
             throw new BugInCF(
-                    String.format(
-                            "AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s\n  for tree (%s) = %s%n  root=%s",
-                            TreePath.getPath(root, tree), tree.getClass(), tree, root));
+                    "AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n"
+                            + "  TreePath.getPath(root, tree)=>%s%n  for tree (%s) = %s%n  root=%s",
+                    TreePath.getPath(root, tree), tree.getClass(), tree, root);
         }
         for (Tree pathTree : path) {
             if (pathTree instanceof MethodTree) {
@@ -3556,10 +3553,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     // We should never reach here: isFunctionalInterface performs the same check
                     // and would have raised an error already.
                     throw new BugInCF(
-                            String.format(
-                                    "Expected the type of a cast tree in an assignment context to contain a functional interface bound. "
-                                            + "Found type: %s for tree: %s in lambda tree: %s",
-                                    castATM, cast, tree));
+                            "Expected the type of a cast tree in an assignment context to contain a functional interface bound. "
+                                    + "Found type: %s for tree: %s in lambda tree: %s",
+                            castATM, cast, tree);
                 }
                 return castATM;
 
@@ -3682,10 +3678,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 }
             }
             throw new BugInCF(
-                    String.format(
-                            "Expected the type of %s tree in assignment context to be a functional interface. "
-                                    + "Found type: %s for tree: %s in lambda tree: %s",
-                            contextTree.getKind(), type, contextTree, tree));
+                    "Expected the type of %s tree in assignment context to be a functional interface. "
+                            + "Found type: %s for tree: %s in lambda tree: %s",
+                    contextTree.getKind(), type, contextTree, tree);
         }
         return true;
     }

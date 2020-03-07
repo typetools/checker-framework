@@ -16,7 +16,7 @@ public class AnnotatedForTest extends FrameworkPerDirectoryTest {
                 "subtyping",
                 "-Anomsgtext",
                 "-Aquals=testlib.util.SubQual,testlib.util.SuperQual",
-                "-AuseDefaultsForUncheckedCode=source,bytecode");
+                "-AuseConservativeDefaultsForUncheckedCode=source,bytecode");
     }
 
     @Parameters

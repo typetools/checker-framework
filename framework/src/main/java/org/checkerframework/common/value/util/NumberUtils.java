@@ -100,29 +100,39 @@ public class NumberUtils {
      * @return a primitive type
      */
     public static TypeKind unboxPrimitive(TypeMirror type) {
-        if (type.getKind() == TypeKind.DECLARED) {
-            String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
-
-            switch (typeString) {
-                case "java.lang.Byte":
-                    return TypeKind.BYTE;
-                case "java.lang.Boolean":
-                    return TypeKind.BOOLEAN;
-                case "java.lang.Character":
-                    return TypeKind.CHAR;
-                case "java.lang.Double":
-                    return TypeKind.DOUBLE;
-                case "java.lang.Float":
-                    return TypeKind.FLOAT;
-                case "java.lang.Integer":
-                    return TypeKind.INT;
-                case "java.lang.Long":
-                    return TypeKind.LONG;
-                case "java.lang.Short":
-                    return TypeKind.SHORT;
-            }
+        final TypeKind typeKind = type.getKind();
+        if (typeKind.isPrimitive()) {
+            return typeKind;
         }
-        return type.getKind();
+
+        final String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+
+        switch (typeString) {
+            case "java.lang.Byte":
+                return TypeKind.BYTE;
+            case "java.lang.Boolean":
+                return TypeKind.BOOLEAN;
+            case "java.lang.Character":
+                return TypeKind.CHAR;
+            case "java.lang.Double":
+                return TypeKind.DOUBLE;
+            case "java.lang.Float":
+                return TypeKind.FLOAT;
+            case "java.lang.Integer":
+                return TypeKind.INT;
+            case "java.lang.Long":
+                return TypeKind.LONG;
+            case "java.lang.Short":
+                return TypeKind.SHORT;
+            default:
+                // TODO: this method should only be called for primitive or boxed primitive types.
+                // However, it is also used to implement other methods where this condition might
+                // not be met.
+                // Think of a nicer way to structure all these methods.
+                // throw new BugInCF("Expected primitive wrapper, got " + type + " kind: " +
+                // typeKind);
+                return typeKind;
+        }
     }
 
     /**

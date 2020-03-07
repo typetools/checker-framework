@@ -506,7 +506,7 @@ public class LockAnnotatedTypeFactory
      * multiple errors being issued for the same method (as would occur if
      * issueErrorIfMoreThanOnePresent were set to true when visiting method invocations). If no
      * annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS as the
-     * default for unchecked code.
+     * conservative default.
      *
      * @param element the method element
      * @param issueErrorIfMoreThanOnePresent whether to issue an error if more than one side effect
@@ -526,7 +526,7 @@ public class LockAnnotatedTypeFactory
             int count = sideEffectAnnotationPresent.size();
 
             if (count == 0) {
-                return defaults.applyUncheckedCodeDefaults(element)
+                return defaults.applyConservativeDefaults(element)
                         ? SideEffectAnnotation.MAYRELEASELOCKS
                         : SideEffectAnnotation.RELEASESNOLOCKS;
             }

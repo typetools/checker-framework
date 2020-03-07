@@ -11,7 +11,7 @@ plugins {
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.0.1' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
-    id "com.gorylenko.gradle-git-properties" version "2.2.1"
+    id "com.gorylenko.gradle-git-properties" version "2.2.2"
 }
 apply plugin: "de.undercouch.download"
 
@@ -98,7 +98,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.1.3'
+    version '3.2.0'
 
     repositories {
         mavenCentral()
@@ -339,7 +339,7 @@ task htmlValidate(type: Exec, group: 'Format') {
 //   in the subproject or `./gradlew :checker:javadoc` at the top level.
 task allJavadoc(type: Javadoc, group: "Documentation") {
     description = 'Generates a global API documentation for all the modules'
-    dependsOn(':checker:shadowJar')
+    dependsOn(':checker:shadowJar', 'getPlumeScripts')
     destinationDir = file("${rootDir}/docs/api")
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
@@ -349,6 +349,14 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
         classpath += configurations.javacJar
     }
     doLast {
+        exec {
+            // Javadoc for to com.sun.tools.java.* is not publicly available, so these links are broken.
+            // This command removes those links.
+            workingDir "${rootDir}/docs/api"
+            executable "${plumeScriptsHome}/preplace"
+            args += ['<a href="https://docs.oracle.com/javase/9/docs/api/com/sun/tools/javac/.*?>(.*?)</a>', '\\1']
+
+        }
         copy {
             from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
             rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
@@ -855,6 +863,7 @@ task checkBasicStyle(group: 'Format') {
             '*.pdf',
             '*.png',
             '*.sty',
+            '*.toc',
             '*.xcf',
             '*~',
             '#*#',

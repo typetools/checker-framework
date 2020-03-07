@@ -76,19 +76,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-        return "AnnotatedTypeMirrors aren't structurally equal.\n"
-                + "  type1 = "
-                + type1.getClass().getSimpleName()
-                + "( "
-                + type1
-                + " )\n"
-                + "  type2 = "
-                + type2.getClass().getSimpleName()
-                + "( "
-                + type2
-                + " )\n"
-                + "  visitHistory = "
-                + visitHistory;
+        return PluginUtil.joinLines(
+                "AnnotatedTypeMirrors aren't structurally equal.",
+                "  type1 = " + type1.getClass().getSimpleName() + "( " + type1 + " )",
+                "  type2 = " + type2.getClass().getSimpleName() + "( " + type2 + " )",
+                "  visitHistory = " + visitHistory);
     }
 
     /**
@@ -150,15 +142,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             final Collection<? extends AnnotatedTypeMirror> types2) {
         if (types1.size() != types2.size()) {
             throw new BugInCF(
-                    "Mismatching collection sizes:\n    types 1: "
-                            + PluginUtil.join("; ", types1)
-                            + " ("
-                            + types1.size()
-                            + ")\n    types 2: "
-                            + PluginUtil.join("; ", types2)
-                            + " ("
-                            + types2.size()
-                            + ")");
+                    "Mismatching collection sizes:%n    types 1: %s (%d)%n    types 2: %s (%d)",
+                    PluginUtil.join("; ", types1),
+                    types1.size(),
+                    PluginUtil.join("; ", types2),
+                    types2.size());
         }
 
         final Iterator<? extends AnnotatedTypeMirror> types1Iter = types1.iterator();
@@ -261,19 +249,12 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         } else {
             return true;
             /* TODO! This should be an error. See framework/tests/all-systems/InitializationVisitor.java
-             * for a failure.
-            throw new BugInCF(
-                    "Mismatching type argument sizes:\n    type 1: "
-                            + type1
-                            + " ("
-                            + type1Args.size()
-                            + ")\n    type 2: "
-                            + type2
-                            + " ("
-                            + type2Args.size()
-                            + ")");
-            return false;
-            */
+            * for a failure.
+               throw new BugInCF(
+                       "Mismatching type argument sizes:%n    type 1: %s (%d)%n    type 2: %s (%d)",
+                                type1, type1Args.size(), type2, type2Args.size());
+               return false;
+               */
         }
     }
 

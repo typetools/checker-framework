@@ -7,4 +7,4 @@ A transcript of all the output (as text, not a screenshot).
 
 What you expected to happen instead.  It can be helpful to explain your reasoning or reference a section of the manual.
 
-Files that are used by the commands you ran.
+Files that are used by the commands you ran.  If you cannot share the code, please create a test case that reproduces the problem.

@@ -105,16 +105,15 @@ public class FactoryTestChecker extends BaseTypeChecker {
     }*/
 
     @Override
-    public Properties getMessages() {
+    public Properties getMessagesProperties() {
         // We don't have any properties
-        // '\n' doesn't need to be replaced here
         Properties prop = new Properties();
         prop.setProperty(
                 "type.unexpected",
-                "unexpected type for the given tree\n"
-                        + "Tree       : %s\n"
-                        + "Found      : %s\n"
-                        + "Expected   : %s\n");
+                "unexpected type for the given tree%n"
+                        + "Tree       : %s%n"
+                        + "Found      : %s%n"
+                        + "Expected   : %s%n");
         return prop;
     }
 
