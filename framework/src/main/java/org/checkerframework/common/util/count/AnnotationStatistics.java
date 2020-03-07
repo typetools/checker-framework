@@ -65,8 +65,10 @@ public class AnnotationStatistics extends SourceChecker {
     final Map<String, Integer> annotationCount = new HashMap<>();
 
     @Override
-    public void typeProcessingOver() {
-        if (annotationCount.isEmpty()) {
+    public void typeProcessingOver(boolean hasError) {
+        if (hasError) {
+            System.out.println("Not counting annotations, because compilation issued an error.");
+        } else if (annotationCount.isEmpty()) {
             System.out.println("No annotations found.");
         } else {
             System.out.println("Found annotations: ");
@@ -74,6 +76,7 @@ public class AnnotationStatistics extends SourceChecker {
                 System.out.println(key + "\t" + annotationCount.get(key));
             }
         }
+        super.typeProcessingOver(hasError);
     }
 
     /** Increment the number of times annotation with name {@code annoName} has appeared. */
