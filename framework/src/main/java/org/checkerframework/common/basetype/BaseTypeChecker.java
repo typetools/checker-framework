@@ -691,12 +691,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     }
 
     @Override
-    public void typeProcessingOver() {
+    public void typeProcessingOver(boolean hasError) {
         for (BaseTypeChecker checker : getSubcheckers()) {
-            checker.typeProcessingOver();
+            checker.typeProcessingOver(hasError);
         }
-
-        super.typeProcessingOver();
+        super.typeProcessingOver(hasError);
     }
 
     @Override
