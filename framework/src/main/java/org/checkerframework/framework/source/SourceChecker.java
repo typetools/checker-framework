@@ -6,6 +6,7 @@ import static javax.tools.Diagnostic.Kind.NOTE;
 import static javax.tools.Diagnostic.Kind.WARNING;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -1335,7 +1336,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private void writeJsonDiagnostics() {
         if (diagnostics != null) {
-            Gson gson = new Gson();
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
             List<PublishDiagnosticsParams> jsonDiagnostics = new ArrayList<>();
             List<URI> files = new ArrayList<>(diagnostics.keySet());
             Collections.sort(files, new ToStringComparator<>());
