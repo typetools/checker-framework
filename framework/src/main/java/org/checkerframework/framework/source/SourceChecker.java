@@ -2,6 +2,8 @@ package org.checkerframework.framework.source;
 
 import static javax.tools.Diagnostic.Kind.ERROR;
 import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+import static javax.tools.Diagnostic.Kind.NOTE;
+import static javax.tools.Diagnostic.Kind.WARNING;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
@@ -52,8 +54,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -497,7 +497,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                             jreVersion));
         } else if (jreVersion != 8 && jreVersion != 11) {
             message(
-                    Kind.WARNING,
+                    WARNING,
                     "The Checker Framework is only tested with JDK 8 and JDK 11. You are using version %d. Please use JDK 8 or JDK 11.",
                     jreVersion);
         }
@@ -676,7 +676,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             pattern = options.get(patternName);
             if (pattern == null) {
                 message(
-                        Kind.WARNING,
+                        WARNING,
                         "The " + patternName + " property is empty; please fix your command line");
                 pattern = "";
             }
@@ -688,7 +688,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         if (pattern.indexOf("/") != -1) {
             message(
-                    Kind.WARNING,
+                    WARNING,
                     "The "
                             + patternName
                             + " property contains \"/\", which will never match a class name: "
@@ -740,7 +740,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (this.messager == null) {
                 messager = processingEnv.getMessager();
                 messager.printMessage(
-                        Kind.WARNING,
+                        WARNING,
                         "You have forgotten to call super.initChecker in your "
                                 + "subclass of SourceChecker, "
                                 + this.getClass()
@@ -817,7 +817,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // Also the enum constant Source.JDK1_8 was renamed at some point...
         if (!warnedAboutSourceLevel && source.compareTo(Source.lookup("8")) < 0) {
             messager.printMessage(
-                    Kind.WARNING, "-source " + source.name + " does not support type annotations");
+                    WARNING, "-source " + source.name + " does not support type annotations");
             warnedAboutSourceLevel = true;
         }
 
@@ -847,9 +847,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             setRoot(p.getCompilationUnit());
             if (hasOption("filenames")) {
                 // Add timestamp to indicate how long operations are taking
-                message(Kind.NOTE, new java.util.Date().toString());
+                message(NOTE, new java.util.Date().toString());
                 message(
-                        Kind.NOTE,
+                        NOTE,
                         "%s is type-checking %s",
                         (Object) this.getClass().getSimpleName(),
                         currentRoot.getSourceFile().getName());
@@ -885,7 +885,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param args arguments for interpolation in the string corresponding to the given message key
      */
     public void reportError(Object source, @CompilerMessageKey String messageKey, Object... args) {
-        report(source, Diagnostic.Kind.ERROR, messageKey, args);
+        report(source, ERROR, messageKey, args);
     }
 
     /**
@@ -897,7 +897,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     public void reportWarning(
             Object source, @CompilerMessageKey String messageKey, Object... args) {
-        report(source, Diagnostic.Kind.MANDATORY_WARNING, messageKey, args);
+        report(source, MANDATORY_WARNING, messageKey, args);
     }
 
     /**
@@ -923,7 +923,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param args arguments for interpolation in the string corresponding to the given message key
      */
     private void report(
-            Object source, Kind kind, @CompilerMessageKey String messageKey, Object... args) {
+            Object source,
+            javax.tools.Diagnostic.Kind kind,
+            @CompilerMessageKey String messageKey,
+            Object... args) {
         assert messagesProperties != null : "null messagesProperties";
 
         if (shouldSuppressWarnings(source, messageKey)) {
@@ -936,7 +939,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
         }
 
-        if (kind == Kind.NOTE) {
+        if (kind == NOTE) {
             System.err.println("(NOTE) " + String.format(messageKey, args));
             return;
         }
@@ -968,8 +971,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args);
         }
 
-        if (kind == Kind.ERROR && hasOption("warns")) {
-            kind = Kind.MANDATORY_WARNING;
+        if (kind == ERROR && hasOption("warns")) {
+            kind = MANDATORY_WARNING;
         }
 
         if (source instanceof Element) {
@@ -977,7 +980,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } else if (source instanceof Tree) {
             printOrStoreMessage(kind, messageText, (Tree) source, currentRoot);
         } else {
-            throw new BugInCF("invalid position source: " + source.getClass().getName());
+            throw new BugInCF("invalid position source, class=" + source.getClass());
         }
     }
 
@@ -992,7 +995,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param args optional arguments to substitute in the message
      * @see SourceChecker#report(Result, Object)
      */
-    public void message(Kind kind, String msg, Object... args) {
+    public void message(javax.tools.Diagnostic.Kind kind, String msg, Object... args) {
         String ftdmsg = String.format(msg, args);
         if (messager != null) {
             messager.printMessage(kind, ftdmsg);
@@ -1025,7 +1028,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param root the compilation unit
      */
     protected void printOrStoreMessage(
-            Kind kind, String message, Tree source, CompilationUnitTree root) {
+            javax.tools.Diagnostic.Kind kind,
+            String message,
+            Tree source,
+            CompilationUnitTree root) {
         Trees.instance(processingEnv).printMessage(kind, message, source, root);
     }
 
@@ -1215,7 +1221,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     && !s.equals("none") /*&&
                     !warnedOnLint.contains(s)*/) {
                 this.messager.printMessage(
-                        Kind.WARNING,
+                        WARNING,
                         "Unsupported lint option: "
                                 + s
                                 + "; All options: "
@@ -2438,7 +2444,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
             prop.load(base);
         } catch (IOException e) {
-            message(Kind.WARNING, "Couldn't parse properties file: " + filePath);
+            message(WARNING, "Couldn't parse properties file: " + filePath);
             // e.printStackTrace();
             // ignore the possible customization file
         }
