@@ -1727,7 +1727,9 @@ switch, which is used to pass options to an annotation processor.
 \begin{itemize}
 
 \item \code{-AjsonOutput}: Output error/warning messages in a JSON file,
-  for easy parsing by tools.
+  for easy parsing by tools.  The JSON file is a list of
+  \ahref{https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics}{\<PublishDiagnosticsParams>}
+  values, as defined in the Language Server Protocol specification.
   Example usage: \code{-AjsonOutput=\$HOME/typechecking.json}
 
 \item \code{-Adetailedmsgtext}: Output error/warning messages in a
