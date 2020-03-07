@@ -1084,6 +1084,9 @@ public class StubParser {
     /**
      * Adds the annotations present on the declaration of an enum constant to the ATM of that
      * constant.
+     *
+     * @param decl the enum constant, in Javaparser AST form (the source of annotations)
+     * @param elt the enum constant declaration, as an element (the destination for annotations)
      */
     private void processEnumConstant(EnumConstantDeclaration decl, VariableElement elt) {
         recordDeclAnnotationFromStubFile(elt);
@@ -1097,6 +1100,7 @@ public class StubParser {
      * Returns the innermost component type of {@code type}.
      *
      * @param type array type
+     * @return the innermost component type of {@code type}
      */
     private AnnotatedTypeMirror innermostComponentType(AnnotatedArrayType type) {
         AnnotatedTypeMirror componentType = type;
