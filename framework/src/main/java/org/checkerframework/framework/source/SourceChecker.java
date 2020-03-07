@@ -1002,10 +1002,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             kind = MANDATORY_WARNING;
         }
 
-        // TODO: Set jsonOutput using code like this:
-        // (this.processingEnv.getOptions() != null /*nnbug*/
-        //         && this.processingEnv.getOptions().containsKey("jsonOutput"))
-
         addToDiagnostics(sourceToTree(source), kind, messageKey, messageText);
 
         if (source instanceof Element) {
@@ -1273,8 +1269,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             default:
                 throw new BugInCF("Unexpected Diagnostic.Kind: " + kind);
         }
-
-        // Diagnostic d = new Diagnostic
 
         Diagnostic d =
                 new Diagnostic(
