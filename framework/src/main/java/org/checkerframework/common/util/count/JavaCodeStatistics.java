@@ -65,6 +65,7 @@ public class JavaCodeStatistics extends SourceChecker {
         System.out.printf(
                 "Found %d warning suppression annotations for the Index Checker.%n",
                 numberOfIndexWarningSuppressions);
+        super.typeProcessingOver();
     }
 
     @Override
