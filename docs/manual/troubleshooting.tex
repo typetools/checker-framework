@@ -632,6 +632,7 @@ Checker Framework.  See
 \url{https://bugs.openjdk.java.net/browse/JDK-7101822} and \url{https://bugs.openjdk.java.net/browse/JDK-8169095}.
 % Also see https://github.com/typetools/checker-framework/issues/1304
 
+
 \sectionAndLabel{How to report problems (bug reporting)}{reporting-bugs}
 
 If you have a problem with any checker, or with the Checker Framework,
@@ -669,17 +670,29 @@ helpful if you:
   includes every file that is used by any of the commands you reported, and
   possibly other files as well.  Please attach the files, rather than
   pasting their contents into the body of your bug report or email message,
-  because some mailers mangle formatting of pasted text.  If you
+  because some mailers mangle formatting of pasted text.
+
+  If you
   encountered a problem while using tool integration such as
   Maven integration, then try to reproduce the problem from the
   command line as well --- this will indicate whether the problem is with
-  the checker itself or with the tool integration.
+  the checker itself or with the tool integration.  If you use an invasive
+  annotation processor such as Lombok, then try to repoduce the problem
+  without it --- this will indicate whether the problem is in the Checker
+  Framework proper or in its interaction with Lombok.
+
+  If you cannot share your code, create a new, small test case.  (This is
+  helpful even if your code is not secret!)  The progress tracing options
+  (Section~\ref{creating-debugging-options-progress}) can be helpful in
+  determining which file the Checker Framework was processing when it
+  crashed.
 \item
   Indicate exactly what the result was by attaching a file or using
   cut-and-paste from your command shell (don't merely describe it in
-  words, and don't use a screenshot).
+  words, don't use a screenshot, and don't provide just part of the output).
 \item
-  Indicate what you expected the result to be, since a bug is a difference
+  If the problem is not a crash, then
+  indicate what you expected the result to be, since a bug is a difference
   between desired and actual outcomes.  Also, please indicate \textbf{why}
   you expected that result --- explaining your reasoning can help you
   understand how your reasoning is different than the checker's and which
@@ -689,8 +702,8 @@ helpful if you:
 \item
   Indicate what you have already done to try to understand the problem.
   Did you do any additional experiments?  What parts of the manual did
-  read, and what else did you search for in the manual?  This information
-  will prevent you from being given redundant suggestions.
+  read, and what else did you search for in the manual?  Without this
+  information, the maintainers may give you redundant suggestions.
 \end{itemize}
 
 A particularly useful format for a test case is as a new file, or a diff to

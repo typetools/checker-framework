@@ -1,9 +1,9 @@
 #!/bin/sh
 
-mydir="`dirname $0`"
-case `uname -s` in
+mydir="$(dirname "$0")"
+case $(uname -s) in
     CYGWIN*)
-      mydir=`cygpath -m $mydir`
+      mydir=$(cygpath -m "$mydir")
       ;;
 esac
 

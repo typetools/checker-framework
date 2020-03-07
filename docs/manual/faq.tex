@@ -80,7 +80,10 @@ fully-qualified type name?
 \faqtocpara{\ref{faq-tool-section}: Tool questions}
 \\ \ref{faq-pluggable-type-checking}: How does pluggable type-checking work?
 \\ \ref{faq-classpath-to-use-annotated-library}: What classpath is needed to use an annotated library?
+\\ \ref{faq-classfile-annotations}: Why do \<.class> files contain more annotations than the source code?
 \\ \ref{faq-checked-exceptions}: Is there a type-checker for managing checked and unchecked exceptions?
+\\ \ref{faq-cf-is-slow}: The Checker Framework runs too slowly
+
 
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
 \\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs or Error Prone)?
@@ -1471,19 +1474,16 @@ Framework's annotations.
 
 \subsectionAndLabel{Why do \<.class> files contain more annotations than the source code?}{faq-classfile-annotations}
 
-You may notice annotations such as \<@Pure> and \<@SideEffectFree> in
-compiled \<.class> files even though the source code contains no
-annotations.  These annotations are propagated from annotated libraries,
-such as the JDK, to your code.
+A \<.class> file contains an annotation on every type, as computed by
+defaulting rules; see Section~\ref{effective-qualifier}.
 
 When an overridden method has a side effect annotation, the overriding
-method must have one too.  If you do not write one explicitly, the Checker
-Framework could issue a warning, or it could automatically add the missing
-annotation.  It does the latter, for annotations declared with the
-\refqualclass{framework/qual}{InheritedAnnotation} meta-annotation.
-
-In addition, defaulted and inferred type qualifiers are written into
-\<.class> files; see Section~\ref{effective-qualifier}.
+method must have one too.  However, if the side effect annotation is
+declared with the \refqualclass{framework/qual}{InheritedAnnotation}
+meta-annotation, the Checker Framework automatically adds the missing
+annotation.  This is the case for most side effect annotations --- these
+annotations are propagated from annotated libraries, such as the JDK, to
+your code.
 
 
 \subsectionAndLabel{Is there a type-checker for managing checked and unchecked exceptions?}{faq-checked-exceptions}
@@ -1500,6 +1500,33 @@ Checked exceptions are an example of a ``type and effect'' system, which is
 like a type system but also accounts for actions/behaviors such as side
 effects.  The GUI Effect Checker (\chapterpageref{guieffect-checker}) is a
 type-and-effect system that is distributed with the Checker Framework.
+
+
+\subsectionAndLabel{The Checker Framework runs too slowly}{faq-cf-is-slow}
+
+Using a pluggable type-checker increases compile times by a factor of 2-5.
+Slow compilation speed is probably the worst thing about the Checker
+Framework.
+
+If the Checker Framework is too slow for you to run on every compilation,
+you can run it periodically, such as in a Git commit hook or in continuous
+integration.
+
+The Checker Framework team does not currently have the resources to fix
+performance problems, but we welcome community contributions.
+
+Here are some reasons that the Checker Framework is so slow.
+\begin{itemize}
+\item
+  It has to do all the same work as the compiler does, such as resolving
+  overloading/overriding/generics and type-checking.  It does so for
+  richer, user-defined type systems whereas \<javac> hard-codes one type
+  system.
+\item
+  Its implementation has some inefficiencies.  For example, when running a
+  compound or aggregate checker, it makes multiple passes over the program
+  rather than just one.
+\end{itemize}
 
 
 \sectionAndLabel{Relationship to other tools}{faq-other-tools-section}
@@ -1760,4 +1787,5 @@ third-party tools.  The Checker Framework is one such tool.
 %%  LocalWords:  NoSuchElementException binarySearch subclasses faq awarns
 %%  LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
 %%  LocalWords:  IllegalFormatException typequals typedef runtime nullaway
-%%  LocalWords:  covariance InheritedAnnotation someMethod jml jsr
+%%  LocalWords:  covariance InheritedAnnotation someMethod jml jsr Java''
+% LocalWords:  checkers'' covariance'' contravariance''

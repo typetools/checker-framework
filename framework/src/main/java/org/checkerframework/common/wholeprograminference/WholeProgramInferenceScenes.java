@@ -8,6 +8,7 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -22,6 +23,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AClass;
@@ -275,11 +277,31 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 field.type, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.FIELD);
     }
 
+    /**
+     * Updates the return type of the method methodTree in the Scene of the class with symbol
+     * classSymbol. Also updates the return types of methods that this method overrides, if they are
+     * available as source.
+     *
+     * <p>If the Scene does not contain an annotated return type for the method methodTree, then the
+     * type of the value passed to the return expression will be added to the return type of that
+     * method in the Scene. If the Scene previously contained an annotated return type for the
+     * method methodTree, its new type will be the LUB between the previous type and the type of the
+     * value passed to the return expression.
+     *
+     * @param retNode the node that contains the expression returned
+     * @param classSymbol the symbol of the class that contains the method
+     * @param methodTree the tree of the method whose return type may be updated
+     * @param overriddenMethods the methods that the given method return overrides, each indexed by
+     *     the annotated type of the class that defines it
+     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
+     *     used to update the method's return type
+     */
     @Override
     public void updateFromReturn(
             ReturnNode retNode,
             ClassSymbol classSymbol,
             MethodTree methodTree,
+            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods,
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
@@ -306,6 +328,45 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
         storage.updateAnnotationSetInScene(
                 method.returnType, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.RETURN);
+
+        // Now, update return types of overridden methods based on the implementation we just saw.
+        // This inference is similar to the inference procedure for method parameters: both are
+        // updated based only on the implementations (in this case) or call-sites (for method
+        // parameters) that are available to WPI.
+        //
+        // An alternative implementation would be to:
+        //  * update only the method (not overridden methods)
+        //  * when finished, propagate the final result to overridden methods
+        //
+        for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
+                overriddenMethods.entrySet()) {
+
+            AnnotatedDeclaredType superclassDecl = pair.getKey();
+            ExecutableElement overriddenMethodElement = pair.getValue();
+
+            AnnotatedExecutableType overriddenMethod =
+                    AnnotatedTypes.asMemberOf(
+                            atf.getProcessingEnv().getTypeUtils(),
+                            atf,
+                            superclassDecl,
+                            overriddenMethodElement);
+
+            String superClassName = superclassDecl.getUnderlyingType().toString();
+            String superJaifPath = storage.getJaifPath(superClassName);
+            AClass superClazz = storage.getAClass(superClassName, superJaifPath);
+            AMethod overriddenMethodInSuperclass =
+                    superClazz.methods.getVivify(
+                            JVMNames.getJVMMethodName(overriddenMethodElement));
+            AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
+
+            storage.updateAnnotationSetInScene(
+                    overriddenMethodInSuperclass.returnType,
+                    atf,
+                    superJaifPath,
+                    rhsATM,
+                    overriddenMethodReturnType,
+                    TypeUseLocation.RETURN);
+        }
     }
 
     /** Write all modified scenes into .jaif files. */

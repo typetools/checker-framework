@@ -247,7 +247,7 @@ This section describes how to create an annotated library.
     Every time the build system runs the compiler, it should:
     \begin{itemize}
     \item
-      pass the \<-AuseDefaultsForUncheckedCode=source,bytecode>
+      pass the \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode>
       command-line option and
     \item
       run every pluggable type-checker for which any
@@ -436,14 +436,14 @@ There are two concerns:
 
 
 
-\subsectionAndLabel{The \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line argument}{AuseDefaultsForUncheckedCodesource}
+\subsectionAndLabel{The \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode> command-line argument}{AuseConservativeDefaultsForUncheckedCodesource}
 
 \begin{sloppypar}
 When compiling a library that is not fully annotated, use command-line
-argument \<-AuseDefaultsForUncheckedCode=source,bytecode>.  This causes
+argument \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode>.  This causes
 the checker to behave normally for classes with a relevant \<@AnnotatedFor>
 annotation.  For classes without \<@AnnotatedFor>, the checker uses
-unchecked code defaults
+conservative defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
 user-written annotation, and the checker issues no warnings.
 \end{sloppypar}
@@ -453,7 +453,7 @@ class, indicates that the class has been annotated for certain type
 systems.  For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
 the programmer has written annotations for the Nullness and Regular
 Expression type systems.  If one of those two type-checkers is run,
-the \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line argument
+the \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode> command-line argument
 has no effect and this class is treated normally:
 unannotated types are defaulted using normal source-code
 defaults and type-checking warnings are issued.
@@ -467,7 +467,7 @@ that all appropriate annotations are present.
 
 \begin{sloppypar}
 Whenever you compile a class using the Checker Framework, including when
-using the \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line
+using the \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode> command-line
 argument, the resulting \<.class> files are fully-annotated; each type use
 in the \<.class> file has an explicit type qualifier for any checker that
 is run.
@@ -776,9 +776,9 @@ read whether the library's annotations are parsed.
 %%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
 %%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel mkdir
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
-%%  LocalWords:  TypeSystem2 TypeSystem3 AuseDefaultsForUncheckedCode ln
+%%  LocalWords:  TypeSystem2 TypeSystem3 AuseConservativeDefaultsForUncheckedCode ln
 %  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org boolean
 %  LocalWords:  AstubWarnIfOverwritesBytecode Awarns AssumeAssertion
 %%  LocalWords:  Makefile buildJdk PuseLocalJdk jdkShaHash AonlyDefs
-%%  LocalWords:  AuseDefaultsForUncheckedCodesource
+%%  LocalWords:  AuseConservativeDefaultsForUncheckedCodesource
 %%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses
