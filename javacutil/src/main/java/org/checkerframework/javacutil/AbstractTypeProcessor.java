@@ -139,9 +139,6 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      * <p>Subclasses may override this method to do any aggregate analysis (e.g. generate report,
      * persistence) or resource deallocation.
      *
-     * <p>If an error (a Java error or a processor error) is reported, this method is not guaranteed
-     * to be invoked.
-     *
      * @param hasError true if compilation issued an error, either from the Java compiler or from a
      *     pluggable type-checker
      */
