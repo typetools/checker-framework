@@ -77,7 +77,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         List<DiagMessage> diagMessages = isValidType(atypeFactory.getQualifierHierarchy(), type);
         if (!diagMessages.isEmpty()) {
             for (DiagMessage d : diagMessages) {
-                checker.report(tree, d.getKind(), d.getMessageKey(), d.getArgs());
+                checker.report(tree, d);
             }
             return false;
         }

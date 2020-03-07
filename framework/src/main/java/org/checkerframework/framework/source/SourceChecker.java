@@ -878,8 +878,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     ///
 
     /**
-     * Reports an error. By default, it prints it to the screen via the compiler's internal
-     * messager.
+     * Reports an error. By default, prints it to the screen via the compiler's internal messager.
      *
      * @param source the source position information; may be an Element, a Tree, or null
      * @param messageKey the message key
@@ -890,8 +889,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Reports a warning. By default, it prints it to the screen via the compiler's internal
-     * messager.
+     * Reports a warning. By default, prints it to the screen via the compiler's internal messager.
      *
      * @param source the source position information; may be an Element, a Tree, or null
      * @param messageKey the message key
@@ -900,6 +898,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     public void reportWarning(
             Object source, @CompilerMessageKey String messageKey, Object... args) {
         report(source, Diagnostic.Kind.MANDATORY_WARNING, messageKey, args);
+    }
+
+    /**
+     * Reports a diagnostic message. By default, prints it to the screen via the compiler's internal
+     * messager.
+     *
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @param d the diagnostic message
+     */
+    public void report(Object source, DiagMessage d) {
+        report(source, d.getKind(), d.getMessageKey(), d.getArgs());
     }
 
     /**
@@ -913,7 +922,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param messageKey the message key
      * @param args arguments for interpolation in the string corresponding to the given message key
      */
-    public void report(
+    private void report(
             Object source, Kind kind, @CompilerMessageKey String messageKey, Object... args) {
         assert messagesProperties != null : "null messagesProperties";
 
@@ -970,17 +979,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } else {
             throw new BugInCF("invalid position source: " + source.getClass().getName());
         }
-    }
-
-    /**
-     * Reports a diagnostic message. By default, it prints it to the screen via the compiler's
-     * internal messager; otherwise, the method returns with no side effects.
-     *
-     * @param source the source position information; may be an Element, a Tree, or null
-     * @param d the diagnostic message
-     */
-    public void report(Object source, DiagMessage d) {
-        report(source, d.getKind(), d.getMessageKey(), d.getArgs());
     }
 
     /**
