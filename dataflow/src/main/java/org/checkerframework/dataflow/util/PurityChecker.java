@@ -114,7 +114,7 @@ public class PurityChecker {
          * Add a reason why the method is not side-effect-free.
          *
          * @param t a tree
-         * @param message indicating why the tree is not side-effect-free
+         * @param msgId why the tree is not side-effect-free
          */
         public void addNotSEFreeReason(Tree t, String msgId) {
             notSEFreeReasons.add(Pair.of(t, msgId));
@@ -134,7 +134,7 @@ public class PurityChecker {
          * Add a reason why the method is not deterministic.
          *
          * @param t a tree
-         * @param message indicating why the tree is not deterministic
+         * @param msgId why the tree is not deterministic
          */
         public void addNotDetReason(Tree t, String msgId) {
             notDetReasons.add(Pair.of(t, msgId));
@@ -154,7 +154,7 @@ public class PurityChecker {
          * Add a reason why the method is not both side-effect-free and deterministic.
          *
          * @param t tree
-         * @param message indicating why the tree is not deterministic and side-effect-free
+         * @param msgId why the tree is not deterministic and side-effect-free
          */
         public void addNotBothReason(Tree t, String msgId) {
             notBothReasons.add(Pair.of(t, msgId));

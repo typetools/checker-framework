@@ -23,17 +23,35 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class PurityUtils {
 
-    /** Does the method {@code methodTree} have any purity annotation? */
+    /**
+     * Does the method {@code methodTree} have any purity annotation?
+     *
+     * @param provider how to get annotations
+     * @param methodTree a method to test
+     * @return whether the method has any purity annotations
+     */
     public static boolean hasPurityAnnotation(AnnotationProvider provider, MethodTree methodTree) {
         return !getPurityKinds(provider, methodTree).isEmpty();
     }
 
-    /** Does the method {@code methodElement} have any purity annotation? */
+    /**
+     * Does the method {@code methodElement} have any purity annotation?
+     *
+     * @param provider how to get annotations
+     * @param methodElement a method to test
+     * @return whether the method has any purity annotations
+     */
     public static boolean hasPurityAnnotation(AnnotationProvider provider, Element methodElement) {
         return !getPurityKinds(provider, methodElement).isEmpty();
     }
 
-    /** Is the method {@code methodTree} deterministic? */
+    /**
+     * Is the method {@code methodTree} deterministic?
+     *
+     * @param provider how to get annotations
+     * @param methodTree a method to test
+     * @return whether the method is deterministic
+     */
     public static boolean isDeterministic(AnnotationProvider provider, MethodTree methodTree) {
         Element methodElement = TreeUtils.elementFromTree(methodTree);
         if (methodElement == null) {
@@ -42,13 +60,25 @@ public class PurityUtils {
         return isDeterministic(provider, methodElement);
     }
 
-    /** Is the method {@code methodElement} deterministic? */
+    /**
+     * Is the method {@code methodElement} deterministic?
+     *
+     * @param provider how to get annotations
+     * @param methodElement a method to test
+     * @return whether the method is deterministic
+     */
     public static boolean isDeterministic(AnnotationProvider provider, Element methodElement) {
         List<Kind> kinds = getPurityKinds(provider, methodElement);
         return kinds.contains(Kind.DETERMINISTIC);
     }
 
-    /** Is the method {@code methodTree} side-effect-free? */
+    /**
+     * Is the method {@code methodTree} side-effect-free?
+     *
+     * @param provider how to get annotations
+     * @param methodTree a method to test
+     * @return whether the method is side-effect-free
+     */
     public static boolean isSideEffectFree(AnnotationProvider provider, MethodTree methodTree) {
         Element methodElement = TreeUtils.elementFromTree(methodTree);
         if (methodElement == null) {
@@ -57,13 +87,23 @@ public class PurityUtils {
         return isSideEffectFree(provider, methodElement);
     }
 
-    /** Is the method {@code methodElement} side-effect-free? */
+    /**
+     * Is the method {@code methodElement} side-effect-free?
+     *
+     * @param provider how to get annotations
+     * @param methodElement a method to test
+     * @return whether the method is side-effect-free
+     */
     public static boolean isSideEffectFree(AnnotationProvider provider, Element methodElement) {
         List<Kind> kinds = getPurityKinds(provider, methodElement);
         return kinds.contains(Kind.SIDE_EFFECT_FREE);
     }
 
-    /** @return the types of purity of the method {@code methodTree}. */
+    /**
+     * @param provider how to get annotations
+     * @param methodTree a method to test
+     * @return the types of purity of the method {@code methodTree}.
+     */
     public static List<Pure.Kind> getPurityKinds(
             AnnotationProvider provider, MethodTree methodTree) {
         Element methodElement = TreeUtils.elementFromTree(methodTree);
@@ -74,6 +114,8 @@ public class PurityUtils {
     }
 
     /**
+     * @param provider how to get annotations
+     * @param methodElement a method to test
      * @return the types of purity of the method {@code methodElement}. TODO: should the return type
      *     be an EnumSet?
      */
