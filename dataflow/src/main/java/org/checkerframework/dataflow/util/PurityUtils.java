@@ -24,17 +24,35 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class PurityUtils {
 
-    /** Does the method {@code tree} have any purity annotation? */
+    /**
+     * Does the method {@code tree} have any purity annotation?
+     *
+     * @param provider how to get annotations
+     * @param tree a method to test
+     * @return whether the method has any purity annotations
+     */
     public static boolean hasPurityAnnotation(AnnotationProvider provider, MethodTree tree) {
         return !getPurityKinds(provider, tree).isEmpty();
     }
 
-    /** Does the method {@code methodElement} have any purity annotation? */
+    /**
+     * Does the method {@code methodElement} have any purity annotation?
+     *
+     * @param provider how to get annotations
+     * @param methodElement a method to test
+     * @return whether the method has any purity annotations
+     */
     public static boolean hasPurityAnnotation(AnnotationProvider provider, Element methodElement) {
         return !getPurityKinds(provider, methodElement).isEmpty();
     }
 
-    /** Is the method {@code tree} deterministic? */
+    /**
+     * Is the method {@code tree} deterministic?
+     *
+     * @param provider how to get annotations
+     * @param tree a method to test
+     * @return whether the method is deterministic
+     */
     public static boolean isDeterministic(AnnotationProvider provider, MethodTree tree) {
         Element methodElement = TreeUtils.elementFromTree(tree);
         if (methodElement == null) {
@@ -43,13 +61,25 @@ public class PurityUtils {
         return isDeterministic(provider, methodElement);
     }
 
-    /** Is the method {@code methodElement} deterministic? */
+    /**
+     * Is the method {@code methodElement} deterministic?
+     *
+     * @param provider how to get annotations
+     * @param methodElement a method to test
+     * @return whether the method is deterministic
+     */
     public static boolean isDeterministic(AnnotationProvider provider, Element methodElement) {
         EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
         return kinds.contains(DETERMINISTIC);
     }
 
-    /** Is the method {@code tree} side-effect-free? */
+    /**
+     * Is the method {@code tree} side-effect-free?
+     *
+     * @param provider how to get annotations
+     * @param tree a method to test
+     * @return whether the method is side-effect-free
+     */
     public static boolean isSideEffectFree(AnnotationProvider provider, MethodTree tree) {
         Element methodElement = TreeUtils.elementFromTree(tree);
         if (methodElement == null) {
@@ -58,13 +88,23 @@ public class PurityUtils {
         return isSideEffectFree(provider, methodElement);
     }
 
-    /** Is the method {@code methodElement} side-effect-free? */
+    /**
+     * Is the method {@code methodElement} side-effect-free?
+     *
+     * @param provider how to get annotations
+     * @param methodElement a method to test
+     * @return whether the method is side-effect-free
+     */
     public static boolean isSideEffectFree(AnnotationProvider provider, Element methodElement) {
         EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
         return kinds.contains(SIDE_EFFECT_FREE);
     }
 
-    /** @return the types of purity of the method {@code tree}. */
+    /**
+     * @param provider how to get annotations
+     * @param tree a method to test
+     * @return the types of purity of the method {@code tree}.
+     */
     public static EnumSet<Pure.Kind> getPurityKinds(AnnotationProvider provider, MethodTree tree) {
         Element methodElement = TreeUtils.elementFromTree(tree);
         if (methodElement == null) {
@@ -74,6 +114,8 @@ public class PurityUtils {
     }
 
     /**
+     * @param provider how to get annotations
+     * @param methodElement a method to test
      * @return the types of purity of the method {@code methodElement}. TODO: should the return type
      *     be an EnumSet?
      */

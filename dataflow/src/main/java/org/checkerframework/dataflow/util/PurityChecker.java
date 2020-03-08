@@ -98,34 +98,61 @@ public class PurityChecker {
             return types.containsAll(kinds);
         }
 
-        /** Get the reasons why the method is not side-effect-free. */
+        /**
+         * Get the reasons why the method is not side-effect-free.
+         *
+         * @return the reasons why the method is not side-effect-free
+         */
         public List<Pair<Tree, String>> getNotSEFreeReasons() {
             return notSEFreeReasons;
         }
 
-        /** Add a reason why the method is not side-effect-free. */
+        /**
+         * Add a reason why the method is not side-effect-free.
+         *
+         * @param t a tree
+         * @param message indicating why the tree is not side-effect-free
+         */
         public void addNotSEFreeReason(Tree t, String msgId) {
             notSEFreeReasons.add(Pair.of(t, msgId));
             types.remove(SIDE_EFFECT_FREE);
         }
 
-        /** Get the reasons why the method is not deterministic. */
+        /**
+         * Get the reasons why the method is not deterministic.
+         *
+         * @return the reasons why the method is not deterministic
+         */
         public List<Pair<Tree, String>> getNotDetReasons() {
             return notDetReasons;
         }
 
-        /** Add a reason why the method is not deterministic. */
+        /**
+         * Add a reason why the method is not deterministic.
+         *
+         * @param t a tree
+         * @param message indicating why the tree is not deterministic
+         */
         public void addNotDetReason(Tree t, String msgId) {
             notDetReasons.add(Pair.of(t, msgId));
             types.remove(DETERMINISTIC);
         }
 
-        /** Get the reasons why the method is not both side-effect-free and deterministic. */
+        /**
+         * Get the reasons why the method is not both side-effect-free and deterministic.
+         *
+         * @return the reasons why the method is not both side-effect-free and deterministic
+         */
         public List<Pair<Tree, String>> getNotBothReasons() {
             return notBothReasons;
         }
 
-        /** Add a reason why the method is not both side-effect-free and deterministic. */
+        /**
+         * Add a reason why the method is not both side-effect-free and deterministic.
+         *
+         * @param t tree
+         * @param message indicating why the tree is not deterministic and side-effect-free
+         */
         public void addNotBothReason(Tree t, String msgId) {
             notBothReasons.add(Pair.of(t, msgId));
             types.remove(DETERMINISTIC);

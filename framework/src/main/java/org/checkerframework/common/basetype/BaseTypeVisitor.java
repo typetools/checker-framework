@@ -726,11 +726,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /** Reports errors found during purity checking. */
+    /**
+     * Reports errors found during purity checking.
+     *
+     * @param result whether the method is deterministic and/or side-effect-free
+     * @param node the method
+     * @param expectedKinds the expected purity for the method
+     */
     protected void reportPurityErrors(
-            PurityResult result, MethodTree node, EnumSet<Pure.Kind> expectedTypes) {
-        assert !result.isPure(expectedTypes);
-        EnumSet<Pure.Kind> t = EnumSet.copyOf(expectedTypes);
+            PurityResult result, MethodTree node, EnumSet<Pure.Kind> expectedKinds) {
+        assert !result.isPure(expectedKinds);
+        EnumSet<Pure.Kind> t = EnumSet.copyOf(expectedKinds);
         t.removeAll(result.getTypes());
         if (t.contains(Pure.Kind.DETERMINISTIC) || t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
             String msgPrefix = "purity.not.deterministic.not.sideeffectfree.";
