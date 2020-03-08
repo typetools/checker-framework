@@ -487,7 +487,6 @@ public final class Class<@UnknownKeyFor T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @Pure
-    @EnsuresNonNullIf(expression="#1", result=true)
     public native boolean isInstance(@Nullable Object obj);
 
 
