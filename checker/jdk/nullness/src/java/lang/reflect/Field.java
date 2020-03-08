@@ -17,7 +17,6 @@ public final class Field extends AccessibleObject implements Member {
   @SideEffectFree public Class<?> getType() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Type getGenericType() { throw new RuntimeException("skeleton method"); }
   @Pure
-  @EnsuresNonNullIf(expression="#1", result=true)
   public boolean equals(@Nullable Object obj) { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
