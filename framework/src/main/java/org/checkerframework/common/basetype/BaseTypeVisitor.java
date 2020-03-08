@@ -43,7 +43,6 @@ import com.sun.tools.javac.tree.TreeInfo;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -653,7 +652,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // check "no" purity
-        List<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
+        EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
         // @Deterministic makes no sense for a void method or constructor
         boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
         if (isDeterministic) {
@@ -680,7 +679,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Issue a warning if the method is pure, but not annotated
         // as such (if the feature is activated).
         if (checkPurityAlways) {
-            Collection<Pure.Kind> additionalKinds = new HashSet<>(r.getTypes());
+            EnumSet<Pure.Kind> additionalKinds = r.getTypes().clone();
             additionalKinds.removeAll(kinds);
             if (TreeUtils.isConstructor(node)) {
                 additionalKinds.remove(Pure.Kind.DETERMINISTIC);
@@ -729,9 +728,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /** Reports errors found during purity checking. */
     protected void reportPurityErrors(
-            PurityResult result, MethodTree node, Collection<Pure.Kind> expectedTypes) {
+            PurityResult result, MethodTree node, EnumSet<Pure.Kind> expectedTypes) {
         assert !result.isPure(expectedTypes);
-        Collection<Pure.Kind> t = EnumSet.copyOf(expectedTypes);
+        EnumSet<Pure.Kind> t = EnumSet.copyOf(expectedTypes);
         t.removeAll(result.getTypes());
         if (t.contains(Pure.Kind.DETERMINISTIC) || t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
             String msgPrefix = "purity.not.deterministic.not.sideeffectfree.";
@@ -3137,11 +3136,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     methodReference ? "purity.invalid.methodref" : "purity.invalid.overriding";
 
             // check purity annotations
-            Set<Pure.Kind> superPurity =
-                    new HashSet<>(
-                            PurityUtils.getPurityKinds(atypeFactory, overridden.getElement()));
-            Set<Pure.Kind> subPurity =
-                    new HashSet<>(PurityUtils.getPurityKinds(atypeFactory, overrider.getElement()));
+            EnumSet<Pure.Kind> superPurity =
+                    PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
+            EnumSet<Pure.Kind> subPurity =
+                    PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
             if (!subPurity.containsAll(superPurity)) {
                 checker.report(
                         Result.failure(

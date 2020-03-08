@@ -1,5 +1,8 @@
 package org.checkerframework.dataflow.util;
 
+import static org.checkerframework.dataflow.qual.Pure.Kind.DETERMINISTIC;
+import static org.checkerframework.dataflow.qual.Pure.Kind.SIDE_EFFECT_FREE;
+
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
@@ -12,13 +15,11 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import javax.lang.model.element.Element;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.Pair;
@@ -93,7 +94,7 @@ public class PurityChecker {
          * @param kinds the varieties of purity to check
          * @return true if the method is pure with respect to all the given kinds
          */
-        public boolean isPure(Collection<Kind> kinds) {
+        public boolean isPure(EnumSet<Pure.Kind> kinds) {
             return types.containsAll(kinds);
         }
 
@@ -105,7 +106,7 @@ public class PurityChecker {
         /** Add a reason why the method is not side-effect-free. */
         public void addNotSEFreeReason(Tree t, String msgId) {
             notSEFreeReasons.add(Pair.of(t, msgId));
-            types.remove(Kind.SIDE_EFFECT_FREE);
+            types.remove(SIDE_EFFECT_FREE);
         }
 
         /** Get the reasons why the method is not deterministic. */
@@ -116,7 +117,7 @@ public class PurityChecker {
         /** Add a reason why the method is not deterministic. */
         public void addNotDetReason(Tree t, String msgId) {
             notDetReasons.add(Pair.of(t, msgId));
-            types.remove(Kind.DETERMINISTIC);
+            types.remove(DETERMINISTIC);
         }
 
         /** Get the reasons why the method is not both side-effect-free and deterministic. */
@@ -127,8 +128,8 @@ public class PurityChecker {
         /** Add a reason why the method is not both side-effect-free and deterministic. */
         public void addNotBothReason(Tree t, String msgId) {
             notBothReasons.add(Pair.of(t, msgId));
-            types.remove(Kind.DETERMINISTIC);
-            types.remove(Kind.SIDE_EFFECT_FREE);
+            types.remove(DETERMINISTIC);
+            types.remove(SIDE_EFFECT_FREE);
         }
     }
 
