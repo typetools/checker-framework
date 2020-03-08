@@ -21,7 +21,6 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -54,15 +53,9 @@ public class PurityChecker {
             AnnotationProvider annoProvider,
             boolean assumeSideEffectFree,
             boolean assumeDeterministic) {
-        if (statement == null) {
-            throw new BugInCF("statement is null");
-        }
-
         PurityCheckerHelper helper =
                 new PurityCheckerHelper(annoProvider, assumeSideEffectFree, assumeDeterministic);
-        if (statement != null) {
-            helper.scan(statement, null);
-        }
+        helper.scan(statement, null);
         return helper.purityResult;
     }
 
