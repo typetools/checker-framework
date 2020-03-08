@@ -89,13 +89,13 @@ public class PurityChecker {
         }
 
         /**
-         * Is the method pure w.r.t. a given set of types?
+         * Is the method pure w.r.t. a given set of kinds?
          *
-         * @param kinds the varieties of purity to check
+         * @param otherKinds the varieties of purity to check
          * @return true if the method is pure with respect to all the given kinds
          */
-        public boolean isPure(EnumSet<Pure.Kind> kinds) {
-            return types.containsAll(kinds);
+        public boolean isPure(EnumSet<Pure.Kind> otherKinds) {
+            return types.containsAll(otherKinds);
         }
 
         /**
@@ -111,7 +111,7 @@ public class PurityChecker {
          * Add a reason why the method is not side-effect-free.
          *
          * @param t a tree
-         * @param message indicating why the tree is not side-effect-free
+         * @param msgId why the tree is not side-effect-free
          */
         public void addNotSEFreeReason(Tree t, String msgId) {
             notSEFreeReasons.add(Pair.of(t, msgId));
@@ -131,7 +131,7 @@ public class PurityChecker {
          * Add a reason why the method is not deterministic.
          *
          * @param t a tree
-         * @param message indicating why the tree is not deterministic
+         * @param msgId why the tree is not deterministic
          */
         public void addNotDetReason(Tree t, String msgId) {
             notDetReasons.add(Pair.of(t, msgId));
@@ -151,7 +151,7 @@ public class PurityChecker {
          * Add a reason why the method is not both side-effect-free and deterministic.
          *
          * @param t tree
-         * @param message indicating why the tree is not deterministic and side-effect-free
+         * @param msgId why the tree is not deterministic and side-effect-free
          */
         public void addNotBothReason(Tree t, String msgId) {
             notBothReasons.add(Pair.of(t, msgId));
