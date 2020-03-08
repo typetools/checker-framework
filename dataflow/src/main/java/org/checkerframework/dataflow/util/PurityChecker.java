@@ -97,8 +97,8 @@ public class PurityChecker {
          * @param kinds the varieties of purity to check
          * @return true if the method is pure with respect to all the given kinds
          */
-        public boolean isPure(Collection<Kind> kinds) {
-            return kinds.containsAll(kinds);
+        public boolean isPure(Collection<Kind> otherKinds) {
+            return kinds.containsAll(otherKinds);
         }
 
         /** Get the reasons why the method is not side-effect-free. */
