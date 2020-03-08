@@ -671,7 +671,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         } else {
             r =
                     PurityChecker.checkPurity(
-                            atypeFactory.getPath(node.getBody()),
+                            body,
                             atypeFactory,
                             checker.hasOption("assumeSideEffectFree")
                                     || checker.hasOption("assumePure"),
