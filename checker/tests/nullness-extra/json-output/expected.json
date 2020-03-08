@@ -1,0 +1,23 @@
+[
+  {
+    "uri": "file:/checker/tests/nullness-extra/json-output/JsonOutputTestCase.java",
+    "diagnostics": [
+      {
+        "range": {
+          "start": {
+            "line": 13,
+            "character": 15
+          },
+          "end": {
+            "line": 13,
+            "character": 15
+          }
+        },
+        "severity": 1,
+        "code": "argument.type.incompatible",
+        "source": "Nullness Checker",
+        "message": "[argument.type.incompatible] incompatible types in argument.\nfound   : @Initialized @Nullable InputStream\nrequired: @Initialized @NonNull InputStream"
+      }
+    ]
+  }
+]

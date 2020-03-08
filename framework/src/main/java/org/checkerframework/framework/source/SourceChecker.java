@@ -1341,6 +1341,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             String filename = getOption("jsonOutput");
             try (FileWriter writer = new FileWriter(filename)) {
                 writer.write(gson.toJson(jsonDiagnostics));
+                writer.append(System.lineSeparator());
             } catch (IOException e) {
                 throw new UserError("Problem writing file " + filename, e);
             }

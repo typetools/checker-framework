@@ -99,6 +99,8 @@ checker/tests/nullness-extra/*.class
 checker/tests/nullness-extra/compat/Out.txt
 checker/tests/nullness-extra/compat/javax/annotation/Nullable.class
 checker/tests/nullness-extra/compat/lib/Lib.class
+checker/tests/nullness-extra/json-output/Out.txt
+checker/tests/nullness-extra/json-output/actual.json
 checker/tests/nullness-extra/multiple-errors/*.class
 checker/tests/nullness-extra/multiple-errors/Out.txt
 checker/tests/nullness-extra/package-anno/Out.txt

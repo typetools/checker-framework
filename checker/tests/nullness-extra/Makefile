@@ -1,5 +1,5 @@
 # Tests that are currently passing
-PASSING_TESTS = Bug109 compat issue265 issue594 issue607 multiple-errors package-anno shorthand
+PASSING_TESTS = Bug109 compat issue265 issue594 issue607 json-output multiple-errors package-anno shorthand
 ifeq (,$(findstring 1.8,$(shell javac -version)))
   # issue309 and issue502 fail with Java 11 because of differences between Java 8 and Java 11 bytecode.
   # TODO: issue559 should work with an annotated jdk11.
@@ -40,6 +40,9 @@ issue559:
 
 issue594:
 	$(MAKE) -C issue594
+
+json-output:
+	$(MAKE) -C json-output
 
 multiple-errors:
 	$(MAKE) -C multiple-errors
