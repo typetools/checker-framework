@@ -6,7 +6,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -39,7 +38,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(GuardedByUnknown.class)
 @DefaultQualifierInHierarchy
-@DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER})
 // These are required because the default for local variables is @GuardedByUnknown, but if the local
 // variable is one of these type kinds, the default should be @GuardedByUnknown.
 @DefaultFor(

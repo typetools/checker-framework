@@ -13,7 +13,7 @@ public class FormatterUncheckedDefaultsTest extends CheckerFrameworkPerDirectory
                 org.checkerframework.checker.formatter.FormatterChecker.class,
                 "formatter",
                 "-Anomsgtext",
-                "-AuseDefaultsForUncheckedCode=-source,bytecode");
+                "-AuseConservativeDefaultsForUncheckedCode=-source,bytecode");
     }
 
     @Parameters

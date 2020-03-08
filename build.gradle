@@ -863,6 +863,7 @@ task checkBasicStyle(group: 'Format') {
             '*.pdf',
             '*.png',
             '*.sty',
+            '*.toc',
             '*.xcf',
             '*~',
             '#*#',
