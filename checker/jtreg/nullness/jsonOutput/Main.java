@@ -2,7 +2,7 @@
  * @test
  * @summary Check the -AjsonOutput command-line argument
  *
- * @compile/fail/timeout=60 -AjsonOutput=actual.json -processor org.checkerframework.checker.nullness.NullnessChecker JsonOutputTestCase.java Main.java
+ * @compile/fail/timeout=60 -AjsonOutput=/tmp/actual.json -processor org.checkerframework.checker.nullness.NullnessChecker JsonOutputTestCase.java Main.java
  * @run main Main
  */
 
@@ -12,7 +12,7 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
-        assertFileContents("actual.json");
+        assertFileContents("/tmp/actual.json");
     }
 
     public static void assertFileContents(String file) {
