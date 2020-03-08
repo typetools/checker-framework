@@ -680,7 +680,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Issue a warning if the method is pure, but not annotated
         // as such (if the feature is activated).
         if (checkPurityAlways) {
-            Collection<Pure.Kind> additionalKinds = new HashSet<>(r.getTypes());
+            Collection<Pure.Kind> additionalKinds = new HashSet<>(r.getKinds());
             additionalKinds.removeAll(kinds);
             if (TreeUtils.isConstructor(node)) {
                 additionalKinds.remove(Pure.Kind.DETERMINISTIC);
@@ -732,7 +732,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             PurityResult result, MethodTree node, Collection<Pure.Kind> expectedTypes) {
         assert !result.isPure(expectedTypes);
         Collection<Pure.Kind> t = EnumSet.copyOf(expectedTypes);
-        t.removeAll(result.getTypes());
+        t.removeAll(result.getKinds());
         if (t.contains(Pure.Kind.DETERMINISTIC) || t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
             String msgPrefix = "purity.not.deterministic.not.sideeffectfree.";
             if (!t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
