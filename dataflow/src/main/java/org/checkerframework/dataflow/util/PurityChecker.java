@@ -184,9 +184,13 @@ public class PurityChecker {
             if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
                 purityResult.addNotBothReason(node, "call.method");
             } else {
-                boolean det = assumeDeterministic || PurityUtils.isDeterministic(annoProvider, elt);
-                boolean seFree =
-                        assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, elt);
+                EnumSet<Pure.Kind> purityKinds =
+                        (assumeDeterministic && assumeSideEffectFree)
+                                // Avoid computation if not necessary
+                                ? EnumSet.of(DETERMINISTIC, SIDE_EFFECT_FREE)
+                                : PurityUtils.getPurityKinds(annoProvider, elt);
+                boolean det = assumeDeterministic || purityKinds.contains(DETERMINISTIC);
+                boolean seFree = assumeSideEffectFree || purityKinds.contains(SIDE_EFFECT_FREE);
                 if (!det && !seFree) {
                     purityResult.addNotBothReason(node, "call.method");
                 } else if (!det) {
