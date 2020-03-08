@@ -53,6 +53,10 @@ public class PurityChecker {
             AnnotationProvider annoProvider,
             boolean assumeSideEffectFree,
             boolean assumeDeterministic) {
+        if (statement == null) {
+            throw new BugInCF("statement is null");
+        }
+
         PurityCheckerHelper helper =
                 new PurityCheckerHelper(annoProvider, assumeSideEffectFree, assumeDeterministic);
         if (statement != null) {
