@@ -13,8 +13,11 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
+// This class cannot be moved to the org.checkerframework.common.purity package because
+// dataflow.analysis.FlowExpressions uses  this class.
+
 /**
- * An utility class for working with the {@link SideEffectFree}, {@link Deterministic}, and {@link
+ * A utility class for working with the {@link SideEffectFree}, {@link Deterministic}, and {@link
  * Pure} annotations.
  *
  * @see SideEffectFree
