@@ -14,7 +14,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * An utility class for working with the {@link SideEffectFree}, {@link Deterministic}, and {@link
+ * A utility class for working with the {@link SideEffectFree}, {@link Deterministic}, and {@link
  * Pure} annotations.
  *
  * @see SideEffectFree
@@ -23,9 +23,9 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class PurityUtils {
 
-    /** Does the method {@code tree} have any purity annotation? */
-    public static boolean hasPurityAnnotation(AnnotationProvider provider, MethodTree tree) {
-        return !getPurityKinds(provider, tree).isEmpty();
+    /** Does the method {@code methodTree} have any purity annotation? */
+    public static boolean hasPurityAnnotation(AnnotationProvider provider, MethodTree methodTree) {
+        return !getPurityKinds(provider, methodTree).isEmpty();
     }
 
     /** Does the method {@code methodElement} have any purity annotation? */
@@ -33,11 +33,11 @@ public class PurityUtils {
         return !getPurityKinds(provider, methodElement).isEmpty();
     }
 
-    /** Is the method {@code tree} deterministic? */
-    public static boolean isDeterministic(AnnotationProvider provider, MethodTree tree) {
-        Element methodElement = TreeUtils.elementFromTree(tree);
+    /** Is the method {@code methodTree} deterministic? */
+    public static boolean isDeterministic(AnnotationProvider provider, MethodTree methodTree) {
+        Element methodElement = TreeUtils.elementFromTree(methodTree);
         if (methodElement == null) {
-            throw new BugInCF("Could not find element for tree: " + tree);
+            throw new BugInCF("Could not find element for tree: " + methodTree);
         }
         return isDeterministic(provider, methodElement);
     }
@@ -48,11 +48,11 @@ public class PurityUtils {
         return kinds.contains(Kind.DETERMINISTIC);
     }
 
-    /** Is the method {@code tree} side-effect-free? */
-    public static boolean isSideEffectFree(AnnotationProvider provider, MethodTree tree) {
-        Element methodElement = TreeUtils.elementFromTree(tree);
+    /** Is the method {@code methodTree} side-effect-free? */
+    public static boolean isSideEffectFree(AnnotationProvider provider, MethodTree methodTree) {
+        Element methodElement = TreeUtils.elementFromTree(methodTree);
         if (methodElement == null) {
-            throw new BugInCF("Could not find element for tree: " + tree);
+            throw new BugInCF("Could not find element for tree: " + methodTree);
         }
         return isSideEffectFree(provider, methodElement);
     }
@@ -63,11 +63,12 @@ public class PurityUtils {
         return kinds.contains(Kind.SIDE_EFFECT_FREE);
     }
 
-    /** @return the types of purity of the method {@code tree}. */
-    public static List<Pure.Kind> getPurityKinds(AnnotationProvider provider, MethodTree tree) {
-        Element methodElement = TreeUtils.elementFromTree(tree);
+    /** @return the types of purity of the method {@code methodTree}. */
+    public static List<Pure.Kind> getPurityKinds(
+            AnnotationProvider provider, MethodTree methodTree) {
+        Element methodElement = TreeUtils.elementFromTree(methodTree);
         if (methodElement == null) {
-            throw new BugInCF("Could not find element for tree: " + tree);
+            throw new BugInCF("Could not find element for tree: " + methodTree);
         }
         return getPurityKinds(provider, methodElement);
     }

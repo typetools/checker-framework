@@ -67,21 +67,20 @@ public class PurityChecker {
      */
     public static class PurityResult {
 
-        protected final List<Pair<Tree, String>> notSEFreeReasons;
-        protected final List<Pair<Tree, String>> notDetReasons;
-        protected final List<Pair<Tree, String>> notBothReasons;
+        /** Reasons that the referenced method is not side-effect-free. */
+        protected final List<Pair<Tree, String>> notSEFreeReasons = new ArrayList<>(1);
+
+        /** Reasons that the referenced method is not deterministic. */
+        protected final List<Pair<Tree, String>> notDetReasons = new ArrayList<>(1);
+
+        /** Reasons that the referenced method is not side-effect-free and deterministic. */
+        protected final List<Pair<Tree, String>> notBothReasons = new ArrayList<>(1);
+
         /**
          * Contains all the varieties of purity that the expression has. Starts out with all
          * varieties, and elements are removed from it as violations are found.
          */
-        protected EnumSet<Pure.Kind> types;
-
-        public PurityResult() {
-            notSEFreeReasons = new ArrayList<>();
-            notDetReasons = new ArrayList<>();
-            notBothReasons = new ArrayList<>();
-            types = EnumSet.allOf(Pure.Kind.class);
-        }
+        protected EnumSet<Pure.Kind> types = EnumSet.allOf(Pure.Kind.class);
 
         public EnumSet<Pure.Kind> getTypes() {
             return types;
