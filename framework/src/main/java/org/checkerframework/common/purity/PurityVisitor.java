@@ -1,5 +1,8 @@
 package org.checkerframework.common.purity;
 
+import static org.checkerframework.dataflow.qual.Pure.Kind.DETERMINISTIC;
+import static org.checkerframework.dataflow.qual.Pure.Kind.SIDE_EFFECT_FREE;
+
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
@@ -13,11 +16,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -45,8 +45,25 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
 
+    /** Whether -A suggestPureMethods was supplied. */
+    private boolean suggestPureMethods;
+
+    /** Whether -A checkPurityAnnotations was supplied. */
+    private boolean checkPurityAnnotations;
+
+    /** Whether -A assumeSideEffectFree was supplied. */
+    private boolean assumeSideEffectFree;
+
+    /**
+     * Create a PurityVisitor associated with the given checker.
+     *
+     * @param checker the checker
+     */
     public PurityVisitor(BaseTypeChecker checker) {
         super(checker);
+        suggestPureMethods = checker.hasOption("suggestPureMethods");
+        checkPurityAnnotations = checker.hasOption("checkPurityAnnotations");
+        assumeSideEffectFree = checker.hasOption("assumeSideEffectFree");
     }
 
     /**
@@ -69,41 +86,33 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
     public static class PurityResult {
 
         /** Reasons why a method is not {@link SideEffectFree}. */
-        protected final List<Pair<Tree, String>> notSEFreeReasons;
+        protected final List<Pair<Tree, String>> notSEFreeReasons = new ArrayList<>(1);
 
         /** Reasons why a method is not {@link Deterministic}. */
-        protected final List<Pair<Tree, String>> notDetReasons;
+        protected final List<Pair<Tree, String>> notDetReasons = new ArrayList<>(1);
 
         /** Reasons why a method is not {@link SideEffectFree} nor {@link Deterministic} */
-        protected final List<Pair<Tree, String>> notBothReasons;
+        protected final List<Pair<Tree, String>> notBothReasons = new ArrayList<>(1);
 
         /**
          * Contains all the varieties of purity that the expression has. Starts out with all
          * varieties, and elements are removed from it as violations are found.
          */
-        protected EnumSet<Pure.Kind> types;
+        protected EnumSet<Pure.Kind> kinds = EnumSet.allOf(Pure.Kind.class);
 
-        /** Constructor for the {@link PurityResult} inner class. */
-        public PurityResult() {
-            notSEFreeReasons = new ArrayList<>();
-            notDetReasons = new ArrayList<>();
-            notBothReasons = new ArrayList<>();
-            types = EnumSet.allOf(Pure.Kind.class);
-        }
-
-        /** Accessor method for the types. */
-        public EnumSet<Pure.Kind> getTypes() {
-            return types;
+        /** Accessor method for the kinds. */
+        public EnumSet<Pure.Kind> getKinds() {
+            return kinds;
         }
 
         /**
-         * Is the method pure w.r.t. a given set of types?
+         * Is the method pure w.r.t. a given set of kinds?
          *
          * @param kinds the varieties of purity to check
          * @return true if the method is pure with respect to all the given kinds
          */
-        public boolean isPure(Collection<Pure.Kind> kinds) {
-            return types.containsAll(kinds);
+        public boolean isPure(EnumSet<Pure.Kind> kinds) {
+            return kinds.containsAll(kinds);
         }
 
         /** Get the reasons why the method is not side-effect-free. */
@@ -114,7 +123,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
         /** Add a reason why the method is not side-effect-free. */
         public void addNotSEFreeReason(Tree t, String msgId) {
             notSEFreeReasons.add(Pair.of(t, msgId));
-            types.remove(Pure.Kind.SIDE_EFFECT_FREE);
+            kinds.remove(SIDE_EFFECT_FREE);
         }
 
         /** Get the reasons why the method is not deterministic. */
@@ -125,7 +134,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
         /** Add a reason why the method is not deterministic. */
         public void addNotDetReason(Tree t, String msgId) {
             notDetReasons.add(Pair.of(t, msgId));
-            types.remove(Pure.Kind.DETERMINISTIC);
+            kinds.remove(DETERMINISTIC);
         }
 
         /** Get the reasons why the method is not both side-effect-free and deterministic. */
@@ -136,8 +145,8 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
         /** Add a reason why the method is not both side-effect-free and deterministic. */
         public void addNotBothReason(Tree t, String msgId) {
             notBothReasons.add(Pair.of(t, msgId));
-            types.remove(Pure.Kind.DETERMINISTIC);
-            types.remove(Pure.Kind.SIDE_EFFECT_FREE);
+            kinds.remove(DETERMINISTIC);
+            kinds.remove(SIDE_EFFECT_FREE);
         }
     }
 
@@ -260,13 +269,13 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
         /** Performs an assignment check and updates the result if necessary. */
         protected void assignmentCheck(ExpressionTree variable) {
             if (TreeUtils.isFieldAccess(variable)) {
-                // rhs is a field access
+                // lhs is a field access
                 purityResult.addNotBothReason(variable, "assign.field");
             } else if (variable instanceof ArrayAccessTree) {
-                // rhs is array access
+                // lhs is array access
                 purityResult.addNotBothReason(variable, "assign.array");
             } else {
-                // rhs is a local variable
+                // lhs is a local variable
                 assert isLocalVariable(variable);
             }
         }
@@ -287,14 +296,12 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
     @Override
     public Void visitMethod(MethodTree node, Void p) {
         boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
-        boolean checkPurityAlways = checker.hasOption("suggestPureMethods");
-        boolean checkPurityAnnotations = checker.hasOption("checkPurityAnnotations");
 
-        if (checkPurityAnnotations && (anyPurityAnnotation || checkPurityAlways)) {
+        if (checkPurityAnnotations && (anyPurityAnnotation || suggestPureMethods)) {
             // check "no" purity
-            List<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
+            EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
             // @Deterministic makes no sense for a void method or constructor
-            boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
+            boolean isDeterministic = kinds.contains(DETERMINISTIC);
             if (isDeterministic) {
                 if (TreeUtils.isConstructor(node)) {
                     checker.report(Result.warning("purity.deterministic.constructor"), node);
@@ -308,26 +315,25 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
                     checkPurity(
                             atypeFactory.getPath(node.getBody()),
                             atypeFactory,
-                            checker.hasOption("assumeSideEffectFree"));
+                            assumeSideEffectFree);
             if (!r.isPure(kinds)) {
                 reportPurityErrors(r, kinds);
             }
 
-            // Issue a warning if the method is pure, but not annotated
-            // as such (if the feature is activated).
-            if (checkPurityAlways) {
-                Collection<Pure.Kind> additionalKinds = new HashSet<>(r.getTypes());
+            if (suggestPureMethods) {
+                // Issue a warning if the method is pure, but not annotated as such.
+                EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
                 additionalKinds.removeAll(kinds);
                 if (TreeUtils.isConstructor(node)) {
-                    additionalKinds.remove(Pure.Kind.DETERMINISTIC);
+                    additionalKinds.remove(DETERMINISTIC);
                 }
                 if (!additionalKinds.isEmpty()) {
                     if (additionalKinds.size() == 2) {
                         checker.report(Result.warning("purity.more.pure", node.getName()), node);
-                    } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+                    } else if (additionalKinds.contains(SIDE_EFFECT_FREE)) {
                         checker.report(
                                 Result.warning("purity.more.sideeffectfree", node.getName()), node);
-                    } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+                    } else if (additionalKinds.contains(DETERMINISTIC)) {
                         checker.report(
                                 Result.warning("purity.more.deterministic", node.getName()), node);
                     } else {
@@ -340,26 +346,28 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
     }
 
     /** Reports errors found during purity checking. */
-    protected void reportPurityErrors(PurityResult result, Collection<Pure.Kind> expectedTypes) {
-        assert !result.isPure(expectedTypes);
-        Collection<Pure.Kind> t = EnumSet.copyOf(expectedTypes);
-        t.removeAll(result.getTypes());
-        if (t.contains(Pure.Kind.DETERMINISTIC) || t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            String msgPrefix = "purity.not.deterministic.not.sideeffectfree.";
-            if (!t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-                msgPrefix = "purity.not.deterministic.";
-            } else if (!t.contains(Pure.Kind.DETERMINISTIC)) {
-                msgPrefix = "purity.not.sideeffectfree.";
+    protected void reportPurityErrors(PurityResult result, EnumSet<Pure.Kind> expectedKinds) {
+        assert !result.isPure(expectedKinds);
+        EnumSet<Pure.Kind> violations = EnumSet.copyOf(expectedKinds);
+        violations.removeAll(result.getKinds());
+        if (violations.contains(DETERMINISTIC) || violations.contains(SIDE_EFFECT_FREE)) {
+            String msgKeyPrefix;
+            if (!violations.contains(SIDE_EFFECT_FREE)) {
+                msgKeyPrefix = "purity.not.deterministic.";
+            } else if (!violations.contains(DETERMINISTIC)) {
+                msgKeyPrefix = "purity.not.sideeffectfree.";
+            } else {
+                msgKeyPrefix = "purity.not.deterministic.not.sideeffectfree.";
             }
             for (Pair<Tree, String> r : result.getNotBothReasons()) {
-                reportPurityError(msgPrefix, r);
+                reportPurityError(msgKeyPrefix, r);
             }
-            if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+            if (violations.contains(SIDE_EFFECT_FREE)) {
                 for (Pair<Tree, String> r : result.getNotSEFreeReasons()) {
                     reportPurityError("purity.not.sideeffectfree.", r);
                 }
             }
-            if (t.contains(Pure.Kind.DETERMINISTIC)) {
+            if (violations.contains(DETERMINISTIC)) {
                 for (Pair<Tree, String> r : result.getNotDetReasons()) {
                     reportPurityError("purity.not.deterministic.", r);
                 }
@@ -367,16 +375,16 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
         }
     }
 
-    /** Reports single purity error. * */
-    private void reportPurityError(String msgPrefix, Pair<Tree, String> r) {
+    /** Reports a single purity error. */
+    private void reportPurityError(String msgKeyPrefix, Pair<Tree, String> r) {
         String reason = r.second;
         @SuppressWarnings("CompilerMessages")
-        @CompilerMessageKey String msg = msgPrefix + reason;
+        @CompilerMessageKey String msgKey = msgKeyPrefix + reason;
         if (reason.equals("call")) {
             MethodInvocationTree mitree = (MethodInvocationTree) r.first;
-            checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
+            checker.report(Result.failure(msgKey, mitree.getMethodSelect()), r.first);
         } else {
-            checker.report(Result.failure(msg), r.first);
+            checker.report(Result.failure(msgKey), r.first);
         }
     }
 
@@ -439,11 +447,10 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
                     methodReference ? "purity.invalid.methodref" : "purity.invalid.overriding";
 
             // check purity annotations
-            Set<Pure.Kind> superPurity =
-                    new HashSet<>(
-                            PurityUtils.getPurityKinds(atypeFactory, overridden.getElement()));
-            Set<Pure.Kind> subPurity =
-                    new HashSet<>(PurityUtils.getPurityKinds(atypeFactory, overrider.getElement()));
+            EnumSet<Pure.Kind> superPurity =
+                    PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
+            EnumSet<Pure.Kind> subPurity =
+                    PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
             if (!subPurity.containsAll(superPurity)) {
                 checker.report(
                         Result.failure(

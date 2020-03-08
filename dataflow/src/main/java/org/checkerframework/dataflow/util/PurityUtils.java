@@ -1,13 +1,14 @@
 package org.checkerframework.dataflow.util;
 
+import static org.checkerframework.dataflow.qual.Pure.Kind.DETERMINISTIC;
+import static org.checkerframework.dataflow.qual.Pure.Kind.SIDE_EFFECT_FREE;
+
 import com.sun.source.tree.MethodTree;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.EnumSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
@@ -26,9 +27,9 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class PurityUtils {
 
-    /** Does the method {@code tree} have any purity annotation? */
-    public static boolean hasPurityAnnotation(AnnotationProvider provider, MethodTree tree) {
-        return !getPurityKinds(provider, tree).isEmpty();
+    /** Does the method {@code methodTree} have any purity annotation? */
+    public static boolean hasPurityAnnotation(AnnotationProvider provider, MethodTree methodTree) {
+        return !getPurityKinds(provider, methodTree).isEmpty();
     }
 
     /** Does the method {@code methodElement} have any purity annotation? */
@@ -36,50 +37,48 @@ public class PurityUtils {
         return !getPurityKinds(provider, methodElement).isEmpty();
     }
 
-    /** Is the method {@code tree} deterministic? */
-    public static boolean isDeterministic(AnnotationProvider provider, MethodTree tree) {
-        Element methodElement = TreeUtils.elementFromTree(tree);
+    /** Is the method {@code methodTree} deterministic? */
+    public static boolean isDeterministic(AnnotationProvider provider, MethodTree methodTree) {
+        Element methodElement = TreeUtils.elementFromTree(methodTree);
         if (methodElement == null) {
-            throw new BugInCF("Could not find element for tree: " + tree);
+            throw new BugInCF("Could not find element for tree: " + methodTree);
         }
         return isDeterministic(provider, methodElement);
     }
 
     /** Is the method {@code methodElement} deterministic? */
     public static boolean isDeterministic(AnnotationProvider provider, Element methodElement) {
-        List<Kind> kinds = getPurityKinds(provider, methodElement);
-        return kinds.contains(Kind.DETERMINISTIC);
+        EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
+        return kinds.contains(DETERMINISTIC);
     }
 
-    /** Is the method {@code tree} side-effect-free? */
-    public static boolean isSideEffectFree(AnnotationProvider provider, MethodTree tree) {
-        Element methodElement = TreeUtils.elementFromTree(tree);
+    /** Is the method {@code methodTree} side-effect-free? */
+    public static boolean isSideEffectFree(AnnotationProvider provider, MethodTree methodTree) {
+        Element methodElement = TreeUtils.elementFromTree(methodTree);
         if (methodElement == null) {
-            throw new BugInCF("Could not find element for tree: " + tree);
+            throw new BugInCF("Could not find element for tree: " + methodTree);
         }
         return isSideEffectFree(provider, methodElement);
     }
 
     /** Is the method {@code methodElement} side-effect-free? */
     public static boolean isSideEffectFree(AnnotationProvider provider, Element methodElement) {
-        List<Kind> kinds = getPurityKinds(provider, methodElement);
-        return kinds.contains(Kind.SIDE_EFFECT_FREE);
+        EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
+        return kinds.contains(SIDE_EFFECT_FREE);
     }
 
-    /** @return the types of purity of the method {@code tree}. */
-    public static List<Pure.Kind> getPurityKinds(AnnotationProvider provider, MethodTree tree) {
-        Element methodElement = TreeUtils.elementFromTree(tree);
+    /** @return the types of purity of the method {@code methodTree}. */
+    public static EnumSet<Pure.Kind> getPurityKinds(
+            AnnotationProvider provider, MethodTree methodTree) {
+        Element methodElement = TreeUtils.elementFromTree(methodTree);
         if (methodElement == null) {
-            throw new BugInCF("Could not find element for tree: " + tree);
+            throw new BugInCF("Could not find element for tree: " + methodTree);
         }
         return getPurityKinds(provider, methodElement);
     }
 
-    /**
-     * @return the types of purity of the method {@code methodElement}. TODO: should the return type
-     *     be an EnumSet?
-     */
-    public static List<Pure.Kind> getPurityKinds(
+    /** @return the types of purity of the method {@code methodElement} */
+    public static EnumSet<Pure.Kind> getPurityKinds(
             AnnotationProvider provider, Element methodElement) {
         AnnotationMirror pureAnnotation = provider.getDeclAnnotation(methodElement, Pure.class);
         AnnotationMirror sefAnnotation =
@@ -87,17 +86,17 @@ public class PurityUtils {
         AnnotationMirror detAnnotation =
                 provider.getDeclAnnotation(methodElement, Deterministic.class);
 
-        List<Pure.Kind> kinds = new ArrayList<>();
+        EnumSet<Pure.Kind> result = EnumSet.noneOf(Pure.Kind.class);
         if (pureAnnotation != null) {
-            kinds.add(Kind.DETERMINISTIC);
-            kinds.add(Kind.SIDE_EFFECT_FREE);
+            result.add(DETERMINISTIC);
+            result.add(SIDE_EFFECT_FREE);
         }
         if (sefAnnotation != null) {
-            kinds.add(Kind.SIDE_EFFECT_FREE);
+            result.add(SIDE_EFFECT_FREE);
         }
         if (detAnnotation != null) {
-            kinds.add(Kind.DETERMINISTIC);
+            result.add(DETERMINISTIC);
         }
-        return kinds;
+        return result;
     }
 }
