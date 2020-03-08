@@ -3247,12 +3247,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
         Set<AnnotationMirror> annotationMirrors = getDeclAnnotations(element);
 
-        // Go through all annotations found.
-        for (AnnotationMirror annotation : annotationMirrors) {
-            List<? extends AnnotationMirror> annotationsOnAnnotation;
+        for (AnnotationMirror candidate : annotationMirrors) {
+            List<? extends AnnotationMirror> metaAnnotationsOnAnnotation;
             try {
-                annotationsOnAnnotation =
-                        annotation.getAnnotationType().asElement().getAnnotationMirrors();
+                metaAnnotationsOnAnnotation =
+                        candidate.getAnnotationType().asElement().getAnnotationMirrors();
             } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                 // Fix for Issue 309: If a CompletionFailure occurs, issue a warning.
                 // I didn't find a nicer alternative to check whether the Symbol can be completed.
@@ -3262,18 +3261,62 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         Result.warning(
                                 "annotation.not.completed",
                                 ElementUtils.getVerboseName(element),
-                                annotation),
-                        annotation.getAnnotationType().asElement());
+                                candidate),
+                        candidate.getAnnotationType().asElement());
                 continue;
             }
             // First call copier, if exception, continue normal modula laws.
-            for (AnnotationMirror a : annotationsOnAnnotation) {
-                if (areSameByClass(a, metaAnnotationClass)) {
-                    result.add(Pair.of(annotation, a));
+            for (AnnotationMirror ma : metaAnnotationsOnAnnotation) {
+                if (areSameByClass(ma, metaAnnotationClass)) {
+                    // This candidate has the right kind of meta-annotation.
+                    // It might be a real contract, or a list of contracts.
+                    if (isListForRepeatedAnnotation(candidate)) {
+                        List<AnnotationMirror> wrappedCandidates =
+                                AnnotationUtils.getElementValueArray(
+                                        candidate, "value", AnnotationMirror.class, false);
+                        for (AnnotationMirror wrappedCandidate : wrappedCandidates) {
+                            result.add(Pair.of(wrappedCandidate, ma));
+                        }
+                    } else {
+                        result.add(Pair.of(candidate, ma));
+                    }
                 }
             }
         }
         return result;
+    }
+
+    Map<AnnotationMirror, Boolean> isListForRepeatedAnnotationCache = new HashMap<>();
+
+    /** Returns true if this is a wrapper for multiple repeated annotations. */
+    boolean isListForRepeatedAnnotation(AnnotationMirror a) {
+        if (!isListForRepeatedAnnotationCache.containsKey(a)) {
+            isListForRepeatedAnnotationCache.put(a, isListForRepeatedAnnotationImplementation(a));
+        }
+        return isListForRepeatedAnnotationCache.get(a);
+    }
+
+    /**
+     * Returns true if the annotation is a wrapper for multiple repeated annotations.
+     *
+     * @param a the annotation to test
+     * @return true if the annotation is a wrapper for multiple repeated annotations
+     */
+    boolean isListForRepeatedAnnotationImplementation(AnnotationMirror a) {
+        DeclaredType annotationType = a.getAnnotationType();
+        TypeMirror enclosingType = annotationType.getEnclosingType();
+        if (enclosingType == null) {
+            return false;
+        }
+        if (!annotationType.asElement().getSimpleName().contentEquals("List")) {
+            return false;
+        }
+        List<? extends Element> annoElements = annotationType.asElement().getEnclosedElements();
+        if (annoElements.size() != 1) {
+            return false;
+        }
+        // TODO: should check that the type of the single element is: "array of enclosingType".
+        return true;
     }
 
     /**
