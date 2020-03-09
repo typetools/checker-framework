@@ -106,11 +106,11 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
         /**
          * Is the method pure w.r.t. a given set of kinds?
          *
-         * @param kinds the varieties of purity to check
+         * @param otherKinds the varieties of purity to check
          * @return true if the method is pure with respect to all the given kinds
          */
-        public boolean isPure(EnumSet<Pure.Kind> kinds) {
-            return kinds.containsAll(kinds);
+        public boolean isPure(EnumSet<Pure.Kind> otherKinds) {
+            return kinds.containsAll(otherKinds);
         }
 
         /** Get the reasons why the method is not side-effect-free. */
