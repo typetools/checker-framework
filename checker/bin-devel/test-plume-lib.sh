@@ -44,9 +44,8 @@ if [ -d "$CHECKERFRAMEWORK" ] ; then
   # Fails if not currently on a branch
   git -C "$CHECKERFRAMEWORK" pull || true
 else
-  JSR308="$(cd "$CHECKERFRAMEWORK/.." && pwd -P)"
-  (cd "$JSR308" && /tmp/plume-scripts/git-clone-related typetools checker-framework) \
-    || (cd "$JSR308" && /tmp/plume-scripts/git-clone-related typetools checker-framework)
+  /tmp/plume-scripts/git-clone-related typetools checker-framework "$CHECKERFRAMEWORK" \
+    || /tmp/plume-scripts/git-clone-related typetools checker-framework "$CHECKERFRAMEWORK"
 fi
 # This also builds annotation-tools
 (cd "$CHECKERFRAMEWORK" && ./checker/bin-devel/build.sh downloadjdk)
@@ -54,7 +53,9 @@ fi
 echo "PACKAGES=" "${PACKAGES[@]}"
 for PACKAGE in "${PACKAGES[@]}"; do
   echo "PACKAGE=${PACKAGE}"
-  (cd /tmp && rm -rf "${PACKAGE}" && /tmp/plume-scripts/git-clone-related plume-lib "${PACKAGE}")
+  PACKAGEDIR="/tmp/${PACKAGE}"
+  rm -rf "${PACKAGEDIR}"
+  /tmp/plume-scripts/git-clone-related plume-lib "${PACKAGE}" "${PACKAGEDIR}"
   echo "About to call ./gradlew --console=plain -PcfLocal assemble"
-  (cd /tmp/"${PACKAGE}" && CHECKERFRAMEWORK=$CHECKERFRAMEWORK ./gradlew --console=plain -PcfLocal assemble)
+  (cd "${PACKAGEDIR}" && CHECKERFRAMEWORK=$CHECKERFRAMEWORK ./gradlew --console=plain -PcfLocal assemble)
 done
