@@ -222,13 +222,14 @@ rules are used in order, until one applies.
 \item
   The qualifier in the meta-annotation \<@DefaultFor> for the location of the use of \<MyClass>.
   These are defaults specified by the type system designer (Section~\ref{creating-typesystem-defaults});
-  this is usually CLIMB-to-top (Section~\ref{climb-to-top}).
+  this is usually CLIMB-to-top (Section~\ref{climb-to-top}) (CLIMB means \textbf{C}asts, \textbf{L}ocals,
+  \textbf{I}nstanceof, and (some) i\textbf{M}plicit \textbf{B}ounds).
 \item
   The qualifier with the meta-annotation \<@DefaultQualifierInHierarchy>
 \end{enumerate}
 
 If the unannotated type is the type of a local variable, then the first 5 rules are skipped and only
-rules 6 and 7 apply.  This makes the type local variables top so they can be refined.
+rules 6 and 7 apply. If rule 6 applies, it makes the type of local variables top so they can be refined.
 
 % (Implementation detail:  setting defaults is implemented by the
 % \refclass{framework/util}{QualifierDefaults} class.)
@@ -522,10 +523,10 @@ is implicitly the bottom annotation: \code {@NonNull}.
 \subsectionAndLabel{Default qualifiers for \<.class> files (library defaults)}{defaults-classfile}
 
 (\emph{Note:} Currently, the conservative library defaults presented in this section
-are off by default and can be turned on by supplying the \<-AuseDefaultsForUncheckedcode=bytecode>
+are off by default and can be turned on by supplying the \<-AuseConservativeDefaultsForUncheckedCode=bytecode>
 command-line option.  In a future release, they will be turned on
 by default and it will be possible to turn them off by supplying a
-\<-AuseDefaultsForUncheckedCode=-bytecode> command-line option.)
+\<-AuseConservativeDefaultsForUncheckedCode=-bytecode> command-line option.)
 
 The defaulting rules presented so far apply to source code that is read by
 the compiler.  When the compiler reads a \<.class> file, different
@@ -609,11 +610,6 @@ misbehave at run time.
 % time.  However, it can be useful when you are first annotating a codebase,
 % to help you focus on errors within the codebase before you have annotated
 % external libraries.
-
-% TODO: document
-% the \refqualclass{framework/qual}{DefaultInUncheckedCodeFor}
-% and \refqualclass{framework/qual}{DefaultQualifierInHierarchyInUncheckedCode}
-% annotations for type system designers.
 
 
 \newpage
@@ -1524,8 +1520,8 @@ class @Marsupial-Animal {
 %%  LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled readLine
 %%  LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
 %%  LocalWords:  I18nFormatFor AunsafeDefaultsForUnannotatedBytecode
-%%  LocalWords:  AuseDefaultsForUncheckedCode DefaultFor TypeUseLocation
-% LocalWords:  AuseDefaultsForUncheckedcode EnsuresKeyFor EnsuresKeyForIf
+%%  LocalWords:  AuseConservativeDefaultsForUncheckedCode DefaultFor TypeUseLocation
+% LocalWords:  EnsuresKeyFor EnsuresKeyForIf
 % LocalWords:  EnsuresLockHeld EnsuresLockHeldIf FieldInvariant fieldA
 % LocalWords:  fieldB myMethod SomeType runtime typedefs signedness
 %%  LocalWords:  Signedness MonotonicNonNull UpperBoundFor

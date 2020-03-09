@@ -66,10 +66,8 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
@@ -485,8 +483,7 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Create {@link QualifierDefaults} which handles checker specified defaults, and initialize the
      * created {@link QualifierDefaults}. Subclasses should override {@link
-     * GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)} or {@link
-     * GenericAnnotatedTypeFactory#addUncheckedCodeDefaults(QualifierDefaults defs)} to add more
+     * GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)} to add more
      * defaults or use different defaults.
      *
      * @return the QualifierDefaults object
@@ -501,7 +498,6 @@ public abstract class GenericAnnotatedTypeFactory<
         QualifierDefaults defs = createQualifierDefaults();
         addCheckedCodeDefaults(defs);
         addCheckedStandardDefaults(defs);
-        addUncheckedCodeDefaults(defs);
         addUncheckedStandardDefaults(defs);
         checkForDefaultQualifierInHierarchy(defs);
 
@@ -590,46 +586,6 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Adds default qualifiers for code that is not type-checked by reading
-     * {@code @DefaultInUncheckedCodeFor} and {@code @DefaultQualifierInHierarchyInUncheckedCode}
-     * meta-annotations. Then it applies the standard unchecked code defaults, if a default was not
-     * specified for a particular location.
-     *
-     * <p>Standard unchecked code default are: <br>
-     * top: {@code TypeUseLocation.RETURN,TypeUseLocation.FIELD,TypeUseLocation.UPPER_BOUND}<br>
-     * bottom: {@code TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND}<br>
-     *
-     * <p>If {@code @DefaultQualifierInHierarchyInUncheckedCode} code is not found or a default for
-     * {@code TypeUseLocation.Otherwise} is not used, the defaults for checked code will be applied
-     * to locations without a default for unchecked code.
-     *
-     * <p>Subclasses may override this method to add defaults that cannot be specified with a
-     * {@code @DefaultInUncheckedCodeFor} or {@code @DefaultQualifierInHierarchyInUncheckedCode}
-     * meta-annotations or to change the standard defaults.
-     *
-     * @param defs {@link QualifierDefaults} object to which defaults are added
-     */
-    protected void addUncheckedCodeDefaults(QualifierDefaults defs) {
-        for (Class<? extends Annotation> annotation : getSupportedTypeQualifiers()) {
-            DefaultInUncheckedCodeFor defaultInUncheckedCodeFor =
-                    annotation.getAnnotation(DefaultInUncheckedCodeFor.class);
-
-            if (defaultInUncheckedCodeFor != null) {
-                final TypeUseLocation[] locations = defaultInUncheckedCodeFor.value();
-                defs.addUncheckedCodeDefaults(
-                        AnnotationBuilder.fromClass(elements, annotation), locations);
-            }
-
-            if (annotation.getAnnotation(DefaultQualifierInHierarchyInUncheckedCode.class)
-                    != null) {
-                defs.addUncheckedCodeDefault(
-                        AnnotationBuilder.fromClass(elements, annotation),
-                        TypeUseLocation.OTHERWISE);
-            }
-        }
-    }
-
-    /**
      * Adds standard unchecked defaults that do not conflict with previously added defaults.
      *
      * @param defs {@link QualifierDefaults} object to which defaults are added
@@ -653,8 +609,6 @@ public abstract class GenericAnnotatedTypeFactory<
                             + getSortedQualifierNames());
         }
 
-        // Don't require @DefaultQualifierInHierarchyInUncheckedCode or an
-        // unchecked default for TypeUseLocation.OTHERWISE.
         // If a default unchecked code qualifier isn't specified, the defaults
         // for checked code will be used.
     }

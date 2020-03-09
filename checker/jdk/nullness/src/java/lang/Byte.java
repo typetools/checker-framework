@@ -437,7 +437,6 @@ public final class Byte extends Number implements Comparable<Byte> {
      *                  {@code false} otherwise.
      */
     @Pure
-    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof Byte) {
             return value == ((Byte)obj).byteValue();

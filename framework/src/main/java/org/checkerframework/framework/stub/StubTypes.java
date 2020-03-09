@@ -190,18 +190,34 @@ public class StubTypes {
                 // level directory of the jar that contains the checker.
                 stubPath = stubPath.replace("checker.jar/", "/");
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
+                // Didn't find the stub file.
                 if (in == null) {
-                    // Didn't find the stubfile.
-                    URL topLevelResource = checker.getClass().getResource("/" + stubPath);
-                    if (topLevelResource != null) {
-                        checker.message(
-                                Kind.WARNING,
-                                stubPath
-                                        + " should be in the same directory as "
-                                        + checker.getClass().getSimpleName()
-                                        + ".class, but is at the top level of a jar file: "
-                                        + topLevelResource);
-                    } else {
+                    // When using a compound checker, the target stub file may be found by the
+                    // current checker's parent checkers. Also check this to avoid a false
+                    // warning. Currently, only the original checker will try to parse the target
+                    // stub file, the parent checkers are only used to reduce false warnings.
+                    SourceChecker currentChecker = checker;
+                    boolean findByParentCheckers = false;
+                    while (currentChecker != null) {
+                        URL topLevelResource =
+                                currentChecker.getClass().getResource("/" + stubPath);
+                        if (topLevelResource != null) {
+                            currentChecker.message(
+                                    Kind.WARNING,
+                                    stubPath
+                                            + " should be in the same directory as "
+                                            + currentChecker.getClass().getSimpleName()
+                                            + ".class, but is at the top level of a jar file: "
+                                            + topLevelResource);
+                            findByParentCheckers = true;
+                            break;
+                        } else {
+                            currentChecker = currentChecker.getParentChecker();
+                        }
+                    }
+                    // If there exists one parent checker which can find this stub file, don't
+                    // report an warning.
+                    if (!findByParentCheckers) {
                         checker.message(
                                 Kind.WARNING,
                                 "Did not find stub file "

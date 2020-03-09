@@ -162,7 +162,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      *
      * <p>Though each checker is run on a whole compilation unit before the next checker is run,
      * error and warning messages are collected and sorted based on the location in the source file
-     * before being printed. (See {@link #printMessage(Diagnostic.Kind, String, Tree,
+     * before being printed. (See {@link #printOrStoreMessage(Diagnostic.Kind, String, Tree,
      * CompilationUnitTree)}.)
      *
      * <p>WARNING: Circular dependencies are not supported nor do checkers verify that their
@@ -507,7 +507,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         super.typeProcess(element, tree);
 
         if (!getSubcheckers().isEmpty()) {
-            printCollectedMessages(tree.getCompilationUnit());
+            printStoredMessages(tree.getCompilationUnit());
             // Update errsOnLastExit to reflect the errors issued.
             this.errsOnLastExit = log.nerrors;
         }
@@ -521,21 +521,25 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     @Override
     protected void warnUnneededSuppressions() {
-        if (parentChecker != null || !hasOption("warnUnneededSuppressions")) {
+        if (parentChecker != null) {
+            return;
+        }
+
+        if (!hasOption("warnUnneededSuppressions")) {
             return;
         }
         Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);
         this.elementsWithSuppressedWarnings.clear();
         Set<String> checkerKeys = new HashSet<>(getSuppressWarningsKeys());
-        Set<String> errorKeys = new HashSet<>(messages.stringPropertyNames());
+        Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
         for (BaseTypeChecker subChecker : subcheckers) {
             elementsSuppress.addAll(subChecker.elementsWithSuppressedWarnings);
             subChecker.elementsWithSuppressedWarnings.clear();
             checkerKeys.addAll(subChecker.getSuppressWarningsKeys());
-            errorKeys.addAll(subChecker.messages.stringPropertyNames());
+            errorKeys.addAll(subChecker.messagesProperties.stringPropertyNames());
             subChecker.getVisitor().treesWithSuppressWarnings.clear();
         }
-        warnUnneedSuppressions(elementsSuppress, checkerKeys, errorKeys);
+        warnUnneededSuppressions(elementsSuppress, checkerKeys, errorKeys);
 
         getVisitor().treesWithSuppressWarnings.clear();
     }
@@ -555,11 +559,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * <p>Otherwise, it prints the message.
      */
     @Override
-    protected void printMessage(
+    protected void printOrStoreMessage(
             Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
         assert this.currentRoot == root;
         if (messageStore == null) {
-            super.printMessage(kind, message, source, root);
+            super.printOrStoreMessage(kind, message, source, root);
         } else {
             CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this);
             messageStore.add(checkerMessage);
@@ -573,10 +577,10 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      *
      * @param unit current compilation unit
      */
-    private void printCollectedMessages(CompilationUnitTree unit) {
+    private void printStoredMessages(CompilationUnitTree unit) {
         if (messageStore != null) {
             for (CheckerMessage msg : messageStore) {
-                super.printMessage(msg.kind, msg.message, msg.source, unit);
+                super.printOrStoreMessage(msg.kind, msg.message, msg.source, unit);
             }
         }
     }
