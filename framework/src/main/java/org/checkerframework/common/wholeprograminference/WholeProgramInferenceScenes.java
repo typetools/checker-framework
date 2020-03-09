@@ -142,6 +142,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             String jaifPath,
             AMethodWrapper method,
             List<Node> arguments) {
+
         for (int i = 0; i < arguments.size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);

@@ -61,9 +61,9 @@ public class AFieldWrapper {
     }
 
     /**
-     * Returns the type of the field, formatted to be printable in Java source code
+     * Returns the type of the field or formal, formatted to be printable in Java source code
      *
-     * @return the type of the field, formatted to be printable in Java source code
+     * @return the type of the field or formal, formatted to be printable in Java source code
      */
     public String getType() {
         return type;

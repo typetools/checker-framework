@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AFieldWrapper;
@@ -200,38 +201,42 @@ public final class SceneToStubWriter {
      * result of the array types seen so far, to handle multidimensional arrays. That builder is
      * appended to the final component type in the base case.
      *
-     * @param e same as above
+     * @param e same as above, but can become null if scene-lib did not fill in the inner types,
+     *     which happens when they do not have annotations
      * @param arrayType same as above
      * @param result the string builder containing the array types seen so far
      * @return the formatted string, as above, with a trailing space
      */
     private static String formatArrayTypeImpl(
-            ATypeElement e, String arrayType, StringBuilder result) {
+            @Nullable ATypeElement e, String arrayType, StringBuilder result) {
         String nextComponentType =
                 arrayType.indexOf('[') == -1
                         ? null
                         : arrayType.substring(0, arrayType.lastIndexOf('['));
         // base case when the component is a non-array type
         if (nextComponentType == null) {
-            return formatAnnotations(e.tlAnnotationsHere) + arrayType + " " + result.toString();
+            String componentAsString = arrayType + " " + result.toString();
+            if (e != null) {
+                return formatAnnotations(e.tlAnnotationsHere) + componentAsString;
+            } else {
+                return componentAsString;
+            }
         } else {
-            result.append(formatAnnotations(e.tlAnnotationsHere));
+            if (e != null) {
+                result.append(formatAnnotations(e.tlAnnotationsHere));
+            }
             result.append("[] ");
         }
-        // find the next array type; this loop should always find something, so throws an
-        // exception afterward if it fails
+        // find the next array type, if scene-lib is tracking information about it
         ATypeElement innerType = null;
-        for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
-            InnerTypeLocation loc = ite.getKey();
-            ATypeElement it = ite.getValue();
-            if (loc.location.contains(TypePathEntry.ARRAY)) {
-                innerType = it;
+        if (e != null) {
+            for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
+                InnerTypeLocation loc = ite.getKey();
+                ATypeElement it = ite.getValue();
+                if (loc.location.contains(TypePathEntry.ARRAY)) {
+                    innerType = it;
+                }
             }
-        }
-
-        if (innerType == null) {
-            throw new BugInCF(
-                    "Encountered a multidimensional array without an inner type. This probably indicates a bug in the Annotation File Utilities.");
         }
 
         return formatArrayTypeImpl(innerType, nextComponentType, result);
@@ -449,6 +454,11 @@ public final class SceneToStubWriter {
         AMethod aMethod = aMethodWrapper.getAMethod();
 
         printWriter.print(INDENT);
+
+        // type parameters
+        printTypeParameters(aMethodWrapper.getTypeParameters(), printWriter);
+
+        printWriter.print(formatAnnotations(aMethod.returnType.tlAnnotationsHere));
         // Needed because AMethod stores the name with the parameters, to distinguish
         // between overloaded methods.
         String methodName = aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
@@ -602,6 +612,17 @@ public final class SceneToStubWriter {
             return;
         }
         List<? extends TypeParameterElement> typeParameters = type.getTypeParameters();
+        printTypeParameters(typeParameters, printWriter);
+    }
+
+    /**
+     * Prints the given type parameters.
+     *
+     * @param typeParameters the type element to print
+     * @param printWriter where to print the type parameters
+     */
+    private static void printTypeParameters(
+            List<? extends TypeParameterElement> typeParameters, PrintWriter printWriter) {
         if (typeParameters.isEmpty()) {
             return;
         }

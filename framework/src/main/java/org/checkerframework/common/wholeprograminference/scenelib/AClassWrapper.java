@@ -73,8 +73,7 @@ public class AClassWrapper {
             return methods.get(methodName);
         } else {
             AMethodWrapper wrapper =
-                    new AMethodWrapper(
-                            theClass.methods.getVivify(methodName), methodElt.getReturnType());
+                    new AMethodWrapper(theClass.methods.getVivify(methodName), methodElt);
             methods.put(methodName, wrapper);
             return wrapper;
         }
