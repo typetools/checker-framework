@@ -467,16 +467,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         @Override
         protected List<DiagMessage> reduce(List<DiagMessage> r1, List<DiagMessage> r2) {
-            if (r1 == null || r1.isEmpty()) {
-                return r2;
-            } else if (r2 == null || r2.isEmpty()) {
-                return r1;
-            } else {
-                List<DiagMessage> result = new ArrayList<>(r1.size() + r2.size());
-                result.addAll(r1);
-                result.addAll(r2);
-                return result;
-            }
+            return DiagMessage.mergeLists(r1, r2);
         }
 
         @Override
