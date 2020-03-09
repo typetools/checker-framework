@@ -1078,7 +1078,11 @@ public class FlowExpressionParseUtil {
             return errorKey + " " + Arrays.toString(args);
         }
 
-        /** Return a DiagMessage that can be used for error reporting. */
+        /**
+         * Return a DiagMessage that can be used for error reporting.
+         *
+         * @return a DiagMessage that can be used for error reporting
+         */
         public DiagMessage getDiagMessage() {
             return new DiagMessage(ERROR, errorKey, args);
         }

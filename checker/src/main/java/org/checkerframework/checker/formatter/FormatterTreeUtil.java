@@ -351,13 +351,25 @@ public class FormatterTreeUtil {
         }
     }
 
-    /** Reports an error. Takes a {@link Result} to report the location. */
-    public final <E> void failure(Result<E> res, @CompilerMessageKey String msg, Object... args) {
+    /**
+     * Reports an error.
+     *
+     * @param res used for source location information
+     * @param msgKey the diagnostic message key
+     * @param args arguments to the diagnostic message
+     */
+    public final void failure(Result<?> res, @CompilerMessageKey String msg, Object... args) {
         checker.reportError(res.location, msg, args);
     }
 
-    /** Reports an warning. Takes a {@link Result} to report the location. */
-    public final <E> void warning(Result<E> res, @CompilerMessageKey String msg, Object... args) {
+    /**
+     * Reports a warning.
+     *
+     * @param res used for source location information
+     * @param msgKey the diagnostic message key
+     * @param args arguments to the diagnostic message
+     */
+    public final void warning(Result<?> res, @CompilerMessageKey String msg, Object... args) {
         checker.reportWarning(res.location, msg, args);
     }
 
