@@ -1,5 +1,8 @@
 package org.checkerframework.dataflow.util;
 
+import static org.checkerframework.dataflow.qual.Pure.Kind.DETERMINISTIC;
+import static org.checkerframework.dataflow.qual.Pure.Kind.SIDE_EFFECT_FREE;
+
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
@@ -12,13 +15,11 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import javax.lang.model.element.Element;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.Pair;
@@ -97,7 +98,7 @@ public class PurityChecker {
          * @param otherKinds the varieties of purity to check
          * @return true if the method is pure with respect to all the given kinds
          */
-        public boolean isPure(Collection<Kind> otherKinds) {
+        public boolean isPure(EnumSet<Pure.Kind> otherKinds) {
             return kinds.containsAll(otherKinds);
         }
 
@@ -118,7 +119,7 @@ public class PurityChecker {
          */
         public void addNotSEFreeReason(Tree t, String msgId) {
             notSEFreeReasons.add(Pair.of(t, msgId));
-            kinds.remove(Kind.SIDE_EFFECT_FREE);
+            kinds.remove(SIDE_EFFECT_FREE);
         }
 
         /**
@@ -138,7 +139,7 @@ public class PurityChecker {
          */
         public void addNotDetReason(Tree t, String msgId) {
             notDetReasons.add(Pair.of(t, msgId));
-            kinds.remove(Kind.DETERMINISTIC);
+            kinds.remove(DETERMINISTIC);
         }
 
         /**
@@ -158,8 +159,8 @@ public class PurityChecker {
          */
         public void addNotBothReason(Tree t, String msgId) {
             notBothReasons.add(Pair.of(t, msgId));
-            kinds.remove(Kind.DETERMINISTIC);
-            kinds.remove(Kind.SIDE_EFFECT_FREE);
+            kinds.remove(DETERMINISTIC);
+            kinds.remove(SIDE_EFFECT_FREE);
         }
     }
 
@@ -214,9 +215,13 @@ public class PurityChecker {
             if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
                 purityResult.addNotBothReason(node, "call.method");
             } else {
-                boolean det = assumeDeterministic || PurityUtils.isDeterministic(annoProvider, elt);
-                boolean seFree =
-                        assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, elt);
+                EnumSet<Pure.Kind> purityKinds =
+                        (assumeDeterministic && assumeSideEffectFree)
+                                // Avoid computation if not necessary
+                                ? EnumSet.of(DETERMINISTIC, SIDE_EFFECT_FREE)
+                                : PurityUtils.getPurityKinds(annoProvider, elt);
+                boolean det = assumeDeterministic || purityKinds.contains(DETERMINISTIC);
+                boolean seFree = assumeSideEffectFree || purityKinds.contains(SIDE_EFFECT_FREE);
                 if (!det && !seFree) {
                     purityResult.addNotBothReason(node, "call.method");
                 } else if (!det) {
