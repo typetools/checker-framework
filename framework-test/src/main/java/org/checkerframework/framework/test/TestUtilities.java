@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -217,8 +218,8 @@ public class TestUtilities {
             // and should be printed in full.
             if (!result.contains("unexpected Throwable")) {
                 String firstLine;
-                if (result.contains("\n")) {
-                    firstLine = result.substring(0, result.indexOf('\n'));
+                if (result.contains(System.lineSeparator())) {
+                    firstLine = result.substring(0, result.indexOf(System.lineSeparator()));
                 } else {
                     firstLine = result;
                 }
@@ -316,38 +317,31 @@ public class TestUtilities {
             List<String> missing,
             boolean usingNoMsgText,
             boolean testFailed) {
-        try {
-            final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
-            bw.write("File: " + testFile.getAbsolutePath() + "\n");
-            bw.write("TestFailed: " + testFailed + "\n");
-            bw.write("Using nomsgtxt: " + usingNoMsgText + "\n");
-            bw.write(
-                    "#Missing: "
-                            + missing.size()
-                            + "      #Unexpected: "
-                            + unexpected.size()
-                            + "\n");
+        try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
+            pw.println("File: " + testFile.getAbsolutePath());
+            pw.println("TestFailed: " + testFailed);
+            pw.println("Using nomsgtxt: " + usingNoMsgText);
+            pw.println("#Missing: " + missing.size() + "      #Unexpected: " + unexpected.size());
 
-            bw.write("Expected:\n");
-            bw.write(String.join("\n", expected));
-            bw.newLine();
+            pw.println("Expected:");
+            pw.println(PluginUtil.joinLines(expected));
+            pw.println();
 
-            bw.write("Actual:\n");
-            bw.write(String.join("\n", actual));
-            bw.newLine();
+            pw.println("Actual:");
+            pw.println(PluginUtil.joinLines(actual));
+            pw.println();
 
-            bw.write("Missing:\n");
-            bw.write(String.join("\n", missing));
-            bw.newLine();
+            pw.println("Missing:");
+            pw.println(PluginUtil.joinLines(missing));
+            pw.println();
 
-            bw.write("Unexpected:\n");
-            bw.write(String.join("\n", unexpected));
-            bw.newLine();
+            pw.println("Unexpected:");
+            pw.println(PluginUtil.joinLines(unexpected));
+            pw.println();
 
-            bw.newLine();
-            bw.newLine();
-            bw.flush();
-            bw.close();
+            pw.println();
+            pw.println();
+            pw.flush();
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -373,32 +367,27 @@ public class TestUtilities {
             Iterable<? extends JavaFileObject> files,
             Iterable<String> options,
             Iterable<String> processors) {
-        try {
-            final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
-            bw.write("Files:\n");
+        try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
+            pw.println("Files:");
             for (JavaFileObject f : files) {
-                bw.write("    " + f.getName());
-                bw.newLine();
+                pw.println("    " + f.getName());
             }
-            bw.newLine();
+            pw.println();
 
-            bw.write("Options:\n");
+            pw.println("Options:");
             for (String o : options) {
-                bw.write("    " + o);
-                bw.newLine();
+                pw.println("    " + o);
             }
-            bw.newLine();
+            pw.println();
 
-            bw.write("Processors:\n");
+            pw.println("Processors:");
             for (String p : processors) {
-                bw.write("    " + p);
-                bw.newLine();
+                pw.println("    " + p);
             }
-            bw.newLine();
-            bw.newLine();
+            pw.println();
+            pw.println();
 
-            bw.flush();
-            bw.close();
+            pw.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

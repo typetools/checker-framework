@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`
+echo Entering checker/bin-devel/build.sh in "$(pwd)"
 
 # Fail the whole script if any command fails
 set -e
@@ -25,7 +25,8 @@ echo "SHELLOPTS=${SHELLOPTS}"
 if [ "$(uname)" == "Darwin" ] ; then
   export JAVA_HOME=${JAVA_HOME:-$(/usr/libexec/java_home)}
 else
-  export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(readlink -f $(which javac))))}
+  # shellcheck disable=SC2230
+  export JAVA_HOME=${JAVA_HOME:-$(dirname "$(dirname "$(readlink -f "$(which javac)")")")}
 fi
 echo "JAVA_HOME=${JAVA_HOME}"
 
@@ -46,20 +47,23 @@ fi
 #   fatal: destination path '../annotation-tools/annotation-file-utilities/..' already exists and is not an empty directory.
 # even if the directory does not exist!
 # The reason is that git creates each element of the path:
-#  .. , ../annotation-tools, ../annotation-tools/annotation-file-utilities
-#  (this is the problem), and../annotation-tools/annotation-file-utilities/.. .
+#  ..
+#  ../annotation-tools
+#  ../annotation-tools/annotation-file-utilities (this is the problem),
+#  ../annotation-tools/annotation-file-utilities/..
+#  etc.
 
 AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 AT=$(dirname "${AFU}")
 
 ## Build annotation-tools (Annotation File Utilities)
-/tmp/plume-scripts/git-clone-related typetools annotation-tools ${AT}
+/tmp/plume-scripts/git-clone-related typetools annotation-tools "${AT}"
 if [ ! -d ../annotation-tools ] ; then
-  ln -s ${AT} ../annotation-tools
+  ln -s "${AT}" ../annotation-tools
 fi
 
 echo "Running:  (cd ${AT} && ./.travis-build-without-test.sh)"
-(cd ${AT} && ./.travis-build-without-test.sh)
+(cd "${AT}" && ./.travis-build-without-test.sh)
 echo "... done: (cd ${AT} && ./.travis-build-without-test.sh)"
 
 
@@ -73,6 +77,10 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
 ## Compile
 
+# Downloading the gradle wrapper sometimes fails.
+# If so, the next command gets another chance to try the download.
+(./gradlew help || sleep 10) > /dev/null 2>&1
+
 # Two options: download a prebuilt JDK or rebuild the JDK.
 if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
   echo "running \"./gradlew assemble\" for checker-framework"
@@ -82,4 +90,4 @@ else
   ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
 fi
 
-echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`
+echo Exiting checker/bin-devel/build.sh in "$(pwd)"

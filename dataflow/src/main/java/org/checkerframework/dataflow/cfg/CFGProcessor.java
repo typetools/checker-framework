@@ -113,7 +113,7 @@ public class CFGProcessor extends BasicTypeProcessor {
     public static class CFGProcessResult {
         /** Control flow graph. */
         private final @Nullable ControlFlowGraph controlFlowGraph;
-        /** Did the CFG process succeed or not. */
+        /** Did the CFG process succeed? */
         private final boolean isSuccess;
         /** Error message (when the CFG process failed). */
         private final @Nullable String errMsg;
@@ -139,9 +139,9 @@ public class CFGProcessor extends BasicTypeProcessor {
         /**
          * Create the result of CFG process.
          *
-         * @param cfg Control flow graph
-         * @param isSuccess Did the CFG process succeed or not
-         * @param errMsg Error message (when the CFG process failed)
+         * @param cfg the control flow graph
+         * @param isSuccess did the CFG process succeed?
+         * @param errMsg error message (when the CFG process failed)
          */
         private CFGProcessResult(
                 @Nullable ControlFlowGraph cfg, boolean isSuccess, @Nullable String errMsg) {

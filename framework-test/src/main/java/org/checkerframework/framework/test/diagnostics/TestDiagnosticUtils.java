@@ -16,9 +16,10 @@ import org.checkerframework.javacutil.Pair;
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
 public class TestDiagnosticUtils {
 
-    // this regex represents how the diagnostics appear in Java source files
+    /** This regex represents how the diagnostics appear in Java source files. */
     public static final String DIAGNOSTIC_IN_JAVA_REGEX =
-            "\\s*(error|fixable-error|warning|other):\\s*(\\(?.*\\)?)\\s*";
+            "\\s*(error|fixable-error|warning|fixable-warning|other):\\s*(\\(?.*\\)?)\\s*";
+    /** The compiled regex representation of the diagnostics. */
     public static final Pattern DIAGNOSTIC_IN_JAVA_PATTERN =
             Pattern.compile(DIAGNOSTIC_IN_JAVA_REGEX);
 
@@ -184,8 +185,8 @@ public class TestDiagnosticUtils {
             // "unexpected Throwable" or it is an Checker Error (contains "Compilation unit").
             if (!trimmed.contains("unexpected Throwable")
                     && !trimmed.contains("Compilation unit")) {
-                if (trimmed.contains("\n")) {
-                    trimmed = trimmed.substring(0, trimmed.indexOf('\n'));
+                if (trimmed.contains(System.lineSeparator())) {
+                    trimmed = trimmed.substring(0, trimmed.indexOf(System.lineSeparator()));
                 }
 
                 if (trimmed.contains(".java:")) {

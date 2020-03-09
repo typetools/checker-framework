@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 // Tests that lack of @AnnotatedFor suppresses warnings, when
-// -AuseDefaultsForUnCheckedCode=source is supplied.
+// -AuseConservativeDefaultsForUncheckedCode=source is supplied.
 
 @AnnotatedFor("nullness")
 class BasicSafeDefaultsTest {

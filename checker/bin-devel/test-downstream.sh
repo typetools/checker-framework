@@ -17,7 +17,9 @@ echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo "BUILDJDK=${BUILDJDK}"
-source $SCRIPTDIR/build.sh ${BUILDJDK}
+# In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
+# shellcheck disable=SC1090
+source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
 
 
 ## downstream tests:  projects that depend on the Checker Framework.
@@ -34,18 +36,19 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 
 # Guava
 # Can't use `git-clone-related` here, since we want slightly different behavior.
-eval `/tmp/plume-scripts/ci-info typetools`
-REPO_URL=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetools guava`
-BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO_URL} ${CI_BRANCH} cf-master`
-if [ $BRANCH = "master" ] ; then
+# shellcheck disable=SC2046
+eval $(/tmp/plume-scripts/ci-info typetools)
+REPO_URL=$(/tmp/plume-scripts/git-find-fork "${CI_ORGANIZATION}" typetools guava)
+BRANCH=$(/tmp/plume-scripts/git-find-branch "${REPO_URL}" "${CI_BRANCH}" cf-master)
+if [ "$BRANCH" = "master" ] ; then
   # ${CI_ORGANIZATION} has a fork of Guava, but no branch that corresponds to the pull-requested branch,
   # nor a cf-master branch.  Use upstream.
   REPO_URL=https://github.com/typetools/guava.git
-  if [ $CI_BRANCH = "master" ] ; then
-    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO_URL} cf-master`
+  if [ "$CI_BRANCH" = "master" ] ; then
+    BRANCH=$(/tmp/plume-scripts/git-find-branch ${REPO_URL} cf-master)
   else
-    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO_URL} ${CI_BRANCH} cf-master`
+    BRANCH=$(/tmp/plume-scripts/git-find-branch ${REPO_URL} "${CI_BRANCH}" cf-master)
   fi
 fi
-git -C .. clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO_URL} guava || git -C .. clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO_URL} guava
+git -C .. clone -b "${BRANCH}" --single-branch --depth 1 -q ${REPO_URL} guava || git -C .. clone -b "${BRANCH}" --single-branch --depth 1 -q ${REPO_URL} guava
 (cd ../guava/guava && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
