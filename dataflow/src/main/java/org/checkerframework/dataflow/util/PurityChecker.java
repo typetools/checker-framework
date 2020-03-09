@@ -261,6 +261,11 @@ public class PurityChecker {
             return super.visitAssignment(node, ignore);
         }
 
+        /**
+         * Check whether {@code variable} is permitted on the left-hand-side of an assignment.
+         *
+         * @param variable the lhs to check
+         */
         protected void assignmentCheck(ExpressionTree variable) {
             if (TreeUtils.isFieldAccess(variable)) {
                 // lhs is a field access
