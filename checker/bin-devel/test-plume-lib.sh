@@ -45,7 +45,7 @@ if [ -d "$CHECKERFRAMEWORK" ] ; then
   git -C "$CHECKERFRAMEWORK" pull || true
 else
   JSR308="$(cd "$CHECKERFRAMEWORK/.." && pwd -P)"
-  (cd "$JSR308" && git clone https://github.com/typetools/checker-framework.git) || (cd "$JSR308" && git clone https://github.com/typetools/checker-framework.git)
+  (cd "$JSR308" && git-clone-related typetools checker-framework) || (cd "$JSR308" && git-clone-related typetools checker-framework)
 fi
 # This also builds annotation-tools
 (cd "$CHECKERFRAMEWORK" && ./checker/bin-devel/build.sh downloadjdk)
@@ -53,7 +53,7 @@ fi
 echo "PACKAGES=" "${PACKAGES[@]}"
 for PACKAGE in "${PACKAGES[@]}"; do
   echo "PACKAGE=${PACKAGE}"
-  (cd /tmp && rm -rf "${PACKAGE}" && git clone --depth 1 "https://github.com/plume-lib/${PACKAGE}.git")
+  (cd /tmp && rm -rf "${PACKAGE}" && git-clone-related plume-lib "${PACKAGE}")
   echo "About to call ./gradlew --console=plain -PcfLocal assemble"
   (cd /tmp/"${PACKAGE}" && CHECKERFRAMEWORK=$CHECKERFRAMEWORK ./gradlew --console=plain -PcfLocal assemble)
 done
