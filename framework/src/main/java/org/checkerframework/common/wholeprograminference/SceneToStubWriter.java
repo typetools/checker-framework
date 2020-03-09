@@ -285,6 +285,18 @@ public final class SceneToStubWriter {
             basetype = aField.getType();
         }
 
+        // anonymous static classes shouldn't be printed with the "anonymous" tag that the AScene
+        // library uses
+        if (basetype.startsWith("<anonymous ")) {
+            basetype = basetype.substring("<anonymous ".length(), basetype.length() - 1);
+        }
+
+        // fields don't need their generic types, and sometimes they are wrong. Just don't print
+        // them.
+        while (basetype.contains("<")) {
+            basetype = basetype.substring(0, basetype.indexOf('<'));
+        }
+
         if (basetype.contains("[")) {
             String formattedArrayType = formatArrayType(aField.getTheField().type, basetype);
             result.append(formattedArrayType); // formatArrayType adds a trailing space
