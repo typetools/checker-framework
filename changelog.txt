@@ -10,6 +10,8 @@ Implementation details:
  * Renamings:
    applyUncheckedCodeDefaults() to applyConservativeDefaults()
    useUncheckedCodeDefault() to useConservativeDefault()
+ * Removed the deprecated Analysis#Analysis(ProcessingEnvironment)
+   and Analysis#Analysis(T, int, ProcessingEnvironment);
 
 ---------------------------------------------------------------------------
 
