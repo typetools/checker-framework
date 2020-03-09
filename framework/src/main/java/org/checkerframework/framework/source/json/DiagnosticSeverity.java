@@ -1,6 +1,6 @@
 package org.checkerframework.framework.source.json;
 
-/* The severity of a diagnostic. */
+/** The severity of a diagnostic. */
 public enum DiagnosticSeverity {
     /** Reports an error. */
     ERROR(1),
@@ -11,9 +11,15 @@ public enum DiagnosticSeverity {
     /** Reports a hint. */
     HINT(4);
 
+    /** The numeric value of this DiagnosticSeverity. */
     public final int value;
 
-    DiagnosticSeverity(int value) {
+    /**
+     * Create a new DiagnosticSeverity.
+     *
+     * @param value the numeric value of this DiagnosticSeverity
+     */
+    private DiagnosticSeverity(int value) {
         this.value = value;
     }
 }

@@ -910,9 +910,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @param r the result to report
      * @param src the position object associated with the result; may be an Element, a Tree, or null
-     * @deprecated use {@link #reportError} or {@link reportWarning} instead
+     * @deprecated use {@link #reportError} or {@link #reportWarning} instead
      */
-    @Deprecated // use {@link #reportError} or {@link reportWarning} instead
+    @Deprecated // use {@link #reportError} or {@link #reportWarning} instead
     public void report(final Result r, final Object src) {
         if (r.isSuccess()) {
             return;

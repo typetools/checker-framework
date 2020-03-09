@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+/** Represents a diagnostic, such as a compiler error or warning. */
 public class Diagnostic {
     /** The range at which the message applies. */
     public final Range range;

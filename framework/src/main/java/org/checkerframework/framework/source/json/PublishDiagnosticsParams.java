@@ -3,6 +3,7 @@ package org.checkerframework.framework.source.json;
 import java.net.URI;
 import java.util.List;
 
+/** A file plus a list of diagnostics for that file. */
 public class PublishDiagnosticsParams {
     // TODO: can these fields be final?
     /** The URI for which diagnostic information is reported. */
