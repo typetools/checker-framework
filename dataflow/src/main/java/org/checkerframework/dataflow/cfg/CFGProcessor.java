@@ -72,6 +72,7 @@ public class CFGProcessor extends BasicTypeProcessor {
             ControlFlowGraph cfg = CFGBuilder.build(rootTree, methodTree, classTree, processingEnv);
             result = new CFGProcessResult(cfg);
         }
+        super.typeProcessingOver();
     }
 
     @Override
