@@ -66,24 +66,28 @@ public class PurityChecker {
      */
     public static class PurityResult {
 
-        protected final List<Pair<Tree, String>> notSEFreeReasons;
-        protected final List<Pair<Tree, String>> notDetReasons;
-        protected final List<Pair<Tree, String>> notBothReasons;
+        /** Reasons that the referenced method is not side-effect-free. */
+        protected final List<Pair<Tree, String>> notSEFreeReasons = new ArrayList<>(1);
+
+        /** Reasons that the referenced method is not deterministic. */
+        protected final List<Pair<Tree, String>> notDetReasons = new ArrayList<>(1);
+
+        /** Reasons that the referenced method is not side-effect-free and deterministic. */
+        protected final List<Pair<Tree, String>> notBothReasons = new ArrayList<>(1);
+
         /**
          * Contains all the varieties of purity that the expression has. Starts out with all
          * varieties, and elements are removed from it as violations are found.
          */
-        protected EnumSet<Pure.Kind> types;
+        protected EnumSet<Pure.Kind> kinds = EnumSet.allOf(Pure.Kind.class);
 
-        public PurityResult() {
-            notSEFreeReasons = new ArrayList<>();
-            notDetReasons = new ArrayList<>();
-            notBothReasons = new ArrayList<>();
-            types = EnumSet.allOf(Pure.Kind.class);
-        }
-
-        public EnumSet<Pure.Kind> getTypes() {
-            return types;
+        /**
+         * Return the kinds of purity that the method has.
+         *
+         * @return the kinds of purity that the method has
+         */
+        public EnumSet<Pure.Kind> getKinds() {
+            return kinds;
         }
 
         /**
@@ -93,7 +97,7 @@ public class PurityChecker {
          * @return true if the method is pure with respect to all the given kinds
          */
         public boolean isPure(EnumSet<Pure.Kind> otherKinds) {
-            return types.containsAll(otherKinds);
+            return kinds.containsAll(otherKinds);
         }
 
         /**
@@ -113,7 +117,7 @@ public class PurityChecker {
          */
         public void addNotSEFreeReason(Tree t, String msgId) {
             notSEFreeReasons.add(Pair.of(t, msgId));
-            types.remove(SIDE_EFFECT_FREE);
+            kinds.remove(SIDE_EFFECT_FREE);
         }
 
         /**
@@ -133,7 +137,7 @@ public class PurityChecker {
          */
         public void addNotDetReason(Tree t, String msgId) {
             notDetReasons.add(Pair.of(t, msgId));
-            types.remove(DETERMINISTIC);
+            kinds.remove(DETERMINISTIC);
         }
 
         /**
@@ -153,8 +157,8 @@ public class PurityChecker {
          */
         public void addNotBothReason(Tree t, String msgId) {
             notBothReasons.add(Pair.of(t, msgId));
-            types.remove(DETERMINISTIC);
-            types.remove(SIDE_EFFECT_FREE);
+            kinds.remove(DETERMINISTIC);
+            kinds.remove(SIDE_EFFECT_FREE);
         }
     }
 
@@ -291,15 +295,20 @@ public class PurityChecker {
             return super.visitAssignment(node, ignore);
         }
 
+        /**
+         * Check whether {@code variable} is permitted on the left-hand-side of an assignment.
+         *
+         * @param variable the lhs to check
+         */
         protected void assignmentCheck(ExpressionTree variable) {
             if (TreeUtils.isFieldAccess(variable)) {
-                // rhs is a field access
+                // lhs is a field access
                 purityResult.addNotBothReason(variable, "assign.field");
             } else if (variable instanceof ArrayAccessTree) {
-                // rhs is array access
+                // lhs is array access
                 purityResult.addNotBothReason(variable, "assign.array");
             } else {
-                // rhs is a local variable
+                // lhs is a local variable
                 assert isLocalVariable(variable);
             }
         }

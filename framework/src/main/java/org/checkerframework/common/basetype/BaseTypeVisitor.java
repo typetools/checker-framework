@@ -644,10 +644,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected void checkPurity(MethodTree node) {
         boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
-        boolean checkPurityAlways = checker.hasOption("suggestPureMethods");
+        boolean suggestPureMethods = checker.hasOption("suggestPureMethods");
         boolean checkPurityAnnotations = checker.hasOption("checkPurityAnnotations");
 
-        if (!checkPurityAnnotations || (!anyPurityAnnotation && !checkPurityAlways)) {
+        if (!checkPurityAnnotations || (!anyPurityAnnotation && !suggestPureMethods)) {
             return;
         }
 
@@ -681,10 +681,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             reportPurityErrors(r, node, kinds);
         }
 
-        // Issue a warning if the method is pure, but not annotated
-        // as such (if the feature is activated).
-        if (checkPurityAlways) {
-            EnumSet<Pure.Kind> additionalKinds = r.getTypes().clone();
+        if (suggestPureMethods) {
+            // Issue a warning if the method is pure, but not annotated as such.
+            EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
             additionalKinds.removeAll(kinds);
             if (TreeUtils.isConstructor(node)) {
                 additionalKinds.remove(Pure.Kind.DETERMINISTIC);
@@ -741,24 +740,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void reportPurityErrors(
             PurityResult result, MethodTree node, EnumSet<Pure.Kind> expectedKinds) {
         assert !result.isPure(expectedKinds);
-        EnumSet<Pure.Kind> t = EnumSet.copyOf(expectedKinds);
-        t.removeAll(result.getTypes());
-        if (t.contains(Pure.Kind.DETERMINISTIC) || t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            String msgPrefix = "purity.not.deterministic.not.sideeffectfree.";
-            if (!t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-                msgPrefix = "purity.not.deterministic.";
-            } else if (!t.contains(Pure.Kind.DETERMINISTIC)) {
-                msgPrefix = "purity.not.sideeffectfree.";
+        EnumSet<Pure.Kind> violations = EnumSet.copyOf(expectedKinds);
+        violations.removeAll(result.getKinds());
+        if (violations.contains(Pure.Kind.DETERMINISTIC)
+                || violations.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+            String msgKeyPrefix;
+            if (!violations.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+                msgKeyPrefix = "purity.not.deterministic.";
+            } else if (!violations.contains(Pure.Kind.DETERMINISTIC)) {
+                msgKeyPrefix = "purity.not.sideeffectfree.";
+            } else {
+                msgKeyPrefix = "purity.not.deterministic.not.sideeffectfree.";
             }
             for (Pair<Tree, String> r : result.getNotBothReasons()) {
-                reportPurityError(msgPrefix, r);
+                reportPurityError(msgKeyPrefix, r);
             }
-            if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+            if (violations.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
                 for (Pair<Tree, String> r : result.getNotSEFreeReasons()) {
                     reportPurityError("purity.not.sideeffectfree.", r);
                 }
             }
-            if (t.contains(Pure.Kind.DETERMINISTIC)) {
+            if (violations.contains(Pure.Kind.DETERMINISTIC)) {
                 for (Pair<Tree, String> r : result.getNotDetReasons()) {
                     reportPurityError("purity.not.deterministic.", r);
                 }
@@ -766,16 +768,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /** Reports single purity error. */
-    private void reportPurityError(String msgPrefix, Pair<Tree, String> r) {
+    /**
+     * Reports a single purity error.
+     *
+     * @param msgKeyPrefix the prefix of the message key to use when reporting
+     * @param r the result to report
+     */
+    private void reportPurityError(String msgKeyPrefix, Pair<Tree, String> r) {
         String reason = r.second;
         @SuppressWarnings("CompilerMessages")
-        @CompilerMessageKey String msg = msgPrefix + reason;
+        @CompilerMessageKey String msgKey = msgKeyPrefix + reason;
         if (reason.equals("call")) {
             MethodInvocationTree mitree = (MethodInvocationTree) r.first;
-            checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
+            checker.report(Result.failure(msgKey, mitree.getMethodSelect()), r.first);
         } else {
-            checker.report(Result.failure(msg), r.first);
+            checker.report(Result.failure(msgKey), r.first);
         }
     }
 
@@ -2809,7 +2816,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Type checks that a method may override another method. Uses an OverrideChecker subclass as
-     * created by createOverrideChecker(). This version of the method uses the annotated type
+     * created by {@link #createOverrideChecker}. This version of the method uses the annotated type
      * factory to get the annotated type of the overriding method, and does NOT expose that type.
      *
      * @see #checkOverride(MethodTree, AnnotatedTypeMirror.AnnotatedExecutableType,
@@ -2837,7 +2844,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Type checks that a method may override another method. Uses an OverrideChecker subclass as
-     * created by createOverrideChecker(). This version of the method exposes
+     * created by {@link #createOverrideChecker}. This version of the method exposes
      * AnnotatedExecutableType of the overriding method. Override this version of the method if you
      * need to access that type.
      *
