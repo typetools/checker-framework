@@ -104,6 +104,8 @@ public class FieldInvariants {
     }
 
     /**
+     * @param superInvar the value to check for being a super invariant
+     * @param factory the type factory
      * @return null if {@code superInvar} is a super invariant, otherwise returns the error message
      */
     public DiagMessage isSuperInvariant(FieldInvariants superInvar, AnnotatedTypeFactory factory) {

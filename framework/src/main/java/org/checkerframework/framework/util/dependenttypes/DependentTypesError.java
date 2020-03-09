@@ -55,7 +55,12 @@ public class DependentTypesError {
         this.error = error;
     }
 
-    /** Create a DependentTypesError for the given expression and exception. */
+    /**
+     * Create a DependentTypesError for the given expression and exception.
+     *
+     * @param expression the incorrect Java expression
+     * @param e wraps an error message about the expression
+     */
     public DependentTypesError(String expression, FlowExpressionParseException e) {
         this.expression = expression;
         this.error = e.getDiagMessage().getArgs()[0].toString();

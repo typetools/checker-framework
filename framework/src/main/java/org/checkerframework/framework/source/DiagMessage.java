@@ -1,6 +1,8 @@
 package org.checkerframework.framework.source;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -25,8 +27,9 @@ public class DiagMessage {
     /**
      * Create a DiagMessage.
      *
-     * @param messageKey the message key.
-     * @param args the arguments that will be interpolated into the localized message.
+     * @param kind the kind of message
+     * @param messageKey the message key
+     * @param args the arguments that will be interpolated into the localized message
      */
     public DiagMessage(Kind kind, @CompilerMessageKey String messageKey, Object... args) {
         this.kind = kind;
@@ -80,5 +83,25 @@ public class DiagMessage {
         }
 
         return kind + messageKey + " : " + Arrays.toString(args);
+    }
+
+    /**
+     * Returns the concatenation of the lists.
+     *
+     * @param list1 a list of DiagMessage, or null
+     * @param list2 a list of DiagMessage, or null
+     * @return the concatenation of the lists
+     */
+    public static List<DiagMessage> mergeLists(List<DiagMessage> list1, List<DiagMessage> list2) {
+        if (list1 == null || list1.isEmpty()) {
+            return list2;
+        } else if (list2 == null || list2.isEmpty()) {
+            return list1;
+        } else {
+            List<DiagMessage> result = new ArrayList<>(list1.size() + list2.size());
+            result.addAll(list1);
+            result.addAll(list2);
+            return result;
+        }
     }
 }

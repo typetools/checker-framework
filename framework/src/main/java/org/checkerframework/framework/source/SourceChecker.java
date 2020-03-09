@@ -905,6 +905,29 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     ///
 
     /**
+     * Reports a result. By default, it prints it to the screen via the compiler's internal messager
+     * if the result is non-success; otherwise, the method returns with no side effects.
+     *
+     * @param r the result to report
+     * @param src the position object associated with the result; may be an Element, a Tree, or null
+     * @deprecated use {@link #reportError} or {@link reportWarning} instead
+     */
+    @Deprecated // use {@link #reportError} or {@link reportWarning} instead
+    public void report(final Result r, final Object src) {
+        if (r.isSuccess()) {
+            return;
+        }
+
+        if (shouldSuppressWarnings(src, r.getMessageKeys().iterator().next())) {
+            return;
+        }
+
+        for (DiagMessage dmsg : r.getDiagMessages()) {
+            report(src, dmsg);
+        }
+    }
+
+    /**
      * Reports an error. By default, prints it to the screen via the compiler's internal messager.
      *
      * @param source the source position information; may be an Element, a Tree, or null
@@ -1016,13 +1039,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Print a non-localized message using the javac messager. This is preferable to using
      * System.out or System.err, but should only be used for exceptional cases that don't happen in
-     * correct usage. Localized messages should be raised using {@link SourceChecker#report(Result,
-     * Object)}.
+     * correct usage. Localized messages should be raised using {@link #reportError}, {@link
+     * #reportWarning}, etc.
      *
      * @param kind the kind of message to print
      * @param msg the message text
      * @param args optional arguments to substitute in the message
-     * @see SourceChecker#report(Result, Object)
+     * @see SourceChecker#report(Object, DiagMessage)
      */
     public void message(javax.tools.Diagnostic.Kind kind, String msg, Object... args) {
         String ftdmsg = String.format(msg, args);
@@ -1046,7 +1069,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Do not call this method directly. Call {@link #report(Result, Object)} instead.
+     * Do not call this method. Call {@link #reportError} or {@link #reportWarning} instead.
      *
      * <p>This method exists so that the BaseTypeChecker can override it. For compound checkers, it
      * stores all messages and sorts them by location before outputting them.

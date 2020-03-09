@@ -9,7 +9,6 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -119,6 +118,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      *   <li>These properties should also hold recursively for component types of arrays, as wells
      *       as bounds of type variables and wildcards.
      * </ol>
+     *
+     * @param qualifierHierarchy the qualifier hierachy
+     * @param type the type to test
+     * @return list of reasons the type is invalid, or empty list if the type is valid
      */
     protected List<DiagMessage> isValidType(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
@@ -132,16 +135,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
                     @Override
                     protected List<DiagMessage> reduce(List<DiagMessage> r1, List<DiagMessage> r2) {
-                        if (r1 == null || r1.isEmpty()) {
-                            return r2;
-                        } else if (r2 == null || r2.isEmpty()) {
-                            return r1;
-                        } else {
-                            List<DiagMessage> result = new ArrayList<>(r1.size() + r2.size());
-                            result.addAll(r1);
-                            result.addAll(r2);
-                            return result;
-                        }
+                        return DiagMessage.mergeLists(r1, r2);
                     }
                 };
         return scanner.visit(type);
