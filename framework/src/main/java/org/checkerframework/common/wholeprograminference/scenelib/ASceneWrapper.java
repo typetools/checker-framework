@@ -137,7 +137,7 @@ public class ASceneWrapper {
     }
 
     /**
-     * Write the scene wrapped by this object to a jaif on the given path.
+     * Write the scene wrapped by this object to a .jaif file on the given path.
      *
      * @param jaifPath the path to the jaif file to be written
      * @param annosToIgnore which annotations should be ignored in which contexts
