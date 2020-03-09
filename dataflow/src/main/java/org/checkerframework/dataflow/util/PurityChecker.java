@@ -292,15 +292,20 @@ public class PurityChecker {
             return super.visitAssignment(node, ignore);
         }
 
+        /**
+         * Check whether {@code variable} is permitted on the left-hand-side of an assignment.
+         *
+         * @param variable the lhs to check
+         */
         protected void assignmentCheck(ExpressionTree variable) {
             if (TreeUtils.isFieldAccess(variable)) {
-                // rhs is a field access
+                // lhs is a field access
                 purityResult.addNotBothReason(variable, "assign.field");
             } else if (variable instanceof ArrayAccessTree) {
-                // rhs is array access
+                // lhs is array access
                 purityResult.addNotBothReason(variable, "assign.array");
             } else {
-                // rhs is a local variable
+                // lhs is a local variable
                 assert isLocalVariable(variable);
             }
         }
