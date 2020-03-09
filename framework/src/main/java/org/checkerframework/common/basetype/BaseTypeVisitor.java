@@ -1,5 +1,7 @@
 package org.checkerframework.common.basetype;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
@@ -43,6 +45,7 @@ import com.sun.tools.javac.tree.TreeInfo;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -436,7 +439,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Tree mem : classTree.getMembers()) {
             if (mem.getKind() == Tree.Kind.VARIABLE) {
                 AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(mem);
-                Result hasIllegalPoly;
+                List<DiagMessage> hasIllegalPoly;
                 if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration((VariableTree) mem))) {
                     // A polymorphic qualifier is not allowed on a static field even if the class
                     // has a qualifier parameter.
@@ -444,8 +447,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 } else {
                     hasIllegalPoly = polyScanner.visit(fieldType, illegalOnFieldsPolyQual);
                 }
-                if (hasIllegalPoly.isFailure()) {
-                    checker.report(hasIllegalPoly, mem);
+                for (DiagMessage dm : hasIllegalPoly) {
+                    checker.report(mem, dm);
                 }
             }
         }
@@ -459,27 +462,37 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * A scanner that indicates whether any part of an annotated type has a polymorphic annotation.
      */
-    static class PolyTypeScanner extends SimpleAnnotatedTypeScanner<Result, Set<AnnotationMirror>> {
+    static class PolyTypeScanner
+            extends SimpleAnnotatedTypeScanner<List<DiagMessage>, Set<AnnotationMirror>> {
 
         @Override
-        protected Result reduce(Result r1, Result r2) {
-            r1 = r1 == null ? Result.SUCCESS : r1;
-            r2 = r2 == null ? Result.SUCCESS : r2;
-            return r1.merge(r2);
+        protected List<DiagMessage> reduce(List<DiagMessage> r1, List<DiagMessage> r2) {
+            if (r1 == null || r1.isEmpty()) {
+                return r2;
+            } else if (r2 == null || r2.isEmpty()) {
+                return r1;
+            } else {
+                List<DiagMessage> result = new ArrayList<>(r1.size() + r2.size());
+                result.addAll(r1);
+                result.addAll(r2);
+                return result;
+            }
         }
 
         @Override
-        protected Result defaultAction(AnnotatedTypeMirror type, Set<AnnotationMirror> polys) {
+        protected List<DiagMessage> defaultAction(
+                AnnotatedTypeMirror type, Set<AnnotationMirror> polys) {
             if (type == null) {
-                return Result.SUCCESS;
+                return Collections.emptyList();
             }
 
             for (AnnotationMirror poly : polys) {
                 if (type.hasAnnotationRelaxed(poly)) {
-                    return Result.failure("invalid.polymorphic.qualifier.use", poly);
+                    return Collections.singletonList(
+                            new DiagMessage(ERROR, "invalid.polymorphic.qualifier.use", poly));
                 }
             }
-            return Result.SUCCESS;
+            return Collections.emptyList();
         }
     }
 
