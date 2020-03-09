@@ -727,7 +727,6 @@ public final class Float extends Number implements Comparable<Float> {
      * @see java.lang.Float#floatToIntBits(float)
      */
     @Pure
-    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object obj) {
         return (obj instanceof Float)
                && (floatToIntBits(((Float)obj).value) == floatToIntBits(value));
