@@ -153,14 +153,12 @@ public class I18nFormatterTreeUtil {
 
     /** Reports an error. Takes a {@link Result} to report the location. */
     public final <E> void failure(Result<E> res, @CompilerMessageKey String msg, Object... args) {
-        checker.report(
-                org.checkerframework.framework.source.Result.failure(msg, args), res.location);
+        checker.reportError(res.location, msg, args);
     }
 
     /** Reports an warning. Takes a {@link Result} to report the location. */
     public final <E> void warning(Result<E> res, @CompilerMessageKey String msg, Object... args) {
-        checker.report(
-                org.checkerframework.framework.source.Result.warning(msg, args), res.location);
+        checker.reportWarning(res.location, msg, args);
     }
 
     private I18nConversionCategory[] asFormatCallCategoriesLowLevel(MethodInvocationNode node) {
@@ -297,10 +295,7 @@ public class I18nFormatterTreeUtil {
                             paramIndex = flowExprContext.arguments.indexOf(paramArg);
                         } catch (FlowExpressionParseException e) {
                             // report errors here
-                            checker.report(
-                                    org.checkerframework.framework.source.Result.failure(
-                                            "i18nformat.invalid.formatfor"),
-                                    tree);
+                            checker.reportError(tree, "i18nformat.invalid.formatfor");
                         }
                     }
                     break;

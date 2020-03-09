@@ -73,7 +73,6 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.NoQualifierParameter;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.StubTypes;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -3144,12 +3143,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 results.add(annotation);
             } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                 // If a CompletionFailure occurs, issue a warning.
-                checker.report(
-                        Result.warning(
-                                "annotation.not.completed",
-                                ElementUtils.getVerboseName(elt),
-                                annotation),
-                        annotation.getAnnotationType().asElement());
+                checker.reportWarning(
+                        annotation.getAnnotationType().asElement(),
+                        "annotation.not.completed",
+                        ElementUtils.getVerboseName(elt),
+                        annotation);
             }
         }
 
@@ -3196,12 +3194,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                         // Fix for Issue 348: If a CompletionFailure occurs,
                         // issue a warning.
-                        checker.report(
-                                Result.warning(
-                                        "annotation.not.completed",
-                                        ElementUtils.getVerboseName(elt),
-                                        annotation),
-                                annotation.getAnnotationType().asElement());
+                        checker.reportWarning(
+                                annotation.getAnnotationType().asElement(),
+                                "annotation.not.completed",
+                                ElementUtils.getVerboseName(elt),
+                                annotation);
                         continue;
                     }
                     if (containsSameByClass(annotationsOnAnnotation, InheritedAnnotation.class)
@@ -3266,12 +3263,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // I didn't find a nicer alternative to check whether the Symbol can be completed.
                 // The completer field of a Symbol might be non-null also in successful cases.
                 // Issue a warning (exception only happens once) and continue.
-                checker.report(
-                        Result.warning(
-                                "annotation.not.completed",
-                                ElementUtils.getVerboseName(element),
-                                annotation),
-                        annotation.getAnnotationType().asElement());
+                checker.reportWarning(
+                        annotation.getAnnotationType().asElement(),
+                        "annotation.not.completed",
+                        ElementUtils.getVerboseName(element),
+                        annotation);
                 continue;
             }
             // First call copier, if exception, continue normal modula laws.

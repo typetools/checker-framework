@@ -353,14 +353,12 @@ public class FormatterTreeUtil {
 
     /** Reports an error. Takes a {@link Result} to report the location. */
     public final <E> void failure(Result<E> res, @CompilerMessageKey String msg, Object... args) {
-        checker.report(
-                org.checkerframework.framework.source.Result.failure(msg, args), res.location);
+        checker.reportError(res.location, msg, args);
     }
 
     /** Reports an warning. Takes a {@link Result} to report the location. */
     public final <E> void warning(Result<E> res, @CompilerMessageKey String msg, Object... args) {
-        checker.report(
-                org.checkerframework.framework.source.Result.warning(msg, args), res.location);
+        checker.reportWarning(res.location, msg, args);
     }
 
     /**
