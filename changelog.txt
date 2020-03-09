@@ -10,9 +10,9 @@ Implementation details:
  * Renamings:
    applyUncheckedCodeDefaults() to applyConservativeDefaults()
    useUncheckedCodeDefault() to useConservativeDefault()
- * Removed the `framework.source.Result` class.
- * Changed the signature of methods that took or returned a Result, notably:
-    * `SourceChecker.report` (prefer `reportError` and `reportWarning`)
+ * Deprecated the `framework.source.Result` class; use `List<DiagMessage>`
+   instead.  If you were creating a `Result` just to pass it to `report`, then
+   call new methods `reportError` and `reportWarning` instead.
 
 ---------------------------------------------------------------------------
 

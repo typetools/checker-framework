@@ -878,6 +878,29 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     ///
 
     /**
+     * Reports a result. By default, it prints it to the screen via the compiler's internal messager
+     * if the result is non-success; otherwise, the method returns with no side effects.
+     *
+     * @param r the result to report
+     * @param src the position object associated with the result; may be an Element, a Tree, or null
+     * @deprecated use {@link #reportError} or {@link reportWarning} instead
+     */
+    @Deprecated // use {@link #reportError} or {@link reportWarning} instead
+    public void report(final Result r, final Object src) {
+        if (r.isSuccess()) {
+            return;
+        }
+
+        if (shouldSuppressWarnings(src, r.getMessageKeys().iterator().next())) {
+            return;
+        }
+
+        for (DiagMessage dmsg : r.getDiagMessages()) {
+            report(src, dmsg);
+        }
+    }
+
+    /**
      * Reports an error. By default, prints it to the screen via the compiler's internal messager.
      *
      * @param source the source position information; may be an Element, a Tree, or null
