@@ -147,7 +147,6 @@ public abstract class Enum<E extends Enum<E>>
      *          enum constant.
      */
     @Pure
-    @EnsuresNonNullIf(expression="#1", result=true)
     public final boolean equals(@Nullable Object other) {
         return this==other;
     }
