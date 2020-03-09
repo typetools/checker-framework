@@ -55,9 +55,7 @@ public class PurityChecker {
             boolean assumeDeterministic) {
         PurityCheckerHelper helper =
                 new PurityCheckerHelper(annoProvider, assumeSideEffectFree, assumeDeterministic);
-        if (statement != null) {
-            helper.scan(statement, null);
-        }
+        helper.scan(statement, null);
         return helper.purityResult;
     }
 

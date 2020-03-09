@@ -664,15 +664,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
-        // Report errors if necessary.
-        PurityResult r =
-                PurityChecker.checkPurity(
-                        atypeFactory.getPath(node.getBody()),
-                        atypeFactory,
-                        checker.hasOption("assumeSideEffectFree")
-                                || checker.hasOption("assumePure"),
-                        checker.hasOption("assumeDeterministic")
-                                || checker.hasOption("assumePure"));
+        TreePath body = atypeFactory.getPath(node.getBody());
+        PurityResult r;
+        if (body == null) {
+            r = new PurityResult();
+        } else {
+            r =
+                    PurityChecker.checkPurity(
+                            body,
+                            atypeFactory,
+                            checker.hasOption("assumeSideEffectFree")
+                                    || checker.hasOption("assumePure"),
+                            checker.hasOption("assumeDeterministic")
+                                    || checker.hasOption("assumePure"));
+        }
         if (!r.isPure(kinds)) {
             reportPurityErrors(r, node, kinds);
         }
