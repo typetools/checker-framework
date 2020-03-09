@@ -987,8 +987,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Print a non-localized message using the javac messager. This is preferable to using
      * System.out or System.err, but should only be used for exceptional cases that don't happen in
-     * correct usage. Localized messages should be raised using {@link SourceChecker#report(Result,
-     * Object)}.
+     * correct usage. Localized messages should be raised using {@link #reportError}, {@link
+     * #reportWarning}, etc.
      *
      * @param kind the kind of message to print
      * @param msg the message text
