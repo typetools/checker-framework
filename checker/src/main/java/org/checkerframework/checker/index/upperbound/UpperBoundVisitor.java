@@ -123,7 +123,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         try {
             rec = FlowExpressionParseUtil.parse(s, context, getCurrentPath(), false);
         } catch (FlowExpressionParseException e) {
-            checker.report(e.getResult(), error);
+            checker.report(error, e.getDiagMessage());
             return;
         }
         Element element = null;

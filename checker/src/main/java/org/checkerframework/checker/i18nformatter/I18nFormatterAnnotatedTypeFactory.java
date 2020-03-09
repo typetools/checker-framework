@@ -111,8 +111,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
                         if (in == null) {
                             System.err.println("Couldn't find the properties file: " + name);
-                            // report(Result.failure("propertykeychecker.filenotfound", name),
-                            // null);
+                            // report(null, "propertykeychecker.filenotfound", name);
                             // return Collections.emptySet();
                             continue;
                         }

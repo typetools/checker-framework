@@ -10,6 +10,9 @@ Implementation details:
  * Renamings:
    applyUncheckedCodeDefaults() to applyConservativeDefaults()
    useUncheckedCodeDefault() to useConservativeDefault()
+ * Removed the `framework.source.Result` class.
+ * Changed the signature of methods that took or returned a Result, notably:
+    * `SourceChecker.report` (prefer `reportError` and `reportWarning`)
 
 ---------------------------------------------------------------------------
 

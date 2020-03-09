@@ -24,7 +24,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TreeUtils;
@@ -146,16 +145,15 @@ public class OptionalVisitor
         if (sameExpression(receiver, getReceiver)) {
             ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
 
-            checker.report(
-                    Result.warning(
-                            "prefer.map.and.orelse",
-                            receiver,
-                            // The literal "CONTAININGCLASS::" is gross.
-                            // TODO: add this to the error message.
-                            // ElementUtils.getQualifiedClassName(ele);
-                            ele.getSimpleName(),
-                            falseExpr),
-                    node);
+            checker.reportWarning(
+                    node,
+                    "prefer.map.and.orelse",
+                    receiver,
+                    // The literal "CONTAININGCLASS::" is gross.
+                    // TODO: add this to the error message.
+                    // ElementUtils.getQualifiedClassName(ele);
+                    ele.getSimpleName(),
+                    falseExpr);
         }
     }
 
