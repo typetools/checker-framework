@@ -73,9 +73,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
     private PurityResult checkPurity(
             TreePath statement, AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
         PurityVisitorHelper helper = new PurityVisitorHelper(annoProvider, assumeSideEffectFree);
-        if (statement != null) {
-            helper.scan(statement, null);
-        }
+        helper.scan(statement, null);
         return helper.purityResult;
     }
 
@@ -310,12 +308,14 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
                 }
             }
 
-            // Report errors if necessary.
-            PurityResult r =
-                    checkPurity(
-                            atypeFactory.getPath(node.getBody()),
-                            atypeFactory,
-                            assumeSideEffectFree);
+            TreePath body = atypeFactory.getPath(node.getBody());
+            PurityResult r;
+            if (body == null) {
+                r = new PurityResult();
+            } else {
+                r = checkPurity(body, atypeFactory, assumeSideEffectFree);
+            }
+
             if (!r.isPure(kinds)) {
                 reportPurityErrors(r, kinds);
             }
