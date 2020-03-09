@@ -69,6 +69,10 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
     /**
      * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
      * result that can be queried.
+     *
+     * @param statement the statement to check
+     * @param annoProvider the annotation provider
+     * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
      */
     private PurityResult checkPurity(
             TreePath statement, AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
@@ -83,13 +87,13 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
      */
     public static class PurityResult {
 
-        /** Reasons why a method is not {@link SideEffectFree}. */
+        /** Reasons that the referenced method is not side-effect-free. */
         protected final List<Pair<Tree, String>> notSEFreeReasons = new ArrayList<>(1);
 
-        /** Reasons why a method is not {@link Deterministic}. */
+        /** Reasons that the referenced method is not deterministic. */
         protected final List<Pair<Tree, String>> notDetReasons = new ArrayList<>(1);
 
-        /** Reasons why a method is not {@link SideEffectFree} nor {@link Deterministic} */
+        /** Reasons that the referenced method is not side-effect-free and deterministic. */
         protected final List<Pair<Tree, String>> notBothReasons = new ArrayList<>(1);
 
         /**
@@ -98,7 +102,11 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
          */
         protected EnumSet<Pure.Kind> kinds = EnumSet.allOf(Pure.Kind.class);
 
-        /** Accessor method for the kinds. */
+        /**
+         * Return the kinds of purity that the method has.
+         *
+         * @return the kinds of purity that the method has
+         */
         public EnumSet<Pure.Kind> getKinds() {
             return kinds;
         }
@@ -113,34 +121,61 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             return kinds.containsAll(otherKinds);
         }
 
-        /** Get the reasons why the method is not side-effect-free. */
+        /**
+         * Get the reasons why the method is not side-effect-free.
+         *
+         * @return the reasons why the method is not side-effect-free
+         */
         public List<Pair<Tree, String>> getNotSEFreeReasons() {
             return notSEFreeReasons;
         }
 
-        /** Add a reason why the method is not side-effect-free. */
+        /**
+         * Add a reason why the method is not side-effect-free.
+         *
+         * @param t a tree
+         * @param msgId why the tree is not side-effect-free
+         */
         public void addNotSEFreeReason(Tree t, String msgId) {
             notSEFreeReasons.add(Pair.of(t, msgId));
             kinds.remove(SIDE_EFFECT_FREE);
         }
 
-        /** Get the reasons why the method is not deterministic. */
+        /**
+         * Get the reasons why the method is not deterministic.
+         *
+         * @return the reasons why the method is not deterministic
+         */
         public List<Pair<Tree, String>> getNotDetReasons() {
             return notDetReasons;
         }
 
-        /** Add a reason why the method is not deterministic. */
+        /**
+         * Add a reason why the method is not deterministic.
+         *
+         * @param t a tree
+         * @param msgId why the tree is not deterministic
+         */
         public void addNotDetReason(Tree t, String msgId) {
             notDetReasons.add(Pair.of(t, msgId));
             kinds.remove(DETERMINISTIC);
         }
 
-        /** Get the reasons why the method is not both side-effect-free and deterministic. */
+        /**
+         * Get the reasons why the method is not both side-effect-free and deterministic.
+         *
+         * @return the reasons why the method is not both side-effect-free and deterministic
+         */
         public List<Pair<Tree, String>> getNotBothReasons() {
             return notBothReasons;
         }
 
-        /** Add a reason why the method is not both side-effect-free and deterministic. */
+        /**
+         * Add a reason why the method is not both side-effect-free and deterministic.
+         *
+         * @param t tree
+         * @param msgId why the tree is not deterministic and side-effect-free
+         */
         public void addNotBothReason(Tree t, String msgId) {
             notBothReasons.add(Pair.of(t, msgId));
             kinds.remove(DETERMINISTIC);
@@ -185,9 +220,13 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
                 purityResult.addNotBothReason(node, "call.method");
             } else {
-                boolean det = PurityUtils.isDeterministic(annoProvider, elt);
-                boolean seFree =
-                        (assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, elt));
+                EnumSet<Pure.Kind> purityKinds =
+                        (assumeDeterministic && assumeSideEffectFree)
+                                // Avoid computation if not necessary
+                                ? EnumSet.of(DETERMINISTIC, SIDE_EFFECT_FREE)
+                                : PurityUtils.getPurityKinds(annoProvider, elt);
+                boolean det = assumeDeterministic || purityKinds.contains(DETERMINISTIC);
+                boolean seFree = assumeSideEffectFree || purityKinds.contains(SIDE_EFFECT_FREE);
                 if (!det && !seFree) {
                     purityResult.addNotBothReason(node, "call.method");
                 } else if (!det) {
@@ -239,8 +278,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             Element ctorElement = TreeUtils.elementFromUse(node);
             boolean deterministic = okThrowDeterministic;
             boolean sideEffectFree =
-                    (assumeSideEffectFree
-                            || PurityUtils.isSideEffectFree(annoProvider, ctorElement));
+                    assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);
             // This does not use "addNotBothReason" because the reasons are different:  one is
             // because the constructor is called at all, and the other is because the constuctor
             // is not side-effect-free.
@@ -264,7 +302,11 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             return super.visitAssignment(node, ignore);
         }
 
-        /** Performs an assignment check and updates the result if necessary. */
+        /**
+         * Check whether {@code variable} is permitted on the left-hand-side of an assignment.
+         *
+         * @param variable the lhs to check
+         */
         protected void assignmentCheck(ExpressionTree variable) {
             if (TreeUtils.isFieldAccess(variable)) {
                 // lhs is a field access
@@ -278,7 +320,11 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             }
         }
 
-        /** Checks if the argument passed is a local variable. */
+        /**
+         * Checks if the argument passed is a local variable.
+         *
+         * @param variable the tree to check
+         */
         protected boolean isLocalVariable(ExpressionTree variable) {
             return variable instanceof IdentifierTree && !TreeUtils.isFieldAccess(variable);
         }
