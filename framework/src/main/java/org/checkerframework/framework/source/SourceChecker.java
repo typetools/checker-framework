@@ -2454,11 +2454,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
         gitPropertiesPrinted = true;
 
-        try (InputStream in = getClass().getResourceAsStream("/git.properties");
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in)); ) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
+        try (InputStream in = getClass().getResourceAsStream("/git.properties")) {
+            if (in == null) {
+                System.out.println("Did not find resource /git.properties");
+                return;
+            }
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
             }
         } catch (IOException e) {
             System.out.println("IOException while reading git.properties: " + e.getMessage());
