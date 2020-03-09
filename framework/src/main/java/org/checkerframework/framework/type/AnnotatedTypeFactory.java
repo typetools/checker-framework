@@ -506,18 +506,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * This method is called only when {@code -Ainfer} is passed as an option. It checks if another
      * option that should not occur simultaneously with the whole-program inference is also passed
      * as argument, and aborts the process if that is the case. For example, the whole-program
-     * inference process was not designed to work with unchecked code defaults.
+     * inference process was not designed to work with conservative defaults.
      *
      * <p>Subclasses may override this method to add more options.
      */
     protected void checkInvalidOptionsInferSignatures() {
         // See Issue 683
         // https://github.com/typetools/checker-framework/issues/683
-        if (checker.useUncheckedCodeDefault("source")
-                || checker.useUncheckedCodeDefault("bytecode")) {
+        if (checker.useConservativeDefault("source")
+                || checker.useConservativeDefault("bytecode")) {
             throw new UserError(
-                    "The option -Ainfer cannot be"
-                            + " used together with unchecked code defaults.");
+                    "The option -Ainfer cannot be" + " used together with conservative defaults.");
         }
     }
 

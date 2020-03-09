@@ -4,6 +4,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -13,6 +14,7 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 /**
@@ -147,6 +149,8 @@ public interface WholeProgramInference {
 
     /**
      * Updates the return type of the method {@code methodTree} based on {@code returnedExpression}.
+     * Also updates the return types of any methods that this method overrides that are available as
+     * source code.
      *
      * <p>If there is no stored annotated return type for the method methodTree, then the type of
      * the return expression will be added to the return type of that method. If there is a stored
@@ -156,6 +160,8 @@ public interface WholeProgramInference {
      * @param retNode the node that contains the expression returned
      * @param classSymbol the symbol of the class that contains the method
      * @param methodTree the tree of the method whose return type may be updated
+     * @param overriddenMethods the methods that the given method return overrides, indexed by the
+     *     annotated type of the superclass in which each method is defined
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used to update the method's return type
      */
@@ -163,6 +169,7 @@ public interface WholeProgramInference {
             ReturnNode retNode,
             ClassSymbol classSymbol,
             MethodTree methodTree,
+            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods,
             AnnotatedTypeFactory atf);
 
     /**

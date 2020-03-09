@@ -1,3 +1,18 @@
+Version 3.3.0, April 1, 2020
+
+Renamings:
+  -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
+    The old name works temporarily but will be removed in a future release.
+
+Implementation details:
+ * Removed `@DefaultInUncheckedCodeFor` and
+   `@DefaultQualifierInHierarchyInUncheckedCode`.
+ * Renamings:
+   applyUncheckedCodeDefaults() to applyConservativeDefaults()
+   useUncheckedCodeDefault() to useConservativeDefault()
+
+---------------------------------------------------------------------------
+
 Version 3.2.0, March 2, 2020
 
 @SuppressWarnings("initialization") suppresses only warnings whose key
@@ -27,6 +42,8 @@ Implementation details:
  * Deprecated Analysis#Analysis(ProcessingEnvironment) and Analysis#Analysis(T,
    int, ProcessingEnvironment); use Analysis#Analysis(), Analysis#Analysis(int),
    Analysis#Analysis(T), and Analysis#Analysis(T, int) instead.
+ * Renamed SourceChecker#getMessages to getMessagesProperties.
+ * Renamed one overload of SourceChecker.printMessages to printOrStoreMessage.
 
 Closed issues:
 2181, 2975, 3018, 3022, 3032, 3036, 3037, 3038, 3041, 3049, 3055, 3076.

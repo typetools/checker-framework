@@ -236,7 +236,6 @@ public final class Boolean implements java.io.Serializable,
      *          same value; {@code false} otherwise.
      */
     @Pure
-    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof Boolean) {
             return value == ((Boolean)obj).booleanValue();
