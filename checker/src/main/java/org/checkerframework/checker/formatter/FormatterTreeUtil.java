@@ -358,8 +358,8 @@ public class FormatterTreeUtil {
      * @param msgKey the diagnostic message key
      * @param args arguments to the diagnostic message
      */
-    public final void failure(Result<?> res, @CompilerMessageKey String msg, Object... args) {
-        checker.reportError(res.location, msg, args);
+    public final void failure(Result<?> res, @CompilerMessageKey String msgKey, Object... args) {
+        checker.reportError(res.location, msgKey, args);
     }
 
     /**
@@ -369,8 +369,8 @@ public class FormatterTreeUtil {
      * @param msgKey the diagnostic message key
      * @param args arguments to the diagnostic message
      */
-    public final void warning(Result<?> res, @CompilerMessageKey String msg, Object... args) {
-        checker.reportWarning(res.location, msg, args);
+    public final void warning(Result<?> res, @CompilerMessageKey String msgKey, Object... args) {
+        checker.reportWarning(res.location, msgKey, args);
     }
 
     /**
