@@ -131,13 +131,13 @@ public class PurityUtils {
         if (pureAnnotation != null) {
             return EnumSet.of(DETERMINISTIC, SIDE_EFFECT_FREE);
         }
-        EnumSet<Pure.Kind> kinds = EnumSet.noneOf(Pure.Kind.class);
+        EnumSet<Pure.Kind> result = EnumSet.noneOf(Pure.Kind.class);
         if (sefAnnotation != null) {
-            kinds.add(SIDE_EFFECT_FREE);
+            result.add(SIDE_EFFECT_FREE);
         }
         if (detAnnotation != null) {
-            kinds.add(DETERMINISTIC);
+            result.add(DETERMINISTIC);
         }
-        return kinds;
+        return result;
     }
 }
