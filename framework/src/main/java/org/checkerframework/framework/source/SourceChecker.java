@@ -993,7 +993,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param kind the kind of message to print
      * @param msg the message text
      * @param args optional arguments to substitute in the message
-     * @see SourceChecker#report(Result, Object)
+     * @see SourceChecker#report(Object, DiagMessage)
      */
     public void message(javax.tools.Diagnostic.Kind kind, String msg, Object... args) {
         String ftdmsg = String.format(msg, args);
@@ -1017,7 +1017,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Do not call this method directly. Call {@link #report(Result, Object)} instead.
+     * Do not call this method. Call {@link #reportError} or {@link #reportWarning} instead.
      *
      * <p>This method exists so that the BaseTypeChecker can override it. For compound checkers, it
      * stores all messages and sorts them by location before outputting them.

@@ -25,8 +25,9 @@ public class DiagMessage {
     /**
      * Create a DiagMessage.
      *
-     * @param messageKey the message key.
-     * @param args the arguments that will be interpolated into the localized message.
+     * @param kind the kind of message
+     * @param messageKey the message key
+     * @param args the arguments that will be interpolated into the localized message
      */
     public DiagMessage(Kind kind, @CompilerMessageKey String messageKey, Object... args) {
         this.kind = kind;

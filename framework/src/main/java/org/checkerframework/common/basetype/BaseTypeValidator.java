@@ -119,6 +119,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      *   <li>These properties should also hold recursively for component types of arrays, as wells
      *       as bounds of type variables and wildcards.
      * </ol>
+     *
+     * @param qualifierHierarchy the qualifier hierachy
+     * @param type the type to test
+     * @return list of reasons the type is invalid, or empty list if the type is valid
      */
     protected List<DiagMessage> isValidType(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
