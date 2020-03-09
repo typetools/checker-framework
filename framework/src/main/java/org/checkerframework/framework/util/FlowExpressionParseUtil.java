@@ -1054,8 +1054,8 @@ public class FlowExpressionParseUtil {
     ///
 
     /**
-     * An exception that indicates a parse error. Call {@link #getResult} to obtain a {@link Result}
-     * that can be used for error reporting.
+     * An exception that indicates a parse error. Call {@link #getDiagMessage} to obtain a {@link
+     * DiagMessage} that can be used for error reporting.
      */
     public static class FlowExpressionParseException extends Exception {
         private static final long serialVersionUID = 2L;
