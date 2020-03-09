@@ -1035,6 +1035,21 @@ If you want to allow Maven to compile your code without running the
 checkers, you may want to move the declarations above to within a Maven
 profile, so that the checkers run only if the profile was enabled.
 
+% TODO: Figure out why, and then remove this paragraph.
+Warning:  adding
+
+\begin{mysmall}
+\begin{alltt}
+<compilerArgs>
+  ...
+  <arg>-verbose</arg>
+\end{alltt}
+\end{mysmall}
+
+\noindent
+may suppress warnings from the stub parser.
+
+
 \end{enumerate}
 
 
