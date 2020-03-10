@@ -213,16 +213,40 @@ public final class SceneToStubWriter {
                 arrayType.indexOf('[') == -1
                         ? null
                         : arrayType.substring(0, arrayType.lastIndexOf('['));
+
         // base case when the component is a non-array type
         if (nextComponentType == null) {
-            String componentAsString = arrayType + " " + result.toString();
-            if (e != null) {
+            String componentAsString = arrayType + result.toString();
+            if (e != null && !arrayType.startsWith("@")) {
                 return formatAnnotations(e.tlAnnotationsHere) + componentAsString;
             } else {
                 return componentAsString;
             }
         } else {
-            if (e != null) {
+
+            String arrayLiteralAnnotation = "";
+            int finalComponentArrayPos = nextComponentType.lastIndexOf(']');
+            int finalAnnotationPos = nextComponentType.lastIndexOf('@');
+            if (finalComponentArrayPos != -1) {
+                // glob anything to the right of the next component array with this array
+                arrayLiteralAnnotation = nextComponentType.substring(finalComponentArrayPos + 1);
+                nextComponentType = nextComponentType.substring(0, finalComponentArrayPos + 1);
+            } else if (finalAnnotationPos > 0) {
+                // if there is no array in the component type, and an annotation that's not
+                // at the start, then glob anything to the right of that annotation with this
+                // array. TODO: generics/other inner types with annotations. Does this handle them?
+                arrayLiteralAnnotation = nextComponentType.substring(finalAnnotationPos);
+                // don't grab the space here, because it will be re-added later
+                nextComponentType = nextComponentType.substring(0, finalAnnotationPos - 1);
+            }
+
+            arrayLiteralAnnotation = arrayLiteralAnnotation.trim();
+
+            if (!"".equals(arrayLiteralAnnotation)) {
+                result.append(" ");
+                result.append(arrayLiteralAnnotation);
+                result.append(" ");
+            } else if (e != null) {
                 result.append(" ");
                 result.append(formatAnnotations(e.tlAnnotationsHere));
             }
@@ -297,17 +321,19 @@ public final class SceneToStubWriter {
 
     /**
      * Formats the given type correctly for printing in Java source code.
+     *
      * @param basetype the base type
      * @param type the scene-lib representation of the type
-     * @return a String representing the type, as it would appear in Java source code,
-     *         followed by a trailing space
+     * @return a String representing the type, as it would appear in Java source code, followed by a
+     *     trailing space
      */
     private static String formatType(final String basetype, final ATypeElement type) {
         String basetypeToPrint = basetype;
         // anonymous static classes shouldn't be printed with the "anonymous" tag that the AScene
         // library uses
         if (basetype.startsWith("<anonymous ")) {
-            basetypeToPrint = basetype.substring("<anonymous ".length(), basetype.length() - 1);
+            basetypeToPrint =
+                    basetypeToPrint.substring("<anonymous ".length(), basetype.length() - 1);
         }
 
         // fields don't need their generic types, and sometimes they are wrong. Just don't print
@@ -316,20 +342,17 @@ public final class SceneToStubWriter {
             basetypeToPrint = basetypeToPrint.substring(0, basetypeToPrint.indexOf('<'));
         }
 
-        // don't print annotations that were already in the type, because doing
-        // so messes up the stub parser
-        /*while (basetypeToPrint.contains("@")) {
-            int firstAtSign = basetypeToPrint.indexOf('@');
-            basetypeToPrint = basetypeToPrint.substring(0, firstAtSign) +
-                    basetypeToPrint.substring(basetypeToPrint.indexOf(' ', firstAtSign) + 1);
-        }*/
-
         if (basetypeToPrint.contains("[")) {
             // formatArrayType adds a trailing space
             return formatArrayType(type, basetypeToPrint);
         } else {
-            // must add trailing space directly
-            return formatAnnotations(type.tlAnnotationsHere) + basetypeToPrint + " ";
+            // must add trailing space directly here
+            if (!basetypeToPrint.startsWith("@")) {
+                // only print inferred annotation if there is no user-written annotation
+                return formatAnnotations(type.tlAnnotationsHere) + basetypeToPrint + " ";
+            } else {
+                return basetypeToPrint + " ";
+            }
         }
     }
 
