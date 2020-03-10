@@ -9,7 +9,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -89,10 +88,9 @@ public class CollectionToArrayHeuristics {
 
             if (receiverIsNonNull && !argIsArrayCreation) {
                 if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
-                    checker.report(Result.warning("toArray.nullable.elements.not.newarray"), tree);
+                    checker.reportWarning(tree, "toArray.nullable.elements.not.newarray");
                 } else {
-                    checker.report(
-                            Result.warning("toArray.nullable.elements.mismatched.size"), tree);
+                    checker.reportWarning(tree, "toArray.nullable.elements.mismatched.size");
                 }
             }
         }
