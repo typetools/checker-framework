@@ -653,7 +653,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /** Checks contracts at method declaration. */
+    /**
+     * Checks contracts at method declaration.
+     *
+     * @param node the method to be checked
+     * @param methodElement the element corresponding to the method
+     * @param formalParamNames parameter names
+     * @param abstractMethod whether or not the method is abstract
+     */
     private void checkContractsAtMethodDeclaration(
             MethodTree node,
             ExecutableElement methodElement,

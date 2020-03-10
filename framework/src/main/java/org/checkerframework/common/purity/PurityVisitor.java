@@ -494,7 +494,18 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
     /** This class adds a purity check to the OverrideChecker. */
     protected class PurityOverrideChecker extends OverrideChecker {
 
-        /** Creates a PurityOverrideChecker. */
+        /**
+         * Creates a PurityOverrideChecker.
+         *
+         * @param overriderTree the AST node of the overriding method or method reference
+         * @param overrider the type of the overriding method
+         * @param overridingType the type enclosing the overrider method, usually an
+         *     AnnotatedDeclaredType; for Method References may be something else
+         * @param overridingReturnType the return type of the overriding method
+         * @param overridden the type of the overridden method
+         * @param overriddenType the declared type enclosing the overridden method
+         * @param overriddenReturnType the return type of the overridden method
+         */
         public PurityOverrideChecker(
                 Tree overriderTree,
                 AnnotatedTypeMirror.AnnotatedExecutableType overrider,
