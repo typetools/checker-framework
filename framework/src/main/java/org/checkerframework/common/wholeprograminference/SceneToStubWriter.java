@@ -188,7 +188,27 @@ public final class SceneToStubWriter {
      */
     private static String formatArrayType(ATypeElement e, String arrayType) {
         StringBuilder result = new StringBuilder();
-        return formatArrayTypeImpl(e, arrayType, result) + " ";
+        int componentEndPos;
+        if (arrayType.startsWith("@")) {
+            // if there's an explicit annotations, go to second space
+            componentEndPos = arrayType.indexOf(' ', arrayType.indexOf(' ') + 1);
+        } else {
+            // otherwise, go to first space
+            componentEndPos = arrayType.indexOf(' ');
+        }
+
+        // if the first array doesn't have an annotation, then the spacing will be off,
+        // so use the position of the first '[' instead (which must be correct, since the
+        // first array doesn't have an annotation).
+        int firstArrayPos = arrayType.indexOf('[');
+        if (firstArrayPos < componentEndPos || componentEndPos == -1) {
+            componentEndPos = firstArrayPos - 1;
+        }
+
+        String componentType = arrayType.substring(0, componentEndPos + 1);
+        String arrayTypes = arrayType.substring(componentEndPos + 1);
+
+        return formatArrayTypeImpl(e, arrayTypes, componentType, result) + " ";
     }
 
     /**
@@ -203,68 +223,61 @@ public final class SceneToStubWriter {
      *
      * @param e same as above, but can become null if scene-lib did not fill in the inner types,
      *     which happens when they do not have annotations
-     * @param arrayType same as above
+     * @param arrayTypes the array parts of the array type (i.e. the parts after the component type)
+     * @param componentType the component type of the array
      * @param result the string builder containing the array types seen so far
      * @return the formatted string, without the trailing space
      */
     private static String formatArrayTypeImpl(
-            @Nullable ATypeElement e, String arrayType, StringBuilder result) {
-        String nextComponentType =
-                arrayType.indexOf('[') == -1
-                        ? null
-                        : arrayType.substring(0, arrayType.lastIndexOf('['));
-
-        // base case when the component is a non-array type
-        if (nextComponentType == null) {
-            String componentAsString = arrayType + result.toString();
-            if (e != null && !arrayType.startsWith("@")) {
-                return formatAnnotations(e.tlAnnotationsHere) + componentAsString;
-            } else {
-                return componentAsString;
-            }
+            @Nullable ATypeElement e,
+            String arrayTypes,
+            String componentType,
+            StringBuilder result) {
+        // print the next type:
+        String nextArrayType = arrayTypes.substring(0, arrayTypes.indexOf(']') + 1);
+        String remainingArrayType = arrayTypes.substring(arrayTypes.indexOf(']') + 1);
+        if (nextArrayType.contains("@")) {
+            result.append(nextArrayType);
         } else {
-
-            String arrayLiteralAnnotation = "";
-            int finalComponentArrayPos = nextComponentType.lastIndexOf(']');
-            int finalAnnotationPos = nextComponentType.lastIndexOf('@');
-            if (finalComponentArrayPos != -1) {
-                // glob anything to the right of the next component array with this array
-                arrayLiteralAnnotation = nextComponentType.substring(finalComponentArrayPos + 1);
-                nextComponentType = nextComponentType.substring(0, finalComponentArrayPos + 1);
-            } else if (finalAnnotationPos > 0) {
-                // if there is no array in the component type, and an annotation that's not
-                // at the start, then glob anything to the right of that annotation with this
-                // array. TODO: generics/other inner types with annotations. Does this handle them?
-                arrayLiteralAnnotation = nextComponentType.substring(finalAnnotationPos);
-                // don't grab the space here, because it will be re-added later
-                nextComponentType = nextComponentType.substring(0, finalAnnotationPos - 1);
-            }
-
-            arrayLiteralAnnotation = arrayLiteralAnnotation.trim();
-
-            if (!"".equals(arrayLiteralAnnotation)) {
-                result.append(" ");
-                result.append(arrayLiteralAnnotation);
-                result.append(" ");
-            } else if (e != null) {
-                result.append(" ");
+            if (e != null) {
                 result.append(formatAnnotations(e.tlAnnotationsHere));
             }
-            result.append("[]");
+            result.append(nextArrayType);
         }
-        // find the next array type, if scene-lib is tracking information about it
-        ATypeElement innerType = null;
-        if (e != null) {
-            for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
-                InnerTypeLocation loc = ite.getKey();
-                ATypeElement it = ite.getValue();
-                if (loc.location.contains(TypePathEntry.ARRAY)) {
-                    innerType = it;
-                }
-            }
+        result.append(" ");
+
+        // check if there are any other array types. If so, recurse; otherwise, print the component.
+        if ("".equals(remainingArrayType)) {
+            ATypeElement component = getNextArrayLevel(e);
+            return formatType(componentType, component) + result.toString();
+        } else {
+            return formatArrayTypeImpl(
+                    getNextArrayLevel(e), remainingArrayType, componentType, result);
+        }
+    }
+
+    /**
+     * Gets the next array level (either the next array type or the component) from the given type
+     * element, or null if scene-lib is not storing any more information about this array (for
+     * example, when the component type is unannotated).
+     *
+     * @param e the array type element; can be null
+     * @return the next level of the array, if scene-lib stores information on it. null if the input
+     *     is null or scene-lib is not storing more information.
+     */
+    private static @Nullable ATypeElement getNextArrayLevel(@Nullable ATypeElement e) {
+        if (e == null) {
+            return null;
         }
 
-        return formatArrayTypeImpl(innerType, nextComponentType, result);
+        for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
+            InnerTypeLocation loc = ite.getKey();
+            ATypeElement it = ite.getValue();
+            if (loc.location.contains(TypePathEntry.ARRAY)) {
+                return it;
+            }
+        }
+        return null;
     }
 
     /**
@@ -323,11 +336,12 @@ public final class SceneToStubWriter {
      * Formats the given type correctly for printing in Java source code.
      *
      * @param basetype the base type
-     * @param type the scene-lib representation of the type
+     * @param type the scene-lib representation of the type, or null if only the bare type is to be
+     *     printed
      * @return a String representing the type, as it would appear in Java source code, followed by a
      *     trailing space
      */
-    private static String formatType(final String basetype, final ATypeElement type) {
+    private static String formatType(final String basetype, final @Nullable ATypeElement type) {
         String basetypeToPrint = basetype;
         // anonymous static classes shouldn't be printed with the "anonymous" tag that the AScene
         // library uses
@@ -345,14 +359,14 @@ public final class SceneToStubWriter {
         if (basetypeToPrint.contains("[")) {
             // formatArrayType adds a trailing space
             return formatArrayType(type, basetypeToPrint);
+        }
+
+        // must add trailing space directly here
+        if (type == null || basetypeToPrint.startsWith("@")) {
+            return basetypeToPrint + " ";
         } else {
-            // must add trailing space directly here
-            if (!basetypeToPrint.startsWith("@")) {
-                // only print inferred annotation if there is no user-written annotation
-                return formatAnnotations(type.tlAnnotationsHere) + basetypeToPrint + " ";
-            } else {
-                return basetypeToPrint + " ";
-            }
+            // only print inferred annotation if there is no user-written annotation
+            return formatAnnotations(type.tlAnnotationsHere) + basetypeToPrint + " ";
         }
     }
 
