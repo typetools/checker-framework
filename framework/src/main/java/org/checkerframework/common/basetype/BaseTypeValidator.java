@@ -143,11 +143,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     /**
      * Checks every property listed in {@link #isValidType}, but only for the top level type. If
-     * successful, returns null. If not successful, returns diagnostics.
+     * successful, returns an empty list. If not successful, returns diagnostics.
      *
      * @param qualifierHierarchy the qualifier hierarchy
      * @param type the type to be checked
-     * @return the diagnostics indicating failure, or null if successful
+     * @return the diagnostics indicating failure, or an empty list if successful
      */
     protected List<DiagMessage> isTopLevelValidType(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
