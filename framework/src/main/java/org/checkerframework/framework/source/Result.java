@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.BugInCF;
  * compiler interface.
  *
  * @see SourceChecker#report
- * @deprecated use {@code ListDiagMessage>} instead
+ * @deprecated use {@code List<DiagMessage>} instead
  */
 @Deprecated // use {@code List<DiagMessage>} instead
 public final class Result {

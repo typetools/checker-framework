@@ -105,7 +105,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     /**
      * Performs some well-formedness checks on the given {@link AnnotatedTypeMirror}. Returns a list
-     * of failures. If successful, returns en empty list. The method will never return failures for
+     * of failures. If successful, returns an empty list. The method will never return failures for
      * a valid type, but might not catch all invalid types.
      *
      * <p>Currently, the following is checked:
@@ -143,11 +143,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     /**
      * Checks every property listed in {@link #isValidType}, but only for the top level type. If
-     * successful, returns null. If not successful, returns diagnostics.
+     * successful, returns an empty list. If not successful, returns diagnostics.
      *
      * @param qualifierHierarchy the qualifier hierarchy
      * @param type the type to be checked
-     * @return the diagnostics indicating failure, or null if successful
+     * @return the diagnostics indicating failure, or an empty list if successful
      */
     protected List<DiagMessage> isTopLevelValidType(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
