@@ -419,7 +419,12 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
         return super.visitMethod(node, p);
     }
 
-    /** Reports errors found during purity checking. */
+    /**
+     * Reports errors found during purity checking.
+     *
+     * @param result the result after purity checking
+     * @param expectedKinds expected results
+     */
     protected void reportPurityErrors(PurityResult result, EnumSet<Pure.Kind> expectedKinds) {
         assert !result.isPure(expectedKinds);
         EnumSet<Pure.Kind> violations = EnumSet.copyOf(expectedKinds);
@@ -449,7 +454,12 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
         }
     }
 
-    /** Reports a single purity error. */
+    /**
+     * Reports a single purity error.
+     *
+     * @param msgKeyPrefix message key prefix
+     * @param r reason why the error is issued
+     */
     private void reportPurityError(String msgKeyPrefix, Pair<Tree, String> r) {
         String reason = r.second;
         @SuppressWarnings("CompilerMessages")
@@ -484,6 +494,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
     /** This class adds a purity check to the OverrideChecker. */
     protected class PurityOverrideChecker extends OverrideChecker {
 
+        /** Creates a PurityOverrideChecker. */
         public PurityOverrideChecker(
                 Tree overriderTree,
                 AnnotatedTypeMirror.AnnotatedExecutableType overrider,

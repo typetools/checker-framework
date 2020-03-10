@@ -653,6 +653,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
+    /** Checks contracts at method declaration. */
     private void checkContractsAtMethodDeclaration(
             MethodTree node,
             ExecutableElement methodElement,
@@ -3015,6 +3016,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return result;
         }
 
+        /** Checks pre and post conditions. */
         private void checkPreAndPostConditions() {
             String msgKey = methodReference ? "methodref" : "override";
             if (methodReference) {

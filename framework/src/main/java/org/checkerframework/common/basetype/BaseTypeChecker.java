@@ -175,6 +175,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * by the BaseTypeChecker.
      *
      * <p>The BaseTypeChecker will not modify the list returned by this method.
+     *
+     * @return the list containing every immediate subchecker.
      */
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers = new LinkedHashSet<>();
@@ -187,7 +189,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         return checkers;
     }
 
-    /** Returns whether or not reflection should be resolved. */
+    /**
+     * Returns whether or not reflection should be resolved.
+     *
+     * @return true if reflection should be resolved
+     */
     public boolean shouldResolveReflection() {
         // Because this method is indirectly called by getSubcheckers and
         // this.getOptions or this.hasOption
