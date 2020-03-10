@@ -8,12 +8,13 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 
 class Issue2432 {
 
-    void jdkAnnotation(List<@PolyNull Object> nl, @Nullable Object no) {
-        // JDK classes are manually annotated in CF
+    void jdkAnnotation(List<@PolyNull Object> nl, @Nullable Object no, @PolyNull Object po) {
         // :: error: (argument.type.incompatible)
         nl.add(null);
         // :: error: (argument.type.incompatible)
         nl.add(no);
+        // OK
+        nl.add(po);
     }
 
     // receiver's poly annotations in declaration are different from the ones in invocation
@@ -78,7 +79,7 @@ class Issue2432 {
     }
 
     // lub test with receiver
-    // T dummy in tripleAdd is to ensure poly annotations from declaration is handled serperately
+    // T dummy in tripleAdd is to ensure poly annotations from declaration is handled separately
     void lubWithReceiver(
             TypeArgClass<@PolyNull Object> pc, @Nullable Object no, @NonNull Object nno) {
         // :: error: (argument.type.incompatible)
@@ -87,7 +88,7 @@ class Issue2432 {
         pc.tripleAdd(no, nno, nno);
     }
 
-    // ensure ensure poly annotations from declaration is handled serperately from poly from other
+    // ensure poly annotations from declaration is handled separately from poly from other
     // context
     void declarationPolyInParameter(
             TypeArgClass<@PolyNull Object> pc, @Nullable Object no, @NonNull Object nno) {
