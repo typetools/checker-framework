@@ -39,16 +39,28 @@ import org.checkerframework.javacutil.TreeUtils;
  * Note: The nullness of the returned array doesn't depend on the passed array nullness.
  */
 public class CollectionToArrayHeuristics {
+
+    /** The processing environment. */
     private final ProcessingEnvironment processingEnv;
+    /** The checker, used for issuing diagnostic messages. */
+    private final BaseTypeChecker checker;
+    /** The type factory. */
     private final NullnessAnnotatedTypeFactory atypeFactory;
 
+    /** The Collection.toArray(T[]) method. */
     private final ExecutableElement collectionToArrayE;
+    /** The Collection.size() method. */
     private final ExecutableElement size;
+    /** The Collection type. */
     private final AnnotatedDeclaredType collectionType;
 
-    /** The checker, used for issuing diagnostics messages. */
-    private final BaseTypeChecker checker;
-
+    /**
+     * Create a CollectionToArrayHeuristics.
+     *
+     * @param env the processing environment
+     * @param checker the checker, used for issuing diagnostic messages
+     * @param factory the type factory
+     */
     public CollectionToArrayHeuristics(
             ProcessingEnvironment env,
             BaseTypeChecker checker,
