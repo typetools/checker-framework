@@ -144,13 +144,14 @@ public class ASceneWrapper {
      */
     public void writeToJaif(
             String jaifPath, Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
-        removeIgnoredAnnosFromScene(theScene, annosToIgnore);
-        theScene.prune();
+        AScene scene = theScene.clone();
+        removeIgnoredAnnosFromScene(scene, annosToIgnore);
+        scene.prune();
         new File(jaifPath).delete();
-        if (!theScene.isEmpty()) {
+        if (!scene.isEmpty()) {
             // Only write non-empty scenes into .jaif files.
             try {
-                IndexFileWriter.write(theScene, new FileWriter(jaifPath));
+                IndexFileWriter.write(scene, new FileWriter(jaifPath));
             } catch (IOException e) {
                 throw new UserError("Problem while writing %s: %s", jaifPath, e.getMessage());
             } catch (DefException e) {
@@ -168,11 +169,12 @@ public class ASceneWrapper {
      */
     public void writeToStub(
             String jaifPath, Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
-        removeIgnoredAnnosFromScene(theScene, annosToIgnore);
-        theScene.prune();
+        AScene scene = theScene.clone();
+        removeIgnoredAnnosFromScene(scene, annosToIgnore);
+        scene.prune();
         String stubPath = jaifPath.replace(".jaif", ".astub");
         new File(stubPath).delete();
-        if (!theScene.isEmpty()) {
+        if (!scene.isEmpty()) {
             // Only write non-empty scenes into .astub files.
             try {
                 SceneToStubWriter.write(this, new FileWriter(stubPath));
@@ -183,17 +185,10 @@ public class ASceneWrapper {
     }
 
     /**
-     * Interact with scenelib to add a class to the scene.
+     * Obtain the representation of the given class, which can be further operated on to e.g. add
+     * information about a method.
      *
      * <p>Results are interned.
-     *
-     * <p>updateClassMetadata has to be called on both paths (cache hit and cache miss) because the
-     * second parameter could have been null when the first miss occurred, so the data would never
-     * have been written. In general, the design of WPI forces this: this cache is used by several
-     * different hooks into the visitor (that is, CFAbstractTransfer), but the information needed to
-     * fully populate it is only available at some of those hooks. Since the information isn't used
-     * until the end of WPI when stubs/jaifs are printed, what's important is that it is eventually
-     * collected: it doesn't have to be on the first cache miss.
      *
      * @param className the binary name of the class to be added to the scene
      * @param classSymbol the element representing the class, used for adding data to the
@@ -211,6 +206,15 @@ public class ASceneWrapper {
             wrapper = new AClassWrapper(aClass);
             classes.put(className, wrapper);
         }
+
+        // updateClassMetadata must be called on both paths (cache hit and cache miss) because the
+        // second parameter could have been null when the first miss occurred.
+        // The design of WPI forces this: different visit methods in CFAbstractTransfer
+        // call WPI in different ways, but all of them need to use this cache. Only some
+        // actually provide the relevant metadata, and the visit order isn't know ahead of time.
+        // Therefore, the metadata could be attached to ANY cache request, and must be updated
+        // if so. Since it is not used until the end of WPI, it being unavailable during WPI is
+        // not a problem.
         if (classSymbol != null) {
             updateClassMetadata(wrapper, classSymbol);
         }

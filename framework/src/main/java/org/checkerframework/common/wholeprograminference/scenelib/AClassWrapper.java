@@ -46,7 +46,7 @@ public class AClassWrapper {
 
     /**
      * The type element representing the class. Clients must call {@link
-     * #setTypeElement(TypeElement)} before interacting with this field.
+     * #setTypeElement(TypeElement)} before accessing with this field.
      */
     private @MonotonicNonNull TypeElement typeElement = null;
 
@@ -109,7 +109,7 @@ public class AClassWrapper {
     }
 
     /**
-     * Get all the fields that have been vivified (that is, interacted with) on a class.
+     * Get all the fields that have been vivified on a class.
      *
      * @return a map from field name to the object representing the field
      */
