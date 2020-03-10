@@ -927,6 +927,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Reports a diagnostic message. By default, prints it to the screen via the compiler's internal
      * messager.
      *
+     * <p>Most clients should use {@link #reportError} or {@link #reportWarning}.
+     *
      * @param source the source position information; may be an Element, a Tree, or null
      * @param d the diagnostic message
      */
@@ -936,9 +938,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Reports a diagnostic message. By default, it prints it to the screen via the compiler's
-     * internal messager; otherwise, the method returns with no side effects.
-     *
-     * <p>Most clients should use {@link #reportError} or {@link #reportWarning}.
+     * internal messager; however, it might also store it for later output.
      *
      * @param source the source position information; may be an Element, a Tree, or null
      * @param kind the type of message
