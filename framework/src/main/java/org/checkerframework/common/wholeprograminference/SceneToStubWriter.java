@@ -223,7 +223,9 @@ public final class SceneToStubWriter {
      *
      * @param e same as above, but can become null if scene-lib did not fill in the inner types,
      *     which happens when they do not have annotations
-     * @param arrayTypes the array parts of the array type (i.e. the parts after the component type)
+     * @param arrayTypes the array parts of the array type (i.e. the parts after the component
+     *     type). Must contain at least one '[', or this routine's result is undefined (but it will
+     *     probably throw an exception).
      * @param componentType the component type of the array
      * @param result the string builder containing the array types seen so far
      * @return the formatted string, without the trailing space
@@ -235,7 +237,8 @@ public final class SceneToStubWriter {
             StringBuilder result) {
         // print the next type:
         String nextArrayType = arrayTypes.substring(0, arrayTypes.indexOf(']') + 1);
-        String remainingArrayType = arrayTypes.substring(arrayTypes.indexOf(']') + 1);
+        String remainingArrayTypes = arrayTypes.substring(arrayTypes.indexOf(']') + 1);
+        // do not print inferred annotations if there was one in the source code
         if (nextArrayType.contains("@")) {
             result.append(nextArrayType);
         } else {
@@ -247,12 +250,12 @@ public final class SceneToStubWriter {
         result.append(" ");
 
         // check if there are any other array types. If so, recurse; otherwise, print the component.
-        if ("".equals(remainingArrayType)) {
+        if ("".equals(remainingArrayTypes)) {
             ATypeElement component = getNextArrayLevel(e);
             return formatType(componentType, component) + result.toString();
         } else {
             return formatArrayTypeImpl(
-                    getNextArrayLevel(e), remainingArrayType, componentType, result);
+                    getNextArrayLevel(e), remainingArrayTypes, componentType, result);
         }
     }
 
