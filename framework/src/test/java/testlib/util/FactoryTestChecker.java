@@ -19,9 +19,9 @@ import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.tools.JavaFileObject;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.BugInCF;
@@ -275,13 +275,9 @@ public class FactoryTestChecker extends BaseTypeChecker {
                         // The key is added above using a setProperty call, which is not supported
                         // by the CompilerMessageChecker
                         @SuppressWarnings("compilermessages")
-                        Result res =
-                                Result.failure(
-                                        "type.unexpected",
-                                        tree.toString(),
-                                        actualType,
-                                        expectedType);
-                        FactoryTestChecker.this.report(res, tree);
+                        @CompilerMessageKey String key = "type.unexpected";
+                        FactoryTestChecker.this.reportError(
+                                tree, key, tree.toString(), actualType, expectedType);
                     }
                 }
             }
