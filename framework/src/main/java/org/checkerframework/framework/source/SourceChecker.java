@@ -792,13 +792,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected int errsOnLastExit = 0;
 
     /**
-     * Type-check the code with Java specifications and then runs the Checker Rule Checking visitor
-     * on the processed source.
+     * Type-check the code using this checker's visitor.
      *
      * @see Processor#process(Set, RoundEnvironment)
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
+        // Cannot use BugInCF here because it is outside of the try/catch for BugInCf
         if (e == null) {
             messager.printMessage(
                     javax.tools.Diagnostic.Kind.ERROR, "Refusing to process empty TypeElement");
@@ -962,8 +962,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         try {
             messageText = String.format(fmtString, args);
         } catch (Exception e) {
-            messageText =
-                    "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args);
+            throw new BugInCF(
+                    "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args),
+                    e);
         }
 
         if (source instanceof Element) {
