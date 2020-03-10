@@ -347,9 +347,10 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
         }
 
         /**
-         * Checks if the argument passed is a local variable.
+         * Checks if the argument is a local variable.
          *
          * @param variable the tree to check
+         * @return true if the argument is a local variable
          */
         protected boolean isLocalVariable(ExpressionTree variable) {
             return variable instanceof IdentifierTree && !TreeUtils.isFieldAccess(variable);
