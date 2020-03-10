@@ -798,8 +798,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
-        if (e == null || p == null) {
-            throw new BugInCF("SourceChecker.typeProcess: e=%s, p=%s", e, p);
+        // Cannot use BugInCF here because it is outside of the try/catch for BugInCf
+        if (e == null) {
+            messager.printMessage(
+                    javax.tools.Diagnostic.Kind.ERROR, "Refusing to process empty TypeElement");
+            return;
+        }
+        if (p == null) {
+            messager.printMessage(
+                    javax.tools.Diagnostic.Kind.ERROR,
+                    "Refusing to process empty TreePath in TypeElement: " + e);
+            return;
         }
 
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
