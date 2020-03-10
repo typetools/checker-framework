@@ -30,6 +30,18 @@ class MultiDimensionalArrays {
         testParam(x);
     }
 
+    int[] useReturn(@Sibling1 int @Sibling2 [] x) {
+        return x;
+    }
+
+    void testReturn() {
+        requiresS1S2(
+                // :: error: argument.type.incompatible
+                useReturn(
+                        // :: error: argument.type.incompatible
+                        twoDimArray));
+    }
+
     // three dimensional arrays
 
     void requiresS1S2S1(@Sibling1 int @Sibling2 [] @Sibling1 [] x) {}
@@ -52,6 +64,15 @@ class MultiDimensionalArrays {
 
     void useParam2(@Sibling1 int @Sibling2 [] @Sibling1 [] x) {
         testParam2(x);
+    }
+
+    int[][] useReturn2(@Sibling1 int @Sibling2 [] @Sibling1 [] x) {
+        return x;
+    }
+
+    void testReturn2() {
+        // :: error: argument.type.incompatible
+        requiresS1S2S1(useReturn2(threeDimArray));
     }
 
     // three dimensional array with annotations only on two inner types
@@ -78,6 +99,15 @@ class MultiDimensionalArrays {
         testParam3(x);
     }
 
+    int[][] useReturn3(@Sibling1 int @Sibling2 [][] x) {
+        return x;
+    }
+
+    void testReturn3() {
+        // :: error: argument.type.incompatible
+        requiresS1S2N(useReturn3(threeDimArray2));
+    }
+
     // three dimensional array with annotations only on two array types, not innermost type
 
     void requiresS2S1(int @Sibling2 [] @Sibling1 [] x) {}
@@ -100,5 +130,14 @@ class MultiDimensionalArrays {
 
     void useParam4(int @Sibling2 [] @Sibling1 [] x) {
         testParam4(x);
+    }
+
+    int[][] useReturn4(int @Sibling2 [] @Sibling1 [] x) {
+        return x;
+    }
+
+    void testReturn4() {
+        // :: error: argument.type.incompatible
+        requiresS2S1(useReturn4(threeDimArray3));
     }
 }

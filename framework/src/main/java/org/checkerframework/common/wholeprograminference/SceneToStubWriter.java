@@ -188,7 +188,7 @@ public final class SceneToStubWriter {
      */
     private static String formatArrayType(ATypeElement e, String arrayType) {
         StringBuilder result = new StringBuilder();
-        return formatArrayTypeImpl(e, arrayType, result);
+        return formatArrayTypeImpl(e, arrayType, result) + " ";
     }
 
     /**
@@ -205,7 +205,7 @@ public final class SceneToStubWriter {
      *     which happens when they do not have annotations
      * @param arrayType same as above
      * @param result the string builder containing the array types seen so far
-     * @return the formatted string, as above, with a trailing space
+     * @return the formatted string, without the trailing space
      */
     private static String formatArrayTypeImpl(
             @Nullable ATypeElement e, String arrayType, StringBuilder result) {
@@ -223,9 +223,10 @@ public final class SceneToStubWriter {
             }
         } else {
             if (e != null) {
+                result.append(" ");
                 result.append(formatAnnotations(e.tlAnnotationsHere));
             }
-            result.append("[] ");
+            result.append("[]");
         }
         // find the next array type, if scene-lib is tracking information about it
         ATypeElement innerType = null;
@@ -289,28 +290,47 @@ public final class SceneToStubWriter {
         } else {
             basetype = aField.getType();
         }
+        result.append(formatType(basetype, aField.getTheField().type));
+        result.append(fieldName);
+        return result.toString();
+    }
 
+    /**
+     * Formats the given type correctly for printing in Java source code.
+     * @param basetype the base type
+     * @param type the scene-lib representation of the type
+     * @return a String representing the type, as it would appear in Java source code,
+     *         followed by a trailing space
+     */
+    private static String formatType(final String basetype, final ATypeElement type) {
+        String basetypeToPrint = basetype;
         // anonymous static classes shouldn't be printed with the "anonymous" tag that the AScene
         // library uses
         if (basetype.startsWith("<anonymous ")) {
-            basetype = basetype.substring("<anonymous ".length(), basetype.length() - 1);
+            basetypeToPrint = basetype.substring("<anonymous ".length(), basetype.length() - 1);
         }
 
         // fields don't need their generic types, and sometimes they are wrong. Just don't print
         // them.
-        while (basetype.contains("<")) {
-            basetype = basetype.substring(0, basetype.indexOf('<'));
+        while (basetypeToPrint.contains("<")) {
+            basetypeToPrint = basetypeToPrint.substring(0, basetypeToPrint.indexOf('<'));
         }
 
-        if (basetype.contains("[")) {
-            String formattedArrayType = formatArrayType(aField.getTheField().type, basetype);
-            result.append(formattedArrayType); // formatArrayType adds a trailing space
+        // don't print annotations that were already in the type, because doing
+        // so messes up the stub parser
+        /*while (basetypeToPrint.contains("@")) {
+            int firstAtSign = basetypeToPrint.indexOf('@');
+            basetypeToPrint = basetypeToPrint.substring(0, firstAtSign) +
+                    basetypeToPrint.substring(basetypeToPrint.indexOf(' ', firstAtSign) + 1);
+        }*/
+
+        if (basetypeToPrint.contains("[")) {
+            // formatArrayType adds a trailing space
+            return formatArrayType(type, basetypeToPrint);
         } else {
-            result.append(formatAnnotations(aField.getTheField().type.tlAnnotationsHere));
-            result.append(basetype + " "); // must add trailing space directly
+            // must add trailing space directly
+            return formatAnnotations(type.tlAnnotationsHere) + basetypeToPrint + " ";
         }
-        result.append(fieldName);
-        return result.toString();
     }
 
     /**
@@ -458,7 +478,6 @@ public final class SceneToStubWriter {
         // type parameters
         printTypeParameters(aMethodWrapper.getTypeParameters(), printWriter);
 
-        printWriter.print(formatAnnotations(aMethod.returnType.tlAnnotationsHere));
         // Needed because AMethod stores the name with the parameters, to distinguish
         // between overloaded methods.
         String methodName = aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
@@ -475,10 +494,8 @@ public final class SceneToStubWriter {
             // so it would be acceptable to print "java.lang.Object" for every
             // method. A better type is printed if one is available to improve
             // the readability of the resulting stub file.
-            printWriter.print(formatAnnotations(aMethod.returnType.tlAnnotationsHere));
             String returnType = aMethodWrapper.getReturnType();
-            printWriter.print(returnType);
-            printWriter.print(" ");
+            printWriter.print(formatType(returnType, aMethod.returnType));
         }
         printWriter.print(methodName);
         printWriter.print("(");

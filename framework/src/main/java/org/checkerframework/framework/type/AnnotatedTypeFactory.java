@@ -1285,8 +1285,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private AnnotatedTypeMirror mergeStubsWithSource(
             @Nullable AnnotatedTypeMirror type, Element elt) {
+
+        if (elt.toString().contains("useReturn")) {
+            System.out.println(elt);
+        }
         AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
         if (stubType != null) {
+            if (stubType.toString().contains("useReturn")) {
+                System.out.println(stubType);
+            }
+
             if (type == null) {
                 type = stubType;
             } else {
