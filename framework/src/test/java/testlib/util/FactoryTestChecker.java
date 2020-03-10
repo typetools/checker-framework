@@ -105,7 +105,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
     }*/
 
     @Override
-    public Properties getMessages() {
+    public Properties getMessagesProperties() {
         // We don't have any properties
         Properties prop = new Properties();
         prop.setProperty(

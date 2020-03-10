@@ -817,7 +817,6 @@ public final class Double extends Number implements Comparable<Double> {
      * @see java.lang.Double#doubleToLongBits(double)
      */
     @Pure
-    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object obj) {
         return (obj instanceof Double)
                && (doubleToLongBits(((Double)obj).value) ==
