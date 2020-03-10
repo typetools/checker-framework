@@ -1,5 +1,7 @@
 package org.checkerframework.framework.util;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ArrayCreationLevel;
@@ -70,7 +72,7 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
-import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.ElementUtils;
@@ -456,7 +458,7 @@ public class FlowExpressionParseUtil {
             // can override, rather than halting parsing which the user cannot override.
             /*if (!PurityUtils.isDeterministic(context.checkerContext.getAnnotationProvider(),
                     methodElement)) {
-                throw new FlowExpressionParseException(Result.failure(
+                throw new FlowExpressionParseException(new DiagMessage(ERROR,
                         "flowexpr.method.not.deterministic",
                         methodElement.getSimpleName()));
             }*/
@@ -1052,8 +1054,8 @@ public class FlowExpressionParseUtil {
     ///
 
     /**
-     * An exception that indicates a parse error. Call {@link #getResult} to obtain a {@link Result}
-     * that can be used for error reporting.
+     * An exception that indicates a parse error. Call {@link #getDiagMessage} to obtain a {@link
+     * DiagMessage} that can be used for error reporting.
      */
     public static class FlowExpressionParseException extends Exception {
         private static final long serialVersionUID = 2L;
@@ -1076,9 +1078,13 @@ public class FlowExpressionParseUtil {
             return errorKey + " " + Arrays.toString(args);
         }
 
-        /** Return a Result that can be used for error reporting. */
-        public Result getResult() {
-            return Result.failure(errorKey, args);
+        /**
+         * Return a DiagMessage that can be used for error reporting.
+         *
+         * @return a DiagMessage that can be used for error reporting
+         */
+        public DiagMessage getDiagMessage() {
+            return new DiagMessage(ERROR, errorKey, args);
         }
 
         public boolean isFlowParseError() {

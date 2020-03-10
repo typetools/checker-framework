@@ -142,22 +142,20 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                 // From the manual:
                 // It is legal to use a format string with fewer format specifiers
                 // than required, but a warning is issued.
-                checker.report(
-                        org.checkerframework.framework.source.Result.warning(
-                                "i18nformat.missing.arguments",
-                                varType.toString(),
-                                valueType.toString()),
-                        valueTree);
+                checker.reportWarning(
+                        valueTree,
+                        "i18nformat.missing.arguments",
+                        varType.toString(),
+                        valueType.toString());
             } else if (rhsArgTypes.length > lhsArgTypes.length) {
                 // Since it is known that too many conversion categories were provided,
                 // issue a more specific error message to that effect than
                 // assignment.type.incompatible.
-                checker.report(
-                        org.checkerframework.framework.source.Result.failure(
-                                "i18nformat.excess.arguments",
-                                varType.toString(),
-                                valueType.toString()),
-                        valueTree);
+                checker.reportError(
+                        valueTree,
+                        "i18nformat.excess.arguments",
+                        varType.toString(),
+                        valueType.toString());
             }
         }
 
