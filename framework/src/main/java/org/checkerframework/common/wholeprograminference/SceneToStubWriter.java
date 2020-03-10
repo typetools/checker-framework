@@ -190,7 +190,7 @@ public final class SceneToStubWriter {
         StringBuilder result = new StringBuilder();
         int componentEndPos;
         if (arrayType.startsWith("@")) {
-            // if there's an explicit annotations, go to second space
+            // if there's an explicit annotation, go to second space
             componentEndPos = arrayType.indexOf(' ', arrayType.indexOf(' ') + 1);
         } else {
             // otherwise, go to first space
