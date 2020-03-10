@@ -70,7 +70,8 @@ public class AMethodWrapper {
     /**
      * Wrap an AMethod. Package-private, because it should only be called from AClassWrapper.
      *
-     * @param theMethod the method to wrap
+     * @param theMethod the method to wrap, in scene-lib format
+     * @param methodElt the element representing the method's declaration
      */
     AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
         this.theMethod = theMethod;
