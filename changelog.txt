@@ -1,7 +1,6 @@
 Version 3.3.0, April 1, 2020
 
 Renamings:
-  "unchecked code defaults" to "conservative defaults".
   -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
     The old name works temporarily but will be removed in a future release.
 
