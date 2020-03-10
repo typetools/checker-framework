@@ -27,6 +27,8 @@ import org.checkerframework.framework.source.SupportedLintOptions;
     // It is the default temporarily, until we improve the analysis to reduce false positives or we
     // learn what advice to give programmers about avoid false positive warnings.
     // See issue #986: https://github.com/typetools/checker-framework/issues/986
+    "soundArrayCreationNullness",
+    // old name for soundArrayCreationNullness; temporary, for backward compatibility
     "forbidnonnullarraycomponents"
 })
 public class NullnessChecker extends InitializationChecker {

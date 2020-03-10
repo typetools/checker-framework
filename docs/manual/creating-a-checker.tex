@@ -1761,7 +1761,7 @@ large codebase without being inundated in stack traces.
   through the \code{-Astubs} option are still processed. This is useful
   when experimenting with an alternative stub file.
 
-\item \code{-Anocheckjdk}:
+\item \code{-ApermitMissingJdk}:
   don't issue an error if no annotated JDK can be found.
 
 \item \code{-AstubDebug}:
@@ -1848,6 +1848,41 @@ The \<dot> program is part of \ahref{http://www.graphviz.org}{Graphviz}.
 
 \end{itemize}
 
+\noindent
+You can also use \refclass{dataflow/cfg}{CFGVisualizeLauncher} to generate a DOT
+or String representation of the control flow graph of a given method in a given class.
+
+\begin{itemize}
+
+\item With JDK 8:
+
+\begin{smaller}
+\begin{Verbatim}
+java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
+  -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
+  org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
+  MyClass.java output/ -class MyClass -method test -pdf
+\end{Verbatim}
+\end{smaller}
+
+
+\item With JDK 11:
+
+\begin{smaller}
+\begin{Verbatim}
+java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
+  org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
+  MyClass.java output/ -class MyClass -method test -pdf
+\end{Verbatim}
+\end{smaller}
+
+\end{itemize}
+
+\noindent
+The above command will generate the corresponding dot and pdf files for the
+method \code{test} in the class \code{MyClass} in the directory \<output>. For more
+information, run \refclass{dataflow/cfg}{CFGVisualizeLauncher} with no arguments to
+see the usage.
 
 \subsectionAndLabel{Miscellaneous debugging options}{creating-debugging-options-misc}
 
@@ -2189,7 +2224,7 @@ The Checker Framework uses Oracle's Tree API to access a program's AST\@.
 The Tree API is specific to the Oracle OpenJDK, so the Checker Framework only
 works with the OpenJDK javac, not with Eclipse's compiler ecj.
 This also limits the tightness of
-the integration of the Checker Framework into other IDEs such as \href{http://www.jetbrains.com/idea/}{IntelliJ IDEA}\@.
+the integration of the Checker Framework into other IDEs such as \href{https://www.jetbrains.com/idea/}{IntelliJ IDEA}\@.
 An implementation-neutral API would be preferable.
 In the future, the Checker Framework
 can be migrated to use the Java Model AST of JSR 198 (Extension API for
@@ -2267,7 +2302,7 @@ without warnings or errors.
 %%  LocalWords:  addAbsoluteDefault BaseAnnotatedTypeFactory superclasses
 %%  LocalWords:  SupportedOptions AprintAllQualifiers InvisibleQualifier
 %%  LocalWords:  Adetailedmsgtext AnoPrintErrorStack Aignorejdkastub Astubs
-%%  LocalWords:  Anocheckjdk AstubDebug Aflowdotdir AresourceStats Regex
+%%  LocalWords:  ApermitMissingJdk AstubDebug Aflowdotdir AresourceStats Regex
 %%  LocalWords:  classfiles CHECKERFRAMEWORK RegexUtil asRegex myString
 %%  LocalWords:  myInt CFAbstractTransfer RegexTransfer CFAbstractAnalysis
 %%  LocalWords:  createTransferFunction RegexAnalysis createFlowAnalysis

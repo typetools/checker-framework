@@ -1,5 +1,52 @@
+Version 3.3.0, April 1, 2020
+
+Renamings:
+  -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
+    The old name works temporarily but will be removed in a future release.
+
+Implementation details:
+ * Removed `@DefaultInUncheckedCodeFor` and
+   `@DefaultQualifierInHierarchyInUncheckedCode`.
+ * Renamings:
+   applyUncheckedCodeDefaults() to applyConservativeDefaults()
+   useUncheckedCodeDefault() to useConservativeDefault()
+
+---------------------------------------------------------------------------
+
+Version 3.2.0, March 2, 2020
+
+@SuppressWarnings("initialization") suppresses only warnings whose key
+contains "initialization".  Previously, it suppressed all warnings issued
+by the Nullness Checker or the Initialization Checker.
+
+Closed issues:
+2719, 3001, 3020, 3069, 3093, 3120.
+
+---------------------------------------------------------------------------
+
+Version 3.1.1, February 3, 2020
+
+New command-line options:
+  -AassumeDeterministic Unsoundly assume that every method is deterministic
+  -AassumePure Unsoundly assume that every method is pure
+
+Renamed -Anocheckjdk to -ApermitMissingJdk.
+The old version still works, for backward compatibility.
+
+Renamed -Alint=forbidnonnullarraycomponents to
+-Alint=soundArrayCreationNullness.  The old version still works, for
+backward compatibility.
+
 Implementation details:
  * Deprecated QualifierHierarchy#getTypeQualifiers.
+ * Deprecated Analysis#Analysis(ProcessingEnvironment) and Analysis#Analysis(T,
+   int, ProcessingEnvironment); use Analysis#Analysis(), Analysis#Analysis(int),
+   Analysis#Analysis(T), and Analysis#Analysis(T, int) instead.
+ * Renamed SourceChecker#getMessages to getMessagesProperties.
+ * Renamed one overload of SourceChecker.printMessages to printOrStoreMessage.
+
+Closed issues:
+2181, 2975, 3018, 3022, 3032, 3036, 3037, 3038, 3041, 3049, 3055, 3076.
 
 ---------------------------------------------------------------------------
 
@@ -18,7 +65,6 @@ Implementation details:
  * Renamed ConditionalPostcondition#annoResult to ConditionalPostcondition#resultValue.
 
 Closed issues:
-
 2867, 2897, 2972.
 
 ---------------------------------------------------------------------------
@@ -34,7 +80,6 @@ Implementation details:
  * Deprecated AnnotatedTypes#isTypeAnnotation and AnnotatedTypes#hasTypeQualifierElementTypes.
 
 Closed issues:
-
 945, 1224, 2024, 2744, 2809, 2815, 2818, 2830, 2840, 2853, 2854, 2865, 2873,
 2874, 2878, 2880, 2886, 2888, 2900, 2905, 2919, 2923.
 

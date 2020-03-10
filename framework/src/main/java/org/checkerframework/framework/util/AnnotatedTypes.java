@@ -52,6 +52,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -166,7 +167,7 @@ public class AnnotatedTypes {
                     AnnotatedTypeVariable resultTypeArgTV = (AnnotatedTypeVariable) resultTypeArg;
                     resultTypeArgTV.getUpperBound().addAnnotations(sourceTypeArg.getAnnotations());
                 } else {
-                    resultTypeArg.addAnnotations(sourceTypeArg.getAnnotations());
+                    resultTypeArg.addAnnotations(sourceTypeArg.getEffectiveAnnotations());
                 }
                 @SuppressWarnings("unchecked")
                 T result = (T) resultAtd;
@@ -402,7 +403,7 @@ public class AnnotatedTypes {
             case DECLARED:
                 return substituteTypeVariables(types, atypeFactory, of, member, memberType);
             default:
-                throw new BugInCF("asMemberOf called on unexpected type.\nt: " + of);
+                throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", of);
         }
     }
 
@@ -454,15 +455,11 @@ public class AnnotatedTypes {
         for (final AnnotatedTypeMirror typeParam : enclosingType.getTypeArguments()) {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
                 throw new BugInCF(
-                        "Type arguments of a declaration should be type variables\n"
-                                + "enclosingClassOfElem="
-                                + enclosingClassOfElem
-                                + "\n"
-                                + "enclosingType="
-                                + enclosingType
-                                + "\n"
-                                + "typeMirror="
-                                + t);
+                        PluginUtil.joinLines(
+                                "Type arguments of a declaration should be type variables",
+                                "enclosingClassOfElem=" + enclosingClassOfElem,
+                                "enclosingType=" + enclosingType,
+                                "typeMirror=" + t));
             }
             ownerParams.add((AnnotatedTypeVariable) typeParam);
         }
@@ -470,12 +467,10 @@ public class AnnotatedTypes {
         List<AnnotatedTypeMirror> baseParams = base.getTypeArguments();
         if (ownerParams.size() != baseParams.size() && !base.wasRaw()) {
             throw new BugInCF(
-                    "Unexpected number of parameters.\n"
-                            + "enclosingType="
-                            + enclosingType
-                            + "\n"
-                            + "baseType="
-                            + base);
+                    PluginUtil.joinLines(
+                            "Unexpected number of parameters.",
+                            "enclosingType=" + enclosingType,
+                            "baseType=" + base));
         }
         if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.wasRaw()) {
             List<AnnotatedTypeMirror> newBaseParams = new ArrayList<>();
@@ -1159,7 +1154,8 @@ public class AnnotatedTypes {
                     if (glb == null) {
                         throw new BugInCF(
                                 "AnnotatedIntersectionType has no annotation in hierarchy "
-                                        + "on any of its supertypes.\n"
+                                        + "on any of its supertypes."
+                                        + System.lineSeparator()
                                         + "intersectionType="
                                         + source);
                     }
@@ -1171,15 +1167,11 @@ public class AnnotatedTypes {
                     }
 
                     throw new BugInCF(
-                            "Unexpected AnnotatedTypeMirror with no primary annotation.\n"
-                                    + "toSearch="
-                                    + toSearch
-                                    + "\n"
-                                    + "top="
-                                    + top
-                                    + "\n"
-                                    + "source="
-                                    + source);
+                            PluginUtil.joinLines(
+                                    "Unexpected AnnotatedTypeMirror with no primary annotation.",
+                                    "toSearch=" + toSearch,
+                                    "top=" + top,
+                                    "source=" + source));
             }
         }
 

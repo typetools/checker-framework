@@ -252,9 +252,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 checker.report(Result.failure("overrides.equals"), classTree);
             }
             TypeMirror superClass = elt.getSuperclass();
-            if (superClass != null) {
+            if (superClass != null
+                    // The super class of an interface is "none" rather than null.
+                    && superClass.getKind() == TypeKind.DECLARED) {
                 TypeElement superClassElement = TypesUtils.getTypeElement(superClass);
-
                 if (superClassElement != null
                         && !ElementUtils.isObject(superClassElement)
                         && atypeFactory.getDeclAnnotation(superClassElement, UsesObjectEquals.class)
@@ -811,7 +812,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (tm.getKind() != TypeKind.DECLARED) {
             checker.message(
                     Kind.WARNING,
-                    "InterningVisitor.classIsAnnotated: tm = %s (%s)%n",
+                    "InterningVisitor.classIsAnnotated: tm = %s (%s)",
                     tm,
                     tm.getClass());
         }
@@ -819,7 +820,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (classElt == null) {
             checker.message(
                     Kind.WARNING,
-                    "InterningVisitor.classIsAnnotated: classElt = null for tm = %s (%s)%n",
+                    "InterningVisitor.classIsAnnotated: classElt = null for tm = %s (%s)",
                     tm,
                     tm.getClass());
         }

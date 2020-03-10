@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.PluginUtil;
 
 /**
@@ -354,13 +355,9 @@ public class TestConfigurationBuilder {
             return build();
         }
 
-        throw new RuntimeException(
-                "Attempted to build invalid test configuration:\n"
-                        + "Errors:\n"
-                        + String.join("\n", errors)
-                        + "\n"
-                        + this
-                        + "\n");
+        throw new BugInCF(
+                "Attempted to build invalid test configuration:%n" + "Errors:%n%s%n%s%n",
+                String.join("%n", errors), this);
     }
 
     /** @return the set of Javac options as a flat list */
@@ -370,18 +367,12 @@ public class TestConfigurationBuilder {
 
     @Override
     public String toString() {
-        return "TestConfigurationBuilder:\n"
-                + "testSourceFiles="
-                + (testSourceFiles == null ? "null" : PluginUtil.join(" ", testSourceFiles))
-                + "\n"
-                + "processors="
-                + (processors == null ? "null" : PluginUtil.join(", ", processors))
-                + "\n"
-                + "options="
-                + (options == null ? "null" : PluginUtil.join(", ", options.getOptionsAsList()))
-                + "\n"
-                + "shouldEmitDebugInfo="
-                + shouldEmitDebugInfo;
+        return PluginUtil.joinLines(
+                "TestConfigurationBuilder:",
+                "testSourceFiles=" + PluginUtil.join(" ", testSourceFiles),
+                "processors=" + PluginUtil.join(", ", processors),
+                "options=" + PluginUtil.join(", ", options.getOptionsAsList()),
+                "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
     }
 
     /** @return a list that first has the items from parameter list then the items from iterable */

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.PluginUtil;
 
 public class ReferenceInfoUtil {
 
@@ -158,51 +159,17 @@ public class ReferenceInfoUtil {
 
     public static String positionCompareStr(
             TypeAnnotation.Position p1, TypeAnnotation.Position p2) {
-        return "type = "
-                + p1.type
-                + ", "
-                + p2.type
-                + "\n"
-                + "offset = "
-                + p1.offset
-                + ", "
-                + p2.offset
-                + "\n"
-                + "lvarOffset = "
-                + p1.lvarOffset
-                + ", "
-                + p2.lvarOffset
-                + "\n"
-                + "lvarLength = "
-                + p1.lvarLength
-                + ", "
-                + p2.lvarLength
-                + "\n"
-                + "lvarIndex = "
-                + p1.lvarIndex
-                + ", "
-                + p2.lvarIndex
-                + "\n"
-                + "bound_index = "
-                + p1.bound_index
-                + ", "
-                + p2.bound_index
-                + "\n"
-                + "parameter_index = "
-                + p1.parameter_index
-                + ", "
-                + p2.parameter_index
-                + "\n"
-                + "type_index = "
-                + p1.type_index
-                + ", "
-                + p2.type_index
-                + "\n"
-                + "exception_index = "
-                + p1.exception_index
-                + ", "
-                + p2.exception_index
-                + "\n";
+        return PluginUtil.joinLines(
+                "type = " + p1.type + ", " + p2.type,
+                "offset = " + p1.offset + ", " + p2.offset,
+                "lvarOffset = " + p1.lvarOffset + ", " + p2.lvarOffset,
+                "lvarLength = " + p1.lvarLength + ", " + p2.lvarLength,
+                "lvarIndex = " + p1.lvarIndex + ", " + p2.lvarIndex,
+                "bound_index = " + p1.bound_index + ", " + p2.bound_index,
+                "parameter_index = " + p1.parameter_index + ", " + p2.parameter_index,
+                "type_index = " + p1.type_index + ", " + p2.type_index,
+                "exception_index = " + p1.exception_index + ", " + p2.exception_index,
+                "");
     }
 
     private static TypeAnnotation findAnnotation(
@@ -232,7 +199,7 @@ public class ReferenceInfoUtil {
             ClassFile cf)
             throws InvalidIndex, UnexpectedEntry {
         if (actualAnnos.size() != expectedAnnos.size()) {
-            throw new ComparisionException(
+            throw new ComparisonException(
                     "Wrong number of annotations", expectedAnnos, actualAnnos);
         }
 
@@ -241,7 +208,7 @@ public class ReferenceInfoUtil {
             TypeAnnotation.Position expected = e.second;
             TypeAnnotation actual = findAnnotation(aName, expected, actualAnnos, cf);
             if (actual == null) {
-                throw new ComparisionException(
+                throw new ComparisonException(
                         "Expected annotation not found: " + aName + " position: " + expected,
                         expectedAnnos,
                         actualAnnos);
@@ -251,13 +218,13 @@ public class ReferenceInfoUtil {
     }
 }
 
-class ComparisionException extends RuntimeException {
+class ComparisonException extends RuntimeException {
     private static final long serialVersionUID = -3930499712333815821L;
 
     public final List<Pair<String, TypeAnnotation.Position>> expected;
     public final List<TypeAnnotation> found;
 
-    public ComparisionException(
+    public ComparisonException(
             String message,
             List<Pair<String, TypeAnnotation.Position>> expected,
             List<TypeAnnotation> found) {
@@ -267,19 +234,14 @@ class ComparisionException extends RuntimeException {
     }
 
     public String toString() {
-        String str = super.toString();
-        if (expected != null && found != null) {
-            str +=
-                    "\n\tExpected: "
-                            + expected.size()
-                            + " annotations; but found: "
-                            + found.size()
-                            + " annotations\n"
-                            + "  Expected: "
-                            + expected
-                            + "\n  Found: "
-                            + found;
-        }
-        return str;
+        return PluginUtil.joinLines(
+                super.toString(),
+                "\tExpected: "
+                        + expected.size()
+                        + " annotations; but found: "
+                        + found.size()
+                        + " annotations",
+                "  Expected: " + expected,
+                "  Found: " + found);
     }
 }

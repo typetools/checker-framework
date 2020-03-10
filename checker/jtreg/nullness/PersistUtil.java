@@ -3,7 +3,7 @@
 // TODO: add a @Processor method-annotation to parameterize
 
 /**
- * This class has auxiliar methods to compile a class and return its classfile. It is used by
+ * This class has auxiliary methods to compile a class and return its classfile. It is used by
  * defaultPersists/Driver and inheritDeclAnnoPersist/Driver.
  */
 import com.sun.tools.classfile.ClassFile;
@@ -17,6 +17,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
+import java.util.StringJoiner;
 
 public class PersistUtil {
 
@@ -68,35 +69,36 @@ public class PersistUtil {
     }
 
     public static String wrap(String compact) {
-        StringBuilder sb = new StringBuilder();
+        StringJoiner sj = new StringJoiner(System.lineSeparator());
 
         // Automatically import java.util
-        sb.append("\nimport java.util.*;");
-        sb.append("\nimport java.lang.annotation.*;\n");
+        sj.add("");
+        sj.add("import java.util.*;");
+        sj.add("import java.lang.annotation.*;");
 
         // And the Nullness qualifiers
-        sb.append("import org.checkerframework.framework.qual.DefaultQualifier;\n");
-        sb.append("import org.checkerframework.checker.nullness.qual.*;\n");
-        sb.append("import org.checkerframework.dataflow.qual.*;\n");
+        sj.add("import org.checkerframework.framework.qual.DefaultQualifier;");
+        sj.add("import org.checkerframework.checker.nullness.qual.*;");
+        sj.add("import org.checkerframework.dataflow.qual.*;");
 
-        sb.append("\n");
+        sj.add("");
         boolean isSnippet =
                 !(compact.startsWith("class") || compact.contains(" class"))
                         && !compact.contains("interface")
                         && !compact.contains("enum");
 
         if (isSnippet) {
-            sb.append("class Test {\n");
+            sj.add("class Test {");
         }
 
-        sb.append(compact);
-        sb.append("\n");
+        sj.add(compact);
 
         if (isSnippet) {
-            sb.append("}\n\n");
+            sj.add("}");
+            sj.add("");
         }
 
-        return sb.toString();
+        return sj.toString();
     }
 }
 

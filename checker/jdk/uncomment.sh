@@ -2,18 +2,18 @@
 
 set -o pipefail
 
-[ $# -ne 1 ] && echo "usage: `basename $0` sourcefile.java" && exit 1
+[ $# -ne 1 ] && echo "usage: $(basename "$0") sourcefile.java" && exit 1
 [ -z "${CHECKERFRAMEWORK}" ] && echo "CHECKERFRAMEWORK not set" && exit 1
 
 # annotated-jdk8u-jdk should be Checker Framework sibling
-PARENTDIR=`(cd "${CHECKERFRAMEWORK}/.." && pwd)`
-WORKDIR=`(cd "\`dirname $0\`" && pwd)`
+PARENTDIR=$( (cd "${CHECKERFRAMEWORK}/.." && pwd))
+WORKDIR=$( (cd "$(dirname "$0")" && pwd))
 SRCDIR="${PARENTDIR}/annotated-jdk8u-jdk/src/share/classes"
 ORIGINAL="${SRCDIR}/$1"
-BASE=`basename "$1" .java`
+BASE=$(basename "$1" .java)
 COPY="${BASE}.0"
-COUNT=`expr \`grep -c cf-bug "${ORIGINAL}"\` + 0`
-CURRENT=`expr 0`
+COUNT=$(expr \`grep -c cf-bug "${ORIGINAL}"\` + 0)
+CURRENT=$(expr 0)
 
 # remove $1th added comment
 uncomment() {
@@ -38,7 +38,7 @@ cp "${ORIGINAL}" "${COPY}"
 (
 trap "cp ${COPY} ${ORIGINAL} && exit 1" SIGINT
 while [ ${CURRENT} -le ${COUNT} ] ; do
-  CURRENT=`expr ${CURRENT} + 1`
+  CURRENT=$(expr ${CURRENT} + 1)
   OUT="${BASE}.${CURRENT}"
   uncomment ${CURRENT} < "${COPY}" > "${OUT}"
   cp "${OUT}" "${ORIGINAL}"
