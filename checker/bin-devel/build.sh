@@ -33,27 +33,14 @@ echo "JAVA_HOME=${JAVA_HOME}"
 if [ -d "/tmp/plume-scripts" ] ; then
   (cd /tmp/plume-scripts && git pull -q)
 else
-  (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
+  (cd /tmp && (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git || git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git))
 fi
 
 # Clone the annotated JDK 11 into ../jdk .
 /tmp/plume-scripts/git-clone-related typetools jdk
 
-# This does not work:
-#   AT=${AFU}/..
-# because `git clone REPO ../annotation-tools/annotation-file-utilities/..`
-# fails with
-#   fatal: could not create work tree dir '../annotation-tools/annotation-file-utilities/..': File exists
-#   fatal: destination path '../annotation-tools/annotation-file-utilities/..' already exists and is not an empty directory.
-# even if the directory does not exist!
-# The reason is that git creates each element of the path:
-#  ..
-#  ../annotation-tools
-#  ../annotation-tools/annotation-file-utilities (this is the problem),
-#  ../annotation-tools/annotation-file-utilities/..
-#  etc.
-
 AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
+# Don't use `AT=${AFU}/..` which causes a git failure.
 AT=$(dirname "${AFU}")
 
 ## Build annotation-tools (Annotation File Utilities)
