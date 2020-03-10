@@ -8,6 +8,8 @@ import java.util.Collection;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -45,9 +47,15 @@ public class CollectionToArrayHeuristics {
     private final ExecutableElement size;
     private final AnnotatedDeclaredType collectionType;
 
+    /** The checker, used for issuing diagnostics messages. */
+    private final BaseTypeChecker checker;
+
     public CollectionToArrayHeuristics(
-            ProcessingEnvironment env, NullnessAnnotatedTypeFactory factory) {
+            ProcessingEnvironment env,
+            BaseTypeChecker checker,
+            NullnessAnnotatedTypeFactory factory) {
         this.processingEnv = env;
+        this.checker = checker;
         this.atypeFactory = factory;
 
         this.collectionToArrayE =
@@ -70,13 +78,22 @@ public class CollectionToArrayHeuristics {
             Tree argument = tree.getArguments().get(0);
             boolean argIsArrayCreation =
                     isHandledArrayCreation(argument, receiverName(tree.getMethodSelect()));
-            boolean receiverIsNonNull = isNonNullReceiver(tree);
+            boolean receiverIsNonNull = receiverIsCollectionOfNonNullElements(tree);
             setComponentNullness(receiverIsNonNull && argIsArrayCreation, method.getReturnType());
 
             // TODO: We need a mechanism to prevent nullable collections
             // from inserting null elements into a nonnull arrays.
             if (!receiverIsNonNull) {
                 setComponentNullness(false, method.getParameterTypes().get(0));
+            }
+
+            if (receiverIsNonNull && !argIsArrayCreation) {
+                if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
+                    checker.report(Result.warning("toArray.nullable.elements.not.newarray"), tree);
+                } else {
+                    checker.report(
+                            Result.warning("toArray.nullable.elements.mismatched.size"), tree);
+                }
             }
         }
     }
@@ -134,9 +151,12 @@ public class CollectionToArrayHeuristics {
 
     /**
      * Returns {@code true} if the method invocation tree receiver is collection that contains
-     * non-null elements (i.e. its type argument is a {@code NonNull}.
+     * non-null elements (i.e. its type argument is {@code @NonNull}.
+     *
+     * @param tree a method invocation
+     * @return true if the receiver is a collection of non-null elements
      */
-    private boolean isNonNullReceiver(MethodInvocationTree tree) {
+    private boolean receiverIsCollectionOfNonNullElements(MethodInvocationTree tree) {
         // check receiver
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
         AnnotatedDeclaredType collection =
