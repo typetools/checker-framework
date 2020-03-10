@@ -150,7 +150,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * @return the diagnostics indicating failure, or an empty list if successful
      */
     // This method returns a singleton or empyty list.  Its return type is List rather than
-    // DiagMessage (with null indicting success) because it is used in a context that expects a
+    // DiagMessage (with null indicting success) because its caller,  isValidType(), expects a
     // list.
     protected List<DiagMessage> isTopLevelValidType(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
