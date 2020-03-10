@@ -634,7 +634,7 @@ subprojects {
         createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-AsuppressWarnings=not.interned'])
         createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness')
         createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'WorkingNullness', ['-AskipUses=com.sun.*', '-AskipDefs=org.checkerframework.checker.*|org.checkerframework.common.*|org.checkerframework.framework.*|org.checkerframework.dataflow.cfg.CFGBuilder'])
-        createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
+        createCheckTypeTask(project.name, 'org.checkerframework.common.purity.PurityChecker', 'Purity')
         createCheckTypeTask(project.name, 'org.checkerframework.checker.signature.SignatureChecker', 'Signature')
 
         // Add jtregTests to framework and checker modules

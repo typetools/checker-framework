@@ -1,4 +1,4 @@
-package org.checkerframework.dataflow.util;
+package org.checkerframework.common.purity;
 
 import static org.checkerframework.dataflow.qual.Pure.Kind.DETERMINISTIC;
 import static org.checkerframework.dataflow.qual.Pure.Kind.SIDE_EFFECT_FREE;
@@ -10,6 +10,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -18,9 +19,16 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.util.PurityUtils;
+import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -29,14 +37,38 @@ import org.checkerframework.javacutil.TreeUtils;
  * A visitor that determines the purity (as defined by {@link
  * org.checkerframework.dataflow.qual.SideEffectFree}, {@link
  * org.checkerframework.dataflow.qual.Deterministic}, and {@link
- * org.checkerframework.dataflow.qual.Pure}) of a statement or expression. The entry point is method
- * {@link #checkPurity}.
+ * org.checkerframework.dataflow.qual.Pure}) of a statement or expression.
  *
  * @see SideEffectFree
  * @see Deterministic
  * @see Pure
  */
-public class PurityChecker {
+public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
+
+    /** Whether -AsuggestPureMethods was supplied. */
+    private boolean suggestPureMethods;
+
+    /** Whether -AcheckPurityAnnotations was supplied. */
+    private boolean checkPurityAnnotations;
+
+    /** Whether -AassumeSideEffectFree was supplied. */
+    private boolean assumeSideEffectFree;
+
+    /** Whether -AassumeDeterministic was supplied. */
+    private boolean assumeDeterministic;
+
+    /**
+     * Create a PurityVisitor associated with the given checker.
+     *
+     * @param checker the checker
+     */
+    public PurityVisitor(BaseTypeChecker checker) {
+        super(checker);
+        suggestPureMethods = checker.hasOption("suggestPureMethods");
+        checkPurityAnnotations = checker.hasOption("checkPurityAnnotations");
+        assumeSideEffectFree = checker.hasOption("assumeSideEffectFree");
+        assumeDeterministic = checker.hasOption("assumeDeterministic");
+    }
 
     /**
      * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
@@ -49,19 +81,19 @@ public class PurityChecker {
      * @return information about whether the given statement is side-effect-free, deterministic, or
      *     both
      */
-    public static PurityResult checkPurity(
+    private PurityResult checkPurity(
             TreePath statement,
             AnnotationProvider annoProvider,
             boolean assumeSideEffectFree,
             boolean assumeDeterministic) {
-        PurityCheckerHelper helper =
-                new PurityCheckerHelper(annoProvider, assumeSideEffectFree, assumeDeterministic);
+        PurityVisitorHelper helper =
+                new PurityVisitorHelper(annoProvider, assumeSideEffectFree, assumeDeterministic);
         helper.scan(statement, null);
         return helper.purityResult;
     }
 
     /**
-     * Result of the {@link PurityChecker}. Can be queried regarding whether a given tree was
+     * Result of the {@link PurityVisitorHelper}. Can be queried regarding whether a given tree was
      * side-effect-free, deterministic, or both; also gives reasons if the answer is "no".
      */
     public static class PurityResult {
@@ -165,11 +197,13 @@ public class PurityChecker {
     // TODO: It would be possible to improve efficiency by visiting fewer nodes.  This would require
     // overriding more visit* methods.  I'm not sure whether such an optimization would be worth it.
 
-    /** Helper class to keep {@link PurityChecker}'s interface clean. */
-    protected static class PurityCheckerHelper extends TreePathScanner<Void, Void> {
+    /** Helper class. */
+    protected static class PurityVisitorHelper extends TreePathScanner<Void, Void> {
 
-        PurityResult purityResult = new PurityResult();
+        /** The result of the analysis. */
+        PurityVisitor.PurityResult purityResult = new PurityVisitor.PurityResult();
 
+        /** Helps performing the analysis. */
         protected final AnnotationProvider annoProvider;
 
         /**
@@ -185,13 +219,13 @@ public class PurityChecker {
         private final boolean assumeDeterministic;
 
         /**
-         * Create a PurityCheckerHelper.
+         * Create a PurityVisitorHelper.
          *
          * @param annoProvider the annotation provider
          * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
          * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
          */
-        public PurityCheckerHelper(
+        public PurityVisitorHelper(
                 AnnotationProvider annoProvider,
                 boolean assumeSideEffectFree,
                 boolean assumeDeterministic) {
@@ -328,6 +362,181 @@ public class PurityChecker {
             ExpressionTree variable = node.getVariable();
             assignmentCheck(variable);
             return super.visitCompoundAssignment(node, ignore);
+        }
+    }
+
+    @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
+
+        if (checkPurityAnnotations && (anyPurityAnnotation || suggestPureMethods)) {
+            // check "no" purity
+            EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
+            // @Deterministic makes no sense for a void method or constructor
+            boolean isDeterministic = kinds.contains(DETERMINISTIC);
+            if (isDeterministic) {
+                if (TreeUtils.isConstructor(node)) {
+                    checker.report(Result.warning("purity.deterministic.constructor"), node);
+                } else if (TreeUtils.typeOf(node.getReturnType()).getKind() == TypeKind.VOID) {
+                    checker.report(Result.warning("purity.deterministic.void.method"), node);
+                }
+            }
+
+            TreePath body = atypeFactory.getPath(node.getBody());
+            PurityResult r;
+            if (body == null) {
+                r = new PurityResult();
+            } else {
+                r = checkPurity(body, atypeFactory, assumeSideEffectFree, assumeDeterministic);
+            }
+
+            if (!r.isPure(kinds)) {
+                reportPurityErrors(r, kinds);
+            }
+
+            if (suggestPureMethods) {
+                // Issue a warning if the method is pure, but not annotated as such.
+                EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
+                additionalKinds.removeAll(kinds);
+                if (TreeUtils.isConstructor(node)) {
+                    additionalKinds.remove(DETERMINISTIC);
+                }
+                if (!additionalKinds.isEmpty()) {
+                    if (additionalKinds.size() == 2) {
+                        checker.report(Result.warning("purity.more.pure", node.getName()), node);
+                    } else if (additionalKinds.contains(SIDE_EFFECT_FREE)) {
+                        checker.report(
+                                Result.warning("purity.more.sideeffectfree", node.getName()), node);
+                    } else if (additionalKinds.contains(DETERMINISTIC)) {
+                        checker.report(
+                                Result.warning("purity.more.deterministic", node.getName()), node);
+                    } else {
+                        assert false : "BaseTypeVisitor reached undesirable state";
+                    }
+                }
+            }
+        }
+        return super.visitMethod(node, p);
+    }
+
+    /** Reports errors found during purity checking. */
+    protected void reportPurityErrors(PurityResult result, EnumSet<Pure.Kind> expectedKinds) {
+        assert !result.isPure(expectedKinds);
+        EnumSet<Pure.Kind> violations = EnumSet.copyOf(expectedKinds);
+        violations.removeAll(result.getKinds());
+        if (violations.contains(DETERMINISTIC) || violations.contains(SIDE_EFFECT_FREE)) {
+            String msgKeyPrefix;
+            if (!violations.contains(SIDE_EFFECT_FREE)) {
+                msgKeyPrefix = "purity.not.deterministic.";
+            } else if (!violations.contains(DETERMINISTIC)) {
+                msgKeyPrefix = "purity.not.sideeffectfree.";
+            } else {
+                msgKeyPrefix = "purity.not.deterministic.not.sideeffectfree.";
+            }
+            for (Pair<Tree, String> r : result.getNotBothReasons()) {
+                reportPurityError(msgKeyPrefix, r);
+            }
+            if (violations.contains(SIDE_EFFECT_FREE)) {
+                for (Pair<Tree, String> r : result.getNotSEFreeReasons()) {
+                    reportPurityError("purity.not.sideeffectfree.", r);
+                }
+            }
+            if (violations.contains(DETERMINISTIC)) {
+                for (Pair<Tree, String> r : result.getNotDetReasons()) {
+                    reportPurityError("purity.not.deterministic.", r);
+                }
+            }
+        }
+    }
+
+    /** Reports a single purity error. */
+    private void reportPurityError(String msgKeyPrefix, Pair<Tree, String> r) {
+        String reason = r.second;
+        @SuppressWarnings("CompilerMessages")
+        @CompilerMessageKey String msgKey = msgKeyPrefix + reason;
+        if (reason.equals("call")) {
+            MethodInvocationTree mitree = (MethodInvocationTree) r.first;
+            checker.report(Result.failure(msgKey, mitree.getMethodSelect()), r.first);
+        } else {
+            checker.report(Result.failure(msgKey), r.first);
+        }
+    }
+
+    @Override
+    protected OverrideChecker createOverrideChecker(
+            Tree overriderTree,
+            AnnotatedTypeMirror.AnnotatedExecutableType overrider,
+            AnnotatedTypeMirror overridingType,
+            AnnotatedTypeMirror overridingReturnType,
+            AnnotatedTypeMirror.AnnotatedExecutableType overridden,
+            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
+            AnnotatedTypeMirror overriddenReturnType) {
+        return new PurityOverrideChecker(
+                overriderTree,
+                overrider,
+                overridingType,
+                overridingReturnType,
+                overridden,
+                overriddenType,
+                overriddenReturnType);
+    }
+
+    /** This class adds a purity check to the OverrideChecker. */
+    protected class PurityOverrideChecker extends OverrideChecker {
+
+        public PurityOverrideChecker(
+                Tree overriderTree,
+                AnnotatedTypeMirror.AnnotatedExecutableType overrider,
+                AnnotatedTypeMirror overridingType,
+                AnnotatedTypeMirror overridingReturnType,
+                AnnotatedTypeMirror.AnnotatedExecutableType overridden,
+                AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
+                AnnotatedTypeMirror overriddenReturnType) {
+            super(
+                    overriderTree,
+                    overrider,
+                    overridingType,
+                    overridingReturnType,
+                    overridden,
+                    overriddenType,
+                    overriddenReturnType);
+        }
+
+        @Override
+        public boolean checkOverride() {
+            if (checker.shouldSkipUses(overriddenType.getUnderlyingType().asElement())) {
+                return true;
+            }
+
+            checkOverridePurity();
+            return super.checkOverride();
+        }
+
+        /**
+         * Checks if the override is valid according to the Purity Checker and reports the errors if
+         * there are any.
+         */
+        private void checkOverridePurity() {
+            String msgKey =
+                    methodReference ? "purity.invalid.methodref" : "purity.invalid.overriding";
+
+            // check purity annotations
+            EnumSet<Pure.Kind> superPurity =
+                    PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
+            EnumSet<Pure.Kind> subPurity =
+                    PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
+            if (!subPurity.containsAll(superPurity)) {
+                checker.report(
+                        Result.failure(
+                                msgKey,
+                                overriderMeth,
+                                overriderTyp,
+                                overriddenMeth,
+                                overriddenTyp,
+                                subPurity,
+                                superPurity),
+                        overriderTree);
+            }
         }
     }
 }
