@@ -45,14 +45,17 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
 
-    /** Whether -A suggestPureMethods was supplied. */
+    /** Whether -AsuggestPureMethods was supplied. */
     private boolean suggestPureMethods;
 
-    /** Whether -A checkPurityAnnotations was supplied. */
+    /** Whether -AcheckPurityAnnotations was supplied. */
     private boolean checkPurityAnnotations;
 
-    /** Whether -A assumeSideEffectFree was supplied. */
+    /** Whether -AassumeSideEffectFree was supplied. */
     private boolean assumeSideEffectFree;
+
+    /** Whether -AassumeSideEffectFree was supplied. */
+    private boolean assumeDeterministic;
 
     /**
      * Create a PurityVisitor associated with the given checker.
@@ -73,10 +76,17 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
      * @param statement the statement to check
      * @param annoProvider the annotation provider
      * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
+     * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
+     * @return information about whether the given statement is side-effect-free, deterministic, or
+     *     both
      */
     private PurityResult checkPurity(
-            TreePath statement, AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
-        PurityVisitorHelper helper = new PurityVisitorHelper(annoProvider, assumeSideEffectFree);
+            TreePath statement,
+            AnnotationProvider annoProvider,
+            boolean assumeSideEffectFree,
+            boolean assumeDeterministic) {
+        PurityVisitorHelper helper =
+                new PurityVisitorHelper(annoProvider, assumeSideEffectFree, assumeDeterministic);
         helper.scan(statement, null);
         return helper.purityResult;
     }
@@ -201,10 +211,26 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
          */
         private final boolean assumeSideEffectFree;
 
-        /** Constructor for the {@link PurityVisitorHelper} inner class. */
-        public PurityVisitorHelper(AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
+        /**
+         * True if all methods should be assumed to be @Deterministic, for the purposes of
+         * org.checkerframework.dataflow analysis.
+         */
+        private final boolean assumeDeterministic;
+
+        /**
+         * Create a PurityVisitorHelper.
+         *
+         * @param annoProvider the annotation provider
+         * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
+         * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
+         */
+        public PurityVisitorHelper(
+                AnnotationProvider annoProvider,
+                boolean assumeSideEffectFree,
+                boolean assumeDeterministic) {
             this.annoProvider = annoProvider;
             this.assumeSideEffectFree = assumeSideEffectFree;
+            this.assumeDeterministic = assumeDeterministic;
         }
 
         @Override
@@ -276,7 +302,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
 
             assert TreeUtils.isUseOfElement(node) : "@AssumeAssertion(nullness): tree kind";
             Element ctorElement = TreeUtils.elementFromUse(node);
-            boolean deterministic = okThrowDeterministic;
+            boolean deterministic = assumeDeterministic || okThrowDeterministic;
             boolean sideEffectFree =
                     assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);
             // This does not use "addNotBothReason" because the reasons are different:  one is
@@ -359,7 +385,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             if (body == null) {
                 r = new PurityResult();
             } else {
-                r = checkPurity(body, atypeFactory, assumeSideEffectFree);
+                r = checkPurity(body, atypeFactory, assumeSideEffectFree, assumeDeterministic);
             }
 
             if (!r.isPure(kinds)) {
