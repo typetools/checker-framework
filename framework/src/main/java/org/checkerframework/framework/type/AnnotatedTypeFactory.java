@@ -2034,7 +2034,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Callback to handle the declared method type before type variable substitution.
+     * A callback method for the AnnotatedTypeFactory subtypes to customize the handling of the
+     * declared method type before type variable substitution.
      *
      * @param tree either a method invocation or a member reference tree
      * @param type declared method type before type variable substitution
@@ -2163,7 +2164,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Callback to handle the declared constructor type before type variable substitution.
+     * A callback method for the AnnotatedTypeFactory subtypes to customize the handling of the
+     * declared constructor type before type variable substitution.
      *
      * @param tree a NewClassTree from constructorFromUse()
      * @param type declared method type before type variable substitution
@@ -3523,8 +3525,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         return Pair.of(functionalInterfaceType, functionType);
     }
-
-    //    void getFnInterfaceFromTreePreSubstitution()
 
     /**
      * Get the AnnotatedDeclaredType for the FunctionalInterface from assignment context of the
