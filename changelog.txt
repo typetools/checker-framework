@@ -10,6 +10,7 @@ Implementation details:
  * Renamings:
    applyUncheckedCodeDefaults() to applyConservativeDefaults()
    useUncheckedCodeDefault() to useConservativeDefault()
+ * AbstractTypeProcessor#typeProcessingOver() always gets called
  * Deprecated the `framework.source.Result` class; use `DiagMessage` or
    `List<DiagMessage>` instead.  If you were creating a `Result` just to
    pass it to `report`, then call new methods `reportError` and
