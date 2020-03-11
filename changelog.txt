@@ -7,8 +7,6 @@ Renamings:
 Implementation details:
  * Removed `@DefaultInUncheckedCodeFor` and
    `@DefaultQualifierInHierarchyInUncheckedCode`.
- * Added boolean `hasError` parameter to
-   AbstractTypeProcessor#typeProcessingOver()
  * Renamings:
    applyUncheckedCodeDefaults() to applyConservativeDefaults()
    useUncheckedCodeDefault() to useConservativeDefault()

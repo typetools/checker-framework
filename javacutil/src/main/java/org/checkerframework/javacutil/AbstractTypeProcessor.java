@@ -142,7 +142,16 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      * @param hasError true if compilation issued an error, either from the Java compiler or from a
      *     pluggable type-checker
      */
-    public void typeProcessingOver(boolean hasError) {}
+    public void typeProcessingOver() {}
+
+    /**
+     * Return log.
+     *
+     * @return the log.
+     */
+    public Log getCompilerLog() {
+        return Log.instance(((JavacProcessingEnvironment) processingEnv).getContext());
+    }
 
     /** A task listener that invokes the processor whenever a class is fully analyzed. */
     private final class AttributionTaskListener implements TaskListener {
@@ -158,10 +167,8 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
                 hasInvokedTypeProcessingStart = true;
             }
 
-            Log log = Log.instance(((JavacProcessingEnvironment) processingEnv).getContext());
-
             if (!hasInvokedTypeProcessingOver && elements.isEmpty()) {
-                typeProcessingOver(log.nerrors != 0);
+                typeProcessingOver();
                 hasInvokedTypeProcessingOver = true;
             }
 
@@ -182,7 +189,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
             typeProcess(elem, p);
 
             if (!hasInvokedTypeProcessingOver && elements.isEmpty()) {
-                typeProcessingOver(log.nerrors != 0);
+                typeProcessingOver();
                 hasInvokedTypeProcessingOver = true;
             }
         }

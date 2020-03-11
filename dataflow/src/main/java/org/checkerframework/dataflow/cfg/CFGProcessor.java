@@ -4,6 +4,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.TreePathScanner;
+import com.sun.tools.javac.util.Log;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.ExecutableElement;
@@ -61,20 +62,22 @@ public class CFGProcessor extends BasicTypeProcessor {
     }
 
     @Override
-    public void typeProcessingOver(boolean hasError) {
+    public void typeProcessingOver() {
         if (rootTree == null) {
             result = new CFGProcessResult("Root tree is null.");
         } else if (classTree == null) {
             result = new CFGProcessResult("Method tree is null.");
         } else if (methodTree == null) {
             result = new CFGProcessResult("Class tree is null.");
-        } else if (hasError) {
-            result = new CFGProcessResult("Compilation issued an error.");
+        }
+        Log log = getCompilerLog();
+        if (log.nerrors != 0) {
+            result = new CFGProcessResult("Compilation issued " + log.nerrors + " error(s).");
         } else {
             ControlFlowGraph cfg = CFGBuilder.build(rootTree, methodTree, classTree, processingEnv);
             result = new CFGProcessResult(cfg);
         }
-        super.typeProcessingOver(hasError);
+        super.typeProcessingOver();
     }
 
     @Override

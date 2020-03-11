@@ -119,11 +119,11 @@ public abstract class AggregateChecker extends SourceChecker {
     }
 
     @Override
-    public void typeProcessingOver(boolean hasError) {
+    public void typeProcessingOver() {
         for (SourceChecker checker : checkers) {
-            checker.typeProcessingOver(hasError);
+            checker.typeProcessingOver();
         }
-        super.typeProcessingOver(hasError);
+        super.typeProcessingOver();
     }
 
     @Override
