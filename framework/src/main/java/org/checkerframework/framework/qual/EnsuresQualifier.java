@@ -37,8 +37,8 @@ import java.lang.annotation.Target;
 @Repeatable(EnsuresQualifier.List.class)
 public @interface EnsuresQualifier {
     /**
-     * The Java expressions for which the qualifier holds after successful method termination.
-     *
+     * @return the Java expressions for which the qualifier holds after successful method
+     *     termination
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();

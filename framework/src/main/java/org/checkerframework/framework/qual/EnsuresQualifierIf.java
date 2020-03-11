@@ -40,16 +40,15 @@ import java.lang.annotation.Target;
 @Repeatable(EnsuresQualifierIf.List.class)
 public @interface EnsuresQualifierIf {
     /**
-     * The Java expressions for which the qualifier holds if the method terminates with return value
-     * {@link #result()}.
-     *
+     * @return the Java expressions for which the qualifier holds if the method terminates with
+     *     return value {@link #result()}.
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 
     /**
-     * The qualifier that is guaranteed to hold if the method terminates with return value {@link
-     * #result()}.
+     * @return the qualifier that is guaranteed to hold if the method terminates with return value
+     *     {@link #result()}.
      */
     Class<? extends Annotation> qualifier();
 

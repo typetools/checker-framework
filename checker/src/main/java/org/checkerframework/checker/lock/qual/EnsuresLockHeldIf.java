@@ -35,7 +35,7 @@ public @interface EnsuresLockHeldIf {
     // that conditional postconditions have a field named "expression".
     String[] expression();
 
-    /** The return value of the method that needs to hold for the postcondition to hold. */
+    /** @return the return value of the method under which the postconditions hold */
     boolean result();
 
     /**
