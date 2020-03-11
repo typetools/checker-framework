@@ -313,6 +313,12 @@ public class PurityChecker {
             }
         }
 
+        /**
+         * Checks if the argument is a local variable.
+         *
+         * @param variable the tree to check
+         * @return true if the argument is a local variable
+         */
         protected boolean isLocalVariable(ExpressionTree variable) {
             return variable instanceof IdentifierTree && !TreeUtils.isFieldAccess(variable);
         }
