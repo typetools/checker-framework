@@ -18,7 +18,6 @@ import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -72,7 +71,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
                 // happens when the parent's respective constructor is not @Unique.
                 AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(node);
                 if (!superResult.hasAnnotation(Unique.class)) {
-                    checker.report(Result.failure("unique.leaked"), node);
+                    checker.reportError(node, "unique.leaked");
                 }
             } else {
                 // TODO: Currently the type of "this" doesn't always return
@@ -135,7 +134,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             // visitMethodInvocation.
         } else {
             // May be leaked, raise warning.
-            checker.report(Result.failure("unique.leaked"), node);
+            checker.reportError(node, "unique.leaked");
         }
     }
 
@@ -157,9 +156,9 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             // If an assignment occurs inside a constructor with
             // result type @Unique, it will invalidate the @Unique property
             // by using the "this" reference.
-            checker.report(Result.failure("unique.leaked"), valueExp);
+            checker.reportError(valueExp, "unique.leaked");
         } else if (canBeLeaked(valueExp)) {
-            checker.report(Result.failure("unique.leaked"), valueExp);
+            checker.reportError(valueExp, "unique.leaked");
         }
     }
 
@@ -187,7 +186,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
                 if (!varType.hasAnnotation(NonLeaked.class)
                         && !(varType.hasAnnotation(LeakedToResult.class)
                                 && parentKind == Kind.EXPRESSION_STATEMENT)) {
-                    checker.report(Result.failure("unique.leaked"), valueTree);
+                    checker.reportError(valueTree, "unique.leaked");
                 }
             }
         }
@@ -199,7 +198,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         // @Unique is thrown, it is not @Unique anymore.
         ExpressionTree exp = node.getExpression();
         if (canBeLeaked(exp)) {
-            checker.report(Result.failure("unique.leaked"), exp);
+            checker.reportError(exp, "unique.leaked");
         }
         return super.visitThrow(node, p);
     }
@@ -210,17 +209,17 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(node);
         VariableElement elt = TreeUtils.elementFromDeclaration(node);
         if (elt.getKind().isField() && varType.hasExplicitAnnotation(Unique.class)) {
-            checker.report(Result.failure("unique.location.forbidden"), node);
+            checker.reportError(node, "unique.location.forbidden");
         } else if (node.getType().getKind() == Kind.ARRAY_TYPE) {
             AnnotatedArrayType arrayType = (AnnotatedArrayType) varType;
             if (arrayType.getComponentType().hasAnnotation(Unique.class)) {
-                checker.report(Result.failure("unique.location.forbidden"), node);
+                checker.reportError(node, "unique.location.forbidden");
             }
         } else if (node.getType().getKind() == Kind.PARAMETERIZED_TYPE) {
             AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) varType;
             for (AnnotatedTypeMirror atm : declaredType.getTypeArguments()) {
                 if (atm.hasAnnotation(Unique.class)) {
-                    checker.report(Result.failure("unique.location.forbidden"), node);
+                    checker.reportError(node, "unique.location.forbidden");
                 }
             }
         }
@@ -233,7 +232,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         if (initializers != null && !initializers.isEmpty()) {
             for (ExpressionTree exp : initializers) {
                 if (canBeLeaked(exp)) {
-                    checker.report(Result.failure("unique.leaked"), exp);
+                    checker.reportError(exp, "unique.leaked");
                 }
             }
         }
@@ -257,7 +256,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             // happens when the parent's respective constructor is not @Unique.
             AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(superCall);
             if (!superResult.hasAnnotation(Unique.class)) {
-                checker.report(Result.failure("unique.leaked"), superCall);
+                checker.reportError(superCall, "unique.leaked");
             }
         }
     }
