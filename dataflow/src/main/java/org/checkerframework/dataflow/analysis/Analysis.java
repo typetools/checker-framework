@@ -63,7 +63,7 @@ public class Analysis<
     /**
      * The associated processing environment.
      *
-     * @deprecated as {@code env} is moved to {@link
+     * @deprecated as {@code env} is moved to {@code
      *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this field will be removed in
      *     next major update
      */
@@ -74,7 +74,7 @@ public class Analysis<
     /**
      * Instance of the types utility.
      *
-     * @deprecated as {@code types} is moved to {@link
+     * @deprecated as {@code types} is moved to {@code
      *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this field will be removed in
      *     next major update
      */
@@ -147,10 +147,10 @@ public class Analysis<
 
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set by the subclass, e.g., {@link
+     * flow graph. The transfer function is set by the subclass, e.g., {@code
      * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
      *
-     * @deprecated as {@code env} is moved to {@link
+     * @deprecated as {@code env} is moved to {@code
      *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this helper constructor will be
      *     removed in next major update. Use {@link #Analysis()}, {@link #Analysis(TransferFunction,
      *     int)}, {@link #Analysis(TransferFunction)} or {@link #Analysis(int)} instead
@@ -163,7 +163,7 @@ public class Analysis<
 
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set by the subclass, e.g., {@link
+     * flow graph. The transfer function is set by the subclass, e.g., {@code
      * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
      */
     public Analysis() {
@@ -172,7 +172,7 @@ public class Analysis<
 
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set by the subclass, e.g., {@link
+     * flow graph. The transfer function is set by the subclass, e.g., {@code
      * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
      *
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
@@ -185,7 +185,7 @@ public class Analysis<
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      *
-     * @deprecated as {@code env} is moved to {@link
+     * @deprecated as {@code env} is moved to {@code
      *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this constructor will be removed
      *     in next major update. Use {@link #Analysis(TransferFunction, int)} instead.
      * @param transfer transfer function
@@ -210,7 +210,7 @@ public class Analysis<
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      *
-     * @deprecated as {@code env} is moved to {@link
+     * @deprecated as {@code env} is moved to {@code
      *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this constructor will be removed
      *     in next major update. Use {@link #Analysis(TransferFunction, int)} instead.
      * @param transfer transfer function
@@ -268,7 +268,7 @@ public class Analysis<
     /**
      * Get the types utility.
      *
-     * @deprecated as {@link #getTypes()} is moved to {@link
+     * @deprecated as {@link #getTypes()} is moved to {@code
      *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this method will be removed in
      *     next major update
      * @return {@link #types}
@@ -283,7 +283,7 @@ public class Analysis<
     /**
      * Get the processing environment.
      *
-     * @deprecated as {@link #getEnv()} is moved to {@link
+     * @deprecated as {@link #getEnv()} is moved to {@code
      *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this method will be removed in
      *     next major update
      * @return {@link #env}
