@@ -55,9 +55,9 @@ public class ValueChecker extends BaseTypeChecker {
     }
 
     @Override
-    public void typeProcessingOver() {
+    public void typeProcessingOver(boolean hasError) {
         // Reset ignore overflow.
         Range.ignoreOverflow = false;
-        super.typeProcessingOver();
+        super.typeProcessingOver(hasError);
     }
 }

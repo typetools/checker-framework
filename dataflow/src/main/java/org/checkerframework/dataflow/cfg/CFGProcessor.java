@@ -61,18 +61,20 @@ public class CFGProcessor extends BasicTypeProcessor {
     }
 
     @Override
-    public void typeProcessingOver() {
+    public void typeProcessingOver(boolean hasError) {
         if (rootTree == null) {
             result = new CFGProcessResult("Root tree is null.");
         } else if (classTree == null) {
             result = new CFGProcessResult("Method tree is null.");
         } else if (methodTree == null) {
             result = new CFGProcessResult("Class tree is null.");
+        } else if (hasError) {
+            result = new CFGProcessResult("Compilation issued an error.");
         } else {
             ControlFlowGraph cfg = CFGBuilder.build(rootTree, methodTree, classTree, processingEnv);
             result = new CFGProcessResult(cfg);
         }
-        super.typeProcessingOver();
+        super.typeProcessingOver(hasError);
     }
 
     @Override

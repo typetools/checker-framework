@@ -46,13 +46,13 @@ import javax.lang.model.util.ElementFilter;
  *       #typeProcess(TypeElement, TreePath) typeProcess} method on the {@code Processor}. The class
  *       is guaranteed to be type-checked Java code and all the tree type and symbol information is
  *       resolved.
- *   <li>Finally, the tools calls the {@link #typeProcessingOver() typeProcessingOver} method on the
+ *   <li>Finally, the tool calls the {@link #typeProcessingOver typeProcessingOver} method on the
  *       {@code Processor}.
  * </ol>
  *
  * <p>The tool is permitted to ask type processors to process a class once it is analyzed before the
  * rest of classes are analyzed. The tool is also permitted to stop type processing immediately if
- * any errors are raised, without invoking {@code typeProcessingOver}
+ * any errors are raised, without invoking {@link #typeProcessingOver}.
  *
  * <p>A subclass may override any of the methods in this class, as long as the general {@link
  * javax.annotation.processing.Processor Processor} contract is obeyed, with one notable exception.
@@ -74,8 +74,8 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
     private boolean hasInvokedTypeProcessingStart = false;
 
     /**
-     * Method {@link #typeProcessingOver()} must be invoked exactly once, after the last invocation
-     * of {@link #typeProcess(TypeElement, TreePath)}.
+     * Method {@link #typeProcessingOver} must be invoked exactly once, after the last invocation of
+     * {@link #typeProcess(TypeElement, TreePath)}.
      */
     private static boolean hasInvokedTypeProcessingOver = false;
 
@@ -139,10 +139,10 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      * <p>Subclasses may override this method to do any aggregate analysis (e.g. generate report,
      * persistence) or resource deallocation.
      *
-     * <p>If an error (a Java error or a processor error) is reported, this method is not guaranteed
-     * to be invoked.
+     * @param hasError true if compilation issued an error, either from the Java compiler or from a
+     *     pluggable type-checker
      */
-    public void typeProcessingOver() {}
+    public void typeProcessingOver(boolean hasError) {}
 
     /** A task listener that invokes the processor whenever a class is fully analyzed. */
     private final class AttributionTaskListener implements TaskListener {
@@ -160,8 +160,8 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
 
             Log log = Log.instance(((JavacProcessingEnvironment) processingEnv).getContext());
 
-            if (!hasInvokedTypeProcessingOver && elements.isEmpty() && log.nerrors == 0) {
-                typeProcessingOver();
+            if (!hasInvokedTypeProcessingOver && elements.isEmpty()) {
+                typeProcessingOver(log.nerrors != 0);
                 hasInvokedTypeProcessingOver = true;
             }
 
@@ -181,8 +181,8 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
 
             typeProcess(elem, p);
 
-            if (!hasInvokedTypeProcessingOver && elements.isEmpty() && log.nerrors == 0) {
-                typeProcessingOver();
+            if (!hasInvokedTypeProcessingOver && elements.isEmpty()) {
+                typeProcessingOver(log.nerrors != 0);
                 hasInvokedTypeProcessingOver = true;
             }
         }
