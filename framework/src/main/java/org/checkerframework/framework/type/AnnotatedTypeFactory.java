@@ -3282,9 +3282,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return result;
     }
 
+    /** Cache for {@link #isListForRepeatedAnnotation}. */
     Map<AnnotationMirror, Boolean> isListForRepeatedAnnotationCache = new HashMap<>();
 
-    /** Returns true if this is a wrapper for multiple repeated annotations. */
+    /**
+     * Returns true if the given annotation is a wrapper for multiple repeated annotations.
+     *
+     * @param a an annotation that might be a wrapper
+     * @return true if the argument is a wrapper for multiple repeated annotations
+     */
     boolean isListForRepeatedAnnotation(AnnotationMirror a) {
         if (!isListForRepeatedAnnotationCache.containsKey(a)) {
             isListForRepeatedAnnotationCache.put(a, isListForRepeatedAnnotationImplementation(a));
