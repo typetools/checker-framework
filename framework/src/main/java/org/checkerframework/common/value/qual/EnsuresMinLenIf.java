@@ -38,7 +38,7 @@ public @interface EnsuresMinLenIf {
     /** The return value of the method that needs to hold for the postcondition to hold. */
     boolean result();
 
-    /** The minimum number of elements in the sequence. */
+    /** @return the minimum number of elements in the sequence */
     @QualifierArgument("value")
     int targetValue() default 0;
 
@@ -54,7 +54,7 @@ public @interface EnsuresMinLenIf {
     @ConditionalPostconditionAnnotation(qualifier = MinLen.class)
     @InheritedAnnotation
     @interface List {
-        /** The repeatable annotations. */
+        /** @return the repeatable annotations */
         EnsuresMinLenIf[] value();
     }
 }

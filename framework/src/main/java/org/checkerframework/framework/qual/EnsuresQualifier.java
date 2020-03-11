@@ -43,7 +43,7 @@ public @interface EnsuresQualifier {
      */
     String[] expression();
 
-    /** The qualifier that is guaranteed to hold on successful termination of the method. */
+    /** @return the qualifier that is guaranteed to hold on successful termination of the method */
     Class<? extends Annotation> qualifier();
 
     /**
@@ -57,7 +57,7 @@ public @interface EnsuresQualifier {
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @InheritedAnnotation
     @interface List {
-        /** The repeatable annotations. */
+        /** @return the repeatable annotations */
         EnsuresQualifier[] value();
     }
 }

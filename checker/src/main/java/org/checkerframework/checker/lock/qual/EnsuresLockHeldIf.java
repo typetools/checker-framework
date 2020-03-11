@@ -25,8 +25,8 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Repeatable(EnsuresLockHeldIf.List.class)
 public @interface EnsuresLockHeldIf {
     /**
-     * Java expressions whose values are held after the method returns the given result.
-     *
+     * @return Java expressions whose values are locks that are held after method the returns the
+     *     given result
      * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
      *     Java expressions</a>
      */
@@ -50,7 +50,7 @@ public @interface EnsuresLockHeldIf {
     @ConditionalPostconditionAnnotation(qualifier = LockHeld.class)
     @InheritedAnnotation
     @interface List {
-        /** The repeatable annotations. */
+        /** @return the repeatable annotations */
         EnsuresLockHeldIf[] value();
     }
 }

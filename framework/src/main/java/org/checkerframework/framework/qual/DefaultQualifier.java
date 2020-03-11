@@ -77,7 +77,7 @@ public @interface DefaultQualifier {
         ElementType.PARAMETER
     })
     @interface List {
-        /** The repeatable annotations. */
+        /** @return the repeatable annotations */
         DefaultQualifier[] value();
     }
 }

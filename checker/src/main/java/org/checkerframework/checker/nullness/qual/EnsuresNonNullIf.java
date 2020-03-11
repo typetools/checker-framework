@@ -79,7 +79,7 @@ public @interface EnsuresNonNullIf {
      */
     String[] expression();
 
-    /** The return value of the method that needs to hold for the postcondition to hold. */
+    /** @return the return value of the method under which the postcondition holds */
     boolean result();
 
     /**
@@ -94,7 +94,7 @@ public @interface EnsuresNonNullIf {
     @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
     @InheritedAnnotation
     @interface List {
-        /** The repeatable annotations. */
+        /** @return the repeatable annotations */
         EnsuresNonNullIf[] value();
     }
 }

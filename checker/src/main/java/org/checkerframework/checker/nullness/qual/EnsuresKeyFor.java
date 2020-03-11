@@ -44,9 +44,8 @@ public @interface EnsuresKeyFor {
     String[] value();
 
     /**
-     * Java expressions that are maps, each of which contains each of the expressions' value on
-     * successful method termination.
-     *
+     * @return Java expressions whose values are maps, each of which contains each expression value
+     *     as a key (after successful method termination)
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     @JavaExpression
@@ -65,7 +64,7 @@ public @interface EnsuresKeyFor {
     @PostconditionAnnotation(qualifier = KeyFor.class)
     @InheritedAnnotation
     @interface List {
-        /** The repeatable annotations. */
+        /** @return the repeatable annotations */
         EnsuresKeyFor[] value();
     }
 }

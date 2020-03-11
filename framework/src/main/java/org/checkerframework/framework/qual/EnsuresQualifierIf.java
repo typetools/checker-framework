@@ -53,7 +53,7 @@ public @interface EnsuresQualifierIf {
      */
     Class<? extends Annotation> qualifier();
 
-    /** The return value of the method that needs to hold for the postcondition to hold. */
+    /** @return the return value of the method that needs to hold for the postcondition to hold */
     boolean result();
 
     /**
@@ -67,7 +67,7 @@ public @interface EnsuresQualifierIf {
     @Target({ElementType.METHOD})
     @InheritedAnnotation
     @interface List {
-        /** The repeatable annotations. */
+        /** @return the repeatable annotations */
         EnsuresQualifierIf[] value();
     }
 }

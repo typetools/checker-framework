@@ -28,7 +28,7 @@ public @interface RequiresQualifier {
      */
     String[] expression();
 
-    /** The qualifier that is required. */
+    /** @return the qualifier that is required */
     Class<? extends Annotation> qualifier();
 
     /**
@@ -41,7 +41,7 @@ public @interface RequiresQualifier {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @interface List {
-        /** The repeatable annotations. */
+        /** @return the repeatable annotations */
         RequiresQualifier[] value();
     }
 }
