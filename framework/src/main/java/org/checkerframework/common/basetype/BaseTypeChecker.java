@@ -695,6 +695,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         for (BaseTypeChecker checker : getSubcheckers()) {
             checker.typeProcessingOver();
         }
+
         super.typeProcessingOver();
     }
 

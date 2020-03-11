@@ -66,6 +66,7 @@ public class JavaCodeStatistics extends SourceChecker {
                     "Compilation issued %d error(s). Statistics might be incomplete.%n",
                     log.nerrors);
         }
+
         System.out.printf("Found %d generic type uses.%n", generics);
         System.out.printf("Found %d array accesses and creations.%n", arrayAccesses);
         System.out.printf("Found %d typecasts.%n", typecasts);
