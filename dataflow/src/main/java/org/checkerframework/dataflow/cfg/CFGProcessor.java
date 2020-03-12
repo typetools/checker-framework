@@ -36,7 +36,7 @@ public class CFGProcessor extends BasicTypeProcessor {
     /** Tree node for the specified method. */
     private @Nullable MethodTree methodTree;
 
-    /** Result of CFG process. */
+    /** Result of CFG process; is set by {@link #typeProcessingOver}. */
     private @MonotonicNonNull CFGProcessResult result = null;
 
     /**
