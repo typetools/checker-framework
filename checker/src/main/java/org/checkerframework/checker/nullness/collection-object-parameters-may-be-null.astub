@@ -80,9 +80,28 @@ package java.util;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+class AbstractCollection {
+    @Pure public boolean contains(@Nullable Object o);
+    public boolean remove(@Nullable Object o);
+    @Pure public boolean containsAll(Collection<?> c);
+    public boolean removeAll(Collection<?> c);
+    public boolean retainAll(Collection<?> c);
+}
+
 public abstract class AbstractList<E> extends AbstractCollection<E> implements List<E> {
     public int indexOf(@Nullable Object o);
     public int lastIndexOf(@Nullable Object o);
+}
+
+class AbstractMap {
+    public boolean containsValue(@Nullable Object value);
+    public boolean containsKey(@Nullable Object key);
+    public @Nullable V get(@Nullable Object key);
+    public @Nullable V remove(@Nullable Object key);
+}
+
+class AbstractSet {
+  public boolean removeAll(Collection<?> c);
 }
 
 public class ArrayList<E> extends AbstractList<E>
@@ -96,7 +115,6 @@ public class ArrayList<E> extends AbstractList<E>
 
 public interface Collection<E> extends Iterable<E> {
     boolean contains(@Nullable Object o);
-    boolean add(@Nullable E e);
     boolean remove(@Nullable Object o);
     boolean containsAll(Collection<? extends @Nullable Object> c);
     boolean addAll(Collection<? extends @Nullable E> c);
@@ -106,6 +124,10 @@ public interface Collection<E> extends Iterable<E> {
 public interface Comparator<T> {
     int compare(@Nullable T o1, @Nullable T o2);
 
+}
+
+class ConcurrentSkipListSet {
+    public boolean removeAll(Collection<?> c);
 }
 
 public interface Deque<E> extends Queue<E> {
@@ -118,6 +140,9 @@ public interface Deque<E> extends Queue<E> {
 public interface List<E> extends Collection<E> {
     boolean contains(@Nullable Object o);
     boolean remove(@Nullable Object o);
+    boolean containsAll(Collection<?> c);
+    boolean removeAll(Collection<?> c);
+    boolean retainAll(Collection<?> c);
     int indexOf(@Nullable Object o);
     int lastIndexOf(@Nullable Object o);
 }
@@ -138,8 +163,17 @@ public class PriorityQueue<E> extends AbstractQueue<E>
 }
 
 public interface Set<E> extends Collection<E> {
-    boolean contains(@Nullable Object o);
+    @Pure boolean contains(@Nullable Object o);
     boolean remove(@Nullable Object o);
+    @Pure boolean containsAll(Collection<?> c);
+    boolean retainAll(Collection<?> c);
+    boolean removeAll(Collection<?> c);
+}
+
+class SynchronousQueue {
+    @Pure public boolean containsAll(Collection<?> c);
+    public boolean removeAll(Collection<?> c);
+    public boolean retainAll(Collection<?> c);
 }
 
 public class TreeMap<K,V>
@@ -157,6 +191,12 @@ public class TreeSet<E> extends AbstractSet<E>
 {
     public boolean contains(@Nullable Object o);
     public boolean remove(@Nullable Object o);
+}
+
+class Vector {
+    public synchronized boolean containsAll(Collection<?> c);
+    public synchronized boolean removeAll(Collection<?> c);
+    public synchronized boolean retainAll(Collection<?> c);
 }
 
 package java.util.concurrent;
