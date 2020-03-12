@@ -14,6 +14,7 @@ Implementation details:
    `List<DiagMessage>` instead.  If you were creating a `Result` just to
    pass it to `report`, then call new methods `reportError` and
    `reportWarning` instead.
+ * AbstractTypeProcessor#typeProcessingOver() always gets called.
 
 ---------------------------------------------------------------------------
 
