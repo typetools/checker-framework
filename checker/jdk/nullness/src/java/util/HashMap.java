@@ -927,8 +927,8 @@ public class HashMap<K, V> extends AbstractMap<K,V>
         public final void clear()               { HashMap.this.clear(); }
         @SideEffectFree
         public final Iterator<K> iterator()     { return new KeyIterator(); }
-        public final boolean contains(Object o) { return containsKey(o); }
-        public final boolean remove(Object key) {
+        public final boolean contains(@Nullable Object o) { return containsKey(o); }
+        public final boolean remove(@Nullable Object key) {
             return removeNode(hash(key), key, null, false, true) != null;
         }
         @SideEffectFree
@@ -978,7 +978,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
         public final void clear()               { HashMap.this.clear(); }
         @SideEffectFree
         public final Iterator<V> iterator()     { return new ValueIterator(); }
-        public final boolean contains(Object o) { return containsValue(o); }
+        public final boolean contains(@Nullable Object o) { return containsValue(o); }
         @SideEffectFree
         public final Spliterator<V> spliterator() {
             return new ValueSpliterator<>(HashMap.this, 0, -1, 0, 0);
@@ -1029,7 +1029,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
         public final Iterator<Map.Entry<K,V>> iterator() {
             return new EntryIterator();
         }
-        public final boolean contains(Object o) {
+        public final boolean contains(@Nullable Object o) {
             if (!(o instanceof Map.Entry))
                 return false;
             Map.Entry<?,?> e = (Map.Entry<?,?>) o;
@@ -1037,7 +1037,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
             Node<K,V> candidate = getNode(hash(key), key);
             return candidate != null && candidate.equals(e);
         }
-        public final boolean remove(Object o) {
+        public final boolean remove(@Nullable Object o) {
             if (o instanceof Map.Entry) {
                 Map.Entry<?,?> e = (Map.Entry<?,?>) o;
                 Object key = e.getKey();
