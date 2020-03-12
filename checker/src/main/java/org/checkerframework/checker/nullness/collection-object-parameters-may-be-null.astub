@@ -45,22 +45,26 @@
 // or "such that Objects.equals(o, e)") but can be interpreted to say that null is a permitted
 // value:
 //
-//   Collections
-//     frequency
-//
+//   ArrayBlockingQueue
 //   ArrayDeque
-//     removeFirstOccurrence
-//     removeLastOccurrence
-//
+//   ConcurrentLinkedDeque
 //   ConcurrentLinkedQueue
 //   CopyOnWriteArrayList
 //   CopyOnWriteArraySet
+//   LinkedBlockingDeque
 //   LinkedBlockingQueue
 //   LinkedTransferQueue
 //   PriorityBlockingQueue
 //   PriorityQueue
 //     contains
 //     remove
+//
+//   ArrayDeque
+//     removeFirstOccurrence
+//     removeLastOccurrence
+//
+//   Collections
+//     frequency
 //
 // Special cases:
 //   EnumMap:

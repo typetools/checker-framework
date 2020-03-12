@@ -1101,7 +1101,7 @@ public class ConcurrentLinkedDeque<E extends @NonNull Object>
      * @param o element whose presence in this deque is to be tested
      * @return {@code true} if this deque contains the specified element
      */
-    @Pure public boolean contains(Object o) {
+    @Pure public boolean contains(@Nullable Object o) {
         if (o == null) return false;
         for (Node<E> p = first(); p != null; p = succ(p)) {
             E item = p.item;
