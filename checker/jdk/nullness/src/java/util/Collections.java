@@ -3983,7 +3983,7 @@ public class Collections {
             public boolean retainAll(Collection<? extends @NonNull Object> c) {
                 return batchRemove(c, true);
             }
-            private boolean batchRemove(Collection<? extends @NonNull Object>, boolean complement) {
+            private boolean batchRemove(Collection<? extends @NonNull Object> c, boolean complement) {
                 Objects.requireNonNull(c);
                 boolean modified = false;
                 Iterator<Map.Entry<K,V>> it = iterator();
