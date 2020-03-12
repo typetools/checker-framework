@@ -1,3 +1,4 @@
+// This file is a workaround for https://tinyurl.com/cfissue/1326 .
 // For documentation, see
 // https://checkerframework.org/manual/#collection-object-parameters-may-be-null .
 
