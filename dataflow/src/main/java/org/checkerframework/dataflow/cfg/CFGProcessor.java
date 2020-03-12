@@ -9,6 +9,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BasicTypeProcessor;
 import org.checkerframework.javacutil.TreeUtils;
@@ -35,8 +36,8 @@ public class CFGProcessor extends BasicTypeProcessor {
     /** Tree node for the specified method. */
     private @Nullable MethodTree methodTree;
 
-    /** Result of CFG process. */
-    private @Nullable CFGProcessResult result;
+    /** Result of CFG process; is set by {@link #typeProcessingOver}. */
+    private @MonotonicNonNull CFGProcessResult result = null;
 
     /**
      * Create a CFG processor.
@@ -48,7 +49,6 @@ public class CFGProcessor extends BasicTypeProcessor {
     protected CFGProcessor(String className, String methodName) {
         this.className = className;
         this.methodName = methodName;
-        this.result = null;
     }
 
     /**

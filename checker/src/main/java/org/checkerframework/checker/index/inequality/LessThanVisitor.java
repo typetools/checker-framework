@@ -11,7 +11,6 @@ import org.checkerframework.checker.index.Subsequence;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 
@@ -43,15 +42,14 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
 
             if (anm == null || !LessThanAnnotatedTypeFactory.isLessThanOrEqual(anm, subSeq.to)) {
                 // issue an error
-                checker.report(
-                        Result.failure(
-                                FROM_GT_TO,
-                                subSeq.from,
-                                subSeq.to,
-                                anm == null ? "@LessThanUnknown" : anm,
-                                subSeq.to,
-                                subSeq.to),
-                        valueTree);
+                checker.reportError(
+                        valueTree,
+                        FROM_GT_TO,
+                        subSeq.from,
+                        subSeq.to,
+                        anm == null ? "@LessThanUnknown" : anm,
+                        subSeq.to,
+                        subSeq.to);
             }
         }
 

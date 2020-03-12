@@ -12,7 +12,6 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -106,13 +105,11 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
                             atypeFactory.getGroupCount(receiverType.getAnnotation(Regex.class));
                 }
                 if (paramGroups > annoGroups) {
-                    checker.report(
-                            Result.failure(
-                                    "group.count.invalid", paramGroups, annoGroups, receiver),
-                            group);
+                    checker.reportError(
+                            group, "group.count.invalid", paramGroups, annoGroups, receiver);
                 }
             } else {
-                checker.report(Result.warning("group.count.unknown"), group);
+                checker.reportWarning(group, "group.count.unknown");
             }
         }
         return super.visitMethodInvocation(node, p);

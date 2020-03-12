@@ -1,11 +1,9 @@
 package org.checkerframework.framework.util.dependenttypes;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -57,16 +55,15 @@ public class DependentTypesError {
         this.error = error;
     }
 
-    /** Create a DependentTypesError for the given expression and exception. */
+    /**
+     * Create a DependentTypesError for the given expression and exception.
+     *
+     * @param expression the incorrect Java expression
+     * @param e wraps an error message about the expression
+     */
     public DependentTypesError(String expression, FlowExpressionParseException e) {
         this.expression = expression;
-        StringBuilder buf = new StringBuilder();
-        List<Result.DiagMessage> msgs = e.getResult().getDiagMessages();
-
-        for (Result.DiagMessage msg : msgs) {
-            buf.append(msg.getArgs()[0]);
-        }
-        this.error = buf.toString();
+        this.error = e.getDiagMessage().getArgs()[0].toString();
     }
 
     /**

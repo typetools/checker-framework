@@ -1,5 +1,10 @@
 package org.checkerframework.framework.source;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+import static javax.tools.Diagnostic.Kind.NOTE;
+import static javax.tools.Diagnostic.Kind.WARNING;
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -49,8 +54,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -500,7 +503,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                             jreVersion));
         } else if (jreVersion != 8 && jreVersion != 11) {
             message(
-                    Kind.WARNING,
+                    WARNING,
                     "The Checker Framework is only tested with JDK 8 and JDK 11. You are using version %d. Please use JDK 8 or JDK 11.",
                     jreVersion);
         }
@@ -679,7 +682,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             pattern = options.get(patternName);
             if (pattern == null) {
                 message(
-                        Kind.WARNING,
+                        WARNING,
                         "The " + patternName + " property is empty; please fix your command line");
                 pattern = "";
             }
@@ -691,7 +694,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         if (pattern.indexOf("/") != -1) {
             message(
-                    Kind.WARNING,
+                    WARNING,
                     "The "
                             + patternName
                             + " property contains \"/\", which will never match a class name: "
@@ -743,7 +746,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (this.messager == null) {
                 messager = processingEnv.getMessager();
                 messager.printMessage(
-                        javax.tools.Diagnostic.Kind.WARNING,
+                        WARNING,
                         "You have forgotten to call super.initChecker in your "
                                 + "subclass of SourceChecker, "
                                 + this.getClass()
@@ -806,14 +809,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     public void typeProcess(TypeElement e, TreePath p) {
         // Cannot use BugInCF here because it is outside of the try/catch for BugInCf
         if (e == null) {
-            messager.printMessage(
-                    javax.tools.Diagnostic.Kind.ERROR, "Refusing to process empty TypeElement");
+            messager.printMessage(ERROR, "Refusing to process empty TypeElement");
             return;
         }
         if (p == null) {
-            messager.printMessage(
-                    javax.tools.Diagnostic.Kind.ERROR,
-                    "Refusing to process empty TreePath in TypeElement: " + e);
+            messager.printMessage(ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
             return;
         }
 
@@ -823,8 +823,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // Also the enum constant Source.JDK1_8 was renamed at some point...
         if (!warnedAboutSourceLevel && source.compareTo(Source.lookup("8")) < 0) {
             messager.printMessage(
-                    javax.tools.Diagnostic.Kind.WARNING,
-                    "-source " + source.name + " does not support type annotations");
+                    WARNING, "-source " + source.name + " does not support type annotations");
             warnedAboutSourceLevel = true;
         }
 
@@ -854,9 +853,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             setRoot(p.getCompilationUnit());
             if (hasOption("filenames")) {
                 // Add timestamp to indicate how long operations are taking
-                message(Kind.NOTE, new java.util.Date().toString());
+                message(NOTE, new java.util.Date().toString());
                 message(
-                        Kind.NOTE,
+                        NOTE,
                         "%s is type-checking %s",
                         (Object) this.getClass().getSimpleName(),
                         currentRoot.getSourceFile().getName());
@@ -881,7 +880,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    /// Reporting type-checking errors; the main entry point is report()
+    /// Reporting type-checking errors; most clients use reportError() or reportWarning()
     ///
 
     /**
@@ -890,7 +889,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @param r the result to report
      * @param src the position object associated with the result; may be an Element, a Tree, or null
+     * @deprecated use {@link #reportError} or {@link #reportWarning} instead
      */
+    @Deprecated // use {@link #reportError} or {@link #reportWarning} instead
     public void report(final Result r, final Object src) {
         if (r.isSuccess()) {
             return;
@@ -900,43 +901,66 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return;
         }
 
-        for (Result.DiagMessage msg : r.getDiagMessages()) {
-            if (r.isFailure()) {
-                this.message(
-                        hasOption("warns")
-                                ? Diagnostic.Kind.MANDATORY_WARNING
-                                : Diagnostic.Kind.ERROR,
-                        src,
-                        msg.getMessageKey(),
-                        msg.getArgs());
-            } else if (r.isWarning()) {
-                this.message(
-                        Diagnostic.Kind.MANDATORY_WARNING, src, msg.getMessageKey(), msg.getArgs());
-            } else {
-                this.message(Diagnostic.Kind.NOTE, src, msg.getMessageKey(), msg.getArgs());
-            }
+        for (DiagMessage dmsg : r.getDiagMessages()) {
+            report(src, dmsg);
         }
     }
 
     /**
-     * Prints a message (error, warning, note, etc.) via JSR-269.
+     * Reports an error. By default, prints it to the screen via the compiler's internal messager.
      *
-     * @param kind the type of message to print
-     * @param source the object from which to obtain source position information; may be an Element,
-     *     a Tree, or null
-     * @param msgKey the message key to print
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @param messageKey the message key
      * @param args arguments for interpolation in the string corresponding to the given message key
-     * @see Diagnostic
-     * @throws IllegalArgumentException if {@code source} is neither a {@link Tree} nor an {@link
-     *     Element}
      */
-    private void message(
-            Diagnostic.Kind kind,
-            @Nullable Object source,
-            @CompilerMessageKey String msgKey,
-            Object... args) {
+    public void reportError(Object source, @CompilerMessageKey String messageKey, Object... args) {
+        report(source, ERROR, messageKey, args);
+    }
 
+    /**
+     * Reports a warning. By default, prints it to the screen via the compiler's internal messager.
+     *
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @param messageKey the message key
+     * @param args arguments for interpolation in the string corresponding to the given message key
+     */
+    public void reportWarning(
+            Object source, @CompilerMessageKey String messageKey, Object... args) {
+        report(source, MANDATORY_WARNING, messageKey, args);
+    }
+
+    /**
+     * Reports a diagnostic message. By default, prints it to the screen via the compiler's internal
+     * messager.
+     *
+     * <p>Most clients should use {@link #reportError} or {@link #reportWarning}.
+     *
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @param d the diagnostic message
+     */
+    public void report(Object source, DiagMessage d) {
+        report(source, d.getKind(), d.getMessageKey(), d.getArgs());
+    }
+
+    /**
+     * Reports a diagnostic message. By default, it prints it to the screen via the compiler's
+     * internal messager; however, it might also store it for later output.
+     *
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @param kind the type of message
+     * @param messageKey the message key
+     * @param args arguments for interpolation in the string corresponding to the given message key
+     */
+    private void report(
+            Object source,
+            javax.tools.Diagnostic.Kind kind,
+            @CompilerMessageKey String messageKey,
+            Object... args) {
         assert messagesProperties != null : "null messagesProperties";
+
+        if (shouldSuppressWarnings(source, messageKey)) {
+            return;
+        }
 
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
@@ -944,12 +968,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
         }
 
-        if (kind == Diagnostic.Kind.NOTE) {
-            System.err.println("(NOTE) " + String.format(msgKey, args));
+        if (kind == NOTE) {
+            System.err.println("(NOTE) " + String.format(messageKey, args));
             return;
         }
 
-        final String defaultFormat = "(" + msgKey + ")";
+        final String defaultFormat = "(" + messageKey + ")";
         String fmtString;
         if (this.processingEnv.getOptions() != null /*nnbug*/
                 && this.processingEnv.getOptions().containsKey("nomsgtext")) {
@@ -960,9 +984,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             // a stylized error message for easy parsing by a tool.
             fmtString =
                     detailedMsgTextPrefix(source, defaultFormat, args)
-                            + fullMessageOf(msgKey, defaultFormat);
+                            + fullMessageOf(messageKey, defaultFormat);
         } else {
-            fmtString = "[" + suppressionKey(msgKey) + "] " + fullMessageOf(msgKey, defaultFormat);
+            fmtString =
+                    "["
+                            + suppressionKey(messageKey)
+                            + "] "
+                            + fullMessageOf(messageKey, defaultFormat);
         }
         String messageText;
         try {
@@ -973,27 +1001,31 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     e);
         }
 
+        if (kind == ERROR && hasOption("warns")) {
+            kind = MANDATORY_WARNING;
+        }
+
         if (source instanceof Element) {
             messager.printMessage(kind, messageText, (Element) source);
         } else if (source instanceof Tree) {
             printOrStoreMessage(kind, messageText, (Tree) source, currentRoot);
         } else {
-            throw new BugInCF("invalid position source: " + source.getClass().getName());
+            throw new BugInCF("invalid position source, class=" + source.getClass());
         }
     }
 
     /**
      * Print a non-localized message using the javac messager. This is preferable to using
      * System.out or System.err, but should only be used for exceptional cases that don't happen in
-     * correct usage. Localized messages should be raised using {@link SourceChecker#report(Result,
-     * Object)}.
+     * correct usage. Localized messages should be raised using {@link #reportError}, {@link
+     * #reportWarning}, etc.
      *
      * @param kind the kind of message to print
      * @param msg the message text
      * @param args optional arguments to substitute in the message
-     * @see SourceChecker#report(Result, Object)
+     * @see SourceChecker#report(Object, DiagMessage)
      */
-    public void message(Diagnostic.Kind kind, String msg, Object... args) {
+    public void message(javax.tools.Diagnostic.Kind kind, String msg, Object... args) {
         String ftdmsg = String.format(msg, args);
         if (messager != null) {
             messager.printMessage(kind, ftdmsg);
@@ -1011,11 +1043,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (messager == null) {
             messager = processingEnv.getMessager();
         }
-        messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
+        messager.printMessage(ERROR, msg);
     }
 
     /**
-     * Do not call this method directly. Call {@link #report(Result, Object)} instead.
+     * Do not call this method. Call {@link #reportError} or {@link #reportWarning} instead.
      *
      * <p>This method exists so that the BaseTypeChecker can override it. For compound checkers, it
      * stores all messages and sorts them by location before outputting them.
@@ -1026,7 +1058,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param root the compilation unit
      */
     protected void printOrStoreMessage(
-            Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
+            javax.tools.Diagnostic.Kind kind,
+            String message,
+            Tree source,
+            CompilationUnitTree root) {
         Trees.instance(processingEnv).printMessage(kind, message, source, root);
     }
 
@@ -1134,12 +1169,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Returns the most specific warning suppression key for the warning/error being printed. This
      * is {@code msg} prefixed by a checker name (or "all") and a colon.
      *
-     * @param msgKey the simple, checker-specific error message key
+     * @param messageKey the simple, checker-specific error message key
      * @return the most specific warning suppression key for the warning/error being printed
      */
-    private String suppressionKey(String msgKey) {
+    private String suppressionKey(String messageKey) {
         if (this.processingEnv.getOptions().containsKey("showSuppressWarningKeys")) {
-            return this.getSuppressWarningsKeys() + ":" + msgKey;
+            return this.getSuppressWarningsKeys() + ":" + messageKey;
         } else if (this.processingEnv
                 .getOptions()
                 .containsKey("requirePrefixInWarningSuppressions")) {
@@ -1148,20 +1183,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             String defaultKey = getDefaultWarningSuppressionKey();
             Collection<String> keys = getSuppressWarningsKeys();
             if (keys.contains(defaultKey)) {
-                return defaultKey + ":" + msgKey;
+                return defaultKey + ":" + messageKey;
             } else if (keys.isEmpty()) {
                 keys.remove(SUPPRESS_ALL_KEY);
                 if (keys.isEmpty()) {
-                    return SUPPRESS_ALL_KEY + ":" + msgKey;
+                    return SUPPRESS_ALL_KEY + ":" + messageKey;
                 } else {
                     String firstKey = keys.iterator().next();
-                    return firstKey + ":" + msgKey;
+                    return firstKey + ":" + messageKey;
                 }
             } else {
-                return msgKey;
+                return messageKey;
             }
         } else {
-            return msgKey;
+            return messageKey;
         }
     }
 
@@ -1216,7 +1251,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     && !s.equals("none") /*&&
                     !warnedOnLint.contains(s)*/) {
                 this.messager.printMessage(
-                        javax.tools.Diagnostic.Kind.WARNING,
+                        WARNING,
                         "Unsupported lint option: "
                                 + s
                                 + "; All options: "
@@ -1788,11 +1823,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     private void reportUnneededSuppression(Tree tree, String key) {
         Tree swTree = findSuppressWarningsTree(tree);
         report(
-                Result.warning(
-                        SourceChecker.UNNEEDED_SUPPRESSION_KEY,
-                        "\"" + key + "\"",
-                        getClass().getSimpleName()),
-                swTree);
+                swTree,
+                MANDATORY_WARNING,
+                SourceChecker.UNNEEDED_SUPPRESSION_KEY,
+                "\"" + key + "\"",
+                getClass().getSimpleName());
     }
 
     /** The name of the @SuppressWarnings annotation. */
@@ -2439,7 +2474,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
             prop.load(base);
         } catch (IOException e) {
-            message(Kind.WARNING, "Couldn't parse properties file: " + filePath);
+            message(WARNING, "Couldn't parse properties file: " + filePath);
             // e.printStackTrace();
             // ignore the possible customization file
         }
