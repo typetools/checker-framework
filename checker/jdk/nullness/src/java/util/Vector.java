@@ -880,7 +880,7 @@ public class Vector<E>
      * @throws NullPointerException if the specified collection is null
      */
     @Pure
-    public synchronized boolean containsAll(Collection<?> c) {
+    public synchronized boolean containsAll(Collection<? extends @NonNull Object> c) {
         return super.containsAll(c);
     }
 
@@ -924,7 +924,7 @@ public class Vector<E>
      *         or if the specified collection is null
      * @since 1.2
      */
-    public synchronized boolean removeAll(Collection<?> c) {
+    public synchronized boolean removeAll(Collection<? extends @NonNull Object> c) {
         return super.removeAll(c);
     }
 
@@ -947,7 +947,7 @@ public class Vector<E>
      *         or if the specified collection is null
      * @since 1.2
      */
-    public synchronized boolean retainAll(Collection<?> c) {
+    public synchronized boolean retainAll(Collection<? extends @NonNull Object> c) {
         return super.retainAll(c);
     }
 

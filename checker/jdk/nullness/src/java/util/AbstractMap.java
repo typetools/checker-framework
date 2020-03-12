@@ -119,7 +119,7 @@ public abstract class AbstractMap<K, V> implements Map<K,V> {
      * @throws NullPointerException {@inheritDoc}
      */
     @Pure
-    public boolean containsValue(@Nullable Object value) {
+    public boolean containsValue(Object value) {
         Iterator<Entry<K,V>> i = entrySet().iterator();
         if (value==null) {
             while (i.hasNext()) {
@@ -186,7 +186,7 @@ public abstract class AbstractMap<K, V> implements Map<K,V> {
      * @throws NullPointerException          {@inheritDoc}
      */
     @Pure
-    public @Nullable V get(@Nullable Object key) {
+    public @Nullable V get(Object key) {
         Iterator<Entry<K,V>> i = entrySet().iterator();
         if (key==null) {
             while (i.hasNext()) {
@@ -246,7 +246,7 @@ public abstract class AbstractMap<K, V> implements Map<K,V> {
      * @throws ClassCastException            {@inheritDoc}
      * @throws NullPointerException          {@inheritDoc}
      */
-    public @Nullable V remove(@Nullable Object key) {
+    public @Nullable V remove(Object key) {
         Iterator<Entry<K,V>> i = entrySet().iterator();
         Entry<K,V> correctEntry = null;
         if (key==null) {

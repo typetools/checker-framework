@@ -299,7 +299,7 @@ public interface List<E> extends Collection<E> {
      * @see #contains(Object)
      */
     @Pure
-    boolean containsAll(Collection<?> c);
+    boolean containsAll(Collection<? extends @NonNull Object> c);
 
     /**
      * Appends all of the elements in the specified collection to the end of
@@ -371,7 +371,7 @@ public interface List<E> extends Collection<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean removeAll(Collection<?> c);
+    boolean removeAll(Collection<? extends @NonNull Object> c);
 
     /**
      * Retains only the elements in this list that are contained in the
@@ -393,7 +393,7 @@ public interface List<E> extends Collection<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean retainAll(Collection<?> c);
+    boolean retainAll(Collection<? extends @NonNull Object> c);
 
     /**
      * Replaces each element of this list with the result of applying the

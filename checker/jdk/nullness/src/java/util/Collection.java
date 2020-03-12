@@ -347,7 +347,7 @@ public interface Collection<E> extends Iterable<E> {
      * @see    #contains(Object)
      */
     @Pure
-    boolean containsAll(Collection<?> c);
+    boolean containsAll(Collection<? extends @NonNull Object> c);
 
     /**
      * Adds all of the elements in the specified collection to this collection
@@ -398,7 +398,7 @@ public interface Collection<E> extends Iterable<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean removeAll(Collection<?> c);
+    boolean removeAll(Collection<? extends @NonNull Object> c);
 
     /**
      * Removes all of the elements of this collection that satisfy the given
@@ -457,7 +457,7 @@ public interface Collection<E> extends Iterable<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean retainAll(Collection<?> c);
+    boolean retainAll(Collection<? extends @NonNull Object> c);
 
     /**
      * Removes all of the elements from this collection (optional operation).

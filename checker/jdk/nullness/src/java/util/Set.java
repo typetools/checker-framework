@@ -15,10 +15,10 @@ public interface Set<E> extends Collection<E> {
   @SideEffectFree public abstract <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1);
   public abstract boolean add(E a1);
   public abstract boolean remove(Object a1);
-  @Pure public abstract boolean containsAll(Collection<?> a1);
+  @Pure public abstract boolean containsAll(Collection<? extends @NonNull Object> c);
   public abstract boolean addAll(Collection<? extends E> a1);
-  public abstract boolean retainAll(Collection<?> a1);
-  public abstract boolean removeAll(Collection<?> a1);
+  public abstract boolean retainAll(Collection<? extends @NonNull Object> c);
+  public abstract boolean removeAll(Collection<? extends @NonNull Object> c);
   public abstract void clear();
   @Pure public abstract boolean equals(@Nullable Object a1);
   @Pure public abstract int hashCode();

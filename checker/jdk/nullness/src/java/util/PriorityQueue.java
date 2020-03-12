@@ -18,8 +18,8 @@ public class PriorityQueue<E extends @NonNull Object> extends AbstractQueue<E> i
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean offer(E a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable E peek() { throw new RuntimeException("skeleton method"); }
-  public boolean remove(Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean contains(Object a1) { throw new RuntimeException("skeleton method"); }
+  public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree
   public Object [] toArray() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree

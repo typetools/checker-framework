@@ -3,6 +3,7 @@
 // https://checkerframework.org/manual/#collection-object-parameters-may-be-null .
 
 // The affected methods are:
+// containsAll(Collection)
 // containsKey(Object)
 // contains(Object)
 // containsValue(Object)
@@ -10,10 +11,66 @@
 // getOrDefault(Object, V)
 // indexOf(Object)
 // lastIndexOf(Object)
+// removeAll(Collection)
 // removeFirstOccurrence(Object)
 // removeLastOccurrence(Object )
 // remove(Object)
 // remove(Object, Object)
+// retainAll(Collection)
+
+// Here are all the null-friendly classes (every instance permits null elements):
+// Lists:
+//   ArrayList
+//   LinkedList
+//   Vector
+//     Stack
+// Maps:
+//   HashMap
+//     LinkedHashMap
+//     PrinterStateReasons
+//   IdentityHashMap
+//   WeakHashMap
+// Sets:
+//   HashSet
+//     JobStateReasons
+//     LinkedHashSet
+//
+// Special cases:
+//   EnumMap:
+//     "Attempts to insert a null key will throw NullPointerException. Attempts to test for the
+//     presence of a null key or to remove one will, however, function properly. Null values are
+//     permitted."
+//
+// Here are some exceptions: methods whose specification is ambiguous (says "such that o.equals(e)"
+// or "such that Objects.equals(o, e)") but can be interpreted to say that null is a permitted
+// value:
+//
+//   Collections
+//     frequency
+//
+//   ArrayDeque
+//     removeFirstOccurrence
+//     removeLastOccurrence
+//
+//   ConcurrentLinkedQueue
+//   CopyOnWriteArrayList
+//   CopyOnWriteArraySet
+//   LinkedBlockingQueue
+//   LinkedTransferQueue
+//   PriorityBlockingQueue
+//   PriorityQueue
+//     contains
+//     remove
+//
+// Special cases:
+//   EnumMap:
+//     "Attempts to insert a null key will throw NullPointerException. Attempts to test for the
+//     presence of a null key or to remove one will, however, function properly. Null values are
+//     permitted."
+//
+// Many additional method implementations are null-safe, but the specification does not guarantee
+// that all overriding implementations in subclasses will be.
+
 
 package java.util;
 
