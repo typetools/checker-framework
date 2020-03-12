@@ -1,6 +1,8 @@
 package java.util;
-import org.checkerframework.dataflow.qual.Pure;
+
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public abstract class AbstractSet<E> extends AbstractCollection<E> implements Set<E> {
