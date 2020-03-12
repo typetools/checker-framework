@@ -20,6 +20,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * This class is an abstract annotation processor designed to be a convenient superclass for
@@ -148,6 +149,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      *
      * @return the compiler log, which contains errors and warnings
      */
+    @SideEffectFree
     public Log getCompilerLog() {
         return Log.instance(((JavacProcessingEnvironment) processingEnv).getContext());
     }
