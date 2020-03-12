@@ -795,13 +795,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected int errsOnLastExit = 0;
 
     /**
-     * Type-check the code with Java specifications and then runs the Checker Rule Checking visitor
-     * on the processed source.
+     * Type-check the code using this checker's visitor.
      *
      * @see Processor#process(Set, RoundEnvironment)
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
+        // Cannot use BugInCF here because it is outside of the try/catch for BugInCf
         if (e == null) {
             messager.printMessage(ERROR, "Refusing to process empty TypeElement");
             return;
@@ -935,10 +935,33 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Reports a diagnostic message. By default, it prints it to the screen via the compiler's
-     * internal messager; otherwise, the method returns with no side effects.
+     * Reports a warning. By default, prints it to the screen via the compiler's internal messager.
+     *
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @param messageKey the message key
+     * @param args arguments for interpolation in the string corresponding to the given message key
+     */
+    public void reportWarning(
+            Object source, @CompilerMessageKey String messageKey, Object... args) {
+        report(source, MANDATORY_WARNING, messageKey, args);
+    }
+
+    /**
+     * Reports a diagnostic message. By default, prints it to the screen via the compiler's internal
+     * messager.
      *
      * <p>Most clients should use {@link #reportError} or {@link #reportWarning}.
+     *
+     * @param source the source position information; may be an Element, a Tree, or null
+     * @param d the diagnostic message
+     */
+    public void report(Object source, DiagMessage d) {
+        report(source, d.getKind(), d.getMessageKey(), d.getArgs());
+    }
+
+    /**
+     * Reports a diagnostic message. By default, it prints it to the screen via the compiler's
+     * internal messager; however, it might also store it for later output.
      *
      * @param source the source position information; may be an Element, a Tree, or null
      * @param kind the type of message
@@ -990,8 +1013,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         try {
             messageText = String.format(fmtString, args);
         } catch (Exception e) {
-            messageText =
-                    "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args);
+            throw new BugInCF(
+                    "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args),
+                    e);
+        }
+
+        if (kind == ERROR && hasOption("warns")) {
+            kind = MANDATORY_WARNING;
         }
 
         if (kind == ERROR && hasOption("warns")) {

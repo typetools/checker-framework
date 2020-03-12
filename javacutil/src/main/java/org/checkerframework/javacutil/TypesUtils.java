@@ -518,9 +518,6 @@ public final class TypesUtils {
             TypeMirror tm1, TypeMirror tm2, ProcessingEnvironment processingEnv) {
         Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
         Type t2 = TypeAnnotationUtils.unannotatedType(tm2);
-        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
-        com.sun.tools.javac.code.Types types =
-                com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
         // Handle the 'null' type manually (not done by types.lub).
         if (t1.getKind() == TypeKind.NULL) {
             return t2;
@@ -530,24 +527,25 @@ public final class TypesUtils {
         }
         if (t1.getKind() == TypeKind.WILDCARD) {
             WildcardType wc1 = (WildcardType) t1;
-            Type bound = (Type) wc1.getExtendsBound();
-            if (bound == null) {
+            t1 = (Type) wc1.getExtendsBound();
+            if (t1 == null) {
                 // Implicit upper bound of java.lang.Object
                 Elements elements = processingEnv.getElementUtils();
                 return elements.getTypeElement("java.lang.Object").asType();
             }
-            t1 = bound;
         }
         if (t2.getKind() == TypeKind.WILDCARD) {
             WildcardType wc2 = (WildcardType) t2;
-            Type bound = (Type) wc2.getExtendsBound();
-            if (bound == null) {
+            t2 = (Type) wc2.getExtendsBound();
+            if (t2 == null) {
                 // Implicit upper bound of java.lang.Object
                 Elements elements = processingEnv.getElementUtils();
                 return elements.getTypeElement("java.lang.Object").asType();
             }
-            t2 = bound;
         }
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
+        com.sun.tools.javac.code.Types types =
+                com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
         if (types.isSameType(t1, t2)) {
             // Special case if the two types are equal.
             return t1;

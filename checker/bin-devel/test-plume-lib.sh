@@ -32,7 +32,7 @@ echo "PACKAGES=" "${PACKAGES[@]}"
 if [ -d "/tmp/plume-scripts" ] ; then
   (cd /tmp/plume-scripts && git pull -q)
 else
-  (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
+  (cd /tmp && (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git || git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git))
 fi
 
 echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
@@ -44,8 +44,8 @@ if [ -d "$CHECKERFRAMEWORK" ] ; then
   # Fails if not currently on a branch
   git -C "$CHECKERFRAMEWORK" pull || true
 else
-  JSR308="$(cd "$CHECKERFRAMEWORK/.." && pwd -P)"
-  (cd "$JSR308" && git clone https://github.com/typetools/checker-framework.git) || (cd "$JSR308" && git clone https://github.com/typetools/checker-framework.git)
+  /tmp/plume-scripts/git-clone-related typetools checker-framework "$CHECKERFRAMEWORK" \
+    || /tmp/plume-scripts/git-clone-related typetools checker-framework "$CHECKERFRAMEWORK"
 fi
 # This also builds annotation-tools
 (cd "$CHECKERFRAMEWORK" && ./checker/bin-devel/build.sh downloadjdk)
@@ -53,7 +53,9 @@ fi
 echo "PACKAGES=" "${PACKAGES[@]}"
 for PACKAGE in "${PACKAGES[@]}"; do
   echo "PACKAGE=${PACKAGE}"
-  (cd /tmp && rm -rf "${PACKAGE}" && git clone --depth 1 "https://github.com/plume-lib/${PACKAGE}.git")
+  PACKAGEDIR="/tmp/${PACKAGE}"
+  rm -rf "${PACKAGEDIR}"
+  /tmp/plume-scripts/git-clone-related plume-lib "${PACKAGE}" "${PACKAGEDIR}"
   echo "About to call ./gradlew --console=plain -PcfLocal assemble"
-  (cd /tmp/"${PACKAGE}" && CHECKERFRAMEWORK=$CHECKERFRAMEWORK ./gradlew --console=plain -PcfLocal assemble)
+  (cd "${PACKAGEDIR}" && CHECKERFRAMEWORK=$CHECKERFRAMEWORK ./gradlew --console=plain -PcfLocal assemble)
 done

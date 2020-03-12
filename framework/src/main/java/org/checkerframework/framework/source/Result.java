@@ -20,9 +20,9 @@ import org.checkerframework.javacutil.BugInCF;
  * compiler interface.
  *
  * @see SourceChecker#report
- * @deprecated use {@code ListDiagMessage>} instead
+ * @deprecated use {@link DiagMessage} or {@code List<DiagMessage>} instead
  */
-@Deprecated // use {@code List<DiagMessage>} instead
+@Deprecated // use {@link DiagMessage} or {@code List<DiagMessage>} instead
 public final class Result {
 
     /** The kinds of results: SUCCESS, WARNING, or FAILURE. */
