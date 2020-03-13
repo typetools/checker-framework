@@ -15,10 +15,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -59,28 +57,6 @@ public class Analysis<
 
     /** The current control flow graph to perform the analysis on. */
     protected @Nullable ControlFlowGraph cfg;
-
-    /**
-     * The associated processing environment.
-     *
-     * @deprecated as {@code env} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this field will be removed in
-     *     next major update
-     */
-    // TODO: Remove @SuppressWarnings("HidingField") in CFAbstractAnalysis#env when this field is
-    // being removed.
-    @Deprecated protected final @Nullable ProcessingEnvironment env;
-
-    /**
-     * Instance of the types utility.
-     *
-     * @deprecated as {@code types} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this field will be removed in
-     *     next major update
-     */
-    // TODO: Remove @SuppressWarnings("HidingField") in CFAbstractAnalysis#types when this field is
-    // being removed.
-    @Deprecated protected final @Nullable Types types;
 
     /** Then stores before every basic block (assumed to be 'no information' if not present). */
     protected final IdentityHashMap<Block, S> thenStores;
@@ -149,22 +125,6 @@ public class Analysis<
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph. The transfer function is set by the subclass, e.g., {@link
      * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
-     *
-     * @deprecated as {@code env} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this helper constructor will be
-     *     removed in next major update. Use {@link #Analysis()}, {@link #Analysis(TransferFunction,
-     *     int)}, {@link #Analysis(TransferFunction)} or {@link #Analysis(int)} instead
-     * @param env associated processing environment
-     */
-    @Deprecated
-    public Analysis(ProcessingEnvironment env) {
-        this(null, -1, env);
-    }
-
-    /**
-     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set by the subclass, e.g., {@link
-     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
      */
     public Analysis() {
         this(null, -1);
@@ -185,21 +145,6 @@ public class Analysis<
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      *
-     * @deprecated as {@code env} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this constructor will be removed
-     *     in next major update. Use {@link #Analysis(TransferFunction, int)} instead.
-     * @param transfer transfer function
-     * @param env associated processing environment
-     */
-    @Deprecated
-    public Analysis(T transfer, ProcessingEnvironment env) {
-        this(transfer, -1, env);
-    }
-
-    /**
-     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph, given a transfer function.
-     *
      * @param transfer transfer function
      */
     public Analysis(T transfer) {
@@ -210,40 +155,10 @@ public class Analysis<
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      *
-     * @deprecated as {@code env} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this constructor will be removed
-     *     in next major update. Use {@link #Analysis(TransferFunction, int)} instead.
-     * @param transfer transfer function
-     * @param maxCountBeforeWidening number of times a block can be analyzed before widening
-     * @param env associated processing environment
-     */
-    @Deprecated
-    public Analysis(@Nullable T transfer, int maxCountBeforeWidening, ProcessingEnvironment env) {
-        this.env = env;
-        this.types = env.getTypeUtils();
-        this.transferFunction = transfer;
-        this.maxCountBeforeWidening = maxCountBeforeWidening;
-        this.thenStores = new IdentityHashMap<>();
-        this.elseStores = new IdentityHashMap<>();
-        this.blockCount = maxCountBeforeWidening == -1 ? null : new IdentityHashMap<>();
-        this.inputs = new IdentityHashMap<>();
-        this.storesAtReturnStatements = new IdentityHashMap<>();
-        this.worklist = new Worklist();
-        this.nodeValues = new IdentityHashMap<>();
-        this.finalLocalValues = new HashMap<>();
-    }
-
-    /**
-     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph, given a transfer function.
-     *
      * @param transfer transfer function
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
     public Analysis(@Nullable T transfer, int maxCountBeforeWidening) {
-        // The initialization of env and types can be removed in next version.
-        this.env = null;
-        this.types = null;
         this.transferFunction = transfer;
         this.maxCountBeforeWidening = maxCountBeforeWidening;
         this.thenStores = new IdentityHashMap<>();
@@ -266,36 +181,6 @@ public class Analysis<
     }
 
     /**
-     * Get the types utility.
-     *
-     * @deprecated as {@link #getTypes()} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this method will be removed in
-     *     next major update
-     * @return {@link #types}
-     */
-    @Deprecated
-    // TODO: Remove @SuppressWarnings("deprecation") in CFAbstractAnalysis#getTypes() when this
-    // method is being removed.
-    public @Nullable Types getTypes() {
-        return types;
-    }
-
-    /**
-     * Get the processing environment.
-     *
-     * @deprecated as {@link #getEnv()} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this method will be removed in
-     *     next major update
-     * @return {@link #env}
-     */
-    @Deprecated
-    // TODO: Remove @SuppressWarnings("deprecation") in CFAbstractAnalysis#getEnv() when this method
-    // is being removed.
-    public @Nullable ProcessingEnvironment getEnv() {
-        return env;
-    }
-
-    /**
      * Perform the actual analysis.
      *
      * @param cfg the control flow graph used to perform analysis
@@ -313,7 +198,7 @@ public class Analysis<
             }
         } finally {
             assert isRunning;
-            // In case preformatAnalysisHelper crashed, reset isRunning to false.
+            // In case performAnalysisBlock crashed, reset isRunning to false.
             isRunning = false;
         }
     }

@@ -300,14 +300,14 @@ public class TreeMap<K, V>
     /**
      * @throws NoSuchElementException {@inheritDoc}
      */
-    public K firstKey() {
+    public @KeyFor("this") K firstKey() {
         return key(getFirstEntry());
     }
 
     /**
      * @throws NoSuchElementException {@inheritDoc}
      */
-    public K lastKey() {
+    public @KeyFor("this") K lastKey() {
         return key(getLastEntry());
     }
 

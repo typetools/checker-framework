@@ -27,8 +27,6 @@ abstract class TypeFromTreeVisitor
             throw new BugInCF("TypeFromTree.defaultAction: null tree");
         }
         throw new BugInCF(
-                "TypeFromTree.defaultAction: conversion undefined for tree type "
-                        + node.getKind()
-                        + "\n");
+                "TypeFromTree.defaultAction: conversion undefined for tree type " + node.getKind());
     }
 }

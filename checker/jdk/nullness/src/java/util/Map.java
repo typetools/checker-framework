@@ -1203,8 +1203,11 @@ public interface Map<K, V> {
      *         null
      * @since 1.8
      */
+    // It would be more flexible to make the return type of remappingFunction be `@Nullable V`.  A
+    // remappingFunction that returns null is is probably rare, and these annotations accommodate
+    // the majority of uses that don't return null.
     default V merge(K key, V value,
-            BiFunction<? super V, ? super V, ? extends @Nullable V> remappingFunction) {
+            BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         Objects.requireNonNull(value);
         V oldValue = get(key);

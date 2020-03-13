@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.value.util.Range;
 import org.junit.Test;
 
@@ -667,5 +668,19 @@ public class RangeTest {
         assertEquals((long) 3, Range.create(Arrays.asList(3, 2, 1)).to);
         assertEquals(Range.NOTHING, Range.create(Collections.<Integer>emptyList()));
         assertTrue(Range.NOTHING == Range.create(Collections.<Integer>emptyList()));
+    }
+
+    @Test
+    public void testFactoryTypeKind() {
+        assertEquals(Range.BYTE_EVERYTHING, Range.create(TypeKind.BYTE));
+        assertEquals(Range.INT_EVERYTHING, Range.create(TypeKind.INT));
+        assertEquals(Range.SHORT_EVERYTHING, Range.create(TypeKind.SHORT));
+        assertEquals(Range.CHAR_EVERYTHING, Range.create(TypeKind.CHAR));
+        assertEquals(Range.LONG_EVERYTHING, Range.create(TypeKind.LONG));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testFactoryTypeKindFailure() {
+        Range.create(TypeKind.FLOAT);
     }
 }

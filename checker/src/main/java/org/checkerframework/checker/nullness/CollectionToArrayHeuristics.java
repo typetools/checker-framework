@@ -8,6 +8,7 @@ import java.util.Collection;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -38,16 +39,34 @@ import org.checkerframework.javacutil.TreeUtils;
  * Note: The nullness of the returned array doesn't depend on the passed array nullness.
  */
 public class CollectionToArrayHeuristics {
+
+    /** The processing environment. */
     private final ProcessingEnvironment processingEnv;
+    /** The checker, used for issuing diagnostic messages. */
+    private final BaseTypeChecker checker;
+    /** The type factory. */
     private final NullnessAnnotatedTypeFactory atypeFactory;
 
+    /** The Collection.toArray(T[]) method. */
     private final ExecutableElement collectionToArrayE;
+    /** The Collection.size() method. */
     private final ExecutableElement size;
+    /** The Collection type. */
     private final AnnotatedDeclaredType collectionType;
 
+    /**
+     * Create a CollectionToArrayHeuristics.
+     *
+     * @param env the processing environment
+     * @param checker the checker, used for issuing diagnostic messages
+     * @param factory the type factory
+     */
     public CollectionToArrayHeuristics(
-            ProcessingEnvironment env, NullnessAnnotatedTypeFactory factory) {
+            ProcessingEnvironment env,
+            BaseTypeChecker checker,
+            NullnessAnnotatedTypeFactory factory) {
         this.processingEnv = env;
+        this.checker = checker;
         this.atypeFactory = factory;
 
         this.collectionToArrayE =
@@ -70,13 +89,21 @@ public class CollectionToArrayHeuristics {
             Tree argument = tree.getArguments().get(0);
             boolean argIsArrayCreation =
                     isHandledArrayCreation(argument, receiverName(tree.getMethodSelect()));
-            boolean receiverIsNonNull = isNonNullReceiver(tree);
+            boolean receiverIsNonNull = receiverIsCollectionOfNonNullElements(tree);
             setComponentNullness(receiverIsNonNull && argIsArrayCreation, method.getReturnType());
 
             // TODO: We need a mechanism to prevent nullable collections
             // from inserting null elements into a nonnull arrays.
             if (!receiverIsNonNull) {
                 setComponentNullness(false, method.getParameterTypes().get(0));
+            }
+
+            if (receiverIsNonNull && !argIsArrayCreation) {
+                if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
+                    checker.reportWarning(tree, "toArray.nullable.elements.not.newarray");
+                } else {
+                    checker.reportWarning(tree, "toArray.nullable.elements.mismatched.size");
+                }
             }
         }
     }
@@ -134,9 +161,12 @@ public class CollectionToArrayHeuristics {
 
     /**
      * Returns {@code true} if the method invocation tree receiver is collection that contains
-     * non-null elements (i.e. its type argument is a {@code NonNull}.
+     * non-null elements (i.e. its type argument is {@code @NonNull}.
+     *
+     * @param tree a method invocation
+     * @return true if the receiver is a collection of non-null elements
      */
-    private boolean isNonNullReceiver(MethodInvocationTree tree) {
+    private boolean receiverIsCollectionOfNonNullElements(MethodInvocationTree tree) {
         // check receiver
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
         AnnotatedDeclaredType collection =
