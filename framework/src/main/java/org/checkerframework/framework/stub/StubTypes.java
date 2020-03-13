@@ -223,7 +223,7 @@ public class StubTypes {
                                 "Did not find stub file "
                                         + stubPath
                                         + " on classpath or within directory "
-                                        + new File(stubPath).getAbsolutePath()
+                                        + new File(stubPath).getParentFile().getAbsolutePath()
                                         + (stubPathFull.equals(stubPath)
                                                 ? ""
                                                 : (" or at " + stubPathFull)));
