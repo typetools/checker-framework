@@ -69,7 +69,7 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-plume-lib.sh allJdk11
+  - bash: ./checker/bin-devel/test-plume-lib.sh
     displayName: test-plume-lib.sh
 - job: daikon_jdk8
   pool:
