@@ -8,6 +8,7 @@ import java.util.Collection;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -41,6 +42,8 @@ public class CollectionToArrayHeuristics {
 
     /** The processing environment. */
     private final ProcessingEnvironment processingEnv;
+    /** The checker, used for issuing diagnostic messages. */
+    private final BaseTypeChecker checker;
     /** The type factory. */
     private final NullnessAnnotatedTypeFactory atypeFactory;
 
@@ -55,11 +58,15 @@ public class CollectionToArrayHeuristics {
      * Create a CollectionToArrayHeuristics.
      *
      * @param env the processing environment
+     * @param checker the checker, used for issuing diagnostic messages
      * @param factory the type factory
      */
     public CollectionToArrayHeuristics(
-            ProcessingEnvironment env, NullnessAnnotatedTypeFactory factory) {
+            ProcessingEnvironment env,
+            BaseTypeChecker checker,
+            NullnessAnnotatedTypeFactory factory) {
         this.processingEnv = env;
+        this.checker = checker;
         this.atypeFactory = factory;
 
         this.collectionToArrayE =
@@ -89,6 +96,14 @@ public class CollectionToArrayHeuristics {
             // from inserting null elements into a nonnull arrays.
             if (!receiverIsNonNull) {
                 setComponentNullness(false, method.getParameterTypes().get(0));
+            }
+
+            if (receiverIsNonNull && !argIsArrayCreation) {
+                if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
+                    checker.reportWarning(tree, "toArray.nullable.elements.not.newarray");
+                } else {
+                    checker.reportWarning(tree, "toArray.nullable.elements.mismatched.size");
+                }
             }
         }
     }
