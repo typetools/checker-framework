@@ -65,15 +65,15 @@ echo "In checker-framework/.travis-build.sh GROUP=$GROUP"
 ### TESTS OF THIS REPOSITORY
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  $SCRIPTDIR/test-all-tests.sh
+  $SCRIPTDIR/test-cftests-all.sh
 fi
 
 if [[ "${GROUP}" == "junit-tests" || "${GROUP}" == "all" ]]; then
-  $SCRIPTDIR/test-junit-tests.sh
+  $SCRIPTDIR/test-cftests-junit.sh
 fi
 
 if [[ "${GROUP}" == "nonjunit-tests" || "${GROUP}" == "all" ]]; then
-  $SCRIPTDIR/test-nonjunit-tests.sh
+  $SCRIPTDIR/test-cftests-nonjunit.sh
 fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
