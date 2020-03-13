@@ -74,18 +74,18 @@ echo "In checker-framework/.travis-build.sh GROUP=$GROUP"
 case  $GROUP  in
     all)
         # Run cftests-junit and cftests-nonjunit separately, because cftests-all because it takes too long to run on Travis under JDK 11.
-        $SCRIPTDIR/test-cftests-junit.sh
-        $SCRIPTDIR/test-cftests-nonjunit.sh
-        $SCRIPTDIR/test-jdk-jar.sh
-        $SCRIPTDIR/test-misc.sh
-        $SCRIPTDIR/test-cf-inference.sh
-        $SCRIPTDIR/test-plume-lib.sh
-        $SCRIPTDIR/test-daikon.sh
-        $SCRIPTDIR/test-guava.sh
-        $SCRIPTDIR/test-downstream.sh
+        "$SCRIPTDIR/test-cftests-junit.sh"
+        "$SCRIPTDIR/test-cftests-nonjunit.sh"
+        "$SCRIPTDIR/test-jdk-jar.sh"
+        "$SCRIPTDIR/test-misc.sh"
+        "$SCRIPTDIR/test-cf-inference.sh"
+        "$SCRIPTDIR/test-plume-lib.sh"
+        "$SCRIPTDIR/test-daikon.sh"
+        "$SCRIPTDIR/test-guava.sh"
+        "$SCRIPTDIR/test-downstream.sh"
         ;;
     *)
-        ${SCRIPTDIR}/test-${GROUP}.sh
+        "${SCRIPTDIR}/test-${GROUP}.sh"
 esac
 
 
