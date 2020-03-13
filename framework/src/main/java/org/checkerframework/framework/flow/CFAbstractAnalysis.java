@@ -61,11 +61,9 @@ public abstract class CFAbstractAnalysis<
     protected final List<Pair<VariableElement, V>> fieldValues;
 
     /** The associated processing environment. */
-    @SuppressWarnings("HidingField")
     protected final ProcessingEnvironment env;
 
     /** Instance of the types utility. */
-    @SuppressWarnings("HidingField")
     protected final Types types;
 
     /**
@@ -195,7 +193,6 @@ public abstract class CFAbstractAnalysis<
      *
      * @return {@link #types}
      */
-    @SuppressWarnings("deprecation")
     public Types getTypes() {
         return types;
     }
@@ -205,7 +202,6 @@ public abstract class CFAbstractAnalysis<
      *
      * @return {@link #env}
      */
-    @SuppressWarnings("deprecation")
     public ProcessingEnvironment getEnv() {
         return env;
     }
