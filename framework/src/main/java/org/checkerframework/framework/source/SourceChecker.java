@@ -927,29 +927,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Reports a diagnostic message. By default, prints it to the screen via the compiler's internal
      * messager.
      *
-     * @param source the source position information; may be an Element, a Tree, or null
-     * @param d the diagnostic message
-     */
-    public void report(Object source, DiagMessage d) {
-        report(source, d.getKind(), d.getMessageKey(), d.getArgs());
-    }
-
-    /**
-     * Reports a warning. By default, prints it to the screen via the compiler's internal messager.
-     *
-     * @param source the source position information; may be an Element, a Tree, or null
-     * @param messageKey the message key
-     * @param args arguments for interpolation in the string corresponding to the given message key
-     */
-    public void reportWarning(
-            Object source, @CompilerMessageKey String messageKey, Object... args) {
-        report(source, MANDATORY_WARNING, messageKey, args);
-    }
-
-    /**
-     * Reports a diagnostic message. By default, prints it to the screen via the compiler's internal
-     * messager.
-     *
      * <p>Most clients should use {@link #reportError} or {@link #reportWarning}.
      *
      * @param source the source position information; may be an Element, a Tree, or null
@@ -1016,10 +993,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             throw new BugInCF(
                     "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args),
                     e);
-        }
-
-        if (kind == ERROR && hasOption("warns")) {
-            kind = MANDATORY_WARNING;
         }
 
         if (kind == ERROR && hasOption("warns")) {
