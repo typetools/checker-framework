@@ -18,26 +18,27 @@ env:
     - THIS_REPO=checker-framework
     - OS=ubuntu
   matrix:
-    - GROUP=cftests-junit JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=cftests-junit JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=cftests-nonjunit JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=cftests-nonjunit JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=jdk-jar JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=misc JDKVER=jdk8-plus BUILDJDK=downloadjdk
-    - GROUP=misc JDKVER=jdk11-plus BUILDJDK=downloadjdk
-    - GROUP=cf-inference JDKVER=jdk8 BUILDJDK=downloadjdk
-    # Not sure why this fails
-    # - GROUP=cf-inference JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=plume-lib JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=plume-lib JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=daikon-part1 JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=daikon-part1 JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=daikon-part2 JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=daikon-part2 JDKVER=jdk11 BUILDJDK=downloadjdk
+    ## Temporarily commented out for focused testing
+    # - GROUP=cftests-junit JDKVER=jdk8 BUILDJDK=downloadjdk
+    # - GROUP=cftests-junit JDKVER=jdk11 BUILDJDK=downloadjdk
+    # - GROUP=cftests-nonjunit JDKVER=jdk8 BUILDJDK=downloadjdk
+    # - GROUP=cftests-nonjunit JDKVER=jdk11 BUILDJDK=downloadjdk
+    # - GROUP=jdk-jar JDKVER=jdk8 BUILDJDK=downloadjdk
+    # - GROUP=misc JDKVER=jdk8-plus BUILDJDK=downloadjdk
+    # - GROUP=misc JDKVER=jdk11-plus BUILDJDK=downloadjdk
+    # - GROUP=cf-inference JDKVER=jdk8 BUILDJDK=downloadjdk
+    # # Not sure why this fails
+    # # - GROUP=cf-inference JDKVER=jdk11 BUILDJDK=downloadjdk
+    # - GROUP=plume-lib JDKVER=jdk8 BUILDJDK=downloadjdk
+    # - GROUP=plume-lib JDKVER=jdk11 BUILDJDK=downloadjdk
+    # - GROUP=daikon-part1 JDKVER=jdk8 BUILDJDK=downloadjdk
+    # - GROUP=daikon-part1 JDKVER=jdk11 BUILDJDK=downloadjdk
+    # - GROUP=daikon-part2 JDKVER=jdk8 BUILDJDK=downloadjdk
+    # - GROUP=daikon-part2 JDKVER=jdk11 BUILDJDK=downloadjdk
     - GROUP=guava JDKVER=jdk8 BUILDJDK=downloadjdk
     - GROUP=guava JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=downstream JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=downstream JDKVER=jdk11 BUILDJDK=downloadjdk
+    # - GROUP=downstream JDKVER=jdk8 BUILDJDK=downloadjdk
+    # - GROUP=downstream JDKVER=jdk11 BUILDJDK=downloadjdk
 
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
