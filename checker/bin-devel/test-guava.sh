@@ -30,7 +30,6 @@ cd ../guava
 ## fine for Azure but times out on Travis which kills jobs that have not
 ## produced output for 10 minutes.
 if [ "$TRAVIS" = "true" ] ; then
-  cd guava
   ./typecheck.sh formatter
   ./typecheck.sh index
   ./typecheck.sh interning
