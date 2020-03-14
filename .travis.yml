@@ -33,8 +33,8 @@ env:
     # The daikon and guava jobs time out on Travis: 10 minutes without output
     # - GROUP=daikon JDKVER=jdk8 BUILDJDK=downloadjdk
     # - GROUP=daikon JDKVER=jdk11 BUILDJDK=downloadjdk
-    # - GROUP=guava JDKVER=jdk8 BUILDJDK=downloadjdk
-    # - GROUP=guava JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava JDKVER=jdk11 BUILDJDK=downloadjdk
     - GROUP=downstream JDKVER=jdk8 BUILDJDK=downloadjdk
     - GROUP=downstream JDKVER=jdk11 BUILDJDK=downloadjdk
 
