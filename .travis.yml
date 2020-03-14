@@ -94,34 +94,5 @@ script:
      export TRAVIS_REPO_SLUG=$TRAVIS_REPO_SLUG &&
      ./.travis-build.sh $GROUP $BUILDJDK"
 
-jobs:
-  include:
-    - stage: trigger-downstream
-      script: |
-          echo "TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
-          if [[ ($TRAVIS_BRANCH == master) &&
-                ($TRAVIS_PULL_REQUEST == false) ]] ; then
-            SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
-            if [[ "$SLUGOWNER" == "" ]]; then
-              SLUGOWNER=typetools
-            fi
-
-            curl -LO --retry 3 https://raw.github.com/plume-lib/trigger-travis/master/trigger-travis.sh
-
-            git ls-remote https://github.com/${SLUGOWNER}/checker-framework.demos.git &>/dev/null
-            if [ "$?" -eq 0 ]; then
-              sh trigger-travis.sh ${SLUGOWNER} checker-framework.demos $TRAVIS_ACCESS_TOKEN
-            fi
-
-            git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>/dev/null
-            if [ "$?" -eq 0 ]; then
-              sh trigger-travis.sh ${SLUGOWNER} checker-framework-inference $TRAVIS_ACCESS_TOKEN
-            fi
-
-            if [[ "${SLUGOWNER}" == "typetools" ]]; then
-              sh trigger-travis.sh typetests guava-typecheck $TRAVIS_ACCESS_TOKEN
-            fi
-          fi
-
 git:
   depth: 9
