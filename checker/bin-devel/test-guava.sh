@@ -25,7 +25,22 @@ source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
 /tmp/plume-scripts/git-clone-related typetools guava
 cd ../guava
 
-## This command works locally, but on Azure it fails with timouts while downloading Maven dependencies.
-# cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
 
-cd guava && time mvn --debug -B compile -P checkerframework-local
+## Typechecking with all type systems command completes in 30 minutes, which is
+## fine for Azure but times out on Travis which kills jobs that have not
+## produced output for 10 minutes.
+if [ "$TRAVIS" = "true" ] ; then
+  cd guava
+  ./typecheck.sh formatter
+  ./typecheck.sh index
+  ./typecheck.sh interning
+  ./typecheck.sh lock
+  ./typecheck.sh nullness
+  ./typecheck.sh regex
+  ./typecheck.sh signature
+else
+  ## This command works locally, but on Azure it fails with timouts while downloading Maven dependencies.
+  # cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
+
+  cd guava && time mvn --debug -B compile -P checkerframework-local
+fi
