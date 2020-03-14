@@ -30,9 +30,10 @@ env:
     # - GROUP=cf-inference JDKVER=jdk11 BUILDJDK=downloadjdk
     - GROUP=plume-lib JDKVER=jdk8 BUILDJDK=downloadjdk
     - GROUP=plume-lib JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=daikon JDKVER=jdk8 BUILDJDK=downloadjdk
-    # Takes more than 50 minutes on Travis.  TODO: break into parts.
-    # - GROUP=daikon JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=daikon-part1 JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=daikon-part1 JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=daikon-part2 JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=daikon-part2 JDKVER=jdk11 BUILDJDK=downloadjdk
     # - GROUP=guava JDKVER=jdk8 BUILDJDK=downloadjdk
     # - GROUP=guava JDKVER=jdk11 BUILDJDK=downloadjdk
     - GROUP=downstream JDKVER=jdk8 BUILDJDK=downloadjdk
