@@ -1098,7 +1098,6 @@ public final class Long extends Number implements Comparable<Long> {
      *          {@code false} otherwise.
      */
     @Pure
-    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof Long) {
             return value == ((Long)obj).longValue();

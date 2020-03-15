@@ -65,29 +65,33 @@ import org.checkerframework.javacutil.TreeUtils;
 // in file ../../../../../../../docs/manual/nullness-checker.tex, should be kept consistent with
 // this Javadoc.
 public class CollectionToArrayHeuristics {
+
     /** The processing environment. */
     private final ProcessingEnvironment processingEnv;
+    /** The checker, used for issuing diagnostic messages. */
+    private final NullnessChecker checker;
     /** The type factory. */
     private final NullnessAnnotatedTypeFactory atypeFactory;
 
-    /** The element for {@link Collection#toArray(Object[])}. */
+    /** The Collection.toArray(T[]) method. */
     private final ExecutableElement collectionToArrayE;
-    /** The element for {@link Collection#size()}. */
+    /** The Collection.size() method. */
     private final ExecutableElement size;
-    /** The type for {@link Collection}. */
+    /** The Collection type. */
     private final AnnotatedDeclaredType collectionType;
     /** Whether to trust {@code @ArrayLen(0)} annotations. */
     private final boolean trustArrayLenZero;
 
     /**
-     * Create the heuristics for the given nullness checker and factory.
+     * Create a CollectionToArrayHeuristics.
      *
-     * @param checker the checker instance
-     * @param factory the factory instance
+     * @param checker the checker, used for issuing diagnostic messages
+     * @param factory the type factory
      */
     public CollectionToArrayHeuristics(
             NullnessChecker checker, NullnessAnnotatedTypeFactory factory) {
         this.processingEnv = checker.getProcessingEnvironment();
+        this.checker = checker;
         this.atypeFactory = factory;
 
         this.collectionToArrayE =
@@ -116,7 +120,7 @@ public class CollectionToArrayHeuristics {
         if (TreeUtils.isMethodInvocation(tree, collectionToArrayE, processingEnv)) {
             assert !tree.getArguments().isEmpty() : tree;
             ExpressionTree argument = tree.getArguments().get(0);
-            boolean receiverIsNonNull = isNonNullReceiver(tree);
+            boolean receiverIsNonNull = receiverIsCollectionOfNonNullElements(tree);
             boolean argIsHandled =
                     isHandledArrayCreation(argument, receiverName(tree.getMethodSelect()))
                             // additional case: command option "-Alint=trustArrayLenZero" is
@@ -130,6 +134,14 @@ public class CollectionToArrayHeuristics {
             // from inserting null elements into a nonnull arrays.
             if (!receiverIsNonNull) {
                 setComponentNullness(false, method.getParameterTypes().get(0));
+            }
+
+            if (receiverIsNonNull && !argIsHandled) {
+                if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
+                    checker.reportWarning(tree, "toArray.nullable.elements.not.newarray");
+                } else {
+                    checker.reportWarning(tree, "toArray.nullable.elements.mismatched.size");
+                }
             }
         }
     }
@@ -216,9 +228,12 @@ public class CollectionToArrayHeuristics {
 
     /**
      * Returns {@code true} if the method invocation tree receiver is collection that contains
-     * non-null elements (i.e. its type argument is a {@code NonNull}.
+     * non-null elements (i.e. its type argument is {@code @NonNull}.
+     *
+     * @param tree a method invocation
+     * @return true if the receiver is a collection of non-null elements
      */
-    private boolean isNonNullReceiver(MethodInvocationTree tree) {
+    private boolean receiverIsCollectionOfNonNullElements(MethodInvocationTree tree) {
         // check receiver
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
         AnnotatedDeclaredType collection =

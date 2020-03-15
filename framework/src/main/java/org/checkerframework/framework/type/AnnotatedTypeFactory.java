@@ -70,7 +70,6 @@ import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.StubTypes;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -503,18 +502,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * This method is called only when {@code -Ainfer} is passed as an option. It checks if another
      * option that should not occur simultaneously with the whole-program inference is also passed
      * as argument, and aborts the process if that is the case. For example, the whole-program
-     * inference process was not designed to work with unchecked code defaults.
+     * inference process was not designed to work with conservative defaults.
      *
      * <p>Subclasses may override this method to add more options.
      */
     protected void checkInvalidOptionsInferSignatures() {
         // See Issue 683
         // https://github.com/typetools/checker-framework/issues/683
-        if (checker.useUncheckedCodeDefault("source")
-                || checker.useUncheckedCodeDefault("bytecode")) {
+        if (checker.useConservativeDefault("source")
+                || checker.useConservativeDefault("bytecode")) {
             throw new UserError(
-                    "The option -Ainfer cannot be"
-                            + " used together with unchecked code defaults.");
+                    "The option -Ainfer cannot be" + " used together with conservative defaults.");
         }
     }
 
@@ -540,6 +538,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotationBuilder.fromClass(
                         elements, org.checkerframework.dataflow.qual.Pure.class));
 
+        // Accommodate the inability to write @InheritedAnnotation on these annotations.
         addInheritedAnnotation(
                 AnnotationBuilder.fromClass(
                         elements, org.checkerframework.dataflow.qual.Pure.class));
@@ -3136,12 +3135,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 results.add(annotation);
             } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                 // If a CompletionFailure occurs, issue a warning.
-                checker.report(
-                        Result.warning(
-                                "annotation.not.completed",
-                                ElementUtils.getVerboseName(elt),
-                                annotation),
-                        annotation.getAnnotationType().asElement());
+                checker.reportWarning(
+                        annotation.getAnnotationType().asElement(),
+                        "annotation.not.completed",
+                        ElementUtils.getVerboseName(elt),
+                        annotation);
             }
         }
 
@@ -3188,12 +3186,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                         // Fix for Issue 348: If a CompletionFailure occurs,
                         // issue a warning.
-                        checker.report(
-                                Result.warning(
-                                        "annotation.not.completed",
-                                        ElementUtils.getVerboseName(elt),
-                                        annotation),
-                                annotation.getAnnotationType().asElement());
+                        checker.reportWarning(
+                                annotation.getAnnotationType().asElement(),
+                                "annotation.not.completed",
+                                ElementUtils.getVerboseName(elt),
+                                annotation);
                         continue;
                     }
                     if (containsSameByClass(annotationsOnAnnotation, InheritedAnnotation.class)
@@ -3258,12 +3255,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // I didn't find a nicer alternative to check whether the Symbol can be completed.
                 // The completer field of a Symbol might be non-null also in successful cases.
                 // Issue a warning (exception only happens once) and continue.
-                checker.report(
-                        Result.warning(
-                                "annotation.not.completed",
-                                ElementUtils.getVerboseName(element),
-                                annotation),
-                        annotation.getAnnotationType().asElement());
+                checker.reportWarning(
+                        annotation.getAnnotationType().asElement(),
+                        "annotation.not.completed",
+                        ElementUtils.getVerboseName(element),
+                        annotation);
                 continue;
             }
             // First call copier, if exception, continue normal modula laws.
