@@ -26,44 +26,10 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * Determines the nullness type of calls to {@link java.util.Collection#toArray()}.
  *
- * <p>The semantics of {@link Collection#toArray(Object[]) Collection.toArray(T[])} cannot be
- * captured by the nullness type system syntax. The nullness type of the returned array depends on
- * the size of the passed parameter. In particular, the returned array component is of type
- * {@code @NonNull} if the following conditions hold:
- *
- * <ol>
- *   <li value="1">The receiver collection type argument is {@code NonNull}, and
- *   <li value="2">The passed array size is less than the collection size. Here are heuristics to
- *       handle the most common cases:
- *       <ol>
- *         <li value="1">the argument has length 0:
- *             <ol>
- *               <li value="1">an empty array initializer, e.g. {@code c.toArray(new String[] {})},
- *                   or
- *               <li value="2">array creation tree of size 0, e.g. {@code c.toArray(new String[0])}.
- *             </ol>
- *         <li value="2">array creation tree with a collection {@code size()} method invocation as
- *             argument {@code c.toArray(new String[c.size()])}
- *       </ol>
- * </ol>
- *
- * <p>Additionally, when the lint option {@link NullnessChecker#LINT_TRUSTARRAYLENZERO} is provided,
- * a call to {@link Collection#toArray(Object[]) Collection.toArray(T[])} will be estimated to
- * return an array with a non-null component type if the argument is a field access where the field
- * declaration has a {@code @ArrayLen(0)} annotation. This trusts the {@code @ArrayLen(0)}
- * annotation, but does not verify it. Run the Constant Value Checker to verify that annotation.
- *
- * <p>Note: The nullness of the returned array doesn't depend on the passed array nullness. This is
- * a fact about {@link Collection#toArray(Object[]) Collection.toArray(T[])}, not a limitation of
- * this heuristic.
- *
  * @checker_framework.manual #nullness-collection-toarray Nullness and conversions from collections
  *     to arrays
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
-// Note: The https://checkerframework.org/manual/#nullness-collection-toarray section in the manual,
-// in file ../../../../../../../docs/manual/nullness-checker.tex, should be kept consistent with
-// this Javadoc.
 public class CollectionToArrayHeuristics {
 
     /** The processing environment. */
@@ -123,10 +89,6 @@ public class CollectionToArrayHeuristics {
             boolean receiverIsNonNull = receiverIsCollectionOfNonNullElements(tree);
             boolean argIsHandled =
                     isHandledArrayCreation(argument, receiverName(tree.getMethodSelect()))
-                            // additional case: command option "-Alint=trustArrayLenZero" is
-                            // provided, while the argument of {@code toArray} is a field access
-                            // expression which has a {@code ArrayLen(0)} annotation. See other
-                            // cases at {@link #isHandledArrayCreation}.
                             || (trustArrayLenZero && isArrayLenZeroFieldAccess(argument));
             setComponentNullness(receiverIsNonNull && argIsHandled, method.getReturnType());
 
@@ -144,35 +106,6 @@ public class CollectionToArrayHeuristics {
                 }
             }
         }
-    }
-
-    /**
-     * Determine whether the argument is a field access expression of which the declaration has a
-     * {@code ArrayLen(0)} annotation.
-     *
-     * @param argument the expression tree
-     * @return true if the expression is a field access expression, where the field has declared
-     *     type {@code ArrayLen(0)}
-     */
-    private boolean isArrayLenZeroFieldAccess(ExpressionTree argument) {
-        Element el = TreeUtils.elementFromUse(argument);
-        if (el != null && el.getKind().isField()) {
-            TypeMirror t = ElementUtils.getType(el);
-            if (t.getKind() == TypeKind.ARRAY) {
-                List<? extends AnnotationMirror> ams = t.getAnnotationMirrors();
-                for (AnnotationMirror am : ams) {
-                    if (AnnotationUtils.areSameByClass(am, ArrayLen.class)) {
-                        List<Integer> lens =
-                                AnnotationUtils.getElementValueArray(
-                                        am, "value", Integer.class, false);
-                        if (lens.size() == 1 && lens.get(0) == 0) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -203,7 +136,7 @@ public class CollectionToArrayHeuristics {
         }
         NewArrayTree newArr = (NewArrayTree) argument;
 
-        // case 2.1.1: empty array initializer
+        // empty array initializer
         if (newArr.getInitializers() != null) {
             return newArr.getInitializers().isEmpty();
         }
@@ -211,18 +144,47 @@ public class CollectionToArrayHeuristics {
         assert !newArr.getDimensions().isEmpty();
         Tree dimension = newArr.getDimensions().get(newArr.getDimensions().size() - 1);
 
-        // case 2.1.2: 0-length array creation
+        // 0-length array creation
         if (dimension.toString().equals("0")) {
             return true;
         }
 
-        // case 2.2: size()-length array creation
+        // size()-length array creation
         if (TreeUtils.isMethodInvocation(dimension, size, processingEnv)) {
             MethodInvocationTree invok = (MethodInvocationTree) dimension;
             String invokReceiver = receiverName(invok.getMethodSelect());
             return invokReceiver.equals(receiver);
         }
 
+        return false;
+    }
+
+    /**
+     * Returns true if the argument is a field access expression, where the field has declared type
+     * {@code ArrayLen(0)}.
+     *
+     * @param argument the expression tree
+     * @return true if the argument is a field access expression, where the field has declared type
+     *     {@code ArrayLen(0)}
+     */
+    private boolean isArrayLenZeroFieldAccess(ExpressionTree argument) {
+        Element el = TreeUtils.elementFromUse(argument);
+        if (el != null && el.getKind().isField()) {
+            TypeMirror t = ElementUtils.getType(el);
+            if (t.getKind() == TypeKind.ARRAY) {
+                List<? extends AnnotationMirror> ams = t.getAnnotationMirrors();
+                for (AnnotationMirror am : ams) {
+                    if (AnnotationUtils.areSameByClass(am, ArrayLen.class)) {
+                        List<Integer> lens =
+                                AnnotationUtils.getElementValueArray(
+                                        am, "value", Integer.class, false);
+                        if (lens.size() == 1 && lens.get(0) == 0) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
         return false;
     }
 
