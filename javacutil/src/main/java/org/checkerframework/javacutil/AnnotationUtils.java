@@ -844,7 +844,7 @@ public class AnnotationUtils {
      * @param newQual the element to add to the given key's value
      * @param <T> the key type
      */
-    public static <T> void updateMappingToImmutableSet(
+    public static <T extends @NonNull Object> void updateMappingToImmutableSet(
             Map<T, Set<AnnotationMirror>> map, T key, Set<AnnotationMirror> newQual) {
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
