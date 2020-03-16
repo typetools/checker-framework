@@ -26,7 +26,9 @@ source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
 cd ../guava
 
 if [ "$TRAVIS" = "true" ] ; then
-  # Keep Travis from killing the job due to too much time without output
+  # Typechecking with all type systems command completes in 30 minutes, which is
+  # fine for Azure but times out on Travis which kills jobs that have not
+  # produced output for 10 minutes.
   echo "Setting up sleep-and-output jobs for Travis"
   (sleep 1s && echo "1 second has elapsed") &
   (sleep 5m && echo "5 minutes have elapsed") &
@@ -34,15 +36,10 @@ if [ "$TRAVIS" = "true" ] ; then
   (sleep 23m && echo "23 minutes have elapsed") &
   (sleep 32m && echo "32 minutes have elapsed") &
   (sleep 41m && echo "41 minutes have elapsed") &
-fi
 
-## This command works locally, but on Azure it fails with timouts while downloading Maven dependencies.
-# cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
-
-## Typechecking with all type systems command completes in 30 minutes, which is
-## fine for Azure but times out on Travis which kills jobs that have not
-## produced output for 10 minutes.
-if [ "$TRAVIS" = "true" ] ; then
+  # This must be broken into individual jobs (see other scripts).  As
+  # written, Travis kills it, outputting:  "The job exceeded the
+  # maximum log length, and has been terminated."
   ./typecheck.sh formatter
   ./typecheck.sh index
   ./typecheck.sh interning

@@ -34,8 +34,20 @@ env:
     - GROUP=daikon-part1 JDKVER=jdk11 BUILDJDK=downloadjdk
     - GROUP=daikon-part2 JDKVER=jdk8 BUILDJDK=downloadjdk
     - GROUP=daikon-part2 JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=guava JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=guava JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-formatter JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-formatter JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-index JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-index JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-interning JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-interning JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-lock JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-lock JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-nullness JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-nullness JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-regex JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-regex JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-signature JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-signature JDKVER=jdk11 BUILDJDK=downloadjdk
     - GROUP=downstream JDKVER=jdk8 BUILDJDK=downloadjdk
     - GROUP=downstream JDKVER=jdk11 BUILDJDK=downloadjdk
 
