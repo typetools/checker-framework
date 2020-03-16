@@ -25,4 +25,15 @@ source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
 /tmp/plume-scripts/git-clone-related typetools guava
 cd ../guava
 
+if [ "$TRAVIS" = "true" ] ; then
+  # Typechecking with all type systems command completes in 30 minutes, which is
+  # fine for Azure but times out on Travis which kills jobs that have not
+  # produced output for 10 minutes.
+  echo "Setting up sleep-and-output jobs for Travis"
+  (sleep 1s && echo "1 second has elapsed") &
+  (sleep 5m && echo "5 minutes have elapsed") &
+  (sleep 14m && echo "14 minutes have elapsed") &
+  (sleep 23m && echo "23 minutes have elapsed") &
+fi
+
 ./typecheck.sh index
