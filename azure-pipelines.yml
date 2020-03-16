@@ -1,3 +1,14 @@
+# Workaround for https://status.dev.azure.com/_event/179641421
+trigger:
+  branches:
+    include:
+    - '*'
+pr:
+  branches:
+    include:
+    - '*'
+
+
 jobs:
 - job: all_tests_jdk8
   pool:
