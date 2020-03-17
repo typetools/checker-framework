@@ -3,6 +3,13 @@
 
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
+    <groupId>org.checkerframework</groupId>
+    <artifactId>jdk8</artifactId>
+
+    <!-- The comments in the version number are used to do a text substitution. Don't remove them.
+         See checker-framework/bin/poms/updateVersion.sh -->
+    <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
+
     <name>Annotated JDK 8</name>
     <url>https://checkerframework.org</url>
     <description>
@@ -12,9 +19,6 @@
         against and should never be placed on the runtime classpath of a
         compiled program.
     </description>
-
-    <groupId>org.checkerframework</groupId>
-    <artifactId>jdk8</artifactId>
 
     <licenses>
         <license>
@@ -58,9 +62,5 @@
         </developer>
 
     </developers>
-
-    <!-- The comments in the version number are used to do a text substitution. Don't remove them.
-         See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
 
 </project>
