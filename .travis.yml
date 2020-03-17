@@ -26,7 +26,7 @@ env:
     - GROUP=misc JDKVER=jdk8-plus BUILDJDK=downloadjdk
     - GROUP=misc JDKVER=jdk11-plus BUILDJDK=downloadjdk
     - GROUP=cf-inference JDKVER=jdk8 BUILDJDK=downloadjdk
-    # Not sure why this fails
+    # I don't know why this fails.
     # - GROUP=cf-inference JDKVER=jdk11 BUILDJDK=downloadjdk
     - GROUP=plume-lib JDKVER=jdk8 BUILDJDK=downloadjdk
     - GROUP=plume-lib JDKVER=jdk11 BUILDJDK=downloadjdk
