@@ -29,10 +29,6 @@
     </licenses>
 
 
-    <!-- The comments in the version number are used to do a text substitution. Don't remove them.
-         See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
-
     <scm>
         <url>https://github.com/typetools/checker-framework.git</url>
         <connection>https://github.com/typetools/checker-framework.git</connection>
@@ -66,5 +62,9 @@
         </developer>
 
     </developers>
+
+    <!-- The comments in the version number are used to do a text substitution. Don't remove them.
+         See checker-framework/bin/poms/updateVersion.sh -->
+    <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
 
 </project>

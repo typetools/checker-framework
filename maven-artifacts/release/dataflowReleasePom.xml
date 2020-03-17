@@ -27,25 +27,6 @@
         </license>
     </licenses>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>checker-qual</artifactId>
-            <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>javacutil</artifactId>
-            <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
-            <type>jar</type>
-        </dependency>
-    </dependencies>
-
-    <!-- The comments in the version number are used to do a text substitution. Don't remove them.
-         See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
-
     <scm>
         <url>https://github.com/typetools/checker-framework.git</url>
         <connection>https://github.com/typetools/checker-framework.git</connection>
@@ -79,5 +60,24 @@
         </developer>
 
     </developers>
+
+    <!-- The comments in the version number are used to do a text substitution. Don't remove them.
+         See checker-framework/bin/poms/updateVersion.sh -->
+    <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+            <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>javacutil</artifactId>
+            <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
 
 </project>

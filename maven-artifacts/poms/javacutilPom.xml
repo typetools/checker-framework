@@ -17,6 +17,7 @@
             <url>https://checkerframework.org/dev/m2-repo</url>
         </repository>
     </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.checkerframework</groupId>
