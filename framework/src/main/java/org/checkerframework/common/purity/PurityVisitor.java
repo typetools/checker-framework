@@ -27,7 +27,6 @@ import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.Pair;
@@ -373,12 +372,12 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             // check "no" purity
             EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
             // @Deterministic makes no sense for a void method or constructor
-            boolean isDeterministic = kinds.contains(DETERMINISTIC);
+            boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
             if (isDeterministic) {
                 if (TreeUtils.isConstructor(node)) {
-                    checker.report(Result.warning("purity.deterministic.constructor"), node);
+                    checker.reportWarning(node, "purity.deterministic.constructor");
                 } else if (TreeUtils.typeOf(node.getReturnType()).getKind() == TypeKind.VOID) {
-                    checker.report(Result.warning("purity.deterministic.void.method"), node);
+                    checker.reportWarning(node, "purity.deterministic.void.method");
                 }
             }
 
@@ -387,7 +386,14 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             if (body == null) {
                 r = new PurityResult();
             } else {
-                r = checkPurity(body, atypeFactory, assumeSideEffectFree, assumeDeterministic);
+                r =
+                        checkPurity(
+                                body,
+                                atypeFactory,
+                                checker.hasOption("assumeSideEffectFree")
+                                        || checker.hasOption("assumePure"),
+                                checker.hasOption("assumeDeterministic")
+                                        || checker.hasOption("assumePure"));
             }
 
             if (!r.isPure(kinds)) {
@@ -399,17 +405,15 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
                 EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
                 additionalKinds.removeAll(kinds);
                 if (TreeUtils.isConstructor(node)) {
-                    additionalKinds.remove(DETERMINISTIC);
+                    additionalKinds.remove(Pure.Kind.DETERMINISTIC);
                 }
                 if (!additionalKinds.isEmpty()) {
                     if (additionalKinds.size() == 2) {
-                        checker.report(Result.warning("purity.more.pure", node.getName()), node);
-                    } else if (additionalKinds.contains(SIDE_EFFECT_FREE)) {
-                        checker.report(
-                                Result.warning("purity.more.sideeffectfree", node.getName()), node);
-                    } else if (additionalKinds.contains(DETERMINISTIC)) {
-                        checker.report(
-                                Result.warning("purity.more.deterministic", node.getName()), node);
+                        checker.reportWarning(node, "purity.more.pure", node.getName());
+                    } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+                        checker.reportWarning(node, "purity.more.sideeffectfree", node.getName());
+                    } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+                        checker.reportWarning(node, "purity.more.deterministic", node.getName());
                     } else {
                         assert false : "BaseTypeVisitor reached undesirable state";
                     }
@@ -457,8 +461,8 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
     /**
      * Reports a single purity error.
      *
-     * @param msgKeyPrefix message key prefix
-     * @param r reason why the error is issued
+     * @param msgKeyPrefix the prefix of the message key to use when reporting
+     * @param r the result to report
      */
     private void reportPurityError(String msgKeyPrefix, Pair<Tree, String> r) {
         String reason = r.second;
@@ -466,9 +470,9 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
         @CompilerMessageKey String msgKey = msgKeyPrefix + reason;
         if (reason.equals("call")) {
             MethodInvocationTree mitree = (MethodInvocationTree) r.first;
-            checker.report(Result.failure(msgKey, mitree.getMethodSelect()), r.first);
+            checker.reportError(r.first, msgKey, mitree.getMethodSelect());
         } else {
-            checker.report(Result.failure(msgKey), r.first);
+            checker.reportError(r.first, msgKey);
         }
     }
 
@@ -548,16 +552,15 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             EnumSet<Pure.Kind> subPurity =
                     PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
             if (!subPurity.containsAll(superPurity)) {
-                checker.report(
-                        Result.failure(
-                                msgKey,
-                                overriderMeth,
-                                overriderTyp,
-                                overriddenMeth,
-                                overriddenTyp,
-                                subPurity,
-                                superPurity),
-                        overriderTree);
+                checker.reportError(
+                        overriderTree,
+                        msgKey,
+                        overriderMeth,
+                        overriderTyp,
+                        overriddenMeth,
+                        overriddenTyp,
+                        subPurity,
+                        superPurity);
             }
         }
     }
