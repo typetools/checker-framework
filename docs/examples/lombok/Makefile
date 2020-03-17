@@ -7,7 +7,7 @@ all: clean
 	(grep -qF "User.java:9: error: [argument.type.incompatible] incompatible types in argument." Out.txt \
 	  && grep -qF "Foo.java:12: error: [assignment.type.incompatible] incompatible types in assignment." Out.txt \
 	  && grep -qF "y = null; // error" Out.txt) \
-	 || (cat Out.txt && false)
+	 || (echo "===== start of Out.txt =====" && cat Out.txt && echo "===== end of Out.txt =====" && false)
 
 clean:
 	../../../gradlew clean
