@@ -13,6 +13,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -35,7 +36,7 @@ public class CollectionToArrayHeuristics {
     /** The processing environment. */
     private final ProcessingEnvironment processingEnv;
     /** The checker, used for issuing diagnostic messages. */
-    private final NullnessChecker checker;
+    private final BaseTypeChecker checker;
     /** The type factory. */
     private final NullnessAnnotatedTypeFactory atypeFactory;
 
@@ -55,7 +56,7 @@ public class CollectionToArrayHeuristics {
      * @param factory the type factory
      */
     public CollectionToArrayHeuristics(
-            NullnessChecker checker, NullnessAnnotatedTypeFactory factory) {
+            BaseTypeChecker checker, NullnessAnnotatedTypeFactory factory) {
         this.processingEnv = checker.getProcessingEnvironment();
         this.checker = checker;
         this.atypeFactory = factory;
