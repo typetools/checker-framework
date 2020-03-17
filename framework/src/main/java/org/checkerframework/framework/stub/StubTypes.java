@@ -218,12 +218,20 @@ public class StubTypes {
                     // If there exists one parent checker which can find this stub file, don't
                     // report an warning.
                     if (!findByParentCheckers) {
+                        File stubPathParent = new File(stubPath).getParentFile();
+                        String stubPathParentDescription =
+                                (stubPathParent == null
+                                        ? "current directory"
+                                        : "directory "
+                                                + new File(stubPath)
+                                                        .getParentFile()
+                                                        .getAbsolutePath());
                         checker.message(
                                 Kind.WARNING,
                                 "Did not find stub file "
                                         + stubPath
-                                        + " on classpath or within directory "
-                                        + new File(stubPath).getAbsolutePath()
+                                        + " on classpath or within "
+                                        + stubPathParentDescription
                                         + (stubPathFull.equals(stubPath)
                                                 ? ""
                                                 : (" or at " + stubPathFull)));

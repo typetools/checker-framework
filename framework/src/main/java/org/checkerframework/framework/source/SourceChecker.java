@@ -1027,11 +1027,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     public void message(javax.tools.Diagnostic.Kind kind, String msg, Object... args) {
         String ftdmsg = String.format(msg, args);
-        if (messager != null) {
-            messager.printMessage(kind, ftdmsg);
-        } else {
-            System.err.println(kind + ": " + ftdmsg);
+        if (messager == null) {
+            // If this method is called before initChecker() sets the field
+            messager = processingEnv.getMessager();
         }
+        messager.printMessage(kind, ftdmsg);
     }
 
     /**
@@ -1041,6 +1041,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private void printMessage(String msg) {
         if (messager == null) {
+            // If this method is called before initChecker() sets the field
             messager = processingEnv.getMessager();
         }
         messager.printMessage(ERROR, msg);

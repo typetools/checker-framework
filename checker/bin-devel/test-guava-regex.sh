@@ -6,6 +6,12 @@ set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
+if [ -d "/tmp/plume-scripts" ] ; then
+  (cd /tmp/plume-scripts && git pull -q)
+else
+  (cd /tmp && (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git || git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git))
+fi
+
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
@@ -16,8 +22,7 @@ echo "BUILDJDK=${BUILDJDK}"
 source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
 
 
+/tmp/plume-scripts/git-clone-related typetools guava
+cd ../guava
 
-./gradlew nonJunitTests --console=plain --warning-mode=all --no-daemon
-# Moved example-tests-nobuildjdk out of all tests because it fails in
-# the release script because the newest maven artifacts are not published yet.
-./gradlew :checker:exampleTests --console=plain --warning-mode=all --no-daemon
+./typecheck.sh regex

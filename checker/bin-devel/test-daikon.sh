@@ -27,4 +27,9 @@ source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
 cd ../daikon
 git log | head -n 5
 make compile
-time make -C java typecheck
+if [ "$TRAVIS" = "true" ] ; then
+  # Travis kills a job if it runs 10 minutes without output
+  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java typecheck
+else
+  time make -C java typecheck
+fi

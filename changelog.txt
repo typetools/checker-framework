@@ -10,12 +10,11 @@ Implementation details:
  * Renamings:
    applyUncheckedCodeDefaults() to applyConservativeDefaults()
    useUncheckedCodeDefault() to useConservativeDefault()
- * Removed the deprecated Analysis#Analysis(ProcessingEnvironment)
-   and Analysis#Analysis(T, int, ProcessingEnvironment);
  * Deprecated the `framework.source.Result` class; use `DiagMessage` or
    `List<DiagMessage>` instead.  If you were creating a `Result` just to
    pass it to `report`, then call new methods `reportError` and
    `reportWarning` instead.
+ * AbstractTypeProcessor#typeProcessingOver() always gets called.
 
 ---------------------------------------------------------------------------
 
