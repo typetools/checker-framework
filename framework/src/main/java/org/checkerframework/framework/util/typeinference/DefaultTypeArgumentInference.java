@@ -18,7 +18,9 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.framework.source.SourceChecker;
@@ -199,6 +201,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
 
     /**
+     * Holds an AnnotatedTypeMirror whose underlying type is {@code Object} and annotations are
+     * copied from null. It's lazily initialized in #handleNullTypeArguments.
+     */
+    private AnnotatedTypeMirror objectWithAnnosFromNull = null;
+    /**
      * If one of the inferredArgs are NullType, then re-run inference ignoring null method
      * arguments. Then lub the result of the second inference with the NullType and put the new
      * result back into inferredArgs.
@@ -237,7 +244,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 if (withoutNullResult == null) {
                     // withoutNullResult is null when the only constraint on a type argument is
                     // where a method argument is null.
-                    withoutNullResult = typeFactory.getUninferredWildcardType(atv);
+                    if (objectWithAnnosFromNull == null) {
+                        Elements elements = typeFactory.getProcessingEnv().getElementUtils();
+                        TypeMirror objectTM = elements.getTypeElement("java.lang.Object").asType();
+                        objectWithAnnosFromNull =
+                                AnnotatedTypeMirror.createType(objectTM, typeFactory, false);
+                        objectWithAnnosFromNull.addAnnotations(result.getAnnotations());
+                    }
+                    withoutNullResult = objectWithAnnosFromNull;
                 }
                 AnnotatedTypeMirror lub =
                         AnnotatedTypes.leastUpperBound(typeFactory, withoutNullResult, result);
