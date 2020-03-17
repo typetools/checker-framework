@@ -62,6 +62,7 @@
               <fork>true</fork>
               <release>11</release>
               <showWarnings>true</showWarnings>
+              <verbose>true</verbose>
               <annotationProcessorPaths>
                 <path>
                   <groupId>org.checkerframework</groupId>

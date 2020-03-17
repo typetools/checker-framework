@@ -79,6 +79,7 @@
               <!-- If using JDK 11, remove source and target and uncomment "release" below. -->
               <!-- <release>11</release> -->
               <showWarnings>true</showWarnings>
+              <verbose>true</verbose>
               <annotationProcessorPaths>
                 <path>
                   <groupId>org.checkerframework</groupId>
