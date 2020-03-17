@@ -1,5 +1,3 @@
-// @skip-test until the bug is fixed
-
 // Test case for https://tinyurl.com/cfissue/3149 .
 
 // @below-java11-jdk-skip-test
