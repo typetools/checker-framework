@@ -390,10 +390,8 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
                         checkPurity(
                                 body,
                                 atypeFactory,
-                                checker.hasOption("assumeSideEffectFree")
-                                        || checker.hasOption("assumePure"),
-                                checker.hasOption("assumeDeterministic")
-                                        || checker.hasOption("assumePure"));
+                                assumeSideEffectFree || checker.hasOption("assumePure"),
+                                assumeDeterministic || checker.hasOption("assumePure"));
             }
 
             if (!r.isPure(kinds)) {
