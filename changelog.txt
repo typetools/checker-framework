@@ -1,10 +1,8 @@
 Version 3.3.0, April 1, 2020
 
 New command-line options:
-  The Nullness Checker now supports the option -Alint=trustArrayLenZero to
-  trust @ArrayLen(0) annotations when determining the type of
-  Collections.toArray. See the new manual section
-  http://checkerframework.org/manual/#nullness-collection-toarray
+  -Alint=trustArrayLenZero trust @ArrayLen(0) annotations when determining
+  the type of Collections.toArray.
 
 Renamings:
   -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
