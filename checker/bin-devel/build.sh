@@ -70,11 +70,11 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
 # Two options: download a prebuilt JDK or rebuild the JDK.
 if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
-  echo "running \"./gradlew assemble\" for checker-framework"
-  ./gradlew assemble printJdkJarManifest --console=plain --warning-mode=all -s --no-daemon
+  echo "running \"./gradlew assemble printJdkJarManifest\" for checker-framework"
+  ./gradlew assemble printJdkJarManifest --console=plain --warning-mode=all -s --no-daemon -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 else
   echo "running \"./gradlew assemble -PuseLocalJdk\" for checker-framework"
-  ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
+  ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 fi
 
 echo Exiting checker/bin-devel/build.sh in "$(pwd)"
