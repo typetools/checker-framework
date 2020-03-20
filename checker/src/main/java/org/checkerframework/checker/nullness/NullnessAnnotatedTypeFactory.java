@@ -205,8 +205,7 @@ public class NullnessAnnotatedTypeFactory
         postInit();
 
         // do this last, as it might use the factory again.
-        this.collectionToArrayHeuristics =
-                new CollectionToArrayHeuristics((NullnessChecker) checker, this);
+        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(checker, this);
     }
 
     @Override
