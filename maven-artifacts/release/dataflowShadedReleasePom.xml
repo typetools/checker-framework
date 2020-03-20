@@ -31,7 +31,6 @@
         </license>
     </licenses>
 
-
     <scm>
         <url>https://github.com/typetools/checker-framework.git</url>
         <connection>https://github.com/typetools/checker-framework.git</connection>
