@@ -530,7 +530,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** The qualifier hierarchy for the Value type system. */
-    private final class ValueQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    protected class ValueQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         /** @param factory the MultiGraphFactory to use to construct this */
         public ValueQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
