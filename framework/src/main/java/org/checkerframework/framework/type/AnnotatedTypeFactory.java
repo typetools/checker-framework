@@ -1263,7 +1263,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Finds types from stubs and applies them to type.
+     * Finds types from stubs and applies them to {@code type}.
      *
      * @param type the type to apply stub types to
      * @param tree the tree from which to read stub types
@@ -1276,7 +1276,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Finds types from stubs and applies them to type.
+     * Finds types from stubs and applies them to {@code type}.
      *
      * @param type the type to apply stub types to
      * @param elt the element from which to read stub types
