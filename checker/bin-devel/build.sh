@@ -5,6 +5,10 @@ echo Entering checker/bin-devel/build.sh in "$(pwd)"
 # Fail the whole script if any command fails
 set -e
 
+echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
+echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
+
 # Optional argument $1 is one of:
 #  downloadjdk, buildjdk
 # If it is omitted, this script uses downloadjdk.
@@ -30,21 +34,21 @@ else
 fi
 echo "JAVA_HOME=${JAVA_HOME}"
 
-if [ -d "/tmp/plume-scripts" ] ; then
-  (cd /tmp/plume-scripts && git pull -q)
+if [ -d "/tmp/$USER/plume-scripts" ] ; then
+  (cd /tmp/$USER/plume-scripts && git pull -q)
 else
-  (cd /tmp && (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git || git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git))
+  mkdir -p /tmp/$USER && (cd /tmp/$USER && (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git || git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git))
 fi
 
 # Clone the annotated JDK 11 into ../jdk .
-/tmp/plume-scripts/git-clone-related typetools jdk
+/tmp/$USER/plume-scripts/git-clone-related typetools jdk
 
 AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 # Don't use `AT=${AFU}/..` which causes a git failure.
 AT=$(dirname "${AFU}")
 
 ## Build annotation-tools (Annotation File Utilities)
-/tmp/plume-scripts/git-clone-related typetools annotation-tools "${AT}"
+/tmp/$USER/plume-scripts/git-clone-related typetools annotation-tools "${AT}"
 if [ ! -d ../annotation-tools ] ; then
   ln -s "${AT}" ../annotation-tools
 fi
@@ -55,8 +59,7 @@ echo "... done: (cd ${AT} && ./.travis-build-without-test.sh)"
 
 
 ## Build stubparser
-/tmp/plume-scripts/git-clone-related typetools stubparser
-
+/tmp/$USER/plume-scripts/git-clone-related typetools stubparser
 echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 (cd ../stubparser/ && ./.travis-build-without-test.sh)
 echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
