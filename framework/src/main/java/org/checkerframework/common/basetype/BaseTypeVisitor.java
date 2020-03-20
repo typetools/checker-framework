@@ -2641,14 +2641,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver);
             commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, node);
             if (!success) {
-                checker.reportError(
-                        node,
-                        "method.invocation.invalid",
-                        TreeUtils.elementFromUse(node),
-                        treeReceiver.toString(),
-                        methodReceiver.toString());
+                reportMethodInvocabilityError(node, treeReceiver, methodReceiver);
             }
         }
+    }
+
+    /**
+     * Report a method invocability error. Allows checkers to change how the message is output.
+     *
+     * @param node the AST node at which to report the error
+     * @param found the actual type of the receiver
+     * @param expected the expected type of the receiver
+     */
+    protected void reportMethodInvocabilityError(
+            MethodInvocationTree node, AnnotatedTypeMirror found, AnnotatedTypeMirror expected) {
+        checker.reportError(
+                node,
+                "method.invocation.invalid",
+                TreeUtils.elementFromUse(node),
+                found.toString(),
+                expected.toString());
     }
 
     /**
