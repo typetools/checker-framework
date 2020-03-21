@@ -100,6 +100,7 @@ public class ControlFlowGraph {
     /**
      * @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds. Returns
      *     null for trees that don't produce a value.
+     * @param t a tree @ return the nodes to which tree {@code t} corresponds
      */
     public @Nullable Set<Node> getNodesCorrespondingToTree(Tree t) {
         if (convertedTreeLookup.containsKey(t)) {

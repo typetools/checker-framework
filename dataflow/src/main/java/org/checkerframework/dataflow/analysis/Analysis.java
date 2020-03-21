@@ -450,7 +450,11 @@ public class Analysis<
         return transferResult;
     }
 
-    /** Initialize the analysis with a new control flow graph. */
+    /**
+     * Initialize the analysis with a new control flow graph.
+     *
+     * @param cfg the control flow graph to use
+     */
     @EnsuresNonNull("this.cfg")
     protected void init(ControlFlowGraph cfg) {
         thenStores.clear();
@@ -814,16 +818,17 @@ public class Analysis<
         return ct;
     }
 
-    /** The transfer results for each return node in the CFG. */
+    /**
+     * The transfer results for each return node in the CFG.
+     *
+     * @return the transfer results for each return node in the CFG
+     */
     @RequiresNonNull("cfg")
-    public List<Pair<ReturnNode, TransferResult<A, S>>> getReturnStatementStores() {
+    public List<Pair<ReturnNode, @Nullable TransferResult<A, S>>> getReturnStatementStores() {
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
-        List<Pair<ReturnNode, TransferResult<A, S>>> result = new ArrayList<>();
+        List<Pair<ReturnNode, @Nullable TransferResult<A, S>>> result = new ArrayList<>();
         for (ReturnNode returnNode : cfg.getReturnNodes()) {
             TransferResult<A, S> store = storesAtReturnStatements.get(returnNode);
-            if (store == null) {
-                throw new Error("null store for " + returnNode);
-            }
             result.add(Pair.of(returnNode, store));
         }
         return result;
@@ -832,6 +837,8 @@ public class Analysis<
     /**
      * The result of running the analysis. This is only available once the analysis finished
      * running.
+     *
+     * @return the result of running the analysis
      */
     @RequiresNonNull("cfg")
     public AnalysisResult<A, S> getResult() {
