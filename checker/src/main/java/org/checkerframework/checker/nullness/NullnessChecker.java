@@ -55,7 +55,7 @@ public class NullnessChecker extends InitializationChecker {
      */
     public static final String LINT_TRUSTARRAYLENZERO = "trustArrayLenZero";
 
-    /** Default for {@link #LINT_NOINITFORMONOTONICNONNULL}. */
+    /** Default for {@link #LINT_TRUSTARRAYLENZERO}. */
     public static final boolean LINT_DEFAULT_TRUSTARRAYLENZERO = false;
 
     /*
