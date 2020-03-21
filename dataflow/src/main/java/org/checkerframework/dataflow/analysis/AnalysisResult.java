@@ -175,7 +175,8 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * @return the corresponding {@link AssignmentNode} for a given {@link UnaryTree}.
+     * Return the corresponding {@link AssignmentNode} for a given {@link UnaryTree}.
+     *
      * @param tree a unary tree
      * @return the corresponding assignment node
      */
