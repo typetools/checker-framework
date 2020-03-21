@@ -1,6 +1,7 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import scenelib.annotations.el.AField;
 
 /**
@@ -14,7 +15,7 @@ public class AFieldWrapper {
     /**
      * A String representing the type of the field, formatted to be printable in Java source code.
      */
-    private final String type;
+    private final @FullyQualifiedName String type;
 
     /**
      * The name of the method formal parameter; null if this AField does not represent a method
@@ -32,7 +33,8 @@ public class AFieldWrapper {
      * @param parameterName the name, if this AField object represents a formal parameter, or null
      *     if it does not
      */
-    AFieldWrapper(AField theField, String type, @Nullable String parameterName) {
+    AFieldWrapper(
+            AField theField, @FullyQualifiedName String type, @Nullable String parameterName) {
         this.theField = theField;
         this.type = type;
         this.parameterName = parameterName;
@@ -46,7 +48,7 @@ public class AFieldWrapper {
      * @param type a String representing the underlying type of the field in a form printable in
      *     Java source, which AField doesn't include
      */
-    AFieldWrapper(AField theField, String type) {
+    AFieldWrapper(AField theField, @FullyQualifiedName String type) {
         this(theField, type, null);
     }
 
@@ -65,7 +67,7 @@ public class AFieldWrapper {
      *
      * @return the type of the field or formal, formatted to be printable in Java source code
      */
-    public String getType() {
+    public @FullyQualifiedName String getType() {
         return type;
     }
 

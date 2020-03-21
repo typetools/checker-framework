@@ -15,6 +15,7 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AFieldWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AMethodWrapper;
@@ -47,7 +48,7 @@ import scenelib.annotations.util.Strings;
  */
 public final class SceneToStubWriter {
 
-    /** A pattern matching one or more digits */
+    /** A pattern matching one or more digits. */
     private static final Pattern digitPattern = Pattern.compile("\\d+");
 
     /** How far to indent when writing members of a stub file. */
@@ -57,7 +58,7 @@ public final class SceneToStubWriter {
      * Writes the annotations in {@code scene} to {@code out} in stub file format.
      *
      * @param scene the scene to write out
-     * @param out the Writer to output the result to
+     * @param out the Writer to output to
      */
     public static void write(ASceneWrapper scene, Writer out) {
         writeImpl(scene, new PrintWriter(out));
@@ -67,8 +68,8 @@ public final class SceneToStubWriter {
      * Writes the annotations in {@code scene} to the file {@code filename} in stub file format.
      *
      * @param scene the scene to write out
-     * @param filename the path of the file to write to
-     * @throws IOException if the file doesn't exist
+     * @param filename the path of the file to write
+     * @throws IOException if there is trouble writing the file
      * @see #write(ASceneWrapper, Writer)
      */
     public static void write(ASceneWrapper scene, String filename) throws IOException {
@@ -81,7 +82,7 @@ public final class SceneToStubWriter {
      * @param className the binary name of a class
      * @return the part of the name referring to the package
      */
-    private static String packagePart(@BinaryName String className) {
+    private static @DotSeparatedIdentifiers String packagePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
         return (lastdot == -1) ? "" : className.substring(0, lastdot);
     }
@@ -92,15 +93,14 @@ public final class SceneToStubWriter {
      * @param className a binary name
      * @return the part of the name representing the class's name without its package
      */
-    private static String basenamePart(@BinaryName String className) {
+    private static @BinaryName String basenamePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
-        String result = (lastdot == -1) ? className : className.substring(lastdot + 1);
-        return result;
+        return (lastdot == -1) ? className : className.substring(lastdot + 1);
     }
 
     /**
      * Formats a literal argument of an annotation. Copied from {@code IndexFileWriter#printValue}
-     * in the AnnotationFileUtilities (which the jaif printer uses), but modified to not print
+     * in the Annotation File Utilities (which the jaif printer uses), but modified to not print
      * directly and instead return the result to be printed.
      *
      * @param aft the annotation whose values are being formatted, for context
@@ -313,13 +313,7 @@ public final class SceneToStubWriter {
         return result.toString();
     }
 
-    /**
-     * Writes out an import statement for each annotation used in an {@link AScene}.
-     *
-     * <p>{@code DefCollector} is a facility in the Annotation File Utilities for determining which
-     * annotations are used in a given AScene. Here, we use that construct to write out the proper
-     * import statements into a stub file.
-     */
+    /** Writes an import statement for each annotation used in an {@link AScene}. */
     private static class ImportDefWriter extends DefCollector {
 
         /** The writer onto which to write the import statements. */
@@ -353,10 +347,10 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Do not print internal JDK annotations, which are the only annotations that include a '+'
+     * Return true if the given annotation is an internal JDK annotations, whose name includes '+'.
      *
      * @param annotationName the name of the annotation
-     * @return true iff this is an internal JDK annotation that should not be printed
+     * @return true iff this is an internal JDK annotation
      */
     private static boolean isInternalJDKAnnotation(String annotationName) {
         return annotationName.contains("+");
@@ -413,11 +407,12 @@ public final class SceneToStubWriter {
      */
     private static void printFields(AClassWrapper aClass, PrintWriter printWriter) {
 
-        if (aClass.getFields().keySet().size() != 0) {
-            printWriter.println(INDENT + "// fields:");
-            printWriter.println();
+        if (aClass.getFields().isEmpty()) {
+            return;
         }
 
+        printWriter.println(INDENT + "// fields:");
+        printWriter.println();
         for (Map.Entry<String, AFieldWrapper> fieldEntry : aClass.getFields().entrySet()) {
             String fieldName = fieldEntry.getKey();
             AFieldWrapper aField = fieldEntry.getValue();
@@ -426,7 +421,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Prints a field declaration, including a trailing semi-colon and a newline.
+     * Prints a field declaration, including a trailing semicolon and a newline.
      *
      * @param aField the field declaration
      * @param fieldName the name of the field
@@ -441,14 +436,14 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Prints a method signature in stub file format (i.e., without a method body).
+     * Prints a method declaration in stub file format (i.e., without a method body).
      *
      * @param aMethodWrapper the method to print
      * @param basename the simple name of the containing class. Used only to determine if the method
      *     being printed is the constructor of an inner class.
      * @param printWriter where to print the method signature
      */
-    private static void printMethodSignature(
+    private static void printMethodDeclaration(
             AMethodWrapper aMethodWrapper, String basename, PrintWriter printWriter) {
 
         AMethod aMethod = aMethodWrapper.getAMethod();
@@ -522,10 +517,9 @@ public final class SceneToStubWriter {
         printWriter.println();
 
         // For each class
-        class_loop:
         for (Map.Entry<@BinaryName String, AClassWrapper> classEntry :
                 scene.getClasses().entrySet()) {
-            printClass(classEntry, printWriter);
+            printClass(classEntry.getKey(), classEntry.getValue(), printWriter);
         }
         printWriter.flush();
     }
@@ -533,14 +527,13 @@ public final class SceneToStubWriter {
     /**
      * Print the class body, or nothing if this is an anonymous inner class
      *
-     * @param classEntry the class to print, as a Map entry. The key is the class name in binary
-     *     form. The value is the AClassWrapper object representing the class.
+     * @param classname the class name
+     * @param aClassWrapper the representation of the class
      * @param printWriter the writer on which to print
      */
     private static void printClass(
-            Map.Entry<@BinaryName String, AClassWrapper> classEntry, PrintWriter printWriter) {
+            String classname, AClassWrapper aClassWrapper, PrintWriter printWriter) {
 
-        String classname = classEntry.getKey();
         String basename = basenamePart(classname);
 
         if ("package-info".equals(basename) || "module-info".equals(basename)) {
@@ -564,8 +557,6 @@ public final class SceneToStubWriter {
         if (!"".equals(pkg)) {
             printWriter.println("package " + pkg + ";");
         }
-
-        AClassWrapper aClassWrapper = classEntry.getValue();
 
         int curlyCount = printClassDefinitions(basename, aClassWrapper, printWriter);
 
@@ -592,7 +583,7 @@ public final class SceneToStubWriter {
             printWriter.println();
             for (Map.Entry<String, AMethodWrapper> methodEntry :
                     aClassWrapper.getMethods().entrySet()) {
-                printMethodSignature(methodEntry.getValue(), innermostClassname, printWriter);
+                printMethodDeclaration(methodEntry.getValue(), innermostClassname, printWriter);
             }
         }
         for (int i = 0; i < curlyCount; i++) {

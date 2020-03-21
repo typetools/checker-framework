@@ -22,7 +22,10 @@ public class AMethodWrapper {
     /** The wrapped AMethod. */
     private final AMethod theMethod;
 
-    /** The return type of the method, as a fully qualified name. */
+    /**
+     * The return type of the method, as a fully-qualified name, or "java.lang.Object" if the return
+     * type is unknown.
+     */
     private @FullyQualifiedName String returnType = "java.lang.Object";
 
     /**
@@ -70,8 +73,8 @@ public class AMethodWrapper {
     /**
      * Wrap an AMethod. Package-private, because it should only be called from AClassWrapper.
      *
-     * @param theMethod the method to wrap, in scene-lib format
-     * @param methodElt the element representing the method's declaration
+     * @param theMethod the method to wrap
+     * @param methodElt the method's declaration
      */
     AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
         this.theMethod = theMethod;

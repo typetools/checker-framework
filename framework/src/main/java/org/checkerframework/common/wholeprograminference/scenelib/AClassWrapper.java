@@ -22,7 +22,7 @@ import scenelib.annotations.util.JVMNames;
  * A wrapper for the AClass class from scene-lib that carries additional information that is useful
  * during WPI.
  *
- * <p>This might be better as a subclass of AClass, but AClass is final.
+ * <p>This would be better as a subclass of AClass.
  */
 public class AClassWrapper {
 
@@ -30,14 +30,14 @@ public class AClassWrapper {
     private AClass theClass;
 
     /**
-     * The methods of the class. Keys are the names of methods, entries are AMethodWrapper objects.
-     * Mirrors the "methods" field of AClass.
+     * The methods of the class. Keys are the signatures of methods, entries are AMethodWrapper
+     * objects. Mirrors the "methods" field of AClass.
      */
     private final Map<String, AMethodWrapper> methods = new HashMap<>();
 
     /**
      * The fields of the class. Keys are the names of the fields, entries are AFieldWrapper objects.
-     * Wraps the "fields" field of AClass.
+     * Mirrors the "fields" field of AClass.
      */
     private final Map<String, AFieldWrapper> fields = new HashMap<>();
 
@@ -64,17 +64,17 @@ public class AClassWrapper {
      *
      * <p>Results are interned.
      *
-     * @param methodElt the executable element representing the method
+     * @param methodElt the method
      * @return an AMethodWrapper representing the method
      */
     public AMethodWrapper vivifyMethod(ExecutableElement methodElt) {
-        String methodName = JVMNames.getJVMMethodName(methodElt);
-        if (methods.containsKey(methodName)) {
-            return methods.get(methodName);
+        String methodSignature = JVMNames.getJVMMethodName(methodElt);
+        if (methods.containsKey(methodSignature)) {
+            return methods.get(methodSignature);
         } else {
             AMethodWrapper wrapper =
-                    new AMethodWrapper(theClass.methods.getVivify(methodName), methodElt);
-            methods.put(methodName, wrapper);
+                    new AMethodWrapper(theClass.methods.getVivify(methodSignature), methodElt);
+            methods.put(methodSignature, wrapper);
             return wrapper;
         }
     }
@@ -82,7 +82,7 @@ public class AClassWrapper {
     /**
      * Get all the methods that have been vivified (had their types updated by WPI) on a class.
      *
-     * @return a map from method name (in JVM name format) to the object representing the method
+     * @return a map from method signature (in JVM format) to the object representing the method
      */
     public Map<String, AMethodWrapper> getMethods() {
         return ImmutableMap.copyOf(methods);
@@ -150,10 +150,7 @@ public class AClassWrapper {
             this.typeElement = typeElement;
         } else if (!this.typeElement.equals(typeElement)) {
             throw new BugInCF(
-                    "Tried to set the base type of an AClassWrapper to "
-                            + typeElement
-                            + ", but it was already"
-                            + this.typeElement);
+                    "setTypeElement(%s): type is already %s", typeElement, this.typeElement);
         }
     }
 
@@ -184,7 +181,7 @@ public class AClassWrapper {
      *
      * @param enumConstants the list of enum constants for the class
      */
-    public void markAsEnum(List<VariableElement> enumConstants) {
+    public void setEnumConstants(List<VariableElement> enumConstants) {
         if (this.enumConstants != null) {
             throw new BugInCF("WPI marked the same class as an enum multiple times");
         }

@@ -43,9 +43,8 @@ import scenelib.annotations.io.IndexFileParser;
  *
  * <p>The set of annotations inferred for a certain class is stored in an {@link
  * scenelib.annotations.el.AScene}, which {@link #writeScenesToJaif} can write into a .jaif file.
- * For example, a class field of a class whose fully-qualified name is {@code my.package.MyClass}
- * will have its inferred type stored in a Scene, and later written into a file named {@code
- * my.package.MyClass.jaif}.
+ * For example, a class {@code my.package.MyClass} will have its members' inferred types stored in a
+ * Scene, and later written into a file named {@code my.package.MyClass.jaif}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
  * #JAIF_FILES_PATH} directory. Having more information in those initial .jaif files means that the
@@ -74,10 +73,10 @@ public class WholeProgramInferenceScenesStorage {
     private final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
     /**
-     * Set representing Scenes that were modified since the last time all Scenes were written into
-     * .jaif files. Each String element of this set is a path to the .jaif file of the corresponding
-     * Scene in the set. It is obtained by passing a class name as argument to the {@link
-     * #getJaifPath} method.
+     * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
+     * String element of this set is a path (relative to JAIF_FILES_PATH) to the .jaif file of the
+     * corresponding Scene in the set. It is obtained by passing a class name as argument to the
+     * {@link #getJaifPath} method.
      *
      * <p>Modifying a Scene means adding (or changing) a type annotation for a field, method return
      * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
