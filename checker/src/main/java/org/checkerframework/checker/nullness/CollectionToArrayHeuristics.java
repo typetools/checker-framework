@@ -161,12 +161,12 @@ public class CollectionToArrayHeuristics {
     }
 
     /**
-     * Returns true if the argument is a field access expression, where the field has declared type
-     * {@code @ArrayLen(0)}.
+     * Returns true if the argument is a "length" field access expression applied to an array which
+     * has declared type {@code @ArrayLen(0)}.
      *
      * @param argument the expression tree
-     * @return true if the argument is a field access expression, where the field has declared type
-     *     {@code @ArrayLen(0)}
+     * @return true if the argument is a "length" field access expression applied to an array which
+     *     has declared type {@code @ArrayLen(0)}
      */
     private boolean isArrayLenZeroFieldAccess(ExpressionTree argument) {
         Element el = TreeUtils.elementFromUse(argument);
