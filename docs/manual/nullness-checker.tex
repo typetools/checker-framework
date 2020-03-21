@@ -102,7 +102,7 @@ command-line option.)
   \label{nullness-lint-trustarraylenzero}%
   If you supply the \code{-Alint=trustArrayLenZero} command-line option, then
   the checker will trust \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
-  annotations. see Section~\ref{nullness-collection-toarray} for a discussion.
+  annotations. See Section~\ref{nullness-collection-toarray} for a discussion.
 \end{itemize}
 
 \item
@@ -475,9 +475,9 @@ returned array component is of type \<@NonNull> if the following conditions
 hold:
 
 \begin{itemize}
-  \item The receiver collection type argument is \<@NonNull>, and
-  \item The passed array size is less than the collection size. Here are heuristics to
-       handle the most common cases:
+  \item The receiver collection's type argument (that is, the element type) is \<@NonNull>, and
+  \item The passed array size is less than or equal to the collection size. The
+    Nullness Checker uses these heuristics to handle the most common cases:
 
   \begin{itemize}
     \item the argument has length 0:
