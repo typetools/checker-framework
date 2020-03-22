@@ -376,3 +376,20 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
 
     }
 }
+
+task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
+    description 'Deploys '
+    doLast {
+        mvnDeployToLocalRepo("${projectDir}/dist/checker.jar", "${rootDir}/maven-artifacts/release/checkerReleasePom.xml")
+    }
+}
+
+task deployArtifactsToSonatype {
+    description 'Deploys '
+    dependsOn shadowJar
+    dependsOn 'sourcesJar'
+    dependsOn 'javadocJar'
+    doLast {
+        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", sourcesJar.archiveFile.get().toString(), javadocJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/checkerReleasePom.xml")
+    }
+}

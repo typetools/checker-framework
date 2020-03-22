@@ -970,18 +970,39 @@ task releaseAndTest {
 // Don't create an empty checker-framework-VERSION.jar
 jar.onlyIf {false}
 
-void mvnDeployToLocalRepo(binary, pom) {
-    String mavenDevRepoDir = "${rootDir}/checker/bin-devel/m2-repo"
-    String mavenDevRepo = "file://${mavenDevRepoDir}"
-    mkdir mavenDevRepoDir
+void mvnDeployToLocalRepo(String binary, String pom) {
     exec {
         executable 'mvn'
         args += [
-                'deploy:deploy-file',
+                'install:install-file',
                 "-Dfile=${binary}",
                 "-DpomFile=${pom}",
-                "-DgeneratePom=false",
-                "-Durl=${mavenDevRepo}"
         ]
     }
+}
+
+void mvnSignAndDeployToSonatype(String binary, String pom, String classifier="") {
+    String passwordFile = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
+    String passphrase = new File(passwordFile).readLines().get(0);
+
+    exec {
+        executable 'mvn'
+        args += [
+                'gpg:sign-and-deploy-file',
+                '-Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/',
+                '-DrepositoryId=sonatype-nexus-staging',
+                "-DpomFile=${pom}",
+                "-Dfile=${binary}",
+                '-Dgpg.keyname=checker-framework-dev@googlegroups.com',
+                "-Dgpg.passphrase=${passphrase}"
+        ]
+        if (!classifier.isEmpty()) {
+            args += ["-Dclassifier=${classifier}"]
+        }
+    }
+}
+void mvnSignAndDeployMultipleToSonatype(String classesJar, String sourceJar, String javadocJar, String pom) {
+    mvnSignAndDeployToSonatype(classesJar, pom)
+    mvnSignAndDeployToSonatype(sourceJar, pom, "sources")
+    mvnSignAndDeployToSonatype(javadocJar, pom,"javadoc")
 }
