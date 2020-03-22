@@ -392,7 +392,7 @@ task jdkJavadocJar(type: Jar) {
 
 task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
     description 'Deploys '
-
+    dependsOn 'updateJdk'
     doLast {
         mvnDeployToLocalRepo("${projectDir}/dist/checker.jar", "${rootDir}/maven-artifacts/release/checkerReleasePom.xml")
         mvnDeployToLocalRepo("${projectDir}/dist/jdk8.jar", "${rootDir}/maven-artifacts/release/jdk8ReleasePom.xml")
@@ -401,11 +401,9 @@ task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
 
 task deployArtifactsToSonatype {
     description 'Deploys '
-    dependsOn (shadowJar, 'sourcesJar', 'javadocJar', jdkSourcesJar, jdkJavadocJar)
+    dependsOn (shadowJar, 'sourcesJar', 'javadocJar', jdkSourcesJar, jdkJavadocJar, 'updateJdk')
     doLast {
-        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", sourcesJar.archiveFile.get().toString(), javadocJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/checkerReleasePom.xml")
-
+        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", allSourcesJar.archiveFile.get().toString(), allJavadocJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/checkerReleasePom.xml")
         mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/jdk8.jar", jdkSourcesJar.archiveFile.get().toString(), jdkJavadocJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/checkerReleasePom.xml")
-
     }
 }
