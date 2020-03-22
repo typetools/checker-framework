@@ -376,19 +376,36 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
 
     }
 }
+task jdkSourcesJar(type: Jar) {
+    archiveFileName = 'jdk8-source.jar'
+    from "${rootDir}/maven-artifacts/release/"
+    include 'README-jdk'
+    destinationDirectory = buildDir
+}
+
+task jdkJavadocJar(type: Jar) {
+    archiveFileName = 'jdk8-javadoc.jar'
+    from "${rootDir}/maven-artifacts/release/"
+    include 'README-jdk'
+    destinationDirectory = buildDir
+}
 
 task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
     description 'Deploys '
+
     doLast {
         mvnDeployToLocalRepo("${projectDir}/dist/checker.jar", "${rootDir}/maven-artifacts/release/checkerReleasePom.xml")
-        // TODO: jdk8.jar
+        mvnDeployToLocalRepo("${projectDir}/dist/jdk8.jar", "${rootDir}/maven-artifacts/release/jdk8ReleasePom.xml")
     }
 }
 
 task deployArtifactsToSonatype {
     description 'Deploys '
-    dependsOn (shadowJar, 'sourcesJar', 'javadocJar')
+    dependsOn (shadowJar, 'sourcesJar', 'javadocJar', jdkSourcesJar, jdkJavadocJar)
     doLast {
         mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", sourcesJar.archiveFile.get().toString(), javadocJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/checkerReleasePom.xml")
+
+        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/jdk8.jar", jdkSourcesJar.archiveFile.get().toString(), jdkJavadocJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/checkerReleasePom.xml")
+
     }
 }
