@@ -404,6 +404,6 @@ task deployArtifactsToSonatype {
     dependsOn (shadowJar, 'allSourcesJar', 'allJavadocJar', jdkSourcesJar, jdkJavadocJar, 'updateJdk')
     doLast {
         mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", allSourcesJar.archiveFile.get().toString(), allJavadocJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/checkerReleasePom.xml")
-        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/jdk8.jar", jdkSourcesJar.archiveFile.get().toString(), jdkJavadocJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/checkerReleasePom.xml")
+        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/jdk8.jar", jdkSourcesJar.archiveFile.get().toString(), jdkJavadocJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/jdk8ReleasePom.xml")
     }
 }
