@@ -17,8 +17,11 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
@@ -56,7 +59,7 @@ public class Analysis<
     protected @Nullable T transferFunction;
 
     /** The current control flow graph to perform the analysis on. */
-    protected @Nullable ControlFlowGraph cfg;
+    protected @MonotonicNonNull ControlFlowGraph cfg;
 
     /** Then stores before every basic block (assumed to be 'no information' if not present). */
     protected final IdentityHashMap<Block, S> thenStores;
@@ -447,7 +450,12 @@ public class Analysis<
         return transferResult;
     }
 
-    /** Initialize the analysis with a new control flow graph. */
+    /**
+     * Initialize the analysis with a new control flow graph.
+     *
+     * @param cfg the control flow graph to use
+     */
+    @EnsuresNonNull("this.cfg")
     protected void init(ControlFlowGraph cfg) {
         thenStores.clear();
         elseStores.clear();
@@ -614,6 +622,7 @@ public class Analysis<
 
         /** Comparator to allow priority queue to order blocks by their depth-first order. */
         public class DFOComparator implements Comparator<Block> {
+            @SuppressWarnings("unboxing.of.nullable")
             @Override
             public int compare(Block b1, Block b2) {
                 return depthFirstOrder.get(b1) - depthFirstOrder.get(b2);
@@ -809,10 +818,15 @@ public class Analysis<
         return ct;
     }
 
-    /** The transfer results for each return node in the CFG. */
-    public List<Pair<ReturnNode, TransferResult<A, S>>> getReturnStatementStores() {
+    /**
+     * The transfer results for each return node in the CFG.
+     *
+     * @return the transfer results for each return node in the CFG
+     */
+    @RequiresNonNull("cfg")
+    public List<Pair<ReturnNode, @Nullable TransferResult<A, S>>> getReturnStatementStores() {
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
-        List<Pair<ReturnNode, TransferResult<A, S>>> result = new ArrayList<>();
+        List<Pair<ReturnNode, @Nullable TransferResult<A, S>>> result = new ArrayList<>();
         for (ReturnNode returnNode : cfg.getReturnNodes()) {
             TransferResult<A, S> store = storesAtReturnStatements.get(returnNode);
             result.add(Pair.of(returnNode, store));
@@ -823,7 +837,10 @@ public class Analysis<
     /**
      * The result of running the analysis. This is only available once the analysis finished
      * running.
+     *
+     * @return the result of running the analysis
      */
+    @RequiresNonNull("cfg")
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
@@ -839,6 +856,7 @@ public class Analysis<
      * @return the regular exit store, or {@code null}, if there is no such store (because the
      *     method cannot exit through the regular exit block).
      */
+    @RequiresNonNull("cfg")
     public @Nullable S getRegularExitStore() {
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
         SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
@@ -851,8 +869,10 @@ public class Analysis<
     }
 
     /** @return the exceptional exit store. */
+    @RequiresNonNull("cfg")
     public S getExceptionalExitStore() {
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
+        @SuppressWarnings("dereference.of.nullable")
         S exceptionalExitStore = inputs.get(cfg.getExceptionalExitBlock()).getRegularStore();
         return exceptionalExitStore;
     }

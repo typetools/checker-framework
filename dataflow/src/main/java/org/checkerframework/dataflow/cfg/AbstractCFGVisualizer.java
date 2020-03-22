@@ -11,6 +11,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -195,6 +196,7 @@ public abstract class AbstractCFGVisualizer<
             if (verbose) {
                 Node lastNode = getLastNode(bb);
                 if (lastNode != null) {
+                    @SuppressWarnings("nullness:contracts.precondition.not.satisfied")
                     S store = analysis.getResult().getStoreAfter(lastNode);
                     StringBuilder sbStore = new StringBuilder();
                     sbStore.append(escapeString).append("~~~~~~~~~").append(escapeString);
@@ -342,7 +344,11 @@ public abstract class AbstractCFGVisualizer<
         int count = 1;
         for (Block b : cfg.getDepthFirstOrderedBlocks()) {
             depthFirstOrder.computeIfAbsent(b, k -> new ArrayList<>());
-            depthFirstOrder.get(b).add(count++);
+            @SuppressWarnings(
+                    "nullness:assignment.type.incompatible") // computeIfAbsent's function doesn't
+            // return null
+            @NonNull List<Integer> blockIds = depthFirstOrder.get(b);
+            blockIds.add(count++);
         }
         return depthFirstOrder;
     }
