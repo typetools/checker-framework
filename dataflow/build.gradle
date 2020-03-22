@@ -25,7 +25,7 @@ task deployArtifactsToLocalRepo(dependsOn: jar) {
 
 task deployArtifactsToSonatype {
     description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
-    dependsOn ('jar', 'sourcesJar', 'javadocJar')
+    dependsOn ('jar', 'sourcesJar', 'javadocJar', 'shadowJar')
     doLast {
         mvnSignAndDeployMultipleToSonatype(project, "${rootDir}/maven-artifacts/release/dataflowReleasePom.xml".toString())
         mvnSignAndDeployMultipleToSonatype(shadowJar.archiveFile.get().toString(), sourcesJar.archiveFile.get().toString(), javadocJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/dataflowShadedReleasePom.xml")
