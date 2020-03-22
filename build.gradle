@@ -969,3 +969,19 @@ task releaseAndTest {
 
 // Don't create an empty checker-framework-VERSION.jar
 jar.onlyIf {false}
+
+void mvnDeployToLocalRepo(binary, pom) {
+    String mavenDevRepoDir = "${rootDir}/checker/bin-devel/m2-repo"
+    String mavenDevRepo = "file://${mavenDevRepoDir}"
+    mkdir mavenDevRepoDir
+    exec {
+        executable 'mvn'
+        args += [
+                'deploy:deploy-file',
+                "-Dfile=${binary}",
+                "-DpomFile=${pom}",
+                "-DgeneratePom=false",
+                "-Durl=${mavenDevRepo}"
+        ]
+    }
+}
