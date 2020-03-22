@@ -99,7 +99,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.2.1'
+    version '3.2.0'
 
     repositories {
         mavenCentral()
@@ -1035,3 +1035,13 @@ void mvnSignAndDeployMultipleToSonatype(String classesJar, String sourceJar, Str
     mvnSignAndDeployToSonatype(javadocJar, pom,"javadoc")
 }
 
+/**
+ * Signs and deploys multiple jar files for a single artifact.
+ * @param project
+ * @param pom pom file describing the artifact
+ */
+void mvnSignAndDeployMultipleToSonatype(Project project, String pom) {
+    mvnSignAndDeployToSonatype(project.tasks.getByName('jar').archiveFile.get().toString(), pom)
+    mvnSignAndDeployToSonatype(project.tasks.getByName('sourcesJar').archiveFile.get().toString(), pom, "sources")
+    mvnSignAndDeployToSonatype(project.tasks.getByName('javadocJar').archiveFile.get().toString(), pom,"javadoc")
+}

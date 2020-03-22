@@ -37,3 +37,18 @@ compileJava.dependsOn replaceAnnotations
 clean {
     delete file('src')
 }
+
+task deployArtifactsToLocalRepo(dependsOn: jar) {
+    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository. "
+    doLast {
+        mvnDeployToLocalRepo(project, "${rootDir}/maven-artifacts/release/checkerQualAndroidReleasePom.xml".toString())
+    }
+}
+
+task deployArtifactsToSonatype {
+    description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
+    dependsOn ('jar', 'sourcesJar', 'javadocJar')
+    doLast {
+        mvnSignAndDeployMultipleToSonatype(project, "${rootDir}/maven-artifacts/release/checkerQualAndroidReleasePom.xml".toString())
+    }
+}

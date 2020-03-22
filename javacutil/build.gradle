@@ -10,3 +10,18 @@ dependencies {
 
     implementation project(':checker-qual')
 }
+
+task deployArtifactsToLocalRepo(dependsOn: jar) {
+    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository. "
+    doLast {
+        mvnDeployToLocalRepo(project, "${rootDir}/maven-artifacts/release/javacutilReleasePom.xml".toString())
+    }
+}
+
+task deployArtifactsToSonatype {
+    description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
+    dependsOn ('jar', 'sourcesJar', 'javadocJar')
+    doLast {
+        mvnSignAndDeployMultipleToSonatype(project, "${rootDir}/maven-artifacts/release/javacutilReleasePom.xml".toString())
+    }
+}

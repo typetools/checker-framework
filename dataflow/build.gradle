@@ -12,3 +12,22 @@ shadowJar {
 artifacts {
     archives shadowJar
 }
+
+task deployArtifactsToLocalRepo(dependsOn: jar) {
+    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository. "
+    dependsOn ('jar', 'shadowJar')
+
+    doLast {
+        mvnDeployToLocalRepo(project, "${rootDir}/maven-artifacts/release/dataflowReleasePom.xml".toString())
+        mvnDeployToLocalRepo(shadowJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/dataflowShadedReleasePom.xml".toString())
+    }
+}
+
+task deployArtifactsToSonatype {
+    description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
+    dependsOn ('jar', 'sourcesJar', 'javadocJar')
+    doLast {
+        mvnSignAndDeployMultipleToSonatype(project, "${rootDir}/maven-artifacts/release/dataflowReleasePom.xml".toString())
+        mvnSignAndDeployMultipleToSonatype(shadowJar.archiveFile.get().toString(), sourcesJar.archiveFile.get().toString(), javadocJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/dataflowShadedReleasePom.xml")
+    }
+}
