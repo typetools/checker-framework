@@ -50,3 +50,20 @@ compileJava {
 clean {
     delete file('src/')
 }
+
+task deployArtifactsToLocalRepo(dependsOn: jar) {
+    description 'Deploys '
+    doLast {
+        mvnDeployToLocalRepo(project, "${rootDir}/maven-artifacts/release/checkerQualReleasePom.xml".toString())
+    }
+}
+
+task deployArtifactsToSonatype {
+    description 'Deploys '
+    dependsOn 'jar'
+    dependsOn 'sourcesJar'
+    dependsOn 'javadocJar'
+    doLast {
+        mvnSignAndDeployMultipleToSonatype(jar.archiveFile.get().toString(), sourcesJar.archiveFile.get().toString(), javadocJar.archiveFile.get().toString(), "${rootDir}/maven-artifacts/release/checkerQualReleasePom.xml")
+    }
+}
