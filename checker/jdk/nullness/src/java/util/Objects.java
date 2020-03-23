@@ -254,6 +254,5 @@ public final class Objects {
      * @since 1.8
      */
     @EnsuresNonNull("#1")
-    // TODO: treat like other nullness assertion methods in the Checker Framework.
     @Pure public static <T extends @NonNull Object> T requireNonNull(T obj, Supplier<String> messageSupplier) { throw new RuntimeException(); }
 }
