@@ -124,18 +124,20 @@ public class Analysis<
         this.currentTree = currentTree;
     }
 
+    // `@code`, not `@link`, because dataflow module doesn't depend on framework moduel.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set by the subclass, e.g., {@link
+     * flow graph. The transfer function is set by the subclass, e.g., {@code
      * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
      */
     public Analysis() {
         this(null, -1);
     }
 
+    // `@code`, not `@link`, because dataflow module doesn't depend on framework moduel.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set by the subclass, e.g., {@link
+     * flow graph. The transfer function is set by the subclass, e.g., {@code
      * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
      *
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
