@@ -161,7 +161,8 @@ public class ASceneWrapper {
 
     /**
      * Obtain the representation of the given class, which can be further operated on to e.g. add
-     * information about a method.
+     * information about a method. This method also updates the metadata stored about the class
+     * using the given ClassSymbol, if it is non-null.
      *
      * <p>Results are interned.
      *
