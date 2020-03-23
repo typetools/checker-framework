@@ -439,12 +439,15 @@ public final class SceneToStubWriter {
      * Prints a method declaration in stub file format (i.e., without a method body).
      *
      * @param aMethodWrapper the method to print
-     * @param basename the simple name of the containing class. Used only to determine if the method
-     *     being printed is the constructor of an inner class.
+     * @param basename the name of the containing class, as dot-separated identifiers without the
+     *     package name. Used only to determine if the method being printed is the constructor of an
+     *     inner class.
      * @param printWriter where to print the method signature
      */
     private static void printMethodDeclaration(
-            AMethodWrapper aMethodWrapper, String basename, PrintWriter printWriter) {
+            AMethodWrapper aMethodWrapper,
+            @DotSeparatedIdentifiers String basename,
+            PrintWriter printWriter) {
 
         AMethod aMethod = aMethodWrapper.getAMethod();
 
