@@ -10,9 +10,6 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.RequiresQualifier;
-import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
-import org.checkerframework.framework.util.Contract.Postcondition;
-import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
