@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -13,6 +14,7 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -269,8 +271,8 @@ public final class SceneToStubWriter {
      * trailing semicolons/commas/other syntax.
      *
      * <p>Usually, {@link #formatParameter(AFieldWrapper, String, String)} should be called to
-     * format method parameters, and {@link #printField(AFieldWrapper, String, PrintWriter)} should
-     * be called to print field declarations. Both use this method as their underlying
+     * format method parameters, and {@link #printField(AFieldWrapper, String, PrintWriter, String)}
+     * should be called to print field declarations. Both use this method as their underlying
      * implementation.
      *
      * @param aField the field declaration or formal parameter declaration to format
@@ -359,7 +361,7 @@ public final class SceneToStubWriter {
     /**
      * Print the hierarchy of outer classes up to and including the given class, and return the
      * number of curly braces to close with. The classes are printed with appropriate opening curly
-     * braces, in standard Java style. This routine does not attempt to indent them correctly.
+     * braces, in standard Java style.
      *
      * <p>When an inner class is present in an AScene, its name is something like "Outer$Inner".
      * Writing a stub file with that name would be useless to the stub parser, which expects inner
@@ -373,30 +375,24 @@ public final class SceneToStubWriter {
     private static int printClassDefinitions(
             String basename, AClassWrapper aClass, PrintWriter printWriter) {
 
-        String nameToPrint = basename;
-        String remainingInnerClassNames = "";
-        if (basename.contains("$")) {
-            nameToPrint = basename.substring(0, basename.indexOf('$'));
-            remainingInnerClassNames = basename.substring(basename.indexOf('$') + 1);
-        }
+        String[] classNames = StringUtils.split(basename, '$');
 
-        // For any outer class, print "class".  For a leaf class, print "enum" or "class".
-        if ("".equals(remainingInnerClassNames) && aClass.isEnum()) {
-            printWriter.print("enum ");
-        } else {
-            printWriter.print("class ");
+        for (int i = 0; i < classNames.length; i++) {
+            String nameToPrint = classNames[i];
+            printWriter.print(indents(i));
+            // For any outer class, print "class".  For a leaf class, print "enum" or "class".
+            if (i == classNames.length - 1 && aClass.isEnum()) {
+                printWriter.print("enum ");
+            } else {
+                printWriter.print("class ");
+            }
+            printWriter.print(formatAnnotations(aClass.getAnnotations()));
+            printWriter.print(nameToPrint);
+            printTypeParameters(aClass, printWriter);
+            printWriter.println(" {");
+            printWriter.println();
         }
-        printWriter.print(formatAnnotations(aClass.getAnnotations()));
-        printWriter.print(nameToPrint);
-        printTypeParameters(aClass, printWriter);
-        printWriter.println(" {");
-        printWriter.println();
-        if ("".equals(remainingInnerClassNames)) {
-            return 1; // once no inner classes are left,
-            // one curly brace is still required for the original class
-        } else {
-            return 1 + printClassDefinitions(remainingInnerClassNames, aClass, printWriter);
-        }
+        return classNames.length;
     }
 
     /**
@@ -404,19 +400,21 @@ public final class SceneToStubWriter {
      *
      * @param aClass the class whose fields should be printed
      * @param printWriter the writer on which to print the fields
+     * @param indentLevel the indent string
      */
-    private static void printFields(AClassWrapper aClass, PrintWriter printWriter) {
+    private static void printFields(
+            AClassWrapper aClass, PrintWriter printWriter, String indentLevel) {
 
         if (aClass.getFields().isEmpty()) {
             return;
         }
 
-        printWriter.println(INDENT + "// fields:");
+        printWriter.println(indentLevel + "// fields:");
         printWriter.println();
         for (Map.Entry<String, AFieldWrapper> fieldEntry : aClass.getFields().entrySet()) {
             String fieldName = fieldEntry.getKey();
             AFieldWrapper aField = fieldEntry.getValue();
-            printField(aField, fieldName, printWriter);
+            printField(aField, fieldName, printWriter, indentLevel);
         }
     }
 
@@ -426,10 +424,11 @@ public final class SceneToStubWriter {
      * @param aField the field declaration
      * @param fieldName the name of the field
      * @param printWriter the writer on which to print
+     * @param indentLevel the indent string
      */
     private static void printField(
-            AFieldWrapper aField, String fieldName, PrintWriter printWriter) {
-        printWriter.print(INDENT);
+            AFieldWrapper aField, String fieldName, PrintWriter printWriter, String indentLevel) {
+        printWriter.print(indentLevel);
         printWriter.print(formatAFieldImpl(aField, fieldName, null));
         printWriter.println(";");
         printWriter.println();
@@ -442,13 +441,17 @@ public final class SceneToStubWriter {
      * @param basename the simple name of the containing class. Used only to determine if the method
      *     being printed is the constructor of an inner class.
      * @param printWriter where to print the method signature
+     * @param indentLevel the indent string
      */
     private static void printMethodDeclaration(
-            AMethodWrapper aMethodWrapper, String basename, PrintWriter printWriter) {
+            AMethodWrapper aMethodWrapper,
+            String basename,
+            PrintWriter printWriter,
+            String indentLevel) {
 
         AMethod aMethod = aMethodWrapper.getAMethod();
 
-        printWriter.print(INDENT);
+        printWriter.print(indentLevel);
 
         // type parameters
         printTypeParameters(aMethodWrapper.getTypeParameters(), printWriter);
@@ -556,6 +559,8 @@ public final class SceneToStubWriter {
 
         int curlyCount = printClassDefinitions(basename, aClassWrapper, printWriter);
 
+        String indentLevel = indents(curlyCount);
+
         if (aClassWrapper.isEnum()) {
             List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
             if (enumConstants.size() != 0) {
@@ -564,27 +569,39 @@ public final class SceneToStubWriter {
                     sj.add(enumConstant.getSimpleName());
                 }
 
-                printWriter.println(INDENT + "// enum constants:");
+                printWriter.println(indentLevel + "// enum constants:");
                 printWriter.println();
-                printWriter.println(INDENT + sj.toString() + ";");
+                printWriter.println(indentLevel + sj.toString() + ";");
                 printWriter.println();
             }
         }
 
-        printFields(aClassWrapper, printWriter);
+        printFields(aClassWrapper, printWriter, indentLevel);
 
         if (aClassWrapper.getMethods().keySet().size() != 0) {
             // print method signatures
-            printWriter.println(INDENT + "// methods:");
+            printWriter.println(indentLevel + "// methods:");
             printWriter.println();
             for (Map.Entry<String, AMethodWrapper> methodEntry :
                     aClassWrapper.getMethods().entrySet()) {
-                printMethodDeclaration(methodEntry.getValue(), innermostClassname, printWriter);
+                printMethodDeclaration(
+                        methodEntry.getValue(), innermostClassname, printWriter, indentLevel);
             }
         }
-        for (int i = 0; i < curlyCount; i++) {
-            printWriter.println("}");
+        for (int i = curlyCount - 1; i >= 0; i--) {
+            String indents = indents(i);
+            printWriter.println(indents + "}");
         }
+    }
+
+    /**
+     * Return a string containing n indents
+     *
+     * @param n the number of indents
+     * @return a string containing that many indents
+     */
+    private static String indents(int n) {
+        return Collections.nCopies(n, INDENT).stream().reduce(String::concat).orElse("");
     }
 
     /**
