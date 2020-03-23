@@ -23,9 +23,11 @@ public class AMethodWrapper {
 
     /**
      * The return type of the method, as a fully-qualified name, or "java.lang.Object" if the return
-     * type is unknown.
+     * type is unknown. Note that this is a type, not a name, so it would be inappropriate to
+     * annotate it as {@link FullyQualifiedName} - it may include type parameters, for example, that
+     * would never be included in a name.
      */
-    private @FullyQualifiedName String returnType = "java.lang.Object";
+    private String returnType = "java.lang.Object";
 
     /**
      * A mirror of the parameters field of AMethod, but using AFieldWrapper objects as the values.
@@ -39,12 +41,12 @@ public class AMethodWrapper {
     private List<? extends TypeParameterElement> typeParameters;
 
     /**
-     * The return type, as a fully-qualified name.
+     * The return type, as a string using fully-qualified names.
      *
-     * @return the return type as a fully-qualified name, or "java.lang.Object" if the return type
-     *     is unknown
+     * @return the return type as a string using fully-qualified names (in the style of {@link
+     *     TypeMirror#toString()}), or "java.lang.Object" if the return type is unknown
      */
-    public @FullyQualifiedName String getReturnType() {
+    public String getReturnType() {
         return returnType;
     }
 
@@ -60,9 +62,10 @@ public class AMethodWrapper {
     /**
      * Provide the AMethodWrapper with a return type.
      *
-     * @param returnType a fully-qualified name
+     * @param returnType a string representation of the type, in the form returned by {@link
+     *     TypeMirror#toString()}
      */
-    private void setReturnType(@FullyQualifiedName String returnType) {
+    private void setReturnType(String returnType) {
         if ("java.lang.Object".equals(this.returnType)) {
             this.returnType = returnType;
         }
@@ -77,13 +80,8 @@ public class AMethodWrapper {
     AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
         this.theMethod = theMethod;
         String typeAsString = methodElt.getReturnType().toString();
-        if (!typeAsString.startsWith("?")) {
-            // non-wildcard types are fully qualified names
-            @SuppressWarnings("signature:assignment.type.incompatible")
-            @FullyQualifiedName String fullyQualifiedType = typeAsString;
-            setReturnType(fullyQualifiedType);
-        }
-        vivifyParameters(methodElt);
+        this.setReturnType(typeAsString);
+        this.vivifyParameters(methodElt);
         this.typeParameters = methodElt.getTypeParameters();
     }
 

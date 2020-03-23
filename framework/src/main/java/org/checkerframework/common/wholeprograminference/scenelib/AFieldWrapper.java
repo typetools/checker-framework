@@ -1,7 +1,6 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import scenelib.annotations.el.AField;
 
 /**
@@ -14,8 +13,10 @@ public class AFieldWrapper {
 
     /**
      * A String representing the type of the field, formatted to be printable in Java source code.
+     * Note that this not a fully-qualified name - or a name at all! - because it is a type, and
+     * therefore may include generics)
      */
-    private final @FullyQualifiedName String type;
+    private final String type;
 
     /**
      * The name of the method formal parameter; null if this AField does not represent a method
@@ -29,12 +30,12 @@ public class AFieldWrapper {
      *
      * @param theField the wrapped AField
      * @param type a String representing the underlying type of the field in a form printable in
-     *     Java source, which AField doesn't include
+     *     Java source, which AField doesn't include (note that this not a fully-qualified name - or
+     *     a name at all! - because it is a type, and therefore may include generics)
      * @param parameterName the name, if this AField object represents a formal parameter, or null
      *     if it does not
      */
-    AFieldWrapper(
-            AField theField, @FullyQualifiedName String type, @Nullable String parameterName) {
+    AFieldWrapper(AField theField, String type, @Nullable String parameterName) {
         this.theField = theField;
         this.type = type;
         this.parameterName = parameterName;
@@ -46,9 +47,10 @@ public class AFieldWrapper {
      *
      * @param theField the wrapped AField
      * @param type a String representing the underlying type of the field in a form printable in
-     *     Java source, which AField doesn't include
+     *     Java source, which AField doesn't include (note that this not a fully-qualified name - or
+     *     a name at all! - because it is a type, and therefore may include generics)
      */
-    AFieldWrapper(AField theField, @FullyQualifiedName String type) {
+    AFieldWrapper(AField theField, String type) {
         this(theField, type, null);
     }
 
@@ -67,7 +69,7 @@ public class AFieldWrapper {
      *
      * @return the type of the field or formal, formatted to be printable in Java source code
      */
-    public @FullyQualifiedName String getType() {
+    public String getType() {
         return type;
     }
 

@@ -86,6 +86,9 @@ public final class SceneToStubWriter {
      * @param className the binary name of a class
      * @return the part of the name referring to the package
      */
+    // Substrings of binary names are also binary names; the empty string
+    // is a dot-separated identifier (the default package).
+    @SuppressWarnings("signature:return.type.incompatible")
     private static @DotSeparatedIdentifiers String packagePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
         return (lastdot == -1) ? "" : className.substring(0, lastdot);
@@ -97,6 +100,8 @@ public final class SceneToStubWriter {
      * @param className a binary name
      * @return the part of the name representing the class's name without its package
      */
+    // Substrings of binary names are also binary names.
+    @SuppressWarnings("signature:return.type.incompatible")
     private static @BinaryName String basenamePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
         return (lastdot == -1) ? className : className.substring(lastdot + 1);
@@ -537,7 +542,7 @@ public final class SceneToStubWriter {
      * @param printWriter the writer on which to print
      */
     private static void printClass(
-            String classname, AClassWrapper aClassWrapper, PrintWriter printWriter) {
+            @BinaryName String classname, AClassWrapper aClassWrapper, PrintWriter printWriter) {
 
         String basename = basenamePart(classname);
 
