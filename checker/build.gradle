@@ -184,8 +184,9 @@ task updateJdk() {
             if (!downloadedJdk.exists()) {
                 download {
                     src "https://github.com/typetools/annotated-libraries/raw/${jdkShaHash}/jdk8.jar"
-                    overwrite true
                     dest downloadedJdk
+                    overwrite true
+                    retries 3
                 }
             }
             copy {
