@@ -6,9 +6,6 @@ set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
-export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
-echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
-
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo "BUILDJDK=${BUILDJDK}"
 # In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
@@ -16,5 +13,14 @@ echo "BUILDJDK=${BUILDJDK}"
 source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
 
 
-
-./gradlew test --console=plain --warning-mode=all --no-daemon
+# daikon-typecheck: 15 minutes
+/tmp/$USER/plume-scripts/git-clone-related codespecs daikon
+cd ../daikon
+git log | head -n 5
+make compile
+if [ "$TRAVIS" = "true" ] ; then
+  # Travis kills a job if it runs 10 minutes without output
+  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java check-part1
+else
+  time make -C java check-part1
+fi

@@ -28,9 +28,6 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#tests">Testing the Checker Framework</a></li>
       <li><a href="#Code_style">Code style</a></li>
       <li><a href="#IDE_configuration">IDE configuration</a>
-        <ul>
-          <li><a href="#Configure_Eclipse_to_edit_the_Checker_Framework">Configure Eclipse to edit the Checker Framework</a></li>
-        </ul></li>
       <li><a href="#pull-requests">Pull requests</a>
         <ul>
           <li><a href="#pull-requests-maintainers">Pull request and commit notes for maintainers</a></li>
@@ -163,40 +160,10 @@ version control system, such as by running <code>git annotate <em>filename</em><
 
 <h2 id="IDE_configuration">IDE configuration</h2>
 
-<h3 id="Configure_Eclipse_to_edit_the_Checker_Framework">Configure Eclipse to edit the Checker Framework</h3>
+After <a href="../manual/manual.html">cloning and building all projects from their sources</a>,
+import them as gradle projects.
 
-<p>
-These instructions are relevant if you use Eclipse as your IDE.
-</p>
-
-<ol>
-<li> <a href="../manual/manual.html">Clone and build all projects from their sources.</a>
-</li>
-<li> Download Eclipse from
-the <a href="https://www.eclipse.org/downloads/">official Eclipse website</a>
-and install it.
-</li>
-<li> Run Eclipse.
-</li>
-<li> Enter the main Eclipse working screen and in the &ldquo;File&rdquo; menu,
-select &ldquo;Import&rdquo; &rArr; &ldquo;General&rdquo; &rArr; &ldquo;Existing
-Projects into Workspace&rdquo;.
-</li>
-<li> After the &ldquo;Import Projects&rdquo; window appears, select &ldquo;Select
-Root Directory&rdquo;, and select the parent of the <code>$CHECKERFRAMEWORK</code> directory.
-</li>
-<li> Ensure &ldquo;Search for nested projects&rdquo; is selected in the Options panel.
-</li>
-<li> Select all the projects in the folder except for &ldquo;personalblog-demo&rdquo;,
-then select &ldquo;Finish&rdquo; to import the projects.
-</li>
-</ol>
-
-<p>
-Eclipse should successfully build all the imported projects.
-If Eclipse reports any errors, ensure you followed the instructions for
-<a href="../manual/manual.html">cloning and building all projects.</a>
-</p>
+If your IDE cannot find <code>com.sun.source.*</code> packages, try changing the project JDK to JDK 11.
 
 
 <h2 id="pull-requests">Pull requests</h2>
