@@ -5,8 +5,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -515,10 +517,14 @@ public final class SceneToStubWriter {
         importDefWriter.visit();
         printWriter.println();
 
+        // sort by package name so that output is deterministic and default package
+        // comes first
+        List<@BinaryName String> classes = new ArrayList<>(scene.getClasses().keySet());
+        Collections.sort(classes, Comparator.comparing(SceneToStubWriter::packagePart));
+
         // For each class
-        for (Map.Entry<@BinaryName String, AClassWrapper> classEntry :
-                scene.getClasses().entrySet()) {
-            printClass(classEntry.getKey(), classEntry.getValue(), printWriter);
+        for (@BinaryName String clazz : classes) {
+            printClass(clazz, scene.getClasses().get(clazz), printWriter);
         }
         printWriter.flush();
     }
