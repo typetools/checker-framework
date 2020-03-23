@@ -9,7 +9,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import scenelib.annotations.el.AMethod;
 
@@ -64,8 +63,7 @@ public class AMethodWrapper {
      * @param returnType a fully-qualified name
      */
     private void setReturnType(@FullyQualifiedName String returnType) {
-        // do not keep return types that start with a ?, because that's not valid Java
-        if ("java.lang.Object".equals(this.returnType) && !returnType.startsWith("?")) {
+        if ("java.lang.Object".equals(this.returnType)) {
             this.returnType = returnType;
         }
     }
@@ -78,9 +76,13 @@ public class AMethodWrapper {
      */
     AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
         this.theMethod = theMethod;
-        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @DotSeparatedIdentifiers String typeAsString = methodElt.getReturnType().toString();
-        setReturnType(typeAsString);
+        String typeAsString = methodElt.getReturnType().toString();
+        if (!typeAsString.startsWith("?")) {
+            // non-wildcard types are fully qualified names
+            @SuppressWarnings("signature:assignment.type.incompatible")
+            @FullyQualifiedName String fullyQualifiedType = typeAsString;
+            setReturnType(fullyQualifiedType);
+        }
         vivifyParameters(methodElt);
         this.typeParameters = methodElt.getTypeParameters();
     }
