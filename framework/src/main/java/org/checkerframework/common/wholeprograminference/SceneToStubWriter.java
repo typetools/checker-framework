@@ -49,7 +49,7 @@ import scenelib.annotations.util.Strings;
 public final class SceneToStubWriter {
 
     /** A pattern matching one or more digits. */
-    private static final Pattern digitPattern = Pattern.compile("\\d+");
+    private static final Pattern digitPattern = Pattern.compile(".*\\$\\d+(\\$.*|$)");
 
     /** How far to indent when writing members of a stub file. */
     private static final String INDENT = "    ";
@@ -439,15 +439,12 @@ public final class SceneToStubWriter {
      * Prints a method declaration in stub file format (i.e., without a method body).
      *
      * @param aMethodWrapper the method to print
-     * @param basename the name of the containing class, as dot-separated identifiers without the
-     *     package name. Used only to determine if the method being printed is the constructor of an
-     *     inner class.
+     * @param basename the simple name of the containing class. Used only to determine if the method
+     *     being printed is the constructor of an inner class.
      * @param printWriter where to print the method signature
      */
     private static void printMethodDeclaration(
-            AMethodWrapper aMethodWrapper,
-            @DotSeparatedIdentifiers String basename,
-            PrintWriter printWriter) {
+            AMethodWrapper aMethodWrapper, String basename, PrintWriter printWriter) {
 
         AMethod aMethod = aMethodWrapper.getAMethod();
 
@@ -462,11 +459,7 @@ public final class SceneToStubWriter {
         String methodName = aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
         // Use Java syntax for constructors.
         if ("<init>".equals(methodName)) {
-            // Constructor names cannot contain dots, if this is an inner class.
-            methodName =
-                    basename.contains(".")
-                            ? basename.substring(basename.lastIndexOf('.') + 1)
-                            : basename;
+            methodName = basename;
         } else {
             // This isn't a constructor, so add a return type.
             // Note that the stub file format doesn't require this to be correct,
@@ -543,18 +536,18 @@ public final class SceneToStubWriter {
             return;
         }
 
-        // Do not attempt to print stubs for anonymous inner classes, because the stub parser
+        // Do not attempt to print stubs for anonymous inner classes or their inner classes, because
+        // the stub parser
         // cannot read them. (An anonymous inner class has a basename like Outer$1, so this
-        // check ensures that the binary name's final segment after its last $ is not only
-        // composed of digits.)
-        String innermostClassname = basename;
-        if (innermostClassname.contains("$")) {
-            innermostClassname =
-                    innermostClassname.substring(innermostClassname.lastIndexOf('$') + 1);
-            if (digitPattern.matcher(innermostClassname).matches()) {
-                return;
-            }
+        // check ensures that no single class name is exclusively composed of digits.)
+        if (digitPattern.matcher(basename).matches()) {
+            return;
         }
+
+        String innermostClassname =
+                basename.contains("$")
+                        ? basename.substring(basename.lastIndexOf('$') + 1)
+                        : basename;
 
         String pkg = packagePart(classname);
         if (!"".equals(pkg)) {
