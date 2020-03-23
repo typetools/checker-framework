@@ -18,8 +18,8 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
@@ -28,8 +28,6 @@ import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.DefException;
-import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * scene-lib (from the Annotation File Utilities) doesn't provide enough information to usefully
@@ -132,49 +130,31 @@ public class ASceneWrapper {
     }
 
     /**
-     * Write the scene wrapped by this object to a .jaif file at the given path.
+     * Write the scene wrapped by this object to a file at the given path.
      *
-     * @param jaifPath the path of the jaif file to be written
+     * @param jaifPath the path of the file to be written, ending in .jaif
      * @param annosToIgnore which annotations should be ignored in which contexts
+     * @param outputFormat the output format to use. If a format other than JAIF is selected, the
+     *     path will be modified to match.
      */
-    public void writeToJaif(
-            String jaifPath, Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
+    public void writeToFile(
+            String jaifPath,
+            Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore,
+            OutputFormat outputFormat) {
         AScene scene = theScene.clone();
         removeAnnosFromScene(scene, annosToIgnore);
         scene.prune();
-        new File(jaifPath).delete();
-        if (!scene.isEmpty()) {
-            // Only write non-empty scenes into .jaif files.
-            try {
-                IndexFileWriter.write(scene, new FileWriter(jaifPath));
-            } catch (IOException e) {
-                throw new UserError("Problem while writing %s: %s", jaifPath, e.getMessage());
-            } catch (DefException e) {
-                throw new BugInCF(e);
-            }
+        String filepath = jaifPath;
+        if (outputFormat == OutputFormat.STUB) {
+            filepath = jaifPath.replace(".jaif", ".astub");
         }
-    }
-
-    /**
-     * Write the scene represented by this object to a stub file.
-     *
-     * @param jaifPath a path that ends in ".jaif". The stub file will be created on the same path,
-     *     but the extension will be replaced with ".astub"
-     * @param annosToIgnore which annotations to ignore in which contexts
-     */
-    public void writeToStub(
-            String jaifPath, Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
-        AScene scene = theScene.clone();
-        removeAnnosFromScene(scene, annosToIgnore);
-        scene.prune();
-        String stubPath = jaifPath.replace(".jaif", ".astub");
-        new File(stubPath).delete();
+        new File(filepath).delete();
         if (!scene.isEmpty()) {
-            // Only write non-empty scenes into .astub files.
+            // Only write non-empty scenes into files.
             try {
-                SceneToStubWriter.write(this, new FileWriter(stubPath));
+                SceneToStubWriter.write(this, new FileWriter(filepath));
             } catch (IOException e) {
-                throw new UserError("Problem while writing %s: %s", stubPath, e.getMessage());
+                throw new UserError("Problem while writing %s: %s", filepath, e.getMessage());
             }
         }
     }

@@ -405,15 +405,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /** Write all modified scenes into .jaif files or stub files. */
     @Override
-    public void writeResultsToFile(OutputFormat kind) {
-        switch (kind) {
-            case JAIF:
-                storage.writeScenesToJaif();
-                break;
-            case STUB:
-                storage.writeScenesToStub();
-                break;
-        }
+    public void writeResultsToFile(OutputFormat outputFormat) {
+        storage.writeScenes(outputFormat);
     }
 
     /**

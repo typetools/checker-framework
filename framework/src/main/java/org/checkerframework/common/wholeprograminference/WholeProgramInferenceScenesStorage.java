@@ -17,6 +17,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.framework.qual.DefaultFor;
@@ -95,36 +96,20 @@ public class WholeProgramInferenceScenesStorage {
     }
 
     /**
-     * Write all modified scenes into .jaif files. (Scenes are modified by the method {@link
+     * Write all modified scenes into files. (Scenes are modified by the method {@link
      * #updateAnnotationSetInScene}.)
+     *
+     * @param outputFormat the output format to use when writing files
      */
-    public void writeScenesToJaif() {
-        // Create .jaif files directory if it doesn't exist already.
+    public void writeScenes(OutputFormat outputFormat) {
+        // Create WPI directory if it doesn't exist already.
         File jaifDir = new File(JAIF_FILES_PATH);
         if (!jaifDir.exists()) {
             jaifDir.mkdirs();
         }
-        // Write scenes into .jaif files.
+        // Write scenes into files.
         for (String jaifPath : modifiedScenes) {
-            scenes.get(jaifPath).writeToJaif(jaifPath, annosToIgnore);
-        }
-        modifiedScenes.clear();
-    }
-
-    /**
-     * Writes the scenes out to .astub files. This method is an alternative to {@link
-     * #writeScenesToJaif}.
-     */
-    public void writeScenesToStub() {
-        // Use the same directory that .jaif files would normally be written to.
-        File stubDir = new File(JAIF_FILES_PATH);
-        if (!stubDir.exists()) {
-            stubDir.mkdirs();
-        }
-        // Convert the .jaif file names in modifiedScenes into .astub file names.
-        // Then write scenes into .astub files.
-        for (String jaifPath : modifiedScenes) {
-            scenes.get(jaifPath).writeToStub(jaifPath, annosToIgnore);
+            scenes.get(jaifPath).writeToFile(jaifPath, annosToIgnore, outputFormat);
         }
         modifiedScenes.clear();
     }
