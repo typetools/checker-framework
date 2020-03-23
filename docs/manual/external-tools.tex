@@ -1001,7 +1001,9 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <Xmaxerrs>10000</Xmaxerrs>
         <Xmaxwarns>10000</Xmaxwarns>
       </compilerArguments>
+      <!-- Without showWarnings and verbose, maven-compiler-plugin may not show output. -->
       <showWarnings>true</showWarnings>
+      <verbose>true</verbose>
       <annotationProcessorPaths>
         <path>
           <groupId>org.checkerframework</groupId>

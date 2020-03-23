@@ -20,7 +20,7 @@ git log | head -n 5
 make compile
 if [ "$TRAVIS" = "true" ] ; then
   # Travis kills a job if it runs 10 minutes without output
-  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java typecheck
+  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java check-part2
 else
-  time make -C java typecheck
+  time make -C java check-part2
 fi

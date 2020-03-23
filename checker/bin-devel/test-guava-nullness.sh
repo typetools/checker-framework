@@ -13,14 +13,7 @@ echo "BUILDJDK=${BUILDJDK}"
 source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
 
 
-# daikon-typecheck: 15 minutes
-/tmp/$USER/plume-scripts/git-clone-related codespecs daikon
-cd ../daikon
-git log | head -n 5
-make compile
-if [ "$TRAVIS" = "true" ] ; then
-  # Travis kills a job if it runs 10 minutes without output
-  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java typecheck
-else
-  time make -C java typecheck
-fi
+/tmp/$USER/plume-scripts/git-clone-related typetools guava
+cd ../guava
+
+./typecheck.sh nullness
