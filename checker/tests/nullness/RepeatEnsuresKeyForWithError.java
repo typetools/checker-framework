@@ -3,7 +3,7 @@ import java.util.Map;
 import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
 import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 
-public class RepeatKeyForWithError {
+public class RepeatEnsuresKeyForWithError {
 
     Map<String, Integer> map = new HashMap<>();
 

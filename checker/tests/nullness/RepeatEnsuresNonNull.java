@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class RepeatNonNullWithError {
+public class RepeatEnsuresNonNull {
 
     protected @Nullable String value1;
     protected @Nullable String value2;
@@ -11,14 +11,14 @@ public class RepeatNonNullWithError {
     public boolean func1() {
         value1 = "value1";
         value2 = "value2";
-        value3 = null;
+        value3 = "value3";
         return true;
     }
 
     public void func2() {
         value1 = "value1";
         value2 = "value2";
-        value3 = null;
+        value3 = "value3";
     }
 
     @EnsuresNonNullIf(
@@ -57,18 +57,16 @@ public class RepeatNonNullWithError {
     public boolean withcondpostconditionsfunc1() {
         value1 = "value1";
         value2 = "value2";
-        value3 = null; // condition not satisfied here
-        // :: error:  (contracts.conditional.postcondition.not.satisfied)
+        value3 = "value3";
         return true;
     }
 
     @EnsuresNonNull("value1")
     @EnsuresNonNull(value = {"value2", "value3"})
-    // :: error:  (contracts.postcondition.not.satisfied)
     public void withpostconditionsfunc2() {
         value1 = "value1";
         value2 = "value2";
-        value3 = null; // condition not satisfied here
+        value3 = "value3";
     }
 
     @EnsuresNonNullIf.List({
@@ -79,17 +77,15 @@ public class RepeatNonNullWithError {
     public boolean withcondpostconditionfunc1() {
         value1 = "value1";
         value2 = "value2";
-        value3 = null; // condition not satisfied here
-        // :: error:  (contracts.conditional.postcondition.not.satisfied)
+        value3 = "value3";
         return true;
     }
 
     @EnsuresNonNull.List({@EnsuresNonNull("value1"), @EnsuresNonNull("value2")})
     @EnsuresNonNull("value3")
-    // :: error:  (contracts.postcondition.not.satisfied)
     public void withpostconditionfunc2() {
         value1 = "value1";
         value2 = "value2";
-        value3 = null; // condition not satisfied here
+        value3 = "value3";
     }
 }
