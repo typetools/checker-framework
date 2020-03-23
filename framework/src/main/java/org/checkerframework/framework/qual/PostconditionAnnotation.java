@@ -9,13 +9,14 @@ import java.lang.annotation.Target;
 
 /**
  * A meta-annotation that indicates that an annotation E is a postcondition annotation, i.e., E is a
- * type-specialized version of {@link EnsuresQualifier}.
- *
- * <p>E must have an element {@code value} that is one of the following:
+ * type-specialized version of {@link EnsuresQualifier} or of {@link EnsuresQualifier.List}.
  *
  * <ul>
- *   <li>an array of {@code String}s, analogous to {@link EnsuresQualifier#expression()}, or
- *   <li>an array of postcondition annotations, analogous to {@link EnsuresQualifier.List#value()}.
+ *   <li>If E is a type-specialized version of {@link EnsuresQualifier}, its {@code value} element
+ *       must be an array of {@code String}s, analogous to {@link EnsuresQualifier#expression()}.
+ *   <li>If E is a type-specialized version of {@link EnsuresQualifier.List}, its {@code value}
+ *       element must be an array of postcondition annotations, analogous to {@link
+ *       EnsuresQualifier.List#value()}.
  * </ul>
  *
  * <p>The established postcondition P has type specified by the {@code qualifier} field of this
