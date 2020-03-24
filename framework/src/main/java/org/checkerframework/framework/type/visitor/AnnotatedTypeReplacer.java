@@ -52,9 +52,7 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
         new AnnotatedTypeReplacer(top).visit(from, to);
     }
 
-    /*
-     * If top != null we replace only the annotations in the hierarchy of top.
-     */
+    /** If top != null we replace only the annotations in the hierarchy of top. */
     private final AnnotationMirror top;
 
     /** Construct an AnnotatedTypeReplacer that will replace all annotations. */
