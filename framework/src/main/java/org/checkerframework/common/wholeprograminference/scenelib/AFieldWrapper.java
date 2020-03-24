@@ -37,7 +37,9 @@ public class AFieldWrapper {
      */
     AFieldWrapper(AField theField, String type, @Nullable String parameterName) {
         this.theField = theField;
-        this.type = type;
+        // TypeMirror#toString prints multiple annotations on a single type
+        // separated by commas rather than by whitespace, as is required in source code.
+        this.type = type.replaceAll(",@", " @");
         this.parameterName = parameterName;
     }
 

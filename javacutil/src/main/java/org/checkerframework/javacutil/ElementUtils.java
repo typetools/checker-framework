@@ -202,8 +202,10 @@ public class ElementUtils {
     }
 
     /**
-     * A helper method that standarizes types by printing simple names instead of fully qualified
-     * names.
+     * Returns the simple type name, without annotations.
+     *
+     * @param type a type
+     * @return the simple type name, without annotations
      */
     private static String simpleTypeName(TypeMirror type) {
         switch (type.getKind()) {
@@ -215,7 +217,24 @@ public class ElementUtils {
                 return ((DeclaredType) type).asElement().getSimpleName().toString();
             default:
                 if (type.getKind().isPrimitive()) {
-                    return type.toString();
+                    switch (type.getKind()) {
+                        case BOOLEAN:
+                            return "boolean";
+                        case BYTE:
+                            return "byte";
+                        case CHAR:
+                            return "char";
+                        case DOUBLE:
+                            return "double";
+                        case FLOAT:
+                            return "float";
+                        case INT:
+                            return "int";
+                        case LONG:
+                            return "long";
+                        case SHORT:
+                            return "short";
+                    }
                 }
         }
         throw new BugInCF("ElementUtils: unhandled type kind: %s, type: %s", type.getKind(), type);
