@@ -179,8 +179,15 @@ public class KeyForPropagator {
      * receiving an annotation has an @UnknownKeyFor annotation or NO key for annotations.
      */
     private class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
+
+        /** The processing environment. */
         private final ProcessingEnvironment env;
 
+        /**
+         * Create a new replacer.
+         *
+         * @param env the processing environment
+         */
         private KeyForPropagationReplacer(ProcessingEnvironment env) {
             this.env = env;
         }
