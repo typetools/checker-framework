@@ -133,7 +133,32 @@ public final class SceneToStubWriter {
      */
     private static String formatArrayType(ATypeElement e, String arrayType) {
         StringBuilder result = new StringBuilder();
-        return formatArrayTypeImpl(e, arrayType, result);
+        // If there are not annotations on the component, this will be true - unless there
+        // are also no annotations on the first array level. See comment below for how that
+        // case is handled.
+        int componentEndPos = arrayType.indexOf(' ');
+        if (arrayType.startsWith("@")) {
+            // While there are more explicit annotations, go to the next space.
+            while (arrayType.charAt(componentEndPos + 1) == '@') {
+                componentEndPos = arrayType.indexOf(' ', componentEndPos + 1);
+            }
+            // Once all annotations have been skipped, we still have to skip to the end of the
+            // component type itself.
+            componentEndPos = arrayType.indexOf(' ', componentEndPos + 1);
+        }
+
+        // If the first array level doesn't have an annotation, then the spacing will be off,
+        // so use the position of the first '[' instead (which must be correct, since the
+        // first array doesn't have an annotation).
+        int firstArrayPos = arrayType.indexOf('[');
+        if (firstArrayPos < componentEndPos || componentEndPos == -1) {
+            componentEndPos = firstArrayPos - 1;
+        }
+
+        String componentType = arrayType.substring(0, componentEndPos + 1);
+        String arrayTypes = arrayType.substring(componentEndPos + 1);
+
+        return formatArrayTypeImpl(e, arrayTypes, componentType, result) + " ";
     }
 
     /**
@@ -148,43 +173,64 @@ public final class SceneToStubWriter {
      *
      * @param e same as above, but can become null if scene-lib did not fill in the inner types,
      *     which happens when they do not have annotations
-     * @param arrayType same as above
+     * @param arrayTypes the array parts of the array type (i.e. the parts after the component
+     *     type). Must contain at least one '['.
+     * @param componentType the component type of the array
      * @param result the string builder containing the array types seen so far
-     * @return the formatted string, as above, with a trailing space
+     * @return the formatted string, without a trailing space
      */
     private static String formatArrayTypeImpl(
-            @Nullable ATypeElement e, String arrayType, StringBuilder result) {
-        String nextComponentType =
-                arrayType.indexOf('[') == -1
-                        ? null
-                        : arrayType.substring(0, arrayType.lastIndexOf('['));
-        // base case when the component is a non-array type
-        if (nextComponentType == null) {
-            String componentAsString = arrayType + " " + result.toString();
-            if (e != null) {
-                return formatAnnotations(e.tlAnnotationsHere) + componentAsString;
-            } else {
-                return componentAsString;
-            }
+            @Nullable ATypeElement e,
+            String arrayTypes,
+            String componentType,
+            StringBuilder result) {
+        // append the next type:
+        String nextArrayType = arrayTypes.substring(0, arrayTypes.indexOf(']') + 1);
+        String remainingArrayTypes = arrayTypes.substring(arrayTypes.indexOf(']') + 1);
+        // do not append inferred annotations if there was one in the source code
+        if (nextArrayType.contains("@")) {
+            result.append(nextArrayType);
         } else {
             if (e != null) {
                 result.append(formatAnnotations(e.tlAnnotationsHere));
             }
-            result.append("[] ");
+            result.append(nextArrayType);
         }
-        // find the next array type, if scene-lib is tracking information about it
-        ATypeElement innerType = null;
-        if (e != null) {
-            for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
-                InnerTypeLocation loc = ite.getKey();
-                ATypeElement it = ite.getValue();
-                if (loc.location.contains(TypePathEntry.ARRAY)) {
-                    innerType = it;
-                }
-            }
+        result.append(" ");
+
+        // Check if there are any more array levels. If so, recurse; otherwise, append the component
+        // and return.
+        if ("".equals(remainingArrayTypes)) {
+            ATypeElement component = getNextArrayLevel(e);
+            return formatType(componentType, component) + result.toString();
+        } else {
+            return formatArrayTypeImpl(
+                    getNextArrayLevel(e), remainingArrayTypes, componentType, result);
+        }
+    }
+
+    /**
+     * Gets the next array level (either the next array type or the component) from the given type
+     * element, or null if scene-lib is not storing any more information about this array (for
+     * example, when the component type is unannotated).
+     *
+     * @param e the array type element; can be null
+     * @return the next level of the array, if scene-lib stores information on it. null if the input
+     *     is null or scene-lib is not storing more information.
+     */
+    private static @Nullable ATypeElement getNextArrayLevel(@Nullable ATypeElement e) {
+        if (e == null) {
+            return null;
         }
 
-        return formatArrayTypeImpl(innerType, nextComponentType, result);
+        for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
+            InnerTypeLocation loc = ite.getKey();
+            ATypeElement it = ite.getValue();
+            if (loc.location.contains(TypePathEntry.ARRAY)) {
+                return it;
+            }
+        }
+        return null;
     }
 
     /**
@@ -235,27 +281,46 @@ public final class SceneToStubWriter {
             basetype = aField.getType();
         }
 
+        result.append(formatType(basetype, aField.getTheField().type));
+        result.append(fieldName);
+        return result.toString();
+    }
+
+    /**
+     * Formats the given type for printing in Java source code.
+     *
+     * @param basetype the base type
+     * @param type the scene-lib representation of the type, or null if only the bare type is to be
+     *     printed
+     * @return a String representing the type, as it would appear in Java source code, followed by a
+     *     trailing space
+     */
+    private static String formatType(final String basetype, final @Nullable ATypeElement type) {
+        String basetypeToPrint = basetype;
         // anonymous static classes shouldn't be printed with the "anonymous" tag that the AScene
         // library uses
         if (basetype.startsWith("<anonymous ")) {
-            basetype = basetype.substring("<anonymous ".length(), basetype.length() - 1);
+            basetypeToPrint =
+                    basetypeToPrint.substring("<anonymous ".length(), basetype.length() - 1);
         }
 
         // fields don't need their generic types, and sometimes they are wrong. Just don't print
         // them.
-        while (basetype.contains("<")) {
-            basetype = basetype.substring(0, basetype.indexOf('<'));
+        while (basetypeToPrint.contains("<")) {
+            basetypeToPrint = basetypeToPrint.substring(0, basetypeToPrint.indexOf('<'));
         }
 
-        if (basetype.contains("[")) {
-            String formattedArrayType = formatArrayType(aField.getTheField().type, basetype);
-            result.append(formattedArrayType); // formatArrayType adds a trailing space
-        } else {
-            result.append(formatAnnotations(aField.getTheField().type.tlAnnotationsHere));
-            result.append(basetype + " "); // must add trailing space directly
+        if (basetypeToPrint.contains("[")) {
+            // formatArrayType adds a trailing space
+            return formatArrayType(type, basetypeToPrint);
         }
-        result.append(fieldName);
-        return result.toString();
+
+        // must add trailing space directly here
+        if (type == null /*|| basetypeToPrint.startsWith("@")*/) {
+            return basetypeToPrint + " ";
+        } else {
+            return formatAnnotations(type.tlAnnotationsHere) + basetypeToPrint + " ";
+        }
     }
 
     /** Writes an import statement for each annotation used in an {@link AScene}. */
@@ -399,7 +464,6 @@ public final class SceneToStubWriter {
         // type parameters
         printTypeParameters(aMethodWrapper.getTypeParameters(), printWriter);
 
-        printWriter.print(formatAnnotations(aMethod.returnType.tlAnnotationsHere));
         // Needed because AMethod stores the name with the parameters, to distinguish
         // between overloaded methods.
         String methodName = aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
@@ -412,10 +476,8 @@ public final class SceneToStubWriter {
             // so it would be acceptable to print "java.lang.Object" for every
             // method. A better type is printed if one is available to improve
             // the readability of the resulting stub file.
-            printWriter.print(formatAnnotations(aMethod.returnType.tlAnnotationsHere));
             String returnType = aMethodWrapper.getReturnType();
-            printWriter.print(returnType);
-            printWriter.print(" ");
+            printWriter.print(formatType(returnType, aMethod.returnType));
         }
         printWriter.print(methodName);
         printWriter.print("(");

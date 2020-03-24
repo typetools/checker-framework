@@ -1,8 +1,12 @@
 // This test ensures that annotations on different component types of multidimensional arrays
 // are printed correctly.
 
+import org.checkerframework.common.value.qual.ArrayLen;
+import org.checkerframework.common.value.qual.ArrayLenRange;
+import org.checkerframework.common.value.qual.IntVal;
 import testlib.wholeprograminference.qual.Sibling1;
 import testlib.wholeprograminference.qual.Sibling2;
+import testlib.wholeprograminference.qual.SiblingWithFields;
 
 class MultiDimensionalArrays {
 
@@ -30,6 +34,18 @@ class MultiDimensionalArrays {
         testParam(x);
     }
 
+    int[] useReturn(@Sibling1 int @Sibling2 [] x) {
+        return x;
+    }
+
+    void testReturn() {
+        requiresS1S2(
+                // :: error: argument.type.incompatible
+                useReturn(
+                        // :: error: argument.type.incompatible
+                        twoDimArray));
+    }
+
     // three dimensional arrays
 
     void requiresS1S2S1(@Sibling1 int @Sibling2 [] @Sibling1 [] x) {}
@@ -52,6 +68,15 @@ class MultiDimensionalArrays {
 
     void useParam2(@Sibling1 int @Sibling2 [] @Sibling1 [] x) {
         testParam2(x);
+    }
+
+    int[][] useReturn2(@Sibling1 int @Sibling2 [] @Sibling1 [] x) {
+        return x;
+    }
+
+    void testReturn2() {
+        // :: error: argument.type.incompatible
+        requiresS1S2S1(useReturn2(threeDimArray));
     }
 
     // three dimensional array with annotations only on two inner types
@@ -78,6 +103,15 @@ class MultiDimensionalArrays {
         testParam3(x);
     }
 
+    int[][] useReturn3(@Sibling1 int @Sibling2 [][] x) {
+        return x;
+    }
+
+    void testReturn3() {
+        // :: error: argument.type.incompatible
+        requiresS1S2N(useReturn3(threeDimArray2));
+    }
+
     // three dimensional array with annotations only on two array types, not innermost type
 
     void requiresS2S1(int @Sibling2 [] @Sibling1 [] x) {}
@@ -100,5 +134,93 @@ class MultiDimensionalArrays {
 
     void useParam4(int @Sibling2 [] @Sibling1 [] x) {
         testParam4(x);
+    }
+
+    int[][] useReturn4(int @Sibling2 [] @Sibling1 [] x) {
+        return x;
+    }
+
+    void testReturn4() {
+        // :: error: argument.type.incompatible
+        requiresS2S1(useReturn4(threeDimArray3));
+    }
+
+    // three-dimensional arrays with arguments in annotations
+
+    void requiresSf1Sf2Sf3(
+                    @SiblingWithFields(value = {"test1", "test1"}) int @SiblingWithFields(value = {"test2", "test2"}) []
+                                    @SiblingWithFields(value = {"test3"}) []
+                            x) {}
+
+    int[][] threeDimArray4;
+
+    void testField5() {
+        // :: error: argument.type.incompatible
+        requiresSf1Sf2Sf3(threeDimArray4);
+    }
+
+    void useField5(
+                    @SiblingWithFields(value = {"test1", "test1"}) int @SiblingWithFields(value = {"test2", "test2"}) []
+                                    @SiblingWithFields(value = {"test3"}) []
+                            x) {
+        threeDimArray4 = x;
+    }
+
+    void testParam5(int[][] x) {
+        // :: error: argument.type.incompatible
+        requiresSf1Sf2Sf3(x);
+    }
+
+    void useParam5(
+                    @SiblingWithFields(value = {"test1", "test1"}) int @SiblingWithFields(value = {"test2", "test2"}) []
+                                    @SiblingWithFields(value = {"test3"}) []
+                            x) {
+        testParam5(x);
+    }
+
+    int[][] useReturn5(
+                    @SiblingWithFields(value = {"test1", "test1"}) int @SiblingWithFields(value = {"test2", "test2"}) []
+                                    @SiblingWithFields(value = {"test3"}) []
+                            x) {
+        return x;
+    }
+
+    void testReturn5() {
+        // :: error: argument.type.incompatible
+        requiresSf1Sf2Sf3(useReturn5(threeDimArray4));
+    }
+
+    // three dimensional array with annotations from other hierarchies that ought to be preserved
+
+    int[][] threeDimArray5;
+
+    void testField6() {
+        // :: error: argument.type.incompatible
+        requiresS1S2S1(threeDimArray5);
+    }
+
+    void useField6(
+                    @Sibling1 @IntVal(5) int @Sibling2 @ArrayLen(3) [] @Sibling1 @ArrayLenRange(from = 2, to = 6) [] x) {
+        threeDimArray5 = x;
+    }
+
+    void testParam6(int[][] x) {
+        // :: error: argument.type.incompatible
+        requiresS1S2S1(x);
+    }
+
+    void useParam6(
+                    @Sibling1 @IntVal(5) int @Sibling2 @ArrayLen(3) [] @Sibling1 @ArrayLenRange(from = 2, to = 6) [] x) {
+        testParam6(x);
+    }
+
+    int[][] useReturn6(
+                    @Sibling1 @IntVal(5) int @Sibling2 @ArrayLen(3) [] @Sibling1 @ArrayLenRange(from = 2, to = 6) [] x) {
+        return x;
+    }
+
+    void testReturn6() {
+        // :: error: argument.type.incompatible
+        requiresS1S2S1(useReturn6(threeDimArray));
     }
 }
