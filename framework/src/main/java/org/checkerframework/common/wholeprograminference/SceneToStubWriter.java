@@ -33,12 +33,7 @@ import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.el.DefCollector;
 import scenelib.annotations.el.DefException;
 import scenelib.annotations.el.InnerTypeLocation;
-import scenelib.annotations.field.AnnotationAFT;
-import scenelib.annotations.field.AnnotationFieldType;
-import scenelib.annotations.field.ArrayAFT;
-import scenelib.annotations.field.BasicAFT;
-import scenelib.annotations.field.ClassTokenAFT;
-import scenelib.annotations.util.Strings;
+import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * SceneToStubWriter provides two static methods named {@code write} that write a {@link AScene} in
@@ -108,65 +103,6 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Formats a literal argument of an annotation. Copied from {@code IndexFileWriter#printValue}
-     * in the Annotation File Utilities (which the jaif printer uses), but modified to not print
-     * directly and instead return the result to be printed.
-     *
-     * @param aft the annotation whose values are being formatted, for context
-     * @param o the value or values to format
-     * @return the String representation of the value
-     */
-    private static String formatAnnotationValue(AnnotationFieldType aft, Object o) {
-        if (aft instanceof AnnotationAFT) {
-            return formatAnnotation((Annotation) o);
-        } else if (aft instanceof ArrayAFT) {
-            StringJoiner sj = new StringJoiner(",", "{", "}");
-            ArrayAFT aaft = (ArrayAFT) aft;
-            List<?> l = (List<?>) o;
-            // watch out--could be an empty array of unknown type
-            // (see AnnotationBuilder#addEmptyArrayField)
-            if (aaft.elementType == null) {
-                if (l.size() != 0) {
-                    throw new AssertionError();
-                }
-            } else {
-
-                for (Object o2 : l) {
-                    sj.add(formatAnnotationValue(aaft.elementType, o2));
-                }
-            }
-            return sj.toString();
-        } else if (aft instanceof ClassTokenAFT) {
-            return aft.format(o);
-        } else if (aft instanceof BasicAFT && o instanceof String) {
-            return Strings.escape((String) o);
-        } else if (aft instanceof BasicAFT && o instanceof Long) {
-            return o.toString() + "L";
-        } else {
-            return o.toString();
-        }
-    }
-
-    /**
-     * Returns the String representation of an annotation in Java source format.
-     *
-     * @param a the annotation to print
-     * @return the formatted annotation
-     */
-    private static String formatAnnotation(Annotation a) {
-        String annoName = a.def().name.substring(a.def().name.lastIndexOf('.') + 1);
-        if (a.fieldValues.isEmpty()) {
-            return "@" + annoName;
-        }
-        StringJoiner sj = new StringJoiner(",", "@" + annoName + "(", ")");
-        for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
-            AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-            sj.add(f.getKey() + "=" + formatAnnotationValue(aft, f.getValue()));
-        }
-        return sj.toString();
-    }
-
-    /**
      * Returns all annotations in {@code annos} in a form suitable to be printed as Java source
      * code.
      *
@@ -180,7 +116,7 @@ public final class SceneToStubWriter {
         StringBuilder sb = new StringBuilder();
         for (Annotation tla : annos) {
             if (!isInternalJDKAnnotation(tla.def.name)) {
-                sb.append(formatAnnotation(tla));
+                sb.append(IndexFileWriter.formatAnnotation(tla));
                 sb.append(" ");
             }
         }
