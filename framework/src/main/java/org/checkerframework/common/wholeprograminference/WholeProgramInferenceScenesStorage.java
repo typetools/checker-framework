@@ -54,11 +54,8 @@ import scenelib.annotations.io.IndexFileParser;
  */
 public class WholeProgramInferenceScenesStorage {
 
-    /**
-     * Maps the toString() representation of an ATypeElement and its TypeUseLocation to a set of
-     * names of annotations that should not be added to .jaif files for that location.
-     */
-    private final Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore = new HashMap<>();
+    /** Annotations that should not be output to a .jaif or stub file. */
+    private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
 
     /**
      * Directory where .jaif files will be written to and read from. This directory is relative to
@@ -544,5 +541,14 @@ public class WholeProgramInferenceScenesStorage {
                 annosIgnored.add(anno.def().toString());
             }
         }
+    }
+
+    /**
+     * Maps the toString() representation of an ATypeElement and its TypeUseLocation to a set of
+     * names of annotations.
+     */
+    public static class AnnotationsInContexts
+            extends HashMap<Pair<String, TypeUseLocation>, Set<String>> {
+        private static final long serialVersionUID = 20200321L;
     }
 }

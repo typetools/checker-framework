@@ -19,6 +19,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage.AnnotationsInContexts;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
@@ -70,12 +71,9 @@ public class ASceneWrapper {
      * Removes the specified annotations from an AScene.
      *
      * @param scene the scene from which to remove annotations
-     * @param annosToRemove maps the toString() representation of an ATypeElement and its
-     *     TypeUseLocation to a set of names of annotations that should not be added to .jaif files
-     *     for that location.
+     * @param annosToRemove annotations that should not be added to .jaif or stub files
      */
-    private void removeAnnosFromScene(
-            AScene scene, Map<Pair<String, TypeUseLocation>, Set<String>> annosToRemove) {
+    private void removeAnnosFromScene(AScene scene, AnnotationsInContexts annosToRemove) {
         for (AClass aclass : scene.classes.values()) {
             for (AField field : aclass.fields.values()) {
                 removeAnnosFromATypeElement(field.type, TypeUseLocation.FIELD, annosToRemove);
@@ -98,19 +96,10 @@ public class ASceneWrapper {
      *
      * @param typeElt the type element from which to remove annotations
      * @param loc the location where typeEl in used
-     * @param annosToRemove maps a pair of
-     *     <ul>
-     *       <li>the toString() representation of an ATypeElement's description concatenated with
-     *           its annotations
-     *       <li>the ATypeElement's TypeUseLocation
-     *     </ul>
-     *     to a set of names of annotations that should not be added to .jaif files for that
-     *     location.
+     * @param annosToRemove annotations that should not be added to .jaif or stub files
      */
     private void removeAnnosFromATypeElement(
-            ATypeElement typeElt,
-            TypeUseLocation loc,
-            Map<Pair<String, TypeUseLocation>, Set<String>> annosToRemove) {
+            ATypeElement typeElt, TypeUseLocation loc, AnnotationsInContexts annosToRemove) {
         String annosToRemoveKey = typeElt.description.toString() + typeElt.tlAnnotationsHere;
         Set<String> annosToRemoveForLocation = annosToRemove.get(Pair.of(annosToRemoveKey, loc));
         if (annosToRemoveForLocation != null) {
@@ -138,9 +127,7 @@ public class ASceneWrapper {
      *     path will be modified to match.
      */
     public void writeToFile(
-            String jaifPath,
-            Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore,
-            OutputFormat outputFormat) {
+            String jaifPath, AnnotationsInContexts annosToIgnore, OutputFormat outputFormat) {
         AScene scene = theScene.clone();
         removeAnnosFromScene(scene, annosToIgnore);
         scene.prune();
