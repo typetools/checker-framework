@@ -33,6 +33,7 @@ import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.el.DefCollector;
 import scenelib.annotations.el.DefException;
 import scenelib.annotations.el.InnerTypeLocation;
+import scenelib.annotations.field.AnnotationFieldType;
 import scenelib.annotations.io.IndexFileWriter;
 
 /**
@@ -103,6 +104,25 @@ public final class SceneToStubWriter {
     }
 
     /**
+     * Returns the String representation of an annotation in Java source format.
+     *
+     * @param a the annotation to print
+     * @return the formatted annotation
+     */
+    public static String formatAnnotation(Annotation a) {
+        String annoName = a.def().name.substring(a.def().name.lastIndexOf('.') + 1);
+        if (a.fieldValues.isEmpty()) {
+            return "@" + annoName;
+        }
+        StringJoiner sj = new StringJoiner(",", "@" + annoName + "(", ")");
+        for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
+            AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
+            sj.add(f.getKey() + "=" + IndexFileWriter.formatAnnotationValue(aft, f.getValue()));
+        }
+        return sj.toString();
+    }
+
+    /**
      * Returns all annotations in {@code annos} in a form suitable to be printed as Java source
      * code.
      *
@@ -116,7 +136,7 @@ public final class SceneToStubWriter {
         StringBuilder sb = new StringBuilder();
         for (Annotation tla : annos) {
             if (!isInternalJDKAnnotation(tla.def.name)) {
-                sb.append(IndexFileWriter.formatAnnotation(tla));
+                sb.append(formatAnnotation(tla));
                 sb.append(" ");
             }
         }
