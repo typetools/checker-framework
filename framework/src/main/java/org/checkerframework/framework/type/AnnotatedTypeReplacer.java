@@ -5,7 +5,7 @@ import java.util.Map;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
 /** Duplicates annotated types and replaces components according to a replacement map. */
-public class AnnotatedTypeMerger {
+public class AnnotatedTypeReplacer {
 
     /**
      * Return a copy of type after making the specified replacements.
