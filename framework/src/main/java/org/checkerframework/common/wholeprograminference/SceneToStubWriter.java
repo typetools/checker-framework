@@ -133,16 +133,21 @@ public final class SceneToStubWriter {
      */
     private static String formatArrayType(ATypeElement e, String arrayType) {
         StringBuilder result = new StringBuilder();
-        int componentEndPos;
+        // If there are not annotations on the component, this will be true - unless there
+        // are also no annotations on the first array level. See comment below for how that
+        // case is handled.
+        int componentEndPos = arrayType.indexOf(' ');
         if (arrayType.startsWith("@")) {
-            // if there's an explicit annotation, go to second space
-            componentEndPos = arrayType.indexOf(' ', arrayType.indexOf(' ') + 1);
-        } else {
-            // otherwise, go to first space
-            componentEndPos = arrayType.indexOf(' ');
+            // While there are more explicit annotations, go to the next space.
+            while (arrayType.charAt(componentEndPos + 1) == '@') {
+                componentEndPos = arrayType.indexOf(' ', componentEndPos + 1);
+            }
+            // Once all annotations have been skipped, we still have to skip to the end of the
+            // component type itself.
+            componentEndPos = arrayType.indexOf(' ', componentEndPos + 1);
         }
 
-        // if the first array doesn't have an annotation, then the spacing will be off,
+        // If the first array doesn't have an annotation, then the spacing will be off,
         // so use the position of the first '[' instead (which must be correct, since the
         // first array doesn't have an annotation).
         int firstArrayPos = arrayType.indexOf('[');
@@ -275,6 +280,7 @@ public final class SceneToStubWriter {
         } else {
             basetype = aField.getType();
         }
+
         result.append(formatType(basetype, aField.getTheField().type));
         result.append(fieldName);
         return result.toString();
@@ -310,10 +316,9 @@ public final class SceneToStubWriter {
         }
 
         // must add trailing space directly here
-        if (type == null || basetypeToPrint.startsWith("@")) {
+        if (type == null /*|| basetypeToPrint.startsWith("@")*/) {
             return basetypeToPrint + " ";
         } else {
-            // only print inferred annotation if there is no user-written annotation
             return formatAnnotations(type.tlAnnotationsHere) + basetypeToPrint + " ";
         }
     }

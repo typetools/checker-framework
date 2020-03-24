@@ -13,7 +13,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -106,8 +106,8 @@ public class KeyForPropagator {
         Set<Pair<Integer, Integer>> typeParamMappings =
                 TypeArgumentMapper.mapTypeArgumentIndices(subtypeElement, supertypeElement, types);
 
-        KeyForPropagationMerger merger =
-                new KeyForPropagationMerger(typeFactory.getProcessingEnv());
+        KeyForPropagationReplacer merger =
+                new KeyForPropagationReplacer(typeFactory.getProcessingEnv());
 
         final List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
         final List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
@@ -178,10 +178,10 @@ public class KeyForPropagator {
      * An annotated type merger that merges @KeyFor annotations and only if the type that is
      * receiving an annotation has an @UnknownKeyFor annotation or NO key for annotations.
      */
-    private class KeyForPropagationMerger extends AnnotatedTypeMerger {
+    private class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
         private final ProcessingEnvironment env;
 
-        private KeyForPropagationMerger(ProcessingEnvironment env) {
+        private KeyForPropagationReplacer(ProcessingEnvironment env) {
             this.env = env;
         }
 

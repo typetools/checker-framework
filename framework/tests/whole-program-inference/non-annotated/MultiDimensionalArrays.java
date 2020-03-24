@@ -1,6 +1,9 @@
 // This test ensures that annotations on different component types of multidimensional arrays
 // are printed correctly.
 
+import org.checkerframework.common.value.qual.ArrayLen;
+import org.checkerframework.common.value.qual.ArrayLenRange;
+import org.checkerframework.common.value.qual.IntVal;
 import testlib.wholeprograminference.qual.Sibling1;
 import testlib.wholeprograminference.qual.Sibling2;
 import testlib.wholeprograminference.qual.SiblingWithFields;
@@ -185,5 +188,39 @@ class MultiDimensionalArrays {
     void testReturn5() {
         // :: error: argument.type.incompatible
         requiresSf1Sf2Sf3(useReturn5(threeDimArray4));
+    }
+
+    // three dimensional array with annotations from other hierarchies that ought to be preserved
+
+    int[][] threeDimArray5;
+
+    void testField6() {
+        // :: error: argument.type.incompatible
+        requiresS1S2S1(threeDimArray5);
+    }
+
+    void useField6(
+                    @Sibling1 @IntVal(5) int @Sibling2 @ArrayLen(3) [] @Sibling1 @ArrayLenRange(from = 2, to = 6) [] x) {
+        threeDimArray5 = x;
+    }
+
+    void testParam6(int[][] x) {
+        // :: error: argument.type.incompatible
+        requiresS1S2S1(x);
+    }
+
+    void useParam6(
+                    @Sibling1 @IntVal(5) int @Sibling2 @ArrayLen(3) [] @Sibling1 @ArrayLenRange(from = 2, to = 6) [] x) {
+        testParam6(x);
+    }
+
+    int[][] useReturn6(
+                    @Sibling1 @IntVal(5) int @Sibling2 @ArrayLen(3) [] @Sibling1 @ArrayLenRange(from = 2, to = 6) [] x) {
+        return x;
+    }
+
+    void testReturn6() {
+        // :: error: argument.type.incompatible
+        requiresS1S2S1(useReturn6(threeDimArray));
     }
 }

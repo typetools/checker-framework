@@ -80,7 +80,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeCombiner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
@@ -1291,7 +1291,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             } else {
                 // Must merge (rather than only take the stub type if it is a subtype)
                 // to support WPI.
-                AnnotatedTypeMerger.merge(stubType, type);
+                AnnotatedTypeCombiner.combine(stubType, type, this.getQualifierHierarchy());
             }
         }
         return type;
