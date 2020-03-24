@@ -75,7 +75,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeReplacer;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1036,9 +1036,9 @@ public class StubParser {
                 AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
                 for (AnnotatedTypeVariable typePar : typeParameters) {
                     if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {
-                        AnnotatedTypeReplacer.replace(
+                        AnnotatedTypeMerger.merge(
                                 typePar.getUpperBound(), typeVarUse.getUpperBound());
-                        AnnotatedTypeReplacer.replace(
+                        AnnotatedTypeMerger.merge(
                                 typePar.getLowerBound(), typeVarUse.getLowerBound());
                     }
                 }
@@ -1955,7 +1955,7 @@ public class StubParser {
     }
 
     /**
-     * Just like Map.put, but merges (using {@link AnnotatedTypeReplacer#replace}) with any existing
+     * Just like Map.put, but merges (using {@link AnnotatedTypeMerger#merge}) with any existing
      * annotated type for the given key, instead of replacing it.
      *
      * @param m a map
@@ -1975,9 +1975,9 @@ public class StubParser {
                 // annotation exist in both types in the same location for the same hierarchy.
                 // So, if the newType is from a JDK stub file, then prefer the existing type.  This
                 // way user supplied stub files override jdk stub files.
-                AnnotatedTypeReplacer.replace(existingType, newType);
+                AnnotatedTypeMerger.merge(existingType, newType);
             } else {
-                AnnotatedTypeReplacer.replace(newType, existingType);
+                AnnotatedTypeMerger.merge(newType, existingType);
             }
             m.put(key, existingType);
         } else {

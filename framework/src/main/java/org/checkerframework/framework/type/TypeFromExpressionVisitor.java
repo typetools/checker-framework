@@ -34,7 +34,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeReplacer;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
@@ -353,11 +353,10 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // This ensures that the structure of the wildcard will match that created by
         // BoundsInitializer/createType
         if (node.getKind() == Tree.Kind.SUPER_WILDCARD) {
-            AnnotatedTypeReplacer.replace(bound, ((AnnotatedWildcardType) result).getSuperBound());
+            AnnotatedTypeMerger.merge(bound, ((AnnotatedWildcardType) result).getSuperBound());
 
         } else if (node.getKind() == Tree.Kind.EXTENDS_WILDCARD) {
-            AnnotatedTypeReplacer.replace(
-                    bound, ((AnnotatedWildcardType) result).getExtendsBound());
+            AnnotatedTypeMerger.merge(bound, ((AnnotatedWildcardType) result).getExtendsBound());
         }
         return result;
     }

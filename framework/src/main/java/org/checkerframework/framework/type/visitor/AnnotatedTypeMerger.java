@@ -17,53 +17,41 @@ import org.checkerframework.javacutil.BugInCF;
  * <pre>{@code
  * AnnotatedTypeMirror visitType = ...;
  * AnnotatedTypeMirror parameter = ...;
- * visitType.accept(new AnnotatedTypeReplacer(), parameter);
+ * visitType.accept(new AnnotatedTypesMerger(), parameter);
  * }</pre>
  */
-public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
+public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
 
-    /**
-     * Replaces or adds all annotations from {@code from} to {@code to}.
-     *
-     * @param from the annotated type mirror from which to take annotations
-     * @param to the annotated type mirror into which annotations should be copied
-     */
-    public static void replace(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+    /** Replaces or adds all annotations from {@code from} to {@code to}. */
+    public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
         if (from == to) {
             throw new BugInCF("From == to");
         }
-        new AnnotatedTypeReplacer().visit(from, to);
+        new AnnotatedTypeMerger().visit(from, to);
     }
 
-    /**
-     * Replaces or adds annotations in {@code top}'s hierarchy from {@code from} to {@code to}.
-     *
-     * @param from the annotated type mirror from which to take annotations
-     * @param to the annotated type mirror into which annotations should be copied
-     * @param top the top type of the hierarchy whose annotations should be copied
-     */
-    public static void replace(
+    public static void merge(
             final AnnotatedTypeMirror from,
             final AnnotatedTypeMirror to,
             final AnnotationMirror top) {
         if (from == to) {
-            throw new BugInCF("from == to: %s", from);
+            throw new BugInCF("From == to");
         }
-        new AnnotatedTypeReplacer(top).visit(from, to);
+        new AnnotatedTypeMerger(top).visit(from, to);
     }
 
     // If top != null we replace only the annotations in the hierarchy of top.
     private final AnnotationMirror top;
 
-    public AnnotatedTypeReplacer() {
+    public AnnotatedTypeMerger() {
         this.top = null;
     }
 
     /**
      * @param top if top != null, then only annotation in the hierarchy of top are affected by this
-     *     replacer
+     *     merger
      */
-    public AnnotatedTypeReplacer(final AnnotationMirror top) {
+    public AnnotatedTypeMerger(final AnnotationMirror top) {
         this.top = top;
     }
 
