@@ -224,11 +224,10 @@ public final class SceneToStubWriter {
      * @param e same as above, but can become null if scene-lib did not fill in the inner types,
      *     which happens when they do not have annotations
      * @param arrayTypes the array parts of the array type (i.e. the parts after the component
-     *     type). Must contain at least one '[', or this routine's result is undefined (but it will
-     *     probably throw an exception).
+     *     type). Must contain at least one '['.
      * @param componentType the component type of the array
      * @param result the string builder containing the array types seen so far
-     * @return the formatted string, without the trailing space
+     * @return the formatted string, without a trailing space
      */
     private static String formatArrayTypeImpl(
             @Nullable ATypeElement e,
