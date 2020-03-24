@@ -386,7 +386,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             overriddenMethodElement);
 
             @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-            @DotSeparatedIdentifiers String superClassName = superclassDecl.getUnderlyingType().toString();
+            @DotSeparatedIdentifiers String superClassName = getEnclosingClassName(overriddenMethodElement);
             String superJaifPath = storage.getJaifPath(superClassName);
             AClassWrapper superClazz = storage.getAClass(superClassName, superJaifPath);
             AMethodWrapper overriddenMethodInSuperclass =
@@ -405,15 +405,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /** Write all modified scenes into .jaif files or stub files. */
     @Override
-    public void writeResultsToFile(OutputFormat kind) {
-        switch (kind) {
-            case JAIF:
-                storage.writeScenesToJaif();
-                break;
-            case STUB:
-                storage.writeScenesToStub();
-                break;
-        }
+    public void writeResultsToFile(OutputFormat outputFormat) {
+        storage.writeScenes(outputFormat);
     }
 
     /**

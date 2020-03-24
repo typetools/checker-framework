@@ -17,6 +17,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.framework.qual.DefaultFor;
@@ -42,23 +43,20 @@ import scenelib.annotations.io.IndexFileParser;
  * This class stores annotations for fields, method return types, and method parameters.
  *
  * <p>The set of annotations inferred for a certain class is stored in an {@link
- * scenelib.annotations.el.AScene}, which {@link #writeScenesToJaif} can write into a .jaif file.
- * For example, a class field of a class whose fully-qualified name is {@code my.package.MyClass}
- * will have its inferred type stored in a Scene, and later written into a file named {@code
- * my.package.MyClass.jaif}.
+ * scenelib.annotations.el.AScene}, which {@link #writeScenes(OutputFormat)} can write into a file.
+ * For example, a class {@code my.package.MyClass} will have its members' inferred types stored in a
+ * Scene, and later written into a file named {@code my.package.MyClass.jaif} if using {@link
+ * OutputFormat#JAIF}, or {@code my.package.MyClass.astub} if using {@link OutputFormat#STUB}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
- * #JAIF_FILES_PATH} directory. Having more information in those initial .jaif files means that the
- * precision achieved by the whole-program inference analysis will be better. {@link
- * #writeScenesToJaif} rewrites the initial .jaif files, and may create new ones.
+ * #JAIF_FILES_PATH} directory (regardless of output format). Having more information in those
+ * initial .jaif files means that the precision achieved by the whole-program inference analysis
+ * will be better. {@link #writeScenes} rewrites the initial .jaif files, and may create new ones.
  */
 public class WholeProgramInferenceScenesStorage {
 
-    /**
-     * Maps the toString() representation of an ATypeElement and its TypeUseLocation to a set of
-     * names of annotations that should not be added to .jaif files for that location.
-     */
-    private final Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore = new HashMap<>();
+    /** Annotations that should not be output to a .jaif or stub file. */
+    private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
 
     /**
      * Directory where .jaif files will be written to and read from. This directory is relative to
@@ -74,10 +72,10 @@ public class WholeProgramInferenceScenesStorage {
     private final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
     /**
-     * Set representing Scenes that were modified since the last time all Scenes were written into
-     * .jaif files. Each String element of this set is a path to the .jaif file of the corresponding
-     * Scene in the set. It is obtained by passing a class name as argument to the {@link
-     * #getJaifPath} method.
+     * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
+     * String element of this set is a path (relative to JAIF_FILES_PATH) to the .jaif file of the
+     * corresponding Scene in the set. It is obtained by passing a class name as argument to the
+     * {@link #getJaifPath} method.
      *
      * <p>Modifying a Scene means adding (or changing) a type annotation for a field, method return
      * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
@@ -96,36 +94,20 @@ public class WholeProgramInferenceScenesStorage {
     }
 
     /**
-     * Write all modified scenes into .jaif files. (Scenes are modified by the method {@link
+     * Write all modified scenes into files. (Scenes are modified by the method {@link
      * #updateAnnotationSetInScene}.)
+     *
+     * @param outputFormat the output format to use when writing files
      */
-    public void writeScenesToJaif() {
-        // Create .jaif files directory if it doesn't exist already.
+    public void writeScenes(OutputFormat outputFormat) {
+        // Create WPI directory if it doesn't exist already.
         File jaifDir = new File(JAIF_FILES_PATH);
         if (!jaifDir.exists()) {
             jaifDir.mkdirs();
         }
-        // Write scenes into .jaif files.
+        // Write scenes into files.
         for (String jaifPath : modifiedScenes) {
-            scenes.get(jaifPath).writeToJaif(jaifPath, annosToIgnore);
-        }
-        modifiedScenes.clear();
-    }
-
-    /**
-     * Writes the scenes out to .astub files. This method is an alternative to {@link
-     * #writeScenesToJaif}.
-     */
-    public void writeScenesToStub() {
-        // Use the same directory that .jaif files would normally be written to.
-        File stubDir = new File(JAIF_FILES_PATH);
-        if (!stubDir.exists()) {
-            stubDir.mkdirs();
-        }
-        // Convert the .jaif file names in modifiedScenes into .astub file names.
-        // Then write scenes into .astub files.
-        for (String jaifPath : modifiedScenes) {
-            scenes.get(jaifPath).writeToStub(jaifPath, annosToIgnore);
+            scenes.get(jaifPath).writeToFile(jaifPath, annosToIgnore, outputFormat);
         }
         modifiedScenes.clear();
     }
@@ -560,5 +542,14 @@ public class WholeProgramInferenceScenesStorage {
                 annosIgnored.add(anno.def().toString());
             }
         }
+    }
+
+    /**
+     * Maps the toString() representation of an ATypeElement and its TypeUseLocation to a set of
+     * names of annotations.
+     */
+    public static class AnnotationsInContexts
+            extends HashMap<Pair<String, TypeUseLocation>, Set<String>> {
+        private static final long serialVersionUID = 20200321L;
     }
 }

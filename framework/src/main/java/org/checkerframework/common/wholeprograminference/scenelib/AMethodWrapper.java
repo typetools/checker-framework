@@ -9,7 +9,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import scenelib.annotations.el.AMethod;
 
@@ -22,8 +21,13 @@ public class AMethodWrapper {
     /** The wrapped AMethod. */
     private final AMethod theMethod;
 
-    /** The return type of the method, as a fully qualified name. */
-    private @FullyQualifiedName String returnType = "java.lang.Object";
+    /**
+     * The return type of the method, as a fully-qualified name, or "java.lang.Object" if the return
+     * type is unknown. Note that this is a type, not a name, so it would be inappropriate to
+     * annotate it as {@link FullyQualifiedName} - it may include type parameters, for example, that
+     * would never be included in a name.
+     */
+    private String returnType = "java.lang.Object";
 
     /**
      * A mirror of the parameters field of AMethod, but using AFieldWrapper objects as the values.
@@ -37,12 +41,12 @@ public class AMethodWrapper {
     private List<? extends TypeParameterElement> typeParameters;
 
     /**
-     * The return type, as a fully-qualified name.
+     * The return type, as a string using fully-qualified names.
      *
-     * @return the return type as a fully-qualified name, or "java.lang.Object" if the return type
-     *     is unknown
+     * @return the return type as a string using fully-qualified names (in the style of {@link
+     *     TypeMirror#toString()}), or "java.lang.Object" if the return type is unknown
      */
-    public @FullyQualifiedName String getReturnType() {
+    public String getReturnType() {
         return returnType;
     }
 
@@ -58,11 +62,11 @@ public class AMethodWrapper {
     /**
      * Provide the AMethodWrapper with a return type.
      *
-     * @param returnType a fully-qualified name
+     * @param returnType a string representation of the type, in the form returned by {@link
+     *     TypeMirror#toString()}
      */
-    private void setReturnType(@FullyQualifiedName String returnType) {
-        // do not keep return types that start with a ?, because that's not valid Java
-        if ("java.lang.Object".equals(this.returnType) && !returnType.startsWith("?")) {
+    private void setReturnType(String returnType) {
+        if ("java.lang.Object".equals(this.returnType)) {
             this.returnType = returnType;
         }
     }
@@ -70,15 +74,14 @@ public class AMethodWrapper {
     /**
      * Wrap an AMethod. Package-private, because it should only be called from AClassWrapper.
      *
-     * @param theMethod the method to wrap, in scene-lib format
-     * @param methodElt the element representing the method's declaration
+     * @param theMethod the method to wrap
+     * @param methodElt the method's declaration
      */
     AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
         this.theMethod = theMethod;
-        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @DotSeparatedIdentifiers String typeAsString = methodElt.getReturnType().toString();
-        setReturnType(typeAsString);
-        vivifyParameters(methodElt);
+        String typeAsString = methodElt.getReturnType().toString();
+        this.setReturnType(typeAsString);
+        this.vivifyParameters(methodElt);
         this.typeParameters = methodElt.getTypeParameters();
     }
 

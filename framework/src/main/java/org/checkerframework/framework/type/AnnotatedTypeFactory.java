@@ -173,7 +173,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Represent the type relations. */
     protected TypeHierarchy typeHierarchy;
 
-    /** performs whole program inference. */
+    /** Performs whole-program inference. If null, whole-program inference is disabled. */
     private WholeProgramInference wholeProgramInference;
 
     /**
@@ -321,9 +321,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** AnnotationClassLoader used to load type annotation classes via reflective lookup. */
     protected AnnotationClassLoader loader;
 
-    /** Indicates that the whole-program inference is on. */
-    private final boolean infer;
-
     /**
      * Which whole-program inference output format to use, if doing whole-program inference. This
      * variable would be final, but it is not set unless WPI is enabled.
@@ -449,11 +446,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
 
-        infer = checker.hasOption("infer");
-        if (infer) {
+        if (checker.hasOption("infer")) {
             checkInvalidOptionsInferSignatures();
             String inferArg = checker.getOption("infer");
-            // No argument means "jaifs", for backwards compatibility.
+            // No argument means "jaifs", for (temporary) backwards compatibility.
             if (inferArg == null) {
                 inferArg = "jaifs";
             }
@@ -589,7 +585,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return new QualifierUpperBounds(this);
     }
 
-    /** Returns the WholeProgramInference instance. */
+    /**
+     * Returns the WholeProgramInference instance (may be null).
+     *
+     * @return the WholeProgramInference instance, or null
+     */
     public WholeProgramInference getWholeProgramInference() {
         return wholeProgramInference;
     }
@@ -1095,7 +1095,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
-        if (infer && wholeProgramInference != null) {
+        if (wholeProgramInference != null) {
             // Write out the results of whole-program inference, just once for each class.
             wholeProgramInference.writeResultsToFile(wpiOutputFormat);
         }
@@ -1263,7 +1263,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Finds types from stubs and applies them to type.
+     * Finds types from stubs and applies them to {@code type}.
      *
      * @param type the type to apply stub types to
      * @param tree the tree from which to read stub types
@@ -1276,7 +1276,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Finds types from stubs and applies them to type.
+     * Finds types from stubs and applies them to {@code type}.
      *
      * @param type the type to apply stub types to
      * @param elt the element from which to read stub types

@@ -13,6 +13,8 @@ public class AFieldWrapper {
 
     /**
      * A String representing the type of the field, formatted to be printable in Java source code.
+     * Note that this not a fully-qualified name - or a name at all! - because it is a type, and
+     * therefore may include generics)
      */
     private final String type;
 
@@ -28,7 +30,8 @@ public class AFieldWrapper {
      *
      * @param theField the wrapped AField
      * @param type a String representing the underlying type of the field in a form printable in
-     *     Java source, which AField doesn't include
+     *     Java source, which AField doesn't include (note that this not a fully-qualified name - or
+     *     a name at all! - because it is a type, and therefore may include generics)
      * @param parameterName the name, if this AField object represents a formal parameter, or null
      *     if it does not
      */
@@ -44,7 +47,8 @@ public class AFieldWrapper {
      *
      * @param theField the wrapped AField
      * @param type a String representing the underlying type of the field in a form printable in
-     *     Java source, which AField doesn't include
+     *     Java source, which AField doesn't include (note that this not a fully-qualified name - or
+     *     a name at all! - because it is a type, and therefore may include generics)
      */
     AFieldWrapper(AField theField, String type) {
         this(theField, type, null);

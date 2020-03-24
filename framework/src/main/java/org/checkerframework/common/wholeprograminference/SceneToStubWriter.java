@@ -5,7 +5,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -13,8 +16,10 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AFieldWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AMethodWrapper;
@@ -28,12 +33,7 @@ import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.el.DefCollector;
 import scenelib.annotations.el.DefException;
 import scenelib.annotations.el.InnerTypeLocation;
-import scenelib.annotations.field.AnnotationAFT;
-import scenelib.annotations.field.AnnotationFieldType;
-import scenelib.annotations.field.ArrayAFT;
-import scenelib.annotations.field.BasicAFT;
-import scenelib.annotations.field.ClassTokenAFT;
-import scenelib.annotations.util.Strings;
+import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * SceneToStubWriter provides two static methods named {@code write} that write a {@link AScene} in
@@ -47,8 +47,8 @@ import scenelib.annotations.util.Strings;
  */
 public final class SceneToStubWriter {
 
-    /** A pattern matching one or more digits */
-    private static final Pattern digitPattern = Pattern.compile("\\d+");
+    /** A pattern matching one or more digits. */
+    private static final Pattern digitPattern = Pattern.compile(".*\\$\\d+(\\$.*|$)");
 
     /** How far to indent when writing members of a stub file. */
     private static final String INDENT = "    ";
@@ -57,7 +57,7 @@ public final class SceneToStubWriter {
      * Writes the annotations in {@code scene} to {@code out} in stub file format.
      *
      * @param scene the scene to write out
-     * @param out the Writer to output the result to
+     * @param out the Writer to output to
      */
     public static void write(ASceneWrapper scene, Writer out) {
         writeImpl(scene, new PrintWriter(out));
@@ -67,8 +67,8 @@ public final class SceneToStubWriter {
      * Writes the annotations in {@code scene} to the file {@code filename} in stub file format.
      *
      * @param scene the scene to write out
-     * @param filename the path of the file to write to
-     * @throws IOException if the file doesn't exist
+     * @param filename the path of the file to write
+     * @throws IOException if there is trouble writing the file
      * @see #write(ASceneWrapper, Writer)
      */
     public static void write(ASceneWrapper scene, String filename) throws IOException {
@@ -81,7 +81,10 @@ public final class SceneToStubWriter {
      * @param className the binary name of a class
      * @return the part of the name referring to the package
      */
-    private static String packagePart(@BinaryName String className) {
+    // Substrings of binary names are also binary names; the empty string
+    // is a dot-separated identifier (the default package).
+    @SuppressWarnings("signature:return.type.incompatible")
+    private static @DotSeparatedIdentifiers String packagePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
         return (lastdot == -1) ? "" : className.substring(0, lastdot);
     }
@@ -92,69 +95,11 @@ public final class SceneToStubWriter {
      * @param className a binary name
      * @return the part of the name representing the class's name without its package
      */
-    private static String basenamePart(@BinaryName String className) {
+    // Substrings of binary names are also binary names.
+    @SuppressWarnings("signature:return.type.incompatible")
+    private static @BinaryName String basenamePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
-        String result = (lastdot == -1) ? className : className.substring(lastdot + 1);
-        return result;
-    }
-
-    /**
-     * Formats a literal argument of an annotation. Copied from {@code IndexFileWriter#printValue}
-     * in the AnnotationFileUtilities (which the jaif printer uses), but modified to not print
-     * directly and instead return the result to be printed.
-     *
-     * @param aft the annotation whose values are being formatted, for context
-     * @param o the value or values to format
-     * @return the String representation of the value
-     */
-    private static String formatAnnotationValue(AnnotationFieldType aft, Object o) {
-        if (aft instanceof AnnotationAFT) {
-            return formatAnnotation((Annotation) o);
-        } else if (aft instanceof ArrayAFT) {
-            StringJoiner sj = new StringJoiner(",", "{", "}");
-            ArrayAFT aaft = (ArrayAFT) aft;
-            List<?> l = (List<?>) o;
-            // watch out--could be an empty array of unknown type
-            // (see AnnotationBuilder#addEmptyArrayField)
-            if (aaft.elementType == null) {
-                if (l.size() != 0) {
-                    throw new AssertionError();
-                }
-            } else {
-
-                for (Object o2 : l) {
-                    sj.add(formatAnnotationValue(aaft.elementType, o2));
-                }
-            }
-            return sj.toString();
-        } else if (aft instanceof ClassTokenAFT) {
-            return aft.format(o);
-        } else if (aft instanceof BasicAFT && o instanceof String) {
-            return Strings.escape((String) o);
-        } else if (aft instanceof BasicAFT && o instanceof Long) {
-            return o.toString() + "L";
-        } else {
-            return o.toString();
-        }
-    }
-
-    /**
-     * Returns the String representation of an annotation in Java source format.
-     *
-     * @param a the annotation to print
-     * @return the formatted annotation
-     */
-    private static String formatAnnotation(Annotation a) {
-        String annoName = a.def().name.substring(a.def().name.lastIndexOf('.') + 1);
-        if (a.fieldValues.isEmpty()) {
-            return "@" + annoName;
-        }
-        StringJoiner sj = new StringJoiner(",", "@" + annoName + "(", ")");
-        for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
-            AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-            sj.add(f.getKey() + "=" + formatAnnotationValue(aft, f.getValue()));
-        }
-        return sj.toString();
+        return (lastdot == -1) ? className : className.substring(lastdot + 1);
     }
 
     /**
@@ -171,7 +116,7 @@ public final class SceneToStubWriter {
         StringBuilder sb = new StringBuilder();
         for (Annotation tla : annos) {
             if (!isInternalJDKAnnotation(tla.def.name)) {
-                sb.append(formatAnnotation(tla));
+                sb.append(IndexFileWriter.formatAnnotation(tla));
                 sb.append(" ");
             }
         }
@@ -310,8 +255,8 @@ public final class SceneToStubWriter {
      * trailing semicolons/commas/other syntax.
      *
      * <p>Usually, {@link #formatParameter(AFieldWrapper, String, String)} should be called to
-     * format method parameters, and {@link #printField(AFieldWrapper, String, PrintWriter)} should
-     * be called to print field declarations. Both use this method as their underlying
+     * format method parameters, and {@link #printField(AFieldWrapper, String, PrintWriter, String)}
+     * should be called to print field declarations. Both use this method as their underlying
      * implementation.
      *
      * @param aField the field declaration or formal parameter declaration to format
@@ -373,13 +318,7 @@ public final class SceneToStubWriter {
         }
     }
 
-    /**
-     * Writes out an import statement for each annotation used in an {@link AScene}.
-     *
-     * <p>{@code DefCollector} is a facility in the Annotation File Utilities for determining which
-     * annotations are used in a given AScene. Here, we use that construct to write out the proper
-     * import statements into a stub file.
-     */
+    /** Writes an import statement for each annotation used in an {@link AScene}. */
     private static class ImportDefWriter extends DefCollector {
 
         /** The writer onto which to write the import statements. */
@@ -413,10 +352,10 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Do not print internal JDK annotations, which are the only annotations that include a '+'
+     * Return true if the given annotation is an internal JDK annotations, whose name includes '+'.
      *
      * @param annotationName the name of the annotation
-     * @return true iff this is an internal JDK annotation that should not be printed
+     * @return true iff this is an internal JDK annotation
      */
     private static boolean isInternalJDKAnnotation(String annotationName) {
         return annotationName.contains("+");
@@ -425,7 +364,7 @@ public final class SceneToStubWriter {
     /**
      * Print the hierarchy of outer classes up to and including the given class, and return the
      * number of curly braces to close with. The classes are printed with appropriate opening curly
-     * braces, in standard Java style. This routine does not attempt to indent them correctly.
+     * braces, in standard Java style.
      *
      * <p>When an inner class is present in an AScene, its name is something like "Outer$Inner".
      * Writing a stub file with that name would be useless to the stub parser, which expects inner
@@ -439,30 +378,24 @@ public final class SceneToStubWriter {
     private static int printClassDefinitions(
             String basename, AClassWrapper aClass, PrintWriter printWriter) {
 
-        String nameToPrint = basename;
-        String remainingInnerClassNames = "";
-        if (basename.contains("$")) {
-            nameToPrint = basename.substring(0, basename.indexOf('$'));
-            remainingInnerClassNames = basename.substring(basename.indexOf('$') + 1);
-        }
+        String[] classNames = StringUtils.split(basename, '$');
 
-        // For any outer class, print "class".  For a leaf class, print "enum" or "class".
-        if ("".equals(remainingInnerClassNames) && aClass.isEnum()) {
-            printWriter.print("enum ");
-        } else {
-            printWriter.print("class ");
+        for (int i = 0; i < classNames.length; i++) {
+            String nameToPrint = classNames[i];
+            printWriter.print(indents(i));
+            // For any outer class, print "class".  For a leaf class, print "enum" or "class".
+            if (i == classNames.length - 1 && aClass.isEnum()) {
+                printWriter.print("enum ");
+            } else {
+                printWriter.print("class ");
+            }
+            printWriter.print(formatAnnotations(aClass.getAnnotations()));
+            printWriter.print(nameToPrint);
+            printTypeParameters(aClass, printWriter);
+            printWriter.println(" {");
+            printWriter.println();
         }
-        printWriter.print(formatAnnotations(aClass.getAnnotations()));
-        printWriter.print(nameToPrint);
-        printTypeParameters(aClass, printWriter);
-        printWriter.println(" {");
-        printWriter.println();
-        if ("".equals(remainingInnerClassNames)) {
-            return 1; // once no inner classes are left,
-            // one curly brace is still required for the original class
-        } else {
-            return 1 + printClassDefinitions(remainingInnerClassNames, aClass, printWriter);
-        }
+        return classNames.length;
     }
 
     /**
@@ -470,50 +403,58 @@ public final class SceneToStubWriter {
      *
      * @param aClass the class whose fields should be printed
      * @param printWriter the writer on which to print the fields
+     * @param indentLevel the indent string
      */
-    private static void printFields(AClassWrapper aClass, PrintWriter printWriter) {
+    private static void printFields(
+            AClassWrapper aClass, PrintWriter printWriter, String indentLevel) {
 
-        if (aClass.getFields().keySet().size() != 0) {
-            printWriter.println(INDENT + "// fields:");
-            printWriter.println();
+        if (aClass.getFields().isEmpty()) {
+            return;
         }
 
+        printWriter.println(indentLevel + "// fields:");
+        printWriter.println();
         for (Map.Entry<String, AFieldWrapper> fieldEntry : aClass.getFields().entrySet()) {
             String fieldName = fieldEntry.getKey();
             AFieldWrapper aField = fieldEntry.getValue();
-            printField(aField, fieldName, printWriter);
+            printField(aField, fieldName, printWriter, indentLevel);
         }
     }
 
     /**
-     * Prints a field declaration, including a trailing semi-colon and a newline.
+     * Prints a field declaration, including a trailing semicolon and a newline.
      *
      * @param aField the field declaration
      * @param fieldName the name of the field
      * @param printWriter the writer on which to print
+     * @param indentLevel the indent string
      */
     private static void printField(
-            AFieldWrapper aField, String fieldName, PrintWriter printWriter) {
-        printWriter.print(INDENT);
+            AFieldWrapper aField, String fieldName, PrintWriter printWriter, String indentLevel) {
+        printWriter.print(indentLevel);
         printWriter.print(formatAFieldImpl(aField, fieldName, null));
         printWriter.println(";");
         printWriter.println();
     }
 
     /**
-     * Prints a method signature in stub file format (i.e., without a method body).
+     * Prints a method declaration in stub file format (i.e., without a method body).
      *
      * @param aMethodWrapper the method to print
      * @param basename the simple name of the containing class. Used only to determine if the method
      *     being printed is the constructor of an inner class.
      * @param printWriter where to print the method signature
+     * @param indentLevel the indent string
      */
-    private static void printMethodSignature(
-            AMethodWrapper aMethodWrapper, String basename, PrintWriter printWriter) {
+    private static void printMethodDeclaration(
+            AMethodWrapper aMethodWrapper,
+            String basename,
+            PrintWriter printWriter,
+            String indentLevel) {
 
         AMethod aMethod = aMethodWrapper.getAMethod();
 
-        printWriter.print(INDENT);
+        printWriter.print(indentLevel);
 
         // type parameters
         printTypeParameters(aMethodWrapper.getTypeParameters(), printWriter);
@@ -523,11 +464,7 @@ public final class SceneToStubWriter {
         String methodName = aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
         // Use Java syntax for constructors.
         if ("<init>".equals(methodName)) {
-            // Constructor names cannot contain dots, if this is an inner class.
-            methodName =
-                    basename.contains(".")
-                            ? basename.substring(basename.lastIndexOf('.') + 1)
-                            : basename;
+            methodName = basename;
         } else {
             // This isn't a constructor, so add a return type.
             // Note that the stub file format doesn't require this to be correct,
@@ -578,11 +515,14 @@ public final class SceneToStubWriter {
         importDefWriter.visit();
         printWriter.println();
 
+        // sort by package name so that output is deterministic and default package
+        // comes first
+        List<@BinaryName String> classes = new ArrayList<>(scene.getClasses().keySet());
+        Collections.sort(classes, Comparator.comparing(SceneToStubWriter::packagePart));
+
         // For each class
-        class_loop:
-        for (Map.Entry<@BinaryName String, AClassWrapper> classEntry :
-                scene.getClasses().entrySet()) {
-            printClass(classEntry, printWriter);
+        for (@BinaryName String clazz : classes) {
+            printClass(clazz, scene.getClasses().get(clazz), printWriter);
         }
         printWriter.flush();
     }
@@ -590,41 +530,40 @@ public final class SceneToStubWriter {
     /**
      * Print the class body, or nothing if this is an anonymous inner class
      *
-     * @param classEntry the class to print, as a Map entry. The key is the class name in binary
-     *     form. The value is the AClassWrapper object representing the class.
+     * @param classname the class name
+     * @param aClassWrapper the representation of the class
      * @param printWriter the writer on which to print
      */
     private static void printClass(
-            Map.Entry<@BinaryName String, AClassWrapper> classEntry, PrintWriter printWriter) {
+            @BinaryName String classname, AClassWrapper aClassWrapper, PrintWriter printWriter) {
 
-        String classname = classEntry.getKey();
         String basename = basenamePart(classname);
 
         if ("package-info".equals(basename) || "module-info".equals(basename)) {
             return;
         }
 
-        // Do not attempt to print stubs for anonymous inner classes, because the stub parser
+        // Do not attempt to print stubs for anonymous inner classes or their inner classes, because
+        // the stub parser
         // cannot read them. (An anonymous inner class has a basename like Outer$1, so this
-        // check ensures that the binary name's final segment after its last $ is not only
-        // composed of digits.)
-        String innermostClassname = basename;
-        if (innermostClassname.contains("$")) {
-            innermostClassname =
-                    innermostClassname.substring(innermostClassname.lastIndexOf('$') + 1);
-            if (digitPattern.matcher(innermostClassname).matches()) {
-                return;
-            }
+        // check ensures that no single class name is exclusively composed of digits.)
+        if (digitPattern.matcher(basename).matches()) {
+            return;
         }
+
+        String innermostClassname =
+                basename.contains("$")
+                        ? basename.substring(basename.lastIndexOf('$') + 1)
+                        : basename;
 
         String pkg = packagePart(classname);
         if (!"".equals(pkg)) {
             printWriter.println("package " + pkg + ";");
         }
 
-        AClassWrapper aClassWrapper = classEntry.getValue();
-
         int curlyCount = printClassDefinitions(basename, aClassWrapper, printWriter);
+
+        String indentLevel = indents(curlyCount);
 
         if (aClassWrapper.isEnum()) {
             List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
@@ -634,27 +573,43 @@ public final class SceneToStubWriter {
                     sj.add(enumConstant.getSimpleName());
                 }
 
-                printWriter.println(INDENT + "// enum constants:");
+                printWriter.println(indentLevel + "// enum constants:");
                 printWriter.println();
-                printWriter.println(INDENT + sj.toString() + ";");
+                printWriter.println(indentLevel + sj.toString() + ";");
                 printWriter.println();
             }
         }
 
-        printFields(aClassWrapper, printWriter);
+        printFields(aClassWrapper, printWriter, indentLevel);
 
         if (aClassWrapper.getMethods().keySet().size() != 0) {
             // print method signatures
-            printWriter.println(INDENT + "// methods:");
+            printWriter.println(indentLevel + "// methods:");
             printWriter.println();
             for (Map.Entry<String, AMethodWrapper> methodEntry :
                     aClassWrapper.getMethods().entrySet()) {
-                printMethodSignature(methodEntry.getValue(), innermostClassname, printWriter);
+                printMethodDeclaration(
+                        methodEntry.getValue(), innermostClassname, printWriter, indentLevel);
             }
         }
-        for (int i = 0; i < curlyCount; i++) {
-            printWriter.println("}");
+        for (int i = curlyCount - 1; i >= 0; i--) {
+            String indents = indents(i);
+            printWriter.println(indents + "}");
         }
+    }
+
+    /**
+     * Return a string containing n indents
+     *
+     * @param n the number of indents
+     * @return a string containing that many indents
+     */
+    private static String indents(int n) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            sb.append(INDENT);
+        }
+        return sb.toString();
     }
 
     /**

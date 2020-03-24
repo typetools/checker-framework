@@ -23,7 +23,8 @@ repositories {
 }
 
 gitProperties {
-    gitPropertiesResourceDir = "${project.rootDir}/framework/src/main/resources"
+    // logically belongs in framework, but only checker resources are copied to .jar file
+    gitPropertiesResourceDir = "${project.rootDir}/checker/src/main/resources"
 }
 
 ext {
@@ -814,7 +815,8 @@ subprojects {
             }
         }
 
-        // Create an allTests task per project
+        // Create an allTests task per project.
+        // allTests = test + nonJunitTests
         tasks.create(name: 'allTests', group: 'Verification') {
             description 'Run all Checker Framework tests'
             // The 'test' target is just the JUnit tests.
@@ -872,7 +874,7 @@ task checkBasicStyle(group: 'Format') {
             'manual.html',
             'manual.html-e',
             'junit.*.properties',
-	    'framework/src/main/resources/git.properties']
+            'framework/src/main/resources/git.properties']
     doLast {
         FileTree tree = fileTree(dir: projectDir)
         for (String dir : ignoreDirectories) {

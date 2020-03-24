@@ -18,8 +18,9 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage.AnnotationsInContexts;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
@@ -28,20 +29,17 @@ import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.DefException;
-import scenelib.annotations.io.IndexFileWriter;
 
 /**
- * Every class in scene-lib (from the Annotation File Utilities) is final, so none of them can be
- * extended. However, scene-lib also doesn't provide enough information to usefully print stub
- * files: it lacks information about what is and is not an enum, about the base types of variables,
- * and more.
+ * scene-lib (from the Annotation File Utilities) doesn't provide enough information to usefully
+ * print stub files: it lacks information about what is and is not an enum, about the base types of
+ * variables, and more.
  *
  * <p>This class wraps AScene but provides access to that missing information. This allows us to
  * preserve the code that generates .jaif files, while allowing us to sanely and safely keep the
  * information we need to generate stubs.
  *
- * <p>TODO: Remove the dependency on scene-lib entirely.
+ * <p>It would be better to write as a subclass of AScene.
  */
 public class ASceneWrapper {
 
@@ -70,123 +68,88 @@ public class ASceneWrapper {
     }
 
     /**
-     * Removes all annotations that should be ignored from an AScene.
+     * Removes the specified annotations from an AScene.
      *
      * @param scene the scene from which to remove annotations
-     * @param annosToIgnore maps the toString() representation of an ATypeElement and its
-     *     TypeUseLocation to a set of names of annotations that should not be added to .jaif files
-     *     for that location.
+     * @param annosToRemove annotations that should not be added to .jaif or stub files
      */
-    private void removeIgnoredAnnosFromScene(
-            AScene scene, Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
+    private void removeAnnosFromScene(AScene scene, AnnotationsInContexts annosToRemove) {
         for (AClass aclass : scene.classes.values()) {
             for (AField field : aclass.fields.values()) {
-                removeIgnoredAnnosFromATypeElement(
-                        field.type, TypeUseLocation.FIELD, annosToIgnore);
+                removeAnnosFromATypeElement(field.type, TypeUseLocation.FIELD, annosToRemove);
             }
             for (AMethod method : aclass.methods.values()) {
-                // Return type
-                removeIgnoredAnnosFromATypeElement(
-                        method.returnType, TypeUseLocation.RETURN, annosToIgnore);
-                // Receiver type
-                removeIgnoredAnnosFromATypeElement(
-                        method.receiver.type, TypeUseLocation.RECEIVER, annosToIgnore);
-                // Parameter types
+                removeAnnosFromATypeElement(
+                        method.returnType, TypeUseLocation.RETURN, annosToRemove);
+                removeAnnosFromATypeElement(
+                        method.receiver.type, TypeUseLocation.RECEIVER, annosToRemove);
                 for (AField param : method.parameters.values()) {
-                    removeIgnoredAnnosFromATypeElement(
-                            param.type, TypeUseLocation.PARAMETER, annosToIgnore);
+                    removeAnnosFromATypeElement(
+                            param.type, TypeUseLocation.PARAMETER, annosToRemove);
                 }
             }
         }
     }
 
     /**
-     * Removes all annotations that should be ignored from an ATypeElement.
+     * Removes the specified annotations from an ATypeElement.
      *
      * @param typeElt the type element from which to remove annotations
      * @param loc the location where typeEl in used
-     * @param annosToIgnore maps a pair of
-     *     <ul>
-     *       <li>the toString() representation of an ATypeElement's description concatenated with
-     *           its annotations
-     *       <li>the ATypeElement's TypeUseLocation
-     *     </ul>
-     *     to a set of names of annotations that should not be added to .jaif files for that
-     *     location.
+     * @param annosToRemove annotations that should not be added to .jaif or stub files
      */
-    private void removeIgnoredAnnosFromATypeElement(
-            ATypeElement typeElt,
-            TypeUseLocation loc,
-            Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
-        String annosToIgnoreKey = typeElt.description.toString() + typeElt.tlAnnotationsHere;
-        Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(annosToIgnoreKey, loc));
-        if (annosToIgnoreForLocation != null) {
-            Set<Annotation> annosToRemove = new HashSet<>();
+    private void removeAnnosFromATypeElement(
+            ATypeElement typeElt, TypeUseLocation loc, AnnotationsInContexts annosToRemove) {
+        String annosToRemoveKey = typeElt.description.toString() + typeElt.tlAnnotationsHere;
+        Set<String> annosToRemoveForLocation = annosToRemove.get(Pair.of(annosToRemoveKey, loc));
+        if (annosToRemoveForLocation != null) {
+            Set<Annotation> annosToRemoveHere = new HashSet<>();
             for (Annotation anno : typeElt.tlAnnotationsHere) {
-                if (annosToIgnoreForLocation.contains(anno.def().toString())) {
-                    annosToRemove.add(anno);
+                if (annosToRemoveForLocation.contains(anno.def().toString())) {
+                    annosToRemoveHere.add(anno);
                 }
             }
-            typeElt.tlAnnotationsHere.removeAll(annosToRemove);
+            typeElt.tlAnnotationsHere.removeAll(annosToRemoveHere);
         }
 
         // Recursively remove ignored annotations from inner types
         for (ATypeElement innerType : typeElt.innerTypes.values()) {
-            removeIgnoredAnnosFromATypeElement(innerType, loc, annosToIgnore);
+            removeAnnosFromATypeElement(innerType, loc, annosToRemove);
         }
     }
 
     /**
-     * Write the scene wrapped by this object to a .jaif file on the given path.
+     * Write the scene wrapped by this object to a file at the given path.
      *
-     * @param jaifPath the path to the jaif file to be written
+     * @param jaifPath the path of the file to be written, ending in .jaif
      * @param annosToIgnore which annotations should be ignored in which contexts
+     * @param outputFormat the output format to use. If a format other than JAIF is selected, the
+     *     path will be modified to match.
      */
-    public void writeToJaif(
-            String jaifPath, Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
+    public void writeToFile(
+            String jaifPath, AnnotationsInContexts annosToIgnore, OutputFormat outputFormat) {
         AScene scene = theScene.clone();
-        removeIgnoredAnnosFromScene(scene, annosToIgnore);
+        removeAnnosFromScene(scene, annosToIgnore);
         scene.prune();
-        new File(jaifPath).delete();
-        if (!scene.isEmpty()) {
-            // Only write non-empty scenes into .jaif files.
-            try {
-                IndexFileWriter.write(scene, new FileWriter(jaifPath));
-            } catch (IOException e) {
-                throw new UserError("Problem while writing %s: %s", jaifPath, e.getMessage());
-            } catch (DefException e) {
-                throw new BugInCF(e);
-            }
+        String filepath = jaifPath;
+        if (outputFormat == OutputFormat.STUB) {
+            filepath = jaifPath.replace(".jaif", ".astub");
         }
-    }
-
-    /**
-     * Write the scene represented by this object to a stub file.
-     *
-     * @param jaifPath a path that ends in ".jaif". The stub file will be created on the same path,
-     *     but the extension will be replaced with ".astub"
-     * @param annosToIgnore which annotations to ignore in which contexts
-     */
-    public void writeToStub(
-            String jaifPath, Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore) {
-        AScene scene = theScene.clone();
-        removeIgnoredAnnosFromScene(scene, annosToIgnore);
-        scene.prune();
-        String stubPath = jaifPath.replace(".jaif", ".astub");
-        new File(stubPath).delete();
+        new File(filepath).delete();
         if (!scene.isEmpty()) {
-            // Only write non-empty scenes into .astub files.
+            // Only write non-empty scenes into files.
             try {
-                SceneToStubWriter.write(this, new FileWriter(stubPath));
+                SceneToStubWriter.write(this, new FileWriter(filepath));
             } catch (IOException e) {
-                throw new UserError("Problem while writing %s: %s", stubPath, e.getMessage());
+                throw new UserError("Problem while writing %s: %s", filepath, e.getMessage());
             }
         }
     }
 
     /**
      * Obtain the representation of the given class, which can be further operated on to e.g. add
-     * information about a method.
+     * information about a method. This method also updates the metadata stored about the class
+     * using the given ClassSymbol, if it is non-null.
      *
      * <p>Results are interned.
      *
@@ -209,12 +172,10 @@ public class ASceneWrapper {
 
         // updateClassMetadata must be called on both paths (cache hit and cache miss) because the
         // second parameter could have been null when the first miss occurred.
-        // The design of WPI forces this: different visit methods in CFAbstractTransfer
-        // call WPI in different ways, but all of them need to use this cache. Only some
-        // actually provide the relevant metadata, and the visit order isn't know ahead of time.
-        // Therefore, the metadata could be attached to ANY cache request, and must be updated
-        // if so. Since it is not used until the end of WPI, it being unavailable during WPI is
-        // not a problem.
+        // Different visit methods in CFAbstractTransfer call WPI in different ways.  Only some
+        // provide the metadata, and the visit order isn't known ahead of time.
+        // Since it is not used until the end of WPI, it being unavailable during WPI is not a
+        // problem.
         if (classSymbol != null) {
             updateClassMetadata(wrapper, classSymbol);
         }
@@ -236,7 +197,7 @@ public class ASceneWrapper {
                         enumConstants.add((VariableElement) e);
                     }
                 }
-                aClassWrapper.markAsEnum(enumConstants);
+                aClassWrapper.setEnumConstants(enumConstants);
             }
         }
 
@@ -247,7 +208,7 @@ public class ASceneWrapper {
      * Avoid using this if possible; use the other methods of this class unless you absolutely need
      * an AScene.
      *
-     * @return the representation of this scene using only the AScene.
+     * @return the representation of this scene using only the AScene
      */
     public AScene getAScene() {
         return theScene;
