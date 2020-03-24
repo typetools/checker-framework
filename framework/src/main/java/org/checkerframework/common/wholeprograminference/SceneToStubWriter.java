@@ -548,7 +548,11 @@ public final class SceneToStubWriter {
      * @return a string containing that many indents
      */
     private static String indents(int n) {
-        return Collections.nCopies(n, INDENT).stream().reduce(String::concat).orElse("");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            sb.append(INDENT);
+        }
+        return sb.toString();
     }
 
     /**
