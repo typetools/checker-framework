@@ -54,7 +54,7 @@ clean {
 task deployArtifactsToLocalRepo(dependsOn: jar) {
     description "Deploys ${jar.archiveFileName.get()} to the local Maven repository. "
     doLast {
-        mvnDeployToLocalRepo(project, "${rootDir}/maven-artifacts/release/checkerQualReleasePom.xml".toString())
+        mvnDeployToLocalRepo(project, "${pomFiles}/checker-qual-pom.xml")
     }
 }
 
@@ -62,6 +62,6 @@ task deployArtifactsToSonatype {
     description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
     dependsOn ('jar', 'sourcesJar', 'javadocJar')
     doLast {
-        mvnSignAndDeployMultipleToSonatype(project, "${rootDir}/maven-artifacts/release/checkerQualReleasePom.xml".toString())
+        mvnSignAndDeployMultipleToSonatype(project, "${pomFiles}/checker-qual-pom.xml")
     }
 }
