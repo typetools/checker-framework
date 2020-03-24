@@ -147,7 +147,7 @@ public final class SceneToStubWriter {
             componentEndPos = arrayType.indexOf(' ', componentEndPos + 1);
         }
 
-        // If the first array doesn't have an annotation, then the spacing will be off,
+        // If the first array level doesn't have an annotation, then the spacing will be off,
         // so use the position of the first '[' instead (which must be correct, since the
         // first array doesn't have an annotation).
         int firstArrayPos = arrayType.indexOf('[');
@@ -184,10 +184,10 @@ public final class SceneToStubWriter {
             String arrayTypes,
             String componentType,
             StringBuilder result) {
-        // print the next type:
+        // append the next type:
         String nextArrayType = arrayTypes.substring(0, arrayTypes.indexOf(']') + 1);
         String remainingArrayTypes = arrayTypes.substring(arrayTypes.indexOf(']') + 1);
-        // do not print inferred annotations if there was one in the source code
+        // do not append inferred annotations if there was one in the source code
         if (nextArrayType.contains("@")) {
             result.append(nextArrayType);
         } else {
@@ -198,7 +198,8 @@ public final class SceneToStubWriter {
         }
         result.append(" ");
 
-        // check if there are any other array types. If so, recurse; otherwise, print the component.
+        // Check if there are any more array levels. If so, recurse; otherwise, append the component
+        // and return.
         if ("".equals(remainingArrayTypes)) {
             ATypeElement component = getNextArrayLevel(e);
             return formatType(componentType, component) + result.toString();
