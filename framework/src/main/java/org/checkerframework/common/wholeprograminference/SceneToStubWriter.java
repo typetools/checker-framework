@@ -335,7 +335,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Formats the given type correctly for printing in Java source code.
+     * Formats the given type for printing in Java source code.
      *
      * @param basetype the base type
      * @param type the scene-lib representation of the type, or null if only the bare type is to be
