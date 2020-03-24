@@ -17,41 +17,58 @@ import org.checkerframework.javacutil.BugInCF;
  * <pre>{@code
  * AnnotatedTypeMirror visitType = ...;
  * AnnotatedTypeMirror parameter = ...;
- * visitType.accept(new AnnotatedTypesMerger(), parameter);
+ * visitType.accept(new AnnotatedTypeReplacer(), parameter);
  * }</pre>
  */
-public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
+public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
 
-    /** Replaces or adds all annotations from {@code from} to {@code to}. */
-    public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+    /**
+     * Replaces or adds all annotations from {@code from} to {@code to}.
+     *
+     * @param from the annotated type mirror from which to take new annotations
+     * @param to the annotated type mirror to which the annotations will be added
+     */
+    public static void replace(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
         if (from == to) {
             throw new BugInCF("From == to");
         }
-        new AnnotatedTypeMerger().visit(from, to);
+        new AnnotatedTypeReplacer().visit(from, to);
     }
 
-    public static void merge(
+    /**
+     * Replaces or adds annotations in {@code top}'s hierarchy from {@code from} to {@code to}.
+     *
+     * @param from the annotated type mirror from which to take new annotations
+     * @param to the annotated type mirror to which the annotations will be added
+     * @param top the top type of the hierarchy whose annotations will be added
+     */
+    public static void replace(
             final AnnotatedTypeMirror from,
             final AnnotatedTypeMirror to,
             final AnnotationMirror top) {
         if (from == to) {
             throw new BugInCF("From == to");
         }
-        new AnnotatedTypeMerger(top).visit(from, to);
+        new AnnotatedTypeReplacer(top).visit(from, to);
     }
 
-    // If top != null we replace only the annotations in the hierarchy of top.
+    /*
+     * If top != null we replace only the annotations in the hierarchy of top.
+     */
     private final AnnotationMirror top;
 
-    public AnnotatedTypeMerger() {
+    /** Construct an AnnotatedTypeReplacer that will replace all annotations. */
+    public AnnotatedTypeReplacer() {
         this.top = null;
     }
 
     /**
-     * @param top if top != null, then only annotation in the hierarchy of top are affected by this
-     *     merger
+     * Construct an AnnotatedTypeReplacer that will only replace annotations in {@code top}'s
+     * hierarchy.
+     *
+     * @param top if top != null, then only annotation in the hierarchy of top are affected
      */
-    public AnnotatedTypeMerger(final AnnotationMirror top) {
+    public AnnotatedTypeReplacer(final AnnotationMirror top) {
         this.top = top;
     }
 
@@ -69,14 +86,20 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
         return r1;
     }
 
+    /**
+     * Replace the annotations in dst with the annotations in src
+     *
+     * @param src the source of the annotations
+     * @param dst the destination of the annotations
+     */
     protected void replaceAnnotations(
-            final AnnotatedTypeMirror one, final AnnotatedTypeMirror two) {
+            final AnnotatedTypeMirror src, final AnnotatedTypeMirror dst) {
         if (top == null) {
-            two.replaceAnnotations(one.getAnnotations());
+            dst.replaceAnnotations(src.getAnnotations());
         } else {
-            final AnnotationMirror replacement = one.getAnnotationInHierarchy(top);
+            final AnnotationMirror replacement = src.getAnnotationInHierarchy(top);
             if (replacement != null) {
-                two.replaceAnnotation(one.getAnnotationInHierarchy(top));
+                dst.replaceAnnotation(src.getAnnotationInHierarchy(top));
             }
         }
     }
@@ -99,6 +122,7 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
      * fact that the bounds are also merged into the type to.
      *
      * @param from a type variable or wildcard
+     * @param to the destination annotated type mirror
      */
     public void resolvePrimaries(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
         if (from.getKind() == TypeKind.WILDCARD || from.getKind() == TypeKind.TYPEVAR) {

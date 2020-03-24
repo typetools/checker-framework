@@ -13,7 +13,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -106,8 +106,8 @@ public class KeyForPropagator {
         Set<Pair<Integer, Integer>> typeParamMappings =
                 TypeArgumentMapper.mapTypeArgumentIndices(subtypeElement, supertypeElement, types);
 
-        KeyForPropagationMerger merger =
-                new KeyForPropagationMerger(typeFactory.getProcessingEnv());
+        KeyForPropagationReplacer replacer =
+                new KeyForPropagationReplacer(typeFactory.getProcessingEnv());
 
         final List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
         final List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
@@ -123,17 +123,17 @@ public class KeyForPropagator {
 
             switch (direction) {
                 case TO_SUBTYPE:
-                    merger.visit(supertypeArg, subtypeArg);
+                    replacer.visit(supertypeArg, subtypeArg);
                     break;
 
                 case TO_SUPERTYPE:
-                    merger.visit(subtypeArg, supertypeArg);
+                    replacer.visit(subtypeArg, supertypeArg);
                     break;
 
                 case BOTH:
                     // note if they both have an annotation nothing will happen
-                    merger.visit(subtypeArg, supertypeArg);
-                    merger.visit(supertypeArg, subtypeArg);
+                    replacer.visit(subtypeArg, supertypeArg);
+                    replacer.visit(supertypeArg, subtypeArg);
                     break;
             }
         }
@@ -178,23 +178,23 @@ public class KeyForPropagator {
      * An annotated type merger that merges @KeyFor annotations and only if the type that is
      * receiving an annotation has an @UnknownKeyFor annotation or NO key for annotations.
      */
-    private class KeyForPropagationMerger extends AnnotatedTypeMerger {
+    private class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
         private final ProcessingEnvironment env;
 
-        private KeyForPropagationMerger(ProcessingEnvironment env) {
+        private KeyForPropagationReplacer(ProcessingEnvironment env) {
             this.env = env;
         }
 
         @Override
-        protected void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
-            final AnnotationMirror fromKeyFor = from.getAnnotationInHierarchy(UNKNOWN_KEYFOR);
-            final AnnotationMirror toKeyFor = to.getAnnotationInHierarchy(UNKNOWN_KEYFOR);
+        protected void replaceAnnotations(AnnotatedTypeMirror src, AnnotatedTypeMirror dst) {
+            final AnnotationMirror srcKeyFor = src.getAnnotationInHierarchy(UNKNOWN_KEYFOR);
+            final AnnotationMirror dstKeyFor = dst.getAnnotationInHierarchy(UNKNOWN_KEYFOR);
 
             boolean toNeedsAnnotation =
-                    toKeyFor == null || AnnotationUtils.areSame(toKeyFor, UNKNOWN_KEYFOR);
-            if (fromKeyFor != null && toNeedsAnnotation) {
-                AnnotationBuilder annotationBuilder = new AnnotationBuilder(env, fromKeyFor);
-                to.replaceAnnotation(annotationBuilder.build());
+                    dstKeyFor == null || AnnotationUtils.areSame(dstKeyFor, UNKNOWN_KEYFOR);
+            if (srcKeyFor != null && toNeedsAnnotation) {
+                AnnotationBuilder annotationBuilder = new AnnotationBuilder(env, srcKeyFor);
+                dst.replaceAnnotation(annotationBuilder.build());
             }
         }
     }
