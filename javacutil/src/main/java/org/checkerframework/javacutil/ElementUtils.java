@@ -202,11 +202,10 @@ public class ElementUtils {
     }
 
     /**
-     * A helper method that standardizes types by printing simple names instead of fully qualified
-     * names.
+     * Returns the simple type name, without annotations.
      *
-     * @param type the type to standardize
-     * @return the simple type name, without any qualifiers or annotations
+     * @param type a type
+     * @return the simple type name, without annotations
      */
     private static String simpleTypeName(TypeMirror type) {
         switch (type.getKind()) {
