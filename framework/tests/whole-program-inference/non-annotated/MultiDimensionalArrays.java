@@ -3,6 +3,7 @@
 
 import testlib.wholeprograminference.qual.Sibling1;
 import testlib.wholeprograminference.qual.Sibling2;
+import testlib.wholeprograminference.qual.SiblingWithFields;
 
 class MultiDimensionalArrays {
 
@@ -139,5 +140,50 @@ class MultiDimensionalArrays {
     void testReturn4() {
         // :: error: argument.type.incompatible
         requiresS2S1(useReturn4(threeDimArray3));
+    }
+
+    // three-dimensional arrays with arguments in annotations
+
+    void requiresSf1Sf2Sf3(
+                    @SiblingWithFields(value = {"test1", "test1"}) int @SiblingWithFields(value = {"test2", "test2"}) []
+                                    @SiblingWithFields(value = {"test3"}) []
+                            x) {}
+
+    int[][] threeDimArray4;
+
+    void testField5() {
+        // :: error: argument.type.incompatible
+        requiresSf1Sf2Sf3(threeDimArray4);
+    }
+
+    void useField5(
+                    @SiblingWithFields(value = {"test1", "test1"}) int @SiblingWithFields(value = {"test2", "test2"}) []
+                                    @SiblingWithFields(value = {"test3"}) []
+                            x) {
+        threeDimArray4 = x;
+    }
+
+    void testParam5(int[][] x) {
+        // :: error: argument.type.incompatible
+        requiresSf1Sf2Sf3(x);
+    }
+
+    void useParam5(
+                    @SiblingWithFields(value = {"test1", "test1"}) int @SiblingWithFields(value = {"test2", "test2"}) []
+                                    @SiblingWithFields(value = {"test3"}) []
+                            x) {
+        testParam5(x);
+    }
+
+    int[][] useReturn5(
+                    @SiblingWithFields(value = {"test1", "test1"}) int @SiblingWithFields(value = {"test2", "test2"}) []
+                                    @SiblingWithFields(value = {"test3"}) []
+                            x) {
+        return x;
+    }
+
+    void testReturn5() {
+        // :: error: argument.type.incompatible
+        requiresSf1Sf2Sf3(useReturn5(threeDimArray4));
     }
 }
