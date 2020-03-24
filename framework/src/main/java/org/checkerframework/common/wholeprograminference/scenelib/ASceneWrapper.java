@@ -21,6 +21,7 @@ import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage.AnnotationsInContexts;
 import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
@@ -29,6 +30,8 @@ import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
+import scenelib.annotations.el.DefException;
+import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * scene-lib (from the Annotation File Utilities) doesn't provide enough information to usefully
@@ -139,9 +142,17 @@ public class ASceneWrapper {
         if (!scene.isEmpty()) {
             // Only write non-empty scenes into files.
             try {
-                SceneToStubWriter.write(this, new FileWriter(filepath));
+                switch (outputFormat) {
+                    case STUB:
+                        SceneToStubWriter.write(this, new FileWriter(filepath));
+                        break;
+                    case JAIF:
+                        IndexFileWriter.write(scene, new FileWriter(filepath));
+                }
             } catch (IOException e) {
                 throw new UserError("Problem while writing %s: %s", filepath, e.getMessage());
+            } catch (DefException e) {
+                throw new BugInCF(e);
             }
         }
     }
