@@ -234,6 +234,8 @@ public class ElementUtils {
                             return "long";
                         case SHORT:
                             return "short";
+                        default:
+                            throw new BugInCF("expected a primitive type, but found " + type);
                     }
                 }
         }
