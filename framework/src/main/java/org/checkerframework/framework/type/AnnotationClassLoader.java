@@ -139,23 +139,31 @@ public class AnnotationClassLoader {
 
         classLoader = getClassLoader();
 
+        URL localResourceURL;
         if (classLoader != null) {
             // if the application classloader is accessible, then directly
             // retrieve the resource URL of the qual package
             // resource URLs must use slashes
-            resourceURL = classLoader.getResource(packageNameWithSlashes);
+            localResourceURL = classLoader.getResource(packageNameWithSlashes);
 
             // thread based application classloader, if needed in the future:
             // resourceURL =
             // Thread.currentThread().getContextClassLoader().getResource(packageNameWithSlashes);
         } else {
+            // Signal failure to find resource
+            localResourceURL = null;
+        }
+
+        if (localResourceURL == null) {
             // if the application classloader is not accessible (which means the
             // checker class was loaded using the bootstrap classloader)
+            // or if the classloader didn't find the package,
             // then scan the classpaths to find a jar or directory which
             // contains the qual package and set the resource URL to that jar or
             // qual directory
-            resourceURL = getURLFromClasspaths();
+            localResourceURL = getURLFromClasspaths();
         }
+        resourceURL = localResourceURL;
 
         supportedBundledAnnotationClasses = new LinkedHashSet<>();
 
