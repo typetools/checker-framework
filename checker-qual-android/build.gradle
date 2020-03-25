@@ -39,7 +39,7 @@ clean {
 }
 
 task deployArtifactsToLocalRepo(dependsOn: jar) {
-    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository. "
+    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository"
     doLast {
         mvnDeployToLocalRepo(project, "${pomFiles}/checker-qual-android-pom.xml")
     }

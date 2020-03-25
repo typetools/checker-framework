@@ -14,7 +14,7 @@ artifacts {
 }
 
 task deployArtifactsToLocalRepo(dependsOn: jar) {
-    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository. "
+    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository"
     dependsOn ('jar', 'shadowJar')
 
     doLast {
