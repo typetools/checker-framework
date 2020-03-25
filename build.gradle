@@ -54,6 +54,11 @@ ext {
     // The local git repository, typically in the .git directory, but not for worktrees.
     // This value is always overwritten, but Gradle needs the variable to be initialized.
     localRepo = ".git"
+    versions = [
+            checkerFramework: "3.1.1",
+            autoValue       : "1.6.5",
+            lombok          : "1.18.12",
+    ]
 }
 // Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
 // and with text in #installation

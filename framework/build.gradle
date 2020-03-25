@@ -29,6 +29,24 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.13'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
+
+    // AutoValue support
+    implementation "com.google.auto.value:auto-value-annotations:${versions.autoValue}"
+    testImplementation "com.google.auto.value:auto-value-annotations:${versions.autoValue}"
+    testImplementation "com.google.auto.value:auto-value:${versions.autoValue}"
+
+    // Lombok support
+    testImplementation "org.projectlombok:lombok:${versions.lombok}"
+
+//    compile group: 'com.google.auto.value', name: 'auto-value-annotations', version: '1.7'
+//    testImplementation group: 'com.google.auto.value', name: 'auto-value-annotations', version: '1.7'
+//    testImplementation group: 'com.google.auto.value', name: 'auto-value', version: '1.7'
+
+
+
+
+    // Lombok support
+    testImplementation "org.projectlombok:lombok:${versions.lombok}"
 }
 
 task checkDependencies() {
@@ -65,6 +83,8 @@ task allJavadocJar(type: Jar) {
             project(':dataflow').tasks.javadoc.destinationDir,
             project(':javacutil').tasks.javadoc.destinationDir)
 }
+
+
 
 shadowJar {
     description 'Creates the "fat" framework.jar in dist'
