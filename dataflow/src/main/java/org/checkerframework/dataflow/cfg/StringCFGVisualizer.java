@@ -5,6 +5,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -29,6 +30,7 @@ public class StringCFGVisualizer<
         return res;
     }
 
+    @SuppressWarnings("enhancedfor.type.incompatible")
     @Override
     public String visualizeNodes(
             Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
@@ -38,7 +40,7 @@ public class StringCFGVisualizer<
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
         // Generate all the Nodes.
-        for (Block v : blocks) {
+        for (@KeyFor("processOrder") Block v : blocks) {
             sbStringNodes.append(v.getId()).append(":").append(lineSeparator);
             if (verbose) {
                 sbStringNodes

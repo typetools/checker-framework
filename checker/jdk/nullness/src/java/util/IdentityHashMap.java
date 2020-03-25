@@ -344,7 +344,7 @@ public class IdentityHashMap<K, V>
      */
     @SuppressWarnings("unchecked")
     @Pure
-    public V get(Object key) {
+    public @Nullable V get(Object key) {
         Object k = maskNull(key);
         Object[] tab = table;
         int len = tab.length;
@@ -443,7 +443,7 @@ public class IdentityHashMap<K, V>
      * @see     #containsKey(Object)
      */
     @EnsuresKeyFor(value="#1", map="this")
-    public V put(K key, V value) {
+    public @Nullable V put(K key, V value) {
         Object k = maskNull(key);
         Object[] tab = table;
         int len = tab.length;
@@ -535,7 +535,7 @@ public class IdentityHashMap<K, V>
      *         (A <tt>null</tt> return can also indicate that the map
      *         previously associated <tt>null</tt> with <tt>key</tt>.)
      */
-    public V remove(Object key) {
+    public @Nullable V remove(Object key) {
         Object k = maskNull(key);
         Object[] tab = table;
         int len = tab.length;
