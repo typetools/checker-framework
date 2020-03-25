@@ -105,9 +105,8 @@ class AbstractSet {
 public interface Collection<E> extends Iterable<E> {
     boolean contains(@Nullable Object o);
     boolean remove(@Nullable Object o);
-    boolean containsAll(Collection<? extends @Nullable Object> c);
-    boolean addAll(Collection<? extends @Nullable E> c);
-    boolean retainAll(Collection<? extends @Nullable Object> c);
+    boolean containsAll(Collection<?> c);
+    boolean retainAll(Collection<?> c);
 }
 
 class ConcurrentSkipListSet {
