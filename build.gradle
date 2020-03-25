@@ -992,6 +992,11 @@ void mvnDeployToLocalRepo(String jar, String pom) {
     }
 }
 
+/**
+ * Deploys the jar file produced by the "jar" task of the given project to the local Maven repository.
+ * @param project project whose jar file is deployed
+ * @param pom pom file describing the artifact
+ */
 void mvnDeployToLocalRepo(Project project, String pomFile) {
     String jarFile = project.tasks.getByName('jar').archiveFile.get().toString();
     mvnDeployToLocalRepo(jarFile, pomFile)
@@ -1038,8 +1043,8 @@ void mvnSignAndDeployMultipleToSonatype(String classesJar, String sourceJar, Str
 }
 
 /**
- * Signs and deploys multiple jar files for a single artifact.
- * @param project
+ * Signs and deploys the classes jar, sources jar, and javadoc jar files for a single artifact.
+ * @param project with a jar, sourcesJar, and javadocJar tasks defined
  * @param pom pom file describing the artifact
  */
 void mvnSignAndDeployMultipleToSonatype(Project project, String pom) {

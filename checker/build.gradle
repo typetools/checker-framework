@@ -377,6 +377,9 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
     }
 }
 task jdkSourcesJar(type: Jar) {
+    // All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
+    // We create dummies with READMEs in them and pass those to Central. This is the recommended way of handling this.
+    // See: https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide -->
     archiveFileName = 'jdk8-source.jar'
     from "${rootDir}/maven-artifacts/release/"
     include 'README-jdk'
@@ -384,6 +387,9 @@ task jdkSourcesJar(type: Jar) {
 }
 
 task jdkJavadocJar(type: Jar) {
+    // All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
+    // We create dummies with READMEs in them and pass those to Central. This is the recommended way of handling this.
+    // See: https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide -->
     archiveFileName = 'jdk8-javadoc.jar'
     from "${rootDir}/maven-artifacts/release/"
     include 'README-jdk'
@@ -391,7 +397,7 @@ task jdkJavadocJar(type: Jar) {
 }
 
 task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
-    description 'Deploys '
+    description 'Deploys checker.jar and jdk8.jar to the local Maven repository'
     dependsOn 'updateJdk'
     doLast {
         mvnDeployToLocalRepo("${projectDir}/dist/checker.jar", "${pomFiles}/checker-pom.xml")
@@ -400,7 +406,7 @@ task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
 }
 
 task deployArtifactsToSonatype {
-    description 'Deploys '
+    description 'Deploys checker.jar and jdk8.jar (and their sources/javadoc jars) to the Sonatype repository'
     dependsOn (shadowJar, 'allSourcesJar', 'allJavadocJar', jdkSourcesJar, jdkJavadocJar, 'updateJdk')
     doLast {
         mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", allSourcesJar.archiveFile.get().toString(), allJavadocJar.archiveFile.get().toString(), "${pomFiles}/checker-pom.xml")
