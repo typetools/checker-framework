@@ -1076,7 +1076,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
 
     @Override
     @EnsuresKeyFor(value="#1", map="this")
-    public V putIfAbsent(K key, V value) {
+    public @Nullable V putIfAbsent(K key, V value) {
         return putVal(hash(key), key, value, true, true);
     }
 
@@ -1098,7 +1098,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
     }
 
     @Override
-    public V replace(K key, V value) {
+    public @Nullable V replace(K key, V value) {
         Node<K,V> e;
         if ((e = getNode(hash(key), key)) != null) {
             V oldValue = e.value;

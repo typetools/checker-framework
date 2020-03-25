@@ -23,7 +23,8 @@ repositories {
 }
 
 gitProperties {
-    gitPropertiesResourceDir = "${project.rootDir}/framework/src/main/resources"
+    // logically belongs in framework, but only checker resources are copied to .jar file
+    gitPropertiesResourceDir = "${project.rootDir}/checker/src/main/resources"
 }
 
 ext {
@@ -426,8 +427,9 @@ task downloadJtreg(type: Download) {
     src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
     // If ci.adoptopenjdk.net is down, use this copy.
     // src 'https://checkerframework.org/jtreg-4.2.0-tip.tar.gz'
-    overwrite true
     dest new File(buildDir, 'jtreg-4.2.0-tip.tar.gz')
+    overwrite true
+    retries 3
     doLast {
         copy {
             from tarTree(dest)

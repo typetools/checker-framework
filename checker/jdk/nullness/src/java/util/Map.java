@@ -775,7 +775,7 @@ public interface Map<K, V> {
      * @since 1.8
      */
     @EnsuresKeyFor(value="#1", map="this")
-    default V putIfAbsent(K key, V value) {
+    default @Nullable V putIfAbsent(K key, V value) {
         V v = get(key);
         if (v == null) {
             v = put(key, value);
@@ -918,7 +918,7 @@ public interface Map<K, V> {
      *         or value prevents it from being stored in this map
      * @since 1.8
      */
-    default V replace(K key, V value) {
+    default @Nullable V replace(K key, V value) {
         V curValue;
         if (((curValue = get(key)) != null) || containsKey(key)) {
             curValue = put(key, value);
