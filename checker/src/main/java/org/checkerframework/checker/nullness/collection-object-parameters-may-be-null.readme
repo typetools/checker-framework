@@ -1,4 +1,4 @@
-# Run the following in both copios of the annotated JDK.  For example, in:
+# Run the following in both copies of the annotated JDK.  For example, in:
 cd $t/libraries/jdk-fork-mernst-branch-collection-object-parameters-may-be-null/src/java.base/share/classes
 cd $t/checker-framework-fork-mernst-branch-collection-object-parameters-may-be-null/checker/jdk/nullness/src
 
