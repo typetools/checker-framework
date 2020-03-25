@@ -13,11 +13,10 @@
     <name>Annotated JDK 8</name>
     <url>https://checkerframework.org</url>
     <description>
-        Annotated JDK 8 consists of bytecode implementing the Open JDK Java 8 api
-        annotated with Checker Framework annotations.  Method implementations
-        in this file are empty.  This file should only be compiled
-        against and should never be placed on the runtime classpath of a
-        compiled program.
+        Annotated JDK 8 consists of Checker Framework annotations for the Open
+        JDK Java 8 API.  Method implementations in this file are empty.  This
+        file should only be compiled against and should never be placed on the
+        runtime classpath of a compiled program.
     </description>
 
     <licenses>
@@ -57,7 +56,7 @@
             <id>smillst</id>
             <name>Suzanne Millstein</name>
             <email>smillst@cs.washington.edu</email>
-            <organization>University of Washington PLSE Group</organization>
+            <organization>University of Washington</organization>
             <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
         </developer>
 

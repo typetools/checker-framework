@@ -14,7 +14,9 @@
     <url>https://checkerframework.org</url>
     <description>
         Checker Qual is the set of annotations (qualifiers) and supporting classes
-        used by the Checker Framework to type check Java source code.  Please
+        used by the Checker Framework to type check Java source code.
+
+        Please
         see artifact:
         org.checkerframework:checker
     </description>
@@ -55,7 +57,7 @@
             <id>smillst</id>
             <name>Suzanne Millstein</name>
             <email>smillst@cs.washington.edu</email>
-            <organization>University of Washington PLSE Group</organization>
+            <organization>University of Washington</organization>
             <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
         </developer>
 

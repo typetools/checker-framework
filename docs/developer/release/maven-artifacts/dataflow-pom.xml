@@ -37,12 +37,6 @@
             <url>http://www.gnu.org/software/classpath/license.html</url>
             <distribution>repo</distribution>
         </license>
-
-        <license>
-            <name>The MIT License</name>
-            <url>http://opensource.org/licenses/MIT</url>
-            <distribution>repo</distribution>
-        </license>
     </licenses>
 
     <scm>
@@ -73,7 +67,7 @@
             <id>smillst</id>
             <name>Suzanne Millstein</name>
             <email>smillst@cs.washington.edu</email>
-            <organization>University of Washington PLSE Group</organization>
+            <organization>University of Washington</organization>
             <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
         </developer>
 

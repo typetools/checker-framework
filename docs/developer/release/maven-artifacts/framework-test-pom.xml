@@ -20,7 +20,8 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <!-- Keep version number in sync with ../../../../framework/build.gradle . -->
+            <version>4.13</version>
             <type>jar</type>
         </dependency>
     </dependencies>
@@ -35,12 +36,6 @@
         <license>
             <name>GNU General Public License, version 2 (GPL2), with the classpath exception</name>
             <url>http://www.gnu.org/software/classpath/license.html</url>
-            <distribution>repo</distribution>
-        </license>
-
-        <license>
-            <name>The MIT License</name>
-            <url>http://opensource.org/licenses/MIT</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -73,7 +68,7 @@
             <id>smillst</id>
             <name>Suzanne Millstein</name>
             <email>smillst@cs.washington.edu</email>
-            <organization>University of Washington PLSE Group</organization>
+            <organization>University of Washington</organization>
             <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
         </developer>
 

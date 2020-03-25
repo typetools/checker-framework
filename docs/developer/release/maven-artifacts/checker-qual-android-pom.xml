@@ -16,19 +16,18 @@
         Checker Qual Android is the set of annotations (qualifiers) and supporting classes
         used by the Checker Framework to type check Java source code.
 
-      The checker-qual-android artifact is identical to the checker-qual
-      artifact, except that in checker-qual-android annotations have classfile
-      retention.  The default Android Gradle plugin retains types annotated with
-      runtime annotations in the main dex, but strips out class-retention
-      annotations.
+        The checker-qual-android artifact is identical to the checker-qual
+        artifact, except that in checker-qual-android annotations have classfile
+        retention.  The default Android Gradle plugin retains types annotated with
+        runtime annotations in the main dex, but strips out class-retention
+        annotations.
 
-      Please
+        Please
         see artifact:
         org.checkerframework:checker
     </description>
 
     <licenses>
-
         <license>
             <name>The MIT License</name>
             <url>http://opensource.org/licenses/MIT</url>
@@ -64,7 +63,7 @@
             <id>smillst</id>
             <name>Suzanne Millstein</name>
             <email>smillst@cs.washington.edu</email>
-            <organization>University of Washington PLSE Group</organization>
+            <organization>University of Washington</organization>
             <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
         </developer>
 
