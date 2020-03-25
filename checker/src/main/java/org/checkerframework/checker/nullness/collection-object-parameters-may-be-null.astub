@@ -13,7 +13,7 @@
 // lastIndexOf(Object)
 // removeAll(Collection)
 // removeFirstOccurrence(Object)
-// removeLastOccurrence(Object )
+// removeLastOccurrence(Object)
 // remove(Object)
 // remove(Object, Object)
 // retainAll(Collection)
