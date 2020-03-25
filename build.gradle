@@ -55,7 +55,7 @@ ext {
     // This value is always overwritten, but Gradle needs the variable to be initialized.
     localRepo = ".git"
 
-    // Location of pom files used on to add meta-data to the artifacts published to Maven.
+    // Location of pom files used only to add meta-data to the artifacts published to Maven.
     pomFiles = "${rootDir}/docs/developer/release/maven-artifacts"
 }
 // Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
