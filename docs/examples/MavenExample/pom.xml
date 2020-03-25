@@ -84,7 +84,7 @@
                 <path>
                   <groupId>org.checkerframework</groupId>
                   <artifactId>checker</artifactId>
-                  <version>3.2.0</version>
+                  <version>${checkerFrameworkVersion}</version>
                 </path>
                 <!--
                   When using the Subtyping Checker, any custom type qualifiers must be in a
