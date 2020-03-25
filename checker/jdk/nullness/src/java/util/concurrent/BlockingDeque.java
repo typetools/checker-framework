@@ -411,7 +411,7 @@ public interface BlockingDeque<E extends @NonNull Object> extends BlockingQueue<
      * @throws NullPointerException if the specified element is null
      *         (<a href="../Collection.html#optional-restrictions">optional</a>)
      */
-    boolean removeFirstOccurrence(Object o);
+    boolean removeFirstOccurrence(@Nullable Object o);
 
     /**
      * Removes the last occurrence of the specified element from this deque.
@@ -429,7 +429,7 @@ public interface BlockingDeque<E extends @NonNull Object> extends BlockingQueue<
      * @throws NullPointerException if the specified element is null
      *         (<a href="../Collection.html#optional-restrictions">optional</a>)
      */
-    boolean removeLastOccurrence(Object o);
+    boolean removeLastOccurrence(@Nullable Object o);
 
     // *** BlockingQueue methods ***
 
@@ -606,7 +606,7 @@ public interface BlockingDeque<E extends @NonNull Object> extends BlockingQueue<
      * @throws NullPointerException if the specified element is null
      *         (<a href="../Collection.html#optional-restrictions">optional</a>)
      */
-    boolean remove(Object o);
+    boolean remove(@Nullable Object o);
 
     /**
      * Returns {@code true} if this deque contains the specified element.
@@ -621,7 +621,7 @@ public interface BlockingDeque<E extends @NonNull Object> extends BlockingQueue<
      * @throws NullPointerException if the specified element is null
      *         (<a href="../Collection.html#optional-restrictions">optional</a>)
      */
-    @Pure public boolean contains(Object o);
+    @Pure public boolean contains(@Nullable Object o);
 
     /**
      * Returns the number of elements in this deque.

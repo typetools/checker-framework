@@ -45,8 +45,11 @@
 //
 //   ArrayBlockingQueue
 //   ArrayDeque
+//   BlockingDeque
+//   BlockingQueue
 //   ConcurrentLinkedDeque
 //   ConcurrentLinkedQueue
+//   ConcurrentSkipListSet
 //   CopyOnWriteArrayList
 //   CopyOnWriteArraySet
 //   LinkedBlockingDeque
@@ -58,6 +61,7 @@
 //     remove
 //
 //   ArrayDeque
+//   BlockingDeque
 //     removeFirstOccurrence
 //     removeLastOccurrence
 //
@@ -107,10 +111,6 @@ public interface Collection<E> extends Iterable<E> {
     boolean remove(@Nullable Object o);
     boolean containsAll(Collection<?> c);
     boolean retainAll(Collection<?> c);
-}
-
-class ConcurrentSkipListSet {
-    public boolean removeAll(Collection<?> c);
 }
 
 public interface Deque<E> extends Queue<E> {
