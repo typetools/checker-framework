@@ -2,7 +2,7 @@
 // For documentation, see
 // https://checkerframework.org/manual/#collection-object-parameters-may-be-null .
 
-// The affected methods are:
+// This file relaxes the specifications for the following methods:
 // containsAll(Collection)
 // containsKey(Object)
 // contains(Object)
@@ -18,7 +18,11 @@
 // remove(Object, Object)
 // retainAll(Collection)
 
-// Here are all the null-friendly classes (every instance permits null elements):
+// The following exceptions don't need to appear in this file, because their specifications in the
+// annotated JDK already permit null.
+//
+// Here are all the null-friendly classes (every instance permits null elements).
+//
 // Lists:
 //   ArrayList
 //   LinkedList
@@ -35,15 +39,9 @@
 //     JobStateReasons
 //     LinkedHashSet
 //
-// Special cases:
-//   EnumMap:
-//     "Attempts to insert a null key will throw NullPointerException. Attempts to test for the
-//     presence of a null key or to remove one will, however, function properly. Null values are
-//     permitted."
-//
-// Here are some exceptions: methods whose specification is ambiguous (says "such that o.equals(e)"
-// or "such that Objects.equals(o, e)") but can be interpreted to say that null is a permitted
-// value:
+// Here are some methods whose specification is ambiguous: says "such that o.equals(e)" or "such
+// that Objects.equals(o, e)".  The annotated JDK interprets this to say that null is a permitted
+// value.
 //
 //   ArrayBlockingQueue
 //   ArrayDeque
@@ -104,26 +102,12 @@ class AbstractSet {
   public boolean removeAll(Collection<?> c);
 }
 
-public class ArrayList<E> extends AbstractList<E>
-        implements List<E>, RandomAccess, Cloneable, java.io.Serializable
-{
-    public boolean contains(@Nullable Object o);
-    public int indexOf(@Nullable Object o);
-    public int lastIndexOf(@Nullable Object o);
-    public boolean remove(@Nullable Object o);
-}
-
 public interface Collection<E> extends Iterable<E> {
     boolean contains(@Nullable Object o);
     boolean remove(@Nullable Object o);
     boolean containsAll(Collection<? extends @Nullable Object> c);
     boolean addAll(Collection<? extends @Nullable E> c);
     boolean retainAll(Collection<? extends @Nullable Object> c);
-}
-
-public interface Comparator<T> {
-    int compare(@Nullable T o1, @Nullable T o2);
-
 }
 
 class ConcurrentSkipListSet {
@@ -155,12 +139,6 @@ public interface Map<K, V> {
     default V getOrDefault(@Nullable Object key, V defaultValue);
     default boolean remove(@Nullable Object key, @Nullable Object value);
     }
-
-public class PriorityQueue<E> extends AbstractQueue<E>
-    implements java.io.Serializable {
-    public boolean remove(@Nullable Object o);
-    public boolean contains(@Nullable Object o);
-}
 
 public interface Set<E> extends Collection<E> {
     @Pure boolean contains(@Nullable Object o);
@@ -206,14 +184,6 @@ public class ConcurrentLinkedDeque<E>
     implements Deque<E>, java.io.Serializable {
     public boolean removeFirstOccurrence(@Nullable Object o);
     public boolean removeLastOccurrence(@Nullable Object o);
-    public boolean contains(@Nullable Object o);
-    public boolean remove(@Nullable Object o);
-}
-
-public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
-        implements Queue<E>, java.io.Serializable {
-    public boolean contains(@Nullable Object o);
-    public boolean remove(@Nullable Object o);
 }
 
 public interface ConcurrentMap<K,V> extends Map<K,V> {
@@ -230,16 +200,8 @@ public class ConcurrentSkipListSet<E>
 
 public class CopyOnWriteArrayList<E>
     implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
-    public boolean contains(@Nullable Object o);
     public int indexOf(@Nullable Object o);
     public int lastIndexOf(@Nullable Object o);
-    public boolean remove(@Nullable Object o);
-}
-
-public class CopyOnWriteArraySet<E> extends AbstractSet<E>
-        implements java.io.Serializable {
-    public boolean contains(@Nullable Object o);
-    public boolean remove(@Nullable Object o);
 }
 
 public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
