@@ -2,7 +2,9 @@
 // For documentation, see
 // https://checkerframework.org/manual/#collection-object-parameters-may-be-null .
 
-// This file relaxes the specifications for the following methods:
+// This file relaxes the specifications for the following methods when they are documented to
+// possibly throw NPE.  It does not change the specifications when they are documented to definitely
+// throw NPE.
 // containsAll(Collection)
 // containsKey(Object)
 // contains(Object)
@@ -177,13 +179,6 @@ class Vector {
 }
 
 package java.util.concurrent;
-
-public class ConcurrentLinkedDeque<E>
-    extends AbstractCollection<E>
-    implements Deque<E>, java.io.Serializable {
-    public boolean removeFirstOccurrence(@Nullable Object o);
-    public boolean removeLastOccurrence(@Nullable Object o);
-}
 
 public interface ConcurrentMap<K,V> extends Map<K,V> {
     @Nullable V putIfAbsent(@Nullable K key, @Nullable V value);
