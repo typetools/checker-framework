@@ -82,8 +82,6 @@ task allJavadocJar(type: Jar) {
             project(':javacutil').tasks.javadoc.destinationDir)
 }
 
-
-
 shadowJar {
     description 'Creates the "fat" framework.jar in dist'
     destinationDirectory = file("${projectDir}/dist")
