@@ -20,7 +20,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <!-- Keep version number in sync with ../../../../framework/build.gradle . -->
+            <!-- Keep version number in sync with ../../../../framework-test/build.gradle . -->
             <version>4.13</version>
             <type>jar</type>
         </dependency>
