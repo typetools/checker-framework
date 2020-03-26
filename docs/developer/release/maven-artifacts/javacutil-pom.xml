@@ -17,18 +17,18 @@
             <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
             <type>jar</type>
         </dependency>
-        <exclusion>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>checker-qual</artifactId>
-        </exclusion>
         <dependency>
             <groupId>org.plumelib</groupId>
             <artifactId>plume-util</artifactId>
             <!-- Keep version number in sync with ../../../../javacutil/build.gradle . -->
             <version>1.1.4</version>
             <type>jar</type>
-        <exclusions>
-      </exclusions>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.checkerframework</groupId>
+                    <artifactId>checker-qual</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
