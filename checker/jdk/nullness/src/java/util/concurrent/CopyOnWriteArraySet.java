@@ -282,7 +282,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      * @throws NullPointerException if the specified collection is null
      * @see #contains(Object)
      */
-    public boolean containsAll(Collection<? extends @NonNull Object> c) {
+    public boolean containsAll(Collection<?> c) {
         return al.containsAll(c);
     }
 

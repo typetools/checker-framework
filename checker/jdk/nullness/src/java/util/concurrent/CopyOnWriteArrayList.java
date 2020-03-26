@@ -182,7 +182,7 @@ public class CopyOnWriteArrayList<E>
     /**
      * Tests for equality, coping with nulls.
      */
-    private static boolean eq(Object o1, Object o2) {
+    private static boolean eq(@Nullable Object o1, @Nullable Object o2) {
         return (o1 == null) ? o2 == null : o1.equals(o2);
     }
 
@@ -216,7 +216,7 @@ public class CopyOnWriteArrayList<E>
      * @param index first index to search
      * @return index of element, or -1 if absent
      */
-    private static int lastIndexOf(Object o, Object[] elements, int index) {
+    private static int lastIndexOf(@Nullable Object o, Object[] elements, int index) {
         if (o == null) {
             for (int i = index; i >= 0; i--)
                 if (elements[i] == null)
@@ -246,7 +246,7 @@ public class CopyOnWriteArrayList<E>
     /**
      * {@inheritDoc}
      */
-    public int indexOf(Object o) {
+    public int indexOf(@Nullable Object o) {
         Object[] elements = getArray();
         return indexOf(o, elements, 0, elements.length);
     }
@@ -274,7 +274,7 @@ public class CopyOnWriteArrayList<E>
     /**
      * {@inheritDoc}
      */
-    public int lastIndexOf(Object o) {
+    public int lastIndexOf(@Nullable Object o) {
         Object[] elements = getArray();
         return lastIndexOf(o, elements, elements.length - 1);
     }
@@ -540,7 +540,7 @@ public class CopyOnWriteArrayList<E>
      * A version of remove(Object) using the strong hint that given
      * recent snapshot contains o at the given index.
      */
-    private boolean remove(Object o, Object[] snapshot, int index) {
+    private boolean remove(@Nullable Object o, Object[] snapshot, int index) {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
@@ -661,7 +661,7 @@ public class CopyOnWriteArrayList<E>
      * @throws NullPointerException if the specified collection is null
      * @see #contains(Object)
      */
-    public boolean containsAll(Collection<? extends @NonNull Object> c) {
+    public boolean containsAll(Collection<?> c) {
         Object[] elements = getArray();
         int len = elements.length;
         for (Object e : c) {
