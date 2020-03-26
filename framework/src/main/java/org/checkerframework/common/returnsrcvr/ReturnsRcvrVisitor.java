@@ -11,7 +11,7 @@ import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-// import org.checkerframework.framework.source.Result;
+
 public class ReturnsRcvrVisitor extends BaseTypeVisitor<ReturnsRcvrAnnotatedTypeFactory> {
 
     public ReturnsRcvrVisitor(BaseTypeChecker checker) {
@@ -35,7 +35,6 @@ public class ReturnsRcvrVisitor extends BaseTypeVisitor<ReturnsRcvrAnnotatedType
                     grandparent instanceof TypeCastTree
                             && parent.equals(((TypeCastTree) grandparent).getType());
             if (!(isReturnAnnot || isCastAnnot)) {
-                //        checker.report(Result.failure("invalid.this.location"), node);
                 checker.report(
                         node, new DiagMessage(Diagnostic.Kind.ERROR, "invalid.this.location"));
             }
@@ -43,11 +42,3 @@ public class ReturnsRcvrVisitor extends BaseTypeVisitor<ReturnsRcvrAnnotatedType
         return super.visitAnnotation(node, p);
     }
 }
-
-// (tags-query-replace "\\(Checker\\.this\\|checker\\).report([
-// \n]*\\(?:org\\.checkerframework\\.framework\\.source\\.\\)?Result.failure([ \n]*\\([^;]*\\)),[
-// \n]*\\(.*\\));" "\\1.reportError(\\3, \\2);")
-//        (tags-query-replace "\\(Checker\\.this\\|checker\\).report([
-// \n]*\\(?:org\\.checkerframework\\.framework\\.source\\.\\)?Result.warning([ \n]*\\([^;]*\\)),[
-// \n]*\\(.*\\));" "\\1.reportWarning(\\3, \\2);")
-//        (tags-search "Result.SUCCESS")

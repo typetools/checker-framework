@@ -15,6 +15,14 @@ sourceSets {
     }
 }
 
+ext {
+    versions = [
+            checkerFramework: "3.1.1",
+            autoValue       : "1.6.5",
+            lombok          : "1.18.12",
+    ]
+}
+
 dependencies {
     implementation project(':dataflow')
     implementation project(':javacutil')
@@ -30,22 +38,12 @@ dependencies {
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
 
-    // AutoValue support
+    // AutoValue support in returns receiver checker
     implementation "com.google.auto.value:auto-value-annotations:${versions.autoValue}"
     testImplementation "com.google.auto.value:auto-value-annotations:${versions.autoValue}"
     testImplementation "com.google.auto.value:auto-value:${versions.autoValue}"
 
-    // Lombok support
-    testImplementation "org.projectlombok:lombok:${versions.lombok}"
-
-//    compile group: 'com.google.auto.value', name: 'auto-value-annotations', version: '1.7'
-//    testImplementation group: 'com.google.auto.value', name: 'auto-value-annotations', version: '1.7'
-//    testImplementation group: 'com.google.auto.value', name: 'auto-value', version: '1.7'
-
-
-
-
-    // Lombok support
+    // Lombok support in returns receiver checker
     testImplementation "org.projectlombok:lombok:${versions.lombok}"
 }
 

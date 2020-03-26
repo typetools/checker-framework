@@ -17,7 +17,6 @@ import org.checkerframework.common.returnsrcvr.framework.LombokSupport;
 import org.checkerframework.common.returnsrcvr.qual.BottomThis;
 import org.checkerframework.common.returnsrcvr.qual.MaybeThis;
 import org.checkerframework.common.returnsrcvr.qual.This;
-import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
@@ -50,7 +49,6 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     break;
             }
         }
-
         // we have to call this explicitly
         this.postInit();
     }
@@ -100,7 +98,6 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 }
             }
-
             return super.visitExecutable(t, p);
         }
     }
