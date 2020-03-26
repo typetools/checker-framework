@@ -22,12 +22,11 @@ import java.lang.annotation.Target;
 @Repeatable(RequiresQualifiers.class)
 public @interface RequiresQualifier {
     /**
-     * The Java expressions for which the annotation need to be present.
-     *
+     * @return the Java expressions for which the annotation need to be present
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 
-    /** The qualifier that is required. */
+    /** @return the qualifier that is required */
     Class<? extends Annotation> qualifier();
 }
