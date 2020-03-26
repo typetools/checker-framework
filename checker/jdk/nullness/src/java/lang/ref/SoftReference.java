@@ -25,6 +25,7 @@
 
 package java.lang.ref;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
@@ -82,7 +83,7 @@ public class SoftReference<T> extends Reference<T> {
      *
      * @param referent object the new soft reference will refer to
      */
-    public SoftReference(T referent) {
+    public SoftReference(@Nullable T referent) {
         super(referent);
         this.timestamp = clock;
     }
@@ -96,7 +97,7 @@ public class SoftReference<T> extends Reference<T> {
      *          or <tt>null</tt> if registration is not required
      *
      */
-    public SoftReference(T referent, ReferenceQueue<? super T> q) {
+    public SoftReference(@Nullable T referent, ReferenceQueue<? super T> q) {
         super(referent, q);
         this.timestamp = clock;
     }
@@ -109,7 +110,7 @@ public class SoftReference<T> extends Reference<T> {
      * @return   The object to which this reference refers, or
      *           <code>null</code> if this reference object has been cleared
      */
-    @SideEffectFree public T get() {
+    @SideEffectFree public @Nullable T get() {
         T o = super.get();
         if (o != null && this.timestamp != clock)
             this.timestamp = clock;
