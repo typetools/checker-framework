@@ -985,8 +985,6 @@ void mvnDeployToLocalRepo(String jar, String pom) {
                 'install:install-file',
                 "-Dfile=${jar}",
                 "-DpomFile=${pom}",
-                // TODO: This changes the version number of the artifact, but not the version number in the pom file.
-//                "-Dversion=${version}",
                 '-DgeneratePom=true'
 
         ]
@@ -1009,7 +1007,7 @@ void mvnDeployToLocalRepo(Project project, String pomFile) {
  * @param pom filename of pom that describes the artifact
  * @param classifier the kind of artifact; sources or javadoc; defaults to the empty string
  */
-void mvnSignAndDeployToSonatype(String jar, String pom, String classifier="") {
+void mvnSignAndDeployToSonatype(String jar, String pom, String classifier = "") {
     String passwordFile = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
     String passphrase = new File(passwordFile).readLines().get(0);
 
@@ -1040,7 +1038,7 @@ void mvnSignAndDeployToSonatype(String jar, String pom, String classifier="") {
 void mvnSignAndDeployMultipleToSonatype(String classesJar, String sourceJar, String javadocJar, String pom) {
     mvnSignAndDeployToSonatype(classesJar, pom)
     mvnSignAndDeployToSonatype(sourceJar, pom, "sources")
-    mvnSignAndDeployToSonatype(javadocJar, pom,"javadoc")
+    mvnSignAndDeployToSonatype(javadocJar, pom, "javadoc")
 }
 
 /**
