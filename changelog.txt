@@ -10,15 +10,13 @@ Implementation details:
  * Renamings:
    applyUncheckedCodeDefaults() to applyConservativeDefaults()
    useUncheckedCodeDefault() to useConservativeDefault()
+ * AnnotatedTypeReplacer to AnnotatedTypeCopierWithReplacement
+ * AnnotatedTypeMerger to AnnotatedTypeReplacer
  * Deprecated the `framework.source.Result` class; use `DiagMessage` or
    `List<DiagMessage>` instead.  If you were creating a `Result` just to
    pass it to `report`, then call new methods `reportError` and
    `reportWarning` instead.
  * AbstractTypeProcessor#typeProcessingOver() always gets called.
- * Renamed `org.checkerframework.framework.type.AnnotatedTypeReplacer` to
-   `org.checkerframework.framework.type.AnnotatedTypeCopierWithReplacement`.
- * Renamed `org.checkerframework.framework.type.visitor.AnnotatedTypeMerger`
-   to `org.checkerframework.framework.type.visitor.AnnotatedTypeReplacer`.
 
 ---------------------------------------------------------------------------
 
