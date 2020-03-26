@@ -6,11 +6,9 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.tools.Diagnostic;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-
 
 public class ReturnsRcvrVisitor extends BaseTypeVisitor<ReturnsRcvrAnnotatedTypeFactory> {
 
