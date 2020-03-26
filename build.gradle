@@ -55,7 +55,7 @@ ext {
     // This value is always overwritten, but Gradle needs the variable to be initialized.
     localRepo = ".git"
 
-    // Location of pom files used only to add meta-data to the artifacts published to Maven.
+    // Location of pom files that are only used to add meta-data to the artifacts published to Maven.
     pomFiles = "${rootDir}/docs/developer/release/maven-artifacts"
 }
 // Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
@@ -102,7 +102,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.2.1'
+    version '3.2.0'
 
     repositories {
         mavenCentral()
@@ -976,7 +976,7 @@ jar.onlyIf {false}
 /**
  * Deploys the given jar file to the local Maven repository.
  * @param jar fully qualified file name of a jar file
- * @param pom pom file describing the artifact
+ * @param pom filename of pom that describes the artifact
  */
 void mvnDeployToLocalRepo(String jar, String pom) {
     exec {
@@ -996,7 +996,7 @@ void mvnDeployToLocalRepo(String jar, String pom) {
 /**
  * Deploys the jar file produced by the "jar" task of the given project to the local Maven repository.
  * @param project project whose jar file is deployed
- * @param pom pom file describing the artifact
+ * @param pom filename of pom that describes the artifact
  */
 void mvnDeployToLocalRepo(Project project, String pomFile) {
     String jarFile = project.tasks.getByName('jar').archiveFile.get().toString();
@@ -1006,7 +1006,7 @@ void mvnDeployToLocalRepo(Project project, String pomFile) {
 /**
  * Signs and deploys the given jar file to the Sonatypes Maven repository.
  * @param jar fully qualified file name of a jar file
- * @param pom pom file describing the artifact
+ * @param pom filename of pom that describes the artifact
  * @param classifier the kind of artifact; sources or javadoc; defaults to the empty string
  */
 void mvnSignAndDeployToSonatype(String jar, String pom, String classifier="") {
@@ -1031,11 +1031,11 @@ void mvnSignAndDeployToSonatype(String jar, String pom, String classifier="") {
 }
 
 /**
- * Signs and deploys multiple jar files for a single artifact.
+ * Signs and deploys the classes jar, sources jar, and javadoc jar files for a single artifact.
  * @param classesJar class jar file
  * @param sourceJar source jar file corresponding to the classesJar
  * @param javadocJar javadoc jar file corresponding to the classesJar
- * @param pom pom file describing the artifact
+ * @param pom filename of pom that describes the artifact
  */
 void mvnSignAndDeployMultipleToSonatype(String classesJar, String sourceJar, String javadocJar, String pom) {
     mvnSignAndDeployToSonatype(classesJar, pom)
@@ -1046,10 +1046,10 @@ void mvnSignAndDeployMultipleToSonatype(String classesJar, String sourceJar, Str
 /**
  * Signs and deploys the classes jar, sources jar, and javadoc jar files for a single artifact.
  * @param project with a jar, sourcesJar, and javadocJar tasks defined
- * @param pom pom file describing the artifact
+ * @param pom filename of pom that describes the artifact
  */
 void mvnSignAndDeployMultipleToSonatype(Project project, String pom) {
-    mvnSignAndDeployToSonatype(project.tasks.getByName('jar').archiveFile.get().toString(), pom)
-    mvnSignAndDeployToSonatype(project.tasks.getByName('sourcesJar').archiveFile.get().toString(), pom, "sources")
-    mvnSignAndDeployToSonatype(project.tasks.getByName('javadocJar').archiveFile.get().toString(), pom,"javadoc")
+    mvnSignAndDeployMultipleToSonatype(project.tasks.getByName('jar').archiveFile.get().toString(),
+            project.tasks.getByName('sourcesJar').archiveFile.get().toString(),
+            project.tasks.getByName('javadocJar').archiveFile.get().toString(), pom)
 }
