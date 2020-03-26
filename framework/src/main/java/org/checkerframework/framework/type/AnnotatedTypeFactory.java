@@ -3283,7 +3283,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /** Cache for {@link #isListForRepeatedAnnotation}. */
-    private final Map<AnnotationMirror, Boolean> isListForRepeatedAnnotationCache = new HashMap<>();
+    private final Map<DeclaredType, Boolean> isListForRepeatedAnnotationCache = new HashMap<>();
 
     /**
      * Returns true if the given annotation is a wrapper for multiple repeated annotations.
@@ -3292,20 +3292,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return true if the argument is a wrapper for multiple repeated annotations
      */
     private boolean isListForRepeatedAnnotation(AnnotationMirror a) {
-        if (!isListForRepeatedAnnotationCache.containsKey(a)) {
-            isListForRepeatedAnnotationCache.put(a, isListForRepeatedAnnotationImplementation(a));
+        DeclaredType annotationType = a.getAnnotationType();
+        Boolean resultObject = isListForRepeatedAnnotationCache.get(annotationType);
+        if (resultObject != null) {
+            return resultObject;
         }
-        return isListForRepeatedAnnotationCache.get(a);
+        boolean result = isListForRepeatedAnnotationImplementation(annotationType);
+        isListForRepeatedAnnotationCache.put(annotationType, result);
+        return result;
     }
 
     /**
      * Returns true if the annotation is a wrapper for multiple repeated annotations.
      *
-     * @param a the annotation to test
+     * @param annotationType the declaration of the annotation to test
      * @return true if the annotation is a wrapper for multiple repeated annotations
      */
-    private boolean isListForRepeatedAnnotationImplementation(AnnotationMirror a) {
-        DeclaredType annotationType = a.getAnnotationType();
+    private boolean isListForRepeatedAnnotationImplementation(DeclaredType annotationType) {
         TypeMirror enclosingType = annotationType.getEnclosingType();
         if (enclosingType == null) {
             return false;
