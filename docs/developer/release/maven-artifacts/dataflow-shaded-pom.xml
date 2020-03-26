@@ -15,6 +15,7 @@
     <description>
         Dataflow is a dataflow framework based on the javac compiler.
         The packages in this artifact have been renamed to org.checkerframework.shaded.*.
+        (Unlike the dataflow artifact, this artifact contains the dependencies it requires.)
     </description>
 
     <licenses>
