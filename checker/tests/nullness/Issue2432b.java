@@ -1,6 +1,4 @@
-// Additional test cases for issue 2432
-// Test cases for changes to AsSuperVisitor::visitDeclared_Typevar()
-// not directly related to poly annotation handling
+// Ensure correct handling of type parameters and arrays.
 // https://github.com/typetools/checker-framework/issues/2432
 
 import java.util.ArrayList;
