@@ -75,6 +75,11 @@
 //     "Attempts to insert a null key will throw NullPointerException. Attempts to test for the
 //     presence of a null key or to remove one will, however, function properly. Null values are
 //     permitted."
+//   EnumSet:
+//     "Null elements are not permitted.  Attempts to insert a null element will throw
+//     NullPointerException.  Attempts to test for the presence of a null element or to remove one
+//     will, however, function properly."
+
 //
 // Many additional method implementations are null-safe, but the specification does not guarantee
 // that all overriding implementations in subclasses will be.
