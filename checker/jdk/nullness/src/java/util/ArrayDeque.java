@@ -21,8 +21,8 @@ public class ArrayDeque<E extends @NonNull Object> extends AbstractCollection<E>
   public E getLast() { throw new RuntimeException("skeleton method"); }
   public @Nullable E peekFirst() { throw new RuntimeException("skeleton method"); }
   public @Nullable E peekLast() { throw new RuntimeException("skeleton method"); }
-  public boolean removeFirstOccurrence(Object a1) { throw new RuntimeException("skeleton method"); }
-  public boolean removeLastOccurrence(Object a1) { throw new RuntimeException("skeleton method"); }
+  public boolean removeFirstOccurrence(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  public boolean removeLastOccurrence(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean offer(E a1) { throw new RuntimeException("skeleton method"); }
   public E remove() { throw new RuntimeException("skeleton method"); }

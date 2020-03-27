@@ -39,8 +39,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 public @interface EnsuresNonNull {
     /**
-     * The Java expressions that are ensured to be {@link NonNull} on successful method termination.
-     *
+     * @return Java expressions that are {@link NonNull} after successful method termination
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] value();

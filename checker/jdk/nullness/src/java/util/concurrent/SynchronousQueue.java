@@ -968,7 +968,8 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      *
      * @return {@code true}
      */
-    @Pure public boolean isEmpty() {
+    @Pure
+    public boolean isEmpty() {
         return true;
     }
 
@@ -978,7 +979,8 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      *
      * @return zero
      */
-    @Pure public int size() {
+    @Pure
+    public int size() {
         return 0;
     }
 
@@ -1006,7 +1008,8 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      * @param o the element
      * @return {@code false}
      */
-    @Pure public boolean contains(Object o) {
+    @Pure
+    public boolean contains(Object o) {
         return false;
     }
 
@@ -1028,7 +1031,8 @@ public class SynchronousQueue<E extends @NonNull Object> extends AbstractQueue<E
      * @param c the collection
      * @return {@code false} unless given collection is empty
      */
-    @Pure public boolean containsAll(Collection<?> c) {
+    @Pure
+    public boolean containsAll(Collection<?> c) {
         return c.isEmpty();
     }
 
