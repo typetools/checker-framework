@@ -164,7 +164,7 @@ public class CollectionToArrayHeuristics {
      * Returns true if the argument is a field access expression, where the field has declared type
      * {@code @ArrayLen(0)}.
      *
-     * @param argument the expression tree
+     * @param argument an expression tree
      * @return true if the argument is a field access expression, where the field has declared type
      *     {@code @ArrayLen(0)}
      */
