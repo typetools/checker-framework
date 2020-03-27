@@ -1955,7 +1955,7 @@ public class StubParser {
     }
 
     /**
-     * Just like Map.put, but merges (using {@link AnnotatedTypeMerger#merge}) with any existing
+     * Just like Map.put, but merges (using {@link AnnotatedTypeReplacer#replace}) with any existing
      * annotated type for the given key, instead of replacing it.
      *
      * @param m a map
@@ -1971,7 +1971,7 @@ public class StubParser {
         if (m.containsKey(key)) {
             AnnotatedTypeMirror existingType = m.get(key);
             if (isJdkAsStub) {
-                // AnnotatedTypeMerger picks the annotations from the first argument if an
+                // AnnotatedTypeReplacer picks the annotations from the first argument if an
                 // annotation exist in both types in the same location for the same hierarchy.
                 // So, if the newType is from a JDK stub file, then prefer the existing type.  This
                 // way user supplied stub files override jdk stub files.
