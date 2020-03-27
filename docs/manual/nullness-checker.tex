@@ -97,6 +97,16 @@ command-line option.)
   See Section~\ref{nullness-arrays} for a discussion.
   % TODO: this option is temporary and the sound option
   % should become the default.
+
+\item
+  \label{collection-object-parameters-may-be-null}
+  If you supply the
+  \code{-Astubs=collection-object-parameters-may-be-null.astub}
+  command-line option, then in JDK collection classes, the checker
+  unsoundly permits null as an argument for any key or value formal
+  parameter whose type is \<Object> (instead of the element type).
+  See Section~\ref{nullness-collection-arguments}.
+
 \end{itemize}
 
 \item
@@ -414,12 +424,17 @@ More examples of the use of these annotations appear in the Javadoc for
 \refqualclass{checker/nullness/qual}{EnsuresNonNullIf}.
 
 
-\subsectionAndLabel{Nullness and arrays}{nullness-arrays}
+\subsectionAndLabel{Nullness and array initialization}{nullness-arrays}
 
-Suppose that you declare an array to contain non-null elements.
-Currently, the Nullness Checker does not verify that all the elements of the
-array are initialized to a non-null value.  This is an unsoundness in the
-checker.
+Suppose that you declare an array to contain non-null elements:
+
+\begin{Verbatim}
+  Object [] oa = new Object[10];
+\end{Verbatim}
+
+\noindent
+(recall that \<Object> means the same thing as \<@NonNull Object>).
+By default, the Nullness Checker unsoundly permits this code.
 
 To make the Nullness Checker conservatively reject code that may leave a
 non-null value in an array, use the command-line option
@@ -427,17 +442,8 @@ non-null value in an array, use the command-line option
 because it makes the checker issue many false positive errors.
 % TODO: flip the default after collecting more data.
 
-When the \code{-Alint=soundArrayCreationNullness} option is supplied,
-the following is not allowed:
-
-\begin{Verbatim}
-  Object [] oa = new Object[10]; // error
-\end{Verbatim}
-
-\noindent
-(recall that \<Object> means the same thing as \<@NonNull Object>).
-
-Instead, your code needs to create a nullable or lazy-nonnull array, initialize
+With the option enabled, you can write your code to create a nullable or
+lazy-nonnull array, initialize
 each component, and then assign the result to a non-null array:
 
 \begin{Verbatim}
@@ -635,6 +641,27 @@ the distinction between warning suppression and defensive programming.
 % need to be suppressed, so warning suppression needs to be customized for
 % each tool.
 \end{sloppypar}
+
+
+\subsectionAndLabel{Null arguments to collection classes}{nullness-collection-arguments}
+
+For collection methods with \<Object> formal parameter type, such as
+\sunjavadoc{java.base/java/util/Collection.html\#contains(java.lang.Object)}{contains},
+\sunjavadoc{java.base/java/util/AbstractList.html\#indexOf(java.lang.Object)}{indexOf}, and
+\sunjavadoc{java.base/java/util/Collection.html\#remove(java.lang.Object)}{remove},
+the annotated JDK forbids null as an argument.
+
+The reason is that some implementations (like \<ConcurrentHashMap>) throw
+\<NullPointerException> if \<null> is passed.  It would be unsound to
+permit \<null>, because it could lead to a false negative:  the Checker
+Framework issuing no warning even though a NullPointerException can occur
+at run time.
+
+However, many other common implementations permit such calls, so some users
+may wish to sacrifice soundness for a reduced number of false positive
+warnings.  To permit \<null> as an argument to these methods, pass the
+command-line argument
+\<-Astubs=collection-object-parameters-may-be-null.astub>.
 
 
 \sectionAndLabel{Examples}{nullness-example}
