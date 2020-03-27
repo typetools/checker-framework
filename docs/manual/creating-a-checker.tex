@@ -815,6 +815,20 @@ Node)}.
 Then, call \<toString()> on the \<FlowExpressions.Receiver> object.
 
 
+\subsectionAndLabel{Repeatable annotations}{repeatable-annotations}
+
+Some pre- and post-condition annotations that have multiple elements (that
+is, annotations that take multiple arguments) should be repeatable, so that
+programmers can specify them more than once.  An example is
+\refqualclass{checker/nullness/qual}{EnsuresNonNullIf}; it could not be
+defined with each of its elements being a list, as (for example)
+\refqualclass{checker/nullness/qual}{KeyFor} is.
+
+Make an annotation \emph{A} repeatable by defining a nested annotation (within
+\emph{A}'s definition) named \<List>, and writing
+\<@Repeatable(\emph{A}.List.class)> on \emph{A}'s definition.
+
+
 \sectionAndLabel{The checker class:  Compiler interface}{creating-compiler-interface}
 
 A checker's entry point is a subclass of
