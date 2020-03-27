@@ -1,14 +1,13 @@
 import java.util.AbstractMap;
 import java.util.Map;
-import org.checkerframework.checker.initialization.qual.*;
-import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.checker.regex.qual.*;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 // :: error: (initialization.fields.uninitialized)
 public abstract class WeakHasherMapNullable<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     private Map<Object, V> hash;
 
-    @org.checkerframework.dataflow.qual.Pure
+    @Pure
     public boolean containsKey(@Nullable Object key) {
         // :: warning: [unchecked] unchecked cast
         K kkey = (K) key;
