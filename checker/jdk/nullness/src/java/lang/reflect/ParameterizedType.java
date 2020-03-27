@@ -7,5 +7,5 @@ public interface ParameterizedType extends Type {
   public abstract
     @NonNull Type @NonNull [] getActualTypeArguments();
   public abstract @NonNull Type getRawType();
-  public abstract Type getOwnerType();
+  public abstract @Nullable Type getOwnerType();
 }

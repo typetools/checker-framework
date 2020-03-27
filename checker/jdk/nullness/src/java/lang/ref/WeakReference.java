@@ -25,6 +25,7 @@
 
 package java.lang.ref;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Weak reference objects, which do not prevent their referents from being
@@ -53,7 +54,7 @@ public class WeakReference<T> extends Reference<T> {
      *
      * @param referent object the new weak reference will refer to
      */
-    public WeakReference(T referent) {
+    public WeakReference(@Nullable T referent) {
         super(referent);
     }
 
@@ -65,7 +66,7 @@ public class WeakReference<T> extends Reference<T> {
      * @param q the queue with which the reference is to be registered,
      *          or <tt>null</tt> if registration is not required
      */
-    public WeakReference(T referent, ReferenceQueue<? super T> q) {
+    public WeakReference(@Nullable T referent, ReferenceQueue<? super T> q) {
         super(referent, q);
     }
 

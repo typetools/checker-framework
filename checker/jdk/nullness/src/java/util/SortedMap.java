@@ -27,6 +27,7 @@ package java.util;
 
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
@@ -125,8 +126,8 @@ public interface SortedMap<K, V> extends Map<K,V> {
      *         or {@code null} if this map uses the natural ordering
      *         of its keys
      */
-    @SideEffectFree
-    Comparator<? super K> comparator();
+    @Pure
+    @Nullable Comparator<? super K> comparator();
 
     /**
      * Returns a view of the portion of this map whose keys range from

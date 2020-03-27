@@ -186,7 +186,7 @@ task updateJdk() {
                     src "https://github.com/typetools/annotated-libraries/raw/${jdkShaHash}/jdk8.jar"
                     dest downloadedJdk
                     overwrite true
-		    retries 3
+                    retries 3
                 }
             }
             copy {
