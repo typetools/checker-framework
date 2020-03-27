@@ -5,16 +5,13 @@
     <packaging>jar</packaging>
     <groupId>org.checkerframework</groupId>
     <artifactId>javacutil</artifactId>
-
-    <!-- The comments in the version number are used to do a text substitution. Don't remove them.
-         See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
+    <version>${checkerframeworkversion}</version>
 
     <dependencies>
         <dependency>
             <groupId>org.checkerframework</groupId>
             <artifactId>checker-qual</artifactId>
-            <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
+            <version>${checkerframeworkversion}</version>
             <type>jar</type>
         </dependency>
         <dependency>

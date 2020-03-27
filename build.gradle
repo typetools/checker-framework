@@ -102,7 +102,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.2.0'
+    version '3.2.1'
 
     repositories {
         mavenCentral()
@@ -974,17 +974,35 @@ task releaseAndTest {
 jar.onlyIf {false}
 
 /**
+ * Copies the pom file and expands any properties in the file. For example,
+ * ${checkerframeworkversion} is changed to the current version.
+ * @param pomFile file name of pom
+ * @return file name of the copied and expanded pom file
+ */
+String copyAndExpandPomFile(String pomFile) {
+    mkdir "${buildDir}/maven"
+    copy {
+        from pom
+        into "${buildDir}/maven"
+        expand('checkerframeworkversion': version)
+    }
+
+    new File("${buildDir}/maven").toPath().resolve(new File(pom).toPath().last())
+}
+
+/**
  * Deploys the given jar file to the local Maven repository.
  * @param jar fully qualified file name of a jar file
  * @param pom filename of pom that describes the artifact
  */
 void mvnDeployToLocalRepo(String jar, String pom) {
+    String copiedFilename = copyAndExpandPomFile(pom)
     exec {
         executable 'mvn'
         args += [
                 'install:install-file',
                 "-Dfile=${jar}",
-                "-DpomFile=${pom}",
+                "-DpomFile=${copiedFilename}",
                 '-DgeneratePom=true'
 
         ]
@@ -1008,6 +1026,7 @@ void mvnDeployToLocalRepo(Project project, String pomFile) {
  * @param classifier the kind of artifact; sources or javadoc; defaults to the empty string
  */
 void mvnSignAndDeployToSonatype(String jar, String pom, String classifier = "") {
+    String copiedFilename = copyAndExpandPomFile(pom)
     String passwordFile = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
     String passphrase = new File(passwordFile).readLines().get(0);
 
@@ -1017,7 +1036,7 @@ void mvnSignAndDeployToSonatype(String jar, String pom, String classifier = "") 
                 'gpg:sign-and-deploy-file',
                 '-Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/',
                 '-DrepositoryId=sonatype-nexus-staging',
-                "-DpomFile=${pom}",
+                "-DpomFile=${copiedFilename}",
                 "-Dfile=${jar}",
                 '-Dgpg.keyname=checker-framework-dev@googlegroups.com',
                 "-Dgpg.passphrase=${passphrase}"
