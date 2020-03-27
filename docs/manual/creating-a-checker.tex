@@ -10,7 +10,7 @@
 This chapter describes how to create a checker
 --- a type-checking compiler plugin that detects bugs or verifies their
 absence.  After a programmer annotates a program,
-the checker plugin verifies that the code is consistent
+the checker verifies that the code is consistent
 with the annotations.
 If you only want to \emph{use} a checker, you do not need to read this
 chapter.
@@ -2220,7 +2220,7 @@ methods that should be used instead. Also,
 \subsectionAndLabel{How a checker fits in the compiler as an annotation processor}{creating-checker-as-annotation-processor}
 
 The Checker Framework builds on the Annotation Processing API
-introduced in Java 6.  A type annotation processor is one that extends
+introduced in Java 6.  A type-checking annotation processor is one that extends
 \refclass{javacutil}{AbstractTypeProcessor}; it gets run on each class
 source file after the compiler confirms that the class is valid Java code.
 

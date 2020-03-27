@@ -645,7 +645,7 @@ including the JDK, see Section~\ref{reporting-bugs-annotated-libraries}.
 Alternately (especially if your communication is not a bug report), you can
 send mail to checker-framework-dev@googlegroups.com.
 We welcome suggestions, annotated libraries, bug fixes, new
-features, new checker plugins, and other improvements.
+features, new checkers, and other improvements.
 
 Please ensure that your bug report is clear and that it is complete.
 Otherwise, we may be unable to understand it or to reproduce it, either of
@@ -997,22 +997,14 @@ Please see the
 
 \subsectionAndLabel{Enable continuous integration builds}{building-ci}
 
-A continuous integration system runs tests every time you
-push a commit to GitHub.
+We strongly recommend that you enable continuous integration (CI) builds on
+your fork of the projects, so that you learn quickly about errors.  See the
+\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html\#ci}{CI
+  instructions} in the Checker Framework Developer Manual.
 
-If you have forked any of the projects rather than just creating a clone,
-then we recommend that you enable CI builds,
-so that you learn quickly of any errors that creep into your fork.
-
-Follow the
-\ahref{https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops}{Azure
-  Pipelines getting started directions}.
-
-To save time, by default the CI jobs download a pre-built version of
-the JDK rather than building the JDK from the sources in the Checker
-Framework repository.  This means that if you make a change to the
-annotated JDK, your tests will fail.
-To fix your tests, follow the instructions at
+If you make a change to the
+annotated JDK, you need to upload a JDK artifact.
+Follow the instructions at
 \url{https://github.com/typetools/annotated-libraries}.
 
 
