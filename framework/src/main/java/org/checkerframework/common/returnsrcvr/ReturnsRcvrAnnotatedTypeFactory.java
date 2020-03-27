@@ -49,7 +49,7 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     break;
             }
         }
-        //// we have to call this explicitly
+        // we have to call this explicitly
         this.postInit();
     }
 
