@@ -7,10 +7,15 @@ Renamings:
 -Ainfer now takes an argument:
  * -Ainfer=jaifs uses .jaif files to store the results of whole-program inference.
  * -Ainfer=stubs uses .astub files to store the results of whole-program inference
- * -Ainfer is deprecated but is same as -Ainfer=jaifs, for backwards compatibility.
+ * -Ainfer is deprecated but is the same as -Ainfer=jaifs, for backwards compatibility.
 
 New command-line option:
   -AmergeStubsWithSource If both a stub file and a source file are available, use both.
+
+For collection methods with `Object` formal parameter type, such as
+contains, indexOf, and remove, the annotated JDK now forbids null as an
+argument.  To make the Nullness Checker permit null, pass
+`-Astubs=checker.jar/collection-object-parameters-may-be-null.astub`.
 
 Implementation details:
  * Removed `@DefaultInUncheckedCodeFor` and

@@ -26,17 +26,16 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @InheritedAnnotation
 public @interface EnsuresMinLenIf {
     /**
-     * Java expression(s) that are a sequence with the given minimum length after the method returns
-     * the given result.
-     *
+     * @return Java expression(s) that are a sequence with the given minimum length after the method
+     *     returns {@link #result}
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 
-    /** The return value of the method that needs to hold for the postcondition to hold. */
+    /** @return the return value of the method under which the postcondition to hold */
     boolean result();
 
-    /** The minimum number of elements in the sequence. */
+    /** @return the minimum number of elements in the sequence */
     @QualifierArgument("value")
     int targetValue() default 0;
 }

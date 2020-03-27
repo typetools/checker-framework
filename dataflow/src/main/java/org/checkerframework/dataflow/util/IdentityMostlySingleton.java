@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.util;
 
 import java.util.ArrayList;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -44,7 +43,7 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
     }
 
     @Override
-    public boolean contains(@Nullable Object o) {
+    public boolean contains(Object o) {
         switch (state) {
             case EMPTY:
                 return false;
