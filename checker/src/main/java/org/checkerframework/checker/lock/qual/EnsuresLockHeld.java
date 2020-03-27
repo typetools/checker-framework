@@ -22,8 +22,8 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 public @interface EnsuresLockHeld {
     /**
-     * The Java expressions whose values are held after the method terminates successfully.
-     *
+     * @return Java expressions whose values are locks that are held after successful method
+     *     termination
      * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
      *     Java expressions</a>
      */

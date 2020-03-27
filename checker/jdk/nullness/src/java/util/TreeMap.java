@@ -240,7 +240,7 @@ public class TreeMap<K, V>
      */
     @Pure
     @EnsuresKeyForIf(result=true, expression="#1", map="this")
-    public boolean containsKey(@Nullable Object key) {
+    public boolean containsKey(Object key) {
         return getEntry(key) != null;
     }
 
@@ -258,7 +258,7 @@ public class TreeMap<K, V>
      * @since 1.2
      */
     @Pure
-    public boolean containsValue(@Nullable Object value) {
+    public boolean containsValue(Object value) {
         for (Entry<K,V> e = getFirstEntry(); e != null; e = successor(e))
             if (valEquals(value, e.value))
                 return true;
@@ -287,7 +287,7 @@ public class TreeMap<K, V>
      *         and this map uses natural ordering, or its comparator
      *         does not permit null keys
      */
-    public @Nullable V get(@Nullable Object key) {
+    public @Nullable V get(Object key) {
         Entry<K,V> p = getEntry(key);
         return (p==null ? null : p.value);
     }
@@ -614,7 +614,7 @@ public class TreeMap<K, V>
      *         and this map uses natural ordering, or its comparator
      *         does not permit null keys
      */
-    public @Nullable V remove(@Nullable Object key) {
+    public @Nullable V remove(Object key) {
         Entry<K,V> p = getEntry(key);
         if (p == null)
             return null;
