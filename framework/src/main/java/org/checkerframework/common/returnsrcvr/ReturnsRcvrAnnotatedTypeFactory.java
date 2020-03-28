@@ -120,6 +120,11 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Returns {@code true} if the param {@code t} is a {@code Constructor}.
+     *
+     * @param t the {@link AnnotatedTypeMirror}
+     */
     private boolean isConstructor(AnnotatedTypeMirror.AnnotatedExecutableType t) {
         ExecutableElement element = t.getElement();
         return element.getKind() == ElementKind.CONSTRUCTOR;
