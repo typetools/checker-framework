@@ -122,6 +122,6 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private boolean isConstructor(AnnotatedTypeMirror.AnnotatedExecutableType t) {
         ExecutableElement element = t.getElement();
-        return element.getKind().equals(ElementKind.CONSTRUCTOR);
+        return element.getKind() == ElementKind.CONSTRUCTOR;
     }
 }

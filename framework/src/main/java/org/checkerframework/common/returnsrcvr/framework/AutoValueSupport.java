@@ -29,7 +29,7 @@ public class AutoValueSupport implements FrameworkSupport {
             // see if superclass is an AutoValue Builder, to handle generated code
             TypeMirror superclass = ((TypeElement) enclosingElement).getSuperclass();
             // if enclosingType is an interface, the superclass has TypeKind NONE
-            if (!superclass.getKind().equals(TypeKind.NONE)) {
+            if (!(superclass.getKind() == TypeKind.NONE)) {
                 // update enclosingElement to be for the superclass for this case
                 enclosingElement = TypesUtils.getTypeElement(superclass);
                 inAutoValueBuilder =
