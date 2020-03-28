@@ -121,8 +121,7 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns {@code true} if the param {@code t} is a {@code Constructor}.
-     *
+     * @return {@code true} if the param {@code t} is a {@code Constructor}.
      * @param t the {@link AnnotatedTypeMirror}
      */
     private boolean isConstructor(AnnotatedTypeMirror.AnnotatedExecutableType t) {
