@@ -23,8 +23,10 @@ signature-checker.tex \
 guieffect-checker.tex \
 units-checker.tex \
 signedness-checker.tex \
-constant-value-checker.tex \
 aliasing-checker.tex \
+purity-checker.tex \
+constant-value-checker.tex \
+returns-receiver-checker.tex \
 reflection-checker.tex \
 reflection-inference-rules.tex \
 subtyping-checker.tex \
