@@ -9,8 +9,10 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.tools.JavaFileObject.Kind;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
@@ -100,7 +102,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(constructorElt)) {
+        if (!isPresentedAsSource(constructorElt)) {
             return;
         }
 
@@ -121,7 +123,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(methodElt)) {
+        if (!isPresentedAsSource(methodElt)) {
             return;
         }
 
@@ -178,7 +180,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(methodElt)) {
+        if (!isPresentedAsSource(methodElt)) {
             return;
         }
 
@@ -224,7 +226,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(lhs.getElement())) {
+        if (!isPresentedAsSource(lhs)) {
             return;
         }
 
@@ -268,11 +270,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     public void updateFromFieldAssignment(
             FieldAccessNode lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
 
-        // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(lhs.getElement())) {
-            return;
-        }
-
         // If the inferred field has a declaration annotation with the
         // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
         if (atf.getDeclAnnotation(lhs.getElement(), IgnoreInWholeProgramInference.class) != null
@@ -284,6 +281,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         }
 
         ClassSymbol enclosingClass = ((VarSymbol) lhs.getElement()).enclClass();
+
+        // do not infer types for code that isn't presented as source
+        if (!isPresentedAsSource(enclosingClass)) {
+            return;
+        }
+
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @DotSeparatedIdentifiers String className = enclosingClass.flatname.toString();
         String jaifPath = storage.getJaifPath(className);
@@ -327,8 +330,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         // do not infer types for code that isn't presented as source
         if (methodTree == null
-                || ElementUtils.isElementFromByteCode(
-                        TreeUtils.elementFromDeclaration(methodTree))) {
+                || !isPresentedAsSource(TreeUtils.elementFromDeclaration(methodTree))) {
             return;
         }
 
@@ -374,7 +376,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ExecutableElement overriddenMethodElement = pair.getValue();
 
             // do not infer types for code that isn't presented as source
-            if (ElementUtils.isElementFromByteCode(overriddenMethodElement)) {
+            if (!isPresentedAsSource(overriddenMethodElement)) {
                 continue;
             }
 
@@ -431,5 +433,42 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
         return ((MethodSymbol) executableElement).enclClass().flatName().toString();
+    }
+
+    /**
+     * Checks whether a given ClassSymbol came from a source file or not. This is different from
+     * {@link ElementUtils#isElementFromByteCode(Element)}, which will return true if there is a
+     * classfile for the given element - even if there is also a source file!
+     *
+     * @param symbol the class to check
+     * @return true if a source file containing the class is being compiled
+     */
+    private static boolean isPresentedAsSource(ClassSymbol symbol) {
+        return symbol.sourcefile != null && symbol.sourcefile.getKind() == Kind.SOURCE;
+    }
+
+    /**
+     * Checks whether a given method came from a source file or not. This is different from {@link
+     * ElementUtils#isElementFromByteCode(Element)}, which will return true if there is a classfile
+     * for the given element - even if there is also a source file!
+     *
+     * @param executableElement the method to check
+     * @return true if a source file containing the method is being compiled
+     */
+    private static boolean isPresentedAsSource(ExecutableElement executableElement) {
+        return isPresentedAsSource(((MethodSymbol) executableElement).enclClass());
+    }
+
+    /**
+     * Checks whether a given local variable came from a source file or not. This is different from
+     * {@link ElementUtils#isElementFromByteCode(Element)}, which will return true if there is a
+     * classfile for the given element - even if there is also a source file!
+     *
+     * @param localVariableNode the local variable declaration to check
+     * @return true if a source file containing the variable is being compiled
+     */
+    private boolean isPresentedAsSource(LocalVariableNode localVariableNode) {
+        return isPresentedAsSource(
+                (ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()));
     }
 }
