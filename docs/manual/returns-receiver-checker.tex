@@ -24,7 +24,7 @@ indicates that the method should return its receiver.  The
 on the return type of a method, or (in rare cases) as part of a downcast.  When
 using certain frameworks for the builder pattern,
 \refqualclass{common/returnsrcvr/qual}{This} annotations will be injected
-automatically; see Section~\ref{returns-receiver-checker-framework-support}. 
+automatically; see Section~\ref{returns-receiver-checker-framework-support}.
 
 
 \sectionAndLabel{Warnings}{returns-receiver-checker-warnings}
@@ -68,7 +68,7 @@ location other than on the return type of a method or in a downcast.
             abstract Builder setNumberOfLegs(int value);
             abstract Animal build();
         }
-    }            
+    }
     \end{Verbatim}
     \caption{A code example using AutoValue's Builder support.}
     \label{fig-autovalue-builder}
@@ -94,4 +94,3 @@ To disable the checker's built-in framework support, use the
 \<-AdisableFrameworkSupports> command-line option, passing a list of frameworks
 whose support should be disabled.  For example, to disable both AutoValue and
 Lombok support, pass \<-AdisableFrameworkSupports=AutoValue,Lombok>.
-
