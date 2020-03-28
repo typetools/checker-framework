@@ -328,7 +328,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
      * @since 1.2
      */
     @Pure
-    public boolean containsValue(@Nullable Object value) {
+    public boolean containsValue(Object value) {
         return contains(value);
     }
 
@@ -344,7 +344,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object>
      */
     @Pure
     @EnsuresKeyForIf(result=true, expression="#1", map="this")
-    public synchronized boolean containsKey(@Nullable Object key) {
+    public synchronized boolean containsKey(Object key) {
         Entry<?,?> tab[] = table;
         int hash = key.hashCode();
         int index = (hash & 0x7FFFFFFF) % tab.length;

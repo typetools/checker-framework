@@ -10,10 +10,10 @@ import java.lang.annotation.Target;
 
 /**
  * A conditional postcondition annotation to indicate that a method ensures that certain expressions
- * have a certain qualifier once the method has finished, and if the result is as indicated by
- * {@code result}. The expressions for which the annotation must hold after the method's execution
- * are indicated by {@code expression} and are specified using a string. The qualifier is specified
- * by the {@code qualifier} annotation argument.
+ * have a certain qualifier once the method has terminated, and if the result is as indicated by
+ * {@code result}. The expressions for which the qualifier holds after the method's execution are
+ * indicated by {@code expression} and are specified using a string. The qualifier is specified by
+ * the {@code qualifier} annotation element.
  *
  * <p>Here is an example use:
  *
@@ -40,19 +40,18 @@ import java.lang.annotation.Target;
 @Repeatable(EnsuresQualifiersIf.class)
 public @interface EnsuresQualifierIf {
     /**
-     * The Java expressions for which the qualifier holds if the method terminates with return value
-     * {@link #result()}.
-     *
+     * @return the Java expressions for which the qualifier holds if the method terminates with
+     *     return value {@link #result()}.
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 
     /**
-     * The qualifier that is guaranteed to hold if the method terminates with return value {@link
-     * #result()}.
+     * @return the qualifier that is guaranteed to hold if the method terminates with return value
+     *     {@link #result()}.
      */
     Class<? extends Annotation> qualifier();
 
-    /** The return value of the method that needs to hold for the postcondition to hold. */
+    /** @return the return value of the method that needs to hold for the postcondition to hold */
     boolean result();
 }
