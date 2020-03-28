@@ -27,6 +27,6 @@ public class ReturnsRcvrTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"returnsrcvr"};
+        return new String[] {"returnsrcvr", "all-systems"};
     }
 }

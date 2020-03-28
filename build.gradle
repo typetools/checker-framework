@@ -55,7 +55,6 @@ ext {
     // This value is always overwritten, but Gradle needs the variable to be initialized.
     localRepo = ".git"
 }
-
 // Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
 // and with text in #installation
 switch (JavaVersion.current()) {

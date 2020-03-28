@@ -10,8 +10,14 @@ import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
+/** A visitor that extends {@link BaseTypeVisitor} for the returns receiver checker */
 public class ReturnsRcvrVisitor extends BaseTypeVisitor<ReturnsRcvrAnnotatedTypeFactory> {
 
+    /**
+     * Create a new {@code ReturnsRcvrVisitor}.
+     *
+     * @param checker the type-checker associated with this visitor
+     */
     public ReturnsRcvrVisitor(BaseTypeChecker checker) {
         super(checker);
     }

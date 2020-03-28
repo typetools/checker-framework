@@ -13,8 +13,8 @@ import org.junit.runners.Parameterized.Parameters;
  * a Java file in that directory. The file contains "// ::" comments to indicate expected errors and
  * warnings; see https://github.com/typetools/checker-framework/blob/master/checker/tests/README .
  */
-public class LombokTest extends CheckerFrameworkPerDirectoryTest {
-    public LombokTest(List<File> testFiles) {
+public class ReturnsRcvrLombokTest extends CheckerFrameworkPerDirectoryTest {
+    public ReturnsRcvrLombokTest(List<File> testFiles) {
         super(
                 testFiles,
                 ReturnsRcvrChecker.class,
@@ -26,6 +26,6 @@ public class LombokTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"lombok"};
+        return new String[] {"returnsrcvrlombok"};
     }
 }

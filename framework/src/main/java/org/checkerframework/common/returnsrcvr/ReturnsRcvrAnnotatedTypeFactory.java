@@ -24,12 +24,23 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+/** A factory that extends {@link BaseAnnotatedTypeFactory} for the returns receiver checker */
 public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+    /**
+     * property of type {@link AnnotationMirror} which will be initialized to {@link This}
+     * annotation
+     */
     AnnotationMirror THIS_ANNOT;
-    // the collection of the built-in framework supports for returns receiver checker
+
+    /** the collection of the built-in framework supports for returns receiver checker */
     Collection<FrameworkSupport> frameworkSupports;
 
+    /**
+     * Create a new {@code ReturnsRcvrAnnotatedTypeFactory}.
+     *
+     * @param checker the type-checker associated with this factory
+     */
     public ReturnsRcvrAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         THIS_ANNOT = AnnotationBuilder.fromClass(elements, This.class);
@@ -64,8 +75,15 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 super.createTypeAnnotator(), new ReturnsRcvrTypeAnnotator(this));
     }
 
+    /** A TypeAnnotator to add {@link This} annotation to the code */
     private class ReturnsRcvrTypeAnnotator extends TypeAnnotator {
 
+        /**
+         * Create a new ReturnsRcvrAnnotatedTypeFactory.
+         *
+         * @param typeFactory the {@link AnnotatedTypeFactory} associated with this {@link
+         *     TypeAnnotator}
+         */
         public ReturnsRcvrTypeAnnotator(AnnotatedTypeFactory typeFactory) {
             super(typeFactory);
         }

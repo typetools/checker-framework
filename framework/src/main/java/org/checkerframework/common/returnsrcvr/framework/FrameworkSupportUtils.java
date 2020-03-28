@@ -9,11 +9,14 @@ import org.checkerframework.javacutil.AnnotationUtils;
 /** A utility class for framework support in returns receiver checker */
 public class FrameworkSupportUtils {
 
-    // this class is non-instantiable
+    /** this class is non-instantiable */
     private FrameworkSupportUtils() {}
 
+    /** enum of supported frameworks */
     public enum Framework {
+        /** Auto Value framework */
         AUTO_VALUE,
+        /** LOMBOK framework */
         LOMBOK;
     }
 

@@ -9,7 +9,7 @@ import java.util.List;
 import org.checkerframework.framework.test.*;
 import org.junit.runners.Parameterized.Parameters;
 
-public class AutoValueTest extends CheckerFrameworkPerDirectoryTest {
+public class ReturnsRcvrAutoValueTest extends CheckerFrameworkPerDirectoryTest {
 
     private static final ImmutableList<String> ANNOTATION_PROCS =
             ImmutableList.of(
@@ -20,7 +20,7 @@ public class AutoValueTest extends CheckerFrameworkPerDirectoryTest {
                     "com.google.auto.value.processor.AutoValueProcessor",
                     org.checkerframework.common.returnsrcvr.ReturnsRcvrChecker.class.getName());
 
-    public AutoValueTest(List<File> testFiles) {
+    public ReturnsRcvrAutoValueTest(List<File> testFiles) {
         super(
                 testFiles,
                 org.checkerframework.common.returnsrcvr.ReturnsRcvrChecker.class,
@@ -31,7 +31,7 @@ public class AutoValueTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"autovalue"};
+        return new String[] {"returnsrcvrautovalue"};
     }
 
     /**
