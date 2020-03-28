@@ -4,6 +4,8 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.AnnotationMirror;
 import javax.tools.Diagnostic;
+
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.DiagMessage;
