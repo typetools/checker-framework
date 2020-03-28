@@ -23,8 +23,8 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @InheritedAnnotation
 public @interface EnsuresLockHeldIf {
     /**
-     * Java expressions whose values are held after the method returns the given result.
-     *
+     * @return Java expressions whose values are locks that are held after the method returns the
+     *     given result
      * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
      *     Java expressions</a>
      */
@@ -33,6 +33,6 @@ public @interface EnsuresLockHeldIf {
     // that conditional postconditions have a field named "expression".
     String[] expression();
 
-    /** The return value of the method that needs to hold for the postcondition to hold. */
+    /** @return the return value of the method under which the postconditions hold */
     boolean result();
 }

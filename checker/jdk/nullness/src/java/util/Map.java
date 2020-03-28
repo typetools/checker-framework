@@ -176,7 +176,7 @@ public interface Map<K, V> {
      */
     @Pure
     @EnsuresKeyForIf(result=true, expression="#1", map="this")
-    boolean containsKey(@Nullable Object key);
+    boolean containsKey(Object key);
 
     /**
      * Returns <tt>true</tt> if this map maps one or more keys to the
@@ -197,7 +197,7 @@ public interface Map<K, V> {
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     @Pure
-    boolean containsValue(@Nullable Object value);
+    boolean containsValue(Object value);
 
     /**
      * Returns the value to which the specified key is mapped,
@@ -224,16 +224,8 @@ public interface Map<K, V> {
      *         does not permit null keys
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
-    /// Despite the below comment, commit 18e1bb8d2f1c2cdc88af5616faadb28a5381b8d2
-    /// made the parameter @Nullable.  Was that a compromise to reduce false positives?
-    // The parameter is not nullable, because implementations of Map.get and
-    // Map.put are specifically permitted to throw NullPointerException if
-    // any of the arguments is a null).  And some implementations do not
-    // permit nulls (sorted queues PriorityQueue, Hashtable, most concurrent
-    // collections).  Some other implementation do accept nulls and are so
-    // annotated (see ArrayList, LinkedList, HashMap).
     @Pure
-    @Nullable V get(@Nullable Object key);
+    @Nullable V get(Object key);
 
     // Modification Operations
 
@@ -294,7 +286,7 @@ public interface Map<K, V> {
      *         map does not permit null keys
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
-    @Nullable V remove(@Nullable Object key);
+    @Nullable V remove(Object key);
 
 
     // Bulk Operations

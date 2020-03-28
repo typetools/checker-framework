@@ -74,6 +74,8 @@ public @interface EnsuresLTLengthOf {
      * This expression plus each of the value expressions is less than the length of the sequence on
      * successful method termination. The {@code offset} element must ether be empty or the same
      * length as {@code targetValue}.
+     *
+     * @return the offset expressions
      */
     @JavaExpression
     @QualifierArgument("offset")

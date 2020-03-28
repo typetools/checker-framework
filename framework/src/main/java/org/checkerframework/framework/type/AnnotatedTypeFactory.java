@@ -3237,7 +3237,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param metaAnnotationClass the class of the meta-annotation that needs to be present
      * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is the annotation mirror
      *     at {@code element}, and {@code metaAnno} is the annotation mirror (of type {@code
-     *     metaAnnotationClass}) used to annotate {@code anno}.
+     *     metaAnnotationClass}) used to meta-annotate the declaration of {@code anno}
      */
     public List<Pair<AnnotationMirror, AnnotationMirror>> getDeclAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotationClass) {
@@ -3245,27 +3245,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Set<AnnotationMirror> annotationMirrors = getDeclAnnotations(element);
 
         // Go through all annotations found.
-        for (AnnotationMirror annotation : annotationMirrors) {
-            List<? extends AnnotationMirror> annotationsOnAnnotation;
+        for (AnnotationMirror candidate : annotationMirrors) {
+            List<? extends AnnotationMirror> metaAnnotationsOnAnnotation;
             try {
-                annotationsOnAnnotation =
-                        annotation.getAnnotationType().asElement().getAnnotationMirrors();
+                metaAnnotationsOnAnnotation =
+                        candidate.getAnnotationType().asElement().getAnnotationMirrors();
             } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                 // Fix for Issue 309: If a CompletionFailure occurs, issue a warning.
                 // I didn't find a nicer alternative to check whether the Symbol can be completed.
                 // The completer field of a Symbol might be non-null also in successful cases.
                 // Issue a warning (exception only happens once) and continue.
                 checker.reportWarning(
-                        annotation.getAnnotationType().asElement(),
+                        candidate.getAnnotationType().asElement(),
                         "annotation.not.completed",
                         ElementUtils.getVerboseName(element),
-                        annotation);
+                        candidate);
                 continue;
             }
             // First call copier, if exception, continue normal modula laws.
-            for (AnnotationMirror a : annotationsOnAnnotation) {
-                if (areSameByClass(a, metaAnnotationClass)) {
-                    result.add(Pair.of(annotation, a));
+            for (AnnotationMirror ma : metaAnnotationsOnAnnotation) {
+                if (areSameByClass(ma, metaAnnotationClass)) {
+                    result.add(Pair.of(candidate, ma));
                 }
             }
         }

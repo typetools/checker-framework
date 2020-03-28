@@ -82,12 +82,11 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @InheritedAnnotation
 public @interface EnsuresNonNullIf {
     /**
-     * Java expression(s) that are non-null after the method returns the given result.
-     *
+     * @return Java expression(s) that are non-null after the method returns the given result
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 
-    /** The return value of the method that needs to hold for the postcondition to hold. */
+    /** @return the return value of the method under which the postcondition holds */
     boolean result();
 }
