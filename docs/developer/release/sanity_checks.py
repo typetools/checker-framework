@@ -87,15 +87,6 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
 
     execute("mkdir -p " + maven_sanity_dir)
 
-    path_to_artifacts = os.path.join(os.path.expanduser("~"), ".m2", "repository", "org", "checkerframework")
-    print("This script will now delete your Maven Checker Framework artifacts.\n" +
-          "See README-release-process.html#Maven-Plugin dependencies.  These artifacts " +
-          "will need to be re-downloaded the next time you need them.  This will be " +
-          "done automatically by Maven next time you use the plugin.")
-
-    if os.path.isdir(path_to_artifacts):
-        delete_path(path_to_artifacts)
-
     maven_example_dir = os.path.join(maven_sanity_dir, "MavenExample")
     output_log = os.path.join(maven_example_dir, "output.log")
 
@@ -104,8 +95,17 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
 
     execute(get_example_dir_cmd)
 
-    maven_example_pom = os.path.join(maven_example_dir, "pom.xml")
-    add_repo_information(maven_example_pom, repo_url)
+    if repo_url != "":
+        path_to_artifacts = os.path.join(os.path.expanduser("~"), ".m2", "repository", "org", "checkerframework")
+        print("This script will now delete your Maven Checker Framework artifacts.\n" +
+            "See README-release-process.html#Maven-Plugin dependencies.  These artifacts " +
+            "will need to be re-downloaded the next time you need them.  This will be " +
+            "done automatically by Maven next time you use the plugin.")
+
+        if os.path.isdir(path_to_artifacts):
+            delete_path(path_to_artifacts)
+        maven_example_pom = os.path.join(maven_example_dir, "pom.xml")
+        add_repo_information(maven_example_pom, repo_url)
 
     os.environ['JAVA_HOME'] = os.environ['JAVA_8_HOME']
     execute_write_to_file("mvn compile", output_log, False, maven_example_dir)
