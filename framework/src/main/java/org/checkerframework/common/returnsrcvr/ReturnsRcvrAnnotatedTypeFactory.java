@@ -23,6 +23,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 
 /** A factory that extends {@link BaseAnnotatedTypeFactory} for the returns receiver checker */
 public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -47,7 +48,7 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         EnumSet<FrameworkSupportUtils.Framework> frameworkSet =
                 FrameworkSupportUtils.getFrameworkSet(
-                        checker.getOption(ReturnsRcvrChecker.DISABLED_FRAMEWORK_SUPPORTS));
+                        checker.getOption(ReturnsRcvrChecker.DISABLE_FRAMEWORK_SUPPORT));
         frameworkSupports = new ArrayList<FrameworkSupport>();
 
         for (FrameworkSupportUtils.Framework framework : frameworkSet) {
@@ -58,6 +59,8 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case LOMBOK:
                     frameworkSupports.add(new LombokSupport());
                     break;
+                default:
+                    throw new BugInCF("Unknown framework " + framework);
             }
         }
         // we have to call this explicitly

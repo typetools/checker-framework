@@ -5,6 +5,7 @@ import java.util.EnumSet;
 import javax.lang.model.element.Element;
 import org.checkerframework.common.returnsrcvr.ReturnsRcvrChecker;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.UserError;
 
 /** A utility class for framework support in returns receiver checker */
 public class FrameworkSupportUtils {
@@ -21,8 +22,8 @@ public class FrameworkSupportUtils {
     }
 
     /**
-     * Determine the framework supports that should be disabled according to the flag {@code
-     * disableFrameworkSupports}, return a EnumSet containing the framework supports in use
+     * Return which frameworks should be supported, respecting the command-line argument {@code
+     * --disableFrameworkSupport}.
      *
      * @param option a comma-separated list of frameworks whose support should be disabled
      * @return an EnumSet of all framework supports in use
@@ -39,6 +40,10 @@ public class FrameworkSupportUtils {
                     case ReturnsRcvrChecker.LOMBOK_SUPPORT:
                         frameworkSet.remove(Framework.LOMBOK);
                         break;
+                    default:
+                        throw new UserError(
+                                "Unrecognized framework in --disabledFrameworkSupport: "
+                                        + disabledFrameworkSupport);
                 }
             }
         }
