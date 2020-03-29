@@ -982,7 +982,7 @@ jar.onlyIf {false}
 String copyAndExpandPomFile(String pomFile) {
     mkdir "${buildDir}/maven"
     copy {
-        from pom
+        from pomFile
         into "${buildDir}/maven"
         expand('checkerframeworkversion': version)
     }
