@@ -109,7 +109,7 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // check each supported framework
                 for (FrameworkSupport frameworkSupport : frameworkSupports) {
                     // see if the method in the framework should return this
-                    if (frameworkSupport.knownToReturnThis(t)) {
+                    if (frameworkSupport.returnsThis(t)) {
                         // add @This annotation
                         returnType.replaceAnnotation(THIS_ANNOT);
                         AnnotatedTypeMirror.AnnotatedDeclaredType receiverType =

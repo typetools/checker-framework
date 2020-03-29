@@ -9,7 +9,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class LombokSupport implements FrameworkSupport {
 
     @Override
-    public boolean knownToReturnThis(AnnotatedTypeMirror.AnnotatedExecutableType t) {
+    public boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t) {
         ExecutableElement element = t.getElement();
 
         Element enclosingElement = element.getEnclosingElement();
