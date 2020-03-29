@@ -76,9 +76,8 @@ def javac_sanity_check(checker_framework_website, release_version):
 
 def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     """
-       Download the Checker Framework maven plugin from the given repository.  Download the
-       MavenExample example for the Maven plugin and run the NullnessChecker on it.  If we don't
-       encounter the expected errors fail.
+       Run the Maven sanity check with the local artifacts or from the repo at
+       repo_url.
     """
     checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
     maven_sanity_dir = os.path.join(SANITY_DIR, sub_sanity_dir_name)
