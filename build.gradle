@@ -987,7 +987,7 @@ String copyAndExpandPomFile(String pomFile) {
         expand('checkerframeworkversion': version)
     }
 
-    new File("${buildDir}/maven").toPath().resolve(new File(pom).toPath().last())
+    new File("${buildDir}/maven").toPath().resolve(new File(pomFile).toPath().last())
 }
 
 /**
