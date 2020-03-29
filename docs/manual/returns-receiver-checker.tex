@@ -7,7 +7,7 @@ returns its receiver (i.e., the \<this> parameter).
 There are two ways to run the Returns Receiver Checker.
 \begin{itemize}
 \item
-Typically, it is automatically run by another type checker.
+Typically, it is automatically run by another checker.
 \item
 Alternately, you can run just the Returns Receiver Checker, by
 supplying the following command-line options to javac:
@@ -17,9 +17,9 @@ supplying the following command-line options to javac:
 
 \sectionAndLabel{Annotations}{returns-receiver-checker-annotations}
 
-With the Returns Receiver Checker, the type annotation
+The type annotation
 \refqualclass{common/returnsrcvr/qual}{This} on the return type of a method
-indicates that the method should return its receiver.  The
+indicates that the method returns its receiver.  The
 \refqualclass{common/returnsrcvr/qual}{This} annotation should only be written
 on the return type of a method, or (in rare cases) as part of a downcast.  When
 using certain frameworks for the builder pattern,
