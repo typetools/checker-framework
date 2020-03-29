@@ -82,7 +82,7 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
     Central. This is a reversible step, since artifacts that have not been
     released can be dropped, which for our purposes is equivalent to never
     having staged them."""
-    execute("./gradlew deployArtifactsToSonatype")
+    execute("./gradlew deployArtifactsToSonatype", working_dir=CHECKER_FRAMEWORK)
 
 def is_file_empty(filename):
     "Returns true if the given file has size 0."
@@ -265,7 +265,7 @@ def main(argv):
 
         print_step("3b: Run Maven sanity test on development release.")
         if auto or prompt_yes_no("Run Maven sanity test on development repo?", True):
-            maven_sanity_check("maven-dev", MAVEN_DEV_REPO, new_checker_version)
+            maven_sanity_check("maven-dev", "", new_checker_version)
 
     # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
     # This step stages (but doesn't release) the Checker Framework's Maven artifacts in the Sonatypes
