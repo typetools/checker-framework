@@ -94,9 +94,8 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     get_example_dir_cmd = "ant -f %s update-and-copy-maven-example -Dchecker=%s -Dversion=%s -Ddest.dir=%s" % (ant_release_script, checker_dir, release_version, maven_sanity_dir)
 
     execute(get_example_dir_cmd)
-
+    path_to_artifacts = os.path.join(os.path.expanduser("~"), ".m2", "repository", "org", "checkerframework")
     if repo_url != "":
-        path_to_artifacts = os.path.join(os.path.expanduser("~"), ".m2", "repository", "org", "checkerframework")
         print("This script will now delete your Maven Checker Framework artifacts.\n" +
             "See README-release-process.html#Maven-Plugin dependencies.  These artifacts " +
             "will need to be re-downloaded the next time you need them.  This will be " +
@@ -109,8 +108,8 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
 
     os.environ['JAVA_HOME'] = os.environ['JAVA_8_HOME']
     execute_write_to_file("mvn compile", output_log, False, maven_example_dir)
-
-    delete_path(path_to_artifacts)
+    if repo_url != "":
+        delete_path(path_to_artifacts)
 
 def check_results(title, output_log, expected_errors):
     """Verify the given actual output of a sanity check against the given
