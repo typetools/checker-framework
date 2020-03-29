@@ -175,7 +175,7 @@ public class KeyForPropagator {
     }
 
     /**
-     * An annotated type merger that merges @KeyFor annotations and only if the type that is
+     * An annotated type replacer that replaces @KeyFor annotations and only if the type that is
      * receiving an annotation has an @UnknownKeyFor annotation or NO key for annotations.
      */
     private class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
@@ -193,15 +193,15 @@ public class KeyForPropagator {
         }
 
         @Override
-        protected void replaceAnnotations(AnnotatedTypeMirror src, AnnotatedTypeMirror dst) {
-            final AnnotationMirror srcKeyFor = src.getAnnotationInHierarchy(UNKNOWN_KEYFOR);
-            final AnnotationMirror dstKeyFor = dst.getAnnotationInHierarchy(UNKNOWN_KEYFOR);
+        protected void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
+            final AnnotationMirror fromKeyFor = from.getAnnotationInHierarchy(UNKNOWN_KEYFOR);
+            final AnnotationMirror toKeyFor = to.getAnnotationInHierarchy(UNKNOWN_KEYFOR);
 
             boolean toNeedsAnnotation =
-                    dstKeyFor == null || AnnotationUtils.areSame(dstKeyFor, UNKNOWN_KEYFOR);
-            if (srcKeyFor != null && toNeedsAnnotation) {
-                AnnotationBuilder annotationBuilder = new AnnotationBuilder(env, srcKeyFor);
-                dst.replaceAnnotation(annotationBuilder.build());
+                    toKeyFor == null || AnnotationUtils.areSame(toKeyFor, UNKNOWN_KEYFOR);
+            if (fromKeyFor != null && toNeedsAnnotation) {
+                AnnotationBuilder annotationBuilder = new AnnotationBuilder(env, fromKeyFor);
+                to.replaceAnnotation(annotationBuilder.build());
             }
         }
     }
