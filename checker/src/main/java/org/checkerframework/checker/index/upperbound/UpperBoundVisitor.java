@@ -286,9 +286,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * type of the array.
      */
     private boolean relaxedCommonAssignment(AnnotatedTypeMirror varType, ExpressionTree valueExp) {
-        List<? extends ExpressionTree> expressions;
         if (valueExp.getKind() == Kind.NEW_ARRAY && varType.getKind() == TypeKind.ARRAY) {
-            expressions = ((NewArrayTree) valueExp).getInitializers();
+            List<? extends ExpressionTree> expressions =
+                    ((NewArrayTree) valueExp).getInitializers();
             if (expressions == null || expressions.isEmpty()) {
                 return false;
             }
