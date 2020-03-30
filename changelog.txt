@@ -15,10 +15,10 @@ contains, indexOf, and remove, the annotated JDK now forbids null as an
 argument.  To make the Nullness Checker permit null, pass
 `-Astubs=checker.jar/collection-object-parameters-may-be-null.astub`.
 
-The argument to @SuppressWarnings can be a substring of a message key
-delimited by periods or either end of the key.  (Previously, any substring
-worked, including the empty string which suppressed all warnings.  Use
-"all" to suppress all warnings.)
+The argument to @SuppressWarnings can be a substring of a message key that
+is delimited by periods and/or either end of the key.  (Previously, any
+substring worked, including the empty string which suppressed all warnings.
+Use "all" to suppress all warnings.)
 
 All postcondition annotations are repeatable (e.g., `@EnsuresNonNull`,
 `@EnsuresNonNullIf`, ...).
