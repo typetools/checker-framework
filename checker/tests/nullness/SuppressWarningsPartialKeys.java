@@ -42,10 +42,6 @@ public class SuppressWarningsPartialKeys {
         return null;
     }
 
-    @NonNull Object mn6() {
-        return null;
-    }
-
     @SuppressWarnings("i")
     @NonNull Object err1() {
         // :: error: (return.type.incompatible)
