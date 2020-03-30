@@ -269,7 +269,7 @@ class String{
     @StaticallyExecutable String(char[] value, int offset, int count);
     @StaticallyExecutable String(int[] codePoints, int offset, int count);
 
-    @StaticallyExecutable char charAt(int index);
+    @StaticallyExecutable @IntRange(from=0, to=65535) char charAt(int index);
     @StaticallyExecutable int codePointAt(int index);
     @StaticallyExecutable int codePointBefore(int index);
     @StaticallyExecutable int codePointCount(int beginIndex, int endIndex);
@@ -316,7 +316,7 @@ class String{
     @StaticallyExecutable CharSequence subSequence(int beginIndex, int endIndex);
     @StaticallyExecutable String substring(int beginIndex);
     @StaticallyExecutable String substring(int beginIndex, int endIndex);
-    @StaticallyExecutable char @PolyValue[] toCharArray(@PolyValue String this);
+    @StaticallyExecutable @IntRange(from=0, to=65535) char @PolyValue[] toCharArray(@PolyValue String this);
     @StaticallyExecutable String toLowerCase();
     @StaticallyExecutable String toLowerCase(Locale locale);
     @StaticallyExecutable @PolyValue String toString(@PolyValue String this);
