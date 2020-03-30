@@ -3,29 +3,16 @@
 
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <name>Checker Framework</name>
     <groupId>org.checkerframework</groupId>
-    <artifactId>checker</artifactId>
+    <artifactId>dataflow-shaded</artifactId>
+    <version>${checkerframeworkversion}</version>
 
-    <!-- The comments in the version number are used to do a text substitution. Don't remove them.
-         See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></version>
-
-    <distributionManagement>
-        <repository>
-            <id>checker-releases</id>
-            <url>https://checkerframework.org/dev/m2-repo</url>
-        </repository>
-    </distributionManagement>
-
+    <name>Dataflow (shaded)</name>
     <url>https://checkerframework.org</url>
     <description>
-        The Checker Framework enhances Java's type system to
-        make it more powerful and useful. This lets software developers
-        detect and prevent errors in their Java programs.
-        The Checker Framework includes compiler plug-ins ("checkers")
-        that find bugs or verify their absence. It also permits you to
-        write your own compiler plug-ins.
+        Dataflow is a dataflow framework based on the javac compiler.
+        The packages in this artifact have been renamed to org.checkerframework.shaded.*.
+        (Unlike the dataflow artifact, this artifact contains the dependencies it requires.)
     </description>
 
     <licenses>
