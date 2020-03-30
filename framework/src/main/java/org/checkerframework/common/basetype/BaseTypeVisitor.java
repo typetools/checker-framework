@@ -2277,23 +2277,46 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree) {
-
         if (checker.hasOption("showchecks")) {
-            long valuePos = positions.getStartPosition(root, valueTree);
-            System.out.printf(
-                    " %s%s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+            commonAssignmentCheckEndDiagnostic(
                     (success
-                            ? "success: actual is subtype of expected"
-                            : "FAILURE: actual is not subtype of expected"),
-                    (extraMessage == null ? "" : " because " + extraMessage),
-                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
-                    valueTree.getKind(),
-                    valueTree,
-                    valueType.getKind(),
-                    valueType.toString(),
-                    varType.getKind(),
-                    varType.toString());
+                                    ? "success: actual is subtype of expected"
+                                    : "FAILURE: actual is not subtype of expected")
+                            + (extraMessage == null ? "" : " because " + extraMessage),
+                    varType,
+                    valueType,
+                    valueTree);
         }
+    }
+
+    /**
+     * Prints a diagnostic about exiting commonAssignmentCheck, unconditionally.
+     *
+     * <p>Most clients should call {@link #commonAssignmentCheckEndDiagnostic(boolean, String,
+     * AnnotatedTypeMirror, AnnotatedTypeMirror, Tree)}. The purpose of this method is to permit
+     * customizing the message that is printed.
+     *
+     * @param message the result, plus information about why the result is what it is; may be null
+     * @param varType the annotated type of the variable
+     * @param valueType the annotated type of the value
+     * @param valueTree the location to use when reporting the error message
+     */
+    protected final void commonAssignmentCheckEndDiagnostic(
+            String message,
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree) {
+        long valuePos = positions.getStartPosition(root, valueTree);
+        System.out.printf(
+                " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+                message,
+                (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
+                valueTree.getKind(),
+                valueTree,
+                valueType.getKind(),
+                valueType.toString(),
+                varType.getKind(),
+                varType.toString());
     }
 
     /**
