@@ -14,8 +14,8 @@ argument.  To make the Nullness Checker permit null, pass
 `-Astubs=checker.jar/collection-object-parameters-may-be-null.astub`.
 
 The argument to @SuppressWarnings can be a substring of a message key
-delimited by periods or either end of the key.  Previously, any substring
-worked, including the empty string which suppressed all warnings.  (Use
+delimited by periods or either end of the key.  (Previously, any substring
+worked, including the empty string which suppressed all warnings.  Use
 "all" to suppress all warnings.)
 
 Implementation details:
