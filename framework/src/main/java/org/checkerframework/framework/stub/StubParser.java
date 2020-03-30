@@ -308,7 +308,7 @@ public class StubParser {
                         if (element != null) {
                             // Find nested annotations
                             // Find compile time constant fields, or values of an enum
-                            putAllMerge(result, annosInType(element));
+                            putAllNew(result, annosInType(element));
                             importedConstants.addAll(getImportableMembers(element));
                             addEnclosingTypesToImportedTypes(element);
                         }
@@ -317,7 +317,7 @@ public class StubParser {
                         // Wildcard import of members of a package
                         PackageElement element = findPackage(imported);
                         if (element != null) {
-                            putAllMerge(result, annosInPackage(element));
+                            putAllNew(result, annosInPackage(element));
                             addEnclosingTypesToImportedTypes(element);
                         }
                     }
@@ -1955,13 +1955,14 @@ public class StubParser {
     }
 
     /**
-     * Just like Map.put, but merges (using {@link AnnotatedTypeReplacer#replace}) with any existing
-     * annotated type for the given key, instead of replacing it.
+     * Just like Map.put, but modifies an existing annotated type for the given key in {@code m}. If
+     * {@code m} already has an annotated type for {@code key}, each annotation in {@code newType}
+     * will replace annotations from the same hierarchy at the same location in the existing
+     * annotated type. Annotations in other hierarchies will be preserved.
      *
-     * @param m a map
-     * @param key a key for the map
-     * @param newType a value to merge into the map: merge it with the value currently at {@code
-     *     key} and replace that value
+     * @param m the map to put the new type into
+     * @param key the key for the map
+     * @param newType the new type for the key
      */
     private void putMerge(
             Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror newType) {
@@ -1970,13 +1971,9 @@ public class StubParser {
         }
         if (m.containsKey(key)) {
             AnnotatedTypeMirror existingType = m.get(key);
-            if (isJdkAsStub) {
-                // AnnotatedTypeReplacer picks the annotations from the first argument if an
-                // annotation exist in both types in the same location for the same hierarchy.
-                // So, if the newType is from a JDK stub file, then prefer the existing type.  This
-                // way user supplied stub files override jdk stub files.
-                AnnotatedTypeReplacer.replace(existingType, newType);
-            } else {
+            // If the newType is from a JDK stub file, then keep the existing type.  This
+            // way user supplied stub files override jdk stub files.
+            if (!isJdkAsStub) {
                 AnnotatedTypeReplacer.replace(newType, existingType);
             }
             m.put(key, existingType);
@@ -1986,14 +1983,15 @@ public class StubParser {
     }
 
     /**
-     * Just like Map.putAll, but merges with existing values using {@link #putMerge}.
+     * Just like Map.putAll, but modifies existing values using {@link #putNoOverride(Map, Object,
+     * Object)}.
      *
+     * @param m the destination map
+     * @param m2 the source map
      * @param <K> the key type for the maps
      * @param <V> the value type for the maps
-     * @param m the map to merge into
-     * @param m2 the map to merge from
      */
-    private static <K, V> void putAllMerge(Map<K, V> m, Map<K, V> m2) {
+    private static <K, V> void putAllNew(Map<K, V> m, Map<K, V> m2) {
         for (Map.Entry<K, V> e2 : m2.entrySet()) {
             putNoOverride(m, e2.getKey(), e2.getValue());
         }

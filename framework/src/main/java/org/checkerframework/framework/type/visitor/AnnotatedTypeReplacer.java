@@ -23,7 +23,9 @@ import org.checkerframework.javacutil.BugInCF;
 public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
 
     /**
-     * Replaces or adds all annotations from {@code from} to {@code to}.
+     * Replaces or adds all annotations from {@code from} to {@code to}. Annotations from {@code
+     * from} will be used everywhere they exist, but annotations in {@code to} will be kept anywhere
+     * that {@code from} is unannotated.
      *
      * @param from the annotated type mirror from which to take new annotations
      * @param to the annotated type mirror to which the annotations will be added
@@ -37,6 +39,8 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
 
     /**
      * Replaces or adds annotations in {@code top}'s hierarchy from {@code from} to {@code to}.
+     * Annotations from {@code from} will be used everywhere they exist, but annotations in {@code
+     * to} will be kept anywhere that {@code from} is unannotated.
      *
      * @param from the annotated type mirror from which to take new annotations
      * @param to the annotated type mirror to which the annotations will be added
@@ -71,10 +75,10 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
     }
 
     @Override
-    protected Void compare(AnnotatedTypeMirror one, AnnotatedTypeMirror two) {
-        assert one != two;
-        if (one != null && two != null) {
-            replaceAnnotations(one, two);
+    protected Void compare(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
+        assert from != to;
+        if (from != null && to != null) {
+            replaceAnnotations(from, to);
         }
         return null;
     }
@@ -85,19 +89,19 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
     }
 
     /**
-     * Replace the annotations in dst with the annotations in src
+     * Replace the annotations in to with the annotations in from, wherever from has an annotation.
      *
-     * @param src the source of the annotations
-     * @param dst the destination of the annotations
+     * @param from the source of the annotations
+     * @param to the destination of the annotations, modified by this method
      */
     protected void replaceAnnotations(
-            final AnnotatedTypeMirror src, final AnnotatedTypeMirror dst) {
+            final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
         if (top == null) {
-            dst.replaceAnnotations(src.getAnnotations());
+            to.replaceAnnotations(from.getAnnotations());
         } else {
-            final AnnotationMirror replacement = src.getAnnotationInHierarchy(top);
+            final AnnotationMirror replacement = from.getAnnotationInHierarchy(top);
             if (replacement != null) {
-                dst.replaceAnnotation(src.getAnnotationInHierarchy(top));
+                to.replaceAnnotation(from.getAnnotationInHierarchy(top));
             }
         }
     }
