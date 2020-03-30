@@ -7,15 +7,17 @@ import org.checkerframework.common.returnsrcvr.ReturnsRcvrChecker;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.UserError;
 
-/** A utility class for framework support in returns receiver checker */
+/** A utility class for framework support in returns receiver checker. */
 public class FrameworkSupportUtils {
 
     /** this class is non-instantiable */
-    private FrameworkSupportUtils() {}
+    private FrameworkSupportUtils() {
+        throw new RuntimeException();
+    }
 
     /** enum of supported frameworks */
     public enum Framework {
-        /** Auto Value framework */
+        /** AutoValue framework */
         AUTO_VALUE,
         /** LOMBOK framework */
         LOMBOK;
