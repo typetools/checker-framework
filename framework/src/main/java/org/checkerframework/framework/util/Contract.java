@@ -7,12 +7,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
-import org.checkerframework.framework.qual.EnsuresQualifiers;
-import org.checkerframework.framework.qual.EnsuresQualifiersIf;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.RequiresQualifier;
-import org.checkerframework.framework.qual.RequiresQualifiers;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -153,21 +150,21 @@ public abstract class Contract {
                 "precondition",
                 PreconditionAnnotation.class,
                 RequiresQualifier.class,
-                RequiresQualifiers.class,
+                RequiresQualifier.List.class,
                 "value"),
         /** A postcondition. */
         POSTCONDITION(
                 "postcondition",
                 PostconditionAnnotation.class,
                 EnsuresQualifier.class,
-                EnsuresQualifiers.class,
+                EnsuresQualifier.List.class,
                 "value"),
         /** A conditional postcondition. */
         CONDITIONALPOSTCONDITION(
                 "conditional.postcondition",
                 ConditionalPostconditionAnnotation.class,
                 EnsuresQualifierIf.class,
-                EnsuresQualifiersIf.class,
+                EnsuresQualifierIf.List.class,
                 "expression");
         /** Used for constructing error messages. */
         public final String errorKey;

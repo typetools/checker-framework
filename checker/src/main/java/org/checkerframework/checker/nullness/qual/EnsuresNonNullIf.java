@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -51,23 +52,12 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * <pre>{@code   @EnsuresNonNullIf(expression="getComponentType()", result=true)
  *   public native @Pure boolean isArray();}</pre>
  *
- * <!-- Issue:  https://tinyurl.com/cfissue/1307 -->
- * You cannot write two {@code @EnsuresNonNullIf} annotations on a single method; to get the effect
- * of
+ * You can write two {@code @EnsuresNonNullIf} annotations on a single method:
  *
  * <pre><code>
  * &nbsp;   @EnsuresNonNullIf(expression="outputFile", result=true)
  * &nbsp;   @EnsuresNonNullIf(expression="memoryOutputStream", result=false)
  *     public boolean isThresholdExceeded() { ... }
- * </code></pre>
- *
- * you need to instead write
- *
- * <pre><code>
- * &nbsp;@EnsuresQualifiersIf({
- * &nbsp;  @EnsuresQualifierIf(result=true, qualifier=NonNull.class, expression="outputFile"),
- * &nbsp;  @EnsuresQualifierIf(result=false, qualifier=NonNull.class, expression="memoryOutputStream")
- * })
  * </code></pre>
  *
  * @see NonNull
@@ -80,6 +70,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
 @InheritedAnnotation
+@Repeatable(EnsuresNonNullIf.List.class)
 public @interface EnsuresNonNullIf {
     /**
      * @return Java expression(s) that are non-null after the method returns the given result
@@ -89,4 +80,20 @@ public @interface EnsuresNonNullIf {
 
     /** @return the return value of the method under which the postcondition holds */
     boolean result();
+
+    /**
+     * * A wrapper annotation that makes the {@link EnsuresNonNullIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresNonNullIf} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
+    @InheritedAnnotation
+    @interface List {
+        /** @return the repeatable annotations */
+        EnsuresNonNullIf[] value();
+    }
 }
