@@ -12,7 +12,6 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.tools.JavaFileObject.Kind;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
@@ -102,13 +101,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (!isPresentedAsSource(constructorElt)) {
+        if (!ElementUtils.isElementFromSourceCode(constructorElt)) {
             return;
         }
 
         String className = getEnclosingClassName(constructorElt);
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz = storage.getAClass(className, jaifPath);
+        AClassWrapper clazz =
+                storage.getAClass(className, jaifPath, ((MethodSymbol) constructorElt).enclClass());
         AMethodWrapper method = clazz.vivifyMethod(constructorElt);
 
         List<Node> arguments = objectCreationNode.getArguments();
@@ -123,13 +123,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (!isPresentedAsSource(methodElt)) {
+        if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
         }
 
         String className = getEnclosingClassName(methodElt);
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz = storage.getAClass(className, jaifPath);
+        AClassWrapper clazz =
+                storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
 
         AMethodWrapper method = clazz.vivifyMethod(methodElt);
 
@@ -180,13 +181,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (!isPresentedAsSource(methodElt)) {
+        if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
         }
 
         String className = getEnclosingClassName(methodElt);
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz = storage.getAClass(className, jaifPath);
+        AClassWrapper clazz =
+                storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
         AMethodWrapper methodWrapper = clazz.vivifyMethod(methodElt);
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
@@ -226,7 +228,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (!isPresentedAsSource(lhs)) {
+        if (!isElementFromSourceCode(lhs)) {
             return;
         }
 
@@ -283,7 +285,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         ClassSymbol enclosingClass = ((VarSymbol) lhs.getElement()).enclClass();
 
         // do not infer types for code that isn't presented as source
-        if (!isPresentedAsSource(enclosingClass)) {
+        if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
             return;
         }
 
@@ -330,7 +332,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         // do not infer types for code that isn't presented as source
         if (methodTree == null
-                || !isPresentedAsSource(TreeUtils.elementFromDeclaration(methodTree))) {
+                || !ElementUtils.isElementFromSourceCode(
+                        TreeUtils.elementFromDeclaration(methodTree))) {
             return;
         }
 
@@ -376,7 +379,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ExecutableElement overriddenMethodElement = pair.getValue();
 
             // do not infer types for code that isn't presented as source
-            if (!isPresentedAsSource(overriddenMethodElement)) {
+            if (!ElementUtils.isElementFromSourceCode(overriddenMethodElement)) {
                 continue;
             }
 
@@ -390,7 +393,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
             @DotSeparatedIdentifiers String superClassName = getEnclosingClassName(overriddenMethodElement);
             String superJaifPath = storage.getJaifPath(superClassName);
-            AClassWrapper superClazz = storage.getAClass(superClassName, superJaifPath);
+            AClassWrapper superClazz =
+                    storage.getAClass(
+                            superClassName,
+                            superJaifPath,
+                            ((MethodSymbol) overriddenMethodElement).enclClass());
             AMethodWrapper overriddenMethodInSuperclass =
                     superClazz.vivifyMethod(overriddenMethodElement);
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
@@ -436,36 +443,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Checks whether a given ClassSymbol came from a source file or not. This is different from
-     * {@link ElementUtils#isElementFromByteCode(Element)}, which will return true if there is a
-     * classfile for the given element - even if there is also a source file!
-     *
-     * @param symbol the class to check
-     * @return true if a source file containing the class is being compiled
-     */
-    private static boolean isPresentedAsSource(ClassSymbol symbol) {
-        // This is a bit of a hack to avoid treating JDK as source files. JDK files toUri() method
-        // returns just the name of the file (e.g. "Object.java"), but any file actually being
-        // compiled
-        // returns a file URI to the real, actual source file.
-        return symbol.sourcefile != null
-                && symbol.sourcefile.getKind() == Kind.SOURCE
-                && symbol.sourcefile.toUri().toString().startsWith("file:");
-    }
-
-    /**
-     * Checks whether a given method came from a source file or not. This is different from {@link
-     * ElementUtils#isElementFromByteCode(Element)}, which will return true if there is a classfile
-     * for the given element - even if there is also a source file!
-     *
-     * @param executableElement the method to check
-     * @return true if a source file containing the method is being compiled
-     */
-    private static boolean isPresentedAsSource(ExecutableElement executableElement) {
-        return isPresentedAsSource(((MethodSymbol) executableElement).enclClass());
-    }
-
-    /**
      * Checks whether a given local variable came from a source file or not. This is different from
      * {@link ElementUtils#isElementFromByteCode(Element)}, which will return true if there is a
      * classfile for the given element - even if there is also a source file!
@@ -473,8 +450,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param localVariableNode the local variable declaration to check
      * @return true if a source file containing the variable is being compiled
      */
-    private boolean isPresentedAsSource(LocalVariableNode localVariableNode) {
-        return isPresentedAsSource(
-                (ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()));
+    private boolean isElementFromSourceCode(LocalVariableNode localVariableNode) {
+        return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
     }
 }
