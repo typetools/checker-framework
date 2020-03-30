@@ -3244,7 +3244,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
         Set<AnnotationMirror> annotationMirrors = getDeclAnnotations(element);
 
-        // Go through all annotations found.
         for (AnnotationMirror candidate : annotationMirrors) {
             List<? extends AnnotationMirror> metaAnnotationsOnAnnotation;
             try {
@@ -3265,11 +3264,64 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // First call copier, if exception, continue normal modula laws.
             for (AnnotationMirror ma : metaAnnotationsOnAnnotation) {
                 if (areSameByClass(ma, metaAnnotationClass)) {
-                    result.add(Pair.of(candidate, ma));
+                    // This candidate has the right kind of meta-annotation.
+                    // It might be a real contract, or a list of contracts.
+                    if (isListForRepeatedAnnotation(candidate)) {
+                        List<AnnotationMirror> wrappedCandidates =
+                                AnnotationUtils.getElementValueArray(
+                                        candidate, "value", AnnotationMirror.class, false);
+                        for (AnnotationMirror wrappedCandidate : wrappedCandidates) {
+                            result.add(Pair.of(wrappedCandidate, ma));
+                        }
+                    } else {
+                        result.add(Pair.of(candidate, ma));
+                    }
                 }
             }
         }
         return result;
+    }
+
+    /** Cache for {@link #isListForRepeatedAnnotation}. */
+    private final Map<DeclaredType, Boolean> isListForRepeatedAnnotationCache = new HashMap<>();
+
+    /**
+     * Returns true if the given annotation is a wrapper for multiple repeated annotations.
+     *
+     * @param a an annotation that might be a wrapper
+     * @return true if the argument is a wrapper for multiple repeated annotations
+     */
+    private boolean isListForRepeatedAnnotation(AnnotationMirror a) {
+        DeclaredType annotationType = a.getAnnotationType();
+        Boolean resultObject = isListForRepeatedAnnotationCache.get(annotationType);
+        if (resultObject != null) {
+            return resultObject;
+        }
+        boolean result = isListForRepeatedAnnotationImplementation(annotationType);
+        isListForRepeatedAnnotationCache.put(annotationType, result);
+        return result;
+    }
+
+    /**
+     * Returns true if the annotation is a wrapper for multiple repeated annotations.
+     *
+     * @param annotationType the declaration of the annotation to test
+     * @return true if the annotation is a wrapper for multiple repeated annotations
+     */
+    private boolean isListForRepeatedAnnotationImplementation(DeclaredType annotationType) {
+        TypeMirror enclosingType = annotationType.getEnclosingType();
+        if (enclosingType == null) {
+            return false;
+        }
+        if (!annotationType.asElement().getSimpleName().contentEquals("List")) {
+            return false;
+        }
+        List<? extends Element> annoElements = annotationType.asElement().getEnclosedElements();
+        if (annoElements.size() != 1) {
+            return false;
+        }
+        // TODO: should check that the type of the single element is: "array of enclosingType".
+        return true;
     }
 
     /**

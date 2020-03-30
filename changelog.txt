@@ -1,3 +1,5 @@
+---------------------------------------------------------------------------
+
 Version 3.3.0, April 1, 2020
 
 New command-line options:
@@ -12,6 +14,15 @@ For collection methods with `Object` formal parameter type, such as
 contains, indexOf, and remove, the annotated JDK now forbids null as an
 argument.  To make the Nullness Checker permit null, pass
 `-Astubs=checker.jar/collection-object-parameters-may-be-null.astub`.
+
+All postcondition annotations are repeatable (e.g., `@EnsuresNonNull`,
+`@EnsuresNonNullIf`, ...).
+
+Renamed wrapper annotations (which users should not write):
+ * `@DefaultQualifiers` => `@DefaultQualifier.List`
+ * `@EnsuresQualifiersIf` => `@EnsuresQualifierIf.List`
+ * `@EnsuresQualifiers` => `@EnsuresQualifier.List`
+ * `@RequiresQualifiers` => `@RequiresQualifier.List`
 
 Implementation details:
  * Removed `@DefaultInUncheckedCodeFor` and
