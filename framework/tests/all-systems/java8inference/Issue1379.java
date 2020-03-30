@@ -7,7 +7,7 @@ interface Trans1379<I, O> {
     Box1379<O> apply(I in);
 }
 
-@SuppressWarnings("") // just check for crashes
+@SuppressWarnings("all") // just check for crashes
 abstract class Issue1379 {
     abstract <I, O> Box1379<O> app(Box1379<I> in, Trans1379<? super I, ? extends O> t);
 

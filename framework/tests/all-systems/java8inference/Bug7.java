@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-@SuppressWarnings("") // Just check for crashes.
+@SuppressWarnings("all") // Just check for crashes.
 public class Bug7 {
     static <T, K, V> Collector<T, ?, MyMap<K, V>> toMap(
             Function<? super T, ? extends K> keyFunction,
