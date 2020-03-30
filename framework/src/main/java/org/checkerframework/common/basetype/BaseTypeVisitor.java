@@ -2290,7 +2290,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Prints a diagnostic about exiting commonAssignmentCheck, unconditionally.
+     * Prints a diagnostic about exiting commonAssignmentCheck, if the showchecks option was set.
      *
      * <p>Most clients should call {@link #commonAssignmentCheckEndDiagnostic(boolean, String,
      * AnnotatedTypeMirror, AnnotatedTypeMirror, Tree)}. The purpose of this method is to permit
@@ -2306,17 +2306,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree) {
-        long valuePos = positions.getStartPosition(root, valueTree);
-        System.out.printf(
-                " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
-                message,
-                (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
-                valueTree.getKind(),
-                valueTree,
-                valueType.getKind(),
-                valueType.toString(),
-                varType.getKind(),
-                varType.toString());
+        if (checker.hasOption("showchecks")) {
+            long valuePos = positions.getStartPosition(root, valueTree);
+            System.out.printf(
+                    " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+                    message,
+                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
+                    valueTree.getKind(),
+                    valueTree,
+                    valueType.getKind(),
+                    valueType.toString(),
+                    varType.getKind(),
+                    varType.toString());
+        }
     }
 
     /**
