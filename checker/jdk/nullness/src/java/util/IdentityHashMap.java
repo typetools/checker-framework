@@ -344,7 +344,7 @@ public class IdentityHashMap<K, V>
      */
     @SuppressWarnings("unchecked")
     @Pure
-    public V get(Object key) {
+    public @Nullable V get(@Nullable Object key) {
         Object k = maskNull(key);
         Object[] tab = table;
         int len = tab.length;
@@ -370,7 +370,7 @@ public class IdentityHashMap<K, V>
      */
     @Pure
     @EnsuresKeyForIf(result=true, expression="#1", map="this")
-    public boolean containsKey(Object key) {
+    public boolean containsKey(@Nullable Object key) {
         Object k = maskNull(key);
         Object[] tab = table;
         int len = tab.length;
@@ -395,7 +395,7 @@ public class IdentityHashMap<K, V>
      * @see     #containsKey(Object)
      */
     @Pure
-    public boolean containsValue(Object value) {
+    public boolean containsValue(@Nullable Object value) {
         Object[] tab = table;
         for (int i = 1; i < tab.length; i += 2)
             if (tab[i] == value && tab[i - 1] != null)
@@ -443,7 +443,7 @@ public class IdentityHashMap<K, V>
      * @see     #containsKey(Object)
      */
     @EnsuresKeyFor(value="#1", map="this")
-    public V put(K key, V value) {
+    public @Nullable V put(K key, V value) {
         Object k = maskNull(key);
         Object[] tab = table;
         int len = tab.length;
@@ -535,7 +535,7 @@ public class IdentityHashMap<K, V>
      *         (A <tt>null</tt> return can also indicate that the map
      *         previously associated <tt>null</tt> with <tt>key</tt>.)
      */
-    public V remove(Object key) {
+    public @Nullable V remove(@Nullable Object key) {
         Object k = maskNull(key);
         Object[] tab = table;
         int len = tab.length;
@@ -1003,10 +1003,10 @@ public class IdentityHashMap<K, V>
         public int size() {
             return size;
         }
-        public boolean contains(Object o) {
+        public boolean contains(@Nullable Object o) {
             return containsKey(o);
         }
-        public boolean remove(Object o) {
+        public boolean remove(@Nullable Object o) {
             int oldSize = size;
             IdentityHashMap.this.remove(o);
             return size != oldSize;
@@ -1114,10 +1114,10 @@ public class IdentityHashMap<K, V>
         public int size() {
             return size;
         }
-        public boolean contains(Object o) {
+        public boolean contains(@Nullable Object o) {
             return containsValue(o);
         }
-        public boolean remove(Object o) {
+        public boolean remove(@Nullable Object o) {
             for (Iterator<V> i = iterator(); i.hasNext(); ) {
                 if (i.next() == o) {
                     i.remove();
@@ -1220,13 +1220,13 @@ public class IdentityHashMap<K, V>
         public Iterator<Map.Entry<K,V>> iterator() {
             return new EntryIterator();
         }
-        public boolean contains(Object o) {
+        public boolean contains(@Nullable Object o) {
             if (!(o instanceof Map.Entry))
                 return false;
             Map.Entry<?,?> entry = (Map.Entry<?,?>)o;
             return containsMapping(entry.getKey(), entry.getValue());
         }
-        public boolean remove(Object o) {
+        public boolean remove(@Nullable Object o) {
             if (!(o instanceof Map.Entry))
                 return false;
             Map.Entry<?,?> entry = (Map.Entry<?,?>)o;

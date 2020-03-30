@@ -16,6 +16,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.util.Log;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
@@ -65,8 +66,9 @@ public class AnnotationStatistics extends SourceChecker {
     final Map<String, Integer> annotationCount = new HashMap<>();
 
     @Override
-    public void typeProcessingOver(boolean hasError) {
-        if (hasError) {
+    public void typeProcessingOver() {
+        Log log = getCompilerLog();
+        if (log.nerrors != 0) {
             System.out.println("Not counting annotations, because compilation issued an error.");
         } else if (annotationCount.isEmpty()) {
             System.out.println("No annotations found.");
@@ -76,7 +78,7 @@ public class AnnotationStatistics extends SourceChecker {
                 System.out.println(key + "\t" + annotationCount.get(key));
             }
         }
-        super.typeProcessingOver(hasError);
+        super.typeProcessingOver();
     }
 
     /** Increment the number of times annotation with name {@code annoName} has appeared. */

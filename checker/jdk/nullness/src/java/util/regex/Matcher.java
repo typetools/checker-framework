@@ -23,6 +23,8 @@ public final class Matcher implements MatchResult {
   public String group() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree
   public @Nullable String group(int a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree
+  public @Nullable String group(String a1) { throw new RuntimeException("skeleton method"); }
   @Pure
   public int groupCount() { throw new RuntimeException("skeleton method"); }
   public boolean matches() { throw new RuntimeException("skeleton method"); }

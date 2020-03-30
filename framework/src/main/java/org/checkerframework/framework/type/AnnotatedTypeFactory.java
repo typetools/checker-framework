@@ -3237,39 +3237,91 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param metaAnnotationClass the class of the meta-annotation that needs to be present
      * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is the annotation mirror
      *     at {@code element}, and {@code metaAnno} is the annotation mirror (of type {@code
-     *     metaAnnotationClass}) used to annotate {@code anno}.
+     *     metaAnnotationClass}) used to meta-annotate the declaration of {@code anno}
      */
     public List<Pair<AnnotationMirror, AnnotationMirror>> getDeclAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotationClass) {
         List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
         Set<AnnotationMirror> annotationMirrors = getDeclAnnotations(element);
 
-        // Go through all annotations found.
-        for (AnnotationMirror annotation : annotationMirrors) {
-            List<? extends AnnotationMirror> annotationsOnAnnotation;
+        for (AnnotationMirror candidate : annotationMirrors) {
+            List<? extends AnnotationMirror> metaAnnotationsOnAnnotation;
             try {
-                annotationsOnAnnotation =
-                        annotation.getAnnotationType().asElement().getAnnotationMirrors();
+                metaAnnotationsOnAnnotation =
+                        candidate.getAnnotationType().asElement().getAnnotationMirrors();
             } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                 // Fix for Issue 309: If a CompletionFailure occurs, issue a warning.
                 // I didn't find a nicer alternative to check whether the Symbol can be completed.
                 // The completer field of a Symbol might be non-null also in successful cases.
                 // Issue a warning (exception only happens once) and continue.
                 checker.reportWarning(
-                        annotation.getAnnotationType().asElement(),
+                        candidate.getAnnotationType().asElement(),
                         "annotation.not.completed",
                         ElementUtils.getVerboseName(element),
-                        annotation);
+                        candidate);
                 continue;
             }
             // First call copier, if exception, continue normal modula laws.
-            for (AnnotationMirror a : annotationsOnAnnotation) {
-                if (areSameByClass(a, metaAnnotationClass)) {
-                    result.add(Pair.of(annotation, a));
+            for (AnnotationMirror ma : metaAnnotationsOnAnnotation) {
+                if (areSameByClass(ma, metaAnnotationClass)) {
+                    // This candidate has the right kind of meta-annotation.
+                    // It might be a real contract, or a list of contracts.
+                    if (isListForRepeatedAnnotation(candidate)) {
+                        List<AnnotationMirror> wrappedCandidates =
+                                AnnotationUtils.getElementValueArray(
+                                        candidate, "value", AnnotationMirror.class, false);
+                        for (AnnotationMirror wrappedCandidate : wrappedCandidates) {
+                            result.add(Pair.of(wrappedCandidate, ma));
+                        }
+                    } else {
+                        result.add(Pair.of(candidate, ma));
+                    }
                 }
             }
         }
         return result;
+    }
+
+    /** Cache for {@link #isListForRepeatedAnnotation}. */
+    private final Map<DeclaredType, Boolean> isListForRepeatedAnnotationCache = new HashMap<>();
+
+    /**
+     * Returns true if the given annotation is a wrapper for multiple repeated annotations.
+     *
+     * @param a an annotation that might be a wrapper
+     * @return true if the argument is a wrapper for multiple repeated annotations
+     */
+    private boolean isListForRepeatedAnnotation(AnnotationMirror a) {
+        DeclaredType annotationType = a.getAnnotationType();
+        Boolean resultObject = isListForRepeatedAnnotationCache.get(annotationType);
+        if (resultObject != null) {
+            return resultObject;
+        }
+        boolean result = isListForRepeatedAnnotationImplementation(annotationType);
+        isListForRepeatedAnnotationCache.put(annotationType, result);
+        return result;
+    }
+
+    /**
+     * Returns true if the annotation is a wrapper for multiple repeated annotations.
+     *
+     * @param annotationType the declaration of the annotation to test
+     * @return true if the annotation is a wrapper for multiple repeated annotations
+     */
+    private boolean isListForRepeatedAnnotationImplementation(DeclaredType annotationType) {
+        TypeMirror enclosingType = annotationType.getEnclosingType();
+        if (enclosingType == null) {
+            return false;
+        }
+        if (!annotationType.asElement().getSimpleName().contentEquals("List")) {
+            return false;
+        }
+        List<? extends Element> annoElements = annotationType.asElement().getEnclosedElements();
+        if (annoElements.size() != 1) {
+            return false;
+        }
+        // TODO: should check that the type of the single element is: "array of enclosingType".
+        return true;
     }
 
     /**

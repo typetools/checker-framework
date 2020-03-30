@@ -181,7 +181,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws NullPointerException {@inheritDoc}
      */
     @Pure
-    public int indexOf(@Nullable Object o) {
+    public int indexOf(Object o) {
         ListIterator<E> it = listIterator();
         if (o==null) {
             while (it.hasNext())
@@ -207,7 +207,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws NullPointerException {@inheritDoc}
      */
     @Pure
-    public int lastIndexOf(@Nullable Object o) {
+    public int lastIndexOf(Object o) {
         ListIterator<E> it = listIterator(size());
         if (o==null) {
             while (it.hasPrevious())

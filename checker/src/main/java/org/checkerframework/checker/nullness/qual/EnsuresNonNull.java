@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -37,11 +38,27 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PostconditionAnnotation(qualifier = NonNull.class)
 @InheritedAnnotation
+@Repeatable(EnsuresNonNull.List.class)
 public @interface EnsuresNonNull {
     /**
-     * The Java expressions that are ensured to be {@link NonNull} on successful method termination.
-     *
+     * @return Java expressions that are {@link NonNull} after successful method termination
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] value();
+
+    /**
+     * A wrapper annotation that makes the {@link EnsuresNonNull} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresNonNull} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @PostconditionAnnotation(qualifier = NonNull.class)
+    @InheritedAnnotation
+    @interface List {
+        /** @return the repeatable annotations */
+        EnsuresNonNull[] value();
+    }
 }

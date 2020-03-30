@@ -20,6 +20,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * This class is an abstract annotation processor designed to be a convenient superclass for
@@ -46,7 +47,7 @@ import javax.lang.model.util.ElementFilter;
  *       #typeProcess(TypeElement, TreePath) typeProcess} method on the {@code Processor}. The class
  *       is guaranteed to be type-checked Java code and all the tree type and symbol information is
  *       resolved.
- *   <li>Finally, the tools calls the {@link #typeProcessingOver typeProcessingOver} method on the
+ *   <li>Finally, the tool calls the {@link #typeProcessingOver typeProcessingOver} method on the
  *       {@code Processor}.
  * </ol>
  *
@@ -139,10 +140,19 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      * <p>Subclasses may override this method to do any aggregate analysis (e.g. generate report,
      * persistence) or resource deallocation.
      *
-     * @param hasError true if compilation issued an error, either from the Java compiler or from a
-     *     pluggable type-checker
+     * <p>Method {@link #getCompilerLog()} can be used to access the number of compiler errors.
      */
-    public void typeProcessingOver(boolean hasError) {}
+    public void typeProcessingOver() {}
+
+    /**
+     * Return the compiler log, which contains errors and warnings.
+     *
+     * @return the compiler log, which contains errors and warnings
+     */
+    @SideEffectFree
+    public Log getCompilerLog() {
+        return Log.instance(((JavacProcessingEnvironment) processingEnv).getContext());
+    }
 
     /** A task listener that invokes the processor whenever a class is fully analyzed. */
     private final class AttributionTaskListener implements TaskListener {
@@ -158,10 +168,8 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
                 hasInvokedTypeProcessingStart = true;
             }
 
-            Log log = Log.instance(((JavacProcessingEnvironment) processingEnv).getContext());
-
             if (!hasInvokedTypeProcessingOver && elements.isEmpty()) {
-                typeProcessingOver(log.nerrors != 0);
+                typeProcessingOver();
                 hasInvokedTypeProcessingOver = true;
             }
 
@@ -182,7 +190,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
             typeProcess(elem, p);
 
             if (!hasInvokedTypeProcessingOver && elements.isEmpty()) {
-                typeProcessingOver(log.nerrors != 0);
+                typeProcessingOver();
                 hasInvokedTypeProcessingOver = true;
             }
         }

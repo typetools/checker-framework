@@ -1,11 +1,30 @@
+---------------------------------------------------------------------------
+
 Version 3.3.0, April 1, 2020
 
-New command-line option -AjsonOutput, to output type-checking warnings to a
-JSON file for easy parsing by IDE plugins and other tools.
+New command-line options:
+ * -Alint=trustArrayLenZero trust @ArrayLen(0) annotations when determining
+   the type of Collections.toArray.
+ * -AjsonOutput output type-checking warnings to a JSON file for easy
+   parsing by IDE plugins and other tools.
 
 Renamings:
   -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
     The old name works temporarily but will be removed in a future release.
+
+For collection methods with `Object` formal parameter type, such as
+contains, indexOf, and remove, the annotated JDK now forbids null as an
+argument.  To make the Nullness Checker permit null, pass
+`-Astubs=checker.jar/collection-object-parameters-may-be-null.astub`.
+
+All postcondition annotations are repeatable (e.g., `@EnsuresNonNull`,
+`@EnsuresNonNullIf`, ...).
+
+Renamed wrapper annotations (which users should not write):
+ * `@DefaultQualifiers` => `@DefaultQualifier.List`
+ * `@EnsuresQualifiersIf` => `@EnsuresQualifierIf.List`
+ * `@EnsuresQualifiers` => `@EnsuresQualifier.List`
+ * `@RequiresQualifiers` => `@RequiresQualifier.List`
 
 Implementation details:
  * Removed `@DefaultInUncheckedCodeFor` and
@@ -15,10 +34,13 @@ Implementation details:
  * Renamings:
    applyUncheckedCodeDefaults() to applyConservativeDefaults()
    useUncheckedCodeDefault() to useConservativeDefault()
+   AnnotatedTypeReplacer to AnnotatedTypeCopierWithReplacement
+   AnnotatedTypeMerger to AnnotatedTypeReplacer
  * Deprecated the `framework.source.Result` class; use `DiagMessage` or
    `List<DiagMessage>` instead.  If you were creating a `Result` just to
    pass it to `report`, then call new methods `reportError` and
    `reportWarning` instead.
+ * AbstractTypeProcessor#typeProcessingOver() always gets called.
 
 ---------------------------------------------------------------------------
 

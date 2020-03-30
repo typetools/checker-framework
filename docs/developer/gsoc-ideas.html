@@ -189,6 +189,8 @@ You can find more potential projects in the
     the <code>import</code> statements.  Doing so bloats the size of the
     diffs and makes it hard to understand the essential changes.
   <li>
+    Change the build system so that building the annotated branch runs the type-checker.
+  <li>
     Run the type-checker.  If it issues
     warnings, <a href="https://checkerframework.org/manual/#handling-warnings">correct them</a>.
     This might require adding more annotations,
@@ -201,11 +203,12 @@ You can find more potential projects in the
         to suppress a warning.  Convince yourself that both branches can
         execute, or else don't add the <code>if</code> statement.
       <li>If you add a <code>@SuppressWarnings</code> annotation,
+	<a href="https://checkerframework.org/manual/#suppresswarnings-best-practices-smallest-scope">write
+	it on the smallest possible scope</a> and
         <a href="https://checkerframework.org/manual/#suppresswarnings-best-practices-justification">explain
         why</a> the checker warning is a false positive and you are certain
         the code is safe.
     </ul>
-    Change the build system so that building the annotated branch runs the type-checker.
   <li>
     Share it with us so that
     we can evaluate it and give you feedback.
@@ -852,7 +855,7 @@ Alternately, you can
 
 <p>
   You should choose a library that is
-  not <a href="https://github.com/typetools/checker-framework/tree/master/checker/lib">already
+  not <a href="https://search.maven.org/search?q=org.checkerframework.annotatedlib">already
     annotated</a>.  There are two exceptions to this.
 </p>
 <ul>
