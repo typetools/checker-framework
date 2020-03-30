@@ -347,11 +347,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror result = f.type(node);
         assert result instanceof AnnotatedWildcardType;
 
-        // the first time getSuperBound/getExtendsBound is called the bound of this wildcard will be
-        // appropriately initialized where for the type of node, instead of replacing that bound
-        // we merge the annotations onto the initialized bound
-        // This ensures that the structure of the wildcard will match that created by
-        // BoundsInitializer/createType
+        // Instead of directly overwriting the bound, replace each annotation
+        // to ensure that the structure of the wildcard will match that created by
+        // BoundsInitializer/createType.
         if (node.getKind() == Tree.Kind.SUPER_WILDCARD) {
             AnnotatedTypeReplacer.replace(bound, ((AnnotatedWildcardType) result).getSuperBound());
 

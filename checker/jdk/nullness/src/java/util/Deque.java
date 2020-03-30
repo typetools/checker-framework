@@ -30,8 +30,8 @@ public interface Deque<E> extends Queue<E> {
   public abstract @Nullable E peek();
   public abstract void push(E a1);
   public abstract E pop();
-  public abstract boolean remove(@Nullable Object a1);
-  @Pure public abstract boolean contains(@Nullable Object a1);
+  public abstract boolean remove(Object a1);
+  @Pure public abstract boolean contains(Object a1);
   @Pure public abstract int size();
   @SideEffectFree
   public abstract Iterator<E> iterator();

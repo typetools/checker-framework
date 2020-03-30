@@ -29,6 +29,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
@@ -185,7 +186,7 @@ public interface Collection<E> extends Iterable<E> {
      *         (<a href="#optional-restrictions">optional</a>)
      */
     @Pure
-    boolean contains(@Nullable Object o);
+    boolean contains(Object o);
 
     /**
      * Returns an iterator over the elements in this collection.  There are no
@@ -323,7 +324,7 @@ public interface Collection<E> extends Iterable<E> {
      * @throws UnsupportedOperationException if the <tt>remove</tt> operation
      *         is not supported by this collection
      */
-    boolean remove(@Nullable Object o);
+    boolean remove(Object o);
 
 
     // Bulk Operations
@@ -347,7 +348,7 @@ public interface Collection<E> extends Iterable<E> {
      * @see    #contains(Object)
      */
     @Pure
-    boolean containsAll(Collection<?> c);
+    boolean containsAll(Collection<? extends @NonNull Object> c);
 
     /**
      * Adds all of the elements in the specified collection to this collection
@@ -398,7 +399,7 @@ public interface Collection<E> extends Iterable<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean removeAll(Collection<?> c);
+    boolean removeAll(Collection<? extends @NonNull Object> c);
 
     /**
      * Removes all of the elements of this collection that satisfy the given
@@ -457,7 +458,7 @@ public interface Collection<E> extends Iterable<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean retainAll(Collection<?> c);
+    boolean retainAll(Collection<? extends @NonNull Object> c);
 
     /**
      * Removes all of the elements from this collection (optional operation).
