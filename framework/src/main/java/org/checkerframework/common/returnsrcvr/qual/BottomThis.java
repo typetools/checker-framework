@@ -8,10 +8,12 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
-/** The bottom type for the Returns Receiver Checker's type system. Programmers should rarely write this type.
+/**
+ * The bottom type for the Returns Receiver Checker's type system. Programmers should rarely write
+ * this type.
  *
  * @checker_framework.manual #bottom-type the bottom type
- * */
+ */
 @SubtypeOf({MaybeThis.class})
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
