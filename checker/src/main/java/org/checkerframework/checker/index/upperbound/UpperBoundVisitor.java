@@ -249,7 +249,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
         if (!relaxedCommonAssignment(varType, valueTree)) {
             commonAssignmentCheckEndDiagnostic(
-                    "delegated: actual was not found to be a subtype of expected, now must call super",
+                    "relaxedCommonAssignment did not succeed, now must call super",
                     varType,
                     valueType,
                     valueTree);
