@@ -249,8 +249,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
         if (!relaxedCommonAssignment(varType, valueTree)) {
             commonAssignmentCheckEndDiagnostic(
-                    true,
-                    "relaxedCommonAssignment didn't override, now must call super",
+                    "relaxedCommonAssignment did not succeed, now must call super",
                     varType,
                     valueType,
                     valueTree);
