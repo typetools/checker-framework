@@ -906,16 +906,15 @@ latest bug fixes and new features:
 \end{Verbatim}
 
 \item
-  To use a local version of the Checker Framework that you have built from
-  source, install the relevant Checker Framework jars to your local Maven
-  repository under a SNAPSHOT version number. To do so, run:
+  To use a locally-modifed version of the Checker Framework, first run:
 
 \begin{alltt}
 ./gradlew deployArtifactsToLocalRepo
 \end{alltt}
 
-Then, in addition to the instructions above, use the release version output by running \<./gradlew version>
-as the version number for the Checker Framework artifacts:
+\noindent
+Then, in the project you want to type-check, use
+\<\ReleaseVersion{}-SNAPSHOT> as the version number:
 
 \begin{alltt}
    <artifactId>maven-compiler-plugin</artifactId>
