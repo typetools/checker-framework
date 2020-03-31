@@ -908,15 +908,14 @@ latest bug fixes and new features:
 \item
   To use a local version of the Checker Framework that you have built from
   source, install the relevant Checker Framework jars to your local Maven
-  repository under a SNAPSHOT version number.  For example, you could run:
+  repository under a SNAPSHOT version number. To do so, run:
 
 \begin{alltt}
-mvn install:install-file -DgroupId=org.checkerframework -DartifactId=checker  \
-  -Dversion=\ReleaseVersion{}-SNAPSHOT -Dpackaging=jar -Dfile=$CHECKERFRAMEWORK/checker/dist/checker.jar
+./gradlew deployArtifactsToLocalRepo
 \end{alltt}
 
-Then, in addition to the instructions above, use \ReleaseVersion{}-SNAPSHOT
-as the version number for \<maven-compiler-plugin>:
+Then, in addition to the instructions above, use the release version output by running \<./gradlew version>
+as the version number for the Checker Framework artifacts:
 
 \begin{alltt}
    <artifactId>maven-compiler-plugin</artifactId>
