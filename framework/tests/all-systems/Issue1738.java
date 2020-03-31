@@ -3,7 +3,7 @@
 
 import java.util.Iterator;
 
-@SuppressWarnings("") // Only check for crashes
+@SuppressWarnings("all") // Only check for crashes
 class Issue1738 {
     static class TwoParamIterator<T, R> implements Iterator<T> {
         @Override

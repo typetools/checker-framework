@@ -4,7 +4,7 @@
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-@SuppressWarnings({"unchecked", ""}) // Check for crashes only
+@SuppressWarnings({"unchecked", "all"}) // Check for crashes only
 abstract class Issue2088 {
 
     interface A<K extends Comparable<K>> {}

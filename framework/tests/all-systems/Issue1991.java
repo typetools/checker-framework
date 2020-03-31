@@ -1,7 +1,7 @@
 // Test case for Issue 1991:
 // https://github.com/typetools/checker-framework/issues/1991
 
-@SuppressWarnings("") // Check for crashes only
+@SuppressWarnings("all") // Check for crashes only
 class Issue1991 {
     interface Comp<T extends Comp<T>> {}
 

@@ -3,7 +3,7 @@ package inference.guava;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 
-@SuppressWarnings("") // Just check for crashes.
+@SuppressWarnings("all") // Just check for crashes.
 public class Bug5<K, V> {
 
     boolean apply(Object key, V value, MyPredicate<? super Entry<K, V>> predicate) {

@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.Map;
 
-@SuppressWarnings("") // Check for crashes.
+@SuppressWarnings("all") // Check for crashes.
 public class Bug11 {
 
     public static <K1, V1> MyMap<K1, V1> copyOf(Map<? extends K1, ? extends V1> map) {
