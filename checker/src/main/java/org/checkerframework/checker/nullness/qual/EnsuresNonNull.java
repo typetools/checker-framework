@@ -9,6 +9,10 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
+// TODO: In a fix for https://tinyurl.com/cfissue/1917, add the text:
+// Every prefix expression is also non-null; for example, {@code
+// @EnsuresNonNull(expression="a.b.c")} implies that both {@code a.b} and {@code a.b.c} are
+// non-null.
 /**
  * Indicates that the value expressions are non-null, if the method terminates successfully.
  *
