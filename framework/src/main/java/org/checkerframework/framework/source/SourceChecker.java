@@ -2365,11 +2365,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
 
             if (printClasspath) {
-                msg.add("Classpath:");
                 ClassLoader cl = ClassLoader.getSystemClassLoader();
-                URL[] urls = ((URLClassLoader) cl).getURLs();
-                for (URL url : urls) {
-                    msg.add(url.getFile());
+
+                if (cl instanceof URLClassLoader) {
+                    msg.add("Classpath:");
+                    URL[] urls = ((URLClassLoader) cl).getURLs();
+                    for (URL url : urls) {
+                        msg.add(url.getFile());
+                    }
+                } else {
+                    // TODO: Java 9+ use an internal classloader that doesn't support getting URLs,
+                    //       so we will need an alternative approach to retrieve the classpath on
+                    //       Java 9+
+                    msg.add(
+                            "Printing classpath is currently unavailable on Java 9+. Please "
+                                    + "try using Java 8 if this information is very important.");
                 }
             }
         }
