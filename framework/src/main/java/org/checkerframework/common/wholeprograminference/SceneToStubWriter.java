@@ -36,15 +36,16 @@ import scenelib.annotations.el.InnerTypeLocation;
 import scenelib.annotations.field.AnnotationFieldType;
 import scenelib.annotations.io.IndexFileWriter;
 
+// In this file, "base type" means "type without its package part".
+
 /**
- * SceneToStubWriter provides two static methods named {@code write} that write a {@link AScene} in
- * stub file format, to a {@link Writer} {@link #write(ASceneWrapper, Writer)}, or to a file {@link
- * #write(ASceneWrapper, Writer)}. This class is the equivalent of {@code IndexFileWriter} from the
- * Annotation File Utilities, but outputs the results in the stub file format instead of jaif
- * format.
+ * SceneToStubWriter provides static methods that write a {@link AScene} in stub file format, to a
+ * {@link Writer} {@link #write(ASceneWrapper, Writer)} or to a file {@link #write(ASceneWrapper,
+ * Writer)}. This class is the equivalent of {@code IndexFileWriter} from the Annotation File
+ * Utilities, but outputs the results in the stub file format instead of jaif format.
  *
- * <p>You can use this writer instead of {@code IndexFileWriter} by passing the {@code
- * -Ainfer=stubs} command-line argument.
+ * <p>This writer is used instead of {@code IndexFileWriter} if the {@code -Ainfer=stubs}
+ * command-line argument is present.
  */
 public final class SceneToStubWriter {
 
@@ -96,7 +97,7 @@ public final class SceneToStubWriter {
      * @param className a binary name
      * @return the part of the name representing the class's name without its package
      */
-    // Substrings of binary names are also binary names.
+    // A binary name without its package is still a binary name
     @SuppressWarnings("signature:return.type.incompatible")
     private static @BinaryName String basenamePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
@@ -129,7 +130,7 @@ public final class SceneToStubWriter {
      * <p>Each annotation is followed by a space, to separate it from following Java code.
      *
      * @param annos the annotations to format
-     * @return all annotations in {@code annos}, separated by spaces, in a form suitable to be
+     * @return all annotations in {@code annos}, each followed by a space, in a form suitable to be
      *     printed as Java source code
      */
     private static String formatAnnotations(Collection<? extends Annotation> annos) {
@@ -149,30 +150,32 @@ public final class SceneToStubWriter {
      *
      * @param e the array's scenelib type element
      * @param arrayType the string representation of the array's type
-     * @return the type formatted to be written to Java source code
+     * @return the type formatted to be written to Java source code, followed by a space character
      */
     private static String formatArrayType(ATypeElement e, String arrayType) {
         StringBuilder result = new StringBuilder();
         // If there are not annotations on the component, this will be true - unless there
         // are also no annotations on the first array level. See comment below for how that
         // case is handled.
-        int componentEndPos = arrayType.indexOf(' ');
-        if (arrayType.startsWith("@")) {
-            // While there are more explicit annotations, go to the next space.
-            while (arrayType.charAt(componentEndPos + 1) == '@') {
+        int componentEndPos;
+        {
+            componentEndPos = arrayType.indexOf(' ');
+            if (arrayType.startsWith("@")) {
+                // While there are more explicit annotations, go to the next space.
+                while (arrayType.charAt(componentEndPos + 1) == '@') {
+                    componentEndPos = arrayType.indexOf(' ', componentEndPos + 1);
+                }
+                // Once all annotations have been skipped, we still have to skip to the end of the
+                // component type itself.
                 componentEndPos = arrayType.indexOf(' ', componentEndPos + 1);
             }
-            // Once all annotations have been skipped, we still have to skip to the end of the
-            // component type itself.
-            componentEndPos = arrayType.indexOf(' ', componentEndPos + 1);
-        }
-
-        // If the first array level doesn't have an annotation, then the spacing will be off,
-        // so use the position of the first '[' instead (which must be correct, since the
-        // first array doesn't have an annotation).
-        int firstArrayPos = arrayType.indexOf('[');
-        if (firstArrayPos < componentEndPos || componentEndPos == -1) {
-            componentEndPos = firstArrayPos - 1;
+            // If the first array level doesn't have an annotation, then the spacing will be off,
+            // so use the position of the first '[' instead (which must be correct, since the
+            // first array doesn't have an annotation).
+            int firstArrayPos = arrayType.indexOf('[');
+            if (firstArrayPos < componentEndPos || componentEndPos == -1) {
+                componentEndPos = firstArrayPos - 1;
+            }
         }
 
         String componentType = arrayType.substring(0, componentEndPos + 1);
@@ -185,16 +188,19 @@ public final class SceneToStubWriter {
      * The implementation of formatArrayType. Java array types have a somewhat unintuitive syntax:
      * see <a
      * href="https://checkerframework.org/jsr308/specification/java-annotation-design.html#array-syntax">this
-     * explanation</a>. Basically, given the type {@code @Foo int @Bar [] @Baz []}, the iteration
-     * order in the scene-lib representation is {@code @Bar []}, then {@code @Baz []}, and then
-     * finally {@code @Foo int}. This implementation therefore passes a string builder with the
-     * result of the array types seen so far, to handle multidimensional arrays. That builder is
-     * appended to the final component type in the base case.
+     * explanation</a>.
+     *
+     * <p>The iteration order in the scene-lib representation is from outermost to innermost. For
+     * example, given the type {@code @Foo int @Bar [] @Baz []}, the iteration order is {@code @Bar
+     * []}, then {@code @Baz []}, and then finally {@code @Foo int}. This implementation therefore
+     * passes a string builder with the result of the array types seen so far, to handle
+     * multidimensional arrays. That builder is appended to the final component type in the base
+     * case.
      *
      * @param e same as above, but can become null if scene-lib did not fill in the inner types,
      *     which happens when they do not have annotations
-     * @param arrayTypes the array parts of the array type (i.e. the parts after the component
-     *     type). Must contain at least one '['.
+     * @param arrayTypes the array parts of the array type (i.e. the parts after the component type
+     *     in the string representation). Must contain at least one '['.
      * @param componentType the component type of the array
      * @param result the string builder containing the array types seen so far
      * @return the formatted string, without a trailing space
@@ -230,7 +236,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Gets the next array level (either the next array type or the component) from the given type
+     * Gets the outermost array level (or the component if not an array) from the given type
      * element, or null if scene-lib is not storing any more information about this array (for
      * example, when the component type is unannotated).
      *
@@ -245,9 +251,8 @@ public final class SceneToStubWriter {
 
         for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
             InnerTypeLocation loc = ite.getKey();
-            ATypeElement it = ite.getValue();
             if (loc.location.contains(TypePathEntry.ARRAY)) {
-                return it;
+                return ite.getValue();
             }
         }
         return null;
@@ -270,50 +275,36 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Formats an AField so that it can be printed in a stub. An AField represents a variable
-     * declaration. In practice, {@code aField} should represent either a field declaration or a
-     * formal parameter of a method, because stub files should not contain local variable
-     * declarations. It is the responsibility of each caller of this method to ensure that is true.
+     * Formats a field declaration or formal parameter so that it can be printed in a stub.
      *
-     * <p>It is also the responsibility of the caller to place the output of this method in context;
-     * because it is shared between field declarations and formal parameters, it does not add any
-     * trailing semicolons/commas/other syntax.
+     * <p>This method does not add a trailing semicolon or comma.
      *
      * <p>Usually, {@link #formatParameter(AFieldWrapper, String, String)} should be called to
      * format method parameters, and {@link #printField(AFieldWrapper, String, PrintWriter, String)}
      * should be called to print field declarations. Both use this method as their underlying
      * implementation.
      *
-     * @param aField the field declaration or formal parameter declaration to format
+     * @param aField the field declaration or formal parameter declaration to format; should not
+     *     represent a local variable
      * @param fieldName the name to use for the declaration in the stub file. This doesn't matter
-     *     for parameters, but must be correct for fields.
+     *     for parameters (except the "this" receiver parameter), but must be correct for fields.
      * @param className the simple name of the enclosing class. This is only used for printing the
      *     type of an explicit receiver parameter (i.e., a parameter named "this").
      * @return a String suitable to print in a stub file
      */
     private static String formatAFieldImpl(
             AFieldWrapper aField, String fieldName, String className) {
-        StringBuilder result = new StringBuilder();
-        String basetype;
-        if ("this".equals(fieldName)) {
-            basetype = className;
-        } else {
-            basetype = aField.getType();
-        }
-
-        result.append(formatType(basetype, aField.getTheField().type));
-        result.append(fieldName);
-        return result.toString();
+        String basetype = fieldName.equals("this") ? className : aField.getType();
+        return formatType(basetype, aField.getTheField().type) + fieldName;
     }
 
     /**
      * Formats the given type for printing in Java source code.
      *
-     * @param basetype the base type
+     * @param basetype the type to format, as a base name (that is, without a package)
      * @param type the scene-lib representation of the type, or null if only the bare type is to be
      *     printed
-     * @return a String representing the type, as it would appear in Java source code, followed by a
-     *     trailing space
+     * @return the type as it would appear in Java source code, followed by a trailing space
      */
     private static String formatType(final String basetype, final @Nullable ATypeElement type) {
         String basetypeToPrint = basetype;
@@ -391,12 +382,11 @@ public final class SceneToStubWriter {
      * number of curly braces to close with. The classes are printed with appropriate opening curly
      * braces, in standard Java style.
      *
-     * <p>When an inner class is present in an AScene, its name is something like "Outer$Inner".
-     * Writing a stub file with that name would be useless to the stub parser, which expects inner
-     * classes to be properly nested, as in Java source code.
+     * <p>In an AScene, an inner class name is a binary name like "Outer$Inner". In a stub file,
+     * inner classes must be nested, as in Java source code.
      *
-     * @param basename the binary name of the class with the package part stripped
-     * @param aClass the AClass for {@code classname}
+     * @param basename the binary name of the class without the package part
+     * @param aClass the AClass for {@code basename}
      * @param printWriter the writer where the class definition should be printed
      * @return the number of outer classes within which this class is nested
      */
@@ -457,7 +447,7 @@ public final class SceneToStubWriter {
     private static void printField(
             AFieldWrapper aField, String fieldName, PrintWriter printWriter, String indentLevel) {
         printWriter.print(indentLevel);
-        printWriter.print(formatAFieldImpl(aField, fieldName, null));
+        printWriter.print(formatAFieldImpl(aField, fieldName, /*enclosing class=*/ null));
         printWriter.println(";");
         printWriter.println();
     }
@@ -481,7 +471,6 @@ public final class SceneToStubWriter {
 
         printWriter.print(indentLevel);
 
-        // type parameters
         printTypeParameters(aMethodWrapper.getTypeParameters(), printWriter);
 
         // Needed because AMethod stores the name with the parameters, to distinguish
@@ -491,11 +480,6 @@ public final class SceneToStubWriter {
         if ("<init>".equals(methodName)) {
             methodName = basename;
         } else {
-            // This isn't a constructor, so add a return type.
-            // Note that the stub file format doesn't require this to be correct,
-            // so it would be acceptable to print "java.lang.Object" for every
-            // method. A better type is printed if one is available to improve
-            // the readability of the resulting stub file.
             String returnType = aMethodWrapper.getReturnType();
             printWriter.print(formatType(returnType, aMethod.returnType));
         }
@@ -546,14 +530,14 @@ public final class SceneToStubWriter {
         Collections.sort(classes, Comparator.comparing(SceneToStubWriter::packagePart));
 
         // For each class
-        for (@BinaryName String clazz : classes) {
+        for (String clazz : classes) {
             printClass(clazz, scene.getClasses().get(clazz), printWriter);
         }
         printWriter.flush();
     }
 
     /**
-     * Print the class body, or nothing if this is an anonymous inner class
+     * Print the class body, or nothing if this is an anonymous inner class.
      *
      * @param classname the class name
      * @param aClassWrapper the representation of the class
@@ -569,9 +553,8 @@ public final class SceneToStubWriter {
         }
 
         // Do not attempt to print stubs for anonymous inner classes or their inner classes, because
-        // the stub parser
-        // cannot read them. (An anonymous inner class has a basename like Outer$1, so this
-        // check ensures that no single class name is exclusively composed of digits.)
+        // the stub parser cannot read them. (An anonymous inner class has a basename like Outer$1,
+        // so this check ensures that no single class name is exclusively composed of digits.)
         if (digitPattern.matcher(basename).matches()) {
             return;
         }
@@ -618,13 +601,12 @@ public final class SceneToStubWriter {
             }
         }
         for (int i = curlyCount - 1; i >= 0; i--) {
-            String indents = indents(i);
-            printWriter.println(indents + "}");
+            printWriter.println(indents(i));
         }
     }
 
     /**
-     * Return a string containing n indents
+     * Return a string containing n indents.
      *
      * @param n the number of indents
      * @return a string containing that many indents
