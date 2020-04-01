@@ -1,7 +1,7 @@
 // Test case for Issue 1274
 // https://github.com/typetools/checker-framework/issues/1274
 
-@SuppressWarnings("") // Just check for crashes
+@SuppressWarnings("all") // Just check for crashes
 public class Issue1274 {
     static class Mine<T> {
         static <S> Mine<S> of(S p1, S p2) {

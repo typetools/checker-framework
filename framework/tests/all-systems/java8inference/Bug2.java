@@ -3,7 +3,7 @@ import java.util.AbstractMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-@SuppressWarnings("") // Just check for crashes.
+@SuppressWarnings("all") // Just check for crashes.
 public class Bug2 {
 
     public <C, D> ConcurrentMap<C, D> makeMap() {

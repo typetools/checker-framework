@@ -2277,15 +2277,40 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree) {
+        if (checker.hasOption("showchecks")) {
+            commonAssignmentCheckEndDiagnostic(
+                    (success
+                                    ? "success: actual is subtype of expected"
+                                    : "FAILURE: actual is not subtype of expected")
+                            + (extraMessage == null ? "" : " because " + extraMessage),
+                    varType,
+                    valueType,
+                    valueTree);
+        }
+    }
 
+    /**
+     * Prints a diagnostic about exiting commonAssignmentCheck, if the showchecks option was set.
+     *
+     * <p>Most clients should call {@link #commonAssignmentCheckEndDiagnostic(boolean, String,
+     * AnnotatedTypeMirror, AnnotatedTypeMirror, Tree)}. The purpose of this method is to permit
+     * customizing the message that is printed.
+     *
+     * @param message the result, plus information about why the result is what it is; may be null
+     * @param varType the annotated type of the variable
+     * @param valueType the annotated type of the value
+     * @param valueTree the location to use when reporting the error message
+     */
+    protected final void commonAssignmentCheckEndDiagnostic(
+            String message,
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree) {
         if (checker.hasOption("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
-                    " %s%s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
-                    (success
-                            ? "success: actual is subtype of expected"
-                            : "FAILURE: actual is not subtype of expected"),
-                    (extraMessage == null ? "" : " because " + extraMessage),
+                    " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+                    message,
                     (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
                     valueTree.getKind(),
                     valueTree,
@@ -2641,14 +2666,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver);
             commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, node);
             if (!success) {
-                checker.reportError(
-                        node,
-                        "method.invocation.invalid",
-                        TreeUtils.elementFromUse(node),
-                        treeReceiver.toString(),
-                        methodReceiver.toString());
+                reportMethodInvocabilityError(node, treeReceiver, methodReceiver);
             }
         }
+    }
+
+    /**
+     * Report a method invocability error. Allows checkers to change how the message is output.
+     *
+     * @param node the AST node at which to report the error
+     * @param found the actual type of the receiver
+     * @param expected the expected type of the receiver
+     */
+    protected void reportMethodInvocabilityError(
+            MethodInvocationTree node, AnnotatedTypeMirror found, AnnotatedTypeMirror expected) {
+        checker.reportError(
+                node,
+                "method.invocation.invalid",
+                TreeUtils.elementFromUse(node),
+                found.toString(),
+                expected.toString());
     }
 
     /**

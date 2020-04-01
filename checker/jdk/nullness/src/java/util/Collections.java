@@ -39,6 +39,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
 import org.checkerframework.checker.nullness.qual.EnsuresKeyForIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -1133,16 +1134,16 @@ public class Collections {
             throw new UnsupportedOperationException();
         }
 
-        public boolean containsAll(Collection<?> coll) {
+        public boolean containsAll(Collection<? extends @NonNull Object> coll) {
             return c.containsAll(coll);
         }
         public boolean addAll(Collection<? extends E> coll) {
             throw new UnsupportedOperationException();
         }
-        public boolean removeAll(Collection<?> coll) {
+        public boolean removeAll(Collection<? extends @NonNull Object> coll) {
             throw new UnsupportedOperationException();
         }
-        public boolean retainAll(Collection<?> coll) {
+        public boolean retainAll(Collection<? extends @NonNull Object> coll) {
             throw new UnsupportedOperationException();
         }
         public void clear() {
@@ -1799,7 +1800,7 @@ public class Collections {
              * an unscrupulous List whose contains(Object o) method senses
              * when o is a Map.Entry, and calls o.setValue.
              */
-            public boolean containsAll(Collection<?> coll) {
+            public boolean containsAll(Collection<? extends @NonNull Object> coll) {
                 for (Object e : coll) {
                     if (!contains(e)) // Invokes safe contains() above
                         return false;
@@ -2141,16 +2142,16 @@ public class Collections {
             synchronized (mutex) {return c.remove(o);}
         }
 
-        public boolean containsAll(Collection<?> coll) {
+        public boolean containsAll(Collection<? extends @NonNull Object> coll) {
             synchronized (mutex) {return c.containsAll(coll);}
         }
         public boolean addAll(Collection<? extends E> coll) {
             synchronized (mutex) {return c.addAll(coll);}
         }
-        public boolean removeAll(Collection<?> coll) {
+        public boolean removeAll(Collection<? extends @NonNull Object> coll) {
             synchronized (mutex) {return c.removeAll(coll);}
         }
-        public boolean retainAll(Collection<?> coll) {
+        public boolean retainAll(Collection<? extends @NonNull Object> coll) {
             synchronized (mutex) {return c.retainAll(coll);}
         }
         public void clear() {
@@ -3185,13 +3186,13 @@ public class Collections {
         public boolean remove(Object o)   { return c.remove(o); }
         public void clear()               {        c.clear(); }
 
-        public boolean containsAll(Collection<?> coll) {
+        public boolean containsAll(Collection<? extends @NonNull Object> coll) {
             return c.containsAll(coll);
         }
-        public boolean removeAll(Collection<?> coll) {
+        public boolean removeAll(Collection<? extends @NonNull Object> coll) {
             return c.removeAll(coll);
         }
-        public boolean retainAll(Collection<?> coll) {
+        public boolean retainAll(Collection<? extends @NonNull Object> coll) {
             return c.retainAll(coll);
         }
 
@@ -3963,7 +3964,7 @@ public class Collections {
              * against an unscrupulous collection whose contains(Object o)
              * method senses when o is a Map.Entry, and calls o.setValue.
              */
-            public boolean containsAll(Collection<?> c) {
+            public boolean containsAll(Collection<? extends @NonNull Object> c) {
                 for (Object o : c)
                     if (!contains(o)) // Invokes safe contains() above
                         return false;
@@ -3977,13 +3978,13 @@ public class Collections {
                                 <>((Map.Entry<?,?>)o));
             }
 
-            public boolean removeAll(Collection<?> c) {
+            public boolean removeAll(Collection<? extends @NonNull Object> c) {
                 return batchRemove(c, false);
             }
-            public boolean retainAll(Collection<?> c) {
+            public boolean retainAll(Collection<? extends @NonNull Object> c) {
                 return batchRemove(c, true);
             }
-            private boolean batchRemove(Collection<?> c, boolean complement) {
+            private boolean batchRemove(Collection<? extends @NonNull Object> c, boolean complement) {
                 Objects.requireNonNull(c);
                 boolean modified = false;
                 Iterator<Map.Entry<K,V>> it = iterator();
@@ -4477,7 +4478,7 @@ public class Collections {
         public boolean isEmpty() {return true;}
 
         public boolean contains(Object obj) {return false;}
-        public boolean containsAll(Collection<?> c) { return c.isEmpty(); }
+        public boolean containsAll(Collection<? extends @NonNull Object> c) { return c.isEmpty(); }
 
         @SideEffectFree
         public @PolyNull Object[] toArray(EmptySet<@PolyNull E> this) { return new Object[0]; }
@@ -4604,7 +4605,7 @@ public class Collections {
         public boolean isEmpty() {return true;}
 
         public boolean contains(Object obj) {return false;}
-        public boolean containsAll(Collection<?> c) { return c.isEmpty(); }
+        public boolean containsAll(Collection<? extends @NonNull Object> c) { return c.isEmpty(); }
 
         @SideEffectFree
         public @PolyNull Object[] toArray(EmptyList<@PolyNull E> this) { return new Object[0]; }
@@ -5661,9 +5662,9 @@ public class Collections {
         public String toString()          { return s.toString(); }
         public int hashCode()             { return s.hashCode(); }
         public boolean equals(@Nullable Object o)   { return o == this || s.equals(o); }
-        public boolean containsAll(Collection<?> c) {return s.containsAll(c);}
-        public boolean removeAll(Collection<?> c)   {return s.removeAll(c);}
-        public boolean retainAll(Collection<?> c)   {return s.retainAll(c);}
+        public boolean containsAll(Collection<? extends @NonNull Object> c) {return s.containsAll(c);}
+        public boolean removeAll(Collection<? extends @NonNull Object> c)   {return s.removeAll(c);}
+        public boolean retainAll(Collection<? extends @NonNull Object> c)   {return s.retainAll(c);}
         // addAll is the only inherited implementation
 
         // Override default methods in Collection
@@ -5744,9 +5745,9 @@ public class Collections {
         @SideEffectFree
         public <T> T[] toArray(T[] a)     { return q.toArray(a); }
         public String toString()          { return q.toString(); }
-        public boolean containsAll(Collection<?> c) {return q.containsAll(c);}
-        public boolean removeAll(Collection<?> c)   {return q.removeAll(c);}
-        public boolean retainAll(Collection<?> c)   {return q.retainAll(c);}
+        public boolean containsAll(Collection<? extends @NonNull Object> c) {return q.containsAll(c);}
+        public boolean removeAll(Collection<? extends @NonNull Object> c)   {return q.removeAll(c);}
+        public boolean retainAll(Collection<? extends @NonNull Object> c)   {return q.retainAll(c);}
         // We use inherited addAll; forwarding addAll would be wrong
 
         // Override default methods in Collection

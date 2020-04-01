@@ -822,7 +822,7 @@ public class LinkedList<E>
      * @return {@code true} if the list contained the specified element
      * @since 1.6
      */
-    public boolean removeFirstOccurrence(Object o) {
+    public boolean removeFirstOccurrence(@Nullable Object o) {
         return remove(o);
     }
 
@@ -835,7 +835,7 @@ public class LinkedList<E>
      * @return {@code true} if the list contained the specified element
      * @since 1.6
      */
-    public boolean removeLastOccurrence(Object o) {
+    public boolean removeLastOccurrence(@Nullable Object o) {
         if (o == null) {
             for (Node<E> x = last; x != null; x = x.prev) {
                 if (x.item == null) {

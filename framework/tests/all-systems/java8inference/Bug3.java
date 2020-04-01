@@ -3,7 +3,7 @@ package inference.guava;
 import java.util.EnumSet;
 import java.util.Set;
 
-@SuppressWarnings("") // Just check for crashes.
+@SuppressWarnings("all") // Just check for crashes.
 public class Bug3 {
 
     public abstract static class MySet<E> implements Set<E> {

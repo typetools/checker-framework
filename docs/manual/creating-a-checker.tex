@@ -10,7 +10,7 @@
 This chapter describes how to create a checker
 --- a type-checking compiler plugin that detects bugs or verifies their
 absence.  After a programmer annotates a program,
-the checker plugin verifies that the code is consistent
+the checker verifies that the code is consistent
 with the annotations.
 If you only want to \emph{use} a checker, you do not need to read this
 chapter.
@@ -813,6 +813,22 @@ ExpressionTree)} or
 \refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{internalReprOf(AnnotationProvider,
 Node)}.
 Then, call \<toString()> on the \<FlowExpressions.Receiver> object.
+
+
+\subsectionAndLabel{Repeatable annotations}{repeatable-annotations}
+
+Some pre- and post-condition annotations that have multiple elements (that
+is, annotations that take multiple arguments) should be repeatable, so that
+programmers can specify them more than once.  An example is
+\refqualclass{checker/nullness/qual}{EnsuresNonNullIf}; it could not be
+defined with each of its elements being a list, as (for example)
+\refqualclass{checker/nullness/qual}{KeyFor} is.
+
+Make an annotation \emph{A} repeatable by defining a nested annotation (within
+\emph{A}'s definition) named \<List>, and writing
+\<@Repeatable(\emph{A}.List.class)> on \emph{A}'s definition.
+% This convention is encoded in
+% AnnotatedTypeFactory.isListForRepeatedAnnotationImplementation .
 
 
 \sectionAndLabel{The checker class:  Compiler interface}{creating-compiler-interface}
@@ -2220,7 +2236,7 @@ methods that should be used instead. Also,
 \subsectionAndLabel{How a checker fits in the compiler as an annotation processor}{creating-checker-as-annotation-processor}
 
 The Checker Framework builds on the Annotation Processing API
-introduced in Java 6.  A type annotation processor is one that extends
+introduced in Java 6.  A type-checking annotation processor is one that extends
 \refclass{javacutil}{AbstractTypeProcessor}; it gets run on each class
 source file after the compiler confirms that the class is valid Java code.
 

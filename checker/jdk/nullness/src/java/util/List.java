@@ -27,6 +27,7 @@ package java.util;
 
 import java.util.function.UnaryOperator;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
@@ -151,7 +152,7 @@ public interface List<E> extends Collection<E> {
      * (<a href="Collection.html#optional-restrictions">optional</a>)
      */
     @Pure
-    boolean contains(@Nullable Object o);
+    boolean contains(Object o);
 
     /**
      * Returns an iterator over the elements in this list in proper sequence.
@@ -275,7 +276,7 @@ public interface List<E> extends Collection<E> {
      * @throws UnsupportedOperationException if the <tt>remove</tt> operation
      *         is not supported by this list
      */
-    boolean remove(@Nullable Object o);
+    boolean remove(Object o);
 
 
     // Bulk Modification Operations
@@ -299,7 +300,7 @@ public interface List<E> extends Collection<E> {
      * @see #contains(Object)
      */
     @Pure
-    boolean containsAll(Collection<?> c);
+    boolean containsAll(Collection<? extends @NonNull Object> c);
 
     /**
      * Appends all of the elements in the specified collection to the end of
@@ -371,7 +372,7 @@ public interface List<E> extends Collection<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean removeAll(Collection<?> c);
+    boolean removeAll(Collection<? extends @NonNull Object> c);
 
     /**
      * Retains only the elements in this list that are contained in the
@@ -393,7 +394,7 @@ public interface List<E> extends Collection<E> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    boolean retainAll(Collection<?> c);
+    boolean retainAll(Collection<? extends @NonNull Object> c);
 
     /**
      * Replaces each element of this list with the result of applying the
@@ -596,7 +597,7 @@ public interface List<E> extends Collection<E> {
      *         (<a href="Collection.html#optional-restrictions">optional</a>)
      */
     @Pure
-    int indexOf(@Nullable Object o);
+    int indexOf(Object o);
 
     /**
      * Returns the index of the last occurrence of the specified element
@@ -616,7 +617,7 @@ public interface List<E> extends Collection<E> {
      *         (<a href="Collection.html#optional-restrictions">optional</a>)
      */
     @Pure
-    int lastIndexOf(@Nullable Object o);
+    int lastIndexOf(Object o);
 
 
     // List Iterators
