@@ -110,8 +110,3 @@ the Returns Receiver Checker automatically adds \<@This> annotations to setter
 methods in builder classes.  For example, all the \<@This> annotations in
 Figures~\ref{fig-autovalue-builder} and~\ref{fig-autovalue-builder-generated}
 are automatically added by the checker.
-
-To disable the checker's built-in framework support, use the
-\<-AdisableFrameworkSupport> command-line option, passing a list of frameworks
-whose support should be disabled.  For example, to disable both AutoValue and
-Lombok support, pass \<-AdisableFrameworkSupport=AutoValue,Lombok>.
