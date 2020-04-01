@@ -466,8 +466,8 @@ public final class SceneToStubWriter {
      * Prints a method declaration in stub file format (i.e., without a method body).
      *
      * @param aMethodWrapper the method to print
-     * @param basename the simple name of the containing class. Used only to determine if the method
-     *     being printed is the constructor of an inner class.
+     * @param basename the simple name of the enclosing class, for receiver parameters and
+     *     constructor names
      * @param printWriter where to print the method signature
      * @param indentLevel the indent string
      */
