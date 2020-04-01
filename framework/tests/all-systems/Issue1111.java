@@ -4,7 +4,7 @@
 
 import java.util.List;
 
-@SuppressWarnings("") // just check for crash
+@SuppressWarnings("all") // just check for crash
 public class Issue1111 {
     void foo(Box<? super Integer> box, List<Integer> list) {
         bar(box, list);

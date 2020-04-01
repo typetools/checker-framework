@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-@Repeatable(RequiresQualifiers.class)
+@Repeatable(RequiresQualifier.List.class)
 public @interface RequiresQualifier {
     /**
      * @return the Java expressions for which the annotation need to be present
@@ -29,4 +29,18 @@ public @interface RequiresQualifier {
 
     /** @return the qualifier that is required */
     Class<? extends Annotation> qualifier();
+
+    /**
+     * A wrapper annotation that makes the {@link RequiresQualifier} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link RequiresQualifier} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @interface List {
+        /** @return the repeatable annotations */
+        RequiresQualifier[] value();
+    }
 }

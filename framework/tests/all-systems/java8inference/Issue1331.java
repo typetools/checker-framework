@@ -4,7 +4,7 @@
 import java.util.List;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("") // check for crashes
+@SuppressWarnings("all") // check for crashes
 class Issue1331 {
     List<Long> ll;
     long result = getOnlyElement(ll.stream().collect(Collectors.toSet()));

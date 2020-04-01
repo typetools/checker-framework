@@ -1939,7 +1939,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 }
                 userKey = userKey.substring(colonPos + 1);
             }
-            if (errKey.contains(userKey)) {
+            if (errKey.equals(userKey)
+                    || errKey.startsWith(userKey + ".")
+                    || errKey.endsWith("." + userKey)
+                    || errKey.contains("." + userKey + ".")) {
                 return true;
             }
         }
