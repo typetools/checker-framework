@@ -905,47 +905,7 @@ latest bug fixes and new features:
   mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
 \end{Verbatim}
 
-\item
-  To use a local version of the Checker Framework that
-  you have built from source (Section~\ref{build-source}):
-
-\begin{alltt}
-  <dependencies>
-    ... existing <dependency> items ...
-
-    <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>checker-qual</artifactId>
-      <version>\ReleaseVersion{}</version>
-      <scope>system</scope>
-      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker-qual.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>checker</artifactId>
-      <version>\ReleaseVersion{}</version>
-      <scope>system</scope>
-      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker.jar</systemPath>
-    </dependency>
-    <!-- The annotated JDK to use. -->
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>jdk8</artifactId>
-      <version>\ReleaseVersion{}</version>
-      <scope>system</scope>
-      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/jdk8.jar</systemPath>
-    </dependency>
-    <dependency>
-    <groupId>com.google.errorprone</groupId>
-      <artifactId>javac</artifactId>
-      <version>9+181-r4173-1</version>
-    </dependency>
-  </dependencies>
-\end{alltt}
-
 \end{enumerate}
-
 
 \item If using JDK 8, use Maven properties to hold the locations of the
   annotated JDK and ErrorProne javac.jar.  They were declared as Maven dependencies above.
@@ -1051,8 +1011,21 @@ Warning:  adding
 \noindent
 may suppress warnings from the stub parser.
 
-
 \end{enumerate}
+
+
+\subsectionAndLabel{Maven, with a locally-modified version of the Checker Framework}{maven-local-modifications}
+
+To use a locally-modified version of the Checker Framework, first run:
+
+\begin{alltt}
+./gradlew deployArtifactsToLocalRepo
+\end{alltt}
+
+\noindent
+Then use the Maven instructions, but modify the version number for the
+Checker Framework artifacts.  Instead of \<\ReleaseVersion{}>, use the
+version number that is output when you run \<./gradlew version>.
 
 
 \sectionAndLabel{NetBeans}{netbeans}
