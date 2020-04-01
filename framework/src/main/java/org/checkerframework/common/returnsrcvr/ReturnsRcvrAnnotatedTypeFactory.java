@@ -1,19 +1,15 @@
 package org.checkerframework.common.returnsrcvr;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.returnsrcvr.framework.AutoValueSupport;
 import org.checkerframework.common.returnsrcvr.framework.FrameworkSupport;
 import org.checkerframework.common.returnsrcvr.framework.FrameworkSupportUtils;
-import org.checkerframework.common.returnsrcvr.framework.LombokSupport;
 import org.checkerframework.common.returnsrcvr.qual.BottomThis;
 import org.checkerframework.common.returnsrcvr.qual.MaybeThis;
 import org.checkerframework.common.returnsrcvr.qual.This;
@@ -23,7 +19,6 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 
 /** A factory that extends {@link BaseAnnotatedTypeFactory} for the returns receiver checker */
 public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -46,23 +41,9 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
         THIS_ANNOT = AnnotationBuilder.fromClass(elements, This.class);
 
-        EnumSet<FrameworkSupportUtils.Framework> frameworkSet =
+        frameworkSupports =
                 FrameworkSupportUtils.getFrameworkSet(
                         checker.getOption(ReturnsRcvrChecker.DISABLE_FRAMEWORK_SUPPORT));
-        frameworkSupports = new ArrayList<FrameworkSupport>();
-
-        for (FrameworkSupportUtils.Framework framework : frameworkSet) {
-            switch (framework) {
-                case AUTO_VALUE:
-                    frameworkSupports.add(new AutoValueSupport());
-                    break;
-                case LOMBOK:
-                    frameworkSupports.add(new LombokSupport());
-                    break;
-                default:
-                    throw new BugInCF("Unknown framework " + framework);
-            }
-        }
         // we have to call this explicitly
         this.postInit();
     }

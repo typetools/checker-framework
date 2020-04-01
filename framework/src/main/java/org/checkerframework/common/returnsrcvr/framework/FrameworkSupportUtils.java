@@ -1,6 +1,8 @@
 package org.checkerframework.common.returnsrcvr.framework;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.EnumSet;
 import javax.lang.model.element.Element;
 import org.checkerframework.common.returnsrcvr.ReturnsRcvrChecker;
@@ -15,14 +17,6 @@ public class FrameworkSupportUtils {
         throw new RuntimeException();
     }
 
-    /** enum of supported frameworks */
-    public enum Framework {
-        /** AutoValue framework */
-        AUTO_VALUE,
-        /** LOMBOK framework */
-        LOMBOK;
-    }
-
     /**
      * Return which frameworks should be supported, respecting the command-line argument {@code
      * --disableFrameworkSupport}.
@@ -30,17 +24,18 @@ public class FrameworkSupportUtils {
      * @param option a comma-separated list of frameworks whose support should be disabled
      * @return an EnumSet of all framework supports in use
      */
-    public static EnumSet<Framework> getFrameworkSet(String option) {
-        EnumSet<Framework> frameworkSet = EnumSet.allOf(Framework.class);
+    public static Collection<FrameworkSupport> getFrameworkSet(String option) {
+        Collection<FrameworkSupport> frameworkSupports =
+                new ArrayDeque<>(EnumSet.allOf(Frameworks.class));
 
         if (option != null) {
             for (String disabledFrameworkSupport : option.split("\\s?,\\s?")) {
                 switch (disabledFrameworkSupport.toUpperCase()) {
                     case ReturnsRcvrChecker.AUTOVALUE_SUPPORT:
-                        frameworkSet.remove(Framework.AUTO_VALUE);
+                        frameworkSupports.remove(Frameworks.AUTO_VALUE);
                         break;
                     case ReturnsRcvrChecker.LOMBOK_SUPPORT:
-                        frameworkSet.remove(Framework.LOMBOK);
+                        frameworkSupports.remove(Frameworks.LOMBOK);
                         break;
                     default:
                         throw new UserError(
@@ -49,7 +44,7 @@ public class FrameworkSupportUtils {
                 }
             }
         }
-        return frameworkSet;
+        return frameworkSupports;
     }
 
     /**
