@@ -533,7 +533,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (checker.useConservativeDefault("source")
                 || checker.useConservativeDefault("bytecode")) {
             throw new UserError(
-                    "The option -Ainfer=... cannot be used together with unchecked code defaults.");
+                    "The option -Ainfer=... cannot be used together with conservative defaults.");
         }
     }
 
