@@ -443,9 +443,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Checks whether a given local variable came from a source file or not. This is different from
-     * {@link ElementUtils#isElementFromByteCode(Element)}, which will return true if there is a
-     * classfile for the given element - even if there is also a source file!
+     * Checks whether a given local variable came from a source file or not.
+     *
+     * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
+     * a classfile for the given element, whether or not there is also a source file.
      *
      * @param localVariableNode the local variable declaration to check
      * @return true if a source file containing the variable is being compiled
