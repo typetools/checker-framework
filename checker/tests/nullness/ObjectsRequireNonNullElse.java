@@ -1,7 +1,4 @@
-// @skip-test until the bug is fixed
-
-// Test case for https://tinyurl.com/cfissue/3149 .
-
+// Test case for https://tinyurl.com/cfissue/3056 and https://tinyurl.com/cfissue/3149 .
 // @below-java11-jdk-skip-test
 
 import static java.util.Objects.requireNonNullElse;
