@@ -25,7 +25,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.DefaultQualifiers;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -391,7 +390,7 @@ public class QualifierDefaults {
                         AnnotationMirror d =
                                 atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
                         AnnotationMirror ds =
-                                atypeFactory.getDeclAnnotation(elt, DefaultQualifiers.class);
+                                atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
 
                         if (d == null && ds == null) {
                             break;
@@ -583,7 +582,7 @@ public class QualifierDefaults {
         }
 
         {
-            AnnotationMirror ds = atypeFactory.getDeclAnnotation(elt, DefaultQualifiers.class);
+            AnnotationMirror ds = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
             if (ds != null) {
                 if (qualifiers == null) {
                     qualifiers = new DefaultSet();

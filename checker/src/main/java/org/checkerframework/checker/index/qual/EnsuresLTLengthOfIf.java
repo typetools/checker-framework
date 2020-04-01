@@ -2,6 +2,7 @@ package org.checkerframework.checker.index.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -55,6 +56,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
 @InheritedAnnotation
+@Repeatable(EnsuresLTLengthOfIf.List.class)
 public @interface EnsuresLTLengthOfIf {
     /**
      * Java expression(s) that are less than the length of the given sequences after the method
@@ -85,4 +87,20 @@ public @interface EnsuresLTLengthOfIf {
     @JavaExpression
     @QualifierArgument("offset")
     String[] offset() default {};
+
+    /**
+     * A wrapper annotation that makes the {@link EnsuresLTLengthOfIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresLTLengthOfIf} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
+    @InheritedAnnotation
+    @interface List {
+        /** @return the repeatable annotations */
+        EnsuresLTLengthOfIf[] value();
+    }
 }

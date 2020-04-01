@@ -37,7 +37,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 @InheritedAnnotation
-@Repeatable(EnsuresQualifiersIf.class)
+@Repeatable(EnsuresQualifierIf.List.class)
 public @interface EnsuresQualifierIf {
     /**
      * @return the Java expressions for which the qualifier holds if the method terminates with
@@ -54,4 +54,19 @@ public @interface EnsuresQualifierIf {
 
     /** @return the return value of the method that needs to hold for the postcondition to hold */
     boolean result();
+
+    /**
+     * A wrapper annotation that makes the {@link EnsuresQualifierIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresQualifierIf} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD})
+    @InheritedAnnotation
+    @interface List {
+        /** @return the repeatable annotations */
+        EnsuresQualifierIf[] value();
+    }
 }

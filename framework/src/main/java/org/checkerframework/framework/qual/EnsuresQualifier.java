@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @InheritedAnnotation
-@Repeatable(EnsuresQualifiers.class)
+@Repeatable(EnsuresQualifier.List.class)
 public @interface EnsuresQualifier {
     /**
      * @return the Java expressions for which the qualifier holds after successful method
@@ -45,4 +45,19 @@ public @interface EnsuresQualifier {
 
     /** @return the qualifier that is guaranteed to hold on successful termination of the method */
     Class<? extends Annotation> qualifier();
+
+    /**
+     * A wrapper annotation that makes the {@link EnsuresQualifier} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresQualifier} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @InheritedAnnotation
+    @interface List {
+        /** @return the repeatable annotations */
+        EnsuresQualifier[] value();
+    }
 }
