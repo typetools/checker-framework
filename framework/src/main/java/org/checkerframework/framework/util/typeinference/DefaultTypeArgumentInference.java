@@ -199,11 +199,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
 
     /**
-     * Holds an AnnotatedTypeMirror whose underlying type is {@code Object} and annotations are
-     * copied from null. It's lazily initialized in #handleNullTypeArguments.
-     */
-    private AnnotatedTypeMirror objectWithAnnosFromNull = null;
-    /**
      * If one of the inferredArgs are NullType, then re-run inference ignoring null method
      * arguments. Then lub the result of the second inference with the NullType and put the new
      * result back into inferredArgs.
