@@ -440,6 +440,9 @@ def main(argv):
         continue_or_exit("Please update the Checker Framework Gradle plugin:\n"+
                          "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n")
 
+        print_step("Push Step 13. Prep for next Checker Framework release.") # MANUAL
+        continue_or_exit("Increment the last number of the Checker Framework version and add -SNAPSHOT")
+
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
     prompt_to_continue()

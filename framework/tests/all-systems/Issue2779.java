@@ -2,7 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/2779
 
 // @below-java9-jdk-skip-test
-@SuppressWarnings("") // Just check for crashes.
+@SuppressWarnings("all") // Just check for crashes.
 interface Issue2779<S> {
     S get();
 

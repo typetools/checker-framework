@@ -3,7 +3,7 @@ package inference.guava;
 import java.util.Spliterator;
 import java.util.stream.Stream;
 
-@SuppressWarnings("") // Just check for crashes.
+@SuppressWarnings("all") // Just check for crashes.
 public class Bug13 {
 
     public static class MyClass<X> extends MySuperClass<X> {
