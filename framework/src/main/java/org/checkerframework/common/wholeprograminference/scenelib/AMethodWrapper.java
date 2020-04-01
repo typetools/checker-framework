@@ -98,7 +98,8 @@ public class AMethodWrapper {
     }
 
     /**
-     * Add the given parameter to the scene-lib representation.
+     * Obtain the representation of the parameter at the given index, which can be further operated
+     * on to e.g. add a type annotation.
      *
      * @param i the parameter index (zero-indexed)
      * @param type the type of the parameter, as a TypeMirror
@@ -110,7 +111,8 @@ public class AMethodWrapper {
     }
 
     /**
-     * Add the given parameter to the scene-lib representation.
+     * Obtain the representation of the parameter at the given index, which can be further operated
+     * on to e.g. add a type annotation.
      *
      * @param i the parameter index (first parameter is zero)
      * @param type the type of the parameter, printable in Java source code

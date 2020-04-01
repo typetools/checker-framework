@@ -166,15 +166,15 @@ public class ASceneWrapper {
 
     /**
      * Obtain the representation of the given class, which can be further operated on to e.g. add
-     * information about a method. This method also updates the metadata stored about the class
-     * using the given ClassSymbol.
+     * information about a method. This method also updates the additional information stored about
+     * the class using the given ClassSymbol, if it is non-null.
      *
      * <p>Results are interned.
      *
      * @param className the binary name of the class to be added to the scene
      * @param classSymbol the element representing the class, used for adding data to the
      *     AClassWrapper returned by this method. If it is null, an AClassWrapper is looked up or
-     *     created, but the AClassWrapper's metadata is not updated.
+     *     created, but the other information stored by the AClassWrapper is not updated.
      * @return an AClassWrapper representing that class
      */
     public AClassWrapper vivifyClass(
@@ -188,14 +188,14 @@ public class ASceneWrapper {
             classes.put(className, wrapper);
         }
 
-        // updateClassMetadata must be called on both paths (cache hit and cache miss) because the
+        // updateClassData must be called on both paths (cache hit and cache miss) because the
         // second parameter could have been null when the first miss occurred.
         // Different visit methods in CFAbstractTransfer call WPI in different ways.  Only some
         // provide the metadata, and the visit order isn't known ahead of time.
         // Since it is not used until the end of WPI, it being unavailable during WPI is not a
         // problem.
         if (classSymbol != null) {
-            updateClassMetadata(wrapper, classSymbol);
+            updateClassData(wrapper, classSymbol);
         }
         return wrapper;
     }
@@ -206,7 +206,7 @@ public class ASceneWrapper {
      * @param aClassWrapper the class representation in which the metadata is to be updated
      * @param classSymbol the class for which to update metadata
      */
-    private void updateClassMetadata(AClassWrapper aClassWrapper, ClassSymbol classSymbol) {
+    private void updateClassData(AClassWrapper aClassWrapper, ClassSymbol classSymbol) {
         if (classSymbol.isEnum()) {
             if (!aClassWrapper.isEnum()) {
                 List<VariableElement> enumConstants = new ArrayList<>();

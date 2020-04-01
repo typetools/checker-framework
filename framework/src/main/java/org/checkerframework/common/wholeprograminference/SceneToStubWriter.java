@@ -576,6 +576,8 @@ public final class SceneToStubWriter {
             return;
         }
 
+        aClassWrapper.checkIfPrintable();
+
         String innermostClassname =
                 basename.contains("$")
                         ? basename.substring(basename.lastIndexOf('$') + 1)
