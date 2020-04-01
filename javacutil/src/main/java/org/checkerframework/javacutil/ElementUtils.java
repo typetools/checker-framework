@@ -263,12 +263,12 @@ public class ElementUtils {
     }
 
     /**
-     * Checks whether a given element came from a source file or not. This is different from {@link
-     * ElementUtils#isElementFromByteCode(Element)}, which will return true if there is a classfile
-     * for the given element - even if there is also a source file! Always returns false if the
-     * parameter is null.
+     * Checks whether a given element came from a source file.
      *
-     * @param element the element to check
+     * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
+     * a classfile for the given element, even if there is also a source file.
+     *
+     * @param element the element to check, or null
      * @return true if a source file containing the element is being compiled
      */
     public static boolean isElementFromSourceCode(@Nullable Element element) {
@@ -282,18 +282,18 @@ public class ElementUtils {
     }
 
     /**
-     * Checks whether a given ClassSymbol came from a source file or not. This is different from
-     * {@link ElementUtils#isElementFromByteCode(Element)}, which will return true if there is a
-     * classfile for the given element - even if there is also a source file!
+     * Checks whether a given ClassSymbol came from a source file.
+     *
+     * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
+     * a classfile for the given element, even if there is also a source file.
      *
      * @param symbol the class to check
      * @return true if a source file containing the class is being compiled
      */
     private static boolean isElementFromSourceCodeImpl(ClassSymbol symbol) {
-        // This is a bit of a hack to avoid treating JDK as source files. JDK files toUri() method
+        // This is a bit of a hack to avoid treating JDK as source files. JDK files' toUri() method
         // returns just the name of the file (e.g. "Object.java"), but any file actually being
-        // compiled
-        // returns a file URI to the real, actual source file.
+        // compiled returns a file URI to the source file.
         return symbol.sourcefile != null
                 && symbol.sourcefile.getKind() == Kind.SOURCE
                 && symbol.sourcefile.toUri().toString().startsWith("file:");

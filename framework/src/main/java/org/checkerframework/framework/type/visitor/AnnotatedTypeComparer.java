@@ -13,7 +13,7 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A TypeVisitor that takes two AnnotatedTypeMirrors as parameters, and visits them simultaneously.
- * Both Annotated Type Mirrors must have the same structure.
+ * Both AnnotatedTypeMirrors must have the same structure.
  *
  * @see AnnotatedTypeScanner
  */
