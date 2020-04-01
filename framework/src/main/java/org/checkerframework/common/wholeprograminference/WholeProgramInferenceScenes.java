@@ -13,7 +13,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AFieldWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AMethodWrapper;
@@ -290,7 +289,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         }
 
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @DotSeparatedIdentifiers String className = enclosingClass.flatname.toString();
+        @BinaryName String className = enclosingClass.flatname.toString();
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath, enclosingClass);
 
@@ -343,7 +342,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @DotSeparatedIdentifiers String className = classSymbol.flatname.toString();
+        @BinaryName String className = classSymbol.flatname.toString();
 
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath, classSymbol);
@@ -390,8 +389,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             superclassDecl,
                             overriddenMethodElement);
 
-            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-            @DotSeparatedIdentifiers String superClassName = getEnclosingClassName(overriddenMethodElement);
+            String superClassName = getEnclosingClassName(overriddenMethodElement);
             String superJaifPath = storage.getJaifPath(superClassName);
             AClassWrapper superClazz =
                     storage.getAClass(

@@ -13,6 +13,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
@@ -28,6 +29,12 @@ public class AClassWrapper {
 
     /** The wrapped AClass object. */
     private AClass theClass;
+
+    /**
+     * Whether the additional data that this class should store has been provided. It is an error if
+     * this variable is not set to true before the class is printed by {@link SceneToStubWriter}.
+     */
+    private boolean additionalDataProvided = false;
 
     /**
      * The methods of the class. Keys are the signatures of methods, entries are AMethodWrapper
@@ -60,7 +67,8 @@ public class AClassWrapper {
     }
 
     /**
-     * Call before doing anything with a method. Fetches or creates an AMethodWrapper object.
+     * Obtain the representation of the given method, which can be further operated on to e.g. add
+     * information about a parameter.
      *
      * <p>Results are interned.
      *
@@ -152,6 +160,7 @@ public class AClassWrapper {
             throw new BugInCF(
                     "setTypeElement(%s): type is already %s", typeElement, this.typeElement);
         }
+        this.additionalDataProvided = true;
     }
 
     /**
@@ -188,5 +197,17 @@ public class AClassWrapper {
                     this.enumConstants, enumConstants);
         }
         this.enumConstants = new ArrayList<>(enumConstants);
+        this.additionalDataProvided = true;
+    }
+
+    /**
+     * Can {@link SceneToStubWriter} print this class? If so, do nothing. If not, throw an error.
+     */
+    public void checkIfPrintable() {
+        if (!additionalDataProvided) {
+            throw new BugInCF(
+                    "Tried printing an unprintable class to a stub file during WPI: "
+                            + theClass.className);
+        }
     }
 }
