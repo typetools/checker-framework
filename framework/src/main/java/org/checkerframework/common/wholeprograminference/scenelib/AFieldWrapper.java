@@ -13,8 +13,7 @@ public class AFieldWrapper {
 
     /**
      * A String representing the type of the field, formatted to be printable in Java source code.
-     * Note that this not a fully-qualified name - or a name at all! - because it is a type, and
-     * therefore may include generics)
+     * May include generic type arguments.
      */
     private final String type;
 
@@ -30,10 +29,9 @@ public class AFieldWrapper {
      *
      * @param theField the wrapped AField
      * @param type a String representing the underlying type of the field in a form printable in
-     *     Java source, which AField doesn't include (note that this not a fully-qualified name - or
-     *     a name at all! - because it is a type, and therefore may include generics)
-     * @param parameterName the name, if this AField object represents a formal parameter, or null
-     *     if it does not
+     *     Java source, which AField doesn't include; may include generic type arguments
+     * @param parameterName the parameter name, if this AField object represents a formal parameter,
+     *     or null if it does not
      */
     AFieldWrapper(AField theField, String type, @Nullable String parameterName) {
         this.theField = theField;
@@ -49,11 +47,22 @@ public class AFieldWrapper {
      *
      * @param theField the wrapped AField
      * @param type a String representing the underlying type of the field in a form printable in
-     *     Java source, which AField doesn't include (note that this not a fully-qualified name - or
-     *     a name at all! - because it is a type, and therefore may include generics)
+     *     Java source, which AField doesn't include; may include generic type arguments
      */
     AFieldWrapper(AField theField, String type) {
         this(theField, type, null);
+    }
+
+    /**
+     * Create a new AField representing a receiver parameter. This constructor is only for use by
+     * SceneToStubWriter.
+     *
+     * @param receiver the AField to wrap
+     * @param type the type of the receiver parameter, as a Java source string
+     * @return an AFieldWrapper with the name "this" representing the given receiver
+     */
+    public static AFieldWrapper createReceiverParameter(AField receiver, String basename) {
+        return new AFieldWrapper(receiver, basename, "this");
     }
 
     /**
@@ -67,7 +76,8 @@ public class AFieldWrapper {
     }
 
     /**
-     * Returns the type of the field or formal, formatted to be printable in Java source code
+     * Returns the type of the field or formal, formatted to be printable in Java source code. May
+     * include generic type arguments.
      *
      * @return the type of the field or formal, formatted to be printable in Java source code
      */
@@ -76,22 +86,11 @@ public class AFieldWrapper {
     }
 
     /**
-     * The identifier name, if it is a method formal parameter, or null if not.
+     * The identifier name, if {@code this} is a method formal parameter, or null if not.
      *
-     * @return the name of the field or null
+     * @return the name of the formal parameter or null
      */
     public @Nullable String getParameterName() {
         return parameterName;
-    }
-
-    /**
-     * Create a new AField representing a receiver parameter; only for use by SceneToStubWriter.
-     *
-     * @param receiver the AField to wrap
-     * @param basename the name of the type of the receiver parameter, as a Java source string
-     * @return an AFieldWrapper with the name "this" representing the given receiver
-     */
-    public static AFieldWrapper createReceiverParameter(AField receiver, String basename) {
-        return new AFieldWrapper(receiver, basename, "this");
     }
 }
