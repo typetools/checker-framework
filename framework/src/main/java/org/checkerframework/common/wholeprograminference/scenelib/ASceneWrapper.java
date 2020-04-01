@@ -36,13 +36,13 @@ import scenelib.annotations.io.IndexFileWriter;
 /**
  * scene-lib (from the Annotation File Utilities) doesn't provide enough information to usefully
  * print stub files: it lacks information about what is and is not an enum, about the base types of
- * variables, and more.
+ * variables, and about formal parameter names.
  *
  * <p>This class wraps AScene but provides access to that missing information. This allows us to
  * preserve the code that generates .jaif files, while allowing us to sanely and safely keep the
  * information we need to generate stubs.
  *
- * <p>It would be better to write as a subclass of AScene.
+ * <p>This class would be better as a subclass of AScene.
  */
 public class ASceneWrapper {
 
@@ -98,7 +98,7 @@ public class ASceneWrapper {
      * Removes the specified annotations from an ATypeElement.
      *
      * @param typeElt the type element from which to remove annotations
-     * @param loc the location where typeEl in used
+     * @param loc the location where typeElt is used
      * @param annosToRemove annotations that should not be added to .jaif or stub files
      */
     private void removeAnnosFromATypeElement(
@@ -115,7 +115,7 @@ public class ASceneWrapper {
             typeElt.tlAnnotationsHere.removeAll(annosToRemoveHere);
         }
 
-        // Recursively remove ignored annotations from inner types
+        // Recursively remove annotations from inner types
         for (ATypeElement innerType : typeElt.innerTypes.values()) {
             removeAnnosFromATypeElement(innerType, loc, annosToRemove);
         }
@@ -124,19 +124,26 @@ public class ASceneWrapper {
     /**
      * Write the scene wrapped by this object to a file at the given path.
      *
-     * @param jaifPath the path of the file to be written, ending in .jaif
+     * @param jaifPath the path of the file to be written, but ending in ".jaif". If {@code
+     *     outputformat} is not JAIF, the path will be modified to match.
      * @param annosToIgnore which annotations should be ignored in which contexts
-     * @param outputFormat the output format to use. If a format other than JAIF is selected, the
-     *     path will be modified to match.
+     * @param outputFormat the output format to use
      */
     public void writeToFile(
             String jaifPath, AnnotationsInContexts annosToIgnore, OutputFormat outputFormat) {
         AScene scene = theScene.clone();
         removeAnnosFromScene(scene, annosToIgnore);
         scene.prune();
-        String filepath = jaifPath;
-        if (outputFormat == OutputFormat.STUB) {
-            filepath = jaifPath.replace(".jaif", ".astub");
+        String filepath;
+        switch (outputFormat) {
+            case JAIF:
+                filepath = jaifPath;
+                break;
+            case STUB:
+                filepath = jaifPath.replace(".jaif", ".astub");
+                break;
+            default:
+                throw new BugInCF("Unhandled outputFormat " + outputFormat);
         }
         new File(filepath).delete();
         if (!scene.isEmpty()) {
@@ -160,14 +167,14 @@ public class ASceneWrapper {
     /**
      * Obtain the representation of the given class, which can be further operated on to e.g. add
      * information about a method. This method also updates the metadata stored about the class
-     * using the given ClassSymbol, if it is non-null.
+     * using the given ClassSymbol.
      *
      * <p>Results are interned.
      *
      * @param className the binary name of the class to be added to the scene
      * @param classSymbol the element representing the class, used for adding data to the
-     *     AClassWrapper returned by this method. If it is null, the AClassWrapper's data will not
-     *     be updated.
+     *     AClassWrapper returned by this method. If it is null, an AClassWrapper is looked up or
+     *     created, but the AClassWrapper's metadata is not updated.
      * @return an AClassWrapper representing that class
      */
     public AClassWrapper vivifyClass(

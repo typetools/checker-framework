@@ -19,8 +19,8 @@ import scenelib.annotations.el.AClass;
 import scenelib.annotations.util.JVMNames;
 
 /**
- * A wrapper for the AClass class from scene-lib that carries additional information that is useful
- * during WPI.
+ * A wrapper for the AClass class from scene-lib that carries additional name and type information
+ * that is useful during WPI.
  *
  * <p>This would be better as a subclass of AClass.
  */
@@ -46,7 +46,7 @@ public class AClassWrapper {
 
     /**
      * The type element representing the class. Clients must call {@link
-     * #setTypeElement(TypeElement)} before accessing with this field.
+     * #setTypeElement(TypeElement)} before accessing this field.
      */
     private @MonotonicNonNull TypeElement typeElement = null;
 
@@ -183,7 +183,9 @@ public class AClassWrapper {
      */
     public void setEnumConstants(List<VariableElement> enumConstants) {
         if (this.enumConstants != null) {
-            throw new BugInCF("WPI marked the same class as an enum multiple times");
+            throw new BugInCF(
+                    "setEnumConstants was called multiple times with arguments %s and %s",
+                    this.enumConstants, enumConstants);
         }
         this.enumConstants = new ArrayList<>(enumConstants);
     }

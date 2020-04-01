@@ -9,7 +9,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import scenelib.annotations.el.AMethod;
 
 /**
@@ -22,10 +21,9 @@ public class AMethodWrapper {
     private final AMethod theMethod;
 
     /**
-     * The return type of the method, as a fully-qualified name, or "java.lang.Object" if the return
-     * type is unknown. Note that this is a type, not a name, so it would be inappropriate to
-     * annotate it as {@link FullyQualifiedName} - it may include type parameters, for example, that
-     * would never be included in a name.
+     * The return type of the method, in a format that can be printed in Java source code, or
+     * "java.lang.Object" if the return type is unknown. The type may contain generic type
+     * arguments.
      */
     private String returnType = "java.lang.Object";
 
@@ -41,7 +39,20 @@ public class AMethodWrapper {
     private List<? extends TypeParameterElement> typeParameters;
 
     /**
-     * The return type, as a string using fully-qualified names.
+     * Wrap an AMethod. Package-private, because it should only be called from AClassWrapper.
+     *
+     * @param theMethod the method to wrap
+     * @param methodElt the method's declaration
+     */
+    AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
+        this.theMethod = theMethod;
+        this.setReturnType(methodElt.getReturnType().toString());
+        this.vivifyParameters(methodElt);
+        this.typeParameters = methodElt.getTypeParameters();
+    }
+
+    /**
+     * The return type, in a format that can be printed in Java source code.
      *
      * @return the return type as a string using fully-qualified names (in the style of {@link
      *     TypeMirror#toString()}), or "java.lang.Object" if the return type is unknown
@@ -72,20 +83,6 @@ public class AMethodWrapper {
     }
 
     /**
-     * Wrap an AMethod. Package-private, because it should only be called from AClassWrapper.
-     *
-     * @param theMethod the method to wrap
-     * @param methodElt the method's declaration
-     */
-    AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
-        this.theMethod = theMethod;
-        String typeAsString = methodElt.getReturnType().toString();
-        this.setReturnType(typeAsString);
-        this.vivifyParameters(methodElt);
-        this.typeParameters = methodElt.getTypeParameters();
-    }
-
-    /**
      * Populates the method parameter map for the method. This is called from the constructor, so
      * that the method parameter map always has an entry for each parameter.
      *
@@ -101,15 +98,6 @@ public class AMethodWrapper {
     }
 
     /**
-     * Avoid calling this if possible; prefer the methods of this class.
-     *
-     * @return the underlying AMethod object that has been wrapped
-     */
-    public AMethod getAMethod() {
-        return theMethod;
-    }
-
-    /**
      * Add the given parameter to the scene-lib representation.
      *
      * @param i the parameter index (zero-indexed)
@@ -118,8 +106,7 @@ public class AMethodWrapper {
      * @return an AFieldWrapper representing the parameter
      */
     public AFieldWrapper vivifyParameter(int i, TypeMirror type, Name simpleName) {
-        String typeAsString = type.toString();
-        return vivifyParameter(i, typeAsString, simpleName);
+        return vivifyParameter(i, type.toString(), simpleName);
     }
 
     /**
@@ -149,5 +136,14 @@ public class AMethodWrapper {
      */
     public Map<Integer, AFieldWrapper> getParameters() {
         return ImmutableMap.copyOf(parameters);
+    }
+
+    /**
+     * Avoid calling this if possible; prefer the methods of this class.
+     *
+     * @return the underlying AMethod object that has been wrapped
+     */
+    public AMethod getAMethod() {
+        return theMethod;
     }
 }
