@@ -17,41 +17,53 @@ supplying the following command-line options to javac:
 
 \sectionAndLabel{Annotations}{returns-receiver-checker-annotations}
 
-The type annotation
-\refqualclass{common/returnsrcvr/qual}{This} on the return type of a method
-indicates that the method returns its receiver.  The
-\refqualclass{common/returnsrcvr/qual}{This} annotation should only be written
-on the return type of a method, or (in rare cases) as part of a downcast.  When
-using certain frameworks for the builder pattern,
-\refqualclass{common/returnsrcvr/qual}{This} annotations will be injected
-automatically; see Section~\ref{returns-receiver-checker-framework-support}.
+\begin{figure}
+    \begin{Verbatim}
+    class NameBuilder {
+        String firstName, lastName;
+        @This NameBuilder setFirstName(String firstName) {
+            this.firstName = firstName;
+            return this;
+        }
+        @This NameBuilder setLastName(String lastName) {
+            this.lastName = lastName;
+            return this;
+        }
+        Name build() { return new Name(firstName, lastName); }
+    }
+    \end{Verbatim}
+    \caption{Example usage of \refqualclass{common/returnsrcvr/qual}{This} annotation.}
+    \label{fig-this-annot-example}
+\end{figure}
 
+The type annotation \refqualclass{common/returnsrcvr/qual}{This} on the return
+type of a method indicates that the method returns its receiver. As an example,
+Figure~\ref{fig-this-annot-example} shows a builder class in which
+\refqualclass{common/returnsrcvr/qual}{This} is used to specify that the
+\<setFirstName> and \<setLastName> methods return their receiver.  An
+\refqualclass{common/returnsrcvr/qual}{This} annotation can only be written on
+the return type of a method or in a downcast; if written elsewhere, the checker
+will emit an \code{[invalid.this.location]} warning.
 
-\sectionAndLabel{Warnings}{returns-receiver-checker-warnings}
+The qualifier hierarchy and type-checking approach for the Returns Receiver
+Checker are both somewhat unusual.  As is standard, the Returns Receiver
+Checker has a top qualifier,
+\refqualclass{common/returnsrcvr/qual}{MaybeThis}, and a bottom qualifier,
+\refqualclass{common/returnsrcvr/qual}{BottomThis}.  However, \refqualclass{common/returnsrcvr/qual}{This}
+is \emph{not} a subtype of \refqualclass{common/returnsrcvr/qual}{MaybeThis},
+but instead a polymorphic qualifier.  While polymorphic qualifiers are typically
+used to allow a method to have multiple qualified type signatures (see
+Section~\ref{qualifier-polymorphism}), here polymorphism is used to equate a
+method's return and receiver type qualifier.  When the checker observes an
+\refqualclass{common/returnsrcvr/qual}{This} annotation on a method return type,
+it proceeds to automatically add \refqualclass{common/returnsrcvr/qual}{This} to
+the method's receiver type. The presence of
+\refqualclass{common/returnsrcvr/qual}{This} on both the method's return and
+receiver type forces their type qualifiers to be \emph{equal}.  Hence, the
+method will only pass the type checker if it returns its receiver argument,
+achieving the desired checking.
 
-The \refqualclass{common/returnsrcvr/qual}{This} annotation is a polymorphic
-qualifier (see Section~\ref{qualifier-polymorphism}).  When applied to a method
-with an \refqualclass{common/returnsrcvr/qual}{This} annotation on its return
-type, the Returns Receiver Checker injects an
-\refqualclass{common/returnsrcvr/qual}{This} annotation on the method's receiver
-parameter.  The presence of the polymorphic
-\refqualclass{common/returnsrcvr/qual}{This} qualifier on both the method's
-return and receiver type force their types to be equal.  Hence, Checker
-Framework's standard checking of type compatibility will discover cases where a
-method is not properly returning its receiver.  When a method with an
-\refqualclass{common/returnsrcvr/qual}{This} return type returns some value
-other than its receiver, the issue is reported as a
-\code{[return.type.incompatible]} warning.  Similarly, if a method with an
-\refqualclass{common/returnsrcvr/qual}{This} return type is overridden by a
-method lacking \refqualclass{common/returnsrcvr/qual}{This} on its return type,
-the checker reports an \code{[override.return.invalid]} warning.
-
-Additionally, an \code{[invalid.this.location]} warning will be emitted if an
-\refqualclass{common/returnsrcvr/qual}{This} annotation is written in any
-location other than on the return type of a method or in a downcast.
-
-
-\sectionAndLabel{Framework Support}{returns-receiver-checker-framework-support}
+\sectionAndLabel{AutoValue and Lombok Support}{returns-receiver-checker-autovalue-lombok-support}
 
 \begin{figure}
     \begin{Verbatim}
@@ -64,14 +76,46 @@ location other than on the return type of a method or in a downcast.
         }
         @AutoValue.Builder
         abstract static class Builder {
-            abstract Builder setName(String value);
-            abstract Builder setNumberOfLegs(int value);
+            abstract @This Builder setName(String value);
+            abstract @This Builder setNumberOfLegs(int value);
             abstract Animal build();
         }
     }
     \end{Verbatim}
-    \caption{A code example using AutoValue's Builder support.}
+    \caption{An illustrative use of the \<@AutoValue.Builder> annotation.
+    Given this code, AutoValue automatically generates a concrete subclass of
+    \<Animal.Builder> (see Figure~\ref{fig-autovalue-builder-generated}).  The <@This> annotations on the setters in
+    \<Builder> are automatically added by the Returns Receiver Checker.}
     \label{fig-autovalue-builder}
+\end{figure}
+
+\begin{figure}
+    \begin{Verbatim}
+    class AutoValue_Animal {
+        static final class Builder extends Animal.Builder {
+            private String name;
+            private Integer numberOfLegs;
+            @This Animal.Builder setName(String name) {
+              this.name = name;
+              return this;
+            }
+            @This Animal.Builder setNumberOfLegs(int numberOfLegs) {
+              this.numberOfLegs = numberOfLegs;
+              return this;
+            }
+            @Override
+            Animal build() {
+              return new AutoValue_Animal(
+                  this.name,
+                  this.numberOfLegs);
+            }
+          }
+    }
+    \end{Verbatim}
+    \caption{Code generated by AutoValue for the example of
+    Figure~\ref{fig-autovalue-builder}, including the \<@This> annotations added
+    by the Returns Receiver Checker.}
+    \label{fig-autovalue-builder-generated}
 \end{figure}
 
 For programs using builder generation support from
