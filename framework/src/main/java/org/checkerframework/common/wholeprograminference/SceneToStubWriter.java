@@ -41,8 +41,20 @@ import scenelib.annotations.io.IndexFileWriter;
 /**
  * SceneToStubWriter provides static methods that write a {@link AScene} in stub file format, to a
  * {@link Writer} {@link #write(ASceneWrapper, Writer)} or to a file {@link #write(ASceneWrapper,
- * Writer)}. This class is the equivalent of {@code IndexFileWriter} from the Annotation File
+ * String)}. This class is the equivalent of {@code IndexFileWriter} from the Annotation File
  * Utilities, but outputs the results in the stub file format instead of jaif format.
+ *
+ * <p>This class works by taking as input a scene-lib representation of a type augmented with some
+ * additional information, stored as printable strings. It walks the scene-lib representation
+ * structurally and outputs the stub file as a string, by combining the information scene-lib stores
+ * with the information gathered elsewhere.
+ *
+ * <p>The additional information is stored in the {@link ASceneWrapper}, {@link AClassWrapper},
+ * {@link AMethodWrapper}, and {@link AFieldWrapper} classes. See the documentation of each of those
+ * classes for exactly what additional information is stored.
+ *
+ * <p>This approach is used because the scene-lib representation of a type does not have enough
+ * information to print full types.
  *
  * <p>This writer is used instead of {@code IndexFileWriter} if the {@code -Ainfer=stubs}
  * command-line argument is present.
