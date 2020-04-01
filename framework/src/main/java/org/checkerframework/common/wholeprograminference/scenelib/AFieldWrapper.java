@@ -1,5 +1,6 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import scenelib.annotations.el.AField;
 
@@ -12,10 +13,9 @@ public class AFieldWrapper {
     private final AField theField;
 
     /**
-     * A String representing the type of the field, formatted to be printable in Java source code.
-     * May include generic type arguments.
+     * Javac's representation of the type of the parameter or field represented by {@code theField}.
      */
-    private final String type;
+    private final TypeMirror type;
 
     /**
      * The name of the method formal parameter; null if this AField does not represent a method
@@ -28,16 +28,13 @@ public class AFieldWrapper {
      * AMethodWrapper or AClassWrapper.
      *
      * @param theField the wrapped AField
-     * @param type a String representing the underlying type of the field in a form printable in
-     *     Java source, which AField doesn't include; may include generic type arguments
+     * @param type javac's representation of the type of the wrapped field
      * @param parameterName the parameter name, if this AField object represents a formal parameter,
      *     or null if it does not
      */
-    AFieldWrapper(AField theField, String type, @Nullable String parameterName) {
+    AFieldWrapper(AField theField, TypeMirror type, @Nullable String parameterName) {
         this.theField = theField;
-        // TypeMirror#toString prints multiple annotations on a single type
-        // separated by commas rather than by whitespace, as is required in source code.
-        this.type = type.replaceAll(",@", " @");
+        this.type = type;
         this.parameterName = parameterName;
     }
 
@@ -46,10 +43,9 @@ public class AFieldWrapper {
      * AMethodWrapper or AClassWrapper.
      *
      * @param theField the wrapped AField
-     * @param type a String representing the underlying type of the field in a form printable in
-     *     Java source, which AField doesn't include; may include generic type arguments
+     * @param type javac's representation of the type of the wrapped field
      */
-    AFieldWrapper(AField theField, String type) {
+    AFieldWrapper(AField theField, TypeMirror type) {
         this(theField, type, null);
     }
 
@@ -58,11 +54,10 @@ public class AFieldWrapper {
      * SceneToStubWriter.
      *
      * @param receiver the AField to wrap
-     * @param basename the type of the receiver parameter, as a Java source string
      * @return an AFieldWrapper with the name "this" representing the given receiver
      */
-    public static AFieldWrapper createReceiverParameter(AField receiver, String basename) {
-        return new AFieldWrapper(receiver, basename, "this");
+    public static AFieldWrapper createReceiverParameter(AField receiver) {
+        return new AFieldWrapper(receiver, null, "this");
     }
 
     /**
@@ -76,12 +71,11 @@ public class AFieldWrapper {
     }
 
     /**
-     * Returns the type of the field or formal, formatted to be printable in Java source code. May
-     * include generic type arguments.
+     * Returns the type of the field or formal.
      *
-     * @return the type of the field or formal, formatted to be printable in Java source code
+     * @return the type of the field or formal
      */
-    public String getType() {
+    public TypeMirror getType() {
         return type;
     }
 

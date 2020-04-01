@@ -109,8 +109,7 @@ public class AClassWrapper {
         if (fields.containsKey(fieldName)) {
             return fields.get(fieldName);
         } else {
-            AFieldWrapper wrapper =
-                    new AFieldWrapper(theClass.fields.getVivify(fieldName), type.toString());
+            AFieldWrapper wrapper = new AFieldWrapper(theClass.fields.getVivify(fieldName), type);
             fields.put(fieldName, wrapper);
             return wrapper;
         }

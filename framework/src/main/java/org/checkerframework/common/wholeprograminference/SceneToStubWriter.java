@@ -13,9 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -157,94 +161,84 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Formats the component types of an array via recursive descent through the array's scene-lib
-     * structure.
+     * Formats the component types of an array via recursive descent through the array type.
      *
-     * @param e the array's scenelib type element
-     * @param arrayType the string representation of the array's type
+     * @param scenelibRep the array's scenelib type element
+     * @param javacRep the representation of the array's type used by javac
      * @return the type formatted to be written to Java source code, followed by a space character
      */
-    private static String formatArrayType(ATypeElement e, String arrayType) {
-        StringBuilder result = new StringBuilder();
-        // If there are not annotations on the component, this will be true - unless there
-        // are also no annotations on the first array level. See comment below for how that
-        // case is handled.
-        int componentEndPos;
-        {
-            componentEndPos = arrayType.indexOf(' ');
-            if (arrayType.startsWith("@")) {
-                // While there are more explicit annotations, go to the next space.
-                while (arrayType.charAt(componentEndPos + 1) == '@') {
-                    componentEndPos = arrayType.indexOf(' ', componentEndPos + 1);
-                }
-                // Once all annotations have been skipped, we still have to skip to the end of the
-                // component type itself.
-                componentEndPos = arrayType.indexOf(' ', componentEndPos + 1);
-            }
-            // If the first array level doesn't have an annotation, then the spacing will be off,
-            // so use the position of the first '[' instead (which must be correct, since the
-            // first array doesn't have an annotation).
-            int firstArrayPos = arrayType.indexOf('[');
-            if (firstArrayPos < componentEndPos || componentEndPos == -1) {
-                componentEndPos = firstArrayPos - 1;
-            }
-        }
-
-        String componentType = arrayType.substring(0, componentEndPos + 1);
-        String arrayTypes = arrayType.substring(componentEndPos + 1);
-
-        return formatArrayTypeImpl(e, arrayTypes, componentType, result) + " ";
+    private static String formatArrayType(ATypeElement scenelibRep, ArrayType javacRep) {
+        List<ATypeElement> scenelibRepInOrder = getSceneLibRepInOrder(scenelibRep);
+        return formatArrayTypeImpl(scenelibRepInOrder, javacRep);
     }
 
     /**
-     * The implementation of formatArrayType. Java array types have a somewhat unintuitive syntax:
-     * see <a
-     * href="https://checkerframework.org/jsr308/specification/java-annotation-design.html#array-syntax">this
-     * explanation</a>.
+     * Javac's TypeMirror and its derivatives represent arrays differently than scene-lib does. This
+     * method descends through the scenelib representation and returns a list in the same order used
+     * by Javac. More details on the two representations follow as motivation for why this code is
+     * necessary.
      *
-     * <p>The iteration order in the scene-lib representation is from outermost to innermost. For
-     * example, given the type {@code @Foo int @Bar [] @Baz []}, the iteration order is {@code @Bar
-     * []}, then {@code @Baz []}, and then finally {@code @Foo int}. This implementation therefore
-     * passes a string builder with the result of the array types seen so far, to handle
-     * multidimensional arrays. That builder is appended to the final component type in the base
-     * case.
+     * <p>If we label an array as such: (0) int (1) [] (2) [] (3) [], then level 0 is the component
+     * type, and level 3 is the "outermost" type. Scene-lib's representation of this type is a
+     * nested ATypeElement, with this structure: (1) -> (2) -> (3) -> (0). The TypeMirror, on the
+     * other hand, represents the type like this: (3) -> (2) -> (1) -> (0), for ease of printing.
+     * This method therefore descends through the scenelib structure until it finds the component,
+     * adding each item to a list. It then reverses the list, and then adds the component type to
+     * the end.
      *
-     * @param e same as above, but can become null if scene-lib did not fill in the inner types,
-     *     which happens when they do not have annotations
-     * @param arrayTypes the array parts of the array type (i.e. the parts after the component type
-     *     in the string representation). Must contain at least one '['.
-     * @param componentType the component type of the array
-     * @param result the string builder containing the array types seen so far
-     * @return the formatted string, without a trailing space
+     * <p><a
+     * href="https://checkerframework.org/jsr308/specification/java-annotation-design.html#array-syntax">This
+     * document</a> explains the reasoning for scenelib's representation.
+     *
+     * @param scenelibRep scenelib's representation of an array type
+     * @return a list of the array levels in scenelib's representation, but in the order used by
+     *     javac
+     */
+    private static List<ATypeElement> getSceneLibRepInOrder(ATypeElement scenelibRep) {
+        List<ATypeElement> result = new ArrayList<>();
+        ATypeElement array = scenelibRep;
+        ATypeElement component = getNextArrayLevel(scenelibRep);
+        do {
+            result.add(array);
+            array = component;
+            component = getNextArrayLevel(array);
+        } while (component != null);
+        Collections.reverse(result);
+        // at this point, array has become the actual base component, because component is null
+        result.add(array);
+        return result;
+    }
+
+    /**
+     * Formats the component types of an array via recursive descent through the array type.
+     *
+     * @param scenelibRepInOrder the scenelib representation, reordered to match javac's order. See
+     *     {@link #getSceneLibRepInOrder(ATypeElement)} for an explanation of why this is necessary.
+     * @param javacRep the javac representation of the array type
+     * @return the type formatted to be written to Java source code, followed by a space character
      */
     private static String formatArrayTypeImpl(
-            @Nullable ATypeElement e,
-            String arrayTypes,
-            String componentType,
-            StringBuilder result) {
-        // append the next type:
-        String nextArrayType = arrayTypes.substring(0, arrayTypes.indexOf(']') + 1);
-        String remainingArrayTypes = arrayTypes.substring(arrayTypes.indexOf(']') + 1);
-        // do not append inferred annotations if there was one in the source code
-        if (nextArrayType.contains("@")) {
-            result.append(nextArrayType);
-        } else {
-            if (e != null) {
-                result.append(formatAnnotations(e.tlAnnotationsHere));
-            }
-            result.append(nextArrayType);
+            List<ATypeElement> scenelibRepInOrder, ArrayType javacRep) {
+        TypeMirror javacComponent = javacRep.getComponentType();
+        ATypeElement scenelibRep = scenelibRepInOrder.get(0);
+        ATypeElement scenelibComponent = scenelibRepInOrder.get(1);
+        String result = "";
+        List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
+        for (AnnotationMirror explicitAnno : explicitAnnos) {
+            result += explicitAnno.toString();
+            result += " ";
         }
-        result.append(" ");
-
-        // Check if there are any more array levels. If so, recurse; otherwise, append the component
-        // and return.
-        if ("".equals(remainingArrayTypes)) {
-            ATypeElement component = getNextArrayLevel(e);
-            return formatType(componentType, component) + result.toString();
-        } else {
+        if ("".equals(result)) {
+            result += formatAnnotations(scenelibRep.tlAnnotationsHere);
+        }
+        result += "[] ";
+        if (javacComponent.getKind() == TypeKind.ARRAY) {
             return formatArrayTypeImpl(
-                    getNextArrayLevel(e), remainingArrayTypes, componentType, result);
+                            scenelibRepInOrder.subList(1, scenelibRepInOrder.size()),
+                            (ArrayType) javacComponent)
+                    + result;
         }
+        return formatType(scenelibComponent, javacComponent) + result;
     }
 
     /**
@@ -306,25 +300,51 @@ public final class SceneToStubWriter {
      */
     private static String formatAFieldImpl(
             AFieldWrapper aField, String fieldName, String className) {
-        String basetype = fieldName.equals("this") ? className : aField.getType();
-        return formatType(basetype, aField.getTheField().type) + fieldName;
+        if ("this".equals(fieldName)) {
+            return formatType(aField.getTheField().type, null, className) + fieldName;
+        } else {
+            return formatType(aField.getTheField().type, aField.getType()) + fieldName;
+        }
     }
 
     /**
      * Formats the given type for printing in Java source code.
      *
-     * @param basetype the type to format, as a base name (that is, without a package)
      * @param type the scene-lib representation of the type, or null if only the bare type is to be
      *     printed
+     * @param javacType the javac representation of the type
      * @return the type as it would appear in Java source code, followed by a trailing space
      */
-    private static String formatType(final String basetype, final @Nullable ATypeElement type) {
-        String basetypeToPrint = basetype;
+    private static String formatType(
+            final @Nullable ATypeElement type, final TypeMirror javacType) {
+        // TypeMirror#toString prints multiple annotations on a single type
+        // separated by commas rather than by whitespace, as is required in source code.
+        String basetypeToPrint = javacType.toString().replaceAll(",@", " @");
+        return formatType(type, javacType, basetypeToPrint);
+    }
+
+    /**
+     * Formats the given type for printing in Java source code. This separate version of this method
+     * exists only for receiver parameters, which are printed using the name of the class as {@code
+     * basetypeToPrint} instead of the javac type. The other version of this method should be
+     * preferred in every other case.
+     *
+     * @param type the scene-lib representation of the type, or null if only the bare type is to be
+     *     printed
+     * @param javacType the javac representation of the type, or null if this is a receiver
+     *     parameter
+     * @param basetypeToPrint the string representation of the type
+     * @return the type as it would appear in Java source code, followed by a trailing space
+     */
+    private static String formatType(
+            final @Nullable ATypeElement type,
+            @Nullable TypeMirror javacType,
+            String basetypeToPrint) {
         // anonymous static classes shouldn't be printed with the "anonymous" tag that the AScene
         // library uses
-        if (basetype.startsWith("<anonymous ")) {
+        if (basetypeToPrint.startsWith("<anonymous ")) {
             basetypeToPrint =
-                    basetypeToPrint.substring("<anonymous ".length(), basetype.length() - 1);
+                    basetypeToPrint.substring("<anonymous ".length(), basetypeToPrint.length() - 1);
         }
 
         // fields don't need their generic types, and sometimes they are wrong. Just don't print
@@ -334,12 +354,11 @@ public final class SceneToStubWriter {
         }
 
         if (basetypeToPrint.contains("[")) {
-            // formatArrayType adds a trailing space
-            return formatArrayType(type, basetypeToPrint);
+            // receivers cannot be arrays, so using the javacType here is safe
+            return formatArrayType(type, (ArrayType) javacType);
         }
 
-        // must add trailing space directly here
-        if (type == null /*|| basetypeToPrint.startsWith("@")*/) {
+        if (type == null) {
             return basetypeToPrint + " ";
         } else {
             return formatAnnotations(type.tlAnnotationsHere) + basetypeToPrint + " ";
@@ -492,8 +511,7 @@ public final class SceneToStubWriter {
         if ("<init>".equals(methodName)) {
             methodName = basename;
         } else {
-            String returnType = aMethodWrapper.getReturnType();
-            printWriter.print(formatType(returnType, aMethod.returnType));
+            printWriter.print(formatType(aMethod.returnType, aMethodWrapper.getReturnType()));
         }
         printWriter.print(methodName);
         printWriter.print("(");
@@ -504,7 +522,7 @@ public final class SceneToStubWriter {
             // Only output the receiver if it has an annotation.
             parameters.add(
                     formatParameter(
-                            AFieldWrapper.createReceiverParameter(aMethod.receiver, basename),
+                            AFieldWrapper.createReceiverParameter(aMethod.receiver),
                             "this",
                             basename));
         }

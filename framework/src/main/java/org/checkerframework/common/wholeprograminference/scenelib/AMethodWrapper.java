@@ -9,6 +9,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import scenelib.annotations.el.AMethod;
 
 /**
@@ -20,17 +21,13 @@ public class AMethodWrapper {
     /** The wrapped AMethod. */
     private final AMethod theMethod;
 
-    /**
-     * The return type of the method, in a format that can be printed in Java source code, or
-     * "java.lang.Object" if the return type is unknown. The type may contain generic type
-     * arguments.
-     */
-    private String returnType = "java.lang.Object";
+    /** The return type of the method, or null if the method's return type is unknown or void. */
+    private @Nullable TypeMirror returnType;
 
     /**
      * A mirror of the parameters field of AMethod, but using AFieldWrapper objects as the values.
      * Keys are parameter indices. Like the parameters field of AMethod, this map starts empty and
-     * is vivified by calls to {@link #vivifyParameter(int, String, Name)} or {@link
+     * is vivified by calls to {@link #vivifyParameter(int, TypeMirror, Name)} or {@link
      * #vivifyParameter(int, TypeMirror, Name)}.
      */
     private Map<Integer, AFieldWrapper> parameters = new HashMap<>();
@@ -46,18 +43,17 @@ public class AMethodWrapper {
      */
     AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
         this.theMethod = theMethod;
-        this.setReturnType(methodElt.getReturnType().toString());
+        this.returnType = methodElt.getReturnType();
         this.vivifyParameters(methodElt);
         this.typeParameters = methodElt.getTypeParameters();
     }
 
     /**
-     * The return type, in a format that can be printed in Java source code.
+     * Get the return type.
      *
-     * @return the return type as a string using fully-qualified names (in the style of {@link
-     *     TypeMirror#toString()}), or "java.lang.Object" if the return type is unknown
+     * @return the return type, or null if the return type is unknown or void
      */
-    public String getReturnType() {
+    public @Nullable TypeMirror getReturnType() {
         return returnType;
     }
 
@@ -68,18 +64,6 @@ public class AMethodWrapper {
      */
     public List<? extends TypeParameterElement> getTypeParameters() {
         return typeParameters;
-    }
-
-    /**
-     * Provide the AMethodWrapper with a return type.
-     *
-     * @param returnType a string representation of the type, in the form returned by {@link
-     *     TypeMirror#toString()}
-     */
-    private void setReturnType(String returnType) {
-        if ("java.lang.Object".equals(this.returnType)) {
-            this.returnType = returnType;
-        }
     }
 
     /**
@@ -101,25 +85,12 @@ public class AMethodWrapper {
      * Obtain the representation of the parameter at the given index, which can be further operated
      * on to e.g. add a type annotation.
      *
-     * @param i the parameter index (zero-indexed)
-     * @param type the type of the parameter, as a TypeMirror
+     * @param i the parameter index (first parameter is zero)
+     * @param type the type of the parameter
      * @param simpleName the name of the parameter
      * @return an AFieldWrapper representing the parameter
      */
     public AFieldWrapper vivifyParameter(int i, TypeMirror type, Name simpleName) {
-        return vivifyParameter(i, type.toString(), simpleName);
-    }
-
-    /**
-     * Obtain the representation of the parameter at the given index, which can be further operated
-     * on to e.g. add a type annotation.
-     *
-     * @param i the parameter index (first parameter is zero)
-     * @param type the type of the parameter, printable in Java source code
-     * @param simpleName the name of the parameter
-     * @return an AFieldWrapper representing the parameter
-     */
-    private AFieldWrapper vivifyParameter(int i, String type, Name simpleName) {
         if (parameters.containsKey(i)) {
             return parameters.get(i);
         } else {
