@@ -905,6 +905,8 @@ latest bug fixes and new features:
   mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
 \end{Verbatim}
 
+\end{enumerate}
+
 \item If using JDK 8, use Maven properties to hold the locations of the
   annotated JDK and ErrorProne javac.jar.  They were declared as Maven dependencies above.
 To set the value of these properties automatically, you will use the Maven Dependency plugin.
@@ -925,6 +927,7 @@ section, or add it if it is not present.
 \begin{alltt}
   <plugin>
     <!-- This plugin will set properties values using dependency information -->
+    <groupId>org.apache.maven.plugins</groupId>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-dependency-plugin</artifactId>
     <executions>
@@ -1009,8 +1012,6 @@ Warning:  adding
 \noindent
 may suppress warnings from the stub parser.
 
-
-\end{enumerate}
 
 \item To use a locally-modified version of the Checker Framework, first run:
 
