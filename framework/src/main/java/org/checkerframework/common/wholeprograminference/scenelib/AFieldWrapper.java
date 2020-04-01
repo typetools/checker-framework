@@ -58,7 +58,7 @@ public class AFieldWrapper {
      * SceneToStubWriter.
      *
      * @param receiver the AField to wrap
-     * @param type the type of the receiver parameter, as a Java source string
+     * @param basename the type of the receiver parameter, as a Java source string
      * @return an AFieldWrapper with the name "this" representing the given receiver
      */
     public static AFieldWrapper createReceiverParameter(AField receiver, String basename) {
