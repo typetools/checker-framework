@@ -17,30 +17,11 @@ supplying the following command-line options to javac:
 
 \sectionAndLabel{Annotations}{returns-receiver-checker-annotations}
 
-\begin{figure}
-    \begin{Verbatim}
-    class NameBuilder {
-        String firstName, lastName;
-        @This NameBuilder setFirstName(String firstName) {
-            this.firstName = firstName;
-            return this;
-        }
-        @This NameBuilder setLastName(String lastName) {
-            this.lastName = lastName;
-            return this;
-        }
-        Name build() { return new Name(firstName, lastName); }
-    }
-    \end{Verbatim}
-    \caption{Example usage of \refqualclass{common/returnsrcvr/qual}{This} annotation.}
-    \label{fig-this-annot-example}
-\end{figure}
-
 The type annotation \refqualclass{common/returnsrcvr/qual}{This} on the return
 type of a method indicates that the method returns its receiver. As an example,
-Figure~\ref{fig-this-annot-example} shows a builder class in which
+Figure~\ref{fig-autovalue-builder-generated} shows a \<Builder> class in which
 \refqualclass{common/returnsrcvr/qual}{This} is used to specify that the
-\<setFirstName> and \<setLastName> methods return their receiver.  An
+\<setName> and \<setNumberOfLegs> methods return their receiver.  An
 \refqualclass{common/returnsrcvr/qual}{This} annotation can only be written on
 the return type of a method or in a downcast; if written elsewhere, the checker
 will emit an \code{[invalid.this.location]} warning.
@@ -118,21 +99,17 @@ achieving the desired checking.
     \label{fig-autovalue-builder-generated}
 \end{figure}
 
-For programs using builder generation support from
-\href{https://github.com/google/auto/tree/master/value}{AutoValue} or
-\href{https://projectlombok.org/}{Project Lombok}, the Returns Receiver Checker
-will automatically inject \refqualclass{common/returnsrcvr/qual}{This}
-annotations on the return types of the fluent API methods of generated builders.
-Consider the code using AutoValue in Figure~\ref{fig-autovalue-builder}.  For
-this code, AutoValue automatically generates a class
-\<AutoValue\_Animal.Builder> that extends \<Animal.Builder> and implements its
-abstract methods.  The Returns Receiver Checker automatically adds a
-\refqualclass{common/returnsrcvr/qual}{This} annotation to the return type of
-\<Animal.Builder.setName> and \<Animal.Builder.setNumberOfLegs>, and also to the
-return types of those methods in the generated subclass.  The Returns Receiver
-Checker still runs to ensure the implementation of the generated subclass is
-consistent with the injected annotations.  Project Lombok Builders are supported
-in a similar fashion.
+The \href{https://github.com/google/auto/tree/master/value}{AutoValue} and
+\href{https://projectlombok.org/}{Lombok} projects both support automatic
+generation of builder classes, which enable flexible object construction.
+Figure~\ref{fig-autovalue-builder} shows code using AutoValue to specify the
+methods in a builder (using the \<@AutoValue.Builder> annotation), and
+Figure~\ref{fig-autovalue-builder-generated} shows the builder implementation
+that AutoValue generates for this example.  For code using these two frameworks,
+the Returns Receiver Checker automatically adds \<@This> annotations to setter
+methods in builder classes.  For example, all the \<@This> annotations in
+Figures~\ref{fig-autovalue-builder} and~\ref{fig-autovalue-builder-generated}
+are automatically added by the checker.
 
 To disable the checker's built-in framework support, use the
 \<-AdisableFrameworkSupport> command-line option, passing a list of frameworks
