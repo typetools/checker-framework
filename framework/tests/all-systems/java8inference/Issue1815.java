@@ -4,7 +4,7 @@
 import java.util.List;
 import java.util.stream.Stream;
 
-@SuppressWarnings("") // just check for crashes
+@SuppressWarnings("all") // just check for crashes
 abstract class Issue1815 {
 
     class A extends B {}
