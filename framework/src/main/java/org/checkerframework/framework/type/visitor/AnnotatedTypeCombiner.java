@@ -57,28 +57,28 @@ public class AnnotatedTypeCombiner extends AnnotatedTypeComparer<Void> {
     }
 
     /**
-     * Computes the greatest lower bound of each set of annotations shared by one and two, and
-     * replaces the annotations in two with the result.
+     * Computes the greatest lower bound of each set of annotations shared by from and to, and
+     * replaces the annotations in to with the result.
      *
-     * @param one the first set of annotations
-     * @param two the second set of annotations. This is modified by side-effect to hold the result.
+     * @param from the first set of annotations
+     * @param to the second set of annotations. This is modified by side-effect to hold the result.
      */
     protected void combineAnnotations(
-            final AnnotatedTypeMirror one, final AnnotatedTypeMirror two) {
+            final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
 
         Set<AnnotationMirror> combinedAnnotations = AnnotationUtils.createAnnotationSet();
 
         for (AnnotationMirror top : hierarchy.getTopAnnotations()) {
-            AnnotationMirror aOne = one.getAnnotationInHierarchy(top);
-            AnnotationMirror aTwo = two.getAnnotationInHierarchy(top);
-            if (aOne != null && aTwo != null) {
-                combinedAnnotations.add(hierarchy.greatestLowerBound(aOne, aTwo));
-            } else if (aOne != null) {
-                combinedAnnotations.add(aOne);
-            } else if (aTwo != null) {
-                combinedAnnotations.add(aTwo);
+            AnnotationMirror aFrom = from.getAnnotationInHierarchy(top);
+            AnnotationMirror aTo = to.getAnnotationInHierarchy(top);
+            if (aFrom != null && aTo != null) {
+                combinedAnnotations.add(hierarchy.greatestLowerBound(aFrom, aTo));
+            } else if (aFrom != null) {
+                combinedAnnotations.add(aFrom);
+            } else if (aTo != null) {
+                combinedAnnotations.add(aTo);
             }
         }
-        two.replaceAnnotations(combinedAnnotations);
+        to.replaceAnnotations(combinedAnnotations);
     }
 }
