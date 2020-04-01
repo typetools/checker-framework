@@ -603,7 +603,7 @@ public final class SceneToStubWriter {
             }
         }
         for (int i = curlyCount - 1; i >= 0; i--) {
-            printWriter.println(indents(i));
+            printWriter.println(indents(i) + "}");
         }
     }
 
