@@ -905,36 +905,6 @@ latest bug fixes and new features:
   mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
 \end{Verbatim}
 
-\item
-  To use a locally-modifed version of the Checker Framework, first run:
-
-\begin{alltt}
-./gradlew deployArtifactsToLocalRepo
-\end{alltt}
-
-\noindent
-Then, in the project you want to type-check, use
-\<\ReleaseVersion{}-SNAPSHOT> as the version number:
-
-\begin{alltt}
-   <artifactId>maven-compiler-plugin</artifactId>
-      ...
-      <configuration>
-        ...
-        <annotationProcessorPaths>
-          <path>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>checker</artifactId>
-            <version>\ReleaseVersion{}-SNAPSHOT</version>
-          </path>
-\end{alltt}
-
-You can make similar changes if you have changed other artifacts besides
-\<checker>, such as \<checker-qual>, \<jdk8>, etc.
-
-\end{enumerate}
-
-
 \item If using JDK 8, use Maven properties to hold the locations of the
   annotated JDK and ErrorProne javac.jar.  They were declared as Maven dependencies above.
 To set the value of these properties automatically, you will use the Maven Dependency plugin.
@@ -1042,6 +1012,17 @@ may suppress warnings from the stub parser.
 
 \end{enumerate}
 
+\item To use a locally-modified version of the Checker Framework, first run:
+
+\begin{alltt}
+./gradlew deployArtifactsToLocalRepo
+\end{alltt}
+
+\noindent
+Then, in addition to the instructions above, use the release version output by running \<./gradlew version>
+as the version number for the Checker Framework artifacts.
+
+\end{enumerate}
 
 \sectionAndLabel{NetBeans}{netbeans}
 
