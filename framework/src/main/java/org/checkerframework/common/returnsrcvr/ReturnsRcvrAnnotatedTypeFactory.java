@@ -11,8 +11,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsrcvr.framework.FrameworkSupport;
 import org.checkerframework.common.returnsrcvr.framework.FrameworkSupportUtils;
 import org.checkerframework.common.returnsrcvr.qual.BottomThis;
-import org.checkerframework.common.returnsrcvr.qual.MaybeThis;
 import org.checkerframework.common.returnsrcvr.qual.This;
+import org.checkerframework.common.returnsrcvr.qual.UnknownThis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
@@ -50,7 +50,7 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiers(BottomThis.class, MaybeThis.class, This.class);
+        return getBundledTypeQualifiers(BottomThis.class, UnknownThis.class, This.class);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             AnnotatedTypeMirror returnType = t.getReturnType();
             AnnotationMirror maybeThisAnnot =
-                    AnnotationBuilder.fromClass(elements, MaybeThis.class);
+                    AnnotationBuilder.fromClass(elements, UnknownThis.class);
             AnnotationMirror retAnnotation = returnType.getAnnotationInHierarchy(maybeThisAnnot);
             if (retAnnotation != null && AnnotationUtils.areSame(retAnnotation, THIS_ANNOT)) {
                 // add @This to the receiver type

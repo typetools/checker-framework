@@ -29,9 +29,9 @@ will emit an \code{[invalid.this.location]} warning.
 The qualifier hierarchy and type-checking approach for the Returns Receiver
 Checker are both somewhat unusual.  As is standard, the Returns Receiver
 Checker has a top qualifier,
-\refqualclass{common/returnsrcvr/qual}{MaybeThis}, and a bottom qualifier,
+\refqualclass{common/returnsrcvr/qual}{UnknownThis}, and a bottom qualifier,
 \refqualclass{common/returnsrcvr/qual}{BottomThis}.  However, \refqualclass{common/returnsrcvr/qual}{This}
-is \emph{not} a subtype of \refqualclass{common/returnsrcvr/qual}{MaybeThis},
+is \emph{not} a subtype of \refqualclass{common/returnsrcvr/qual}{UnknownThis},
 but instead a polymorphic qualifier.  While polymorphic qualifiers are typically
 used to allow a method to have multiple qualified type signatures (see
 Section~\ref{qualifier-polymorphism}), here polymorphism is used to equate a

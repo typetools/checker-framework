@@ -12,7 +12,7 @@ class SimpleTest {
         return this;
     }
 
-    @This SimpleTest retThisWrapper(@MaybeThis SimpleTest other, boolean flag) {
+    @This SimpleTest retThisWrapper(@UnknownThis SimpleTest other, boolean flag) {
         if (flag) {
             // :: error: return.type.incompatible
             return other.retThis();

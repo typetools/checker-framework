@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * @checker_framework.manual #bottom-type the bottom type
  */
-@SubtypeOf({MaybeThis.class})
+@SubtypeOf({UnknownThis.class})
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})

@@ -13,4 +13,4 @@ import org.checkerframework.framework.qual.*;
 @SubtypeOf({})
 @QualifierForLiterals(LiteralKind.NULL)
 @DefaultFor(types = Void.class, value = TypeUseLocation.LOWER_BOUND)
-public @interface MaybeThis {}
+public @interface UnknownThis {}
