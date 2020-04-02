@@ -1,4 +1,4 @@
-package org.checkerframework.common.returnsrcvr;
+package org.checkerframework.common.returnsreceiver;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -10,25 +10,23 @@ import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** A visitor that extends {@link BaseTypeVisitor} for the returns receiver checker */
-public class ReturnsRcvrVisitor extends BaseTypeVisitor<ReturnsRcvrAnnotatedTypeFactory> {
+/** The visitor for the Returns Receiver Checker. */
+public class ReturnsReceiverVisitor extends BaseTypeVisitor<ReturnsReceiverAnnotatedTypeFactory> {
 
     /**
-     * Create a new {@code ReturnsRcvrVisitor}.
+     * Create a new {@code ReturnsReceiverVisitor}.
      *
      * @param checker the type-checker associated with this visitor
      */
-    public ReturnsRcvrVisitor(BaseTypeChecker checker) {
+    public ReturnsReceiverVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
         AnnotationMirror annot = TreeUtils.annotationFromAnnotationTree(node);
-        AnnotationMirror thisAnnot = getTypeFactory().THIS_ANNOT;
-        if (AnnotationUtils.areSame(annot, thisAnnot)) {
-            TreePath currentPath = getCurrentPath();
-            TreePath parentPath = currentPath.getParentPath();
+        if (AnnotationUtils.areSame(annot, getTypeFactory().THIS_ANNOTATION)) {
+            TreePath parentPath = getCurrentPath().getParentPath();
             Tree parent = parentPath.getLeaf();
             Tree grandparent = parentPath.getParentPath().getLeaf();
             boolean isReturnAnnot =

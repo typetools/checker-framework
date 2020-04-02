@@ -1,4 +1,4 @@
-package org.checkerframework.common.returnsrcvr.framework;
+package org.checkerframework.common.returnsreceiver.framework;
 
 import com.google.auto.value.AutoValue;
 import javax.lang.model.element.Element;
@@ -10,16 +10,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Enum of supported frameworks. */
-public enum Frameworks implements FrameworkSupport {
-    /** AutoValue framework */
+public enum Framework implements FrameworkSupport {
+    /** AutoValue framework. */
     AUTO_VALUE {
         @Override
         public boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t) {
-
             ExecutableElement element = t.getElement();
-
             Element enclosingElement = element.getEnclosingElement();
-
             boolean inAutoValueBuilder =
                     FrameworkSupportUtils.hasAnnotation(enclosingElement, AutoValue.Builder.class);
 
@@ -27,7 +24,7 @@ public enum Frameworks implements FrameworkSupport {
                 // see if superclass is an AutoValue Builder, to handle generated code
                 TypeMirror superclass = ((TypeElement) enclosingElement).getSuperclass();
                 // if enclosingType is an interface, the superclass has TypeKind NONE
-                if (!(superclass.getKind() == TypeKind.NONE)) {
+                if (superclass.getKind() != TypeKind.NONE) {
                     // update enclosingElement to be for the superclass for this case
                     enclosingElement = TypesUtils.getTypeElement(superclass);
                     inAutoValueBuilder =
@@ -45,14 +42,12 @@ public enum Frameworks implements FrameworkSupport {
             return false;
         }
     },
-    /** LOMBOK framework */
+    /** Lombok framework. */
     LOMBOK {
         @Override
         public boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t) {
             ExecutableElement element = t.getElement();
-
             Element enclosingElement = element.getEnclosingElement();
-
             boolean inLombokBuilder =
                     (FrameworkSupportUtils.hasAnnotationByName(enclosingElement, "lombok.Generated")
                                     || FrameworkSupportUtils.hasAnnotationByName(

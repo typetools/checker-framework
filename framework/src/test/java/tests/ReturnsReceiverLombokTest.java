@@ -2,7 +2,7 @@ package tests;
 
 import java.io.File;
 import java.util.List;
-import org.checkerframework.common.returnsrcvr.ReturnsRcvrChecker;
+import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -13,11 +13,11 @@ import org.junit.runners.Parameterized.Parameters;
  * a Java file in that directory. The file contains "// ::" comments to indicate expected errors and
  * warnings; see https://github.com/typetools/checker-framework/blob/master/checker/tests/README .
  */
-public class ReturnsRcvrLombokTest extends CheckerFrameworkPerDirectoryTest {
-    public ReturnsRcvrLombokTest(List<File> testFiles) {
+public class ReturnsReceiverLombokTest extends CheckerFrameworkPerDirectoryTest {
+    public ReturnsReceiverLombokTest(List<File> testFiles) {
         super(
                 testFiles,
-                ReturnsRcvrChecker.class,
+                ReturnsReceiverChecker.class,
                 "lombok",
                 "-Anomsgtext",
                 "-nowarn",
@@ -26,6 +26,6 @@ public class ReturnsRcvrLombokTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"returnsrcvrlombok"};
+        return new String[] {"returnsreceiverlombok"};
     }
 }

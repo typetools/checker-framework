@@ -1,15 +1,15 @@
-package org.checkerframework.common.returnsrcvr.framework;
+package org.checkerframework.common.returnsreceiver.framework;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.EnumSet;
 import javax.lang.model.element.Element;
-import org.checkerframework.common.returnsrcvr.ReturnsRcvrChecker;
+import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.UserError;
 
-/** A utility class for framework support in returns receiver checker. */
+/** A utility class for framework support in the Returns Receiver Checker. */
 public class FrameworkSupportUtils {
 
     /** this class is non-instantiable */
@@ -21,26 +21,27 @@ public class FrameworkSupportUtils {
      * Return which frameworks should be supported, respecting the command-line argument {@code
      * --disableFrameworkSupport}.
      *
-     * @param option a comma-separated list of frameworks whose support should be disabled
-     * @return an EnumSet of all framework supports in use
+     * @param disabledFrameworks a comma-separated list of frameworks whose support should be
+     *     disabled; may be null
+     * @return the frameworks supported by this instantiation of the Returns Receiver Checker
      */
-    public static Collection<FrameworkSupport> getFrameworkSet(String option) {
+    public static Collection<FrameworkSupport> getSupportedFrameworks(String disabledFrameworks) {
         Collection<FrameworkSupport> frameworkSupports =
-                new ArrayDeque<>(EnumSet.allOf(Frameworks.class));
+                new ArrayDeque<>(EnumSet.allOf(Framework.class));
 
-        if (option != null) {
-            for (String disabledFrameworkSupport : option.split("\\s?,\\s?")) {
-                switch (disabledFrameworkSupport.toUpperCase()) {
-                    case ReturnsRcvrChecker.AUTOVALUE_SUPPORT:
-                        frameworkSupports.remove(Frameworks.AUTO_VALUE);
+        if (disabledFrameworks != null) {
+            for (String disabledFramework : disabledFrameworks.split("\\s?,\\s?")) {
+                switch (disabledFramework.toUpperCase()) {
+                    case ReturnsReceiverChecker.AUTOVALUE_SUPPORT:
+                        frameworkSupports.remove(Framework.AUTO_VALUE);
                         break;
-                    case ReturnsRcvrChecker.LOMBOK_SUPPORT:
-                        frameworkSupports.remove(Frameworks.LOMBOK);
+                    case ReturnsReceiverChecker.LOMBOK_SUPPORT:
+                        frameworkSupports.remove(Framework.LOMBOK);
                         break;
                     default:
                         throw new UserError(
                                 "Unrecognized framework in --disabledFrameworkSupport: "
-                                        + disabledFrameworkSupport);
+                                        + disabledFrameworks);
                 }
             }
         }
@@ -48,7 +49,7 @@ public class FrameworkSupportUtils {
     }
 
     /**
-     * Given an annotation class, return true if the element has the annotation
+     * Given an annotation class, return true if the element has an annotation of that class.
      *
      * @param element the element that might have an annotation
      * @param annotClass the class of the annotation that might be present
@@ -60,7 +61,7 @@ public class FrameworkSupportUtils {
     }
 
     /**
-     * Given an annotation name, return true if the element has the annotation of that name
+     * Given an annotation name, return true if the element has an annotation of that name.
      *
      * @param element the element that might have an annotation
      * @param annotClassName the class of the annotation that might be present

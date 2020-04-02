@@ -1,4 +1,4 @@
-import org.checkerframework.common.returnsrcvr.qual.This;
+import org.checkerframework.common.returnsreceiver.qual.This;
 
 public class GenericReturn {
 

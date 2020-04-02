@@ -1,4 +1,4 @@
-import org.checkerframework.common.returnsrcvr.qual.*;
+import org.checkerframework.common.returnsreceiver.qual.*;
 
 // Test basic subtyping relationships for the Returns Receiver Checker.
 class OverrideTest {

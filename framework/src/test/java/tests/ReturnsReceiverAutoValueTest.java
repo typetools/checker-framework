@@ -9,7 +9,7 @@ import java.util.List;
 import org.checkerframework.framework.test.*;
 import org.junit.runners.Parameterized.Parameters;
 
-public class ReturnsRcvrAutoValueTest extends CheckerFrameworkPerDirectoryTest {
+public class ReturnsReceiverAutoValueTest extends CheckerFrameworkPerDirectoryTest {
 
     private static final ImmutableList<String> ANNOTATION_PROCS =
             ImmutableList.of(
@@ -18,12 +18,13 @@ public class ReturnsRcvrAutoValueTest extends CheckerFrameworkPerDirectoryTest {
                     "com.google.auto.value.processor.AutoOneOfProcessor",
                     "com.google.auto.value.processor.AutoValueBuilderProcessor",
                     "com.google.auto.value.processor.AutoValueProcessor",
-                    org.checkerframework.common.returnsrcvr.ReturnsRcvrChecker.class.getName());
+                    org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker.class
+                            .getName());
 
-    public ReturnsRcvrAutoValueTest(List<File> testFiles) {
+    public ReturnsReceiverAutoValueTest(List<File> testFiles) {
         super(
                 testFiles,
-                org.checkerframework.common.returnsrcvr.ReturnsRcvrChecker.class,
+                org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker.class,
                 "basic",
                 "-Anomsgtext",
                 "-nowarn");
@@ -31,7 +32,7 @@ public class ReturnsRcvrAutoValueTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"returnsrcvrautovalue"};
+        return new String[] {"returnsreceiverautovalue"};
     }
 
     /**

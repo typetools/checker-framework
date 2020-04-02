@@ -1,4 +1,4 @@
-package org.checkerframework.common.returnsrcvr.qual;
+package org.checkerframework.common.returnsreceiver.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

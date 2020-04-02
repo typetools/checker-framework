@@ -11,13 +11,13 @@ Typically, it is automatically run by another checker.
 \item
 Alternately, you can run just the Returns Receiver Checker, by
 supplying the following command-line options to javac:
-\code{-processor org.checkerframework.common.returnsrcvr.ReturnsRcvrChecker}
+\code{-processor org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker}
 \end{itemize}
 
 
 \sectionAndLabel{Annotations}{returns-receiver-checker-annotations}
 
-The qualifier \refqualclass{common/returnsrcvr/qual}{This} on the return
+The qualifier \refqualclass{common/returnsreceiver/qual}{This} on the return
 type of a method indicates that the method returns its receiver.  Methods
 that return their receiver are common in so-called ``fluent'' APIs.  Here
 is an example:
@@ -31,22 +31,22 @@ class MyBuilder {
 }
 \end{Verbatim}
 
-An \refqualclass{common/returnsrcvr/qual}{This} annotation can only be
+An \refqualclass{common/returnsreceiver/qual}{This} annotation can only be
 written on the return type of a method or in a downcast.
 
 As is standard, the Returns Receiver Checker has a top qualifier,
-\refqualclass{common/returnsrcvr/qual}{UnknownThis}, and a bottom qualifier,
-\refqualclass{common/returnsrcvr/qual}{BottomThis}.
+\refqualclass{common/returnsreceiver/qual}{UnknownThis}, and a bottom qualifier,
+\refqualclass{common/returnsreceiver/qual}{BottomThis}.
 Pragrammers rarely need to write these annotations.
 
 Here are some implementation details that most users will not care about.
-\refqualclass{common/returnsrcvr/qual}{This}
-is \emph{not} a subtype of \refqualclass{common/returnsrcvr/qual}{UnknownThis},
+\refqualclass{common/returnsreceiver/qual}{This}
+is \emph{not} a subtype of \refqualclass{common/returnsreceiver/qual}{UnknownThis},
 but instead is a polymorphic qualifier.  When the Returns Receiver Checker observes an
-\refqualclass{common/returnsrcvr/qual}{This} annotation on a method return type,
-it adds \refqualclass{common/returnsrcvr/qual}{This} to
+\refqualclass{common/returnsreceiver/qual}{This} annotation on a method return type,
+it adds \refqualclass{common/returnsreceiver/qual}{This} to
 the method's receiver type. The presence of the polymorphic annoattion
-\refqualclass{common/returnsrcvr/qual}{This} on both the method's return and
+\refqualclass{common/returnsreceiver/qual}{This} on both the method's return and
 receiver type forces their type qualifiers to be \emph{equal}.  Hence, the
 method will only pass the type checker if it returns its receiver argument,
 achieving the desired checking.
