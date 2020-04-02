@@ -51,6 +51,10 @@ Implementation details:
    `reportWarning` instead.
  * AbstractTypeProcessor#typeProcessingOver() always gets called.
 
+Closed issues:
+1307, 1881, 1929, 2432, 2793, 3040, 3046, 3050, 3056, 3083, 3124, 3126, 3129,
+3132, 3139, 3149, 3150, 3167, 3189.
+
 ---------------------------------------------------------------------------
 
 Version 3.2.0, March 2, 2020

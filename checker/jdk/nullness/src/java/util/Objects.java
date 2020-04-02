@@ -178,7 +178,7 @@ public final class Objects {
      * @throws NullPointerException if {@code obj} is {@code null}
      */
     @EnsuresNonNull("#1")
-    @SideEffectFree public static <T extends @NonNull Object> T requireNonNull(T obj) { throw new RuntimeException(); }
+    @SideEffectFree public static <T> @NonNull T requireNonNull(@NonNull T obj) { throw new RuntimeException(); }
 
     /**
      * Checks that the specified object reference is not {@code null} and
@@ -197,7 +197,7 @@ public final class Objects {
      * @throws NullPointerException if {@code obj} is {@code null}
      */
     @EnsuresNonNull("#1")
-    @SideEffectFree public static <T extends @NonNull Object> T requireNonNull(T obj, @Nullable String message) { throw new RuntimeException(); }
+    @SideEffectFree public static <T> @NonNull T requireNonNull(@NonNull T obj, @Nullable String message) { throw new RuntimeException(); }
 
     /**
      * Returns {@code true} if the provided reference is {@code null} otherwise
@@ -254,5 +254,5 @@ public final class Objects {
      * @since 1.8
      */
     @EnsuresNonNull("#1")
-    @Pure public static <T extends @NonNull Object> T requireNonNull(T obj, Supplier<String> messageSupplier) { throw new RuntimeException(); }
+    @Pure public static <T> @NonNull T requireNonNull(@NonNull T obj, Supplier<String> messageSupplier) { throw new RuntimeException(); }
 }
