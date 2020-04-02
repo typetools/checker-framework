@@ -22,6 +22,7 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInference.O
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage.AnnotationsInContexts;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
@@ -208,7 +209,7 @@ public class ASceneWrapper {
      */
     private void updateClassData(AClassWrapper aClassWrapper, ClassSymbol classSymbol) {
         if (classSymbol.isEnum()) {
-            if (!aClassWrapper.isEnum()) {
+            if (!aClassWrapper.isEnum(classSymbol.getSimpleName().toString())) {
                 List<VariableElement> enumConstants = new ArrayList<>();
                 for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
                     if (e.getKind() == ElementKind.ENUM_CONSTANT) {
@@ -218,6 +219,21 @@ public class ASceneWrapper {
                 aClassWrapper.setEnumConstants(enumConstants);
             }
         }
+
+        ClassSymbol outerClass = classSymbol;
+        ClassSymbol previous = classSymbol;
+        do {
+            if (outerClass.isEnum()) {
+                aClassWrapper.markAsEnum(outerClass.getSimpleName().toString());
+            }
+            Element element = classSymbol.getEnclosingElement();
+            if (element == null || element.getKind() == ElementKind.PACKAGE) {
+                break;
+            }
+            TypeElement t = ElementUtils.enclosingClass(element);
+            previous = outerClass;
+            outerClass = (ClassSymbol) t;
+        } while (outerClass != null && !previous.equals(outerClass));
 
         aClassWrapper.setTypeElement(classSymbol);
     }

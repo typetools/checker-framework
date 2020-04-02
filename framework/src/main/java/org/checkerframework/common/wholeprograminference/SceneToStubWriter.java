@@ -65,11 +65,11 @@ import scenelib.annotations.io.IndexFileWriter;
  */
 public final class SceneToStubWriter {
 
-    /** A pattern matching one or more digits. */
-    private static final Pattern digitPattern = Pattern.compile(".*\\$\\d+(\\$.*|$)");
+    /** A pattern matching an inner class name composed of only digits. */
+    private static final Pattern digitPattern = Pattern.compile("\\$\\d+(\\$|$)");
 
     /** How far to indent when writing members of a stub file. */
-    private static final String INDENT = "    ";
+    private static final String INDENT = "  ";
 
     /**
      * Writes the annotations in {@code scene} to {@code out} in stub file format.
@@ -97,14 +97,13 @@ public final class SceneToStubWriter {
      * Returns the part of a binary name that specifies the package.
      *
      * @param className the binary name of a class
-     * @return the part of the name referring to the package
+     * @return the part of the name referring to the package, or null if there is no package name
      */
-    // Substrings of binary names are also binary names; the empty string
-    // is a dot-separated identifier (the default package).
-    @SuppressWarnings("signature:return.type.incompatible")
-    private static @DotSeparatedIdentifiers String packagePart(@BinaryName String className) {
+    @SuppressWarnings("signature") // a valid non-empty package name is a dot separated identifier
+    private static @Nullable @DotSeparatedIdentifiers String packagePart(
+            @BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
-        return (lastdot == -1) ? "" : className.substring(0, lastdot);
+        return (lastdot == -1) ? null : className.substring(0, lastdot);
     }
 
     /**
@@ -113,11 +112,12 @@ public final class SceneToStubWriter {
      * @param className a binary name
      * @return the part of the name representing the class's name without its package
      */
-    // A binary name without its package is still a binary name
-    @SuppressWarnings("signature:return.type.incompatible")
+    @SuppressWarnings(
+            "signature:return.type.incompatible") // A binary name without its package is still a
+    // binary name
     private static @BinaryName String basenamePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
-        return (lastdot == -1) ? className : className.substring(lastdot + 1);
+        return className.substring(lastdot + 1);
     }
 
     /**
@@ -131,7 +131,7 @@ public final class SceneToStubWriter {
         if (a.fieldValues.isEmpty()) {
             return "@" + annoName;
         }
-        StringJoiner sj = new StringJoiner(",", "@" + annoName + "(", ")");
+        StringJoiner sj = new StringJoiner(", ", "@" + annoName + "(", ")");
         for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
             AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
             sj.add(f.getKey() + "=" + IndexFileWriter.formatAnnotationValue(aft, f.getValue()));
@@ -161,7 +161,8 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Formats the component types of an array via recursive descent through the array type.
+     * Formats the type of an array so that it is printable in Java source code, with the
+     * annotations from the scenelib representation added in appropriate places.
      *
      * @param scenelibRep the array's scenelib type element
      * @param javacRep the representation of the array's type used by javac
@@ -173,18 +174,16 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Javac's TypeMirror and its derivatives represent arrays differently than scene-lib does. This
-     * method descends through the scenelib representation and returns a list in the same order used
-     * by Javac. More details on the two representations follow as motivation for why this code is
-     * necessary.
+     * This method returns each array level in scenelib's representation of an array in a list in
+     * the same order used by javac. This is necessary because javac's TypeMirror and its
+     * derivatives represent arrays differently than scene-lib does.
      *
      * <p>If we label an array as such: (0) int (1) [] (2) [] (3) [], then level 0 is the component
      * type, and level 3 is the "outermost" type. Scene-lib's representation of this type is a
-     * nested ATypeElement, with this structure: (1) -> (2) -> (3) -> (0). The TypeMirror, on the
-     * other hand, represents the type like this: (3) -> (2) -> (1) -> (0), for ease of printing.
-     * This method therefore descends through the scenelib structure until it finds the component,
-     * adding each item to a list. It then reverses the list, and then adds the component type to
-     * the end.
+     * nested ATypeElement, with this structure: (1) - (2) - (3) - (0). The TypeMirror, on the other
+     * hand, represents the type like this: (3) - (2) - (1) - (0), for ease of printing. This method
+     * therefore descends through the scenelib structure until it finds the component, adding each
+     * item to a list. It then reverses the list, and then adds the component type to the end.
      *
      * <p><a
      * href="https://checkerframework.org/jsr308/specification/java-annotation-design.html#array-syntax">This
@@ -210,7 +209,10 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Formats the component types of an array via recursive descent through the array type.
+     * Formats the type of an array to be printable in Java source code, with the annotations from
+     * the scenelib representation added. This method formats a single level of the array, and then
+     * either calls itself recursively (if the component is an array) or formats the component type
+     * using {@link #formatType(ATypeElement, TypeMirror)}.
      *
      * @param scenelibRepInOrder the scenelib representation, reordered to match javac's order. See
      *     {@link #getSceneLibRepInOrder(ATypeElement)} for an explanation of why this is necessary.
@@ -350,7 +352,9 @@ public final class SceneToStubWriter {
         // fields don't need their generic types, and sometimes they are wrong. Just don't print
         // them.
         while (basetypeToPrint.contains("<")) {
-            basetypeToPrint = basetypeToPrint.substring(0, basetypeToPrint.indexOf('<'));
+            basetypeToPrint =
+                    basetypeToPrint.substring(0, basetypeToPrint.indexOf('<'))
+                            + basetypeToPrint.substring(basetypeToPrint.indexOf('>') + 1);
         }
 
         if (basetypeToPrint.contains("[")) {
@@ -429,8 +433,7 @@ public final class SceneToStubWriter {
         for (int i = 0; i < classNames.length; i++) {
             String nameToPrint = classNames[i];
             printWriter.print(indents(i));
-            // For any outer class, print "class".  For a leaf class, print "enum" or "class".
-            if (i == classNames.length - 1 && aClass.isEnum()) {
+            if (aClass.isEnum(nameToPrint)) {
                 printWriter.print("enum ");
             } else {
                 printWriter.print("class ");
@@ -439,6 +442,10 @@ public final class SceneToStubWriter {
             printWriter.print(nameToPrint);
             printTypeParameters(aClass, printWriter);
             printWriter.println(" {");
+            if (aClass.isEnum(nameToPrint) && i != classNames.length - 1) {
+                // Print a blank set of enum constants if this is an outer enum.
+                printWriter.println(indents(i + 1) + ";");
+            }
             printWriter.println();
         }
         return classNames.length;
@@ -585,7 +592,7 @@ public final class SceneToStubWriter {
         // Do not attempt to print stubs for anonymous inner classes or their inner classes, because
         // the stub parser cannot read them. (An anonymous inner class has a basename like Outer$1,
         // so this check ensures that no single class name is exclusively composed of digits.)
-        if (digitPattern.matcher(basename).matches()) {
+        if (digitPattern.matcher(basename).find()) {
             return;
         }
 
@@ -597,7 +604,7 @@ public final class SceneToStubWriter {
                         : basename;
 
         String pkg = packagePart(classname);
-        if (!"".equals(pkg)) {
+        if (pkg != null) {
             printWriter.println("package " + pkg + ";");
         }
 
@@ -605,19 +612,17 @@ public final class SceneToStubWriter {
 
         String indentLevel = indents(curlyCount);
 
-        if (aClassWrapper.isEnum()) {
-            List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
-            if (enumConstants.size() != 0) {
-                StringJoiner sj = new StringJoiner(", ");
-                for (VariableElement enumConstant : enumConstants) {
-                    sj.add(enumConstant.getSimpleName());
-                }
-
-                printWriter.println(indentLevel + "// enum constants:");
-                printWriter.println();
-                printWriter.println(indentLevel + sj.toString() + ";");
-                printWriter.println();
+        List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
+        if (enumConstants != null) {
+            StringJoiner sj = new StringJoiner(", ");
+            for (VariableElement enumConstant : enumConstants) {
+                sj.add(enumConstant.getSimpleName());
             }
+
+            printWriter.println(indentLevel + "// enum constants:");
+            printWriter.println();
+            printWriter.println(indentLevel + sj.toString() + ";");
+            printWriter.println();
         }
 
         printFields(aClassWrapper, printWriter, indentLevel);
@@ -632,8 +637,8 @@ public final class SceneToStubWriter {
                         methodEntry.getValue(), innermostClassname, printWriter, indentLevel);
             }
         }
-        for (int i = curlyCount - 1; i >= 0; i--) {
-            printWriter.println(indents(i) + "}");
+        for (int i = 0; i < curlyCount; i++) {
+            printWriter.println(indents(curlyCount - i - 1) + "}");
         }
     }
 

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
@@ -29,6 +30,12 @@ public class AClassWrapper {
 
     /** The wrapped AClass object. */
     private AClass theClass;
+
+    /**
+     * This HashSet contains the simple class names any of this class' outer classes (or this class)
+     * that are enums.
+     */
+    private HashSet<String> enums = new HashSet<>();
 
     /**
      * Whether the additional data that this class should store has been provided. It is an error if
@@ -163,12 +170,32 @@ public class AClassWrapper {
     }
 
     /**
-     * Checks if any enum constants have been provided to this class.
+     * Checks if the given class in this class hierarchy is an enum or not.
      *
-     * @return true if this class has been marked as an enum
+     * @param className the simple class name of this class or one of its outer classes
+     * @return true if the given class is an enum
+     */
+    public boolean isEnum(String className) {
+        return enums.contains(className);
+    }
+
+    /**
+     * Checks if this class is an enum.
+     *
+     * @return true if this class is an enum
      */
     public boolean isEnum() {
-        return enumConstants != null;
+        return enums.contains(this.theClass.className);
+    }
+
+    /**
+     * Marks the given simple class name as an enum.
+     *
+     * @param className the simple class name of this class or one of its outer classes
+     */
+    public void markAsEnum(String className) {
+        enums.add(className);
+        this.additionalDataProvided = true;
     }
 
     /**
@@ -177,7 +204,7 @@ public class AClassWrapper {
      * @return the enum constants, or null if this is not an enum
      */
     public @Nullable List<VariableElement> getEnumConstants() {
-        if (this.isEnum()) {
+        if (enumConstants != null) {
             return ImmutableList.copyOf(enumConstants);
         } else {
             return null;
