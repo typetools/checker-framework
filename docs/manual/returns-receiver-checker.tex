@@ -17,80 +17,87 @@ supplying the following command-line options to javac:
 
 \sectionAndLabel{Annotations}{returns-receiver-checker-annotations}
 
-The type annotation \refqualclass{common/returnsrcvr/qual}{This} on the return
-type of a method indicates that the method returns its receiver. As an example,
-Figure~\ref{fig-autovalue-builder-generated} shows a \<Builder> class in which
-\refqualclass{common/returnsrcvr/qual}{This} is used to specify that the
-\<setName> and \<setNumberOfLegs> methods return their receiver.  An
-\refqualclass{common/returnsrcvr/qual}{This} annotation can only be written on
-the return type of a method or in a downcast; if written elsewhere, the checker
-will emit an \code{[invalid.this.location]} warning.
+The qualifier \refqualclass{common/returnsrcvr/qual}{This} on the return
+type of a method indicates that the method returns its receiver. Here is an
+example:
 
-The qualifier hierarchy and type-checking approach for the Returns Receiver
-Checker are both somewhat unusual.  As is standard, the Returns Receiver
-Checker has a top qualifier,
+\begin{Verbatim}
+class MyBuilder {
+  @This MyBuilder setName(String name) {
+    this.name = name;
+    return this;
+  }
+}
+\end{Verbatim}
+
+An \refqualclass{common/returnsrcvr/qual}{This} annotation can only be
+written on the return type of a method or in a downcast.
+
+As is standard, the Returns Receiver Checker has a top qualifier,
 \refqualclass{common/returnsrcvr/qual}{UnknownThis}, and a bottom qualifier,
-\refqualclass{common/returnsrcvr/qual}{BottomThis}.  However, \refqualclass{common/returnsrcvr/qual}{This}
+\refqualclass{common/returnsrcvr/qual}{BottomThis}.
+Pragrammers rarely need to write these annotations.
+
+Here are some implementation details that most users will not care about.
+\refqualclass{common/returnsrcvr/qual}{This}
 is \emph{not} a subtype of \refqualclass{common/returnsrcvr/qual}{UnknownThis},
-but instead a polymorphic qualifier.  While polymorphic qualifiers are typically
-used to allow a method to have multiple qualified type signatures (see
-Section~\ref{qualifier-polymorphism}), here polymorphism is used to equate a
-method's return and receiver type qualifier.  When the checker observes an
+but instead is a polymorphic qualifier.  When the Returns Receiver Checker observes an
 \refqualclass{common/returnsrcvr/qual}{This} annotation on a method return type,
-it proceeds to automatically add \refqualclass{common/returnsrcvr/qual}{This} to
-the method's receiver type. The presence of
+it adds \refqualclass{common/returnsrcvr/qual}{This} to
+the method's receiver type. The presence of the polymorphic annoattion
 \refqualclass{common/returnsrcvr/qual}{This} on both the method's return and
 receiver type forces their type qualifiers to be \emph{equal}.  Hence, the
 method will only pass the type checker if it returns its receiver argument,
 achieving the desired checking.
 
+
 \sectionAndLabel{AutoValue and Lombok Support}{returns-receiver-checker-autovalue-lombok-support}
 
 \begin{figure}
-    \begin{Verbatim}
-    @AutoValue
-    abstract class Animal {
-        abstract String name();
-        abstract int numberOfLegs();
-        static Builder builder() {
-            return new AutoValue_Animal.Builder();
-        }
-        @AutoValue.Builder
-        abstract static class Builder {
-            abstract @This Builder setName(String value);
-            abstract @This Builder setNumberOfLegs(int value);
-            abstract Animal build();
-        }
-    }
-    \end{Verbatim}
-    \caption{An illustrative use of the \<@AutoValue.Builder> annotation.
-    Given this code, AutoValue automatically generates a concrete subclass of
-    \<Animal.Builder> (see Figure~\ref{fig-autovalue-builder-generated}).  The <@This> annotations on the setters in
-    \<Builder> are automatically added by the Returns Receiver Checker.}
+\begin{Verbatim}
+@AutoValue
+abstract class Animal {
+  abstract String name();
+  abstract int numberOfLegs();
+  static Builder builder() {
+    return new AutoValue_Animal.Builder();
+  }
+  @AutoValue.Builder
+  abstract static class Builder {
+    abstract Builder setName(String value);       // @This is automatically added here
+    abstract Builder setNumberOfLegs(int value);  // @This is automatically added here
+    abstract Animal build();
+  }
+}
+\end{Verbatim}
+    \caption{User-written code that uses the \<@AutoValue.Builder> annotation.
+      Given this code,
+      (1) AutoValue automatically generates a concrete subclass of
+      \<Animal.Builder>, see Figure~\ref{fig-autovalue-builder-generated}, and
+      (2) the Returns Receiver Checker automatically adds \<@This> annotations
+      on setters in both user-written and automatically-generated code.}
     \label{fig-autovalue-builder}
 \end{figure}
 
 \begin{figure}
     \begin{Verbatim}
     class AutoValue_Animal {
-        static final class Builder extends Animal.Builder {
-            private String name;
-            private Integer numberOfLegs;
-            @This Animal.Builder setName(String name) {
-              this.name = name;
-              return this;
-            }
-            @This Animal.Builder setNumberOfLegs(int numberOfLegs) {
-              this.numberOfLegs = numberOfLegs;
-              return this;
-            }
-            @Override
-            Animal build() {
-              return new AutoValue_Animal(
-                  this.name,
-                  this.numberOfLegs);
-            }
-          }
+      static final class Builder extends Animal.Builder {
+        private String name;
+        private Integer numberOfLegs;
+        @This Animal.Builder setName(String name) {
+          this.name = name;
+          return this;
+        }
+        @This Animal.Builder setNumberOfLegs(int numberOfLegs) {
+          this.numberOfLegs = numberOfLegs;
+          return this;
+        }
+        @Override
+        Animal build() {
+          return new AutoValue_Animal(this.name, this.numberOfLegs);
+        }
+      }
     }
     \end{Verbatim}
     \caption{Code generated by AutoValue for the example of
@@ -102,11 +109,9 @@ achieving the desired checking.
 The \href{https://github.com/google/auto/tree/master/value}{AutoValue} and
 \href{https://projectlombok.org/}{Lombok} projects both support automatic
 generation of builder classes, which enable flexible object construction.
-Figure~\ref{fig-autovalue-builder} shows code using AutoValue to specify the
-methods in a builder (using the \<@AutoValue.Builder> annotation), and
-Figure~\ref{fig-autovalue-builder-generated} shows the builder implementation
-that AutoValue generates for this example.  For code using these two frameworks,
-the Returns Receiver Checker automatically adds \<@This> annotations to setter
-methods in builder classes.  For example, all the \<@This> annotations in
-Figures~\ref{fig-autovalue-builder} and~\ref{fig-autovalue-builder-generated}
-are automatically added by the checker.
+For code using these two frameworks, the Returns Receiver Checker
+automatically adds \<@This> annotations to setter methods in builder
+classes.  All the \<@This> annotations in
+Figures~\ref{fig-autovalue-builder}
+and~\ref{fig-autovalue-builder-generated} are automatically added by the
+Returns Receiver Checker.
