@@ -1,6 +1,7 @@
 // This test ensures that annotations on different component types of multidimensional arrays
 // are printed correctly.
 
+import java.util.List;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntVal;
@@ -222,5 +223,40 @@ class MultiDimensionalArrays {
     void testReturn6() {
         // :: error: argument.type.incompatible
         requiresS1S2S1(useReturn6(threeDimArray));
+    }
+
+    // Shenanigans with lists + arrays; commented out annotations can't be inferred by either
+    // jaif or stub based WPI for now due to limitations in generics inference.
+
+    List<String[]>[] arrayofListsOfStringArrays;
+
+    void testField7() {
+        // :: error: argument.type.incompatible
+        requiresS1S2L(arrayofListsOfStringArrays);
+    }
+
+    void requiresS1S2L(@Sibling1 List</*@Sibling1*/ String /*@Sibling2*/ []> @Sibling2 [] la) {}
+
+    void useField7(@Sibling1 List</*@Sibling1*/ String /*@Sibling2*/ []> @Sibling2 [] x) {
+        arrayofListsOfStringArrays = x;
+    }
+
+    void testParam7(List<String[]>[] x) {
+        // :: error: argument.type.incompatible
+        requiresS1S2L(x);
+    }
+
+    void useParam7(@Sibling1 List</*@Sibling1*/ String /*@Sibling2*/ []> @Sibling2 [] x) {
+        testParam7(x);
+    }
+
+    List<String[]>[] useReturn7(
+            @Sibling1 List</*@Sibling1*/ String /*@Sibling2*/ []> @Sibling2 [] x) {
+        return x;
+    }
+
+    void testReturn7() {
+        // :: error: argument.type.incompatible
+        requiresS1S2L(useReturn7(arrayofListsOfStringArrays));
     }
 }

@@ -13,9 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -41,19 +45,31 @@ import scenelib.annotations.io.IndexFileWriter;
 /**
  * SceneToStubWriter provides static methods that write a {@link AScene} in stub file format, to a
  * {@link Writer} {@link #write(ASceneWrapper, Writer)} or to a file {@link #write(ASceneWrapper,
- * Writer)}. This class is the equivalent of {@code IndexFileWriter} from the Annotation File
+ * String)}. This class is the equivalent of {@code IndexFileWriter} from the Annotation File
  * Utilities, but outputs the results in the stub file format instead of jaif format.
+ *
+ * <p>This class works by taking as input a scene-lib representation of a type augmented with some
+ * additional information, stored as printable strings. It walks the scene-lib representation
+ * structurally and outputs the stub file as a string, by combining the information scene-lib stores
+ * with the information gathered elsewhere.
+ *
+ * <p>The additional information is stored in the {@link ASceneWrapper}, {@link AClassWrapper},
+ * {@link AMethodWrapper}, and {@link AFieldWrapper} classes. See the documentation of each of those
+ * classes for exactly what additional information is stored.
+ *
+ * <p>This approach is used because the scene-lib representation of a type does not have enough
+ * information to print full types.
  *
  * <p>This writer is used instead of {@code IndexFileWriter} if the {@code -Ainfer=stubs}
  * command-line argument is present.
  */
 public final class SceneToStubWriter {
 
-    /** A pattern matching one or more digits. */
-    private static final Pattern digitPattern = Pattern.compile(".*\\$\\d+(\\$.*|$)");
+    /** A pattern matching an inner class name composed of only digits. */
+    private static final Pattern digitPattern = Pattern.compile("\\$\\d+(\\$|$)");
 
     /** How far to indent when writing members of a stub file. */
-    private static final String INDENT = "    ";
+    private static final String INDENT = "  ";
 
     /**
      * Writes the annotations in {@code scene} to {@code out} in stub file format.
@@ -81,14 +97,13 @@ public final class SceneToStubWriter {
      * Returns the part of a binary name that specifies the package.
      *
      * @param className the binary name of a class
-     * @return the part of the name referring to the package
+     * @return the part of the name referring to the package, or null if there is no package name
      */
-    // Substrings of binary names are also binary names; the empty string
-    // is a dot-separated identifier (the default package).
-    @SuppressWarnings("signature:return.type.incompatible")
-    private static @DotSeparatedIdentifiers String packagePart(@BinaryName String className) {
+    @SuppressWarnings("signature") // a valid non-empty package name is a dot separated identifier
+    private static @Nullable @DotSeparatedIdentifiers String packagePart(
+            @BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
-        return (lastdot == -1) ? "" : className.substring(0, lastdot);
+        return (lastdot == -1) ? null : className.substring(0, lastdot);
     }
 
     /**
@@ -97,11 +112,12 @@ public final class SceneToStubWriter {
      * @param className a binary name
      * @return the part of the name representing the class's name without its package
      */
-    // A binary name without its package is still a binary name
-    @SuppressWarnings("signature:return.type.incompatible")
+    @SuppressWarnings(
+            "signature:return.type.incompatible") // A binary name without its package is still a
+    // binary name
     private static @BinaryName String basenamePart(@BinaryName String className) {
         int lastdot = className.lastIndexOf('.');
-        return (lastdot == -1) ? className : className.substring(lastdot + 1);
+        return className.substring(lastdot + 1);
     }
 
     /**
@@ -115,7 +131,7 @@ public final class SceneToStubWriter {
         if (a.fieldValues.isEmpty()) {
             return "@" + annoName;
         }
-        StringJoiner sj = new StringJoiner(",", "@" + annoName + "(", ")");
+        StringJoiner sj = new StringJoiner(", ", "@" + annoName + "(", ")");
         for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
             AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
             sj.add(f.getKey() + "=" + IndexFileWriter.formatAnnotationValue(aft, f.getValue()));
@@ -145,94 +161,86 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Formats the component types of an array via recursive descent through the array's scene-lib
-     * structure.
+     * Formats the type of an array so that it is printable in Java source code, with the
+     * annotations from the scenelib representation added in appropriate places.
      *
-     * @param e the array's scenelib type element
-     * @param arrayType the string representation of the array's type
+     * @param scenelibRep the array's scenelib type element
+     * @param javacRep the representation of the array's type used by javac
      * @return the type formatted to be written to Java source code, followed by a space character
      */
-    private static String formatArrayType(ATypeElement e, String arrayType) {
-        StringBuilder result = new StringBuilder();
-        // If there are not annotations on the component, this will be true - unless there
-        // are also no annotations on the first array level. See comment below for how that
-        // case is handled.
-        int componentEndPos;
-        {
-            componentEndPos = arrayType.indexOf(' ');
-            if (arrayType.startsWith("@")) {
-                // While there are more explicit annotations, go to the next space.
-                while (arrayType.charAt(componentEndPos + 1) == '@') {
-                    componentEndPos = arrayType.indexOf(' ', componentEndPos + 1);
-                }
-                // Once all annotations have been skipped, we still have to skip to the end of the
-                // component type itself.
-                componentEndPos = arrayType.indexOf(' ', componentEndPos + 1);
-            }
-            // If the first array level doesn't have an annotation, then the spacing will be off,
-            // so use the position of the first '[' instead (which must be correct, since the
-            // first array doesn't have an annotation).
-            int firstArrayPos = arrayType.indexOf('[');
-            if (firstArrayPos < componentEndPos || componentEndPos == -1) {
-                componentEndPos = firstArrayPos - 1;
-            }
-        }
-
-        String componentType = arrayType.substring(0, componentEndPos + 1);
-        String arrayTypes = arrayType.substring(componentEndPos + 1);
-
-        return formatArrayTypeImpl(e, arrayTypes, componentType, result) + " ";
+    private static String formatArrayType(ATypeElement scenelibRep, ArrayType javacRep) {
+        List<ATypeElement> scenelibRepInOrder = getSceneLibRepInOrder(scenelibRep);
+        return formatArrayTypeImpl(scenelibRepInOrder, javacRep);
     }
 
     /**
-     * The implementation of formatArrayType. Java array types have a somewhat unintuitive syntax:
-     * see <a
-     * href="https://checkerframework.org/jsr308/specification/java-annotation-design.html#array-syntax">this
-     * explanation</a>.
+     * This method returns each array level in scenelib's representation of an array in a list in
+     * the same order used by javac. This is necessary because javac's TypeMirror and its
+     * derivatives represent arrays differently than scene-lib does.
      *
-     * <p>The iteration order in the scene-lib representation is from outermost to innermost. For
-     * example, given the type {@code @Foo int @Bar [] @Baz []}, the iteration order is {@code @Bar
-     * []}, then {@code @Baz []}, and then finally {@code @Foo int}. This implementation therefore
-     * passes a string builder with the result of the array types seen so far, to handle
-     * multidimensional arrays. That builder is appended to the final component type in the base
-     * case.
+     * <p>If we label an array as such: (0) int (1) [] (2) [] (3) [], then level 0 is the component
+     * type, and level 3 is the "outermost" type. Scene-lib's representation of this type is a
+     * nested ATypeElement, with this structure: (1) - (2) - (3) - (0). The TypeMirror, on the other
+     * hand, represents the type like this: (3) - (2) - (1) - (0), for ease of printing. This method
+     * therefore descends through the scenelib structure until it finds the component, adding each
+     * item to a list. It then reverses the list, and then adds the component type to the end.
      *
-     * @param e same as above, but can become null if scene-lib did not fill in the inner types,
-     *     which happens when they do not have annotations
-     * @param arrayTypes the array parts of the array type (i.e. the parts after the component type
-     *     in the string representation). Must contain at least one '['.
-     * @param componentType the component type of the array
-     * @param result the string builder containing the array types seen so far
-     * @return the formatted string, without a trailing space
+     * <p><a
+     * href="https://checkerframework.org/jsr308/specification/java-annotation-design.html#array-syntax">This
+     * document</a> explains the reasoning for scenelib's representation.
+     *
+     * @param scenelibRep scenelib's representation of an array type
+     * @return a list of the array levels in scenelib's representation, but in the order used by
+     *     javac
+     */
+    private static List<ATypeElement> getSceneLibRepInOrder(ATypeElement scenelibRep) {
+        List<ATypeElement> result = new ArrayList<>();
+        ATypeElement array = scenelibRep;
+        ATypeElement component = getNextArrayLevel(scenelibRep);
+        do {
+            result.add(array);
+            array = component;
+            component = getNextArrayLevel(array);
+        } while (component != null);
+        Collections.reverse(result);
+        // at this point, array has become the actual base component, because component is null
+        result.add(array);
+        return result;
+    }
+
+    /**
+     * Formats the type of an array to be printable in Java source code, with the annotations from
+     * the scenelib representation added. This method formats a single level of the array, and then
+     * either calls itself recursively (if the component is an array) or formats the component type
+     * using {@link #formatType(ATypeElement, TypeMirror)}.
+     *
+     * @param scenelibRepInOrder the scenelib representation, reordered to match javac's order. See
+     *     {@link #getSceneLibRepInOrder(ATypeElement)} for an explanation of why this is necessary.
+     * @param javacRep the javac representation of the array type
+     * @return the type formatted to be written to Java source code, followed by a space character
      */
     private static String formatArrayTypeImpl(
-            @Nullable ATypeElement e,
-            String arrayTypes,
-            String componentType,
-            StringBuilder result) {
-        // append the next type:
-        String nextArrayType = arrayTypes.substring(0, arrayTypes.indexOf(']') + 1);
-        String remainingArrayTypes = arrayTypes.substring(arrayTypes.indexOf(']') + 1);
-        // do not append inferred annotations if there was one in the source code
-        if (nextArrayType.contains("@")) {
-            result.append(nextArrayType);
-        } else {
-            if (e != null) {
-                result.append(formatAnnotations(e.tlAnnotationsHere));
-            }
-            result.append(nextArrayType);
+            List<ATypeElement> scenelibRepInOrder, ArrayType javacRep) {
+        TypeMirror javacComponent = javacRep.getComponentType();
+        ATypeElement scenelibRep = scenelibRepInOrder.get(0);
+        ATypeElement scenelibComponent = scenelibRepInOrder.get(1);
+        String result = "";
+        List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
+        for (AnnotationMirror explicitAnno : explicitAnnos) {
+            result += explicitAnno.toString();
+            result += " ";
         }
-        result.append(" ");
-
-        // Check if there are any more array levels. If so, recurse; otherwise, append the component
-        // and return.
-        if ("".equals(remainingArrayTypes)) {
-            ATypeElement component = getNextArrayLevel(e);
-            return formatType(componentType, component) + result.toString();
-        } else {
+        if ("".equals(result)) {
+            result += formatAnnotations(scenelibRep.tlAnnotationsHere);
+        }
+        result += "[] ";
+        if (javacComponent.getKind() == TypeKind.ARRAY) {
             return formatArrayTypeImpl(
-                    getNextArrayLevel(e), remainingArrayTypes, componentType, result);
+                            scenelibRepInOrder.subList(1, scenelibRepInOrder.size()),
+                            (ArrayType) javacComponent)
+                    + result;
         }
+        return formatType(scenelibComponent, javacComponent) + result;
     }
 
     /**
@@ -294,40 +302,67 @@ public final class SceneToStubWriter {
      */
     private static String formatAFieldImpl(
             AFieldWrapper aField, String fieldName, String className) {
-        String basetype = fieldName.equals("this") ? className : aField.getType();
-        return formatType(basetype, aField.getTheField().type) + fieldName;
+        if ("this".equals(fieldName)) {
+            return formatType(aField.getTheField().type, null, className) + fieldName;
+        } else {
+            return formatType(aField.getTheField().type, aField.getType()) + fieldName;
+        }
     }
 
     /**
      * Formats the given type for printing in Java source code.
      *
-     * @param basetype the type to format, as a base name (that is, without a package)
      * @param type the scene-lib representation of the type, or null if only the bare type is to be
      *     printed
+     * @param javacType the javac representation of the type
      * @return the type as it would appear in Java source code, followed by a trailing space
      */
-    private static String formatType(final String basetype, final @Nullable ATypeElement type) {
-        String basetypeToPrint = basetype;
+    private static String formatType(
+            final @Nullable ATypeElement type, final TypeMirror javacType) {
+        // TypeMirror#toString prints multiple annotations on a single type
+        // separated by commas rather than by whitespace, as is required in source code.
+        String basetypeToPrint = javacType.toString().replaceAll(",@", " @");
+        return formatType(type, javacType, basetypeToPrint);
+    }
+
+    /**
+     * Formats the given type for printing in Java source code. This separate version of this method
+     * exists only for receiver parameters, which are printed using the name of the class as {@code
+     * basetypeToPrint} instead of the javac type. The other version of this method should be
+     * preferred in every other case.
+     *
+     * @param type the scene-lib representation of the type, or null if only the bare type is to be
+     *     printed
+     * @param javacType the javac representation of the type, or null if this is a receiver
+     *     parameter
+     * @param basetypeToPrint the string representation of the type
+     * @return the type as it would appear in Java source code, followed by a trailing space
+     */
+    private static String formatType(
+            final @Nullable ATypeElement type,
+            @Nullable TypeMirror javacType,
+            String basetypeToPrint) {
         // anonymous static classes shouldn't be printed with the "anonymous" tag that the AScene
         // library uses
-        if (basetype.startsWith("<anonymous ")) {
+        if (basetypeToPrint.startsWith("<anonymous ")) {
             basetypeToPrint =
-                    basetypeToPrint.substring("<anonymous ".length(), basetype.length() - 1);
+                    basetypeToPrint.substring("<anonymous ".length(), basetypeToPrint.length() - 1);
         }
 
         // fields don't need their generic types, and sometimes they are wrong. Just don't print
         // them.
         while (basetypeToPrint.contains("<")) {
-            basetypeToPrint = basetypeToPrint.substring(0, basetypeToPrint.indexOf('<'));
+            basetypeToPrint =
+                    basetypeToPrint.substring(0, basetypeToPrint.indexOf('<'))
+                            + basetypeToPrint.substring(basetypeToPrint.indexOf('>') + 1);
         }
 
         if (basetypeToPrint.contains("[")) {
-            // formatArrayType adds a trailing space
-            return formatArrayType(type, basetypeToPrint);
+            // receivers cannot be arrays, so using the javacType here is safe
+            return formatArrayType(type, (ArrayType) javacType);
         }
 
-        // must add trailing space directly here
-        if (type == null /*|| basetypeToPrint.startsWith("@")*/) {
+        if (type == null) {
             return basetypeToPrint + " ";
         } else {
             return formatAnnotations(type.tlAnnotationsHere) + basetypeToPrint + " ";
@@ -398,8 +433,7 @@ public final class SceneToStubWriter {
         for (int i = 0; i < classNames.length; i++) {
             String nameToPrint = classNames[i];
             printWriter.print(indents(i));
-            // For any outer class, print "class".  For a leaf class, print "enum" or "class".
-            if (i == classNames.length - 1 && aClass.isEnum()) {
+            if (aClass.isEnum(nameToPrint)) {
                 printWriter.print("enum ");
             } else {
                 printWriter.print("class ");
@@ -408,6 +442,10 @@ public final class SceneToStubWriter {
             printWriter.print(nameToPrint);
             printTypeParameters(aClass, printWriter);
             printWriter.println(" {");
+            if (aClass.isEnum(nameToPrint) && i != classNames.length - 1) {
+                // Print a blank set of enum constants if this is an outer enum.
+                printWriter.println(indents(i + 1) + ";");
+            }
             printWriter.println();
         }
         return classNames.length;
@@ -478,8 +516,7 @@ public final class SceneToStubWriter {
         if ("<init>".equals(methodName)) {
             methodName = basename;
         } else {
-            String returnType = aMethodWrapper.getReturnType();
-            printWriter.print(formatType(returnType, aMethod.returnType));
+            printWriter.print(formatType(aMethod.returnType, aMethodWrapper.getReturnType()));
         }
         printWriter.print(methodName);
         printWriter.print("(");
@@ -490,7 +527,7 @@ public final class SceneToStubWriter {
             // Only output the receiver if it has an annotation.
             parameters.add(
                     formatParameter(
-                            AFieldWrapper.createReceiverParameter(aMethod.receiver, basename),
+                            AFieldWrapper.createReceiverParameter(aMethod.receiver),
                             "this",
                             basename));
         }
@@ -553,7 +590,7 @@ public final class SceneToStubWriter {
         // Do not attempt to print stubs for anonymous inner classes or their inner classes, because
         // the stub parser cannot read them. (An anonymous inner class has a basename like Outer$1,
         // so this check ensures that no single class name is exclusively composed of digits.)
-        if (digitPattern.matcher(basename).matches()) {
+        if (digitPattern.matcher(basename).find()) {
             return;
         }
 
@@ -565,7 +602,7 @@ public final class SceneToStubWriter {
                         : basename;
 
         String pkg = packagePart(classname);
-        if (!"".equals(pkg)) {
+        if (pkg != null) {
             printWriter.println("package " + pkg + ";");
         }
 
@@ -573,19 +610,17 @@ public final class SceneToStubWriter {
 
         String indentLevel = indents(curlyCount);
 
-        if (aClassWrapper.isEnum()) {
-            List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
-            if (enumConstants.size() != 0) {
-                StringJoiner sj = new StringJoiner(", ");
-                for (VariableElement enumConstant : enumConstants) {
-                    sj.add(enumConstant.getSimpleName());
-                }
-
-                printWriter.println(indentLevel + "// enum constants:");
-                printWriter.println();
-                printWriter.println(indentLevel + sj.toString() + ";");
-                printWriter.println();
+        List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
+        if (enumConstants != null) {
+            StringJoiner sj = new StringJoiner(", ");
+            for (VariableElement enumConstant : enumConstants) {
+                sj.add(enumConstant.getSimpleName());
             }
+
+            printWriter.println(indentLevel + "// enum constants:");
+            printWriter.println();
+            printWriter.println(indentLevel + sj.toString() + ";");
+            printWriter.println();
         }
 
         printFields(aClassWrapper, printWriter, indentLevel);
@@ -600,8 +635,8 @@ public final class SceneToStubWriter {
                         methodEntry.getValue(), innermostClassname, printWriter, indentLevel);
             }
         }
-        for (int i = curlyCount - 1; i >= 0; i--) {
-            printWriter.println(indents(i));
+        for (int i = 0; i < curlyCount; i++) {
+            printWriter.println(indents(curlyCount - i - 1) + "}");
         }
     }
 
