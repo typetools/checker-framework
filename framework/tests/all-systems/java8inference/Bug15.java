@@ -2,7 +2,7 @@ package inference;
 
 import java.util.Map.Entry;
 
-@SuppressWarnings("") // check for crashes
+@SuppressWarnings("all") // check for crashes
 public class Bug15<B> {
     public void putAll(Entry<? extends Class<? extends B>, B> entry) {
         cast(entry.getKey(), entry.getValue());

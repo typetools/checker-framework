@@ -895,11 +895,11 @@ public class WeakHashMap<K, V>
             return WeakHashMap.this.size();
         }
 
-        public boolean contains(Object o) {
+        public boolean contains(@Nullable Object o) {
             return containsKey(o);
         }
 
-        public boolean remove(Object o) {
+        public boolean remove(@Nullable Object o) {
             if (containsKey(o)) {
                 WeakHashMap.this.remove(o);
                 return true;
@@ -948,7 +948,7 @@ public class WeakHashMap<K, V>
             return WeakHashMap.this.size();
         }
 
-        public boolean contains(Object o) {
+        public boolean contains(@Nullable Object o) {
             return containsValue(o);
         }
 
@@ -988,7 +988,7 @@ public class WeakHashMap<K, V>
             return new EntryIterator();
         }
 
-        public boolean contains(Object o) {
+        public boolean contains(@Nullable Object o) {
             if (!(o instanceof Map.Entry))
                 return false;
             Map.Entry<?,?> e = (Map.Entry<?,?>)o;
@@ -996,7 +996,7 @@ public class WeakHashMap<K, V>
             return candidate != null && candidate.equals(e);
         }
 
-        public boolean remove(Object o) {
+        public boolean remove(@Nullable Object o) {
             return removeMapping(o);
         }
 

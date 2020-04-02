@@ -144,7 +144,7 @@ public class ExpectedErrors {
         private int i;
         private int i2;
 
-        @SuppressWarnings("")
+        @SuppressWarnings("all")
         public void suppressWarningsTest() {
             i = (@Sibling1 int) 0;
             i2 = getSibling1();
@@ -170,7 +170,7 @@ public class ExpectedErrors {
             suppressWarningsMethodParams(getSibling1());
         }
 
-        @SuppressWarnings("")
+        @SuppressWarnings("all")
         public int suppressWarningsMethodReturn() {
             return getSibling1();
         }
@@ -181,11 +181,11 @@ public class ExpectedErrors {
         // we won't be able to catch any error inside the method body.
         // Verified manually that in the "annotated" folder param's type wasn't
         // updated.
-        @SuppressWarnings("")
+        @SuppressWarnings("all")
         public void suppressWarningsMethodParams(int param) {}
     }
 
-    @SuppressWarnings("")
+    @SuppressWarnings("all")
     static class SuppressWarningsInner {
         public static int i;
         public static int i2;

@@ -18,13 +18,34 @@ env:
     - THIS_REPO=checker-framework
     - OS=ubuntu
   matrix:
-    - GROUP=all-tests JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=junit-tests JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=nonjunit-tests JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=jdk.jar JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=cftests-junit JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=cftests-junit JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=cftests-nonjunit JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=cftests-nonjunit JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=jdk-jar JDKVER=jdk8 BUILDJDK=downloadjdk
     - GROUP=misc JDKVER=jdk8-plus BUILDJDK=downloadjdk
     - GROUP=misc JDKVER=jdk11-plus BUILDJDK=downloadjdk
-    - GROUP=checker-framework-inference JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=cf-inference JDKVER=jdk8 BUILDJDK=downloadjdk
+    # I don't know why this fails.
+    # - GROUP=cf-inference JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=daikon-part1 JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=daikon-part1 JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=daikon-part2 JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=daikon-part2 JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-formatter JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-formatter JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-index JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-index JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-interning JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-interning JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-lock JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-lock JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-nullness JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-nullness JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-regex JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-regex JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=guava-signature JDKVER=jdk8 BUILDJDK=downloadjdk
+    - GROUP=guava-signature JDKVER=jdk11 BUILDJDK=downloadjdk
     - GROUP=plume-lib JDKVER=jdk8 BUILDJDK=downloadjdk
     - GROUP=plume-lib JDKVER=jdk11 BUILDJDK=downloadjdk
     - GROUP=downstream JDKVER=jdk8 BUILDJDK=downloadjdk
@@ -86,35 +107,6 @@ script:
      export TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG} &&
      export TRAVIS_REPO_SLUG=$TRAVIS_REPO_SLUG &&
      ./.travis-build.sh $GROUP $BUILDJDK"
-
-jobs:
-  include:
-    - stage: trigger-downstream
-      script: |
-          echo "TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
-          if [[ ($TRAVIS_BRANCH == master) &&
-                ($TRAVIS_PULL_REQUEST == false) ]] ; then
-            SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
-            if [[ "$SLUGOWNER" == "" ]]; then
-              SLUGOWNER=typetools
-            fi
-
-            curl -LO --retry 3 https://raw.github.com/plume-lib/trigger-travis/master/trigger-travis.sh
-
-            git ls-remote https://github.com/${SLUGOWNER}/checker-framework.demos.git &>/dev/null
-            if [ "$?" -eq 0 ]; then
-              sh trigger-travis.sh ${SLUGOWNER} checker-framework.demos $TRAVIS_ACCESS_TOKEN
-            fi
-
-            git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>/dev/null
-            if [ "$?" -eq 0 ]; then
-              sh trigger-travis.sh ${SLUGOWNER} checker-framework-inference $TRAVIS_ACCESS_TOKEN
-            fi
-
-            if [[ "${SLUGOWNER}" == "typetools" ]]; then
-              sh trigger-travis.sh typetests guava-typecheck $TRAVIS_ACCESS_TOKEN
-            fi
-          fi
 
 git:
   depth: 9

@@ -177,7 +177,8 @@ public final class Objects {
      * @return {@code obj} if not {@code null}
      * @throws NullPointerException if {@code obj} is {@code null}
      */
-    @SideEffectFree public static <T> T requireNonNull(@Nullable T obj) { throw new RuntimeException(); }
+    @EnsuresNonNull("#1")
+    @SideEffectFree public static <T> @NonNull T requireNonNull(@NonNull T obj) { throw new RuntimeException(); }
 
     /**
      * Checks that the specified object reference is not {@code null} and
@@ -195,7 +196,8 @@ public final class Objects {
      * @return {@code obj} if not {@code null}
      * @throws NullPointerException if {@code obj} is {@code null}
      */
-    @SideEffectFree public static <T> T requireNonNull(@Nullable T obj, @Nullable String message) { throw new RuntimeException(); }
+    @EnsuresNonNull("#1")
+    @SideEffectFree public static <T> @NonNull T requireNonNull(@NonNull T obj, @Nullable String message) { throw new RuntimeException(); }
 
     /**
      * Returns {@code true} if the provided reference is {@code null} otherwise
@@ -251,6 +253,6 @@ public final class Objects {
      * @throws NullPointerException if {@code obj} is {@code null}
      * @since 1.8
      */
-    // TODO: treat like other nullness assertion methods in the Checker Framework.
-    @Pure public static <T> T requireNonNull(@Nullable T obj, Supplier<String> messageSupplier) { throw new RuntimeException(); }
+    @EnsuresNonNull("#1")
+    @Pure public static <T> @NonNull T requireNonNull(@NonNull T obj, Supplier<String> messageSupplier) { throw new RuntimeException(); }
 }

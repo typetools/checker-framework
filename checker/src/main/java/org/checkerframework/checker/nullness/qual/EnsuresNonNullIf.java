@@ -2,12 +2,17 @@ package org.checkerframework.checker.nullness.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
+// TODO: In a fix for https://tinyurl.com/cfissue/1917, add the text:
+// Every prefix expression is also non-null; for example,
+// {@code @EnsuresNonNullIf(expression="a.b.c", results=true)} implies that both {@code a.b} and
+// {@code a.b.c} are non-null if the method returns {@code true}.
 /**
  * Indicates that the given expressions are non-null, if the method returns the given result (either
  * true or false).
@@ -51,23 +56,12 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * <pre>{@code   @EnsuresNonNullIf(expression="getComponentType()", result=true)
  *   public native @Pure boolean isArray();}</pre>
  *
- * <!-- Issue:  https://tinyurl.com/cfissue/1307 -->
- * You cannot write two {@code @EnsuresNonNullIf} annotations on a single method; to get the effect
- * of
+ * You can write two {@code @EnsuresNonNullIf} annotations on a single method:
  *
  * <pre><code>
  * &nbsp;   @EnsuresNonNullIf(expression="outputFile", result=true)
  * &nbsp;   @EnsuresNonNullIf(expression="memoryOutputStream", result=false)
  *     public boolean isThresholdExceeded() { ... }
- * </code></pre>
- *
- * you need to instead write
- *
- * <pre><code>
- * &nbsp;@EnsuresQualifiersIf({
- * &nbsp;  @EnsuresQualifierIf(result=true, qualifier=NonNull.class, expression="outputFile"),
- * &nbsp;  @EnsuresQualifierIf(result=false, qualifier=NonNull.class, expression="memoryOutputStream")
- * })
  * </code></pre>
  *
  * @see NonNull
@@ -80,14 +74,30 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
 @InheritedAnnotation
+@Repeatable(EnsuresNonNullIf.List.class)
 public @interface EnsuresNonNullIf {
     /**
-     * Java expression(s) that are non-null after the method returns the given result.
-     *
+     * @return Java expression(s) that are non-null after the method returns the given result
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 
-    /** The return value of the method that needs to hold for the postcondition to hold. */
+    /** @return the return value of the method under which the postcondition holds */
     boolean result();
+
+    /**
+     * * A wrapper annotation that makes the {@link EnsuresNonNullIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresNonNullIf} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
+    @InheritedAnnotation
+    @interface List {
+        /** @return the repeatable annotations */
+        EnsuresNonNullIf[] value();
+    }
 }

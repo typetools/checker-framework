@@ -190,6 +190,7 @@ public class ContractsUtils {
                 factory.getDeclAnnotationWithMetaAnnotation(executableElement, kind.metaAnnotation);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
+            // contractAnno is the meta-annotation on anno.
             AnnotationMirror contractAnno = r.second;
             AnnotationMirror enforcedQualifier =
                     getQualifierEnforcedByContractAnnotation(contractAnno, anno);

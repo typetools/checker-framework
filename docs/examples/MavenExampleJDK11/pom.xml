@@ -12,7 +12,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <checkerFrameworkVersion><!-- checker-framework-version -->3.2.0<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.3.0<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
@@ -62,6 +62,7 @@
               <fork>true</fork>
               <release>11</release>
               <showWarnings>true</showWarnings>
+              <verbose>true</verbose>
               <annotationProcessorPaths>
                 <path>
                   <groupId>org.checkerframework</groupId>

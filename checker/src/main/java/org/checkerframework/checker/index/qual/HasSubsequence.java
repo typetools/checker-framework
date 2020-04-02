@@ -16,10 +16,10 @@ import org.checkerframework.framework.qual.JavaExpression;
  *
  * <pre><code>
  *  class IntSubArray {
- *  {@literal @}HasSubsequence(subsequence = "this", from = "this.start", to = "this.end")
+ *    {@literal @}HasSubsequence(subsequence = "this", from = "this.start", to = "this.end")
  *    int [] array;
- *    int @IndexFor("array") int start;
- *    int @IndexOrHigh("array") int end;
+ *    {@literal @}IndexFor("array") int start;
+ *    {@literal @}IndexOrHigh("array") int end;
  *  }
  * </code></pre>
  *

@@ -4519,7 +4519,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
             return sb.append(']').toString();
         }
 
-        public final boolean containsAll(Collection<?> c) {
+        public final boolean containsAll(Collection<? extends @NonNull Object> c) {
             if (c != this) {
                 for (Object e : c) {
                     if (e == null || !contains(e))
@@ -4529,7 +4529,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
             return true;
         }
 
-        public final boolean removeAll(Collection<?> c) {
+        public final boolean removeAll(Collection<? extends @NonNull Object> c) {
             if (c == null) throw new NullPointerException();
             boolean modified = false;
             for (Iterator<E> it = iterator(); it.hasNext();) {
@@ -4541,7 +4541,7 @@ public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Obj
             return modified;
         }
 
-        public final boolean retainAll(Collection<?> c) {
+        public final boolean retainAll(Collection<? extends @NonNull Object> c) {
             if (c == null) throw new NullPointerException();
             boolean modified = false;
             for (Iterator<E> it = iterator(); it.hasNext();) {
