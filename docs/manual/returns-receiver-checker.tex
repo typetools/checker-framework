@@ -18,8 +18,9 @@ supplying the following command-line options to javac:
 \sectionAndLabel{Annotations}{returns-receiver-checker-annotations}
 
 The qualifier \refqualclass{common/returnsrcvr/qual}{This} on the return
-type of a method indicates that the method returns its receiver. Here is an
-example:
+type of a method indicates that the method returns its receiver.  Methods
+that return their receiver are common in so-called ``fluent'' APIs.  Here
+is an example:
 
 \begin{Verbatim}
 class MyBuilder {
