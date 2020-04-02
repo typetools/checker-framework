@@ -473,9 +473,7 @@ public final class SceneToStubWriter {
 
         printTypeParameters(aMethodWrapper.getTypeParameters(), printWriter);
 
-        // Needed because AMethod stores the name with the parameters, to distinguish
-        // between overloaded methods.
-        String methodName = aMethod.methodName.substring(0, aMethod.methodName.indexOf("("));
+        String methodName = aMethod.getMethodName();
         // Use Java syntax for constructors.
         if ("<init>".equals(methodName)) {
             methodName = basename;
