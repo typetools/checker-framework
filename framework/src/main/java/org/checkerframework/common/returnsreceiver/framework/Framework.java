@@ -10,7 +10,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Enum of supported frameworks. */
-public enum Framework implements FrameworkSupport {
+public enum Framework {
     /** AutoValue framework. */
     AUTO_VALUE {
         @Override
@@ -34,11 +34,10 @@ public enum Framework implements FrameworkSupport {
 
             if (inAutoValueBuilder) {
                 AnnotatedTypeMirror returnType = t.getReturnType();
-                return returnType != null
-                        && enclosingElement.equals(
-                                TypesUtils.getTypeElement(returnType.getUnderlyingType()));
+                if (returnType == null) throw new RuntimeException("Return type cannot be null");
+                return enclosingElement.equals(
+                        TypesUtils.getTypeElement(returnType.getUnderlyingType()));
             }
-
             return false;
         }
     },
@@ -56,12 +55,13 @@ public enum Framework implements FrameworkSupport {
 
             if (inLombokBuilder) {
                 AnnotatedTypeMirror returnType = t.getReturnType();
-                return returnType != null
-                        && enclosingElement.equals(
-                                TypesUtils.getTypeElement(returnType.getUnderlyingType()));
+                if (returnType == null) throw new RuntimeException("Return type cannot be null");
+                return enclosingElement.equals(
+                        TypesUtils.getTypeElement(returnType.getUnderlyingType()));
             }
-
             return false;
         }
     };
+
+    public abstract boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t);
 }

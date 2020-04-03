@@ -1,13 +1,13 @@
 package org.checkerframework.common.returnsreceiver;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.returnsreceiver.framework.FrameworkSupport;
+import org.checkerframework.common.returnsreceiver.framework.Framework;
 import org.checkerframework.common.returnsreceiver.framework.FrameworkSupportUtils;
 import org.checkerframework.common.returnsreceiver.qual.BottomThis;
 import org.checkerframework.common.returnsreceiver.qual.This;
@@ -25,8 +25,10 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     /** The {@code @}{@link This} annotation. */
     AnnotationMirror THIS_ANNOTATION;
 
+    AnnotationMirror UNKNOWN_ANNOTATION;
+
     /** The supported frameworks (the built-in ones minus any that were disabled). */
-    Collection<FrameworkSupport> frameworks;
+    EnumSet<Framework> frameworks;
 
     /**
      * Create a new {@code ReturnsReceiverAnnotatedTypeFactory}.
@@ -36,9 +38,8 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     public ReturnsReceiverAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         THIS_ANNOTATION = AnnotationBuilder.fromClass(elements, This.class);
-        frameworks =
-                FrameworkSupportUtils.getSupportedFrameworks(
-                        checker.getOption(ReturnsReceiverChecker.DISABLE_FRAMEWORK_SUPPORT));
+        UNKNOWN_ANNOTATION = AnnotationBuilder.fromClass(elements, UnknownThis.class);
+        frameworks = FrameworkSupportUtils.getSupportedFrameworks();
         this.postInit();
     }
 
@@ -70,19 +71,18 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
         public Void visitExecutable(AnnotatedTypeMirror.AnnotatedExecutableType t, Void p) {
 
             AnnotatedTypeMirror returnType = t.getReturnType();
-            AnnotationMirror unknownThisAnnot =
-                    AnnotationBuilder.fromClass(elements, UnknownThis.class);
-            AnnotationMirror retAnnotation = returnType.getAnnotationInHierarchy(unknownThisAnnot);
+            AnnotationMirror retAnnotation =
+                    returnType.getAnnotationInHierarchy(UNKNOWN_ANNOTATION);
+
             if (retAnnotation != null && AnnotationUtils.areSame(retAnnotation, THIS_ANNOTATION)) {
                 // add @This to the receiver type
                 AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = t.getReceiverType();
                 receiverType.replaceAnnotation(THIS_ANNOTATION);
             }
-
             // skip constructors
             if (!isConstructor(t)) {
                 // check each supported framework
-                for (FrameworkSupport frameworkSupport : frameworks) {
+                for (Framework frameworkSupport : frameworks) {
                     // see if the method in the framework should return this
                     if (frameworkSupport.returnsThis(t)) {
                         // add @This annotation
