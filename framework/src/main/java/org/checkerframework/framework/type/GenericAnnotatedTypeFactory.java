@@ -1364,8 +1364,13 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
-        poly.resolve(tree, method);
         return mType;
+    }
+
+    @Override
+    protected void constructorFromUsePreSubstitution(
+            NewClassTree tree, AnnotatedExecutableType type) {
+        poly.resolve(tree, type);
     }
 
     @Override
@@ -1512,8 +1517,15 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
-        poly.resolve(tree, method);
         return mType;
+    }
+
+    @Override
+    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
+        super.methodFromUsePreSubstitution(tree, type);
+        if (tree instanceof MethodInvocationTree) {
+            poly.resolve((MethodInvocationTree) tree, type);
+        }
     }
 
     @Override
