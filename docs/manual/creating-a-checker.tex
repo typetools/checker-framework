@@ -1739,25 +1739,6 @@ implementing a checker. These are provided via the standard \code{javac} ``\code
 switch, which is used to pass options to an annotation processor.
 
 
-\subsectionAndLabel{Format of output}{creating-debugging-options-format}
-
-\begin{itemize}
-
-\item \code{-AjsonOutput}: Output error/warning messages in a JSON file,
-  for easy parsing by tools.  The JSON file is a list of
-  \ahref{https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics}{\<PublishDiagnosticsParams>}
-  values, as defined in the Language Server Protocol specification.
-  Example usage: \code{-AjsonOutput=\$HOME/typechecking.json}
-
-\item \code{-Adetailedmsgtext}: Output error/warning messages in a
-  stylized format that is easy for tools to parse.  This is useful for
-  tools that run the Checker Framework and parse its output, such as IDE
-  plugins.  See the source code of \<SourceChecker.java> for details about
-  the format.  This is now deprecated, given the existence of JSON output.
-
-\end{itemize}
-
-
 \subsectionAndLabel{Amount of detail in messages}{creating-debugging-options-detail}
 
 \begin{itemize}
@@ -1781,6 +1762,26 @@ already reported the bug, and you want to continue using the checker on a
 large codebase without being inundated in stack traces.
 
 \end{itemize}
+
+
+\subsectionAndLabel{Format of output}{creating-debugging-options-format}
+
+\begin{itemize}
+
+\item \code{-AjsonOutput}: Output error/warning messages in a JSON file,
+  for easy parsing by tools.  The JSON file is a list of
+  \ahref{https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics}{\<PublishDiagnosticsParams>}
+  values, as defined in the Language Server Protocol specification.
+  Example usage: \code{-AjsonOutput=\$HOME/typechecking.json}
+
+\item \code{-Adetailedmsgtext}: Output error/warning messages in a
+  stylized format that is easy for tools to parse.  This is useful for
+  tools that run the Checker Framework and parse its output, such as IDE
+  plugins.  See the source code of \<SourceChecker.java> for details about
+  the format.  This is now deprecated, given the existence of JSON output.
+
+\end{itemize}
+
 
 \subsectionAndLabel{Stub and JDK libraries}{creating-debugging-options-libraries}
 

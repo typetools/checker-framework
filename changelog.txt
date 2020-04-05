@@ -6,10 +6,8 @@ JSON file for easy parsing by IDE plugins and other tools.
 Version 3.3.0, April 1, 2020
 
 New command-line options:
- * -Alint=trustArrayLenZero trust @ArrayLen(0) annotations when determining
-   the type of Collections.toArray.
- * -AjsonOutput output type-checking warnings to a JSON file for easy
-   parsing by IDE plugins and other tools.
+  -Alint=trustArrayLenZero trust @ArrayLen(0) annotations when determining
+  the type of Collections.toArray.
 
 Renamings:
   -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
@@ -37,8 +35,6 @@ Renamed wrapper annotations (which users should not write):
 Implementation details:
  * Removed `@DefaultInUncheckedCodeFor` and
    `@DefaultQualifierInHierarchyInUncheckedCode`.
- * Added boolean `hasError` parameter to
-   AbstractTypeProcessor#typeProcessingOver()
  * Renamings:
    applyUncheckedCodeDefaults() to applyConservativeDefaults()
    useUncheckedCodeDefault() to useConservativeDefault()

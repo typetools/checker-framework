@@ -264,18 +264,6 @@ import org.plumelib.util.UtilPlume;
     /// Debugging
     ///
 
-    /// Format of messages
-
-    // Output a JSON file containing diagnostic messages,, useful
-    // for tools parsing Checker Framework output.
-    // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
-    "jsonOutput",
-
-    // Output detailed message in simple-to-parse format, useful
-    // for tools parsing Checker Framework output.
-    // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
-    "detailedmsgtext",
-
     /// Amount of detail in messages
 
     // Print info about git repository from which the Checker Framework was compiled
@@ -299,6 +287,18 @@ import org.plumelib.util.UtilPlume;
     // Only output error code, useful for testing framework
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
     "nomsgtext",
+
+    /// Format of messages
+
+    // Output a JSON file containing diagnostic messages,, useful
+    // for tools parsing Checker Framework output.
+    // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
+    "jsonOutput",
+
+    // Output detailed message in simple-to-parse format, useful
+    // for tools parsing Checker Framework output.
+    // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
+    "detailedmsgtext",
 
     /// Stub and JDK libraries
 
