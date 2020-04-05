@@ -34,7 +34,7 @@ public final class Field extends AccessibleObject implements Member {
   @Pure public float getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   @Pure public double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   // It is OK to set value to a not fully initialized obj parameter
-  public void set(@UnknownInitialization Object obj, @Nullable Object value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  public void set(@UnknownInitialization Object obj, Object value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public void setBoolean(@UnknownInitialization Object obj, boolean value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public void setByte(@UnknownInitialization Object obj, byte value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public void setChar(@UnknownInitialization Object obj, char value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
