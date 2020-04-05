@@ -376,7 +376,17 @@ public class Resolver {
         return methodContext;
     }
 
-    /** Reflectively set a field. */
+    /**
+     * Reflectively set a field.
+     *
+     * @param receiver the receiver where to get the field
+     * @param fieldName the field to access
+     * @param value the value to set
+     * @throws NoSuchFieldException no such field
+     * @throws IllegalAccessException the field was not made accessible
+     */
+    @SuppressWarnings(
+            "nullness:argument.type.incompatible") // value in setField() parameter can be null
     private void setField(Object receiver, String fieldName, @Nullable Object value)
             throws NoSuchFieldException, IllegalAccessException {
         Field f = receiver.getClass().getDeclaredField(fieldName);
