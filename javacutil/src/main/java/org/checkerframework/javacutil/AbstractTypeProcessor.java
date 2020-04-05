@@ -46,7 +46,7 @@ import javax.lang.model.util.ElementFilter;
  *       #typeProcess(TypeElement, TreePath) typeProcess} method on the {@code Processor}. The class
  *       is guaranteed to be type-checked Java code and all the tree type and symbol information is
  *       resolved.
- *   <li>Finally, the tools calls the {@link #typeProcessingOver typeProcessingOver} method on the
+ *   <li>Finally, the tool calls the {@link #typeProcessingOver typeProcessingOver} method on the
  *       {@code Processor}.
  * </ol>
  *
