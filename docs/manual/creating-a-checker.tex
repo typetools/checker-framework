@@ -1750,12 +1750,6 @@ usually not shown.
   parameters and wildcards when they appear in warning messages.  Supplying
   this also implies \code{-AprintAllQualifiers}.
 
-\item \code{-Adetailedmsgtext}: Output error/warning messages in a
-  stylized format that is easy for tools to parse.  This is useful for
-  tools that run the Checker Framework and parse its output, such as IDE
-  plugins.  See the source code of \<SourceChecker.java> for details about
-  the format.
-
 \item \code{-Anomsgtext}: use message keys (such as ``\code{type.invalid}'')
 rather than full message text when reporting errors or warnings.  This is
 used by the Checker Framework's own tests, so they do not need to be
@@ -1768,6 +1762,20 @@ already reported the bug, and you want to continue using the checker on a
 large codebase without being inundated in stack traces.
 
 \end{itemize}
+
+
+\subsectionAndLabel{Format of output}{creating-debugging-options-format}
+
+\begin{itemize}
+
+\item \code{-Adetailedmsgtext}: Output error/warning messages in a
+  stylized format that is easy for tools to parse.  This is useful for
+  tools that run the Checker Framework and parse its output, such as IDE
+  plugins.  See the source code of \<SourceChecker.java> for details about
+  the format.  This is now deprecated, given the existence of JSON output.
+
+\end{itemize}
+
 
 \subsectionAndLabel{Stub and JDK libraries}{creating-debugging-options-libraries}
 
@@ -1824,7 +1832,6 @@ about intermediate steps in method type argument inference
   if it includes a \code{.bat} extension on Windows) to re-execute the same compilation command.
   Note that this argument cannot be included in a file containing command-line arguments
   passed to the compiler using the @argfile syntax.
-
   Example usage: \code{-AoutputArgsToFile=\$HOME/scriptfile}
 
 \end{itemize}
