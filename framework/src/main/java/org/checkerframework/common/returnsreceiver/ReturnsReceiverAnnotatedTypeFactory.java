@@ -51,7 +51,7 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     @Override
     protected TypeAnnotator createTypeAnnotator() {
         return new ListTypeAnnotator(
-                super.createTypeAnnotator(), new ReturnsReceiverTypeAnnotator(this));
+                new ReturnsReceiverTypeAnnotator(this), super.createTypeAnnotator());
     }
 
     /** A TypeAnnotator to add the {@code @}{@link This} annotation. */
@@ -77,7 +77,9 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
             if (retAnnotation != null && AnnotationUtils.areSame(retAnnotation, THIS_ANNOTATION)) {
                 // add @This to the receiver type
                 AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = t.getReceiverType();
-                receiverType.replaceAnnotation(THIS_ANNOTATION);
+                if (!receiverType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
+                    receiverType.addAnnotation(THIS_ANNOTATION);
+                }
             }
             // skip constructors
             if (!isConstructor(t)) {
@@ -85,11 +87,16 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
                 for (Framework frameworkSupport : frameworks) {
                     // see if the method in the framework should return this
                     if (frameworkSupport.returnsThis(t)) {
-                        // add @This annotation
-                        returnType.replaceAnnotation(THIS_ANNOTATION);
+                        if (!returnType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
+
+                            // add @This annotation
+                            returnType.addAnnotation(THIS_ANNOTATION);
+                        }
                         AnnotatedTypeMirror.AnnotatedDeclaredType receiverType =
                                 t.getReceiverType();
-                        receiverType.replaceAnnotation(THIS_ANNOTATION);
+                        if (!receiverType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
+                            receiverType.addAnnotation(THIS_ANNOTATION);
+                        }
                         break;
                     }
                 }
