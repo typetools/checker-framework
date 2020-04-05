@@ -1,4 +1,6 @@
 package java.util;
+
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
@@ -17,7 +19,7 @@ public abstract class AbstractCollection<E> implements Collection<E> {
   @Override
   @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   @Override
-  @Pure public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean contains(Object a1) { throw new RuntimeException("skeleton method"); }
   @Override
   @SideEffectFree public Object [] toArray() { throw new RuntimeException("skeleton method"); }
   @Override
@@ -25,15 +27,15 @@ public abstract class AbstractCollection<E> implements Collection<E> {
   @Override
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   @Override
-  public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  public boolean remove(Object a1) { throw new RuntimeException("skeleton method"); }
   @Override
-  @Pure public boolean containsAll(Collection<?> a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean containsAll(Collection<? extends @NonNull Object> c) { throw new RuntimeException("skeleton method"); }
   @Override
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   @Override
-  public boolean removeAll(Collection<?> a1) { throw new RuntimeException("skeleton method"); }
+  public boolean removeAll(Collection<? extends @NonNull Object> c) { throw new RuntimeException("skeleton method"); }
   @Override
-  public boolean retainAll(Collection<?> a1) { throw new RuntimeException("skeleton method"); }
+  public boolean retainAll(Collection<? extends @NonNull Object> c) { throw new RuntimeException("skeleton method"); }
   @Override
   public void clear() { throw new RuntimeException("skeleton method"); }
   @Override

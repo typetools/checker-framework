@@ -174,9 +174,16 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         return treeLookup.get(tree);
     }
 
-    /** @return the corresponding {@link AssignmentNode} for a given {@link UnaryTree}. */
+    /**
+     * Return the corresponding {@link AssignmentNode} for a given {@link UnaryTree}.
+     *
+     * @param tree a unary tree
+     * @return the corresponding assignment node
+     */
     public AssignmentNode getAssignForUnaryTree(UnaryTree tree) {
-        assert unaryAssignNodeLookup.containsKey(tree) : tree + " is not in unaryAssignNodeLookup";
+        if (!unaryAssignNodeLookup.containsKey(tree)) {
+            throw new Error(tree + " is not in unaryAssignNodeLookup");
+        }
         return unaryAssignNodeLookup.get(tree);
     }
 

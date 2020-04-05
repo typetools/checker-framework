@@ -51,4 +51,9 @@ public class AssertionError extends Error {
     public AssertionError(double detailMessage) {
         this("" +  detailMessage);
     }
+
+    @SideEffectFree
+    public AssertionError(@Nullable String message, @Nullable Throwable cause) {
+        super(message, cause);
+    }
 }

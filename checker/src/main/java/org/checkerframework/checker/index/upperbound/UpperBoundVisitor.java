@@ -249,8 +249,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
         if (!relaxedCommonAssignment(varType, valueTree)) {
             commonAssignmentCheckEndDiagnostic(
-                    true,
-                    "relaxedCommonAssignment didn't override, now must call super",
+                    "relaxedCommonAssignment did not succeed, now must call super",
                     varType,
                     valueType,
                     valueTree);
@@ -284,11 +283,15 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * <p>If the varType is an array type and the value expression is an array initializer, then the
      * above rules are applied for expression in the initializer where the varType is the component
      * type of the array.
+     *
+     * @param varType the type of the left-hand side (the variable in the assignment)
+     * @param valueExp the right-hand side (the expression in the assignment)
+     * @return true if the assignment is legal based on special Upper Bound rules
      */
     private boolean relaxedCommonAssignment(AnnotatedTypeMirror varType, ExpressionTree valueExp) {
-        List<? extends ExpressionTree> expressions;
         if (valueExp.getKind() == Kind.NEW_ARRAY && varType.getKind() == TypeKind.ARRAY) {
-            expressions = ((NewArrayTree) valueExp).getInitializers();
+            List<? extends ExpressionTree> expressions =
+                    ((NewArrayTree) valueExp).getInitializers();
             if (expressions == null || expressions.isEmpty()) {
                 return false;
             }
