@@ -22,7 +22,7 @@ public class WholeProgramInferenceValidationTest extends FrameworkPerDirectoryTe
         // See wholeProgramInferenceTests task.
         if (!new File("tests/whole-program-inference/annotated/").exists()) {
             throw new RuntimeException(
-                    WholeProgramInferenceTest.class + " must be run before this test. ");
+                    WholeProgramInferenceTest.class + " must be run before this test.");
         }
         super.run();
     }
