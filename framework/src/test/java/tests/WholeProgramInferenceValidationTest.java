@@ -7,7 +7,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
 
-/** Tests that the annotations output by {@link WholeProgramInferenceTest}. */
+/** Tests that the annotations output by {@link WholeProgramInferenceTest} are correct. */
 @Category(WholeProgramInferenceTest.class)
 public class WholeProgramInferenceValidationTest extends FrameworkPerDirectoryTest {
 
