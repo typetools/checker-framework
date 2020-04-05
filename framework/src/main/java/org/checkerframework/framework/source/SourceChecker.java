@@ -1378,9 +1378,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     @Override
-    public void typeProcessingOver(boolean hasError) {
+    public void typeProcessingOver() {
         writeJsonDiagnostics();
-        super.typeProcessingOver(hasError);
+        super.typeProcessingOver();
     }
 
     /** Compare two values according to their toString() representations. */

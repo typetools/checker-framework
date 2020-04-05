@@ -6,8 +6,10 @@ JSON file for easy parsing by IDE plugins and other tools.
 Version 3.3.0, April 1, 2020
 
 New command-line options:
-  -Alint=trustArrayLenZero trust @ArrayLen(0) annotations when determining
-  the type of Collections.toArray.
+ * -Alint=trustArrayLenZero trust @ArrayLen(0) annotations when determining
+   the type of Collections.toArray.
+ * -AjsonOutput output type-checking warnings to a JSON file for easy
+   parsing by IDE plugins and other tools.
 
 Renamings:
   -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode

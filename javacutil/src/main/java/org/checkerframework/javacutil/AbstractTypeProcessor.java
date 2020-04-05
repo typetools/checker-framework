@@ -142,7 +142,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      *
      * <p>Method {@link #getCompilerLog()} can be used to access the number of compiler errors.
      */
-    public void typeProcessingOver(boolean hasError) {}
+    public void typeProcessingOver() {}
 
     /**
      * Return the compiler log, which contains errors and warnings.
