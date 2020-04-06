@@ -1195,7 +1195,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *     a Tree, or null
      * @return the tree associated with the given source object, or null if none.
      */
-    Tree sourceToTree(Object source) {
+    private @Nullable Tree sourceToTree(@Nullable Object source) {
         if (source instanceof Element) {
             return trees.getTree((Element) source);
         } else if (source instanceof Tree) {
