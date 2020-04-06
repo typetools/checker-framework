@@ -7,10 +7,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Enum of supported frameworks. */
-public enum Framework {
+public enum FrameworkSupport {
     /** AutoValue framework. */
     AUTO_VALUE {
         @Override
@@ -18,7 +19,8 @@ public enum Framework {
             ExecutableElement element = t.getElement();
             Element enclosingElement = element.getEnclosingElement();
             boolean inAutoValueBuilder =
-                    FrameworkSupportUtils.hasAnnotation(enclosingElement, AutoValue.Builder.class);
+                    AnnotationUtils.containsSameByClass(
+                            enclosingElement.getAnnotationMirrors(), AutoValue.Builder.class);
 
             if (!inAutoValueBuilder) {
                 // see if superclass is an AutoValue Builder, to handle generated code
@@ -47,10 +49,13 @@ public enum Framework {
         public boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t) {
             ExecutableElement element = t.getElement();
             Element enclosingElement = element.getEnclosingElement();
+            // AnnotationUtils.containsSameByName(element.getAnnotationMirrors(), annotClassName);
             boolean inLombokBuilder =
-                    (FrameworkSupportUtils.hasAnnotationByName(enclosingElement, "lombok.Generated")
-                                    || FrameworkSupportUtils.hasAnnotationByName(
-                                            element, "lombok.Generated"))
+                    (AnnotationUtils.containsSameByName(
+                                            enclosingElement.getAnnotationMirrors(),
+                                            "lombok.Generated")
+                                    || AnnotationUtils.containsSameByName(
+                                            element.getAnnotationMirrors(), "lombok.Generated"))
                             && enclosingElement.getSimpleName().toString().endsWith("Builder");
 
             if (inLombokBuilder) {

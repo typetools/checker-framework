@@ -7,8 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.returnsreceiver.framework.Framework;
-import org.checkerframework.common.returnsreceiver.framework.FrameworkSupportUtils;
+import org.checkerframework.common.returnsreceiver.framework.FrameworkSupport;
 import org.checkerframework.common.returnsreceiver.qual.BottomThis;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.checkerframework.common.returnsreceiver.qual.UnknownThis;
@@ -29,7 +28,7 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     final AnnotationMirror UNKNOWN_ANNOTATION;
 
     /** The supported frameworks (the built-in ones minus any that were disabled). */
-    EnumSet<Framework> frameworks;
+    EnumSet<FrameworkSupport> frameworks;
 
     /**
      * Create a new {@code ReturnsReceiverAnnotatedTypeFactory}.
@@ -40,7 +39,7 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
         super(checker);
         THIS_ANNOTATION = AnnotationBuilder.fromClass(elements, This.class);
         UNKNOWN_ANNOTATION = AnnotationBuilder.fromClass(elements, UnknownThis.class);
-        frameworks = FrameworkSupportUtils.getSupportedFrameworks();
+        frameworks = EnumSet.allOf(FrameworkSupport.class);
         this.postInit();
     }
 
@@ -85,7 +84,7 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
             // skip constructors
             if (!isConstructor(t)) {
                 // check each supported framework
-                for (Framework frameworkSupport : frameworks) {
+                for (FrameworkSupport frameworkSupport : frameworks) {
                     // see if the method in the framework should return this
                     if (frameworkSupport.returnsThis(t)) {
                         if (!returnType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
