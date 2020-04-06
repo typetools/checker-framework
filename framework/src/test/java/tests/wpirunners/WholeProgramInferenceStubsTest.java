@@ -5,6 +5,7 @@ import java.util.List;
 import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
 
@@ -16,6 +17,7 @@ import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
  * relevant. The meaning of this test class is to test if the generated stub files are similar to
  * the expected ones. The errors on .java files must be ignored.
  */
+@Category(WholeProgramInferenceStubsTest.class)
 public class WholeProgramInferenceStubsTest extends FrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */

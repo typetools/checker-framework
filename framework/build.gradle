@@ -82,6 +82,14 @@ checkCompilerMessages {
     ]
 }
 
+test {
+    useJUnit {
+        // These are run in task wholeProgramInferenceTests.
+        excludeCategories 'tests.WholeProgramInferenceJaifsTest'
+        excludeCategories 'tests.WholeProgramInferenceStubsTest'
+    }
+}
+
 task testWPIStubs(type: Test) {
     description 'Internal task to run the whole-program-inference tests with -Ainfer=stubs to generate stub files'
 
