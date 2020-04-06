@@ -3,8 +3,6 @@ package tests.wpirunners;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
-import org.junit.Assume;
-import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
@@ -26,11 +24,6 @@ public class WholeProgramInferenceJaifsTest extends FrameworkPerDirectoryTest {
                 "value",
                 "-Anomsgtext",
                 "-Ainfer=jaifs");
-    }
-
-    @Before
-    public void before() throws Exception {
-        Assume.assumeTrue("running_wpi_tests".equals(System.getProperty("wpiTestStatus")));
     }
 
     @Parameters
