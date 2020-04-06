@@ -354,7 +354,7 @@ public final class SceneToStubWriter {
         while (basetypeToPrint.contains("<")) {
             basetypeToPrint =
                     basetypeToPrint.substring(0, basetypeToPrint.indexOf('<'))
-                            + basetypeToPrint.substring(basetypeToPrint.indexOf('>') + 1);
+                            + basetypeToPrint.substring(basetypeToPrint.lastIndexOf('>') + 1);
         }
 
         if (basetypeToPrint.contains("[")) {
