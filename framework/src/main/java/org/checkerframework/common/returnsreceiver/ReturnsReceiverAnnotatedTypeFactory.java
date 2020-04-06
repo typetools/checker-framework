@@ -23,9 +23,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The {@code @}{@link This} annotation. */
-    AnnotationMirror THIS_ANNOTATION;
+    final AnnotationMirror THIS_ANNOTATION;
 
-    AnnotationMirror UNKNOWN_ANNOTATION;
+    /** The {@code @}{@link UnknownThis} annotation. */
+    final AnnotationMirror UNKNOWN_ANNOTATION;
 
     /** The supported frameworks (the built-in ones minus any that were disabled). */
     EnumSet<Framework> frameworks;
