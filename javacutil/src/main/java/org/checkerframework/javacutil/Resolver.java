@@ -379,11 +379,11 @@ public class Resolver {
     /**
      * Reflectively set a field.
      *
-     * @param receiver the receiver where to get the field
-     * @param fieldName the field to access
-     * @param value the value to set
-     * @throws NoSuchFieldException no such field
-     * @throws IllegalAccessException the field was not made accessible
+     * @param receiver the receiver in which to set the field
+     * @param fieldName name of field to set
+     * @param value new value to field
+     * @throws NoSuchFieldException if the field does not exist in the receiver
+     * @throws IllegalAccessException if the field is not made accessible
      */
     @SuppressWarnings(
             "nullness:argument.type.incompatible") // value in setField() parameter can be null
