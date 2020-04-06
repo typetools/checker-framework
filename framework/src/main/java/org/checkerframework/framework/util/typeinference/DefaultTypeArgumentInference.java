@@ -237,7 +237,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 if (withoutNullResult == null) {
                     // withoutNullResult is null when the only constraint on a type argument is
                     // where a method argument is null.
-                    withoutNullResult = typeFactory.getUninferredWildcardType(atv);
+                    withoutNullResult = atv.getUpperBound().deepCopy();
                 }
                 AnnotatedTypeMirror lub =
                         AnnotatedTypes.leastUpperBound(typeFactory, withoutNullResult, result);

@@ -904,6 +904,7 @@ Section~\ref{declaration-annotations-moved}.
  ~com.sun.istack.internal.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
  ~io.reactivex.annotations.NonNull~ \\ \hline
+ ~io.reactivex.rxjava3.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~lombok.NonNull~ \\ \hline
@@ -934,6 +935,7 @@ $\Rightarrow$
  ~edu.umd.cs.findbugs.annotations.PossiblyNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
  ~io.reactivex.annotations.Nullable~ \\ \hline
+ ~io.reactivex.rxjava3.annotations.Nullable~ \\ \hline
  ~javax.annotation.Nullable~ \\ \hline
  ~javax.annotation.CheckForNull~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NullableDecl~ \\ \hline
@@ -2001,14 +2003,16 @@ see Section~\ref{nullness-method-annotations}.
 
 \paragraphAndLabel{Source of the type system}{initialization-checking-type-system}
 
-The type system enforced by the Initialization Checker is known as
+The type system enforced by the Initialization Checker is based on
 ``Freedom Before Commitment''~\cite{SummersM2011}.  Our implementation
 changes its initialization modifiers (``committed'', ``free'', and
 ``unclassified'') to ``initialized'', ``unknown initialization'', and
 ``under initialization''.  Our implementation also has several
 enhancements.  For example, it supports partial initialization (the
 argument to the \<@UnknownInitialization> and \<@UnderInitialization>
-annotations).
+annotations).  The benefit (in terms of reduced false positive
+initialization warnings) from supporting partial initialization is
+greater than the benefit from adopting the Freedom Before Commitment system.
 
 
 
@@ -2030,10 +2034,11 @@ annotations).
 % LocalWords:  NullnessChecker redundantNullComparison instanceof runtime
 % LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
 % LocalWords:  UnderInitialization getComponentType AsuppressWarnings
-% LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass
+% LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass Astubs
 % LocalWords:  mymap mykey KeyType ValueType lineSeparator receiver''
-% LocalWords:  dereferenced dereference Dereferencing initializers
+% LocalWords:  dereferenced dereference Dereferencing initializers astub
 % LocalWords:  initHelper helperMethod NoSuchElementException classpath
 % LocalWords:  soundArrayCreationNullness lombok findbugs CurrentClass
-% LocalWords:  NotOnlyInitialized underinitialization Commitment''
-% LocalWords:  unclassified''
+% LocalWords:  NotOnlyInitialized underinitialization Commitment'' toarray
+% LocalWords:  unclassified'' trustArrayLenZero ArrayLen toArray
+% LocalWords:  ConcurrentHashMap
