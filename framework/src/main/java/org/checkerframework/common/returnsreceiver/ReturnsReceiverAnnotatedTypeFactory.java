@@ -28,7 +28,7 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     final AnnotationMirror UNKNOWN_ANNOTATION;
 
     /** The supported frameworks (the built-in ones minus any that were disabled). */
-    EnumSet<FrameworkSupport> frameworks;
+    private final EnumSet<FrameworkSupport> frameworks;
 
     /**
      * Create a new {@code ReturnsReceiverAnnotatedTypeFactory}.
