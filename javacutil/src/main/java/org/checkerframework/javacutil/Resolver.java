@@ -385,8 +385,10 @@ public class Resolver {
      * @throws NoSuchFieldException if the field does not exist in the receiver
      * @throws IllegalAccessException if the field is not accessible
      */
-    @SuppressWarnings(
-            "nullness:argument.type.incompatible") // assume that the fields all accept null values
+    @SuppressWarnings({
+        "nullness:argument.type.incompatible",
+        "interning:argument.type.incompatible"
+    }) // assume that the fields all accept null and uninterned values
     private void setField(Object receiver, String fieldName, @Nullable Object value)
             throws NoSuchFieldException, IllegalAccessException {
         Field f = receiver.getClass().getDeclaredField(fieldName);
