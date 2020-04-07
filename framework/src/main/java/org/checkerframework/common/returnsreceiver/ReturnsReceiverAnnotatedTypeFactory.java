@@ -24,9 +24,6 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     /** The {@code @}{@link This} annotation. */
     final AnnotationMirror THIS_ANNOTATION;
 
-    /** The {@code @}{@link UnknownThis} annotation. */
-    final AnnotationMirror UNKNOWN_ANNOTATION;
-
     /** The supported frameworks (the built-in ones minus any that were disabled). */
     private final EnumSet<FrameworkSupport> frameworks;
 
@@ -38,7 +35,6 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     public ReturnsReceiverAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         THIS_ANNOTATION = AnnotationBuilder.fromClass(elements, This.class);
-        UNKNOWN_ANNOTATION = AnnotationBuilder.fromClass(elements, UnknownThis.class);
         frameworks = EnumSet.allOf(FrameworkSupport.class);
         this.postInit();
     }
@@ -70,34 +66,30 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
         @Override
         public Void visitExecutable(AnnotatedTypeMirror.AnnotatedExecutableType t, Void p) {
 
-            AnnotatedTypeMirror returnType = t.getReturnType();
-            AnnotationMirror retAnnotation =
-                    returnType.getAnnotationInHierarchy(UNKNOWN_ANNOTATION);
-
-            if (retAnnotation != null && AnnotationUtils.areSame(retAnnotation, THIS_ANNOTATION)) {
-                // add @This to the receiver type
-                AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = t.getReceiverType();
-                if (!receiverType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
-                    receiverType.addAnnotation(THIS_ANNOTATION);
-                }
-            }
-            // skip constructors
+            // skip constructors, as we never need to add annotations to them
             if (!isConstructor(t)) {
-                // check each supported framework
+                AnnotatedTypeMirror returnType = t.getReturnType();
+
+                // if any FrameworkSupport indicates the method returns this,
+                // add an @This annotation on the return type
                 for (FrameworkSupport frameworkSupport : frameworks) {
-                    // see if the method in the framework should return this
                     if (frameworkSupport.returnsThis(t)) {
                         if (!returnType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
-
-                            // add @This annotation
                             returnType.addAnnotation(THIS_ANNOTATION);
                         }
-                        AnnotatedTypeMirror.AnnotatedDeclaredType receiverType =
-                                t.getReceiverType();
-                        if (!receiverType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
-                            receiverType.addAnnotation(THIS_ANNOTATION);
-                        }
                         break;
+                    }
+                }
+
+                // if return type is annotated with @This, add @This annotation
+                // to the receiver type
+                AnnotationMirror retAnnotation =
+                        returnType.getAnnotationInHierarchy(THIS_ANNOTATION);
+                if (retAnnotation != null
+                        && AnnotationUtils.areSame(retAnnotation, THIS_ANNOTATION)) {
+                    AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = t.getReceiverType();
+                    if (!receiverType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
+                        receiverType.addAnnotation(THIS_ANNOTATION);
                     }
                 }
             }
