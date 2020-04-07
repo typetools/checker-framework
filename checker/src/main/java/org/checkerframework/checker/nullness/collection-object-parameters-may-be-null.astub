@@ -118,6 +118,7 @@ public interface Collection<E> extends Iterable<E> {
     boolean contains(@Nullable Object o);
     boolean remove(@Nullable Object o);
     boolean containsAll(Collection<?> c);
+    boolean removeAll(Collection<?> c);
     boolean retainAll(Collection<?> c);
 }
 
