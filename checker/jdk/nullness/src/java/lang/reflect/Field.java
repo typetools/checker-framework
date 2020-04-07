@@ -7,6 +7,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
+// In general, the field value `get` methods should take a top-qualified `obj` parameter
+// and have a top-qualified return type; the field value `set` methods should take a
+// top-qualified `obj` parameter and a bottom-qualified `value` parameter.
+//
+// nullness: the `obj` parameter in `get`/`set` methods is @NonNull, because instance fields
+// require a receiver. Static field accesses need to suppress the errors.
+//
+// initialization: using fully-initialized types should make the typical use case easier.
 public final class Field extends AccessibleObject implements Member {
   protected Field() {}
   @SideEffectFree public Class<?> getDeclaringClass() { throw new RuntimeException("skeleton method"); }
