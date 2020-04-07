@@ -9,6 +9,6 @@ There are a few cases when jtreg is appropriate:
  * The jtreg approach makes it possible to check that an error message
    was output two times.
 
-Sometimes you should put tests in a directory such as
-checker-framework/checker/tests/nullness-extra ,
-such as when it uses multiple Java files.
+Sometimes jtreg is not capable of executing a test, such as when a test
+uses multiple Java files.  In such a case, you will need to write your own
+testing logic, as in checker-framework/checker/tests/nullness-extra/ .
