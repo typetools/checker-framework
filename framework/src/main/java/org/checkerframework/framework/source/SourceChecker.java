@@ -1228,7 +1228,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *     a Tree, or null
      * @return the tree associated with the given source object, or null if none.
      */
-    Tree sourceToTree(Object source) {
+    private @Nullable Tree sourceToTree(@Nullable Object source) {
         if (source instanceof Element) {
             return trees.getTree((Element) source);
         } else if (source instanceof Tree) {
@@ -2539,11 +2539,18 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
 
             if (printClasspath) {
-                msg.add("Classpath:");
                 ClassLoader cl = ClassLoader.getSystemClassLoader();
-                URL[] urls = ((URLClassLoader) cl).getURLs();
-                for (URL url : urls) {
-                    msg.add(url.getFile());
+
+                if (cl instanceof URLClassLoader) {
+                    msg.add("Classpath:");
+                    URL[] urls = ((URLClassLoader) cl).getURLs();
+                    for (URL url : urls) {
+                        msg.add(url.getFile());
+                    }
+                } else {
+                    // TODO: Java 9+ use an internal classloader that doesn't support getting URLs,
+                    // so we will need an alternative approach to retrieve the classpath on Java 9+.
+                    msg.add("Cannot print classpath on Java 9+. To see the classpath, use Java 8.");
                 }
             }
         }

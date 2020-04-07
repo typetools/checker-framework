@@ -72,7 +72,7 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.1</version>
           <configuration>
-              <fork>true</fork>
+              <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
               <!-- If using JDK 8, add source and target. -->
               <source>1.8</source>
               <target>1.8</target>
