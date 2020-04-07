@@ -195,7 +195,6 @@ public class ConcurrentLinkedQueue<E> {
 }
 
 public interface ConcurrentMap<K,V> extends Map<K,V> {
-    @Nullable V putIfAbsent(@Nullable K key, @Nullable V value);
     boolean remove(@Nullable Object key, @Nullable Object value);
 }
 
