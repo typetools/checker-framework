@@ -216,7 +216,7 @@ public class CopyOnWriteArrayList<E>
 }
 
 public class CopyOnWriteArraySet<E>
-    implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
+    implements Set<E>, java.io.Serializable {
     public boolean removeAll(Collection<?> c);
     public boolean retainAll(Collection<?> c);
 }
