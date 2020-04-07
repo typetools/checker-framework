@@ -1060,6 +1060,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         Trees.instance(processingEnv).printMessage(kind, message, source, root);
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    /// Diagnostic message formatting
+    ///
+
     /**
      * Returns the localized long message corresponding to this key. If not found, tries suffixes of
      * this key, stripping off dot-separated prefixes. If still not found, returns {@code
@@ -1141,19 +1145,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             sj.add(Integer.toString(0));
         }
 
-        // (3) The error position, as starting and ending characters in
-        // the source file.
-        final Tree tree;
-        if (source instanceof Element) {
-            tree = trees.getTree((Element) source);
-        } else if (source instanceof Tree) {
-            tree = (Tree) source;
-        } else if (source == null) {
-            tree = null;
-        } else {
-            throw new BugInCF("Unexpected source %s [%s]", source, source.getClass());
-        }
-        sj.add(detailedMsgTextPositionString(tree, currentRoot));
+        // (3) The error position, as starting and ending characters in the source file.
+        sj.add(detailedMsgTextPositionString(sourceToTree(source), currentRoot));
 
         // (4) The human-readable error message will be added by the caller.
         sj.add(""); // Add DETAILS_SEPARATOR at the end.
@@ -1192,6 +1185,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
         } else {
             return messageKey;
+        }
+    }
+
+    /**
+     * Convert a Tree, Element, or null, into a Tree or null.
+     *
+     * @param source the object from which to obtain source position information; may be an Element,
+     *     a Tree, or null
+     * @return the tree associated with the given source object, or null if none.
+     */
+    private @Nullable Tree sourceToTree(@Nullable Object source) {
+        if (source instanceof Element) {
+            return trees.getTree((Element) source);
+        } else if (source instanceof Tree) {
+            return (Tree) source;
+        } else if (source == null) {
+            return null;
+        } else {
+            throw new BugInCF("Unexpected source %s [%s]", source, source.getClass());
         }
     }
 
