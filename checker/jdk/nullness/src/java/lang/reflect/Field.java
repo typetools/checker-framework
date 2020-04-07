@@ -21,9 +21,9 @@ public final class Field extends AccessibleObject implements Member {
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toGenericString() { throw new RuntimeException("skeleton method"); }
-  // These Object formal parameters can be null if the field is static, or can be non-null if the
-  // field is field instance. We don't know which. To prevent a possible NullPointerException,
-  // the Nullness Checker should conservatively issue a warning whenever null is passed.
+  // The `obj` formal parameters can be null if the field is static, or must be non-null if the
+  // field is an instance field. We don't know which. To prevent a possible NullPointerException,
+  // the Nullness Checker conservatively issues a warning whenever null is passed.
   @SideEffectFree public @Nullable Object get(Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   @Pure public boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   @Pure public byte getByte(Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
@@ -33,7 +33,7 @@ public final class Field extends AccessibleObject implements Member {
   @Pure public long getLong(Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   @Pure public float getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   @Pure public double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  // It is OK to set value to a not fully initialized obj parameter
+  // It is OK to set a value in a possibly not fully-initialized `obj` parameter
   public void set(@UnknownInitialization Object obj, Object value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public void setBoolean(@UnknownInitialization Object obj, boolean value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public void setByte(@UnknownInitialization Object obj, byte value) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
