@@ -1,6 +1,5 @@
 package org.checkerframework.common.returnsreceiver.framework;
 
-import com.google.auto.value.AutoValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -19,8 +18,10 @@ public enum FrameworkSupport {
             ExecutableElement element = t.getElement();
             Element enclosingElement = element.getEnclosingElement();
             boolean inAutoValueBuilder =
-                    AnnotationUtils.containsSameByClass(
-                            enclosingElement.getAnnotationMirrors(), AutoValue.Builder.class);
+                    AnnotationUtils.getAnnotationByName(
+                                    enclosingElement.getAnnotationMirrors(),
+                                    "com.google.auto.value.AutoValue.Builder")
+                            != null;
 
             if (!inAutoValueBuilder) {
                 // see if superclass is an AutoValue Builder, to handle generated code
@@ -30,7 +31,10 @@ public enum FrameworkSupport {
                     // update enclosingElement to be for the superclass for this case
                     enclosingElement = TypesUtils.getTypeElement(superclass);
                     inAutoValueBuilder =
-                            enclosingElement.getAnnotation(AutoValue.Builder.class) != null;
+                            AnnotationUtils.getAnnotationByName(
+                                            enclosingElement.getAnnotationMirrors(),
+                                            "com.google.auto.value.AutoValue.Builder")
+                                    != null;
                 }
             }
 
