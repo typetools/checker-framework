@@ -15,11 +15,9 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public enum FluentAPIGenerator {
     /**
-     * For AutoValue builders
-     *
-     * @see <a
-     *     href="https://github.com/google/auto/blob/master/value/userguide/builders.md">AutoValue
-     *     with Builders</a>
+     * The <a
+     * href="https://github.com/google/auto/blob/master/value/userguide/builders.md">AutoValue</a>
+     * framework.
      */
     AUTO_VALUE {
 
@@ -51,7 +49,9 @@ public enum FluentAPIGenerator {
 
             if (inAutoValueBuilder) {
                 AnnotatedTypeMirror returnType = t.getReturnType();
-                if (returnType == null) throw new RuntimeException("Return type cannot be null");
+                if (returnType == null) {
+                    throw new RuntimeException("Return type cannot be null: " + t);
+                }
                 return enclosingElement.equals(
                         TypesUtils.getTypeElement(returnType.getUnderlyingType()));
             }
@@ -70,11 +70,7 @@ public enum FluentAPIGenerator {
             return com + "." + "google.auto.value.AutoValue.Builder";
         }
     },
-    /**
-     * For Project Lombok builders
-     *
-     * @see <a href="https://projectlombok.org/features/Builder">Lombok Builder documentation</a>
-     */
+    /** <a href="https://projectlombok.org/features/Builder">Project Lombok</a>. */
     LOMBOK {
         @Override
         public boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t) {
@@ -90,7 +86,9 @@ public enum FluentAPIGenerator {
 
             if (inLombokBuilder) {
                 AnnotatedTypeMirror returnType = t.getReturnType();
-                if (returnType == null) throw new RuntimeException("Return type cannot be null");
+                if (returnType == null) {
+                    throw new RuntimeException("Return type cannot be null: " + t);
+                }
                 return enclosingElement.equals(
                         TypesUtils.getTypeElement(returnType.getUnderlyingType()));
             }
