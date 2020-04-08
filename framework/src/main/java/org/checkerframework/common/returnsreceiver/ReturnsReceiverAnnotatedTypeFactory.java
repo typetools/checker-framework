@@ -7,7 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.returnsreceiver.framework.FrameworkSupport;
+import org.checkerframework.common.returnsreceiver.fluentapi.FluentAPIGenerator;
 import org.checkerframework.common.returnsreceiver.qual.BottomThis;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.checkerframework.common.returnsreceiver.qual.UnknownThis;
@@ -25,7 +25,7 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     final AnnotationMirror THIS_ANNOTATION;
 
     /** The supported frameworks (the built-in ones minus any that were disabled). */
-    private final EnumSet<FrameworkSupport> frameworks;
+    private final EnumSet<FluentAPIGenerator> frameworks;
 
     /**
      * Create a new {@code ReturnsReceiverAnnotatedTypeFactory}.
@@ -35,7 +35,7 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     public ReturnsReceiverAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         THIS_ANNOTATION = AnnotationBuilder.fromClass(elements, This.class);
-        frameworks = EnumSet.allOf(FrameworkSupport.class);
+        frameworks = EnumSet.allOf(FluentAPIGenerator.class);
         this.postInit();
     }
 
@@ -72,7 +72,7 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
 
                 // if any FrameworkSupport indicates the method returns this,
                 // add an @This annotation on the return type
-                for (FrameworkSupport frameworkSupport : frameworks) {
+                for (FluentAPIGenerator frameworkSupport : frameworks) {
                     if (frameworkSupport.returnsThis(t)) {
                         if (!returnType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
                             returnType.addAnnotation(THIS_ANNOTATION);

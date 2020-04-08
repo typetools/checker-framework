@@ -1,4 +1,4 @@
-package org.checkerframework.common.returnsreceiver.framework;
+package org.checkerframework.common.returnsreceiver.fluentapi;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -10,17 +10,19 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Enum of supported frameworks. */
-public enum FrameworkSupport {
+public enum FluentAPIGenerator {
     /** AutoValue framework. */
     AUTO_VALUE {
+
+        private final String AUTO_VALUE_BUILDER = getAutoValueBuilderCanonicalName();
+
         @Override
         public boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t) {
             ExecutableElement element = t.getElement();
             Element enclosingElement = element.getEnclosingElement();
             boolean inAutoValueBuilder =
                     AnnotationUtils.getAnnotationByName(
-                                    enclosingElement.getAnnotationMirrors(),
-                                    "com.google.auto.value.AutoValue.Builder")
+                                    enclosingElement.getAnnotationMirrors(), AUTO_VALUE_BUILDER)
                             != null;
 
             if (!inAutoValueBuilder) {
@@ -33,7 +35,7 @@ public enum FrameworkSupport {
                     inAutoValueBuilder =
                             AnnotationUtils.getAnnotationByName(
                                             enclosingElement.getAnnotationMirrors(),
-                                            "com.google.auto.value.AutoValue.Builder")
+                                            AUTO_VALUE_BUILDER)
                                     != null;
                 }
             }
@@ -46,6 +48,11 @@ public enum FrameworkSupport {
             }
             return false;
         }
+
+        private String getAutoValueBuilderCanonicalName() {
+            String com = "com";
+            return com + "." + "google.auto.value.AutoValue.Builder";
+        }
     },
     /** Lombok framework. */
     LOMBOK {
@@ -53,7 +60,6 @@ public enum FrameworkSupport {
         public boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t) {
             ExecutableElement element = t.getElement();
             Element enclosingElement = element.getEnclosingElement();
-            // AnnotationUtils.containsSameByName(element.getAnnotationMirrors(), annotClassName);
             boolean inLombokBuilder =
                     (AnnotationUtils.containsSameByName(
                                             enclosingElement.getAnnotationMirrors(),
