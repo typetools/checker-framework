@@ -88,6 +88,7 @@
 package java.util;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 class AbstractCollection {
     @Pure public boolean contains(@Nullable Object o);
@@ -195,7 +196,6 @@ public class ConcurrentLinkedQueue<E> {
 }
 
 public interface ConcurrentMap<K,V> extends Map<K,V> {
-    @Nullable V putIfAbsent(@Nullable K key, @Nullable V value);
     boolean remove(@Nullable Object key, @Nullable Object value);
 }
 
@@ -216,7 +216,8 @@ public class CopyOnWriteArrayList<E>
 }
 
 public class CopyOnWriteArraySet<E>
-    implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
+    extends AbstractSet<E>
+    implements java.io.Serializable {
     public boolean removeAll(Collection<?> c);
     public boolean retainAll(Collection<?> c);
 }
