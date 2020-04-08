@@ -7,7 +7,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.returnsreceiver.fluentapi.FluentAPIGenerator;
 import org.checkerframework.common.returnsreceiver.qual.BottomThis;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.checkerframework.common.returnsreceiver.qual.UnknownThis;

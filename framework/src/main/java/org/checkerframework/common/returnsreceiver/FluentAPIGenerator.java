@@ -1,4 +1,4 @@
-package org.checkerframework.common.returnsreceiver.fluentapi;
+package org.checkerframework.common.returnsreceiver;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
