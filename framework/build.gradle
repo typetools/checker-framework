@@ -15,12 +15,10 @@ sourceSets {
     }
 }
 
-ext {
-    versions = [
-            autoValue       : "1.6.5",
-            lombok          : "1.18.12",
-    ]
-}
+def versions = [
+        autoValue       : "1.6.5",
+        lombok          : "1.18.12",
+]
 
 dependencies {
     implementation project(':dataflow')

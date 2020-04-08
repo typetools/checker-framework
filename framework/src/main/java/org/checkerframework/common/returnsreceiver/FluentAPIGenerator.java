@@ -14,6 +14,13 @@ import org.checkerframework.javacutil.TypesUtils;
  * add @This annotations on method return types in the generated code.
  */
 public enum FluentAPIGenerator {
+    /**
+     * For AutoValue builders
+     *
+     * @see <a
+     *     href="https://github.com/google/auto/blob/master/value/userguide/builders.md">AutoValue
+     *     with Builders</a>
+     */
     AUTO_VALUE {
 
         private final String AUTO_VALUE_BUILDER = getAutoValueBuilderCanonicalName();
@@ -51,11 +58,23 @@ public enum FluentAPIGenerator {
             return false;
         }
 
+        /**
+         * Get the qualified name of the AutoValue Builder annotation. This method constructs the
+         * String dynamically, to ensure it does not get rewritten due to relocation of the {@code
+         * "com.google"} package during the build process
+         *
+         * @return {@code "com.google.auto.value.AutoValue.Builder"}
+         */
         private String getAutoValueBuilderCanonicalName() {
             String com = "com";
             return com + "." + "google.auto.value.AutoValue.Builder";
         }
     },
+    /**
+     * For Project Lombok builders
+     *
+     * @see <a href="https://projectlombok.org/features/Builder">Lombok Builder documentation</a>
+     */
     LOMBOK {
         @Override
         public boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t) {
