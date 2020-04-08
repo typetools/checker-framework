@@ -24,8 +24,8 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     /** The {@code @}{@link This} annotation. */
     final AnnotationMirror THIS_ANNOTATION;
 
-    /** The supported frameworks (the built-in ones minus any that were disabled). */
-    private final EnumSet<FluentAPIGenerator> frameworks;
+    /** The supported fluent API generators */
+    private final EnumSet<FluentAPIGenerator> fluentAPIGenerators;
 
     /**
      * Create a new {@code ReturnsReceiverAnnotatedTypeFactory}.
@@ -35,7 +35,7 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     public ReturnsReceiverAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         THIS_ANNOTATION = AnnotationBuilder.fromClass(elements, This.class);
-        frameworks = EnumSet.allOf(FluentAPIGenerator.class);
+        fluentAPIGenerators = EnumSet.allOf(FluentAPIGenerator.class);
         this.postInit();
     }
 
@@ -70,10 +70,10 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
             if (!isConstructor(t)) {
                 AnnotatedTypeMirror returnType = t.getReturnType();
 
-                // if any FrameworkSupport indicates the method returns this,
+                // if any FluentAPIGenerator indicates the method returns this,
                 // add an @This annotation on the return type
-                for (FluentAPIGenerator frameworkSupport : frameworks) {
-                    if (frameworkSupport.returnsThis(t)) {
+                for (FluentAPIGenerator fluentAPIGenerator : fluentAPIGenerators) {
+                    if (fluentAPIGenerator.returnsThis(t)) {
                         if (!returnType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
                             returnType.addAnnotation(THIS_ANNOTATION);
                         }
