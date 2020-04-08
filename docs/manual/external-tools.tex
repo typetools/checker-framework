@@ -544,8 +544,8 @@ javac \
 Below is an explanation of each argument.
 \begin{enumerate}
 \item \<-J-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/javac.jar>:
-even when running under JDK 8, a Java 9 compiler (either the Error Prone
-compiler or the OpenJDK Java 9 compiler) must be on the JVM bootclasspath.
+even when running under JDK 8, a Java 9+ compiler (either the Error Prone
+compiler or the OpenJDK Java compiler (version 9 or later) must be on the JVM bootclasspath.
 The \<-J> indicates that this is a JVM argument rather than a compiler
 argument.
 
@@ -905,6 +905,9 @@ latest bug fixes and new features:
   mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
 \end{Verbatim}
 
+The need for the \<com.google.errorprone:javac> artifact when running under
+JDK 8 is explained in Section~\ref{java8-install}.
+
 \end{enumerate}
 
 \item If using JDK 8, use Maven properties to hold the locations of the
@@ -951,7 +954,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
     <artifactId>maven-compiler-plugin</artifactId>
     <version>3.8.1</version>
     <configuration>
-      <fork>true</fork>
+      <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
       <!-- If using JDK 8, add source and target. -->
       <source>1.8</source>
       <target>1.8</target>
