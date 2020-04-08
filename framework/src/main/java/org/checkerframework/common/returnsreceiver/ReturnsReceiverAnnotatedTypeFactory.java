@@ -1,7 +1,6 @@
 package org.checkerframework.common.returnsreceiver;
 
 import java.lang.annotation.Annotation;
-import java.util.EnumSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
@@ -67,13 +66,9 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
 
                 // If any FluentAPIGenerator indicates the method returns this,
                 // add an @This annotation on the return type.
-                for (FluentAPIGenerator fluentAPIGenerator :
-                        EnumSet.allOf(FluentAPIGenerator.class)) {
-                    if (fluentAPIGenerator.returnsThis(t)) {
-                        if (!returnType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
-                            returnType.addAnnotation(THIS_ANNOTATION);
-                        }
-                        break;
+                if (FluentAPIGenerator.checkForFluentAPIGenerators(t)) {
+                    if (!returnType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
+                        returnType.addAnnotation(THIS_ANNOTATION);
                     }
                 }
 
