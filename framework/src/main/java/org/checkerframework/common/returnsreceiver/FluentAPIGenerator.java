@@ -31,9 +31,8 @@ public class FluentAPIGenerator {
                 ExecutableElement element = t.getElement();
                 Element enclosingElement = element.getEnclosingElement();
                 boolean inAutoValueBuilder =
-                        AnnotationUtils.getAnnotationByName(
-                                        enclosingElement.getAnnotationMirrors(), AUTO_VALUE_BUILDER)
-                                != null;
+                        AnnotationUtils.containsSameByName(
+                                enclosingElement.getAnnotationMirrors(), AUTO_VALUE_BUILDER);
 
                 if (!inAutoValueBuilder) {
                     // see if superclass is an AutoValue Builder, to handle generated code
@@ -43,10 +42,9 @@ public class FluentAPIGenerator {
                         // update enclosingElement to be for the superclass for this case
                         enclosingElement = TypesUtils.getTypeElement(superclass);
                         inAutoValueBuilder =
-                                AnnotationUtils.getAnnotationByName(
-                                                enclosingElement.getAnnotationMirrors(),
-                                                AUTO_VALUE_BUILDER)
-                                        != null;
+                                AnnotationUtils.containsSameByName(
+                                        enclosingElement.getAnnotationMirrors(),
+                                        AUTO_VALUE_BUILDER);
                     }
                 }
 
@@ -106,6 +104,11 @@ public class FluentAPIGenerator {
         protected abstract boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t);
     }
 
+    /**
+     * @param t the method to check
+     * @return {@code true} if the method was created by any of the generators defined in {@link
+     *     FluentAPIGenerators} and returns {@code this}
+     */
     public static boolean checkForFluentAPIGenerators(
             AnnotatedTypeMirror.AnnotatedExecutableType t) {
         for (FluentAPIGenerators fluentAPIGenerator : FluentAPIGenerators.values()) {
