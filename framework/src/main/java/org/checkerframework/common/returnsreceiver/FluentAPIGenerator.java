@@ -24,6 +24,12 @@ public class FluentAPIGenerator {
          */
         AUTO_VALUE {
 
+            /**
+             * The qualified name of the AutoValue Builder annotation. This needed to be constructed
+             * dynamically due to side effect of the shadow plugin. See {@link
+             * org.checkerframework.common.returnsreceiver.FluentAPIGenerator.FluentAPIGenerators#AUTO_VALUE#getAutoValueBuilderCanonicalName()}
+             * for more information.
+             */
             private final String AUTO_VALUE_BUILDER = getAutoValueBuilderCanonicalName();
 
             @Override
