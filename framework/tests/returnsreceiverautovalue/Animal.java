@@ -1,5 +1,6 @@
 import com.google.auto.value.AutoValue;
 import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.common.returnsreceiver.qual.*;
 
 /**
  * Adapted from the standard AutoValue example code:
@@ -27,6 +28,19 @@ abstract class Animal {
         abstract Builder setHabitat(String value);
 
         abstract Animal build();
+
+        // wrapper methods to ensure @This annotations are getting added properly
+        @This Builder wrapperSetName() {
+            return setName("dummy");
+        }
+
+        @This Builder wrapperSetNumberOfLegs() {
+            return setNumberOfLegs(3);
+        }
+
+        @This Builder wrapperSetHabitat() {
+            return setHabitat("dummy");
+        }
     }
 
     public static void buildSomethingWrong() {

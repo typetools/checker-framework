@@ -2,6 +2,7 @@
 
 // A test for a false positive discovered in a case study.
 import java.util.Optional;
+import org.checkerframework.common.returnsreceiver.qual.*;
 
 class BuilderMethodRef {
     @lombok.NonNull String foo;
@@ -53,6 +54,15 @@ class BuilderMethodRef {
         public BuilderMethodRefBuilder bar(final Object bar) {
             this.bar = bar;
             return this;
+        }
+
+        // wrapper methods to ensure @This annotations are getting added properly
+        @This BuilderMethodRefBuilder wrapperFoo() {
+            return foo("dummy");
+        }
+
+        @This BuilderMethodRefBuilder wrapperBar() {
+            return bar(new Object());
         }
 
         @java.lang.SuppressWarnings("all")
