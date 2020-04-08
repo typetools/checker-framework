@@ -23,9 +23,6 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     /** The {@code @}{@link This} annotation. */
     final AnnotationMirror THIS_ANNOTATION;
 
-    /** The supported fluent API generators */
-    private final EnumSet<FluentAPIGenerator> fluentAPIGenerators;
-
     /**
      * Create a new {@code ReturnsReceiverAnnotatedTypeFactory}.
      *
@@ -34,7 +31,6 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     public ReturnsReceiverAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         THIS_ANNOTATION = AnnotationBuilder.fromClass(elements, This.class);
-        fluentAPIGenerators = EnumSet.allOf(FluentAPIGenerator.class);
         this.postInit();
     }
 
@@ -69,9 +65,10 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
             if (!isConstructor(t)) {
                 AnnotatedTypeMirror returnType = t.getReturnType();
 
-                // if any FluentAPIGenerator indicates the method returns this,
-                // add an @This annotation on the return type
-                for (FluentAPIGenerator fluentAPIGenerator : fluentAPIGenerators) {
+                // If any FluentAPIGenerator indicates the method returns this,
+                // add an @This annotation on the return type.
+                for (FluentAPIGenerator fluentAPIGenerator :
+                        EnumSet.allOf(FluentAPIGenerator.class)) {
                     if (fluentAPIGenerator.returnsThis(t)) {
                         if (!returnType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
                             returnType.addAnnotation(THIS_ANNOTATION);
@@ -80,8 +77,8 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
                     }
                 }
 
-                // if return type is annotated with @This, add @This annotation
-                // to the receiver type
+                // If return type is annotated with @This, add @This annotation
+                // to the receiver type.
                 AnnotationMirror retAnnotation =
                         returnType.getAnnotationInHierarchy(THIS_ANNOTATION);
                 if (retAnnotation != null
@@ -97,8 +94,8 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     }
 
     /**
-     * @return {@code true} if the param {@code t} is a {@code Constructor}.
-     * @param t the {@link AnnotatedTypeMirror}
+     * @return {@code true} if the param {@code t} is a {@code Constructor}
+     * @param t a {@link AnnotatedTypeMirror}
      */
     private boolean isConstructor(AnnotatedTypeMirror.AnnotatedExecutableType t) {
         return t.getElement().getKind() == ElementKind.CONSTRUCTOR;

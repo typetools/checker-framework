@@ -11,7 +11,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Enum of supported fluent API generators. For such generators, the checker can automatically
- * add @This annotations on the appropriate method return types in the generated code.
+ * add @This annotations on method return types in the generated code.
  */
 public enum FluentAPIGenerator {
     AUTO_VALUE {
