@@ -1163,11 +1163,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return the most specific warning suppression key for the warning/error being printed
      */
     private String suppressionKey(String messageKey) {
-        if (this.processingEnv.getOptions().containsKey("showSuppressWarningKeys")) {
+        if (hasOption("showSuppressWarningKeys")) {
             return this.getSuppressWarningsKeys() + ":" + messageKey;
-        } else if (this.processingEnv
-                .getOptions()
-                .containsKey("requirePrefixInWarningSuppressions")) {
+        } else if (hasOption("requirePrefixInWarningSuppressions")) {
             // If the warning key must be prefixed with a checker key, then add that to the
             // warning key that is printed.
             String defaultKey = getDefaultWarningSuppressionKey();
@@ -1318,7 +1316,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         if (activeLints == null) {
-            activeLints = createActiveLints(processingEnv.getOptions());
+            activeLints = createActiveLints(getOptions());
         }
 
         if (activeLints.isEmpty()) {
