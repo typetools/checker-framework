@@ -17,5 +17,5 @@ import org.checkerframework.framework.qual.*;
 @DefaultQualifierInHierarchy
 @SubtypeOf({})
 @QualifierForLiterals(LiteralKind.NULL)
-@DefaultFor(types = Void.class, value = TypeUseLocation.LOWER_BOUND)
+@DefaultFor(value = TypeUseLocation.LOWER_BOUND)
 public @interface UnknownThis {}
