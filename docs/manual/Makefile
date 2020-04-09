@@ -40,7 +40,8 @@ annotating-libraries.tex \
 creating-a-checker.tex \
 external-tools.tex \
 faq.tex \
-troubleshooting.tex
+troubleshooting.tex \
+contributors.tex
 
 all: manual.pdf manual.html
 
