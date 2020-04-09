@@ -1,5 +1,6 @@
 package org.checkerframework.common.returnsreceiver.framework;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -8,6 +9,8 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+
+import java.util.Arrays;
 
 /** Enum of supported frameworks. */
 public enum FrameworkSupport {
@@ -22,6 +25,27 @@ public enum FrameworkSupport {
                                     enclosingElement.getAnnotationMirrors(),
                                     "com.google.auto.value.AutoValue.Builder")
                             != null;
+
+            System.out.println("calling the rr checker's returns this method on: " + element);
+            System.out.println("in AutoValue builder? " + inAutoValueBuilder);
+
+            System.out.println("enclosing element: " + enclosingElement);
+            for (AnnotationMirror anm : enclosingElement.getAnnotationMirrors()) {
+                System.out.println("has this annotation: " + AnnotationUtils.annotationName(anm));
+                if (AnnotationUtils.annotationName(anm).equals("com.google.auto.value.AutoValue.Builder")) {
+                    System.out.println("did change");
+                    inAutoValueBuilder = true;
+                } else {
+                    System.out.println("didn't change");
+                    System.out.println("AnnotationUtils.annotationName(anm): " + AnnotationUtils.annotationName(anm));
+                    System.out.println(AnnotationUtils.annotationName(anm).getClass());
+                    System.out.println("com.google.auto.value.AutoValue.Builder".compareTo(AnnotationUtils.annotationName(anm)));
+                    char[] actualBytes = AnnotationUtils.annotationName(anm).toCharArray();
+                    char[] myBytes = "com.google.auto.value.AutoValue.Builder".toCharArray();
+                    System.out.println("actual bytes: " + Arrays.toString(actualBytes));
+                    System.out.println("expected bytes: " + Arrays.toString(myBytes));
+                }
+            }
 
             if (!inAutoValueBuilder) {
                 // see if superclass is an AutoValue Builder, to handle generated code
