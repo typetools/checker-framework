@@ -23,8 +23,9 @@ signature-checker.tex \
 guieffect-checker.tex \
 units-checker.tex \
 signedness-checker.tex \
-constant-value-checker.tex \
 aliasing-checker.tex \
+purity-checker.tex \
+constant-value-checker.tex \
 reflection-checker.tex \
 reflection-inference-rules.tex \
 subtyping-checker.tex \
@@ -38,7 +39,8 @@ annotating-libraries.tex \
 creating-a-checker.tex \
 external-tools.tex \
 faq.tex \
-troubleshooting.tex
+troubleshooting.tex \
+contributors.tex
 
 all: manual.pdf manual.html
 
