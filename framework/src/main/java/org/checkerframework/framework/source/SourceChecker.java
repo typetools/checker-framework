@@ -783,6 +783,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.messagesProperties = getMessagesProperties();
 
         this.visitor = createSourceVisitor();
+
+        // Validate the lint flags.
+        createActiveLints(getOptions());
     }
 
     /** Output the warning about source level at most once. */

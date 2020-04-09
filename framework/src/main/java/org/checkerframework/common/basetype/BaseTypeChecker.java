@@ -89,13 +89,16 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     public void initChecker() {
         // initialize all checkers and share options as necessary
         for (BaseTypeChecker checker : getSubcheckers()) {
-            checker.initChecker();
             // We need to add all options that are activated for the set of subcheckers to
             // the individual checkers.
             checker.addOptions(super.getOptions());
             // Each checker should "support" all possible lint options - otherwise
             // subchecker A would complain about a lint option for subchecker B.
             checker.setSupportedLintOptions(this.getSupportedLintOptions());
+
+            // Set supported options and lints first, then call initChecker,
+            // which validates the passed options.
+            checker.initChecker();
         }
 
         if (!getSubcheckers().isEmpty()) {
