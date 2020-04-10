@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Spliterator;
 import java.util.function.Function;
 
-@SuppressWarnings("") // Just check for crashes.
+@SuppressWarnings("all") // Just check for crashes.
 public class Bug9<K, Z> {
     private transient Map<K, Collection<Z>> map;
 

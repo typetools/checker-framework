@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-@SuppressWarnings("")
+@SuppressWarnings("all")
 class Issue953bLambda {
     private static List<List<?>> strs = new ArrayList<>();
 

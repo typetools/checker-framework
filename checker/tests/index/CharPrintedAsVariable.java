@@ -1,7 +1,5 @@
 // Test case for https://github.com/typetools/checker-framework/issues/3167 .
 
-// @skip-test until the issue is fixed
-
 public class CharPrintedAsVariable {
     void m1(char c) {
         if (c <= 'A') {

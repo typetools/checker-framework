@@ -869,6 +869,8 @@ public class FlowExpressions {
             } else if (type.getKind() == TypeKind.LONG) {
                 assert value != null : "@AssumeAssertion(nullness): invariant";
                 return value.toString() + "L";
+            } else if (type.getKind() == TypeKind.CHAR) {
+                return "\'" + value + "\'";
             }
             return value == null ? "null" : value.toString();
         }

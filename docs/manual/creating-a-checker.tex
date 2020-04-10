@@ -815,6 +815,22 @@ Node)}.
 Then, call \<toString()> on the \<FlowExpressions.Receiver> object.
 
 
+\subsectionAndLabel{Repeatable annotations}{repeatable-annotations}
+
+Some pre- and post-condition annotations that have multiple elements (that
+is, annotations that take multiple arguments) should be repeatable, so that
+programmers can specify them more than once.  An example is
+\refqualclass{checker/nullness/qual}{EnsuresNonNullIf}; it could not be
+defined with each of its elements being a list, as (for example)
+\refqualclass{checker/nullness/qual}{KeyFor} is.
+
+Make an annotation \emph{A} repeatable by defining a nested annotation (within
+\emph{A}'s definition) named \<List>, and writing
+\<@Repeatable(\emph{A}.List.class)> on \emph{A}'s definition.
+% This convention is encoded in
+% AnnotatedTypeFactory.isListForRepeatedAnnotationImplementation .
+
+
 \sectionAndLabel{The checker class:  Compiler interface}{creating-compiler-interface}
 
 A checker's entry point is a subclass of
@@ -1734,12 +1750,6 @@ usually not shown.
   parameters and wildcards when they appear in warning messages.  Supplying
   this also implies \code{-AprintAllQualifiers}.
 
-\item \code{-Adetailedmsgtext}: Output error/warning messages in a
-  stylized format that is easy for tools to parse.  This is useful for
-  tools that run the Checker Framework and parse its output, such as IDE
-  plugins.  See the source code of \<SourceChecker.java> for details about
-  the format.
-
 \item \code{-Anomsgtext}: use message keys (such as ``\code{type.invalid}'')
 rather than full message text when reporting errors or warnings.  This is
 used by the Checker Framework's own tests, so they do not need to be
@@ -1752,6 +1762,20 @@ already reported the bug, and you want to continue using the checker on a
 large codebase without being inundated in stack traces.
 
 \end{itemize}
+
+
+\subsectionAndLabel{Format of output}{creating-debugging-options-format}
+
+\begin{itemize}
+
+\item \code{-Adetailedmsgtext}: Output error/warning messages in a
+  stylized format that is easy for tools to parse.  This is useful for
+  tools that run the Checker Framework and parse its output, such as IDE
+  plugins.  See the source code of \<SourceChecker.java> for details about
+  the format.
+
+\end{itemize}
+
 
 \subsectionAndLabel{Stub and JDK libraries}{creating-debugging-options-libraries}
 
@@ -1808,7 +1832,6 @@ about intermediate steps in method type argument inference
   if it includes a \code{.bat} extension on Windows) to re-execute the same compilation command.
   Note that this argument cannot be included in a file containing command-line arguments
   passed to the compiler using the @argfile syntax.
-
   Example usage: \code{-AoutputArgsToFile=\$HOME/scriptfile}
 
 \end{itemize}

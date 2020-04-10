@@ -82,7 +82,18 @@ checkCompilerMessages {
     ]
 }
 
+test {
+    useJUnit {
+        // These are run in task wholeProgramInferenceTests.
+        excludeCategories 'tests.WholeProgramInferenceTest'
+    }
+}
+
 task testWPI(type: Test) {
+    description 'Task that runs whole program inference and inserts the inferred annotations ' +
+            'into source code. (Used by wholeProgramInferenceTests.)'
+    dependsOn(compileTestJava)
+
     doFirst {
         delete("tests/whole-program-inference/annotated")
     }
@@ -99,6 +110,9 @@ task testWPI(type: Test) {
 }
 
 task testWPIValidate(type: Test) {
+    description 'Task that checks for expected errors output by testWPI task. ' +
+            '(Used by wholeProgramInferenceTests.)'
+
     outputs.upToDateWhen { false }
     include '**/WholeProgramInferenceValidationTest.class'
     testLogging {
@@ -113,7 +127,6 @@ task testWPIValidate(type: Test) {
 
 task wholeProgramInferenceTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for whole-program inference using .jaif files'
-    dependsOn(compileTestJava)
     dependsOn(testWPI)
     outputs.upToDateWhen { false }
 

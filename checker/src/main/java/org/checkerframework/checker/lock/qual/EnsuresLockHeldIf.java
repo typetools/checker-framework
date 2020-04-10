@@ -2,6 +2,7 @@ package org.checkerframework.checker.lock.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -21,10 +22,11 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = LockHeld.class)
 @InheritedAnnotation
+@Repeatable(EnsuresLockHeldIf.List.class)
 public @interface EnsuresLockHeldIf {
     /**
-     * Java expressions whose values are held after the method returns the given result.
-     *
+     * @return Java expressions whose values are locks that are held after the method returns the
+     *     given result
      * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
      *     Java expressions</a>
      */
@@ -33,6 +35,22 @@ public @interface EnsuresLockHeldIf {
     // that conditional postconditions have a field named "expression".
     String[] expression();
 
-    /** The return value of the method that needs to hold for the postcondition to hold. */
+    /** @return the return value of the method under which the postconditions hold */
     boolean result();
+
+    /**
+     * A wrapper annotation that makes the {@link EnsuresLockHeldIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresLockHeldIf} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @ConditionalPostconditionAnnotation(qualifier = LockHeld.class)
+    @InheritedAnnotation
+    @interface List {
+        /** @return the repeatable annotations */
+        EnsuresLockHeldIf[] value();
+    }
 }

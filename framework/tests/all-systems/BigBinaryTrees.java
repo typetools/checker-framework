@@ -2,7 +2,7 @@
 // acceptable amount of time.  See comment on TreeAnnotator#visitBinary.
 
 // Checkers may correctly issue errors, so suppress them.
-@SuppressWarnings("")
+@SuppressWarnings("all")
 public class BigBinaryTrees {
     String string1;
     String string2;
