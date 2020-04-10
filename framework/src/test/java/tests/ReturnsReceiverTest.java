@@ -10,9 +10,7 @@ import org.junit.runners.Parameterized.Parameters;
  * Test runner for tests of the Returns Receiver Checker.
  *
  * <p>Tests appear as Java files in the {@code tests/returnsreceiver} folder. To add a new test
- * case, create a Java file in that directory. The file contains "// ::" comments to indicate
- * expected errors and warnings; see
- * https://github.com/typetools/checker-framework/blob/master/checker/tests/README .
+ * case, create a Java file in that directory.
  */
 public class ReturnsReceiverTest extends CheckerFrameworkPerDirectoryTest {
     public ReturnsReceiverTest(List<File> testFiles) {

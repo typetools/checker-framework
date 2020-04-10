@@ -6,7 +6,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Wrapper class for {@link FluentAPIGenerators} Enum to keep it private. */
@@ -26,14 +28,14 @@ public class FluentAPIGenerator {
 
             /**
              * The qualified name of the AutoValue Builder annotation. This needed to be constructed
-             * dynamically due to side effect of the shadow plugin. See {@link
+             * dynamically due to a side effect of the shadow plugin. See {@link
              * org.checkerframework.common.returnsreceiver.FluentAPIGenerator.FluentAPIGenerators#AUTO_VALUE#getAutoValueBuilderCanonicalName()}
              * for more information.
              */
             private final String AUTO_VALUE_BUILDER = getAutoValueBuilderCanonicalName();
 
             @Override
-            public boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t) {
+            public boolean returnsThis(AnnotatedExecutableType t) {
                 ExecutableElement element = t.getElement();
                 Element enclosingElement = element.getEnclosingElement();
                 boolean inAutoValueBuilder =
@@ -57,7 +59,7 @@ public class FluentAPIGenerator {
                 if (inAutoValueBuilder) {
                     AnnotatedTypeMirror returnType = t.getReturnType();
                     if (returnType == null) {
-                        throw new RuntimeException("Return type cannot be null: " + t);
+                        throw new BugInCF("Return type cannot be null: " + t);
                     }
                     return enclosingElement.equals(
                             TypesUtils.getTypeElement(returnType.getUnderlyingType()));
@@ -80,7 +82,7 @@ public class FluentAPIGenerator {
         /** <a href="https://projectlombok.org/features/Builder">Project Lombok</a>. */
         LOMBOK {
             @Override
-            public boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t) {
+            public boolean returnsThis(AnnotatedExecutableType t) {
                 ExecutableElement element = t.getElement();
                 Element enclosingElement = element.getEnclosingElement();
                 boolean inLombokBuilder =
@@ -94,7 +96,7 @@ public class FluentAPIGenerator {
                 if (inLombokBuilder) {
                     AnnotatedTypeMirror returnType = t.getReturnType();
                     if (returnType == null) {
-                        throw new RuntimeException("Return type cannot be null: " + t);
+                        throw new BugInCF("Return type cannot be null: " + t);
                     }
                     return enclosingElement.equals(
                             TypesUtils.getTypeElement(returnType.getUnderlyingType()));
@@ -104,21 +106,22 @@ public class FluentAPIGenerator {
         };
 
         /**
-         * @param t the method to check
+         * @param t the annotated type of the method signature
          * @return {@code true} if the method was created by this generator and returns {@code this}
          */
-        protected abstract boolean returnsThis(AnnotatedTypeMirror.AnnotatedExecutableType t);
+        protected abstract boolean returnsThis(AnnotatedExecutableType t);
     }
 
     /**
-     * @param t the method to check
+     * @param t the annotated type of the method signature
      * @return {@code true} if the method was created by any of the generators defined in {@link
      *     FluentAPIGenerators} and returns {@code this}
      */
-    public static boolean checkForFluentAPIGenerators(
-            AnnotatedTypeMirror.AnnotatedExecutableType t) {
+    public static boolean checkForFluentAPIGenerators(AnnotatedExecutableType t) {
         for (FluentAPIGenerators fluentAPIGenerator : FluentAPIGenerators.values()) {
-            if (fluentAPIGenerator.returnsThis(t)) return true;
+            if (fluentAPIGenerator.returnsThis(t)) {
+                return true;
+            }
         }
         return false;
     }
