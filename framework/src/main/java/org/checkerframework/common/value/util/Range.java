@@ -384,7 +384,7 @@ public class Range {
     private static final long BYTE_WIDTH = BYTE_EVERYTHING.width();
 
     /**
-     * Converts a this range to a 8-bit byte range.
+     * Converts this range to a 8-bit byte range.
      *
      * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Byte range, then
      * that bound is set to the bound of the Byte range.
