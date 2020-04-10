@@ -445,9 +445,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The enabled lint options. */
     private Set<String> activeLints;
 
-    /** Lint options that have already been warned about. */
-    private final Set<String> warnedOnLint = new HashSet<>();
-
     /**
      * The active options for this checker. This is a processed version of {@link
      * ProcessingEnvironment#getOptions()}: If the option is of the form "-ACheckerName_key=value"
@@ -1263,15 +1260,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     && !(s.charAt(0) == '-'
                             && this.getSupportedLintOptions().contains(s.substring(1)))
                     && !s.equals("all")
-                    && !s.equals("none")
-                    && !warnedOnLint.contains(s)) {
+                    && !s.equals("none")) {
                 this.messager.printMessage(
                         WARNING,
                         "Unsupported lint option: "
                                 + s
                                 + "; All options: "
                                 + this.getSupportedLintOptions());
-                warnedOnLint.add(s);
             }
 
             activeLint.add(s);
