@@ -126,12 +126,13 @@ public class ASceneWrapper {
      * Write the scene wrapped by this object to a file at the given path.
      *
      * @param jaifPath the path of the file to be written, but ending in ".jaif". If {@code
-     *     outputformat} is not JAIF, the path will be modified to match.
+     *     outputformat} is not {@code JAIF}, the path will be modified to match.
      * @param annosToIgnore which annotations should be ignored in which contexts
      * @param outputFormat the output format to use
      */
     public void writeToFile(
             String jaifPath, AnnotationsInContexts annosToIgnore, OutputFormat outputFormat) {
+        assert jaifPath.endsWith(".jaif");
         AScene scene = theScene.clone();
         removeAnnosFromScene(scene, annosToIgnore);
         scene.prune();
@@ -156,6 +157,8 @@ public class ASceneWrapper {
                         break;
                     case JAIF:
                         IndexFileWriter.write(scene, new FileWriter(filepath));
+                    default:
+                        throw new BugInCF("Unhandled outputFormat " + outputFormat);
                 }
             } catch (IOException e) {
                 throw new UserError("Problem while writing %s: %s", filepath, e.getMessage());

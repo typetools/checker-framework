@@ -65,8 +65,8 @@ import scenelib.annotations.io.IndexFileWriter;
  */
 public final class SceneToStubWriter {
 
-    /** A pattern matching an inner class name composed of only digits. */
-    private static final Pattern digitPattern = Pattern.compile("\\$\\d+(\\$|$)");
+    /** A pattern matching the name of an anonymous inner class, or a class nested within one. */
+    private static final Pattern anonymousInnerClassPattern = Pattern.compile("\\$\\d+(\\$|$)");
 
     /** How far to indent when writing members of a stub file. */
     private static final String INDENT = "  ";
@@ -179,15 +179,16 @@ public final class SceneToStubWriter {
      * derivatives represent arrays differently than scene-lib does.
      *
      * <p>If we label an array as such: (0) int (1) [] (2) [] (3) [], then level 0 is the component
-     * type, and level 3 is the "outermost" type. Scene-lib's representation of this type is a
-     * nested ATypeElement, with this structure: (1) - (2) - (3) - (0). The TypeMirror, on the other
-     * hand, represents the type like this: (3) - (2) - (1) - (0), for ease of printing. This method
-     * therefore descends through the scenelib structure until it finds the component, adding each
-     * item to a list. It then reverses the list, and then adds the component type to the end.
+     * type, level 1 is the "outermost" type, and 3 is the "innermost" array type. Scene-lib's
+     * representation of this type is a nested ATypeElement, with this structure: (1) - (2) - (3) -
+     * (0). The TypeMirror, on the other hand, represents the type like this: (3) - (2) - (1) - (0),
+     * for ease of printing. This method therefore descends through the scenelib structure until it
+     * finds the component, adding each item to a list. It then reverses the list, and then adds the
+     * component type to the end.
      *
      * <p><a
-     * href="https://checkerframework.org/jsr308/specification/java-annotation-design.html#array-syntax">This
-     * document</a> explains the reasoning for scenelib's representation.
+     * href="https://checkerframework.org/jsr308/specification/java-annotation-design.html#array-syntax">The
+     * JSR 308 specification</a> explains the reasoning for scenelib's representation.
      *
      * @param scenelibRep scenelib's representation of an array type
      * @return a list of the array levels in scenelib's representation, but in the order used by

@@ -44,9 +44,9 @@ public class ElementUtils {
      * Returns the innermost type element enclosing the given element.
      *
      * @param elem the enclosed element of a class
-     * @return the innermost type element
+     * @return the innermost type element, or null if no type element encloses {@code elem}
      */
-    public static TypeElement enclosingClass(final Element elem) {
+    public static @Nullable TypeElement enclosingClass(final Element elem) {
         Element result = elem;
         while (result != null && !isClassElement(result)) {
             @Nullable Element encl = result.getEnclosingElement();
