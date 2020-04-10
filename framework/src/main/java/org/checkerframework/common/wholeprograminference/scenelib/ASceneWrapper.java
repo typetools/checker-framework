@@ -157,6 +157,7 @@ public class ASceneWrapper {
                         break;
                     case JAIF:
                         IndexFileWriter.write(scene, new FileWriter(filepath));
+                        break;
                     default:
                         throw new BugInCF("Unhandled outputFormat " + outputFormat);
                 }

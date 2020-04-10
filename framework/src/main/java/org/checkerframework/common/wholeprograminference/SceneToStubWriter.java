@@ -629,7 +629,7 @@ public final class SceneToStubWriter {
 
         printFields(aClassWrapper, printWriter, indentLevel);
 
-        if (aClassWrapper.getMethods().keySet().size() != 0) {
+        if (!aClassWrapper.getMethods().isEmpty()) {
             // print method signatures
             printWriter.println(indentLevel + "// methods:");
             printWriter.println();
