@@ -2,7 +2,8 @@
 # Make will silently continue if that file does not exist.
 -include Makefile.user
 
-# To regenerate this list, run:   latex-process-inputs -makefilelist manual.tex
+# To regenerate this list, run:
+# ../../checker/bin-devel/.plume-scripts/latex-process-inputs -makefilelist manual.tex
 TEX_FILES = \
 manual.tex \
 manual-style.tex \
@@ -69,9 +70,8 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
 
 .PHONY: contributors.tex
-# The `git-authors` script is in https://github.com/plume-lib/plume-scripts
 contributors.tex:
-	git-authors --latex --punctuation > contributors.tex
+	../../checker/bin-devel/.plume-scripts/git-authors --latex --punctuation > contributors.tex
 
 ../api:
 	cd ../.. && ./gradlew allJavadoc
