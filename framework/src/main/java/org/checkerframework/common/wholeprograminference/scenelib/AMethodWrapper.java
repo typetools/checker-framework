@@ -82,8 +82,8 @@ public class AMethodWrapper {
     }
 
     /**
-     * Obtain the representation of the parameter at the given index, which can be further operated
-     * on to e.g. add a type annotation.
+     * Obtain the parameter at the given index, which can be further operated on to e.g. add a type
+     * annotation.
      *
      * @param i the parameter index (first parameter is zero)
      * @param type the type of the parameter

@@ -74,8 +74,8 @@ public class AClassWrapper {
     }
 
     /**
-     * Obtain the representation of the given method, which can be further operated on to e.g. add
-     * information about a parameter.
+     * Obtain the given method, which can be further operated on to e.g. add information about a
+     * parameter.
      *
      * <p>Results are interned.
      *
@@ -170,7 +170,7 @@ public class AClassWrapper {
     }
 
     /**
-     * Checks if the given class in this class hierarchy is an enum or not.
+     * Checks if the given class is an enum or not.
      *
      * @param className the simple class name of this class or one of its outer classes
      * @return true if the given class is an enum

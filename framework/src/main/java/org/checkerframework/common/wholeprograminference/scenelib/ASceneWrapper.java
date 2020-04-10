@@ -166,9 +166,9 @@ public class ASceneWrapper {
     }
 
     /**
-     * Obtain the representation of the given class, which can be further operated on to e.g. add
-     * information about a method. This method also updates the additional information stored about
-     * the class using the given ClassSymbol, if it is non-null.
+     * Obtain the given class, which can be further operated on to e.g. add information about a
+     * method. This method also updates the additional information stored about the class using the
+     * given ClassSymbol, if it is non-null.
      *
      * <p>Results are interned.
      *
@@ -242,7 +242,7 @@ public class ASceneWrapper {
      * Avoid using this if possible; use the other methods of this class unless you absolutely need
      * an AScene.
      *
-     * @return the representation of this scene using only the AScene
+     * @return the AScene representation of this
      */
     public AScene getAScene() {
         return theScene;
