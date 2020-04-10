@@ -317,7 +317,7 @@ public final class SceneToStubWriter {
     /**
      * Formats the given type for printing in Java source code.
      *
-     * @param type the scene-lib representation of the type, or null if only the bare type is to be
+     * @param aType the scene-lib representation of the type, or null if only the bare type is to be
      *     printed
      * @param javacType the javac representation of the type
      * @return the type as it would appear in Java source code, followed by a trailing space
