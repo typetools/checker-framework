@@ -65,7 +65,10 @@ import scenelib.annotations.io.IndexFileWriter;
  */
 public final class SceneToStubWriter {
 
-    /** A pattern matching the name of an anonymous inner class, or a class nested within one. */
+    /**
+     * A pattern matching the name of an anonymous inner class, or a class nested within one. An
+     * anonymous inner class has a basename like Outer$1.
+     */
     private static final Pattern anonymousInnerClassPattern = Pattern.compile("\\$\\d+(\\$|$)");
 
     /** How far to indent when writing members of a stub file. */
@@ -360,7 +363,7 @@ public final class SceneToStubWriter {
         }
 
         if (basetypeToPrint.contains("[")) {
-            // receivers cannot be arrays, so using the javacType here is safe
+            // An array is not a receiver, so using the javacType here is safe.
             return formatArrayType(aType, (ArrayType) javacType);
         }
 
@@ -405,7 +408,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Return true if the given annotation is an internal JDK annotations, whose name includes '+'.
+     * Return true if the given annotation is an internal JDK annotation, whose name includes '+'.
      *
      * @param annotationName the name of the annotation
      * @return true iff this is an internal JDK annotation
@@ -446,7 +449,7 @@ public final class SceneToStubWriter {
             printWriter.println(" {");
             if (aClass.isEnum(nameToPrint) && i != classNames.length - 1) {
                 // Print a blank set of enum constants if this is an outer enum.
-                printWriter.println(indents(i + 1) + ";");
+                printWriter.println(indents(i + 1) + "/* omitted enum constants */ ;");
             }
             printWriter.println();
         }
@@ -516,6 +519,7 @@ public final class SceneToStubWriter {
         String methodName = aMethod.getMethodName();
         // Use Java syntax for constructors.
         if ("<init>".equals(methodName)) {
+            // Set methodName, but don't output a return type.
             methodName = basename;
         } else {
             printWriter.print(formatType(aMethod.returnType, aMethodWrapper.getReturnType()));
@@ -524,7 +528,6 @@ public final class SceneToStubWriter {
         printWriter.print("(");
 
         StringJoiner parameters = new StringJoiner(", ");
-
         if (!aMethod.receiver.type.tlAnnotationsHere.isEmpty()) {
             // Only output the receiver if it has an annotation.
             parameters.add(
@@ -590,9 +593,8 @@ public final class SceneToStubWriter {
         }
 
         // Do not attempt to print stubs for anonymous inner classes or their inner classes, because
-        // the stub parser cannot read them. (An anonymous inner class has a basename like Outer$1,
-        // so this check ensures that no single class name is exclusively composed of digits.)
-        if (digitPattern.matcher(basename).find()) {
+        // the stub parser cannot read them.
+        if (anonymousInnerClassPattern.matcher(basename).find()) {
             return;
         }
 
