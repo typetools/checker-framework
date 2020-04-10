@@ -377,7 +377,7 @@ configurations {
 }
 dependencies {
     // https://mvnrepository.com/artifact/org.plumelib/require-javadoc
-    requireJavadoc group: 'org.plumelib', name: 'require-javadoc', version: '0.1.2'
+    requireJavadoc group: 'org.plumelib', name: 'require-javadoc', version: '0.3.0'
 }
 
 
