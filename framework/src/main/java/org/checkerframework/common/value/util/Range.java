@@ -302,8 +302,11 @@ public class Range {
         if (this.isNothing()) {
             return this;
         }
+        if (INT_EVERYTHING.contains(this)) {
+            return this;
+        }
         if (ignoreOverflow) {
-            return create(Math.max(from, Integer.MIN_VALUE), Math.min(to, Integer.MAX_VALUE));
+            return create(clipToRange(from, INT_EVERYTHING), clipToRange(to, INT_EVERYTHING));
         }
         if (this.isWiderThan(INT_WIDTH)) {
             return INT_EVERYTHING;
@@ -331,8 +334,11 @@ public class Range {
         if (this.isNothing()) {
             return this;
         }
+        if (SHORT_EVERYTHING.contains(this)) {
+            return this;
+        }
         if (ignoreOverflow) {
-            return create(Math.max(from, Short.MIN_VALUE), Math.min(to, Short.MAX_VALUE));
+            return create(clipToRange(from, SHORT_EVERYTHING), clipToRange(to, SHORT_EVERYTHING));
         }
         if (this.isWiderThan(SHORT_WIDTH)) {
             // short is promoted to int before the operation so no need for explicit casting
@@ -361,8 +367,11 @@ public class Range {
         if (this.isNothing()) {
             return this;
         }
+        if (CHAR_EVERYTHING.contains(this)) {
+            return this;
+        }
         if (ignoreOverflow) {
-            return create(Math.max(from, Character.MIN_VALUE), Math.min(to, Character.MAX_VALUE));
+            return create(clipToRange(from, CHAR_EVERYTHING), clipToRange(to, CHAR_EVERYTHING));
         }
         if (this.isWiderThan(CHAR_WIDTH)) {
             // char is promoted to int before the operation so no need for explicit casting
@@ -391,14 +400,34 @@ public class Range {
         if (this.isNothing()) {
             return this;
         }
+        if (BYTE_EVERYTHING.contains(this)) {
+            return this;
+        }
         if (ignoreOverflow) {
-            return create(Math.max(from, Byte.MIN_VALUE), Math.min(to, Byte.MAX_VALUE));
+            return create(clipToRange(from, BYTE_EVERYTHING), clipToRange(to, BYTE_EVERYTHING));
         }
         if (this.isWiderThan(BYTE_WIDTH)) {
             // byte is promoted to int before the operation so no need for explicit casting
             return BYTE_EVERYTHING;
         }
         return createOrElse((byte) this.from, (byte) this.to, BYTE_EVERYTHING);
+    }
+
+    /**
+     * Return x clipped to the given range; out-of-range values become extremal values. Appropriate
+     * only when {@link #ignoreOverflow} is true.
+     *
+     * @param x a value
+     * @return a value in the range [Integer.MIN_VALUE .. Integer.MAX_VALUE]
+     */
+    private long clipToRange(long x, Range r) {
+        if (x < r.from) {
+            return r.from;
+        } else if (x > r.to) {
+            return r.to;
+        } else {
+            return x;
+        }
     }
 
     /**
