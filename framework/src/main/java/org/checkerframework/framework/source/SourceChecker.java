@@ -787,8 +787,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         this.visitor = createSourceVisitor();
 
-        // Validate the lint flags.
-        this.activeLints = createActiveLints(getOptions());
+        // Validate the lint flags, if they haven't been used already.
+        if (this.activeLints == null) {
+            this.activeLints = createActiveLints(getOptions());
+        }
     }
 
     /** Output the warning about source level at most once. */
