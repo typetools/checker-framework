@@ -169,8 +169,8 @@ public final class SceneToStubWriter {
      * @return the type formatted to be written to Java source code, followed by a space character
      */
     private static String formatArrayType(ATypeElement scenelibRep, ArrayType javacRep) {
-        List<ATypeElement> scenelibRepInOrder = getSceneLibRepInOrder(scenelibRep);
-        return formatArrayTypeImpl(scenelibRepInOrder, javacRep);
+        List<ATypeElement> scenelibRepInJavacOrder = getSceneLibRepInJavacOrder(scenelibRep);
+        return formatArrayTypeImpl(scenelibRepInJavacOrder, javacRep);
     }
 
     /**
@@ -194,7 +194,7 @@ public final class SceneToStubWriter {
      * @return a list of the array levels in scenelib's representation, but in the order used by
      *     javac
      */
-    private static List<ATypeElement> getSceneLibRepInOrder(ATypeElement scenelibRep) {
+    private static List<ATypeElement> getSceneLibRepInJavacOrder(ATypeElement scenelibRep) {
         List<ATypeElement> result = new ArrayList<>();
         ATypeElement array = scenelibRep;
         ATypeElement component = getNextArrayLevel(scenelibRep);
@@ -215,16 +215,17 @@ public final class SceneToStubWriter {
      * either calls itself recursively (if the component is an array) or formats the component type
      * using {@link #formatType(ATypeElement, TypeMirror)}.
      *
-     * @param scenelibRepInOrder the scenelib representation, reordered to match javac's order. See
-     *     {@link #getSceneLibRepInOrder(ATypeElement)} for an explanation of why this is necessary.
+     * @param scenelibRepInJavacOrder the scenelib representation, reordered to match javac's order.
+     *     See {@link #getSceneLibRepInJavacOrder(ATypeElement)} for an explanation of why this is
+     *     necessary.
      * @param javacRep the javac representation of the array type
      * @return the type formatted to be written to Java source code, followed by a space character
      */
     private static String formatArrayTypeImpl(
-            List<ATypeElement> scenelibRepInOrder, ArrayType javacRep) {
+            List<ATypeElement> scenelibRepInJavacOrder, ArrayType javacRep) {
         TypeMirror javacComponent = javacRep.getComponentType();
-        ATypeElement scenelibRep = scenelibRepInOrder.get(0);
-        ATypeElement scenelibComponent = scenelibRepInOrder.get(1);
+        ATypeElement scenelibRep = scenelibRepInJavacOrder.get(0);
+        ATypeElement scenelibComponent = scenelibRepInJavacOrder.get(1);
         String result = "";
         List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
         for (AnnotationMirror explicitAnno : explicitAnnos) {
@@ -237,7 +238,7 @@ public final class SceneToStubWriter {
         result += "[] ";
         if (javacComponent.getKind() == TypeKind.ARRAY) {
             return formatArrayTypeImpl(
-                            scenelibRepInOrder.subList(1, scenelibRepInOrder.size()),
+                            scenelibRepInJavacOrder.subList(1, scenelibRepInJavacOrder.size()),
                             (ArrayType) javacComponent)
                     + result;
         }
@@ -319,11 +320,11 @@ public final class SceneToStubWriter {
      * @return the type as it would appear in Java source code, followed by a trailing space
      */
     private static String formatType(
-            final @Nullable ATypeElement type, final TypeMirror javacType) {
+            final @Nullable ATypeElement aType, final TypeMirror javacType) {
         // TypeMirror#toString prints multiple annotations on a single type
         // separated by commas rather than by whitespace, as is required in source code.
         String basetypeToPrint = javacType.toString().replaceAll(",@", " @");
-        return formatType(type, javacType, basetypeToPrint);
+        return formatType(aType, javacType, basetypeToPrint);
     }
 
     /**
@@ -332,7 +333,7 @@ public final class SceneToStubWriter {
      * basetypeToPrint} instead of the javac type. The other version of this method should be
      * preferred in every other case.
      *
-     * @param type the scene-lib representation of the type, or null if only the bare type is to be
+     * @param aType the scene-lib representation of the type, or null if only the bare type is to be
      *     printed
      * @param javacType the javac representation of the type, or null if this is a receiver
      *     parameter
@@ -340,7 +341,7 @@ public final class SceneToStubWriter {
      * @return the type as it would appear in Java source code, followed by a trailing space
      */
     private static String formatType(
-            final @Nullable ATypeElement type,
+            final @Nullable ATypeElement aType,
             @Nullable TypeMirror javacType,
             String basetypeToPrint) {
         // anonymous static classes shouldn't be printed with the "anonymous" tag that the AScene
@@ -360,13 +361,13 @@ public final class SceneToStubWriter {
 
         if (basetypeToPrint.contains("[")) {
             // receivers cannot be arrays, so using the javacType here is safe
-            return formatArrayType(type, (ArrayType) javacType);
+            return formatArrayType(aType, (ArrayType) javacType);
         }
 
-        if (type == null) {
+        if (aType == null) {
             return basetypeToPrint + " ";
         } else {
-            return formatAnnotations(type.tlAnnotationsHere) + basetypeToPrint + " ";
+            return formatAnnotations(aType.tlAnnotationsHere) + basetypeToPrint + " ";
         }
     }
 
