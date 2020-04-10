@@ -418,7 +418,8 @@ public class Range {
      * only when {@link #ignoreOverflow} is true.
      *
      * @param x a value
-     * @return a value in the range [Integer.MIN_VALUE .. Integer.MAX_VALUE]
+     * @param r a range
+     * @return a value within the range; if x is outside r, returns the min or max of r
      */
     private long clipToRange(long x, Range r) {
         if (x < r.from) {
