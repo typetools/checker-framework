@@ -151,14 +151,16 @@ public class WholeProgramInferenceScenesStorage {
     }
 
     /**
-     * Returns the AClass in an AScene, given a className and a jaifPath.
+     * Returns the scene-lib representation of the given className in the scene identified by the
+     * given jaifPath.
      *
      * @param className the name of the class to get, in binary form
      * @param jaifPath the path to the jaif file that would represent that class (must end in
      *     ".jaif")
-     * @param classSymbol optionally, the ClassSymbol representing the class. Used to set the extra
-     *     data stored on an AClassWrapper.
-     * @return the scene-lib representation of the class, wrapped with metadata
+     * @param classSymbol optionally, the ClassSymbol representing the class. Used to set the symbol
+     *     information stored on an AClassWrapper.
+     * @return a version of the scene-lib representation of the class, augmented with symbol
+     *     information if {@code classSymbol} was non-null
      */
     protected AClassWrapper getAClass(
             @BinaryName String className, String jaifPath, @Nullable ClassSymbol classSymbol) {
@@ -168,12 +170,15 @@ public class WholeProgramInferenceScenesStorage {
     }
 
     /**
-     * Returns the AClass in an AScene, given a className and a jaifPath.
+     * Returns the scene-lib representation of the given className in the scene identified by the
+     * given jaifPath.
      *
      * @param className the name of the class to get, in binary form
      * @param jaifPath the path to the jaif file that would represent that class (must end in
      *     ".jaif")
-     * @return the scene-lib representation of the class, wrapped with metadata
+     * @return the scene-lib representation of the class, possibly augmented with symbol information
+     *     if {@link #getAClass(String, String, ClassSymbol)} has already been called with a
+     *     non-null third argument.
      */
     protected AClassWrapper getAClass(@BinaryName String className, String jaifPath) {
         return getAClass(className, jaifPath, null);

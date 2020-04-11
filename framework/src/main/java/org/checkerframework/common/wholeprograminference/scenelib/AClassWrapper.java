@@ -22,7 +22,7 @@ import scenelib.annotations.util.JVMNames;
 
 /**
  * A wrapper for the AClass class from scene-lib that carries additional name and type information
- * that is useful during WPI.
+ * (referred to as "symbol information" elsewhere) that is useful during WPI.
  *
  * <p>This would be better as a subclass of AClass.
  */
@@ -36,12 +36,6 @@ public class AClassWrapper {
      * that are enums.
      */
     private HashSet<String> enums = new HashSet<>();
-
-    /**
-     * Whether the additional data that this class should store has been provided. It is an error if
-     * this variable is not set to true before the class is printed by {@link SceneToStubWriter}.
-     */
-    private boolean additionalDataProvided = false;
 
     /**
      * The methods of the class. Keys are the signatures of methods, entries are AMethodWrapper
@@ -75,7 +69,7 @@ public class AClassWrapper {
 
     /**
      * Obtain the given method, which can be further operated on to e.g. add information about a
-     * parameter.
+     * parameter. WPI uses this to update the types in the method signature.
      *
      * <p>Results are interned.
      *
@@ -104,7 +98,7 @@ public class AClassWrapper {
     }
 
     /**
-     * Call before doing anything with a field. Fetches or creates an AFieldWrapper object.
+     * Obtain the given field, which can be further operated on.
      *
      * <p>Results are interned.
      *
@@ -166,7 +160,6 @@ public class AClassWrapper {
             throw new BugInCF(
                     "setTypeElement(%s): type is already %s", typeElement, this.typeElement);
         }
-        this.additionalDataProvided = true;
     }
 
     /**
@@ -189,13 +182,16 @@ public class AClassWrapper {
     }
 
     /**
-     * Marks the given simple class name as an enum.
+     * Marks the given simple class name as an enum. This method is used to mark outer classes of
+     * this class that have not been vivified, meaning that only their names are available.
+     *
+     * <p>Note that this code will misbehave if a class has the same name as its inner enum, or
+     * vice-versa, because this uses simple names.
      *
      * @param className the simple class name of this class or one of its outer classes
      */
     public void markAsEnum(String className) {
         enums.add(className);
-        this.additionalDataProvided = true;
     }
 
     /**
@@ -223,14 +219,13 @@ public class AClassWrapper {
                     this.enumConstants, enumConstants);
         }
         this.enumConstants = new ArrayList<>(enumConstants);
-        this.additionalDataProvided = true;
     }
 
     /**
      * Can {@link SceneToStubWriter} print this class? If so, do nothing. If not, throw an error.
      */
     public void checkIfPrintable() {
-        if (!additionalDataProvided) {
+        if (typeElement == null) {
             throw new BugInCF(
                     "Tried printing an unprintable class to a stub file during WPI: "
                             + theClass.className);

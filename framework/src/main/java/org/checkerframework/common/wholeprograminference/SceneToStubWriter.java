@@ -1,5 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
+import com.google.common.collect.ComparisonChain;
 import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -48,17 +49,15 @@ import scenelib.annotations.io.IndexFileWriter;
  * String)}. This class is the equivalent of {@code IndexFileWriter} from the Annotation File
  * Utilities, but outputs the results in the stub file format instead of jaif format.
  *
- * <p>This class works by taking as input a scene-lib representation of a type augmented with some
- * additional information, stored as printable strings. It walks the scene-lib representation
+ * <p>This class works by taking as input a scene-lib representation of a type augmented with
+ * additional information, stored in javac's format (e.g. as TypeMirrors or Elements). The A*Wrapper
+ * classes ({@link ASceneWrapper}, {@link AClassWrapper}, {@link AMethodWrapper}, and {@link
+ * AFieldWrapper}) store this additional information. This class walks the scene-lib representation
  * structurally and outputs the stub file as a string, by combining the information scene-lib stores
  * with the information gathered elsewhere.
  *
- * <p>The additional information is stored in the {@link ASceneWrapper}, {@link AClassWrapper},
- * {@link AMethodWrapper}, and {@link AFieldWrapper} classes. See the documentation of each of those
- * classes for exactly what additional information is stored.
- *
- * <p>This approach is used because the scene-lib representation of a type does not have enough
- * information to print full types.
+ * <p>The additional information is necessary because the scene-lib representation of a type does
+ * not have enough information to print full types.
  *
  * <p>This writer is used instead of {@code IndexFileWriter} if the {@code -Ainfer=stubs}
  * command-line argument is present.
@@ -172,7 +171,16 @@ public final class SceneToStubWriter {
      * @return the type formatted to be written to Java source code, followed by a space character
      */
     private static String formatArrayType(ATypeElement scenelibRep, ArrayType javacRep) {
-        List<ATypeElement> scenelibRepInJavacOrder = getSceneLibRepInJavacOrder(scenelibRep);
+        int levels =
+                2; // 1 for the final non-array component type, another for the original array type.
+        TypeMirror componentType = javacRep.getComponentType();
+        while (componentType.getKind() == TypeKind.ARRAY) {
+            componentType = ((ArrayType) componentType).getComponentType();
+            levels++;
+        }
+
+        List<ATypeElement> scenelibRepInJavacOrder =
+                getSceneLibRepInJavacOrder(scenelibRep, levels);
         return formatArrayTypeImpl(scenelibRepInJavacOrder, javacRep);
     }
 
@@ -194,20 +202,23 @@ public final class SceneToStubWriter {
      * JSR 308 specification</a> explains the reasoning for scenelib's representation.
      *
      * @param scenelibRep scenelib's representation of an array type
+     * @param levels the number of component types the type should have, derived from the javac
+     *     representation
      * @return a list of the array levels in scenelib's representation, but in the order used by
-     *     javac
+     *     javac. Guaranteed to have exactly {@code levels} entries.
      */
-    private static List<ATypeElement> getSceneLibRepInJavacOrder(ATypeElement scenelibRep) {
+    private static List<ATypeElement> getSceneLibRepInJavacOrder(
+            ATypeElement scenelibRep, int levels) {
         List<ATypeElement> result = new ArrayList<>();
         ATypeElement array = scenelibRep;
         ATypeElement component = getNextArrayLevel(scenelibRep);
-        do {
+        for (int i = 0; i < levels - 1; i++) {
             result.add(array);
             array = component;
             component = getNextArrayLevel(array);
-        } while (component != null);
+        }
         Collections.reverse(result);
-        // at this point, array has become the actual base component, because component is null
+        // at this point, array has become the actual base component
         result.add(array);
         return result;
     }
@@ -317,8 +328,8 @@ public final class SceneToStubWriter {
     /**
      * Formats the given type for printing in Java source code.
      *
-     * @param aType the scene-lib representation of the type, or null if only the bare type is to be
-     *     printed
+     * @param aType the scene-lib representation of the type, or null if only the unannotated type
+     *     is to be printed
      * @param javacType the javac representation of the type
      * @return the type as it would appear in Java source code, followed by a trailing space
      */
@@ -336,8 +347,8 @@ public final class SceneToStubWriter {
      * basetypeToPrint} instead of the javac type. The other version of this method should be
      * preferred in every other case.
      *
-     * @param aType the scene-lib representation of the type, or null if only the bare type is to be
-     *     printed
+     * @param aType the scene-lib representation of the type, or null if only the unannotated type
+     *     is to be printed
      * @param javacType the javac representation of the type, or null if this is a receiver
      *     parameter
      * @param basetypeToPrint the string representation of the type
@@ -564,10 +575,20 @@ public final class SceneToStubWriter {
         importDefWriter.visit();
         printWriter.println();
 
-        // sort by package name so that output is deterministic and default package
-        // comes first
+        // Sort by package name first so that output is deterministic and default package
+        // comes first; within package sort by class name.
         List<@BinaryName String> classes = new ArrayList<>(scene.getClasses().keySet());
-        Collections.sort(classes, Comparator.comparing(SceneToStubWriter::packagePart));
+        Collections.sort(
+                classes,
+                new Comparator<String>() {
+                    @Override
+                    public int compare(String o1, String o2) {
+                        return ComparisonChain.start()
+                                .compare(packagePart(o1), packagePart(o2))
+                                .compare(basenamePart(o1), basenamePart(o2))
+                                .result();
+                    }
+                });
 
         // For each class
         for (String clazz : classes) {

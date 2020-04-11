@@ -171,15 +171,15 @@ public class ASceneWrapper {
 
     /**
      * Obtain the given class, which can be further operated on to e.g. add information about a
-     * method. This method also updates the additional information stored about the class using the
+     * method. This method also updates the symbol information stored about the class using the
      * given ClassSymbol, if it is non-null.
      *
      * <p>Results are interned.
      *
      * @param className the binary name of the class to be added to the scene
-     * @param classSymbol the element representing the class, used for adding data to the
-     *     AClassWrapper returned by this method. If it is null, an AClassWrapper is looked up or
-     *     created, but the other information stored by the AClassWrapper is not updated.
+     * @param classSymbol the element representing the class, used for adding symbol information to
+     *     the AClassWrapper returned by this method. If it is null, an AClassWrapper is looked up
+     *     or created, but the symbol information stored by the AClassWrapper is not updated.
      * @return an AClassWrapper representing that class
      */
     public AClassWrapper vivifyClass(
@@ -193,34 +193,51 @@ public class ASceneWrapper {
             classes.put(className, wrapper);
         }
 
-        // updateClassData must be called on both paths (cache hit and cache miss) because the
+        // updateSymbolInformation must be called on both paths (cache hit and cache miss) because
+        // the
         // second parameter could have been null when the first miss occurred.
         // Different visit methods in CFAbstractTransfer call WPI in different ways.  Only some
-        // provide the metadata, and the visit order isn't known ahead of time.
+        // provide the symbol information, and the visit order isn't known ahead of time.
         // Since it is not used until the end of WPI, it being unavailable during WPI is not a
         // problem.
         if (classSymbol != null) {
-            updateClassData(wrapper, classSymbol);
+            updateSymbolInformation(wrapper, classSymbol);
         }
         return wrapper;
     }
 
     /**
-     * Updates the metadata stored in AClassWrapper for the given class.
+     * Updates the symbol information stored in AClassWrapper for the given class.
      *
-     * @param aClassWrapper the class representation in which the metadata is to be updated
-     * @param classSymbol the class for which to update metadata
+     * @param aClassWrapper the class representation in which the symbol information is to be
+     *     updated
+     * @param classSymbol the source of the symbol information
      */
-    private void updateClassData(AClassWrapper aClassWrapper, ClassSymbol classSymbol) {
+    private void updateSymbolInformation(AClassWrapper aClassWrapper, ClassSymbol classSymbol) {
         if (classSymbol.isEnum()) {
+            List<VariableElement> enumConstants = new ArrayList<>();
+            for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
+                if (e.getKind() == ElementKind.ENUM_CONSTANT) {
+                    enumConstants.add((VariableElement) e);
+                }
+            }
+            // Either call setEnumConstants or verify that the existing value is consistent.
             if (!aClassWrapper.isEnum(classSymbol.getSimpleName().toString())) {
-                List<VariableElement> enumConstants = new ArrayList<>();
-                for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
-                    if (e.getKind() == ElementKind.ENUM_CONSTANT) {
-                        enumConstants.add((VariableElement) e);
+                aClassWrapper.setEnumConstants(enumConstants);
+            } else {
+                List<VariableElement> existingEnumConstants = aClassWrapper.getEnumConstants();
+                if (existingEnumConstants.size() != enumConstants.size()) {
+                    throw new BugInCF(
+                            "inconsistent enum constants in WPI for class "
+                                    + classSymbol.getQualifiedName().toString());
+                }
+                for (int i = 0; i < enumConstants.size(); i++) {
+                    if (!existingEnumConstants.get(i).equals(enumConstants.get(i))) {
+                        throw new BugInCF(
+                                "inconsistent enum constants in WPI for class "
+                                        + classSymbol.getQualifiedName().toString());
                     }
                 }
-                aClassWrapper.setEnumConstants(enumConstants);
             }
         }
 
@@ -237,6 +254,8 @@ public class ASceneWrapper {
             TypeElement t = ElementUtils.enclosingClass(element);
             previous = outerClass;
             outerClass = (ClassSymbol) t;
+            // It is necessary to check that previous isn't equal to outer class because
+            // otherwise this loop will sometimes run forever.
         } while (outerClass != null && !previous.equals(outerClass));
 
         aClassWrapper.setTypeElement(classSymbol);
