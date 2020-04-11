@@ -77,7 +77,7 @@ public class AClassWrapper {
      * @return an AMethodWrapper representing the method
      */
     public AMethodWrapper vivifyMethod(ExecutableElement methodElt) {
-        String methodSignature = JVMNames.getJVMMethodName(methodElt);
+        String methodSignature = JVMNames.getJVMMethodSignature(methodElt);
         if (methods.containsKey(methodSignature)) {
             return methods.get(methodSignature);
         } else {
