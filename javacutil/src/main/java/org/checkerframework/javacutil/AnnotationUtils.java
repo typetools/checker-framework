@@ -32,6 +32,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
@@ -755,7 +756,23 @@ public class AnnotationUtils {
         List<AnnotationValue> la = getElementValue(anno, elementName, List.class, useDefaults);
         List<T> result = new ArrayList<>(la.size());
         for (AnnotationValue a : la) {
-            result.add(expectedType.cast(a.getValue()));
+            try {
+                result.add(expectedType.cast(a.getValue()));
+            } catch (Throwable t) {
+                String err1 =
+                        String.format(
+                                "getElementValueArray(%n  anno=%s,%n  elementName=%s,%n  expectedType=%s,%n  useDefaults=%s)%n",
+                                anno, elementName, expectedType, useDefaults);
+                String err2 =
+                        String.format(
+                                "Error in cast:%n  expectedType=%s%n  a=%s [%s]%n  a.getValue()=%s [%s]",
+                                expectedType,
+                                a,
+                                a.getClass(),
+                                a.getValue(),
+                                a.getValue().getClass());
+                throw new BugInCF(err1 + "; " + err2, t);
+            }
         }
         return result;
     }
@@ -832,11 +849,19 @@ public class AnnotationUtils {
     // The Javadoc doesn't use @link because framework is a different project than this one
     // (javacutil).
     /**
-     * See
+     * Update a map, to add <code>newQual</code> to the set that <code>key</code> maps to. The
+     * mapped-to element is an unmodifiable set.
+     *
+     * <p>See
      * org.checkerframework.framework.type.QualifierHierarchy#updateMappingToMutableSet(QualifierHierarchy,
      * Map, Object, AnnotationMirror).
+     *
+     * @param map the map to update
+     * @param key the key whose value to update
+     * @param newQual the element to add to the given key's value
+     * @param <T> the key type
      */
-    public static <T> void updateMappingToImmutableSet(
+    public static <T extends @NonNull Object> void updateMappingToImmutableSet(
             Map<T, Set<AnnotationMirror>> map, T key, Set<AnnotationMirror> newQual) {
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();

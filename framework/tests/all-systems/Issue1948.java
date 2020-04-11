@@ -9,7 +9,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-@SuppressWarnings("") // ensure no crash
+@SuppressWarnings("all") // ensure no crash
 class Issue1948<K, V, E extends Issue1948.MyEntry<K, V, E>, S extends Issue1948.MyClass<K, V, E, S>>
         implements ConcurrentMap<K, V> {
 

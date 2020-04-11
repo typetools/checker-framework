@@ -75,7 +75,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeReplacer;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -202,6 +202,9 @@ public class StubParser {
         this.processingEnv = processingEnv;
         this.elements = processingEnv.getElementUtils();
 
+        // TODO: this should use SourceChecker.getOptions() to allow
+        // setting these flags per checker. However, that doesn't seem very
+        // pressing here.
         Map<String, String> options = processingEnv.getOptions();
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
         this.warnIfNotFoundIgnoresClasses = options.containsKey("stubWarnIfNotFoundIgnoresClasses");
@@ -710,12 +713,11 @@ public class StubParser {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
                 if (foundType == null) {
                     stubWarn(
-                            "could not find superclass "
+                            "stub file does not match bytecode: "
+                                    + "could not find superclass "
                                     + superType
                                     + " from type "
-                                    + type
-                                    + LINE_SEPARATOR
-                                    + "Stub file does not match bytecode");
+                                    + type);
                 } else {
                     annotate(foundType, superType, null);
                 }
@@ -726,12 +728,11 @@ public class StubParser {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
                 if (foundType == null) {
                     stubWarn(
-                            "could not find superinterface "
+                            "stub file does not match bytecode: "
+                                    + "could not find superinterface "
                                     + superType
                                     + " from type "
-                                    + type
-                                    + LINE_SEPARATOR
-                                    + "Stub file does not match bytecode");
+                                    + type);
                 } else {
                     annotate(foundType, superType, null);
                 }
@@ -781,15 +782,11 @@ public class StubParser {
             if (methodType.getReceiverType() == null) {
                 if (decl.isConstructorDeclaration()) {
                     stubWarn(
-                            "parseParameter: constructor of a top-level class cannot have receiver annotations%n"
-                                    + "Constructor: %s%n"
-                                    + "Receiver annotations: %s",
+                            "parseParameter: constructor %s of a top-level class cannot have receiver annotations %s",
                             methodType, decl.getReceiverParameter().get().getAnnotations());
                 } else {
                     stubWarn(
-                            "parseParameter: static methods cannot have receiver annotations%n"
-                                    + "Method: %s%n"
-                                    + "Receiver annotations: %s",
+                            "parseParameter: static method %s cannot have receiver annotations %s",
                             methodType, decl.getReceiverParameter().get().getAnnotations());
                 }
             } else {
@@ -1013,14 +1010,12 @@ public class StubParser {
                     stubWarn(
                             "Wildcard type <"
                                     + atype
-                                    + "> doesn't match type in stubs file: <"
+                                    + "> does not match type in stubs file"
+                                    + filename
+                                    + ": <"
                                     + typeDef
                                     + ">"
-                                    + LINE_SEPARATOR
-                                    + "In file "
-                                    + filename
-                                    + LINE_SEPARATOR
-                                    + "While parsing "
+                                    + " while parsing "
                                     + parseState);
                     return;
                 }
@@ -1043,9 +1038,9 @@ public class StubParser {
                 AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
                 for (AnnotatedTypeVariable typePar : typeParameters) {
                     if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {
-                        AnnotatedTypeMerger.merge(
+                        AnnotatedTypeReplacer.replace(
                                 typePar.getUpperBound(), typeVarUse.getUpperBound());
-                        AnnotatedTypeMerger.merge(
+                        AnnotatedTypeReplacer.replace(
                                 typePar.getLowerBound(), typeVarUse.getLowerBound());
                     }
                 }
@@ -1198,7 +1193,7 @@ public class StubParser {
                             elt.toString().replace(LINE_SEPARATOR, " "),
                             elt.getClass());
             if (!debugStubParser) {
-                msg = msg + "%n  For more details, run with -AstubDebug";
+                msg = msg + "; for more details, run with -AstubDebug";
             }
             stubWarn(msg);
             return;
@@ -1509,7 +1504,7 @@ public class StubParser {
         if (typeElement != null) {
             importedTypes.put(name, typeElement);
         }
-        // for debugging: stubWarn("getTypeElementOrNull(%s) => %s%n", name, typeElement);
+        // for debugging: stubWarn("getTypeElementOrNull(%s) => %s", name, typeElement);
         return typeElement;
     }
 
@@ -1568,7 +1563,7 @@ public class StubParser {
                     boolean success = builderAddElement(builder, member, exp);
                     if (!success) {
                         stubWarn(
-                                "Annotation expression, %s, could not be processed for annotation: %s. ",
+                                "Annotation expression, %s, could not be processed for annotation: %s.",
                                 exp, annotation);
                         return null;
                     }
@@ -1582,7 +1577,7 @@ public class StubParser {
             boolean success = builderAddElement(builder, "value", valexpr);
             if (!success) {
                 stubWarn(
-                        "Annotation expression, %s, could not be processed for annotation: %s. ",
+                        "Annotation expression, %s, could not be processed for annotation: %s.",
                         valexpr, annotation);
                 return null;
             }
@@ -1623,9 +1618,9 @@ public class StubParser {
             // double, too.
             return ((DoubleLiteralExpr) expr).asDouble();
         } else if (expr instanceof IntegerLiteralExpr) {
-            return convert(((IntegerLiteralExpr) expr).asInt(), valueKind);
+            return convert(((IntegerLiteralExpr) expr).asNumber(), valueKind);
         } else if (expr instanceof LongLiteralExpr) {
-            return convert(((LongLiteralExpr) expr).asLong(), valueKind);
+            return convert(((LongLiteralExpr) expr).asNumber(), valueKind);
         } else if (expr instanceof UnaryExpr) {
             switch (expr.toString()) {
                     // Special-case the minimum values.  Separately parsing a "-" and a value
@@ -1662,7 +1657,7 @@ public class StubParser {
 
             return typeElement.asType();
         } else if (expr instanceof NullLiteralExpr) {
-            stubWarn("Null found as value for %s. Null isn't allowed as an annotation value", name);
+            stubWarn("Illegal annotation value null, for %s", name);
             return null;
         } else {
             stubWarn("Unexpected annotation expression: " + expr);
@@ -1681,7 +1676,7 @@ public class StubParser {
         String packageName = parseState.packageName;
         String packagePrefix = (packageName == null) ? "" : packageName + ".";
 
-        // stubWarn("findTypeOfName(%s), parseState %s %s%n", name, packageName, enclosingClass);
+        // stubWarn("findTypeOfName(%s), parseState %s %s", name, packageName, enclosingClass);
 
         // As soon as typeElement is set to a non-null value, it will be returned.
         TypeElement typeElement = getTypeElementOrNull(name);
@@ -1741,9 +1736,8 @@ public class StubParser {
                 // casting a negative value to char is illegal.
                 if (negate) {
                     throw new BugInCF(
-                            String.format(
-                                    "convert(%s, %s, %s): can't negate a char",
-                                    number, expectedKind, negate));
+                            "convert(%s, %s, %s): can't negate a char",
+                            number, expectedKind, negate);
                 }
                 return (char) number.intValue();
             case FLOAT:
@@ -1959,8 +1953,14 @@ public class StubParser {
     }
 
     /**
-     * Just like Map.put, but merges with any existing annotated type for the given key, instead of
-     * replacing it.
+     * Just like Map.put, but modifies an existing annotated type for the given key in {@code m}. If
+     * {@code m} already has an annotated type for {@code key}, each annotation in {@code newType}
+     * will replace annotations from the same hierarchy at the same location in the existing
+     * annotated type. Annotations in other hierarchies will be preserved.
+     *
+     * @param m the map to put the new type into
+     * @param key the key for the map
+     * @param newType the new type for the key
      */
     private void putNew(
             Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror newType) {
@@ -1969,14 +1969,10 @@ public class StubParser {
         }
         if (m.containsKey(key)) {
             AnnotatedTypeMirror existingType = m.get(key);
-            if (isJdkAsStub) {
-                // AnnotatedTypeMerger picks the annotations from the first argument if an
-                // annotation exist in both types in the same location for the same hierarchy.
-                // So, if the newType is from a JDK stub file, then prefer the existing type.  This
-                // way user supplied stub files override jdk stub files.
-                AnnotatedTypeMerger.merge(existingType, newType);
-            } else {
-                AnnotatedTypeMerger.merge(newType, existingType);
+            // If the newType is from a JDK stub file, then keep the existing type.  This
+            // way user supplied stub files override jdk stub files.
+            if (!isJdkAsStub) {
+                AnnotatedTypeReplacer.replace(newType, existingType);
             }
             m.put(key, existingType);
         } else {
@@ -1984,7 +1980,15 @@ public class StubParser {
         }
     }
 
-    /** Just like Map.putAll, but merges with existing values using {@link #putNew}. */
+    /**
+     * Just like Map.putAll, but modifies existing values using {@link #putNoOverride(Map, Object,
+     * Object)}.
+     *
+     * @param m the destination map
+     * @param m2 the source map
+     * @param <K> the key type for the maps
+     * @param <V> the value type for the maps
+     */
     private static <K, V> void putAllNew(Map<K, V> m, Map<K, V> m2) {
         for (Map.Entry<K, V> e2 : m2.entrySet()) {
             putNoOverride(m, e2.getKey(), e2.getValue());

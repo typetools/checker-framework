@@ -993,7 +993,6 @@ public final class String
      * @see  #equalsIgnoreCase(String)
      */
     @Pure
-    @EnsuresNonNullIf(expression="#1", result=true)
     public boolean equals(@Nullable Object anObject) {
         if (this == anObject) {
             return true;

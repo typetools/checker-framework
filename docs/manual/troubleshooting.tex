@@ -65,6 +65,11 @@ This section describes some possible problems and solutions.
 
 \begin{itemize}
 \item
+  \label{no-such-field-error-release}
+  An error that includes \<java.lang.NoSuchFieldError: RELEASE"> means that
+  you are not using the correct compiler (you are not using a Java 9+ compiler).
+
+\item
 If you get the error
 
 %BEGIN LATEX
@@ -200,6 +205,7 @@ the pre-compiled distribution.
 
 
 \item
+\label{no-such-field-error}
 A \<NoSuchFieldError> such as this:
 
 \begin{Verbatim}
@@ -626,6 +632,7 @@ Checker Framework.  See
 \url{https://bugs.openjdk.java.net/browse/JDK-7101822} and \url{https://bugs.openjdk.java.net/browse/JDK-8169095}.
 % Also see https://github.com/typetools/checker-framework/issues/1304
 
+
 \sectionAndLabel{How to report problems (bug reporting)}{reporting-bugs}
 
 If you have a problem with any checker, or with the Checker Framework,
@@ -638,7 +645,7 @@ including the JDK, see Section~\ref{reporting-bugs-annotated-libraries}.
 Alternately (especially if your communication is not a bug report), you can
 send mail to checker-framework-dev@googlegroups.com.
 We welcome suggestions, annotated libraries, bug fixes, new
-features, new checker plugins, and other improvements.
+features, new checkers, and other improvements.
 
 Please ensure that your bug report is clear and that it is complete.
 Otherwise, we may be unable to understand it or to reproduce it, either of
@@ -663,17 +670,29 @@ helpful if you:
   includes every file that is used by any of the commands you reported, and
   possibly other files as well.  Please attach the files, rather than
   pasting their contents into the body of your bug report or email message,
-  because some mailers mangle formatting of pasted text.  If you
+  because some mailers mangle formatting of pasted text.
+
+  If you
   encountered a problem while using tool integration such as
   Maven integration, then try to reproduce the problem from the
   command line as well --- this will indicate whether the problem is with
-  the checker itself or with the tool integration.
+  the checker itself or with the tool integration.  If you use an invasive
+  annotation processor such as Lombok, then try to repoduce the problem
+  without it --- this will indicate whether the problem is in the Checker
+  Framework proper or in its interaction with Lombok.
+
+  If you cannot share your code, create a new, small test case.  (This is
+  helpful even if your code is not secret!)  The progress tracing options
+  (Section~\ref{creating-debugging-options-progress}) can be helpful in
+  determining which file the Checker Framework was processing when it
+  crashed.
 \item
   Indicate exactly what the result was by attaching a file or using
   cut-and-paste from your command shell (don't merely describe it in
-  words, and don't use a screenshot).
+  words, don't use a screenshot, and don't provide just part of the output).
 \item
-  Indicate what you expected the result to be, since a bug is a difference
+  If the problem is not a crash, then
+  indicate what you expected the result to be, since a bug is a difference
   between desired and actual outcomes.  Also, please indicate \textbf{why}
   you expected that result --- explaining your reasoning can help you
   understand how your reasoning is different than the checker's and which
@@ -683,8 +702,8 @@ helpful if you:
 \item
   Indicate what you have already done to try to understand the problem.
   Did you do any additional experiments?  What parts of the manual did
-  read, and what else did you search for in the manual?  This information
-  will prevent you from being given redundant suggestions.
+  read, and what else did you search for in the manual?  Without this
+  information, the maintainers may give you redundant suggestions.
 \end{itemize}
 
 A particularly useful format for a test case is as a new file, or a diff to
@@ -779,11 +798,11 @@ sudo apt-get -qqy install \
 pip3 install html5validator
 \end{Verbatim}
 
-% Building Checker Framework from source on Mac OS
+  You may have to answer questions about which time zone your computer is in.
 
 \item[Mac OS]
   If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
-  the following commands (you may need to update the version number \<2.31>):
+  the following commands:
 
 \begin{Verbatim}
 brew update
@@ -792,7 +811,7 @@ brew cask install java
 brew cask install mactex
 \end{Verbatim}
 
-Make a \<latex> directory and copy \<hevea.sty> file into it:
+Make a \<latex> directory and copy \<hevea.sty> file into it (you may need to update the version number \<2.31>):
 
 \begin{Verbatim}
 mkdir -p $HOME/Library/texmf/tex/latex
@@ -978,22 +997,14 @@ Please see the
 
 \subsectionAndLabel{Enable continuous integration builds}{building-ci}
 
-A continuous integration system runs tests every time you
-push a commit to GitHub.
+We strongly recommend that you enable continuous integration (CI) builds on
+your fork of the projects, so that you learn quickly about errors.  See the
+\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html\#ci}{CI
+  instructions} in the Checker Framework Developer Manual.
 
-If you have forked any of the projects rather than just creating a clone,
-then we recommend that you enable CI builds,
-so that you learn quickly of any errors that creep into your fork.
-
-Follow the
-\ahref{https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops}{Azure
-  Pipelines getting started directions}.
-
-To save time, by default the CI jobs download a pre-built version of
-the JDK rather than building the JDK from the sources in the Checker
-Framework repository.  This means that if you make a change to the
-annotated JDK, your tests will fail.
-To fix your tests, follow the instructions at
+If you make a change to the
+annotated JDK, you need to upload a JDK artifact.
+Follow the instructions at
 \url{https://github.com/typetools/annotated-libraries}.
 
 

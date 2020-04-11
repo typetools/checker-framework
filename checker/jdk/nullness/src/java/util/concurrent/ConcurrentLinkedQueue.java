@@ -470,7 +470,7 @@ public class ConcurrentLinkedQueue<E extends @NonNull Object> extends AbstractQu
      * @param o object to be checked for containment in this queue
      * @return {@code true} if this queue contains the specified element
      */
-    @Pure public boolean contains(Object o) {
+    @Pure public boolean contains(@Nullable Object o) {
         if (o == null) return false;
         for (Node<E> p = first(); p != null; p = succ(p)) {
             E item = p.item;

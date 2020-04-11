@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 
 class Map1308<K, V> {}
 
-@SuppressWarnings("") // check for crashes
+@SuppressWarnings("all") // check for crashes
 class Issue1308 {
     void bar(Stream<Number> stream) {
         new Inner(stream.collect(transform(data -> convert(data), Function.identity())));

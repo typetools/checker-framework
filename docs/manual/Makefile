@@ -2,7 +2,8 @@
 # Make will silently continue if that file does not exist.
 -include Makefile.user
 
-# To regenerate this list, run:   latex-process-inputs -makefilelist manual.tex
+# To regenerate this list, run:
+# ../../checker/bin-devel/.plume-scripts/latex-process-inputs -makefilelist manual.tex
 TEX_FILES = \
 manual.tex \
 manual-style.tex \
@@ -23,8 +24,9 @@ signature-checker.tex \
 guieffect-checker.tex \
 units-checker.tex \
 signedness-checker.tex \
-constant-value-checker.tex \
 aliasing-checker.tex \
+purity-checker.tex \
+constant-value-checker.tex \
 reflection-checker.tex \
 reflection-inference-rules.tex \
 subtyping-checker.tex \
@@ -38,7 +40,8 @@ annotating-libraries.tex \
 creating-a-checker.tex \
 external-tools.tex \
 faq.tex \
-troubleshooting.tex
+troubleshooting.tex \
+contributors.tex
 
 all: manual.pdf manual.html
 
@@ -67,9 +70,8 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
 
 .PHONY: contributors.tex
-# The `git-authors` script is in https://github.com/plume-lib/plume-scripts
 contributors.tex:
-	git-authors --latex --punctuation > contributors.tex
+	../../checker/bin-devel/.plume-scripts/git-authors --latex --punctuation > contributors.tex
 
 ../api:
 	cd ../.. && ./gradlew allJavadoc
@@ -87,7 +89,7 @@ check-labels:
 
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:
-	git clone https://github.com/mernst/plume-bib.git bib
+	(git clone --depth 1 -q https://github.com/mernst/plume-bib.git bib || git clone --depth 1 -q https://github.com/mernst/plume-bib.git bib)
 .PHONY: bib-update
 bib-update: bib
 # Even if this command fails, it does not terminate the make job.

@@ -1,0 +1,36 @@
+# Run the following in both copies of the annotated JDK.  For example, in:
+cd $t/libraries/jdk-fork-mernst-branch-collection-object-parameters-may-be-null/src/java.base/share/classes
+cd $t/checker-framework-fork-mernst-branch-collection-object-parameters-may-be-null/checker/jdk/nullness/src
+
+
+rm -f *.txt
+rg -H --no-heading --line-buffered -n 'public.* (containsKey|contains|containsValue|get|getOrDefault|indexOf|lastIndexOf|removeFirstOccurrence|removeLastOccurrence|remove|remove)\(.*\bObject\b' \
+  > rg-output.txt
+
+grep -E '/(ArrayList|LinkedList|Vector|Stack|HashMap|LinkedHashMap|PrinterStateReasons|IdentityHashMap|WeakHashMap|HashSet|JobStateReasons|LinkedHashSet).java' rg-output.txt \
+  > null-friendly.txt
+
+cat null-friendly.txt \
+  | sed 's/@Nullable Object/Obj/g' \
+  | grep Object \
+  > null-friendly-errors.txt
+
+grep -E 'public.* (contains|containsKey|containsValue|remove|removeFirstOccurrence|removeLastOccurrence)\(' rg-output.txt \
+  | grep -E '/(ArrayBlockingQueue|ArrayDeque|ConcurrentLinkedQueue|CopyOnWriteArrayList|CopyOnWriteArraySet|LinkedBlockingDeque|LinkedBlockingQueue|LinkedTransferQueue|PriorityBlockingQueue|PriorityQueue|EnumMap).java' \
+  > contains-remove-friendly.txt
+
+cat contains-remove-friendly.txt \
+  | sed 's/@Nullable Object/Obj/g' \
+  | grep Object \
+  > contains-remove-errors.txt
+
+diff --new-line-format="" --unchanged-line-format="" <(diff --new-line-format="" --unchanged-line-format=""  rg-output.txt null-friendly.txt) contains-remove-friendly.txt > everything-else.txt
+
+grep -E '\(.*@Nullable' everything-else.txt \
+  > everything-else-errors.txt
+
+
+# Files *-errors.txt should be empty.
+# This line will appear because it's an exception:
+java/util/concurrent/ConcurrentLinkedDeque.java:1089:    public boolean contains(@Nullable Object o) {
+java/util/EnumMap.java:258:    public @Nullable V get(@Nullable Object key) {

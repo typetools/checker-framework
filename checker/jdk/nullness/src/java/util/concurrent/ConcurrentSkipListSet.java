@@ -335,7 +335,7 @@ public class ConcurrentSkipListSet<E extends @NonNull Object>
      * @throws NullPointerException if the specified collection or any
      *         of its elements are null
      */
-    public boolean removeAll(Collection<?> c) {
+    public boolean removeAll(Collection<? extends @NonNull Object> c) {
         // Override AbstractSet version to avoid unnecessary call to size()
         boolean modified = false;
         for (Object e : c)
@@ -392,7 +392,8 @@ public class ConcurrentSkipListSet<E extends @NonNull Object>
     /* ---------------- SortedSet operations -------------- */
 
 
-    public Comparator<? super E> comparator() {
+    @Pure
+    public @Nullable Comparator<? super E> comparator() {
         return m.comparator();
     }
 
