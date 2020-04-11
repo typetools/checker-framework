@@ -105,8 +105,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String className = getEnclosingClassName(constructorElt);
         String jaifPath = storage.getJaifPath(className);
         AClass clazz = storage.getAClass(className, jaifPath);
-        String methodName = JVMNames.getJVMMethodName(constructorElt);
-        AMethod method = clazz.methods.getVivify(methodName);
+        String methodSignature = JVMNames.getJVMMethodSignature(constructorElt);
+        AMethod method = clazz.methods.getVivify(methodSignature);
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
@@ -128,8 +128,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClass clazz = storage.getAClass(className, jaifPath);
 
-        String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethod method = clazz.methods.getVivify(methodName);
+        String methodSignature = JVMNames.getJVMMethodSignature(methodElt);
+        AMethod method = clazz.methods.getVivify(methodSignature);
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
@@ -178,8 +178,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String className = getEnclosingClassName(methodElt);
         String jaifPath = storage.getJaifPath(className);
         AClass clazz = storage.getAClass(className, jaifPath);
-        String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethod method = clazz.methods.getVivify(methodName);
+        String methodSignature = JVMNames.getJVMMethodSignature(methodElt);
+        AMethod method = clazz.methods.getVivify(methodSignature);
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
@@ -218,8 +218,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String className = getEnclosingClassName(lhs);
         String jaifPath = storage.getJaifPath(className);
         AClass clazz = storage.getAClass(className, jaifPath);
-        String methodName = JVMNames.getJVMMethodName(methodTree);
-        AMethod method = clazz.methods.getVivify(methodName);
+        String methodSignature = JVMNames.getJVMMethodSignature(methodTree);
+        AMethod method = clazz.methods.getVivify(methodSignature);
 
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
@@ -321,7 +321,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClass clazz = storage.getAClass(className, jaifPath);
 
-        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodName(methodTree));
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodTree));
         // Method return type
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
         // Type of the expression returned
@@ -356,7 +356,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AClass superClazz = storage.getAClass(superClassName, superJaifPath);
             AMethod overriddenMethodInSuperclass =
                     superClazz.methods.getVivify(
-                            JVMNames.getJVMMethodName(overriddenMethodElement));
+                            JVMNames.getJVMMethodSignature(overriddenMethodElement));
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
 
             storage.updateAnnotationSetInScene(
