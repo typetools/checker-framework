@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Converts a field or methods tree into an AnnotatedTypeMirror.
@@ -100,7 +101,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
             AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
             AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
             if (TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
-                if (f.types.isSubtype(funcTypeParam.actualType, lambdaParam.actualType)) {
+                if (TypesUtils.isErasedSubtype(
+                        funcTypeParam.actualType, lambdaParam.actualType, f.types)) {
                     // The Java types should be exactly the same, but because invocation type
                     // inference (#979) isn't implement, check first.
                     return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
