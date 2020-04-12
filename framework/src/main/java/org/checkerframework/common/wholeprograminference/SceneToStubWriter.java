@@ -580,9 +580,9 @@ public final class SceneToStubWriter {
         List<@BinaryName String> classes = new ArrayList<>(scene.getClasses().keySet());
         Collections.sort(
                 classes,
-                new Comparator<String>() {
+                new Comparator<@BinaryName String>() {
                     @Override
-                    public int compare(String o1, String o2) {
+                    public int compare(@BinaryName String o1, @BinaryName String o2) {
                         return ComparisonChain.start()
                                 .compare(packagePart(o1), packagePart(o2))
                                 .compare(basenamePart(o1), basenamePart(o2))
