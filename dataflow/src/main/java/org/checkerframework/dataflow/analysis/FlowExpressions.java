@@ -301,6 +301,8 @@ public class FlowExpressions {
                     case FIELD:
                         // Implicit access expression, such as "this" or a class name
                         Receiver fieldAccessExpression;
+                        @SuppressWarnings(
+                                "nullness:dereference.of.nullable") // a field has enclosing class
                         TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                         if (ElementUtils.isStatic(ele)) {
                             fieldAccessExpression = new ClassName(enclosingType);

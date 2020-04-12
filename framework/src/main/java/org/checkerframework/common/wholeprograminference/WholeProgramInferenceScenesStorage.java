@@ -177,8 +177,8 @@ public class WholeProgramInferenceScenesStorage {
      * @param jaifPath the path to the jaif file that would represent that class (must end in
      *     ".jaif")
      * @return the scene-lib representation of the class, possibly augmented with symbol information
-     *     if {@link #getAClass(String, String, ClassSymbol)} has already been called with a
-     *     non-null third argument.
+     *     if {@link #getAClass(String, String, com.sun.tools.javac.code.Symbol.ClassSymbol)} has
+     *     already been called with a non-null third argument.
      */
     protected AClassWrapper getAClass(@BinaryName String className, String jaifPath) {
         return getAClass(className, jaifPath, null);

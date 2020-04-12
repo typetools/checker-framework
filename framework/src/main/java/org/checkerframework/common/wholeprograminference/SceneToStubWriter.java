@@ -230,8 +230,7 @@ public final class SceneToStubWriter {
      * using {@link #formatType(ATypeElement, TypeMirror)}.
      *
      * @param scenelibRepInJavacOrder the scenelib representation, reordered to match javac's order.
-     *     See {@link #getSceneLibRepInJavacOrder(ATypeElement)} for an explanation of why this is
-     *     necessary.
+     *     See {@link #getSceneLibRepInJavacOrder} for an explanation of why this is necessary.
      * @param javacRep the javac representation of the array type
      * @return the type formatted to be written to Java source code, followed by a space character
      */
