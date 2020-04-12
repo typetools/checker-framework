@@ -373,16 +373,16 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
 javadoc.dependsOn(allJavadoc)
 
 configurations {
-  requireJavadoc
+    requireJavadoc
 }
 dependencies {
-  requireJavadoc "org.plumelib:require-javadoc:0.3.0"
+    requireJavadoc "org.plumelib:require-javadoc:0.3.0"
 }
 task requireJavadoc(type: JavaExec) {
-  description = 'Ensures that Javadoc documentation exists.'
-  main = "org.plumelib.javadoc.RequireJavadoc"
-  classpath = configurations.requireJavadoc
-  args "checker/src/main/java", "dataflow/src/main/java", "framework-test/src/main/java", "framework/src/main/java", "javacutil/src/main/java"
+    description = 'Ensures that Javadoc documentation exists.'
+    main = "org.plumelib.javadoc.RequireJavadoc"
+    classpath = configurations.requireJavadoc
+    args "checker/src/main/java", "dataflow/src/main/java", "framework-test/src/main/java", "framework/src/main/java", "javacutil/src/main/java"
 }
 check.dependsOn requireJavadoc
 
@@ -401,7 +401,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
         destinationDir = file("${rootDir}/docs/tmpapi")
         destinationDir.mkdirs()
         subprojects.forEach {
-            if(!it.name.startsWith("checker-qual")) {
+            if (!it.name.startsWith("checker-qual")) {
                 source += it.sourceSets.main.allJava
             }
         }
@@ -416,6 +416,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
         // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
     }
 }
+
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
 task downloadJtreg(type: Download) {
