@@ -138,6 +138,7 @@ public class ElementUtils {
      *
      * @return the type for the element used as a value
      */
+    @SuppressWarnings("nullness:dereference.of.nullable") // a constructor has an enclosing class
     public static TypeMirror getType(Element element) {
         if (element.getKind() == ElementKind.METHOD) {
             return ((ExecutableElement) element).getReturnType();
