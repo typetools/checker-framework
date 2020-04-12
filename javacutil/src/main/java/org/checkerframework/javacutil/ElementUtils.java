@@ -136,6 +136,7 @@ public class ElementUtils {
      * a method element, the class type of a constructor, or simply the type mirror of the element
      * itself.
      *
+     * @param element the element whose type to obtain
      * @return the type for the element used as a value
      */
     @SuppressWarnings("nullness:dereference.of.nullable") // a constructor has an enclosing class
