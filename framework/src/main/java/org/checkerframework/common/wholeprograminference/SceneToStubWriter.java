@@ -129,11 +129,12 @@ public final class SceneToStubWriter {
      * @return the formatted annotation
      */
     public static String formatAnnotation(Annotation a) {
-        String annoName = a.def().name.substring(a.def().name.lastIndexOf('.') + 1);
+        String fullAnnoName = a.def().name;
+        String simpleAnnoName = fullAnnoName.substring(fullAnnoName.lastIndexOf('.') + 1);
         if (a.fieldValues.isEmpty()) {
-            return "@" + annoName;
+            return "@" + simpleAnnoName;
         }
-        StringJoiner sj = new StringJoiner(", ", "@" + annoName + "(", ")");
+        StringJoiner sj = new StringJoiner(", ", "@" + simpleAnnoName + "(", ")");
         for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
             AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
             sj.add(f.getKey() + "=" + IndexFileWriter.formatAnnotationValue(aft, f.getValue()));
