@@ -14,4 +14,9 @@ class ConflictingAnnotationsTest {
     @Sibling1 int getLocalSibling1() {
         return 1;
     }
+
+    void test(MethodReturnTest.InnerClass i) {
+        // :: error: argument.type.incompatible
+        i.expectsSibling1(getWPINamespaceSibling1());
+    }
 }
