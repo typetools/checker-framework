@@ -373,8 +373,8 @@ public final class SceneToStubWriter {
                             + basetypeToPrint.substring(basetypeToPrint.lastIndexOf('>') + 1);
         }
 
-        if (basetypeToPrint.contains("[")) {
-            // An array is not a receiver, so using the javacType here is safe.
+        // An array is not a receiver, so using the javacType to check for arrays is safe.
+        if (javacType != null && javacType.getKind() == TypeKind.ARRAY) {
             return formatArrayType(aType, (ArrayType) javacType);
         }
 
