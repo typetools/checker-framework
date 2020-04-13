@@ -825,6 +825,10 @@ public abstract class CFAbstractTransfer<
         if (shouldPerformWholeProgramInference(n.getTree())) {
             // Retrieves class containing the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
+            // classTree is null e.g. if this is a return statement in a lambda.
+            if (classTree == null) {
+                return super.visitReturn(n, p);
+            }
             ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
 
             ExecutableElement methodElem =
