@@ -20,6 +20,10 @@ def versions = [
         lombok          : "1.18.12",
 ]
 
+configurations {
+    lombok
+}
+
 dependencies {
     implementation project(':dataflow')
     implementation project(':javacutil')
@@ -196,4 +200,27 @@ task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
 
 clean {
     delete("tests/whole-program-inference/annotated")
+    delete("tests/returnsreceiverlombok/delomboked")
 }
+
+
+task delombok {
+    description 'Delomboks the source code tree in tests/returnsreceiverlombok'
+
+    def srcDelomboked = 'tests/returnsreceiverlombok/delomboked'
+    def srcJava = 'tests/returnsreceiverlombok'
+
+    inputs.files file( srcJava )
+    outputs.dir file( srcDelomboked )
+
+    doLast {
+        delete("tests/returnsreceiverlombok/delomboked")
+        configurations.testImplementation.canBeResolved = true
+        def collection = files( configurations.testImplementation )
+        ant.taskdef( name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
+                classpath: configurations.testImplementation.asPath)
+        ant.delombok( from:srcJava, to:srcDelomboked, classpath: collection.asPath)
+    }
+}
+
+tasks.test.dependsOn("delombok")
