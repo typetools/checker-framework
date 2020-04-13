@@ -202,6 +202,9 @@ public class StubParser {
         this.processingEnv = processingEnv;
         this.elements = processingEnv.getElementUtils();
 
+        // TODO: this should use SourceChecker.getOptions() to allow
+        // setting these flags per checker. However, that doesn't seem very
+        // pressing here.
         Map<String, String> options = processingEnv.getOptions();
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
         this.warnIfNotFoundIgnoresClasses = options.containsKey("stubWarnIfNotFoundIgnoresClasses");
