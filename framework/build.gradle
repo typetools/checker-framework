@@ -20,9 +20,6 @@ def versions = [
         lombok          : "1.18.12",
 ]
 
-configurations {
-    lombok
-}
 
 dependencies {
     implementation project(':dataflow')
