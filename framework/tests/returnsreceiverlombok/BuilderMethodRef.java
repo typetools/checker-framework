@@ -3,6 +3,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.checkerframework.common.returnsreceiver.qual.*;
 
 @Builder
 @Accessors(fluent = true)
@@ -14,5 +15,16 @@ public class BuilderMethodRef {
         BuilderMethodRefBuilder b = builder().foo("Hello");
         opt.ifPresent(b::bar);
         b.build();
+    }
+}
+
+class CustomBuilderMethodRefBuilder extends BuilderMethodRef.BuilderMethodRefBuilder {
+    // wrapper methods to ensure @This annotations are getting added properly
+    BuilderMethodRef.@This BuilderMethodRefBuilder wrapperFoo() {
+        return foo("dummy");
+    }
+
+    BuilderMethodRef.@This BuilderMethodRefBuilder wrapperBar() {
+        return bar(new Object());
     }
 }

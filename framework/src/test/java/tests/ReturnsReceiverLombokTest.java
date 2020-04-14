@@ -15,7 +15,7 @@ public class ReturnsReceiverLombokTest extends CheckerFrameworkPerDirectoryTest 
         super(
                 testFiles,
                 ReturnsReceiverChecker.class,
-                "returnsreceiverlombok/delomboked",
+                "returnsreceiverdelomboked",
                 "-Anomsgtext",
                 "-nowarn",
                 "-AsuppressWarnings=type.anno.before.modifier");
@@ -24,7 +24,7 @@ public class ReturnsReceiverLombokTest extends CheckerFrameworkPerDirectoryTest 
     @Override
     public void run() {
         // Only run if delomboked codes have been created.
-        if (!new File("tests/returnsreceiverlombok/delomboked/").exists()) {
+        if (!new File("tests/returnsreceiverdelomboked/").exists()) {
             throw new RuntimeException("delombok task must be run before this test.");
         }
         super.run();
@@ -32,6 +32,6 @@ public class ReturnsReceiverLombokTest extends CheckerFrameworkPerDirectoryTest 
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"returnsreceiverlombok/delomboked"};
+        return new String[] {"returnsreceiverdelomboked"};
     }
 }

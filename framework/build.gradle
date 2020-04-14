@@ -203,26 +203,23 @@ task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
 
 clean {
     delete("tests/whole-program-inference/annotated")
-    delete("tests/returnsreceiverlombok/delomboked")
+    delete("tests/returnsreceiverdelomboked")
 }
 
 
 task delombok {
     description 'Delomboks the source code tree in tests/returnsreceiverlombok'
 
-    def srcDelomboked = 'tests/returnsreceiverlombok/delomboked'
+    def srcDelomboked = 'tests/returnsreceiverdelomboked'
     def srcJava = 'tests/returnsreceiverlombok'
 
-    inputs.files file( srcJava )
-    outputs.dir file( srcDelomboked )
+    inputs.files file(srcJava)
+    outputs.dir file(srcDelomboked)
 
-    doLast {
-        delete("tests/returnsreceiverlombok/delomboked")
-        def collection = files( configurations.testImplementation )
-        ant.taskdef( name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
-                classpath: configurations.testImplementation.asPath)
-        ant.delombok( from:srcJava, to:srcDelomboked, classpath: collection.asPath)
-    }
+    def collection = files(configurations.testImplementation)
+    ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
+            classpath: configurations.testImplementation.asPath)
+    ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
 }
 
 tasks.test.dependsOn("delombok")
