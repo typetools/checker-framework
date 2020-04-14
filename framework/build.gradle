@@ -216,10 +216,12 @@ task delombok {
     inputs.files file(srcJava)
     outputs.dir file(srcDelomboked)
 
-    def collection = files(configurations.testImplementation)
-    ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
-            classpath: configurations.testImplementation.asPath)
-    ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+    doLast {
+        def collection = files(configurations.testImplementation)
+        ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
+                classpath: configurations.testImplementation.asPath)
+        ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+    }
 }
 
 tasks.test.dependsOn("delombok")
