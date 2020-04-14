@@ -29,6 +29,7 @@ import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AFieldWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AMethodWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AMethod;
@@ -338,6 +339,21 @@ public final class SceneToStubWriter {
         // TypeMirror#toString prints multiple annotations on a single type
         // separated by commas rather than by whitespace, as is required in source code.
         String basetypeToPrint = javacType.toString().replaceAll(",@", " @");
+
+        // We must not print annotations in the default package that conflict with
+        // imported annotation names.
+        for (AnnotationMirror anm : javacType.getAnnotationMirrors()) {
+            String annotationName = AnnotationUtils.annotationName(anm);
+            String simpleName = annotationName.substring(annotationName.lastIndexOf('.') + 1);
+            // This checks if it is in the default package.
+            if (simpleName.equals(annotationName)) {
+                // In that case, do not print any annotations with the type, to
+                // avoid needing to parse an annotation string to remove it.
+                // TypeMirror does not provide any methods to remove annotations.
+                // This code relies on unannotated Java types not including spaces.
+                basetypeToPrint = basetypeToPrint.substring(basetypeToPrint.lastIndexOf(' ') + 1);
+            }
+        }
         return formatType(aType, javacType, basetypeToPrint);
     }
 
