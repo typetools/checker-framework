@@ -73,7 +73,7 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	cd ../.. && ./gradlew getPlumeScripts
 
 .PHONY: contributors.tex
-contributors.tex: ../../checker/bin-devel/.plume-scripts:
+contributors.tex: ../../checker/bin-devel/.plume-scripts
 	../../checker/bin-devel/.plume-scripts/git-authors --latex --punctuation > contributors.tex
 
 ../api:
