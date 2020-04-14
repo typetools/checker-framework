@@ -1,0 +1,2 @@
+This directory does not just contain visitors.  It contains types that are
+intended to be subclassed, such as interfaces and abstract classes.
