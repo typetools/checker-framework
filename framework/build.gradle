@@ -44,12 +44,6 @@ dependencies {
     testImplementation "org.projectlombok:lombok:${versions.lombok}"
 }
 
-configurations{
-    testImplementation{
-        canBeResolved = true
-    }
-}
-
 task checkDependencies() {
     doLast {
         if (!file(afuJar).exists()) {
@@ -217,9 +211,9 @@ task delombok {
     outputs.dir file(srcDelomboked)
 
     doLast {
-        def collection = files(configurations.testImplementation)
+        def collection = files(configurations.testCompileClasspath)
         ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
-                classpath: configurations.testImplementation.asPath)
+                classpath: configurations.testCompileClasspath.asPath)
         ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
     }
 }
