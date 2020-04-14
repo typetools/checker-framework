@@ -90,7 +90,7 @@ package java.util;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
-class AbstractCollection {
+class AbstractCollection<E> {
     @Pure public boolean contains(@Nullable Object o);
     public boolean remove(@Nullable Object o);
     @Pure public boolean containsAll(Collection<?> c);
@@ -103,14 +103,14 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     public int lastIndexOf(@Nullable Object o);
 }
 
-class AbstractMap {
+class AbstractMap<K, V> {
     public boolean containsValue(@Nullable Object value);
     public boolean containsKey(@Nullable Object key);
     public @Nullable V get(@Nullable Object key);
     public @Nullable V remove(@Nullable Object key);
 }
 
-class AbstractSet {
+class AbstractSet<E> {
   public boolean removeAll(Collection<?> c);
 }
 
@@ -173,7 +173,7 @@ public class TreeSet<E> extends AbstractSet<E>
     public boolean remove(@Nullable Object o);
 }
 
-class Vector {
+class Vector<E> {
     public synchronized boolean containsAll(Collection<?> c);
     public synchronized boolean removeAll(Collection<?> c);
     public synchronized boolean retainAll(Collection<?> c);
