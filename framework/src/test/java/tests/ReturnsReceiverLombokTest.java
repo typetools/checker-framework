@@ -7,8 +7,9 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * tests the returns receiver checker's lombok integration, please not that the test files have been
- * delomobok'd
+ * tests the returns receiver checker's lombok integration, the test files in
+ * tests/returnsreceiverlombok package will be delomboked into tests/returnsreceiverdelomboked
+ * package before running the test and the returns receiver checker will run on the generated codes
  */
 public class ReturnsReceiverLombokTest extends CheckerFrameworkPerDirectoryTest {
     public ReturnsReceiverLombokTest(List<File> testFiles) {
