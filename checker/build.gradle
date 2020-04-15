@@ -58,7 +58,11 @@ task cloneTypetoolsJdk() {
 }
 
 task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
-    description "Copy annotated jdk 11 files to ${buildDir}/jdk/jdk11/"
+    def outputDir = "${buildDir}/jdk/jdk11"
+    description "Copy annotated jdk 11 files to ${outputDir}"
+
+    outputs.dir file(outputDir)
+
     doLast {
         FileTree tree = fileTree(dir: "${jdkHome}/src/")
         SortedSet<String> annotatedForFiles = new TreeSet<>();
@@ -76,7 +80,7 @@ task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
         int jdkDirStringSize = absolutejdkHome.size()
         copy {
             from(jdkHome)
-            into("${buildDir}/jdk/jdk11/")
+            into(outputDir)
             for (String filename : annotatedForFiles) {
                 include filename.substring(jdkDirStringSize)
             }
