@@ -16,6 +16,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item Eclipse (Section~\ref{eclipse})
 \item Gradle (Section~\ref{gradle})
 \item IntelliJ IDEA (Section~\ref{intellij})
+\item javac Diagnostics Wrapper (Section~\ref{javac-diagnostics-wrapper})
 \item Lombok (Section~\ref{lombok})
 \item Maven (Section~\ref{maven})
 \item NetBeans (Section~\ref{netbeans})
@@ -769,6 +770,14 @@ It is necessary to manually inform the IDE via a plugin if an annotation
 system adds any dependencies beyond those that normally exist in Java.
 For information about the extension points, see
 \url{https://youtrack.jetbrains.com/issue/IDEA-159286}.
+
+
+\sectionAndLabel{javac diagnostics wrapper}{javac-diagnostics-wrapper}
+
+The \href{https://github.com/eisopux/javac-diagnostics-wrapper}{javac
+diagnostics wrapper} project can post-process the javac
+diagnostics output into other formats, such as
+the LSP (Language Server Protocol) JSON style.
 
 
 \sectionAndLabel{Lombok}{lombok}
