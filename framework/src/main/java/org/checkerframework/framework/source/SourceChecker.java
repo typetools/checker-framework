@@ -465,7 +465,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @see #activeOptions
      */
-    private static final String OPTION_SEPARATOR = "_";
+    protected static final String OPTION_SEPARATOR = "_";
 
     /**
      * The checker that called this one, whether that be a BaseTypeChecker (used as a compound

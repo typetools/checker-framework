@@ -26,8 +26,7 @@ env:
     - GROUP=misc JDKVER=jdk8-plus BUILDJDK=downloadjdk
     - GROUP=misc JDKVER=jdk11-plus BUILDJDK=downloadjdk
     - GROUP=cf-inference JDKVER=jdk8 BUILDJDK=downloadjdk
-    # I don't know why this fails.
-    # - GROUP=cf-inference JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=cf-inference JDKVER=jdk11 BUILDJDK=downloadjdk
     - GROUP=daikon-part1 JDKVER=jdk8 BUILDJDK=downloadjdk
     - GROUP=daikon-part1 JDKVER=jdk11 BUILDJDK=downloadjdk
     - GROUP=daikon-part2 JDKVER=jdk8 BUILDJDK=downloadjdk
