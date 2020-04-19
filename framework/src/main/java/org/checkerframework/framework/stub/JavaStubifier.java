@@ -1,7 +1,6 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ParseResult;
-import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.MemberValuePair;
@@ -19,7 +18,7 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
- * Process Java source files in a directory to produce minimal stub files, by removing:
+ * Process Java source files in a directory to produce, in-place, minimal stub files. Removes:
  *
  * <ol>
  *   <li>everything that is private or package-private,
@@ -34,15 +33,15 @@ public class JavaStubifier {
     /**
      * Processes each provided command-line argument.
      *
-     * @param args command-line arguments
+     * @param args command-line arguments: directories to process
      */
     public static void main(String[] args) {
         if (args.length < 1) {
             System.err.println("Usage: provide one or more directory names to process");
             System.exit(1);
         }
-        for (String dir : args) {
-            process(dir);
+        for (String arg : args) {
+            process(arg);
         }
     }
 
@@ -53,43 +52,43 @@ public class JavaStubifier {
      */
     private static void process(String dir) {
         Path root = Paths.get(dir);
-
-        ParserConfiguration conf = new ParserConfiguration();
-        MinimizationVisitor sm = new MinimizationVisitor();
-
+        MinimizerCallback mc = new MinimizerCallback();
         ProjectRoot projectRoot = new ParserCollectionStrategy().collect(root);
+
         projectRoot
                 .getSourceRoots()
                 .forEach(
                         sourceRoot -> {
                             try {
-                                sourceRoot.parse("", conf, new MinimizationCallback(sm));
+                                sourceRoot.parse("", mc);
                             } catch (IOException e) {
                                 System.err.println("IOException: " + e);
                             }
                         });
     }
 
-    /** Callback to process one source root. */
-    private static class MinimizationCallback implements SourceRoot.Callback {
-        private final MinimizationVisitor sm;
+    /** Callback to process each Java file. */
+    private static class MinimizerCallback implements SourceRoot.Callback {
+        /** The visitor instance. */
+        private final MinimizerVisitor mv;
 
-        public MinimizationCallback(MinimizationVisitor sm) {
-            this.sm = sm;
+        /** Create a MinimizerCallback instance. */
+        public MinimizerCallback() {
+            this.mv = new MinimizerVisitor();
         }
 
         @Override
         public Result process(
                 Path localPath, Path absolutePath, ParseResult<CompilationUnit> result) {
             Result res = Result.SAVE;
-            System.out.printf("Minimizing %s%n", absolutePath);
+            // System.out.printf("Minimizing %s%n", absolutePath);
             Optional<CompilationUnit> opt = result.getResult();
             if (opt.isPresent()) {
                 CompilationUnit cu = opt.get();
                 // this somehow only removes comments except the
                 // first one, and copyright headers are kept
                 cu.getComments().forEach(Node::remove);
-                sm.visit(cu, null);
+                mv.visit(cu, null);
                 if (cu.findAll(ClassOrInterfaceDeclaration.class).isEmpty()
                         && cu.findAll(AnnotationDeclaration.class).isEmpty()
                         && cu.findAll(EnumDeclaration.class).isEmpty()) {
@@ -102,8 +101,8 @@ public class JavaStubifier {
         }
     }
 
-    /** Visitor that processes the AST. */
-    private static class MinimizationVisitor extends ModifierVisitor<Void> {
+    /** Visitor to processes one compilation unit. */
+    private static class MinimizerVisitor extends ModifierVisitor<Void> {
         @Override
         public ClassOrInterfaceDeclaration visit(ClassOrInterfaceDeclaration cid, Void arg) {
             super.visit(cid, arg);
@@ -171,7 +170,7 @@ public class JavaStubifier {
          */
         private boolean removeIfPrivateOrPkgPrivate(NodeWithAccessModifiers<?> node) {
             AccessSpecifier as = node.getAccessSpecifier();
-            if (as.equals(AccessSpecifier.PRIVATE) || as.equals(AccessSpecifier.PACKAGE_PRIVATE)) {
+            if (as == AccessSpecifier.PRIVATE || as == AccessSpecifier.PACKAGE_PRIVATE) {
                 ((Node) node).remove();
                 return true;
             }
