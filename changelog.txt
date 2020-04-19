@@ -12,7 +12,7 @@ Renamings:
 
 -Ainfer now takes an argument:
  * -Ainfer=jaifs uses .jaif files to store the results of whole-program inference.
- * -Ainfer=stubs uses .astub files to store the results of whole-program inference
+ * -Ainfer=stubs uses .astub files to store the results of whole-program inference.
  * -Ainfer is deprecated but is the same as -Ainfer=jaifs, for backwards compatibility.
 
 New command-line option:
