@@ -738,22 +738,13 @@ in the ``Additional command line parameters'' section, add:\\
   \code{-Xbootclasspath/p:".../checker-framework/checker/dist/jdk8.jar"} \\
 (Be sure to fill in the ellipsis.)
 
-\item Configure an annotation profile.
-\begin{enumerate}
-\item
-Create an
-\ahref{https://www.jetbrains.com/help/idea/configuring-annotation-processing.html#create\_profile}{annotation profile}.
-\item
-\ahref{https://www.jetbrains.com/help/idea/configuring-annotation-processing.html#associate}{Associate}
-any desired modules with that profile.
-\item
-Configure that profile:
+\item Create and configure an annotation profile, following the instructions at \url{https://www.jetbrains.com/help/idea/annotation-processors-support.html}.
+When configuring the profile:
 \begin{enumerate}
 \item Add \<.../checker-framework/checker/dist/checker.jar> to the processor path.
 \item Add checkers to be run during compilation by writing the
   fully-qualified name of the checker in the ``Processor FQ Name''
   section.
-\end{enumerate}
 \end{enumerate}
 
 \item Add \<.../checker-framework/checker/dist/checker-qual.jar>, as a dependency to all
