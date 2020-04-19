@@ -29,7 +29,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-import javax.tools.JavaFileObject.Kind;
+import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A Utility class for analyzing {@code Element}s. */
@@ -297,7 +297,7 @@ public class ElementUtils {
         // returns just the name of the file (e.g. "Object.java"), but any file actually being
         // compiled returns a file URI to the source file.
         return symbol.sourcefile != null
-                && symbol.sourcefile.getKind() == Kind.SOURCE
+                && symbol.sourcefile.getKind() == JavaFileObject.Kind.SOURCE
                 && symbol.sourcefile.toUri().toString().startsWith("file:");
     }
 
