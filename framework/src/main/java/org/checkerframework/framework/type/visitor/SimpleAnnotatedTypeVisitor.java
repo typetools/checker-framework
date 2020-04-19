@@ -20,7 +20,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * @param <P> the type of the additional parameter to this visitor's methods. Use {@link Void} for
  *     visitors that do not need an additional parameter.
  */
-public class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeVisitor<R, P> {
+public abstract class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeVisitor<R, P> {
 
     /** The default value to return as a default action. */
     protected final R DEFAULT_VALUE;

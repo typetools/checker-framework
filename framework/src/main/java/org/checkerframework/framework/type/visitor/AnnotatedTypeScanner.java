@@ -54,7 +54,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * @param <P> the type of the additional parameter to this visitor's methods. Use Void for visitors
  *     that do not need an additional parameter.
  */
-public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
+public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
 
     // To prevent infinite loops
     protected final Map<AnnotatedTypeMirror, R> visitedNodes = new IdentityHashMap<>();

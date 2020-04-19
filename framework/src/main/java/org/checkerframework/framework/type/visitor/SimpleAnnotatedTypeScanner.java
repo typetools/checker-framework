@@ -10,7 +10,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 
-public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P> {
+public abstract class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P> {
 
     /**
      * Called by default for any visit method that is not overridden.
