@@ -90,6 +90,24 @@ public class CheckerMain {
     private final List<File> argListFiles;
 
     /**
+     * Option name for specifying an alternative checker-qual.jar location. The accompanying value
+     * MUST be the path to the jar file (NOT the path to its encompassing directory)
+     */
+    public static final String CHECKER_QUAL_PATH_OPT = "-checkerQualJar";
+
+    /**
+     * Option name for specifying an alternative javac.jar location. The accompanying value MUST be
+     * the path to the jar file (NOT the path to its encompassing directory)
+     */
+    public static final String JAVAC_PATH_OPT = "-javacJar";
+
+    /**
+     * Option name for specifying an alternative jdk.jar location. The accompanying value MUST be
+     * the path to the jar file (NOT the path to its encompassing directory)
+     */
+    public static final String JDK_PATH_OPT = "-jdkJar";
+
+    /**
      * Construct all the relevant file locations and Java version given the path to this jar and a
      * set of directories in which to search for jars.
      */
@@ -103,16 +121,12 @@ public class CheckerMain {
 
         this.checkerQualJar =
                 extractFileArg(
-                        PluginUtil.CHECKER_QUAL_PATH_OPT,
-                        new File(searchPath, "checker-qual.jar"),
-                        args);
+                        CHECKER_QUAL_PATH_OPT, new File(searchPath, "checker-qual.jar"), args);
 
-        this.javacJar =
-                extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);
+        this.javacJar = extractFileArg(JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);
 
         final String jdkJarName = PluginUtil.getJdkJarName();
-        this.jdkJar =
-                extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, jdkJarName), args);
+        this.jdkJar = extractFileArg(JDK_PATH_OPT, new File(searchPath, jdkJarName), args);
 
         this.compilationBootclasspath = createCompilationBootclasspath(args);
         this.runtimeClasspath = createRuntimeClasspath(args);
