@@ -104,13 +104,21 @@ public class JavaStubifier {
 
     /** Visitor to processes one compilation unit. */
     private static class MinimizerVisitor extends ModifierVisitor<Void> {
+        /** Whether to consider members implicitly public. */
+        private boolean implicitlyPublic = false;
+
         @Override
         public ClassOrInterfaceDeclaration visit(ClassOrInterfaceDeclaration cid, Void arg) {
+            boolean prevIP = implicitlyPublic;
             if (cid.isInterface()) {
-                return cid;
+                // All members of interfaces are implicitly public.
+                implicitlyPublic = true;
             }
             super.visit(cid, arg);
             removeIfPrivateOrPkgPrivate(cid);
+            if (cid.isInterface()) {
+                implicitlyPublic = prevIP;
+            }
             return cid;
         }
 
@@ -174,6 +182,9 @@ public class JavaStubifier {
          */
         private boolean removeIfPrivateOrPkgPrivate(NodeWithAccessModifiers<?> node) {
             AccessSpecifier as = node.getAccessSpecifier();
+            if (implicitlyPublic) {
+                return false;
+            }
             if (as == AccessSpecifier.PRIVATE || as == AccessSpecifier.PACKAGE_PRIVATE) {
                 ((Node) node).remove();
                 return true;
