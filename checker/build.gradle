@@ -13,7 +13,7 @@ sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-            srcDirs += ['src/main/java', "${buildDir}/jdk"]
+            srcDirs += ['src/main/java', "${buildDir}/generated-resources"]
         }
     }
     testannotations
@@ -59,7 +59,7 @@ task cloneTypetoolsJdk() {
 
 task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
     def inputDir = "${jdkHome}/src"
-    def outputDir = "${buildDir}/jdk/jdk11"
+    def outputDir = "${buildDir}/generated-resources/annotated-jdk/"
     description "Copy annotated jdk 11 files to ${outputDir}"
 
     inputs.dir file(inputDir)
