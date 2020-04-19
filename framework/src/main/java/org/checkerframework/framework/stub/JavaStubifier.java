@@ -91,7 +91,8 @@ public class JavaStubifier {
                 mv.visit(cu, null);
                 if (cu.findAll(ClassOrInterfaceDeclaration.class).isEmpty()
                         && cu.findAll(AnnotationDeclaration.class).isEmpty()
-                        && cu.findAll(EnumDeclaration.class).isEmpty()) {
+                        && cu.findAll(EnumDeclaration.class).isEmpty()
+                        && !absolutePath.endsWith("package-info.java")) {
                     // All content is removed, delete this file.
                     new File(absolutePath.toUri()).delete();
                     res = Result.DONT_SAVE;
@@ -105,6 +106,9 @@ public class JavaStubifier {
     private static class MinimizerVisitor extends ModifierVisitor<Void> {
         @Override
         public ClassOrInterfaceDeclaration visit(ClassOrInterfaceDeclaration cid, Void arg) {
+            if (cid.isInterface()) {
+                return cid;
+            }
             super.visit(cid, arg);
             removeIfPrivateOrPkgPrivate(cid);
             return cid;

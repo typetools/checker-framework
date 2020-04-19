@@ -90,7 +90,17 @@ task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
     }
 }
 
-processResources.dependsOn(copyAnnotatedJdkFiles)
+task minimizeJdk(type: JavaExec) {
+    discription 'Removes all private and package private methods and all method bodies from the annotated jdk.'
+    dependsOn copyAnnotatedJdkFiles
+    dependsOn ':framework:compileJava'
+    classpath = project(':framework').sourceSets.main.runtimeClasspath
+
+    main = 'org.checkerframework.framework.stub.JavaStubifier'
+    args "${buildDir}/generated-resources/annotated-jdk/"
+}
+
+processResources.dependsOn(minimizeJdk)
 
 jar {
     manifest {
