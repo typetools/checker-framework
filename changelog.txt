@@ -1,3 +1,13 @@
+Version ??, May 1, 2020
+
+-Ainfer now takes an argument:
+ * -Ainfer=jaifs uses .jaif files to store the results of whole-program inference.
+ * -Ainfer=stubs uses .astub files to store the results of whole-program inference.
+ * -Ainfer is deprecated but is the same as -Ainfer=jaifs, for backwards compatibility.
+
+New command-line option:
+  -AmergeStubsWithSource If both a stub file and a source file are available, use both.
+
 ---------------------------------------------------------------------------
 
 Version 3.3.0, April 1, 2020
@@ -9,14 +19,6 @@ New command-line options:
 Renamings:
   -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
     The old name works temporarily but will be removed in a future release.
-
--Ainfer now takes an argument:
- * -Ainfer=jaifs uses .jaif files to store the results of whole-program inference.
- * -Ainfer=stubs uses .astub files to store the results of whole-program inference.
- * -Ainfer is deprecated but is the same as -Ainfer=jaifs, for backwards compatibility.
-
-New command-line option:
-  -AmergeStubsWithSource If both a stub file and a source file are available, use both.
 
 For collection methods with `Object` formal parameter type, such as
 contains, indexOf, and remove, the annotated JDK now forbids null as an
