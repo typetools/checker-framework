@@ -16,8 +16,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * is to support fluent API generators so the checker can add @This annotations on method return
  * types when these generators has been used. To check whether a method is created by any of the
  * generators defined in the {@link FluentAPIGenerators} Enum and returns {@code this}, simply call
- * the {@link FluentAPIGenerator#check(AnnotatedExecutableType) method} on the annotated type of the
- * method signature.
+ * the {@link FluentAPIGenerator#check} on the annotated type of the method signature.
  */
 public class FluentAPIGenerator {
 
