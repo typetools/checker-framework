@@ -69,7 +69,10 @@ task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
         FileTree tree = fileTree(dir: inputDir)
         SortedSet<String> annotatedForFiles = new TreeSet<>();
         tree.visit { FileVisitDetails fvd ->
-            if (!fvd.file.isDirectory() && fvd.file.name.matches(".*\\.java")) {
+            if (!fvd.file.isDirectory() && fvd.file.name.matches(".*\\.java")
+                    && !fvd.file.name.matches("module-info.java")) {
+                // Ignore module-info until this JavaParser bug is fixed (and merged in the StubParser):
+                // https://github.com/javaparser/javaparser/issues/2615
                 fvd.getFile().readLines().any { line ->
                     if (line.contains("@AnnotatedFor") || line.contains("org.checkerframework")) {
                         annotatedForFiles.add(fvd.file.absolutePath)
