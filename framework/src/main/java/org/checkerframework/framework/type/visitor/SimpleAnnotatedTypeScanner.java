@@ -10,6 +10,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 
+/**
+ * A simple implementation of AnnotatedTypeScanner. It is abstract; its purpose is to provide
+ * default implementations of all methods.
+ */
 public abstract class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P> {
 
     /**
