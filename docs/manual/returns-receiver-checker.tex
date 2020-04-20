@@ -39,10 +39,10 @@ As is standard, the Returns Receiver Checker has a top qualifier,
 \refqualclass{common/returnsreceiver/qual}{BottomThis}.
 Programmers rarely need to write these annotations.
 
-Here are some implementation details that most users will not care about.
+Here are additional details.
 \refqualclass{common/returnsreceiver/qual}{This}
-is \emph{not} a subtype of \refqualclass{common/returnsreceiver/qual}{UnknownThis},
-but instead is a polymorphic qualifier.  When the Returns Receiver Checker observes an
+is a polymorphic qualifier rather than a regular type qualifier.
+When the Returns Receiver Checker observes an
 \refqualclass{common/returnsreceiver/qual}{This} annotation on a method return type,
 it adds \refqualclass{common/returnsreceiver/qual}{This} to
 the method's receiver type. The presence of the polymorphic annotation
