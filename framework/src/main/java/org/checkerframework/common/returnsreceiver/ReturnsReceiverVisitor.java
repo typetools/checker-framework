@@ -36,7 +36,7 @@ public class ReturnsReceiverVisitor extends BaseTypeVisitor<ReturnsReceiverAnnot
                     grandparent instanceof TypeCastTree
                             && parent.equals(((TypeCastTree) grandparent).getType());
             if (!(isReturnAnnot || isCastAnnot)) {
-                checker.reportError(node, "invalid.this.location");
+                checker.reportError(node, "type.invalid.this.location");
             }
         }
         return super.visitAnnotation(node, p);

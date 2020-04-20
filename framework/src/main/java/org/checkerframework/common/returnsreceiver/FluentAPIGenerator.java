@@ -11,8 +11,31 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** Wrapper class for {@link FluentAPIGenerators} Enum to keep it private. */
+/**
+ * Wrapper class for {@link FluentAPIGenerators} Enum to keep it private. The only use of the enum
+ * is to support fluent API generators so the checker can add @This annotations on method return
+ * types when these generators has been used. To check whether a method is created by any of the
+ * generators defined in the {@link FluentAPIGenerators} Enum and returns {@code this}, simply call
+ * the {@link FluentAPIGenerator#check(AnnotatedExecutableType) method} on the annotated type of the
+ * method signature.
+ */
 public class FluentAPIGenerator {
+
+    /**
+     * This is the only public method of this class
+     *
+     * @param t the annotated type of the method signature
+     * @return {@code true} if the method was created by any of the generators defined in {@link
+     *     FluentAPIGenerators} and returns {@code this}
+     */
+    public static boolean check(AnnotatedExecutableType t) {
+        for (FluentAPIGenerators fluentAPIGenerator : FluentAPIGenerators.values()) {
+            if (fluentAPIGenerator.returnsThis(t)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Enum of supported fluent API generators. For such generators, the checker can automatically
@@ -27,7 +50,7 @@ public class FluentAPIGenerator {
         AUTO_VALUE {
 
             /**
-             * The qualified name of the AutoValue Builder annotation. This needed to be constructed
+             * The qualified name of the AutoValue Builder annotation. This needs to be constructed
              * dynamically due to a side effect of the shadow plugin. See {@link
              * org.checkerframework.common.returnsreceiver.FluentAPIGenerator.FluentAPIGenerators#AUTO_VALUE#getAutoValueBuilderCanonicalName()}
              * for more information.
@@ -45,7 +68,7 @@ public class FluentAPIGenerator {
                 if (!inAutoValueBuilder) {
                     // see if superclass is an AutoValue Builder, to handle generated code
                     TypeMirror superclass = ((TypeElement) enclosingElement).getSuperclass();
-                    // if enclosingType is an interface, the superclass has TypeKind NONE
+                    // if enclosingElement is an interface, the superclass has TypeKind NONE
                     if (superclass.getKind() != TypeKind.NONE) {
                         // update enclosingElement to be for the superclass for this case
                         enclosingElement = TypesUtils.getTypeElement(superclass);
@@ -110,19 +133,5 @@ public class FluentAPIGenerator {
          * @return {@code true} if the method was created by this generator and returns {@code this}
          */
         protected abstract boolean returnsThis(AnnotatedExecutableType t);
-    }
-
-    /**
-     * @param t the annotated type of the method signature
-     * @return {@code true} if the method was created by any of the generators defined in {@link
-     *     FluentAPIGenerators} and returns {@code this}
-     */
-    public static boolean checkForFluentAPIGenerators(AnnotatedExecutableType t) {
-        for (FluentAPIGenerators fluentAPIGenerator : FluentAPIGenerators.values()) {
-            if (fluentAPIGenerator.returnsThis(t)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

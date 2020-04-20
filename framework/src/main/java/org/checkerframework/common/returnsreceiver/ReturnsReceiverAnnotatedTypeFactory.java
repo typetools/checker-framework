@@ -61,38 +61,30 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
         public Void visitExecutable(AnnotatedTypeMirror.AnnotatedExecutableType t, Void p) {
 
             // skip constructors, as we never need to add annotations to them
-            if (!isConstructor(t)) {
-                AnnotatedTypeMirror returnType = t.getReturnType();
+            if (t.getElement().getKind() == ElementKind.CONSTRUCTOR) {
+                return super.visitExecutable(t, p);
+            }
 
-                // If any FluentAPIGenerator indicates the method returns this,
-                // add an @This annotation on the return type.
-                if (FluentAPIGenerator.checkForFluentAPIGenerators(t)) {
-                    if (!returnType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
-                        returnType.addAnnotation(THIS_ANNOTATION);
-                    }
+            AnnotatedTypeMirror returnType = t.getReturnType();
+
+            // If any FluentAPIGenerator indicates the method returns this,
+            // add an @This annotation on the return type.
+            if (FluentAPIGenerator.check(t)) {
+                if (!returnType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
+                    returnType.addAnnotation(THIS_ANNOTATION);
                 }
+            }
 
-                // If return type is annotated with @This, add @This annotation
-                // to the receiver type.
-                AnnotationMirror retAnnotation =
-                        returnType.getAnnotationInHierarchy(THIS_ANNOTATION);
-                if (retAnnotation != null
-                        && AnnotationUtils.areSame(retAnnotation, THIS_ANNOTATION)) {
-                    AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = t.getReceiverType();
-                    if (!receiverType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
-                        receiverType.addAnnotation(THIS_ANNOTATION);
-                    }
+            // If return type is annotated with @This, add @This annotation
+            // to the receiver type.
+            AnnotationMirror retAnnotation = returnType.getAnnotationInHierarchy(THIS_ANNOTATION);
+            if (retAnnotation != null && AnnotationUtils.areSame(retAnnotation, THIS_ANNOTATION)) {
+                AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = t.getReceiverType();
+                if (!receiverType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
+                    receiverType.addAnnotation(THIS_ANNOTATION);
                 }
             }
             return super.visitExecutable(t, p);
         }
-    }
-
-    /**
-     * @return {@code true} if the param {@code t} is a {@code Constructor}
-     * @param t a {@link AnnotatedTypeMirror}
-     */
-    private boolean isConstructor(AnnotatedTypeMirror.AnnotatedExecutableType t) {
-        return t.getElement().getKind() == ElementKind.CONSTRUCTOR;
     }
 }

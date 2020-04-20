@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * }
  * </code></pre>
  *
- * Strictly speaking, this is a polymorphic annotation, but when you write it on a return value, the
+ * Strictly speaking, this is a polymorphic annotation, but when you write it on a return type, the
  * Returns Receiver Checker automatically adds it to the receiver, so the above method is equivalent
  * to:
  *

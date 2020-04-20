@@ -32,25 +32,25 @@ class SimpleTest {
         return x;
     }
 
-    // :: error: invalid.this.location
+    // :: error: type.invalid.this.location
     @This SimpleTest thisOnParam(@This SimpleTest x) {
         return x;
     }
 
     void thisOnLocal() {
-        // :: error: invalid.this.location
+        // :: error: type.invalid.this.location
         // :: error: assignment.type.incompatible
         @This SimpleTest x = new SimpleTest();
 
-        // :: error: invalid.this.location
+        // :: error: type.invalid.this.location
         // :: error: type.argument.type.incompatible
         java.util.List<@This String> l = null;
     }
 
-    // :: error: invalid.this.location
+    // :: error: type.invalid.this.location
     void thisOnReceiver(@This SimpleTest this) {}
 
-    // :: error: invalid.this.location
+    // :: error: type.invalid.this.location
     @This Object f;
 
     interface I {
