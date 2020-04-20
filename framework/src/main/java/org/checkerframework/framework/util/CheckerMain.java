@@ -83,10 +83,13 @@ public class CheckerMain {
      */
     private final List<String> cpOpts;
 
+    /** Processor path options. */
     private final List<String> ppOpts;
 
+    /** Arguments to the Checker Framework. */
     private final List<String> toolOpts;
 
+    /** Command-line argument files (specified with @ on the command line). */
     private final List<File> argListFiles;
 
     /**
