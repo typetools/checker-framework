@@ -37,7 +37,7 @@ written on the return type of a method or in a downcast.
 As is standard, the Returns Receiver Checker has a top qualifier,
 \refqualclass{common/returnsreceiver/qual}{UnknownThis}, and a bottom qualifier,
 \refqualclass{common/returnsreceiver/qual}{BottomThis}.
-Pragrammers rarely need to write these annotations.
+Programmers rarely need to write these annotations.
 
 Here are some implementation details that most users will not care about.
 \refqualclass{common/returnsreceiver/qual}{This}
@@ -45,7 +45,7 @@ is \emph{not} a subtype of \refqualclass{common/returnsreceiver/qual}{UnknownThi
 but instead is a polymorphic qualifier.  When the Returns Receiver Checker observes an
 \refqualclass{common/returnsreceiver/qual}{This} annotation on a method return type,
 it adds \refqualclass{common/returnsreceiver/qual}{This} to
-the method's receiver type. The presence of the polymorphic annoattion
+the method's receiver type. The presence of the polymorphic annotation
 \refqualclass{common/returnsreceiver/qual}{This} on both the method's return and
 receiver type forces their type qualifiers to be \emph{equal}.  Hence, the
 method will only pass the type checker if it returns its receiver argument,
@@ -116,3 +116,5 @@ classes.  All the \<@This> annotations in
 Figures~\ref{fig-autovalue-builder}
 and~\ref{fig-autovalue-builder-generated} are automatically added by the
 Returns Receiver Checker.
+
+% LocalWords:  UnknownThis BottomThis AutoValue autovalue lombok
