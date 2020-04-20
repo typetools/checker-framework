@@ -26,7 +26,13 @@ public class PluginUtil {
     /** The system-specific line separator. */
     private static final String LINE_SEPARATOR = System.lineSeparator();
 
-    /** Return a list of Strings, one per line of the file. */
+    /**
+     * Return a list of Strings, one per line of the file.
+     *
+     * @param argFile argument file
+     * @return a list of Strings, one per line of the file.
+     * @throws IOException when reading the argFile
+     */
     public static List<String> readFile(final File argFile) throws IOException {
         final BufferedReader br = new BufferedReader(new FileReader(argFile));
         String line;
@@ -106,6 +112,10 @@ public class PluginUtil {
     /**
      * Return true if the system property is set to "true". Return false if the system property is
      * not set or is set to "false". Otherwise, errs.
+     *
+     * @param key system property to check
+     * @return true if the system property is set to "true". Return false if the system property is
+     *     not set or is set to "false". Otherwise, errs.
      */
     public static boolean getBooleanSystemProperty(String key) {
         return Boolean.parseBoolean(System.getProperty(key, "false"));
