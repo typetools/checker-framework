@@ -632,7 +632,7 @@ public final class SceneToStubWriter {
      *
      * @param classname the class name
      * @param aClassWrapper the representation of the class
-     * @return
+     * @return whether the class is printable, by the definition above
      */
     private static boolean isPrintable(@BinaryName String classname, AClassWrapper aClassWrapper) {
         String basename = basenamePart(classname);
