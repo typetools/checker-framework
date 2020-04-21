@@ -49,10 +49,10 @@ import scenelib.annotations.io.IndexFileWriter;
 public class ASceneWrapper {
 
     /** The AScene being wrapped. */
-    private AScene theScene;
+    private final AScene theScene;
 
     /** The classes in the scene. */
-    private Map<@BinaryName String, AClassWrapper> classes = new HashMap<>();
+    private final Map<@BinaryName String, AClassWrapper> classes = new HashMap<>();
 
     /**
      * Constructor. Pass the AScene to wrap.

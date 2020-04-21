@@ -5,7 +5,6 @@ import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,13 +41,15 @@ import scenelib.annotations.el.InnerTypeLocation;
 import scenelib.annotations.field.AnnotationFieldType;
 import scenelib.annotations.io.IndexFileWriter;
 
-// In this file, "base type" means "type without its package part".
+// In this file, "base name" means "type without its package part in binary name format".
+// For example, "Outer$Inner" is a base name.
 
 /**
- * SceneToStubWriter provides static methods that write a {@link AScene} in stub file format, to a
- * {@link Writer} {@link #write(ASceneWrapper, Writer)} or to a file {@link #write(ASceneWrapper,
- * String)}. This class is the equivalent of {@code IndexFileWriter} from the Annotation File
- * Utilities, but outputs the results in the stub file format instead of jaif format.
+ * SceneToStubWriter provides a static method that writes an {@link AScene} in stub file format to a
+ * file {@link #write(ASceneWrapper,String)}. This class is the equivalent of {@code
+ * IndexFileWriter} from the Annotation File Utilities, but outputs the results in the stub file
+ * format instead of jaif format. This class is not part of the Annotation File Utilities, a library
+ * for manipulating .jaif files, because it has nothing to do with .jaif files.
  *
  * <p>This class works by taking as input a scene-lib representation of a type augmented with
  * additional information, stored in javac's format (e.g. as TypeMirrors or Elements). The A*Wrapper
@@ -64,6 +65,13 @@ import scenelib.annotations.io.IndexFileWriter;
  * command-line argument is present.
  */
 public final class SceneToStubWriter {
+
+    /**
+     * The entry point to this class is {@link #write(ASceneWrapper, String)}.
+     *
+     * <p>This is a utility class with only static methods. It is not instantiable.
+     */
+    private SceneToStubWriter() {}
 
     /**
      * A pattern matching the name of an anonymous inner class, or a class nested within one. An
@@ -514,14 +522,14 @@ public final class SceneToStubWriter {
      * Prints a method declaration in stub file format (i.e., without a method body).
      *
      * @param aMethodWrapper the method to print
-     * @param basename the simple name of the enclosing class, for receiver parameters and
+     * @param simplename the simple name of the enclosing class, for receiver parameters and
      *     constructor names
      * @param printWriter where to print the method signature
      * @param indentLevel the indent string
      */
     private static void printMethodDeclaration(
             AMethodWrapper aMethodWrapper,
-            String basename,
+            String simplename,
             PrintWriter printWriter,
             String indentLevel) {
 
@@ -535,7 +543,7 @@ public final class SceneToStubWriter {
         // Use Java syntax for constructors.
         if ("<init>".equals(methodName)) {
             // Set methodName, but don't output a return type.
-            methodName = basename;
+            methodName = simplename;
         } else {
             printWriter.print(formatType(aMethod.returnType, aMethodWrapper.getReturnType()));
         }
@@ -549,11 +557,11 @@ public final class SceneToStubWriter {
                     formatParameter(
                             AFieldWrapper.createReceiverParameter(aMethod.receiver),
                             "this",
-                            basename));
+                            simplename));
         }
         for (Integer index : aMethodWrapper.getParameters().keySet()) {
             AFieldWrapper param = aMethodWrapper.getParameters().get(index);
-            parameters.add(formatParameter(param, param.getParameterName(), basename));
+            parameters.add(formatParameter(param, param.getParameterName(), simplename));
         }
         printWriter.print(parameters.toString());
         printWriter.println(");");
@@ -561,9 +569,8 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * The implementation of {@link #write(ASceneWrapper, Writer)} and {@link #write(ASceneWrapper,
-     * String)}. Prints imports, classes, method signatures, and fields in stub file format, all
-     * with appropriate annotations.
+     * The implementation of {@link #write(ASceneWrapper, String)}. Prints imports, classes, method
+     * signatures, and fields in stub file format, all with appropriate annotations.
      *
      * @param scene the scene to write
      * @param filename the name of the file to write (must end in .astub)

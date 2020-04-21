@@ -174,7 +174,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected TypeHierarchy typeHierarchy;
 
     /** Performs whole-program inference. If null, whole-program inference is disabled. */
-    private WholeProgramInference wholeProgramInference;
+    private final @Nullable WholeProgramInference wholeProgramInference;
 
     /**
      * This formatter is used for converting AnnotatedTypeMirrors to Strings. This formatter will be
@@ -470,6 +470,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             boolean isNullnessChecker =
                     "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName());
             wholeProgramInference = new WholeProgramInferenceScenes(!isNullnessChecker);
+        } else {
+            wholeProgramInference = null;
         }
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
 

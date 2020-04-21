@@ -29,13 +29,13 @@ import scenelib.annotations.util.JVMNames;
 public class AClassWrapper {
 
     /** The wrapped AClass object. */
-    private AClass theClass;
+    private final AClass theClass;
 
     /**
      * This HashSet contains the simple class names any of this class' outer classes (or this class)
      * that are enums.
      */
-    private HashSet<String> enums = new HashSet<>();
+    private final HashSet<String> enums = new HashSet<>();
 
     /**
      * The methods of the class. Keys are the signatures of methods, entries are AMethodWrapper

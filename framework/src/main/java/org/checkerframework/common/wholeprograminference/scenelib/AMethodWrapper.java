@@ -22,7 +22,7 @@ public class AMethodWrapper {
     private final AMethod theMethod;
 
     /** The return type of the method, or null if the method's return type is unknown or void. */
-    private @Nullable TypeMirror returnType;
+    private final @Nullable TypeMirror returnType;
 
     /**
      * A mirror of the parameters field of AMethod, but using AFieldWrapper objects as the values.
@@ -30,10 +30,10 @@ public class AMethodWrapper {
      * is vivified by calls to {@link #vivifyParameter(int, TypeMirror, Name)} or {@link
      * #vivifyParameter(int, TypeMirror, Name)}.
      */
-    private Map<Integer, AFieldWrapper> parameters = new HashMap<>();
+    private final Map<Integer, AFieldWrapper> parameters = new HashMap<>();
 
     /** The type parameters of this method. */
-    private List<? extends TypeParameterElement> typeParameters;
+    private final List<? extends TypeParameterElement> typeParameters;
 
     /**
      * Wrap an AMethod. Package-private, because it should only be called from AClassWrapper.
