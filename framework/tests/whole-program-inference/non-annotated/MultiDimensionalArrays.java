@@ -2,9 +2,9 @@
 // are printed correctly.
 
 import java.util.List;
-import org.checkerframework.common.value.qual.ArrayLen;
-import org.checkerframework.common.value.qual.ArrayLenRange;
-import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.aliasing.qual.MaybeAliased;
+import org.checkerframework.common.aliasing.qual.NonLeaked;
+import org.checkerframework.common.aliasing.qual.Unique;
 import testlib.wholeprograminference.qual.Sibling1;
 import testlib.wholeprograminference.qual.Sibling2;
 import testlib.wholeprograminference.qual.SiblingWithFields;
@@ -200,8 +200,7 @@ class MultiDimensionalArrays {
         requiresS1S2S1(threeDimArray5);
     }
 
-    void useField6(
-                    @Sibling1 @IntVal(5) int @Sibling2 @ArrayLen(3) [] @Sibling1 @ArrayLenRange(from = 2, to = 6) [] x) {
+    void useField6(@Sibling1 @Unique int @Sibling2 @NonLeaked [] @Sibling1 @MaybeAliased [] x) {
         threeDimArray5 = x;
     }
 
@@ -210,13 +209,11 @@ class MultiDimensionalArrays {
         requiresS1S2S1(x);
     }
 
-    void useParam6(
-                    @Sibling1 @IntVal(5) int @Sibling2 @ArrayLen(3) [] @Sibling1 @ArrayLenRange(from = 2, to = 6) [] x) {
+    void useParam6(@Sibling1 @Unique int @Sibling2 @NonLeaked [] @Sibling1 @MaybeAliased [] x) {
         testParam6(x);
     }
 
-    int[][] useReturn6(
-                    @Sibling1 @IntVal(5) int @Sibling2 @ArrayLen(3) [] @Sibling1 @ArrayLenRange(from = 2, to = 6) [] x) {
+    int[][] useReturn6(@Sibling1 @Unique int @Sibling2 @NonLeaked [] @Sibling1 @MaybeAliased [] x) {
         return x;
     }
 

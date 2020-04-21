@@ -1,13 +1,13 @@
 // Test that having other, unrelated annotations on fields/methods/etc doesn't foul up inference.
 
-import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.aliasing.qual.Unique;
 import testlib.wholeprograminference.qual.Sibling1;
 
 class OtherAnnotations {
 
     void requireSibling1(@Sibling1 int a) {}
 
-    @IntVal(5) int x;
+    @Unique int x;
 
     void assignX(@Sibling1 int y) {
         x = y;
@@ -18,7 +18,7 @@ class OtherAnnotations {
         requireSibling1(x);
     }
 
-    void methodWithAnnotatedParam(@IntVal(5) int z) {
+    void methodWithAnnotatedParam(@Unique int z) {
         // :: error: argument.type.incompatible
         requireSibling1(z);
     }
@@ -31,7 +31,7 @@ class OtherAnnotations {
         return 5;
     }
 
-    @IntVal(5) int getIntVal5() {
+    @Unique int getIntVal5() {
         return getSibling1();
     }
 

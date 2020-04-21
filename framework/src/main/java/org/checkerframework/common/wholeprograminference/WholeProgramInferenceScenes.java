@@ -13,6 +13,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AFieldWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.AMethodWrapper;
@@ -412,8 +413,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /** Write all modified scenes into .jaif files or stub files. */
     @Override
-    public void writeResultsToFile(OutputFormat outputFormat) {
-        storage.writeScenes(outputFormat);
+    public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
+        storage.writeScenes(outputFormat, checker);
     }
 
     /**

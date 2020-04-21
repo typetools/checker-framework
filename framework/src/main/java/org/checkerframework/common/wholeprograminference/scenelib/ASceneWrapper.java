@@ -17,6 +17,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage.AnnotationsInContexts;
@@ -129,9 +130,13 @@ public class ASceneWrapper {
      *     outputformat} is not {@code JAIF}, the path will be modified to match.
      * @param annosToIgnore which annotations should be ignored in which contexts
      * @param outputFormat the output format to use
+     * @param checker the checker from which this method is called, for naming stub files
      */
     public void writeToFile(
-            String jaifPath, AnnotationsInContexts annosToIgnore, OutputFormat outputFormat) {
+            String jaifPath,
+            AnnotationsInContexts annosToIgnore,
+            OutputFormat outputFormat,
+            BaseTypeChecker checker) {
         assert jaifPath.endsWith(".jaif");
         AScene scene = theScene.clone();
         removeAnnosFromScene(scene, annosToIgnore);
@@ -142,7 +147,8 @@ public class ASceneWrapper {
                 filepath = jaifPath;
                 break;
             case STUB:
-                filepath = jaifPath.replace(".jaif", ".astub");
+                String astubWithChecker = "-" + checker.getClass().getCanonicalName() + ".astub";
+                filepath = jaifPath.replace(".jaif", astubWithChecker);
                 break;
             default:
                 throw new BugInCF("Unhandled outputFormat " + outputFormat);

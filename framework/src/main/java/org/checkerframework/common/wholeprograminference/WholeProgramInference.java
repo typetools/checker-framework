@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -177,8 +178,9 @@ public interface WholeProgramInference {
      * type-checking process.
      *
      * @param format the file format in which to write the results
+     * @param checker the checker from which this method is called, for naming stub files
      */
-    void writeResultsToFile(OutputFormat format);
+    void writeResultsToFile(OutputFormat format, BaseTypeChecker checker);
 
     /** The kinds of output that whole-program inference can produce. */
     enum OutputFormat {
@@ -186,12 +188,12 @@ public interface WholeProgramInference {
          * Output the results of whole-program inference as a stub file that can be parsed back into
          * the Checker Framework by the Stub Parser.
          */
-        STUB,
+        STUB(),
 
         /**
          * Output the results of whole-program inference as a Java annotation index file. The
          * Annotation File Utilities project contains code for reading and writing .jaif files.
          */
-        JAIF
+        JAIF()
     }
 }

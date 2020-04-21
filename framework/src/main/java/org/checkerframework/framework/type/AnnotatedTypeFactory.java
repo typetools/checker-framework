@@ -1097,7 +1097,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         DeclarationsIntoElements.store(processingEnv, this, tree);
         if (wholeProgramInference != null) {
             // Write out the results of whole-program inference, just once for each class.
-            wholeProgramInference.writeResultsToFile(wpiOutputFormat);
+            wholeProgramInference.writeResultsToFile(wpiOutputFormat, this.checker);
         }
     }
 

@@ -17,6 +17,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
@@ -98,8 +99,9 @@ public class WholeProgramInferenceScenesStorage {
      * #updateAnnotationSetInScene}.)
      *
      * @param outputFormat the output format to use when writing files
+     * @param checker the checker from which this method is called, for naming stub files
      */
-    public void writeScenes(OutputFormat outputFormat) {
+    public void writeScenes(OutputFormat outputFormat, BaseTypeChecker checker) {
         // Create WPI directory if it doesn't exist already.
         File jaifDir = new File(JAIF_FILES_PATH);
         if (!jaifDir.exists()) {
@@ -107,7 +109,7 @@ public class WholeProgramInferenceScenesStorage {
         }
         // Write scenes into files.
         for (String jaifPath : modifiedScenes) {
-            scenes.get(jaifPath).writeToFile(jaifPath, annosToIgnore, outputFormat);
+            scenes.get(jaifPath).writeToFile(jaifPath, annosToIgnore, outputFormat, checker);
         }
         modifiedScenes.clear();
     }
