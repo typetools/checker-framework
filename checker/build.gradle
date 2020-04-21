@@ -94,7 +94,7 @@ task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
 }
 
 task minimizeJdk(type: JavaExec) {
-    description 'Removes all private and package private methods and all method bodies from the annotated jdk.'
+    description 'Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK.'
     dependsOn copyAnnotatedJdkFiles
     dependsOn ':framework:compileJava'
     classpath = project(':framework').sourceSets.main.runtimeClasspath

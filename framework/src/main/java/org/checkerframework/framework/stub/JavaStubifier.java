@@ -18,7 +18,9 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
- * Process Java source files in a directory to produce, in-place, minimal stub files. Removes:
+ * Process Java source files in a directory to produce, in-place, minimal stub files.
+ *
+ * <p>To process a file means to remove:
  *
  * <ol>
  *   <li>everything that is private or package-private,
@@ -31,7 +33,7 @@ import java.util.Optional;
  */
 public class JavaStubifier {
     /**
-     * Processes each provided command-line argument.
+     * Processes each provided command-line argument; see class documentation for details.
      *
      * @param args command-line arguments: directories to process
      */
@@ -46,7 +48,7 @@ public class JavaStubifier {
     }
 
     /**
-     * Process the given directory.
+     * Process each file in the given directory; see class documentation for details.
      *
      * @param dir directory to process
      */
@@ -67,7 +69,7 @@ public class JavaStubifier {
                         });
     }
 
-    /** Callback to process each Java file. */
+    /** Callback to process each Java file; see class documentation for details. */
     private static class MinimizerCallback implements SourceRoot.Callback {
         /** The visitor instance. */
         private final MinimizerVisitor mv;
@@ -102,7 +104,7 @@ public class JavaStubifier {
         }
     }
 
-    /** Visitor to processes one compilation unit. */
+    /** Visitor to process one compilation unit; see class documentation for details. */
     private static class MinimizerVisitor extends ModifierVisitor<Void> {
         /** Whether to consider members implicitly public. */
         private boolean implicitlyPublic = false;
