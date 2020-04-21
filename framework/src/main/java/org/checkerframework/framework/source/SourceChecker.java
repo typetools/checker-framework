@@ -465,7 +465,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @see #activeOptions
      */
-    private static final String OPTION_SEPARATOR = "_";
+    protected static final String OPTION_SEPARATOR = "_";
 
     /**
      * The checker that called this one, whether that be a BaseTypeChecker (used as a compound
@@ -783,6 +783,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.messagesProperties = getMessagesProperties();
 
         this.visitor = createSourceVisitor();
+
+        // Validate the lint flags, if they haven't been used already.
+        if (this.activeLints == null) {
+            this.activeLints = createActiveLints(getOptions());
+        }
     }
 
     /** Output the warning about source level at most once. */
@@ -1163,11 +1168,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return the most specific warning suppression key for the warning/error being printed
      */
     private String suppressionKey(String messageKey) {
-        if (this.processingEnv.getOptions().containsKey("showSuppressWarningKeys")) {
+        if (hasOption("showSuppressWarningKeys")) {
             return this.getSuppressWarningsKeys() + ":" + messageKey;
-        } else if (this.processingEnv
-                .getOptions()
-                .containsKey("requirePrefixInWarningSuppressions")) {
+        } else if (hasOption("requirePrefixInWarningSuppressions")) {
             // If the warning key must be prefixed with a checker key, then add that to the
             // warning key that is printed.
             String defaultKey = getDefaultWarningSuppressionKey();
@@ -1257,15 +1260,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     && !(s.charAt(0) == '-'
                             && this.getSupportedLintOptions().contains(s.substring(1)))
                     && !s.equals("all")
-                    && !s.equals("none") /*&&
-                    !warnedOnLint.contains(s)*/) {
+                    && !s.equals("none")) {
                 this.messager.printMessage(
                         WARNING,
                         "Unsupported lint option: "
                                 + s
                                 + "; All options: "
                                 + this.getSupportedLintOptions());
-                // warnedOnLint.add(s);
             }
 
             activeLint.add(s);
@@ -1318,7 +1319,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         if (activeLints == null) {
-            activeLints = createActiveLints(processingEnv.getOptions());
+            activeLints = createActiveLints(getOptions());
         }
 
         if (activeLints.isEmpty()) {
