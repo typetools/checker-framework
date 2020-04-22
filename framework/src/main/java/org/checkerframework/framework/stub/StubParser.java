@@ -1073,6 +1073,13 @@ public class StubParser {
         }
     }
 
+    /**
+     * Process the field declaration in decl, and attach any type qualifiers to the type of elt in
+     * {@link #atypes}
+     *
+     * @param decl the declaration in the stub file
+     * @param elt the element representing that same declaration
+     */
     private void processField(FieldDeclaration decl, VariableElement elt) {
         if (isJdkAsStub && decl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private fields of the jdk.  They can't be referenced outside of the jdk
