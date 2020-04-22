@@ -382,6 +382,12 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
 
     }
 }
+
+task testAnnotatedJdk {
+    description 'Runs some of the tests that use the annotated jdk.'
+    dependsOn('IndexTest', 'LockTest', 'NullnessFbcTest', 'OptionalTest')
+}
+
 task jdkSourcesJar(type: Jar) {
     // All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
     // We create dummies with READMEs in them and pass those to Central. This is the recommended way of handling this.
