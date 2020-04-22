@@ -19,7 +19,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
 /** The type factory for the Returns Receiver Checker. */
 public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** The {@code @}{@link This} annotation. */
+    /**
+     * The {@code @}{@link This} annotation. The field is package visible due to a use in {@link
+     * ReturnsReceiverVisitor}
+     */
     final AnnotationMirror THIS_ANNOTATION;
 
     /**
