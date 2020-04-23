@@ -10,7 +10,7 @@
 This chapter describes how to create a checker
 --- a type-checking compiler plugin that detects bugs or verifies their
 absence.  After a programmer annotates a program,
-the checker plugin verifies that the code is consistent
+the checker verifies that the code is consistent
 with the annotations.
 If you only want to \emph{use} a checker, you do not need to read this
 chapter.
@@ -815,6 +815,22 @@ Node)}.
 Then, call \<toString()> on the \<FlowExpressions.Receiver> object.
 
 
+\subsectionAndLabel{Repeatable annotations}{repeatable-annotations}
+
+Some pre- and post-condition annotations that have multiple elements (that
+is, annotations that take multiple arguments) should be repeatable, so that
+programmers can specify them more than once.  An example is
+\refqualclass{checker/nullness/qual}{EnsuresNonNullIf}; it could not be
+defined with each of its elements being a list, as (for example)
+\refqualclass{checker/nullness/qual}{KeyFor} is.
+
+Make an annotation \emph{A} repeatable by defining a nested annotation (within
+\emph{A}'s definition) named \<List>, and writing
+\<@Repeatable(\emph{A}.List.class)> on \emph{A}'s definition.
+% This convention is encoded in
+% AnnotatedTypeFactory.isListForRepeatedAnnotationImplementation .
+
+
 \sectionAndLabel{The checker class:  Compiler interface}{creating-compiler-interface}
 
 A checker's entry point is a subclass of
@@ -847,10 +863,11 @@ optional, and many checker classes do not have one.)
 
 The checker class bridges between the Java compiler and the checker.  It
 invokes the type-rule check visitor on every Java source file being
-compiled, and provides a simple API,
-\refmethod{framework/source}{SourceChecker}{report}
-{-org.checkerframework.framework.source.Result-java.lang.Object-}, to issue
-errors using the compiler error reporting mechanism.
+compiled.  The checker uses
+\refmethod{framework/source}{SourceChecker}{reportError}{-java.lang.Object-org.checkerframework.framework.source.Result-java.lang.Object:A-}
+and
+\refmethod{framework/source}{SourceChecker}{reportWarning}{-java.lang.Object-org.checkerframework.framework.source.Result-java.lang.Object:A-}
+to issue errors.
 
 Also, the checker class follows the factory method pattern to
 construct the concrete classes (e.g., visitor, factory) and annotation
@@ -1733,12 +1750,6 @@ usually not shown.
   parameters and wildcards when they appear in warning messages.  Supplying
   this also implies \code{-AprintAllQualifiers}.
 
-\item \code{-Adetailedmsgtext}: Output error/warning messages in a
-  stylized format that is easy for tools to parse.  This is useful for
-  tools that run the Checker Framework and parse its output, such as IDE
-  plugins.  See the source code of \<SourceChecker.java> for details about
-  the format.
-
 \item \code{-Anomsgtext}: use message keys (such as ``\code{type.invalid}'')
 rather than full message text when reporting errors or warnings.  This is
 used by the Checker Framework's own tests, so they do not need to be
@@ -1751,6 +1762,25 @@ already reported the bug, and you want to continue using the checker on a
 large codebase without being inundated in stack traces.
 
 \end{itemize}
+
+
+\subsectionAndLabel{Format of output}{creating-debugging-options-format}
+
+\begin{itemize}
+
+\item \code{-Adetailedmsgtext}: Output error/warning messages in a
+  stylized format that is easy for tools to parse.  This is useful for
+  tools that run the Checker Framework and parse its output, such as IDE
+  plugins.  See the source code of \<SourceChecker.java> for details about
+  the format.
+
+\end{itemize}
+
+The
+\ahref{https://github.com/eisopux/javac-diagnostics-wrapper}{javac-diagnostic-wrapper}
+tool can transform javac's textual output into other formats, such as JSON
+in LSP (Language Server Protocol) format.
+
 
 \subsectionAndLabel{Stub and JDK libraries}{creating-debugging-options-libraries}
 
@@ -1774,6 +1804,17 @@ large codebase without being inundated in stack traces.
 \begin{itemize}
 
 \item \code{-Afilenames}: print the name of each file before type-checking it.
+This can be useful for determining that a long compilation job is making
+progress.
+
+This option can also help to keep a Travis CI job alive (since Travis CI
+terminates any job that does not produce output for 10 minutes).
+This does not work if you are using Maven, because with forked compilation,
+the maven-compiler-plugin queues up all the output and then prints it at the end.
+(Also, the maven-compiler-plugin is buggy and sometimes doesn't print any
+output if it cannot parse it.)
+% Example of not producing output:
+% https://github.com/codehaus-plexus/plexus-compiler/issues/66
 
 \item \code{-Ashowchecks}: print debugging information for each
 pseudo-assignment check (as performed by
@@ -1796,7 +1837,6 @@ about intermediate steps in method type argument inference
   if it includes a \code{.bat} extension on Windows) to re-execute the same compilation command.
   Note that this argument cannot be included in a file containing command-line arguments
   passed to the compiler using the @argfile syntax.
-
   Example usage: \code{-AoutputArgsToFile=\$HOME/scriptfile}
 
 \end{itemize}
@@ -2208,7 +2248,7 @@ methods that should be used instead. Also,
 \subsectionAndLabel{How a checker fits in the compiler as an annotation processor}{creating-checker-as-annotation-processor}
 
 The Checker Framework builds on the Annotation Processing API
-introduced in Java 6.  A type annotation processor is one that extends
+introduced in Java 6.  A type-checking annotation processor is one that extends
 \refclass{javacutil}{AbstractTypeProcessor}; it gets run on each class
 source file after the compiler confirms that the class is valid Java code.
 

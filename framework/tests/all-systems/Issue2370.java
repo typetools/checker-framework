@@ -2,7 +2,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-@SuppressWarnings("")
+@SuppressWarnings("all")
 public class Issue2370 {
     private Stream<Action2370> getAction2370s(final State2370 state) {
         return Stream.of(

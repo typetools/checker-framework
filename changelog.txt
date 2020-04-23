@@ -1,8 +1,33 @@
+---------------------------------------------------------------------------
+
 Version 3.3.0, April 1, 2020
+
+New command-line options:
+  -Alint=trustArrayLenZero trust @ArrayLen(0) annotations when determining
+  the type of Collections.toArray.
 
 Renamings:
   -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
     The old name works temporarily but will be removed in a future release.
+
+For collection methods with `Object` formal parameter type, such as
+contains, indexOf, and remove, the annotated JDK now forbids null as an
+argument.  To make the Nullness Checker permit null, pass
+`-Astubs=checker.jar/collection-object-parameters-may-be-null.astub`.
+
+The argument to @SuppressWarnings can be a substring of a message key that
+extends at each end to a period or an end of the key.  (Previously, any
+substring worked, including the empty string which suppressed all warnings.
+Use "all" to suppress all warnings.)
+
+All postcondition annotations are repeatable (e.g., `@EnsuresNonNull`,
+`@EnsuresNonNullIf`, ...).
+
+Renamed wrapper annotations (which users should not write):
+ * `@DefaultQualifiers` => `@DefaultQualifier.List`
+ * `@EnsuresQualifiersIf` => `@EnsuresQualifierIf.List`
+ * `@EnsuresQualifiers` => `@EnsuresQualifier.List`
+ * `@RequiresQualifiers` => `@RequiresQualifier.List`
 
 Implementation details:
  * Removed `@DefaultInUncheckedCodeFor` and
@@ -10,6 +35,17 @@ Implementation details:
  * Renamings:
    applyUncheckedCodeDefaults() to applyConservativeDefaults()
    useUncheckedCodeDefault() to useConservativeDefault()
+   AnnotatedTypeReplacer to AnnotatedTypeCopierWithReplacement
+   AnnotatedTypeMerger to AnnotatedTypeReplacer
+ * Deprecated the `framework.source.Result` class; use `DiagMessage` or
+   `List<DiagMessage>` instead.  If you were creating a `Result` just to
+   pass it to `report`, then call new methods `reportError` and
+   `reportWarning` instead.
+ * AbstractTypeProcessor#typeProcessingOver() always gets called.
+
+Closed issues:
+1307, 1881, 1929, 2432, 2793, 3040, 3046, 3050, 3056, 3083, 3124, 3126, 3129,
+3132, 3139, 3149, 3150, 3167, 3189.
 
 ---------------------------------------------------------------------------
 

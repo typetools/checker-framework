@@ -9,7 +9,7 @@ plugins {
     // https://github.com/tbroyer/gradle-errorprone-plugin
     id "net.ltgt.errorprone" version "1.1.1"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-    id 'org.ajoberstar.grgit' version '4.0.1' apply false
+    id 'org.ajoberstar.grgit' version '4.0.2' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
     id "com.gorylenko.gradle-git-properties" version "2.2.2"
 }
@@ -23,7 +23,8 @@ repositories {
 }
 
 gitProperties {
-    gitPropertiesResourceDir = "${project.rootDir}/framework/src/main/resources"
+    // logically belongs in framework, but only checker resources are copied to .jar file
+    gitPropertiesResourceDir = "${project.rootDir}/checker/src/main/resources"
 }
 
 ext {
@@ -53,6 +54,9 @@ ext {
     // The local git repository, typically in the .git directory, but not for worktrees.
     // This value is always overwritten, but Gradle needs the variable to be initialized.
     localRepo = ".git"
+
+    // Location of pom files that are only used to add meta-data to the artifacts published to Maven.
+    pomFiles = "${rootDir}/docs/developer/release/maven-artifacts"
 }
 // Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
 // and with text in #installation
@@ -98,7 +102,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.2.0'
+    version '3.3.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -136,7 +140,7 @@ allprojects {
             dependsOn(":framework-test:${tagletVersion}Classes")
             doFirst {
                 options.encoding = 'UTF-8'
-                if (!name.startsWith('requireJavadoc') && !name.equals("javadocDoclintAll")) {
+                if (!name.equals("javadocDoclintAll")) {
                     options.memberLevel = javadocMemberLevel
                 }
                 classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
@@ -372,8 +376,13 @@ configurations {
     requireJavadoc
 }
 dependencies {
-    // https://mvnrepository.com/artifact/org.plumelib/require-javadoc
-    requireJavadoc group: 'org.plumelib', name: 'require-javadoc', version: '0.1.2'
+    requireJavadoc "org.plumelib:require-javadoc:0.3.0"
+}
+task requireJavadoc(type: JavaExec) {
+    description = 'Ensures that Javadoc documentation exists.'
+    main = "org.plumelib.javadoc.RequireJavadoc"
+    classpath = configurations.requireJavadoc
+    args "checker/src/main/java", "dataflow/src/main/java", "framework-test/src/main/java", "framework/src/main/java", "javacutil/src/main/java"
 }
 
 
@@ -383,17 +392,15 @@ dependencies {
  * @param taskName the name of the task to create
  * @param taskDescription description of the task
  * @param memberLevel the JavadocMemberLevel to use
- * @param requireJavadoc whether or not to run the RequireJavadoc doclet. If false -Xdoclint:all is
- * passed. Defaults to true.
  * @return the new task
  */
-def createJavadocTask(taskName, taskDescription, memberLevel, requireJavadoc = true) {
+def createJavadocTask(taskName, taskDescription, memberLevel) {
     tasks.create(name: taskName, type: Javadoc) {
         description = taskDescription
         destinationDir = file("${rootDir}/docs/tmpapi")
         destinationDir.mkdirs()
         subprojects.forEach {
-            if(!it.name.startsWith("checker-qual")) {
+            if (!it.name.startsWith("checker-qual")) {
                 source += it.sourceSets.main.allJava
             }
         }
@@ -402,32 +409,24 @@ def createJavadocTask(taskName, taskDescription, memberLevel, requireJavadoc = t
 
         destinationDir.deleteDir()
         options.memberLevel = memberLevel
-        if (requireJavadoc) {
-            options.docletpath = configurations.requireJavadoc.asList()
-            options.doclet = "org.plumelib.javadoc.RequireJavadoc"
-        }
-        options.addBooleanOption('Xdoclint:all', !requireJavadoc)
+        options.addBooleanOption('Xdoclint:all', true)
         options.addStringOption('Xmaxwarns', '99999')
 
         // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
     }
 }
-// With JDK 11 this task produces the following error:
-// javadoc: error - invalid flag: -d
-createJavadocTask('requireJavadoc', 'Ensures that protected and public Java elements have Javadoc documentation.', JavadocMemberLevel.PROTECTED)
-// With JDK 11 this task produces the following error:
-// javadoc: error - invalid flag: -d
-createJavadocTask('requireJavadocPrivate', 'Ensures that private, protected, and public Java elements have Javadoc documentation.', JavadocMemberLevel.PRIVATE)
-createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE, false)
+
+createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
     onlyIf { !(new File("${jtregHome}/lib/jtreg.jar").exists()) }
-    src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
+    // src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
     // If ci.adoptopenjdk.net is down, use this copy.
-    // src 'https://checkerframework.org/jtreg-4.2.0-tip.tar.gz'
-    overwrite true
+    src 'https://checkerframework.org/jtreg-4.2.0-tip.tar.gz'
     dest new File(buildDir, 'jtreg-4.2.0-tip.tar.gz')
+    overwrite true
+    retries 3
     doLast {
         copy {
             from tarTree(dest)
@@ -814,7 +813,8 @@ subprojects {
             }
         }
 
-        // Create an allTests task per project
+        // Create an allTests task per project.
+        // allTests = test + nonJunitTests
         tasks.create(name: 'allTests', group: 'Verification') {
             description 'Run all Checker Framework tests'
             // The 'test' target is just the JUnit tests.
@@ -872,7 +872,7 @@ task checkBasicStyle(group: 'Format') {
             'manual.html',
             'manual.html-e',
             'junit.*.properties',
-	    'framework/src/main/resources/git.properties']
+            'framework/src/main/resources/git.properties']
     doLast {
         FileTree tree = fileTree(dir: projectDir)
         for (String dir : ignoreDirectories) {
@@ -966,3 +966,101 @@ task releaseAndTest {
 
 // Don't create an empty checker-framework-VERSION.jar
 jar.onlyIf {false}
+
+/**
+ * Copies the pom file and expands any properties in the file. For example,
+ * ${checkerframeworkversion} is changed to the current version.
+ * @param pomFile file name of pom
+ * @return file name of the copied and expanded pom file
+ */
+String copyAndExpandPomFile(String pomFile) {
+    mkdir "${buildDir}/maven"
+    copy {
+        from pomFile
+        into "${buildDir}/maven"
+        expand('checkerframeworkversion': version)
+    }
+
+    new File("${buildDir}/maven").toPath().resolve(new File(pomFile).toPath().last())
+}
+
+/**
+ * Deploys the given jar file to the local Maven repository.
+ * @param jar fully qualified file name of a jar file
+ * @param pom filename of pom that describes the artifact
+ */
+void mvnDeployToLocalRepo(String jar, String pom) {
+    String copiedFilename = copyAndExpandPomFile(pom)
+    exec {
+        executable 'mvn'
+        args += [
+                'install:install-file',
+                "-Dfile=${jar}",
+                "-DpomFile=${copiedFilename}",
+                '-DgeneratePom=true'
+
+        ]
+    }
+}
+
+/**
+ * Deploys the jar file produced by the "jar" task of the given project to the local Maven repository.
+ * @param project project whose jar file is deployed
+ * @param pom filename of pom that describes the artifact
+ */
+void mvnDeployToLocalRepo(Project project, String pomFile) {
+    String jarFile = project.tasks.getByName('jar').archiveFile.get().toString();
+    mvnDeployToLocalRepo(jarFile, pomFile)
+}
+
+/**
+ * Signs and deploys the given jar file to the Sonatypes Maven repository.
+ * @param jar fully qualified file name of a jar file
+ * @param pom filename of pom that describes the artifact
+ * @param classifier the kind of artifact; sources or javadoc; defaults to the empty string
+ */
+void mvnSignAndDeployToSonatype(String jar, String pom, String classifier = "") {
+    String copiedFilename = copyAndExpandPomFile(pom)
+    String passwordFile = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
+    String passphrase = new File(passwordFile).readLines().get(0);
+
+    exec {
+        executable 'mvn'
+        args += [
+                'gpg:sign-and-deploy-file',
+                '-Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/',
+                '-DrepositoryId=sonatype-nexus-staging',
+                "-DpomFile=${copiedFilename}",
+                "-Dfile=${jar}",
+                '-Dgpg.keyname=checker-framework-dev@googlegroups.com',
+                "-Dgpg.passphrase=${passphrase}"
+        ]
+        if (!classifier.isEmpty()) {
+            args += ["-Dclassifier=${classifier}"]
+        }
+    }
+}
+
+/**
+ * Signs and deploys the classes jar, sources jar, and javadoc jar files for a single artifact.
+ * @param classesJar class jar file
+ * @param sourceJar source jar file corresponding to the classesJar
+ * @param javadocJar javadoc jar file corresponding to the classesJar
+ * @param pom filename of pom that describes the artifact
+ */
+void mvnSignAndDeployMultipleToSonatype(String classesJar, String sourceJar, String javadocJar, String pom) {
+    mvnSignAndDeployToSonatype(classesJar, pom)
+    mvnSignAndDeployToSonatype(sourceJar, pom, "sources")
+    mvnSignAndDeployToSonatype(javadocJar, pom, "javadoc")
+}
+
+/**
+ * Signs and deploys the classes jar, sources jar, and javadoc jar files for a single artifact.
+ * @param project with a jar, sourcesJar, and javadocJar tasks defined
+ * @param pom filename of pom that describes the artifact
+ */
+void mvnSignAndDeployMultipleToSonatype(Project project, String pom) {
+    mvnSignAndDeployMultipleToSonatype(project.tasks.getByName('jar').archiveFile.get().toString(),
+            project.tasks.getByName('sourcesJar').archiveFile.get().toString(),
+            project.tasks.getByName('javadocJar').archiveFile.get().toString(), pom)
+}

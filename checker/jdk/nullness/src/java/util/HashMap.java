@@ -340,7 +340,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
      * to incorporate impact of the highest bits that would otherwise
      * never be used in index calculations because of table bounds.
      */
-    static final int hash(Object key) {
+    static final int hash(@Nullable Object key) {
         int h;
         return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
     }
@@ -573,7 +573,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
      * @param key the key
      * @return the node, or null if none
      */
-    final Node<K,V> getNode(int hash, Object key) {
+    final Node<K,V> getNode(int hash, @Nullable Object key) {
         Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
         if ((tab = table) != null && (n = tab.length) > 0 &&
             (first = tab[(n - 1) & hash]) != null) {
@@ -822,7 +822,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
      * @param movable if false do not move other nodes while removing
      * @return the node, or null if none
      */
-    final Node<K,V> removeNode(int hash, Object key, Object value,
+    final Node<K,V> removeNode(int hash, @Nullable Object key, @Nullable Object value,
                                boolean matchValue, boolean movable) {
         Node<K,V>[] tab; Node<K,V> p; int n, index;
         if ((tab = table) != null && (n = tab.length) > 0 &&
@@ -927,8 +927,8 @@ public class HashMap<K, V> extends AbstractMap<K,V>
         public final void clear()               { HashMap.this.clear(); }
         @SideEffectFree
         public final Iterator<K> iterator()     { return new KeyIterator(); }
-        public final boolean contains(Object o) { return containsKey(o); }
-        public final boolean remove(Object key) {
+        public final boolean contains(@Nullable Object o) { return containsKey(o); }
+        public final boolean remove(@Nullable Object key) {
             return removeNode(hash(key), key, null, false, true) != null;
         }
         @SideEffectFree
@@ -978,7 +978,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
         public final void clear()               { HashMap.this.clear(); }
         @SideEffectFree
         public final Iterator<V> iterator()     { return new ValueIterator(); }
-        public final boolean contains(Object o) { return containsValue(o); }
+        public final boolean contains(@Nullable Object o) { return containsValue(o); }
         @SideEffectFree
         public final Spliterator<V> spliterator() {
             return new ValueSpliterator<>(HashMap.this, 0, -1, 0, 0);
@@ -1029,7 +1029,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
         public final Iterator<Map.Entry<K,V>> iterator() {
             return new EntryIterator();
         }
-        public final boolean contains(Object o) {
+        public final boolean contains(@Nullable Object o) {
             if (!(o instanceof Map.Entry))
                 return false;
             Map.Entry<?,?> e = (Map.Entry<?,?>) o;
@@ -1037,7 +1037,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
             Node<K,V> candidate = getNode(hash(key), key);
             return candidate != null && candidate.equals(e);
         }
-        public final boolean remove(Object o) {
+        public final boolean remove(@Nullable Object o) {
             if (o instanceof Map.Entry) {
                 Map.Entry<?,?> e = (Map.Entry<?,?>) o;
                 Object key = e.getKey();
@@ -1069,19 +1069,19 @@ public class HashMap<K, V> extends AbstractMap<K,V>
     // Overrides of JDK8 Map extension methods
 
     @Override
-    public V getOrDefault(Object key, V defaultValue) {
+    public V getOrDefault(@Nullable Object key, V defaultValue) {
         Node<K,V> e;
         return (e = getNode(hash(key), key)) == null ? defaultValue : e.value;
     }
 
     @Override
     @EnsuresKeyFor(value="#1", map="this")
-    public V putIfAbsent(K key, V value) {
+    public @Nullable V putIfAbsent(K key, V value) {
         return putVal(hash(key), key, value, true, true);
     }
 
     @Override
-    public boolean remove(Object key, Object value) {
+    public boolean remove(@Nullable Object key, @Nullable Object value) {
         return removeNode(hash(key), key, value, true, true) != null;
     }
 
@@ -1098,7 +1098,7 @@ public class HashMap<K, V> extends AbstractMap<K,V>
     }
 
     @Override
-    public V replace(K key, V value) {
+    public @Nullable V replace(K key, V value) {
         Node<K,V> e;
         if ((e = getNode(hash(key), key)) != null) {
             V oldValue = e.value;
