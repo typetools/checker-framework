@@ -641,7 +641,7 @@ minimal stub files.
   mkdir project-stubs
   cp -R project/src project-stubs
   java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar org.checkerframework.framework.stub.JavaStubifier project-stubs
-  find . -type f -name "*.java" -exec rename 's/.java$/.astub/' {} \;
+  find project-stubs -type f -name "*.java" -exec rename 's/.java$/.astub/' {} \;
 \end{Verbatim}
 
 Supply it a list of directories to process. Replacement happens in-place, so make sure to
