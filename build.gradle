@@ -384,7 +384,6 @@ task requireJavadoc(type: JavaExec) {
     classpath = configurations.requireJavadoc
     args "checker/src/main/java", "dataflow/src/main/java", "framework-test/src/main/java", "framework/src/main/java", "javacutil/src/main/java"
 }
-check.dependsOn requireJavadoc
 
 
 /**
