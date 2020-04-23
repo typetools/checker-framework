@@ -92,7 +92,9 @@ public class TestUtilities {
         List<File> fileInDir = new ArrayList<>();
 
         fileGroupedByDirectory.add(fileInDir);
-        for (String fileName : dir.list()) {
+        String[] dirContents = dir.list();
+        Arrays.sort(dirContents);
+        for (String fileName : dirContents) {
             File file = new File(dir, fileName);
             if (file.isDirectory()) {
                 fileGroupedByDirectory.addAll(findJavaTestFilesInDirectory(file));
