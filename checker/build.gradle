@@ -384,7 +384,7 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
 }
 
 task testAnnotatedJdk {
-    description 'Runs some of the tests that use the annotated jdk.'
+    description 'Runs tests that use the annotated JDK. (This does not run all the tests that use the annotated JDK.)'
     dependsOn('IndexTest', 'LockTest', 'NullnessFbcTest', 'OptionalTest')
 }
 
