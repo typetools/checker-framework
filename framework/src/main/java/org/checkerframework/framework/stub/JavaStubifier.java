@@ -117,16 +117,19 @@ public class JavaStubifier {
                 implicitlyPublic = true;
             }
             super.visit(cid, arg);
-            removeIfPrivateOrPkgPrivate(cid);
             if (cid.isInterface()) {
                 implicitlyPublic = prevIP;
             }
+            // Do not remove private or package-private classes, because there could
+            // be externally-visible members in externally-visible subclasses.
             return cid;
         }
 
         @Override
         public EnumDeclaration visit(EnumDeclaration ed, Void arg) {
             super.visit(ed, arg);
+            // Enums can't be extended, so it is ok to remove them if they are not externally
+            // visible.
             removeIfPrivateOrPkgPrivate(ed);
             return ed;
         }
@@ -134,6 +137,8 @@ public class JavaStubifier {
         @Override
         public ConstructorDeclaration visit(ConstructorDeclaration cd, Void arg) {
             super.visit(cd, arg);
+            // Constructors cannot be overridden, so it is ok to remove them if they are
+            // not externally visible.
             if (!removeIfPrivateOrPkgPrivate(cd)) {
                 // ConstructorDeclaration has to have a body
                 cd.setBody(new BlockStmt());
@@ -144,7 +149,9 @@ public class JavaStubifier {
         @Override
         public MethodDeclaration visit(MethodDeclaration md, Void arg) {
             super.visit(md, arg);
-            if (!removeIfPrivateOrPkgPrivate(md)) {
+            // Non-private methods could be overriden with larger visibility.
+            // So it is only safe to remove private methods, which can't be overridden.
+            if (!removeIfPrivate(md)) {
                 md.removeBody();
             }
             return md;
@@ -153,6 +160,7 @@ public class JavaStubifier {
         @Override
         public FieldDeclaration visit(FieldDeclaration fd, Void arg) {
             super.visit(fd, arg);
+            // It is safe to remove fields that are not externally visible.
             if (!removeIfPrivateOrPkgPrivate(fd)) {
                 fd.getVariables().forEach(v -> v.getInitializer().ifPresent(Node::remove));
             }
@@ -183,11 +191,29 @@ public class JavaStubifier {
          * @return true if the node was removed
          */
         private boolean removeIfPrivateOrPkgPrivate(NodeWithAccessModifiers<?> node) {
-            AccessSpecifier as = node.getAccessSpecifier();
             if (implicitlyPublic) {
                 return false;
             }
+            AccessSpecifier as = node.getAccessSpecifier();
             if (as == AccessSpecifier.PRIVATE || as == AccessSpecifier.PACKAGE_PRIVATE) {
+                ((Node) node).remove();
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Remove the whole node if it is private.
+         *
+         * @param node Node to inspect
+         * @return true if the node was removed
+         */
+        private boolean removeIfPrivate(NodeWithAccessModifiers<?> node) {
+            if (implicitlyPublic) {
+                return false;
+            }
+            AccessSpecifier as = node.getAccessSpecifier();
+            if (as == AccessSpecifier.PRIVATE) {
                 ((Node) node).remove();
                 return true;
             }
