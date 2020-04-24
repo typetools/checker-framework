@@ -14,10 +14,7 @@ RUN apt-get -qqy update \
 && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get -qqy update \
-&& apt-get -qqy install \
-  python3 \
-  python3-pip \
-  python-pip \
+&& apt-get -qqy install python-pip \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*
 
