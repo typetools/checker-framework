@@ -1170,4 +1170,15 @@ public class QualifierDefaults {
 
         return boundType;
     }
+
+    /**
+     * Clear all the underlying cached Elements.
+     *
+     * <p>Implementations of {@link org.checkerframework.javacutil.AbstractTypeProcessor
+     * AbstractTypeProcessor} should consider calling this method after processing to prevent memory
+     * leaks.
+     */
+    public static void clearCache() {
+        elementToBoundType.clear();
+    }
 }

@@ -62,6 +62,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.OptionConfiguration;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -465,7 +466,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @see #activeOptions
      */
-    protected static final String OPTION_SEPARATOR = "_";
+    private static final String OPTION_SEPARATOR = "_";
 
     /**
      * The checker that called this one, whether that be a BaseTypeChecker (used as a compound
@@ -2525,5 +2526,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } catch (IOException e) {
             System.out.println("IOException while reading git.properties: " + e.getMessage());
         }
+    }
+
+    @Override
+    public void typeProcessingOver() {
+        super.typeProcessingOver();
+        QualifierDefaults.clearCache();
     }
 }
