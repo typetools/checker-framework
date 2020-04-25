@@ -54,6 +54,11 @@ class ValueTreeAnnotator extends TreeAnnotator {
                                     "java.lang.Short",
                                     "char[]")));
 
+    /**
+     * Create a ValueTreeAnnotator.
+     *
+     * @param atypeFactory the ValueAnnotatedTypeFactory to use
+     */
     public ValueTreeAnnotator(ValueAnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);
         this.atypeFactory = atypeFactory;

@@ -112,13 +112,21 @@ final class ValueQualifierHierarchy extends MultiGraphQualifierHierarchy {
             Range lubRange = ValueAnnotatedTypeFactory.getRange(lub);
             Range newRange = ValueAnnotatedTypeFactory.getRange(newQualifier);
             Range oldRange = ValueAnnotatedTypeFactory.getRange(previousQualifier);
-            return atypeFactory.createArrayLenRangeAnnotation(
-                    widenedRange(newRange, oldRange, lubRange));
+            Range wubRange = widenedRange(newRange, oldRange, lubRange);
+            return atypeFactory.createArrayLenRangeAnnotation(wubRange);
         } else {
             return lub;
         }
     }
 
+    /**
+     * Determine the widened range from other ranges.
+     *
+     * @param newRange the new range
+     * @param oldRange the old range
+     * @param lubRange the LUB range
+     * @return the widened range
+     */
     private Range widenedRange(Range newRange, Range oldRange, Range lubRange) {
         if (newRange == null || oldRange == null || lubRange.equals(oldRange)) {
             return lubRange;
