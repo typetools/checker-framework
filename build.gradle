@@ -717,8 +717,6 @@ subprojects {
             if (isJava8) {
                 jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
             } else {
-                // Without this, the test throw "java.lang.OutOfMemoryError: Java heap space"
-                forkEvery(1)
                 jvmArgs += [
                         "--illegal-access=warn",
                         "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
