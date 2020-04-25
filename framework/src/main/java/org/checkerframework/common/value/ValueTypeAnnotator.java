@@ -15,7 +15,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 class ValueTypeAnnotator extends TypeAnnotator {
 
-    /** The type factory to use. Shodows the field from the superclass with a more specific type. */
+    /** The type factory to use. Shadows the field from the superclass with a more specific type. */
+    @SuppressWarnings("HidingField")
     protected final ValueAnnotatedTypeFactory typeFactory;
 
     /**
