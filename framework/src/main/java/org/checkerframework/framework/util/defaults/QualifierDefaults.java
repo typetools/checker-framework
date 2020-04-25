@@ -83,9 +83,10 @@ public class QualifierDefaults {
     private final DefaultSet checkedCodeDefaults = new DefaultSet();
     private final DefaultSet uncheckedCodeDefaults = new DefaultSet();
 
-    /** Mapping from an Element to the source Tree of the declaration. */
+    /** Size for caches. */
     private static final int CACHE_SIZE = 300;
 
+    /** Mapping from an Element to the bound type. */
     protected final Map<Element, BoundType> elementToBoundType =
             CollectionUtils.createLRUCache(CACHE_SIZE);
 
@@ -707,10 +708,16 @@ public class QualifierDefaults {
         return new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
     }
 
+    /** A default applier element. */
     public class DefaultApplierElement {
 
+        /** The annotated type factory. */
         protected final AnnotatedTypeFactory atypeFactory;
+
+        /** The scope of the default. */
         protected final Element scope;
+
+        /** The type to which to apply the default. */
         protected final AnnotatedTypeMirror type;
 
         /**
