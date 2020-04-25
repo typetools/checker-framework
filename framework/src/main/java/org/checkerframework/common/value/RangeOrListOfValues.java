@@ -13,10 +13,8 @@ import org.checkerframework.javacutil.PluginUtil;
 /**
  * An abstraction that can be either a range or a list of values that could come from an {@link
  * ArrayLen} or {@link IntVal}. This abstraction reduces the number of cases that {@link
- * org.checkerframework.common.value.ValueAnnotatedTypeFactory.ValueTreeAnnotator#handleInitializers(List,
- * AnnotatedTypeMirror.AnnotatedArrayType)} and {@link
- * org.checkerframework.common.value.ValueAnnotatedTypeFactory.ValueTreeAnnotator#handleDimensions(List,
- * AnnotatedTypeMirror.AnnotatedArrayType)} must handle.
+ * ValueTreeAnnotator#handleInitializers(List, AnnotatedTypeMirror.AnnotatedArrayType)} and {@link
+ * ValueTreeAnnotator#handleDimensions(List, AnnotatedTypeMirror.AnnotatedArrayType)} must handle.
  *
  * <p>Tracks Ints in the list, and creates ArrayLen or ArrayLenRange annotations, because it's meant
  * to be used to reason about ArrayLen and ArrayLenRange values.
