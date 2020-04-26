@@ -866,7 +866,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return the exceptional exit store, or {@code null}, if there is no such store.
      */
     public @Nullable Store getExceptionalExitStore(Tree tree) {
-        return regularExitStores.get(tree);
+        return exceptionalExitStores.get(tree);
     }
 
     /**
