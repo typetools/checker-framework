@@ -419,7 +419,6 @@ public class StubGenerator {
         if (PluginUtil.getJreVersion() == 8) {
             options.put(Option.SOURCE, "8");
             options.put(Option.TARGET, "8");
-            options.put(Option.XBOOTCLASSPATH_PREPEND, "jdk8.jar");
         }
 
         JavaCompiler javac = JavaCompiler.instance(context);

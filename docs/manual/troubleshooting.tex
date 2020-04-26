@@ -156,55 +156,6 @@ annotation was available, but it was not available at run time.
 You can use JDK 8 at run time.
 
 \item
-\label{troubleshooting-class-file-not-found}
-A ``class file for \ldots\ not found'' error, especially for an inner class
-in the JDK, is probably due to a JDK version mismatch.  To solve the
-problem, you need to perform compilation with a different Java version or
-different version of the JDK\@.
-
-In general, Java issues a ``class file for \ldots\ not found'' error when
-your classpath contains code that was compiled
-with some library, but your classpath does not contain that library itself.
-
-For example, suppose that when you run the compiler, you are using JDK 8,
-but some library on your classpath was compiled against JDK 6 or 7, and the
-compiled library refers to a class that only appears in JDK 6 or 7.  (If only
-one version of Java existed, or the Checker Framework didn't try to support
-multiple different versions of Java, this would not be a problem.)
-
-Examples of classes that were removed from the JDK include:
-
-\begin{Verbatim}
-  class file for java.io.File$LazyInitialization not found  -- removed in JDK 7
-  class file for java.util.Hashtable$EmptyIterator not found  -- removed in JDK 7
-  java.lang.NoClassDefFoundError: java/util/Hashtable$EmptyEnumerator  -- removed in JDK 7
-  class file for java.util.TimeZone$DisplayNames not found  -- removed in JDK 8
-\end{Verbatim}
-
-Examples of classes that were added to the JDK include:
-
-\begin{Verbatim}
-  class file for java.util.Vector$Itr not found  -- introduced in JDK 7
-  class file for java.lang.Class$ReflectionData not found  -- introduced in JDK 7 release 45
-  The type java.lang.Class$ReflectionData cannot be resolved  -- introduced in JDK 8
-  class file for java.util.regex.Pattern$HorizWS not found  -- introduced in JDK 9
-\end{Verbatim}
-
-You may be able to solve the problem by running
-
-\begin{Verbatim}
-  ./gradlew buildJdk assemble
-\end{Verbatim}
-
-\noindent
-to re-generate files \code{checker/jdk/jdk\{8,9\}.jar} and \code{checker/bin/jdk\{8,9\}.jar}.
-
-That usually works, but if not, then you should recompile the Checker
-Framework from source (Section~\ref{build-source}) rather than using
-the pre-compiled distribution.
-
-
-\item
 \label{no-such-field-error}
 A \<NoSuchFieldError> such as this:
 
@@ -728,28 +679,9 @@ Alternatively or in the interim, you can use stub files as described in
 Section~\ref{stub}.
 
 If the library is annotated but has some incorrect or missing annotations,
-then please open a pull request that adds the annotations.
-\begin{itemize}
-\item
-  Non-JDK libraries:  You can find the annotated source in
-  \url{https://github.com/typetools/}.
-  If the library does not exist there, then it has no annotations yet.
-  You can fork it, add annotations,
-  and propose that your annotated version be moved into
-  \url{https://github.com/typetools/}.
-\item
-  JDK:  You need to open two pull requests, because there are two versions of the
-  annotated JDK.
-  \begin{itemize}
-  \item JDK 8: The annotated JDK source is in the
-    \ahref{https://github.com/typetools/checker-framework}{Checker Framework
-      GitHub repository}, either in a subdirectory of
-    \ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
-    or in files named \<jdk.astub> in the checker's implementation directory.
-  \item
-    JDK 11: The annotated JDK source is in \url{https://github.com/typetools/jdk}.
-  \end{itemize}
-\end{itemize}
+then please open a pull request that adds the annotations. You can find the annotated source in
+\url{https://github.com/typetools/}, including annotations for the JDK.
+If the library does not exist there, then it has no annotations yet.
 
 For either approach, please see \chapterpageref{annotating-libraries} for
 tips about writing library annotations.
