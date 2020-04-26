@@ -10,18 +10,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.plumelib.util.UtilPlume;
 
-/**
- * This file contains basic utility functions that should be reused to create a command-line call to
- * {@code CheckerMain}.
- */
-public class PluginUtil {
+/** This file contains basic utility functions. */
+public class SystemUtil {
 
     /** The system-specific line separator. */
     private static final String LINE_SEPARATOR = System.lineSeparator();
@@ -54,15 +50,11 @@ public class PluginUtil {
      * @param objs the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
      */
-    public static <T> String join(final CharSequence delimiter, final T[] objs) {
+    public static <T> String join(CharSequence delimiter, T @Nullable [] objs) {
         if (objs == null) {
             return "null";
         }
-        final StringJoiner sb = new StringJoiner(delimiter);
-        for (final Object obj : objs) {
-            sb.add(Objects.toString(obj));
-        }
-        return sb.toString();
+        return UtilPlume.join(delimiter, objs);
     }
 
     /**
@@ -73,15 +65,11 @@ public class PluginUtil {
      * @param values the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
      */
-    public static String join(CharSequence delimiter, Iterable<?> values) {
+    public static String join(CharSequence delimiter, @Nullable Iterable<?> values) {
         if (values == null) {
             return "null";
         }
-        StringJoiner sb = new StringJoiner(delimiter);
-        for (Object value : values) {
-            sb.add(Objects.toString(value));
-        }
-        return sb.toString();
+        return UtilPlume.join(delimiter, values);
     }
 
     /**
@@ -94,7 +82,7 @@ public class PluginUtil {
      */
     @SafeVarargs
     @SuppressWarnings("varargs")
-    public static <T> String joinLines(T... a) {
+    public static <T> String joinLines(T @Nullable ... a) {
         return join(LINE_SEPARATOR, a);
     }
 
@@ -105,7 +93,7 @@ public class PluginUtil {
      * @param v list of values to concatenate
      * @return the concatenation of the string representations of the values, each on its own line
      */
-    public static String joinLines(Iterable<? extends Object> v) {
+    public static String joinLines(@Nullable Iterable<? extends Object> v) {
         return join(LINE_SEPARATOR, v);
     }
 

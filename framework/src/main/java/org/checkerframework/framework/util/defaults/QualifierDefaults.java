@@ -44,7 +44,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -170,11 +170,11 @@ public class QualifierDefaults {
     @Override
     public String toString() {
         // displays the checked and unchecked code defaults
-        return PluginUtil.joinLines(
+        return SystemUtil.joinLines(
                 "Checked code defaults: ",
-                PluginUtil.joinLines(checkedCodeDefaults),
+                SystemUtil.joinLines(checkedCodeDefaults),
                 "Unchecked code defaults: ",
-                PluginUtil.joinLines(uncheckedCodeDefaults),
+                SystemUtil.joinLines(uncheckedCodeDefaults),
                 "useConservativeDefaultsSource: " + useConservativeDefaultsSource,
                 "useConservativeDefaultsBytecode: " + useConservativeDefaultsBytecode);
     }
@@ -1136,7 +1136,7 @@ public class QualifierDefaults {
                 }
             } else {
                 throw new BugInCF(
-                        PluginUtil.joinLines(
+                        SystemUtil.joinLines(
                                 "Unexpected tree type for typeVar Element:",
                                 "typeParamElem=" + typeParamElem,
                                 typeParamDecl));

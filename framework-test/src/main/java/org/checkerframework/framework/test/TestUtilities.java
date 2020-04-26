@@ -22,7 +22,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
 
 public class TestUtilities {
@@ -34,8 +34,8 @@ public class TestUtilities {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         OutputStream err = new ByteArrayOutputStream();
         compiler.run(null, null, err, "-version");
-        IS_AT_LEAST_9_JVM = PluginUtil.getJreVersion() >= 9;
-        IS_AT_LEAST_11_JVM = PluginUtil.getJreVersion() >= 11;
+        IS_AT_LEAST_9_JVM = SystemUtil.getJreVersion() >= 9;
+        IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
     }
 
     public static List<File> findNestedJavaTestFiles(String... dirNames) {
@@ -324,19 +324,19 @@ public class TestUtilities {
             pw.println("#Missing: " + missing.size() + "      #Unexpected: " + unexpected.size());
 
             pw.println("Expected:");
-            pw.println(PluginUtil.joinLines(expected));
+            pw.println(SystemUtil.joinLines(expected));
             pw.println();
 
             pw.println("Actual:");
-            pw.println(PluginUtil.joinLines(actual));
+            pw.println(SystemUtil.joinLines(actual));
             pw.println();
 
             pw.println("Missing:");
-            pw.println(PluginUtil.joinLines(missing));
+            pw.println(SystemUtil.joinLines(missing));
             pw.println();
 
             pw.println("Unexpected:");
-            pw.println(PluginUtil.joinLines(unexpected));
+            pw.println(SystemUtil.joinLines(unexpected));
             pw.println();
 
             pw.println();
@@ -419,10 +419,10 @@ public class TestUtilities {
     }
 
     public static boolean testBooleanProperty(String propName, boolean defaultValue) {
-        return PluginUtil.getBooleanSystemProperty(propName, defaultValue);
+        return SystemUtil.getBooleanSystemProperty(propName, defaultValue);
     }
 
     public static boolean getShouldEmitDebugInfo() {
-        return PluginUtil.getBooleanSystemProperty("emit.test.debug");
+        return SystemUtil.getBooleanSystemProperty("emit.test.debug");
     }
 }
