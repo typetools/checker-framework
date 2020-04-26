@@ -76,11 +76,19 @@ public class QualifierDefaults {
      */
     private boolean applyToTypeVar = false;
 
+    /** Element utilities to use. */
     private final Elements elements;
+
+    /** AnnotatedTypeFactory to use. */
     private final AnnotatedTypeFactory atypeFactory;
+
+    /** List of the upstream checker binary names. */
     private final List<String> upstreamCheckerNames;
 
+    /** Defaults for checked code. */
     private final DefaultSet checkedCodeDefaults = new DefaultSet();
+
+    /** Defaults for unchecked code. */
     private final DefaultSet uncheckedCodeDefaults = new DefaultSet();
 
     /** Size for caches. */
@@ -140,6 +148,7 @@ public class QualifierDefaults {
 
     /** True if conservative defaults should be used in unannotated source code. */
     private final boolean useConservativeDefaultsSource;
+
     /** True if conservative defaults should be used for bytecode. */
     private final boolean useConservativeDefaultsBytecode;
 
