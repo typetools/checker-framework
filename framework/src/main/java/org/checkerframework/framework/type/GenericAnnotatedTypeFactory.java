@@ -879,7 +879,6 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public @Nullable List<Pair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
             MethodTree methodTree) {
-        assert returnStatementStores.containsKey(methodTree);
         return returnStatementStores.get(methodTree);
     }
 
