@@ -871,14 +871,16 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * Returns a list of all return statements of {@code method} paired with their the corresponding
-     * {@link TransferResult}. If {@code method} has no return statement, then null is returned.
+     * {@link TransferResult}. If {@code method} has no return statement, then the empty list is
+     * returned.
      *
      * @param methodTree method whose return statements should be returned
      * @return a list of all return statements of {@code method} paired with their the corresponding
-     *     {@link TransferResult} or {@code null} if {@code method} has no return statements
+     *     {@link TransferResult} or an empty list if {@code method} has no return statements
      */
-    public @Nullable List<Pair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
+    public List<Pair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
             MethodTree methodTree) {
+        assert returnStatementStores.containsKey(methodTree);
         return returnStatementStores.get(methodTree);
     }
 
