@@ -65,6 +65,8 @@ public class SystemUtil {
      * @param values the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
      */
+    // The parameter of UtilPlume#join should be changed to Iterable<?>.
+    @SuppressWarnings("nullness:argument.type.incompatible")
     public static String join(CharSequence delimiter, @Nullable Iterable<?> values) {
         if (values == null) {
             return "null";
