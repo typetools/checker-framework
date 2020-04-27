@@ -114,6 +114,10 @@ public class SystemUtil {
     /**
      * Return its boolean value if the system property is set. Return defaultValue if the system
      * property is not set. Errs if the system property is set to a non-boolean value.
+     *
+     * @param key system property to check
+     * @param defaultValue value to use if the property is not set
+     * @return the boolean value of {@code key} or {@code defaultValue} if {@code key} is not set
      */
     public static boolean getBooleanSystemProperty(String key, boolean defaultValue) {
         String value = System.getProperty(key);

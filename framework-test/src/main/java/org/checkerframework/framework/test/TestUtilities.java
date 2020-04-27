@@ -414,12 +414,32 @@ public class TestUtilities {
         }
     }
 
-    public static boolean testBooleanProperty(String propName) {
-        return testBooleanProperty(propName, false);
+    /**
+     * Return true if the system property is set to "true". Return false if the system property is
+     * not set or is set to "false". Otherwise, errs.
+     *
+     * @param key system property to check
+     * @return true if the system property is set to "true". Return false if the system property is
+     *     not set or is set to "false". Otherwise, errs.
+     * @deprecated Use {@link SystemUtil#getBooleanSystemProperty(String)} instead.
+     */
+    @Deprecated
+    public static boolean testBooleanProperty(String key) {
+        return testBooleanProperty(key, false);
     }
 
-    public static boolean testBooleanProperty(String propName, boolean defaultValue) {
-        return SystemUtil.getBooleanSystemProperty(propName, defaultValue);
+    /**
+     * Return its boolean value if the system property is set. Return defaultValue if the system
+     * property is not set. Errs if the system property is set to a non-boolean value.
+     *
+     * @param key system property to check
+     * @param defaultValue value to use if the property is not set
+     * @return the boolean value of {@code key} or {@code defaultValue} if {@code key} is not set
+     * @deprecated Use {@link SystemUtil#getBooleanSystemProperty(String, boolean)} instead.
+     */
+    @Deprecated
+    public static boolean testBooleanProperty(String key, boolean defaultValue) {
+        return SystemUtil.getBooleanSystemProperty(key, defaultValue);
     }
 
     public static boolean getShouldEmitDebugInfo() {
