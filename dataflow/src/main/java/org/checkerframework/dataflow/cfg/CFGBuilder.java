@@ -866,6 +866,16 @@ public class CFGBuilder {
             }
 
             // remove useless conditional blocks
+            /* Issue 3267 revealed that this is a dangerous optimization:
+               it merges a block that evaluates one condition onto an unrelated following block,
+               which can also be a condition. The then/else stores from the first block are still
+               set, leading to incorrect results for the then/else stores in the following block.
+               The correct result would be to merge the then/else stores from the previous block.
+               However, as this is late in the CFG construction, I didn't see how to add e.g. a
+               dummy variable declaration node in a dummy regular block, which would cause a merge.
+               So for now, let's not perform this optimization.
+               It would be interesting to know how large the impact of this optimization is.
+
             worklist = cfg.getAllBlocks();
             for (Block c : worklist) {
                 BlockImpl cur = (BlockImpl) c;
@@ -882,6 +892,7 @@ public class CFGBuilder {
                     }
                 }
             }
+            */
 
             // merge consecutive basic blocks if possible
             worklist = cfg.getAllBlocks();
