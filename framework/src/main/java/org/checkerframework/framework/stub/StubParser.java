@@ -957,7 +957,9 @@ public class StubParser {
             return;
         }
 
-        clearAnnotations(atype, typeDef);
+        if (mightHaveTypeArguments(atype)) {
+            clearAnnotations(atype, typeDef);
+        }
 
         // Primary annotations for the type of a variable declaration are not stored in typeDef, but
         // rather as declaration annotations (passed as declAnnos to this method).  But, if typeDef
@@ -1051,6 +1053,33 @@ public class StubParser {
         }
     }
 
+    /**
+     * Returns true if atype might have type arguments that {@link
+     * #clearAnnotations(AnnotatedTypeMirror, Type)} might need to remove.
+     *
+     * @param atype the type to check
+     * @return a conservative approximation of whether atype might have type arguments
+     */
+    private boolean mightHaveTypeArguments(AnnotatedTypeMirror atype) {
+        switch (atype.getKind()) {
+            case DECLARED:
+                AnnotatedDeclaredType adtype = (AnnotatedDeclaredType) atype;
+                return !adtype.getTypeArguments().isEmpty();
+            case WILDCARD:
+            case TYPEVAR:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Process the field declaration in decl, and attach any type qualifiers to the type of elt in
+     * {@link #atypes}
+     *
+     * @param decl the declaration in the stub file
+     * @param elt the element representing that same declaration
+     */
     private void processField(FieldDeclaration decl, VariableElement elt) {
         if (isJdkAsStub && decl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private fields of the jdk.  They can't be referenced outside of the jdk
