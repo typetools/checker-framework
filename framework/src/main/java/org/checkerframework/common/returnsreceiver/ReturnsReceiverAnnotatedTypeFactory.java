@@ -14,7 +14,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /** The type factory for the Returns Receiver Checker. */
 public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -78,15 +77,18 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
                 }
             }
 
-            // If return type is annotated with @This, add @This annotation
-            // to the receiver type.
-            AnnotationMirror retAnnotation = returnType.getAnnotationInHierarchy(THIS_ANNOTATION);
-            if (retAnnotation != null && AnnotationUtils.areSame(retAnnotation, THIS_ANNOTATION)) {
-                AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = t.getReceiverType();
-                if (!receiverType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
-                    receiverType.addAnnotation(THIS_ANNOTATION);
-                }
-            }
+            //            // If return type is annotated with @This, add @This annotation
+            //            // to the receiver type.
+            //            AnnotationMirror retAnnotation =
+            // returnType.getAnnotationInHierarchy(THIS_ANNOTATION);
+            //            if (retAnnotation != null && AnnotationUtils.areSame(retAnnotation,
+            // THIS_ANNOTATION)) {
+            //                AnnotatedTypeMirror.AnnotatedDeclaredType receiverType =
+            // t.getReceiverType();
+            //                if (!receiverType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
+            //                    receiverType.addAnnotation(THIS_ANNOTATION);
+            //                }
+            //            }
             return super.visitExecutable(t, p);
         }
     }

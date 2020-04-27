@@ -13,6 +13,7 @@ public class BuilderMethodRef {
 
     public static void test(Optional<Object> opt) {
         BuilderMethodRefBuilder b = builder().foo("Hello");
+        // :: error: (methodref.receiver.bound.invalid)
         opt.ifPresent(b::bar);
         b.build();
     }

@@ -25,7 +25,7 @@ class OverrideTest {
         @Override
         // we do not support this case for now; would need to write explicit @This on receiver in
         // superclass
-        // :: error: override.receiver.invalid
+
         @This Super retWhatever() {
             return this;
         }

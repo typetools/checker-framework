@@ -1,3 +1,4 @@
+@SuppressWarnings("returnsreceiver:methodref.receiver.bound.invalid") // See Issue #2931
 class Issue450 {
 
     Issue450(int i, Runnable... runnables) {}

@@ -11,6 +11,7 @@ interface SupplierR<R> {
     R supply();
 }
 
+@SuppressWarnings("returnsreceiver:methodref.receiver.bound.invalid")
 class MyClass {
 
     void take(/*6*/ MyClass this, String s) {}
