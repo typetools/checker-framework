@@ -272,6 +272,10 @@ public class ControlFlowGraph {
         viz.init(args);
         Map<String, Object> res = viz.visualize(this, this.getEntryBlock(), null);
         viz.shutdown();
-        return (String) res.get("stringGraph");
+        if (res == null) {
+            return super.toString();
+        }
+        String stringGraph = (String) res.get("stringGraph");
+        return stringGraph == null ? super.toString() : stringGraph;
     }
 }
