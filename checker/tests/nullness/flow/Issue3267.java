@@ -24,7 +24,7 @@ class Issue3267 {
         } else {
         }
         if (true) {
-            // :: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             obj.toString();
         }
     }
