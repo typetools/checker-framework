@@ -1033,7 +1033,7 @@ public class QualifierDefaults {
                 final boolean prevIsLowerBound = isLowerBound;
                 final BoundType prevBoundType = boundType;
 
-                boundType = getBoundType(boundedType, atypeFactory);
+                boundType = getBoundType(boundedType);
 
                 try {
                     isLowerBound = true;
@@ -1092,36 +1092,38 @@ public class QualifierDefaults {
      *     AnnotatedTypeVariable.
      * @return the boundType for type
      */
-    private BoundType getBoundType(
-            final AnnotatedTypeMirror type, final AnnotatedTypeFactory typeFactory) {
+    private BoundType getBoundType(final AnnotatedTypeMirror type) {
         if (type instanceof AnnotatedTypeVariable) {
-            return getTypeVarBoundType((AnnotatedTypeVariable) type, typeFactory);
+            return getTypeVarBoundType((AnnotatedTypeVariable) type);
         }
 
         if (type instanceof AnnotatedWildcardType) {
-            return getWildcardBoundType((AnnotatedWildcardType) type, typeFactory);
+            return getWildcardBoundType((AnnotatedWildcardType) type);
         }
 
         throw new BugInCF("Unexpected type kind: type=" + type);
     }
 
-    /** @return the bound type of the input typeVar */
-    private BoundType getTypeVarBoundType(
-            final AnnotatedTypeVariable typeVar, final AnnotatedTypeFactory typeFactory) {
-        return getTypeVarBoundType(
-                (TypeParameterElement) typeVar.getUnderlyingType().asElement(), typeFactory);
+    /**
+     * @param typeVar the type variable
+     * @return the bound type of the input typeVar
+     */
+    private BoundType getTypeVarBoundType(final AnnotatedTypeVariable typeVar) {
+        return getTypeVarBoundType((TypeParameterElement) typeVar.getUnderlyingType().asElement());
     }
 
-    /** @return the boundType (UPPER or UNBOUNDED) of the declaration of typeParamElem */
+    /**
+     * @param typeParamElem the type parameter element
+     * @return the boundType (UPPER or UNBOUNDED) of the declaration of typeParamElem
+     */
     // Results are cached in {@link elementToBoundType}.
-    private BoundType getTypeVarBoundType(
-            final TypeParameterElement typeParamElem, final AnnotatedTypeFactory typeFactory) {
+    private BoundType getTypeVarBoundType(final TypeParameterElement typeParamElem) {
         final BoundType prev = elementToBoundType.get(typeParamElem);
         if (prev != null) {
             return prev;
         }
 
-        TreePath declaredTypeVarEle = typeFactory.getTreeUtils().getPath(typeParamElem);
+        TreePath declaredTypeVarEle = atypeFactory.getTreeUtils().getPath(typeParamElem);
         Tree typeParamDecl = declaredTypeVarEle == null ? null : declaredTypeVarEle.getLeaf();
 
         final BoundType boundType;
@@ -1163,19 +1165,17 @@ public class QualifierDefaults {
     }
 
     /**
+     * @param annotatedWildcard the annotated wildcard type
      * @return the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to
      *     which its an argument.
      */
-    public BoundType getWildcardBoundType(
-            final AnnotatedWildcardType annotatedWildcard, final AnnotatedTypeFactory typeFactory) {
+    public BoundType getWildcardBoundType(final AnnotatedWildcardType annotatedWildcard) {
 
         final WildcardType wildcard = (WildcardType) annotatedWildcard.getUnderlyingType();
 
         final BoundType boundType;
         if (wildcard.isUnbound() && wildcard.bound != null) {
-            boundType =
-                    getTypeVarBoundType(
-                            (TypeParameterElement) wildcard.bound.asElement(), typeFactory);
+            boundType = getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement());
 
         } else {
             // note: isSuperBound will be true for unbounded and lowers, but the unbounded case is
