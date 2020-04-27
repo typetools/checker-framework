@@ -661,6 +661,32 @@ it runs.
 % Furthermore, a programmer must search the stub file
 % for a given method rather than just skimming a few pages of method signatures.
 
+Alternatively, you can minimize source files to make them more suitable as stub files.
+Use the \<JavaStubifier> to convert, in-place, all \<.java> files in given directories into
+minimal stub files.
+
+\begin{Verbatim}
+  mkdir project-stubs
+  cp -R project/src project-stubs
+  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar org.checkerframework.framework.stub.JavaStubifier project-stubs
+  find project-stubs -type f -name "*.java" -exec rename 's/.java$/.astub/' {} \;
+\end{Verbatim}
+
+Supply it a list of directories to process. Replacement happens in-place, so make sure to
+process a copy of your sources.
+
+You can now provide \<project-stubs> as a stub directory using \<-Astubs=project-stubs> as
+an additional command-line option.
+
+If you wish to use a single stub file, rather than a stub directory,
+you can concatenate all the minimized \<.java> files into a single \<.astub> file:
+
+\begin{Verbatim}
+find project-stubs/ -name "*.java" -type f | xargs cat > project.astub
+\end{Verbatim}
+
+% That file will contain many non-unique import statements, but that shouldn't be harmful.
+
 
 \subsubsectionAndLabel{If you do not have access to the Java source code}{stub-creating-without-source}
 
