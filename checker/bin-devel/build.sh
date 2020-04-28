@@ -26,7 +26,7 @@ else
   mkdir -p /tmp/$USER && (cd /tmp/$USER && (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git || git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git))
 fi
 
-# Clone the annotated JDK 11 into ../jdk .
+# Clone the annotated JDK into ../jdk .
 /tmp/$USER/plume-scripts/git-clone-related typetools jdk
 
 AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
