@@ -394,13 +394,11 @@ documentation states is correct, then maybe that library method has not yet
 been annotated, so default annotations are being used.
 
 To solve the problem, add the missing annotations to the library (see
-Chapter~\ref{annotating-libraries}).  Depending on the checker, the
-annotations might be expressed in the form of stub files (which appear
-together with the checker's source code, such as in file
-\code{checker/src/org/checkerframework/checker/interning/jdk8.astub} for the
-Interning Checker) or in the form of annotated libraries (which appear
-under \code{checker/jdk/}, such as at \code{checker/jdk/nullness/src/} for
-the Nullness Checker.
+Chapter~\ref{annotating-libraries}).  The
+annotations might appear in stub files (which appear
+in an \code{.astub} file together with the checker's source code)
+or in the form of annotated libraries (which appear
+in \url{https://github.com/typetools/}).
 
 \item
 If the compiler reports that it cannot find a method from the JDK or
