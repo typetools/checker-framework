@@ -135,56 +135,11 @@ If you get the error
 \end{Verbatim}
 
 \noindent
-If you get an error such as
-
-\begin{Verbatim}
-  java.lang.NoClassDefFoundError: java/util/Objects
-\end{Verbatim}
-
-\noindent
-then you are trying to run the compiler using a JDK 6 or earlier JVM\@.
-Install and use a Java 8
-% or later
-JDK, at least for running the Checker
-Framework.
-
-\noindent
 % I'm not 100% sure of the following explanation and solution.
 then an annotation is not present at run time that was present at compile
 time.  For example, maybe when you compiled the code, the \<@Nullable>
 annotation was available, but it was not available at run time.
 You can use JDK 8 at run time.
-
-\item
-\label{no-such-field-error}
-A \<NoSuchFieldError> such as this:
-
-\begin{Verbatim}
-java.lang.NoSuchFieldError: NATIVE_HEADER_OUTPUT
-\end{Verbatim}
-
-\noindent
-Field \<NATIVE\_HEADER\_OUTPUT> was added in JDK 8.
-The error message suggests that
-you're not executing with the right bootclasspath: some classes were
-compiled with the JDK 8 version and expect the field, but you're
-executing the compiler on a JDK without the field.
-
-One possibility is that you are not running the Checker Framework compiler
---- use \<javac -version> to check this, then use the right one.  (Maybe
-the Checker Framework javac is at the end rather than the beginning of your
-path.)
-
-If you are using Ant, then one possibility
-is that the javac compiler is using the same JDK as Ant is using.  You can
-correct this by being sure to use \<fork="yes"> (see
-Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
-\<extJavac>.
-
-If you are building from source (Section~\ref{build-source}),
-you might need to rebuild the Annotation
-File Utilities before recompiling or using the Checker Framework.
-
 
 \item
 If you get an error that contains lines like these:
