@@ -720,36 +720,17 @@ maintainers' time to evaluate and fix.
 
 \subsectionAndLabel{Problems with annotated libraries}{reporting-bugs-annotated-libraries}
 
-Sometimes, a checker will report a warning because a library is not
-annotated or because the library contains incorrect annotations.
-Please do not open GitHub issues for these.
+Sometimes, a checker reports a warning because a library is not
+annotated.  Please do not open GitHub issues for these.
 Instead, we appreciate pull requests to help us improve the annotations.
 Alternatively or in the interim, you can use stub files as described in
 Section~\ref{stub}.
 
-If the library is annotated but has some incorrect or missing annotations,
-then please open a pull request that adds the annotations.
-\begin{itemize}
-\item
-  Non-JDK libraries:  You can find the annotated source in
-  \url{https://github.com/typetools/}.
-  If the library does not exist there, then it has no annotations yet.
-  You can fork it, add annotations,
-  and propose that your annotated version be moved into
-  \url{https://github.com/typetools/}.
-\item
-  JDK:  You need to open two pull requests, because there are two versions of the
-  annotated JDK.
-  \begin{itemize}
-  \item JDK 8: The annotated JDK source is in the
-    \ahref{https://github.com/typetools/checker-framework}{Checker Framework
-      GitHub repository}, either in a subdirectory of
-    \ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
-    or in files named \<jdk.astub> in the checker's implementation directory.
-  \item
-    JDK 11: The annotated JDK source is in \url{https://github.com/typetools/jdk}.
-  \end{itemize}
-\end{itemize}
+If a checker reports a warning because a library contains incorrect annotations,
+then please open a pull request that adds the annotations.  If the
+library's maintainers have added annotations, make a pull request to them.
+If the Checker Framework maintainers have added annotations,
+you can find the annotated source in \url{https://github.com/typetools/}.
 
 For either approach, please see \chapterpageref{annotating-libraries} for
 tips about writing library annotations.
