@@ -19,9 +19,9 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * }
  * </code></pre>
  *
- * Strictly speaking, this is a polymorphic annotation, but when you write it on a return type, the
- * Returns Receiver Checker automatically adds it to the receiver, so the above method is equivalent
- * to:
+ * <p>Strictly speaking, this is a polymorphic annotation, but when you write it on a return type,
+ * the Returns Receiver Checker automatically adds it to the receiver, so the above method is
+ * equivalent to:
  *
  * <pre><code>
  * &#064;This MyBuilder setName(@This MyBuilder this, String name) {
@@ -29,6 +29,11 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  *   return this;
  * }
  * </code></pre>
+ *
+ * <p>While it would be natural to make {@code @This} the default annotation for receivers, it leads
+ * to false positives warnings due to <a
+ * href="https://github.com/typetools/checker-framework/issues/2931">https://github.com/typetools/checker-framework/issues/2931</a>,
+ * so this defaulting is currently elided.
  *
  * @checker_framework.manual #returns-receiver-checker Returns Receiver Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
