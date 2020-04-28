@@ -143,12 +143,10 @@ public class CheckerMain {
     }
 
     /**
-     * Returns the compilation bootclasspath from {@code argsList} and appends {@code jdkJar} if
-     * using Java 8.
+     * Returns the compilation bootclasspath from {@code argsList}.
      *
      * @param argsList args to add
-     * @return the compilation bootclasspath from {@code argsList} and appends {@code jdkJar} if
-     *     using Java 8
+     * @return the compilation bootclasspath from {@code argsList}
      */
     protected List<String> createCompilationBootclasspath(final List<String> argsList) {
         return extractBootClassPath(argsList);

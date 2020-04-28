@@ -358,7 +358,7 @@ import org.plumelib.util.UtilPlume;
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
     "resourceStats",
 
-    // Parse all JDK files at start up rather than as needed.
+    // Parse all JDK files at startup rather than as needed.
     "parseAllJdk"
 })
 public abstract class SourceChecker extends AbstractTypeProcessor

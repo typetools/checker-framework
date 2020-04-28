@@ -127,7 +127,8 @@ dependencies {
 \end{Verbatim}
 \end{mysmall}
 
-\item Direct all tasks of type \<JavaCompile> used by the \<checkTypes> build variant to use the ErrorProne compiler:
+\item Direct all tasks of type \<JavaCompile> used by the \<checkTypes>
+  build variant to use the Error Prone compiler:
 \begin{mysmall}
 \begin{Verbatim}
 gradle.projectsEvaluated {
@@ -886,7 +887,7 @@ JDK 8 is explained in Section~\ref{java8-install}.
 \end{enumerate}
 
 \item If using JDK 8, use a Maven property to hold the location of the
-  ErrorProne javac.jar.  They were declared as Maven dependencies above.
+  Error Prone \<javac.jar>.  They were declared as Maven dependencies above.
 To set the value of these properties automatically, you will use the Maven Dependency plugin.
 
 First, create the property in the \code{properties} section of the POM:

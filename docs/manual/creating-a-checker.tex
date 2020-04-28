@@ -1670,17 +1670,15 @@ following two lines at the beginning of the constructor for your subtype of
 
 You will need to supply annotations for relevant parts of the JDK;
 otherwise, your type-checker may produce spurious warnings for code that
-uses the JDK\@.  As described in Section~\ref{annotating-libraries}, you can
-supply annotations in Java files that will be compiled to \<.class> files,
-or as stub files (partial Java source files).
-It's easier to start out with stub files.  If you need to annotate many
-classes (say, more than 20 or so), then you should create an annotated JDK.
+uses the JDK\@.  You have two options:
 
 \begin{itemize}
 \item
-To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jdk}.
+  Write JDK annotations in a fork of
+  \url{https://github.com/typetools/jdk}
 \item
-To supply an annotated JDK as a stub file, create a file \<jdk.astub> in
+  Write JDK annotations as stub files (partial Java source files).
+  Create a file \<jdk.astub> in
 the checker's main source directory.  You can also create \<jdk\emph{N}.astub> files that contain methods
 or classes that only exist in certain JDK versions.
 It will be automatically used by the

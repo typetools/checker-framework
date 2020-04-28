@@ -72,7 +72,7 @@ public class StubTypes {
     /** Should the JDK be parsed? */
     private final boolean shouldParseJdk;
 
-    /** Parse all JDK files at start up rather than as needed. */
+    /** Parse all JDK files at startup rather than as needed. */
     private boolean parseAllJdkFiles;
 
     /**
