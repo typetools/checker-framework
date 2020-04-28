@@ -33,9 +33,10 @@ You can write annotations for a library, and make them known to a checker, in tw
   Write annotations in a copy of the library's source code (for instance,
   in a fork of the library's GitHub project).  In addition to writing
   annotations, adjust the build system to run pluggable-type-checking when
-  compiling (see \chapterpageref{external-tools}).
+  compiling (see \chapterpageref{external-tools}).  Now, when you compile
+  the library, the resulting \<.jar> file contains type annotations.
 
-  Then, when doing pluggable type-checking,
+  When checking a client of the library,
   put the annotated library's \<.jar> file on the classpath, as explained in
   Section~\ref{annotated-libraries-using}.
   %% You only need to do this if for some reason you don't trust the
@@ -65,7 +66,7 @@ You can write annotations for a library, and make them known to a checker, in tw
   %% Leave out this complication.
   % This approach is possible with annotated source code.
 
-  Then, when doing pluggable type-checking,
+  Then, when check a client of the library,
   supply the ``stub file'' textually to the Checker Framework.
 
   This approach does not require you to compile the library source
@@ -200,10 +201,10 @@ the correctness and completeness of your annotations.
 
 An alternative is to
 only annotate method signatures.  The alternative is quicker but more
-error-prone, and there is no difference from the point of view of clients,
+error-prone.  There is no difference from the point of view of clients,
 who can only see annotations on public methods and fields.  When you
-compile the library, the type-checker will probably issue warnings, but if
-you supply \<-Awarns>, you don't have to suppress those warnings and the
+compile the library, the type-checker will probably issue warnings; you can
+supply \<-Awarns> so that the
 compiler will still produce \<.class> files.
 
 
@@ -227,7 +228,7 @@ This section describes how to create an annotated library.
   \item
     If it exists, but you want to add annotations for a different checker:
 
-    Clone its repository from \url{https://github.com/typetools/}, tweak
+    Clone its repository from \url{https://github.com/typetools/}, and tweak
     its buildfile to run an additional checker.
 
   \item
@@ -269,9 +270,9 @@ This section describes how to create an annotated library.
   % This is a strong recomendation, but not a requirement.  @AnnotatedFor
   % can be written on a method as well.
   When you annotate a file, annotate the whole thing, not just a few of its
-  methods.  Once the file is fully annotated, add an
+  methods.  Add an
   \<\refqualclass{framework/qual}{AnnotatedFor}(\ttlcb"\emph{checkername}"\ttrcb)>
-  annotation to its class(es), or augment an existing \<@AnnotatedFor>
+  annotation to each class declaration, or augment an existing \<@AnnotatedFor>
   annotation.
 
 \item
@@ -295,11 +296,14 @@ This section describes how to create an annotated library.
     the Maven Central Repository.
 
   \item
-    Encourage the library's maintainers to accept your annotations into its
-    main version control repository.  This will make the annotations easier
+    Optionally, encourage the library's maintainers to accept your annotations into its
+    main version control repository.  This suggestion will be most
+    compelling if you have already reported bugs in the library that were
+    revealed by pluggable type-checking.  Once the annotations are in the
+    main version control repository, they will be easier
     to maintain, the library will obtain the correctness guarantees of
-    pluggable type-checking, and there will be no need for the Checker
-    Framework to include an annotated version of the library.
+    pluggable type-checking, and there will be no need
+    to distribute an annotated version of the library.
 
     If the library maintainers do not accept the annotations, then
     periodically, such as when a new version of the library is released,
@@ -317,7 +321,7 @@ This section describes how to create an annotated library.
 
 This section tells how to create an annotated JDK for a new type system.
 Section~\ref{reporting-bugs-annotated-libraries} tells how to improve
-annotations for the JDK for an existing type system.
+JDK annotations for an existing type system.
 
 When you create a new checker, you need to also supply annotations for
 parts of the JDK, either as stub files or as source code that will be
@@ -406,9 +410,9 @@ see \url{https://github.com/typetools/annotated-libraries}.
 
 \sectionAndLabel{Compiling partially-annotated libraries}{compiling-libraries}
 
-If you completely annotate a library, then you can compile it using a
-pluggable type-checker, and include the resulting \<.jar> file on your
-classpath.  You get a guarantee that the library contains no errors.
+If you \emph{completely} annotate a library, then you can compile it using a
+pluggable type-checker.  You get a guarantee that the library contains no
+errors (that is, it is consistent with the specifications you wrote).
 
 The rest of this section tells you how to compile a library if you
 \emph{partially} annotate it:  that is, you write annotations for some of its
@@ -417,7 +421,7 @@ classes but not others.
 method signatures but do not type-check the bodies.
 See Section~\ref{library-tips}.)
 
-There are two concerns:
+Here are two concerns you may have when partially annotating a library:
 
 \begin{itemize}
 \item
@@ -476,10 +480,12 @@ is run.
 
 \sectionAndLabel{Using stub classes}{stub}
 
-A stub file contains ``stub classes'' that contain annotated signatures,
-but no method bodies.  A
+A ``stub class'' is Java source code that is allowed to omit certain parts,
+such as method bodies.  (See Section~\ref{stub-format} for details
+about the stub file format.)  You use a stub file to write annotations
+for a library, when you cannot edit and recompile the library.  A
 checker uses the annotated signatures at compile time, instead of or in
-addition to annotations that appear in the library.
+addition to annotations that appear in the library's \<.class> files.
 
 Section~\ref{annotating-jdk} explains how you should choose between
 creating stub classes or creating an annotated library.

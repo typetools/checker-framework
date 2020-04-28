@@ -89,9 +89,9 @@ public class TestUtilities {
     private static List<List<File>> findJavaTestFilesInDirectory(File dir) {
         assert dir.isDirectory();
         List<List<File>> fileGroupedByDirectory = new ArrayList<>();
-        List<File> fileInDir = new ArrayList<>();
+        List<File> filesInDir = new ArrayList<>();
 
-        fileGroupedByDirectory.add(fileInDir);
+        fileGroupedByDirectory.add(filesInDir);
         String[] dirContents = dir.list();
         Arrays.sort(dirContents);
         for (String fileName : dirContents) {
@@ -99,11 +99,11 @@ public class TestUtilities {
             if (file.isDirectory()) {
                 fileGroupedByDirectory.addAll(findJavaTestFilesInDirectory(file));
             } else if (isJavaTestFile(file)) {
-                fileInDir.add(file);
+                filesInDir.add(file);
             }
         }
-        if (fileInDir.isEmpty()) {
-            fileGroupedByDirectory.remove(fileInDir);
+        if (filesInDir.isEmpty()) {
+            fileGroupedByDirectory.remove(filesInDir);
         }
         return fileGroupedByDirectory;
     }
