@@ -59,4 +59,10 @@ class SimpleTest {
 
         SimpleTest.@This I setBar();
     }
+
+    // :: error: type.invalid.this.location
+    static @This Object thisOnStatic() {
+        // :: error: return.type.incompatible
+        return new Object();
+    }
 }

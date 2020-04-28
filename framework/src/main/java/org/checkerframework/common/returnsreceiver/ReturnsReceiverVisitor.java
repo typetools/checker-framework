@@ -6,6 +6,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** The visitor for the Returns Receiver Checker. */
@@ -42,6 +43,11 @@ public class ReturnsReceiverVisitor extends BaseTypeVisitor<ReturnsReceiverAnnot
                     grandparent instanceof TypeCastTree
                             && parent.equals(((TypeCastTree) grandparent).getType());
             if (!(isReturnAnnot || isReceiverAnnot || isCastAnnot)) {
+                checker.reportError(node, "type.invalid.this.location");
+            }
+            if (isReturnAnnot
+                    && ElementUtils.isStatic(
+                            TreeUtils.elementFromDeclaration((MethodTree) grandparent))) {
                 checker.reportError(node, "type.invalid.this.location");
             }
         }

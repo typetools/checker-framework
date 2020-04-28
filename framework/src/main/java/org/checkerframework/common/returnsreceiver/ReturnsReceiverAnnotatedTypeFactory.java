@@ -83,7 +83,7 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
             AnnotationMirror retAnnotation = returnType.getAnnotationInHierarchy(THIS_ANNOTATION);
             if (retAnnotation != null && AnnotationUtils.areSame(retAnnotation, THIS_ANNOTATION)) {
                 AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = t.getReceiverType();
-                if (!receiverType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
+                if (receiverType != null && !receiverType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
                     receiverType.addAnnotation(THIS_ANNOTATION);
                 }
             }
