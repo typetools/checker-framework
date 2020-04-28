@@ -671,17 +671,17 @@ maintainers' time to evaluate and fix.
 
 \subsectionAndLabel{Problems with annotated libraries}{reporting-bugs-annotated-libraries}
 
-Sometimes, a checker reports a warning because a library is not
-annotated or because the library contains incorrect annotations.
-Please do not open GitHub issues for these.
+If a checker reports a warning because a library contains \emph{incorrect} annotations,
+then please open a pull request that adds the annotations.  If the
+library's maintainers have added annotations, make a pull request to them.
+If the Checker Framework maintainers have added annotations,
+you can find the annotated source in \url{https://github.com/typetools/}.
+
+If a checker reports a warning because a library is \emph{not
+annotated}, please do not open a GitHub issue.
 Instead, we appreciate pull requests to help us improve the annotations.
 Alternatively or in the interim, you can use stub files as described in
 Section~\ref{stub}.
-
-If the library is annotated but has some incorrect or missing annotations,
-then please open a pull request that adds the annotations. You can find the annotated source in
-\url{https://github.com/typetools/}, including annotations for the JDK.
-If the library does not exist there, then it has no annotations yet.
 
 For either approach, please see \chapterpageref{annotating-libraries} for
 tips about writing library annotations.
