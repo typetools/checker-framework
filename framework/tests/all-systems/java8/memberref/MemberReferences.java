@@ -112,7 +112,6 @@ class Bound {
     }
 }
 
-@SuppressWarnings("returnsreceiver:methodref.receiver.bound.invalid")
 class BoundWithArg<U> {
     void func1(U param) {}
 
