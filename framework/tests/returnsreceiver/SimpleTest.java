@@ -47,7 +47,7 @@ class SimpleTest {
         java.util.List<@This String> l = null;
     }
 
-    // :: error: type.invalid.this.location
+    // can write @This on receiver
     void thisOnReceiver(@This SimpleTest this) {}
 
     // :: error: type.invalid.this.location
