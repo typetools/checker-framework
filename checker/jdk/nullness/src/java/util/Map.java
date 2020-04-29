@@ -135,7 +135,6 @@ import org.checkerframework.framework.qual.Covariant;
  * @since 1.2
  */
 // Subclasses of this interface/class may opt to prohibit null elements
-@Covariant(0)
 public interface Map<K, V> {
     // Query Operations
 

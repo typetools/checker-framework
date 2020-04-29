@@ -305,7 +305,7 @@ Here is a good way to proceed.
   Annotate parts of the JDK, if relevant
   (Section~\ref{creating-a-checker-annotated-jdk}).
 
-  Write test cases for at least some of the annotated JDK methods to ensure
+  Write test cases for a few of the annotated JDK methods to ensure
   that the annotations are being properly read by your checker.
 
 \item
@@ -1775,6 +1775,11 @@ large codebase without being inundated in stack traces.
   the format.
 
 \end{itemize}
+
+The
+\ahref{https://github.com/eisopux/javac-diagnostics-wrapper}{javac-diagnostic-wrapper}
+tool can transform javac's textual output into other formats, such as JSON
+in LSP (Language Server Protocol) format.
 
 
 \subsectionAndLabel{Stub and JDK libraries}{creating-debugging-options-libraries}
