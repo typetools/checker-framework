@@ -9,9 +9,11 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -259,5 +261,21 @@ public class ControlFlowGraph {
 
     public List<LambdaExpressionTree> getDeclaredLambdas() {
         return declaredLambdas;
+    }
+
+    @Override
+    public String toString() {
+        Map<String, Object> args = new HashMap<>();
+        args.put("verbose", true);
+
+        CFGVisualizer<?, ?, ?> viz = new StringCFGVisualizer<>();
+        viz.init(args);
+        Map<String, Object> res = viz.visualize(this, this.getEntryBlock(), null);
+        viz.shutdown();
+        if (res == null) {
+            return super.toString();
+        }
+        String stringGraph = (String) res.get("stringGraph");
+        return stringGraph == null ? super.toString() : stringGraph;
     }
 }
