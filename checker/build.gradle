@@ -60,7 +60,7 @@ task cloneTypetoolsJdk() {
 task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
     def inputDir = "${jdkHome}/src"
     def outputDir = "${buildDir}/generated-resources/annotated-jdk/"
-    description "Copy annotated jdk files to ${outputDir}"
+    description "Copy annotated JDK files to ${outputDir}"
 
     inputs.dir file(inputDir)
     outputs.dir file(outputDir)
@@ -69,7 +69,10 @@ task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
         FileTree tree = fileTree(dir: inputDir)
         SortedSet<String> annotatedForFiles = new TreeSet<>();
         tree.visit { FileVisitDetails fvd ->
-            if (!fvd.file.isDirectory() && fvd.file.name.matches(".*\\.java")) {
+            if (!fvd.file.isDirectory() && fvd.file.name.matches(".*\\.java")
+                    && !fvd.file.name.matches("module-info.java")) {
+                // Ignore module-info until this JavaParser bug is fixed (and merged in the StubParser):
+                // https://github.com/javaparser/javaparser/issues/2615
                 fvd.getFile().readLines().any { line ->
                     if (line.contains("@AnnotatedFor") || line.contains("org.checkerframework")) {
                         annotatedForFiles.add(fvd.file.absolutePath)
@@ -90,7 +93,17 @@ task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
     }
 }
 
-processResources.dependsOn(copyAnnotatedJdkFiles)
+task minimizeJdk(type: JavaExec) {
+    description 'Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK.'
+    dependsOn copyAnnotatedJdkFiles
+    dependsOn ':framework:compileJava'
+    classpath = project(':framework').sourceSets.main.runtimeClasspath
+
+    main = 'org.checkerframework.framework.stub.JavaStubifier'
+    args "${buildDir}/generated-resources/annotated-jdk/"
+}
+
+processResources.dependsOn(minimizeJdk)
 
 jar {
     manifest {

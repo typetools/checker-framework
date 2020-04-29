@@ -27,6 +27,7 @@ signedness-checker.tex \
 aliasing-checker.tex \
 purity-checker.tex \
 constant-value-checker.tex \
+returns-receiver-checker.tex \
 reflection-checker.tex \
 reflection-inference-rules.tex \
 subtyping-checker.tex \

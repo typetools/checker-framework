@@ -708,10 +708,16 @@ public class QualifierDefaults {
         return new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
     }
 
-    public static class DefaultApplierElement {
+    /** A default applier element. */
+    protected static class DefaultApplierElement {
 
+        /** The annotated type factory. */
         protected final AnnotatedTypeFactory atypeFactory;
+
+        /** The scope of the default. */
         protected final Element scope;
+
+        /** The type to which to apply the default. */
         protected final AnnotatedTypeMirror type;
 
         /**
@@ -1046,7 +1052,7 @@ public class QualifierDefaults {
      * Specifies whether the type variable or wildcard has an explicit upper bound (UPPER), an
      * explicit lower bound (LOWER), or no explicit bounds (UNBOUNDED).
      */
-    enum BoundType {
+    protected enum BoundType {
 
         /** Indicates an upper-bounded type variable or wildcard. */
         UPPER,
