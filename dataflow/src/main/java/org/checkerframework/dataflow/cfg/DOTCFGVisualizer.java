@@ -20,6 +20,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
@@ -134,6 +135,12 @@ public class DOTCFGVisualizer<
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
         return super.visualizeSpecialBlockHelper(sbb, "");
+    }
+
+    @Override
+    public String visualizeConditionalBlock(ConditionalBlock cbb) {
+        // No extra content in DOT output.
+        return "";
     }
 
     @Override

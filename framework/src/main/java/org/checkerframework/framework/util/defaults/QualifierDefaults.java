@@ -718,7 +718,7 @@ public class QualifierDefaults {
     }
 
     /** A default applier element. */
-    public class DefaultApplierElement {
+    protected static class DefaultApplierElement {
 
         /** The annotated type factory. */
         protected final AnnotatedTypeFactory atypeFactory;
@@ -1061,7 +1061,7 @@ public class QualifierDefaults {
      * Specifies whether the type variable or wildcard has an explicit upper bound (UPPER), an
      * explicit lower bound (LOWER), or no explicit bounds (UNBOUNDED).
      */
-    enum BoundType {
+    protected enum BoundType {
 
         /** Indicates an upper-bounded type variable or wildcard. */
         UPPER,
