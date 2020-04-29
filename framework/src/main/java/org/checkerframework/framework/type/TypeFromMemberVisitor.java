@@ -101,10 +101,11 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
             AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
             AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
             if (TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
+                // The Java types should be exactly the same, but because invocation type
+                // inference (#979) isn't implement, check first. Use the erased types because the
+                // type arguments are not substituted when the annotated type arguments are.
                 if (TypesUtils.isErasedSubtype(
                         funcTypeParam.actualType, lambdaParam.actualType, f.types)) {
-                    // The Java types should be exactly the same, but because invocation type
-                    // inference (#979) isn't implement, check first.
                     return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
                 }
                 lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());
