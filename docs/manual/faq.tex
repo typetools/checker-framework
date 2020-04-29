@@ -40,6 +40,7 @@ the answers, or other questions to include here.
 \faqtocpara{\ref{faq-warnings-section}: How to handle warnings}
 \\ \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code?
 \\ \ref{faq-interpreting-warnings}: What does a certain Checker Framework warning message mean?
+\\ \ref{faq-warnings-square-brackets}: What do square brackets mean in a Checker Framework warning message?
 \\ \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker guarantee that my code is correct?
 \\ \ref{faq-concurrency}: What guarantee does the Checker Framework give for concurrent code?
 \\ \ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors?
@@ -469,6 +470,19 @@ If nothing else explains it, then ask on the
 \href{https://groups.google.com/forum/#!forum/checker-framework-discuss}{mailing
   list}.  Be sure to say what you think it means or what specific part does
 not make sense to you, and what you have already done to try to understand it.
+
+
+\subsectionAndLabel{What do square brackets mean in a Checker Framework warning message?}{faq-warnings-square-brackets}
+
+In a message like this:
+
+\begin{Verbatim}
+  found   : ? extends T extends @UnknownKeyFor Object
+  required: [extends @UnknownKeyFor Object super @UnknownKeyFor null]
+\end{Verbatim}
+
+\noindent
+the square brackets enclose the upper and lower bounds that the type parameter needs to be within.
 
 
 \subsectionAndLabel{Can a pluggable type-checker guarantee that my code is correct?}{faq-no-absolute-guarantee}

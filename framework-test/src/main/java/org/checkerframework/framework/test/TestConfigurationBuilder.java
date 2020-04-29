@@ -63,7 +63,7 @@ public class TestConfigurationBuilder {
         }
 
         if (PluginUtil.getJreVersion() == 8) {
-            // Use the annotated jdk for the compile bootclasspath
+            // Use the annotated JDK for the compile bootclasspath.
             String jdkJarPath = getJdkJarPathFromProperty();
             if (notNullOrEmpty(jdkJarPath)) {
                 configBuilder.addOption("-Xbootclasspath/p:" + jdkJarPath);
