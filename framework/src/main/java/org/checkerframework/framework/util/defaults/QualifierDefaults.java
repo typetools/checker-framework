@@ -718,7 +718,7 @@ public class QualifierDefaults {
     }
 
     /** A default applier element. */
-    protected static class DefaultApplierElement {
+    protected class DefaultApplierElement {
 
         /** The annotated type factory. */
         protected final AnnotatedTypeFactory atypeFactory;
