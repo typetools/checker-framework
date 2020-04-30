@@ -1,2 +1,2 @@
-/** This class doesn't need a body becuase it is only used to test parse all the JDK files. */
+/** This class doesn't need a body because it is only used to test parsing all the JDK files. */
 public class Test {}
