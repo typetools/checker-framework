@@ -102,7 +102,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.3.1-SNAPSHOT'
+    version '3.4.0-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -708,8 +708,6 @@ subprojects {
             if (isJava8) {
                 jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
             } else {
-                // Without this, the test throw "java.lang.OutOfMemoryError: Java heap space"
-                forkEvery(1)
                 jvmArgs += [
                         "--illegal-access=warn",
                         "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Used to create an instance of TestConfiguration, TestConfigurationBuilder follows the standard
@@ -62,7 +62,7 @@ public class TestConfigurationBuilder {
             configBuilder.addOption("-d", outputClassDirectory.getAbsolutePath());
         }
 
-        if (PluginUtil.getJreVersion() == 8) {
+        if (SystemUtil.getJreVersion() == 8) {
             configBuilder.addOption("-source", "8").addOption("-target", "8");
         }
 
@@ -357,11 +357,11 @@ public class TestConfigurationBuilder {
 
     @Override
     public String toString() {
-        return PluginUtil.joinLines(
+        return SystemUtil.joinLines(
                 "TestConfigurationBuilder:",
-                "testSourceFiles=" + PluginUtil.join(" ", testSourceFiles),
-                "processors=" + PluginUtil.join(", ", processors),
-                "options=" + PluginUtil.join(", ", options.getOptionsAsList()),
+                "testSourceFiles=" + SystemUtil.join(" ", testSourceFiles),
+                "processors=" + SystemUtil.join(", ", processors),
+                "options=" + SystemUtil.join(", ", options.getOptionsAsList()),
                 "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
     }
 

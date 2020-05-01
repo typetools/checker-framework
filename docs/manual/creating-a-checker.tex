@@ -1666,7 +1666,7 @@ following two lines at the beginning of the constructor for your subtype of
 \end{Verbatim}
 
 
-\sectionAndLabel{Annotated JDK}{creating-a-checker-annotated-jdk}
+\sectionAndLabel{Annotated JDK and other annotated libraries}{creating-a-checker-annotated-jdk}
 
 You will need to supply annotations for relevant parts of the JDK;
 otherwise, your type-checker may produce spurious warnings for code that
@@ -1785,6 +1785,9 @@ in LSP (Language Server Protocol) format.
 
 \item \code{-ApermitMissingJdk}:
   don't issue an error if no annotated JDK can be found.
+
+\item \code{-AparseAllJdk}:
+  parse all JDK files at startup rather than as needed.
 
 \item \code{-AstubDebug}:
   Print debugging messages while processing stub files.

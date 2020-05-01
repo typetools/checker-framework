@@ -32,7 +32,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /** Holds information about types parsed from stub files. */
 public class StubTypes {
@@ -73,7 +73,7 @@ public class StubTypes {
     private final boolean shouldParseJdk;
 
     /** Parse all JDK files at startup rather than as needed. */
-    private boolean parseAllJdkFiles;
+    private final boolean parseAllJdkFiles;
 
     /**
      * Creates a stub type.
@@ -85,9 +85,9 @@ public class StubTypes {
         this.typesFromStubFiles = new HashMap<>();
         this.declAnnosFromStubFiles = new HashMap<>();
         this.parsing = false;
-        String release = PluginUtil.getReleaseValue(factory.getProcessingEnv());
+        String release = SystemUtil.getReleaseValue(factory.getProcessingEnv());
         this.annotatedJdkVersion =
-                release != null ? release : String.valueOf(PluginUtil.getJreVersion());
+                release != null ? release : String.valueOf(SystemUtil.getJreVersion());
 
         this.shouldParseJdk = !factory.getContext().getChecker().hasOption("ignorejdkastub");
         this.parseAllJdkFiles = factory.getContext().getChecker().hasOption("parseAllJdk");

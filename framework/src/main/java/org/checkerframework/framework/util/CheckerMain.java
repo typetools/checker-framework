@@ -18,7 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * This class behaves similarly to javac. CheckerMain does the following:
@@ -78,11 +78,32 @@ public class CheckerMain {
      */
     private final List<String> cpOpts;
 
+    /** Processor path options. */
     private final List<String> ppOpts;
 
+    /** Arguments to the Checker Framework. */
     private final List<String> toolOpts;
 
+    /** Command-line argument files (specified with @ on the command line). */
     private final List<File> argListFiles;
+
+    /**
+     * Option name for specifying an alternative checker-qual.jar location. The accompanying value
+     * MUST be the path to the jar file (NOT the path to its encompassing directory)
+     */
+    public static final String CHECKER_QUAL_PATH_OPT = "-checkerQualJar";
+
+    /**
+     * Option name for specifying an alternative javac.jar location. The accompanying value MUST be
+     * the path to the jar file (NOT the path to its encompassing directory)
+     */
+    public static final String JAVAC_PATH_OPT = "-javacJar";
+
+    /**
+     * Option name for specifying an alternative jdk.jar location. The accompanying value MUST be
+     * the path to the jar file (NOT the path to its encompassing directory)
+     */
+    public static final String JDK_PATH_OPT = "-jdkJar";
 
     /**
      * Construct all the relevant file locations and Java version given the path to this jar and a
@@ -98,12 +119,9 @@ public class CheckerMain {
 
         this.checkerQualJar =
                 extractFileArg(
-                        PluginUtil.CHECKER_QUAL_PATH_OPT,
-                        new File(searchPath, "checker-qual.jar"),
-                        args);
+                        CHECKER_QUAL_PATH_OPT, new File(searchPath, "checker-qual.jar"), args);
 
-        this.javacJar =
-                extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);
+        this.javacJar = extractFileArg(JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);
 
         this.compilationBootclasspath = createCompilationBootclasspath(args);
         this.runtimeClasspath = createRuntimeClasspath(args);
@@ -118,7 +136,7 @@ public class CheckerMain {
 
     /** Assert that required jars exist. */
     protected void assertValidState() {
-        if (PluginUtil.getJreVersion() < 9) {
+        if (SystemUtil.getJreVersion() < 9) {
             assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar));
         } else {
             // TODO: once the jdk11 jars exist, check for them.
@@ -375,17 +393,15 @@ public class CheckerMain {
     }
 
     /** Invoke the compiler with all relevant jars on its classpath and/or bootclasspath. */
-    // TODO: unify with PluginUtil.getCmd
     public List<String> getExecArguments() {
         List<String> args = new ArrayList<>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 7);
 
         // TODO: do we need java.exe on Windows?
-        final String java =
-                "java"; // PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
+        final String java = "java";
         args.add(java);
 
-        if (PluginUtil.getJreVersion() == 8) {
-            args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, runtimeClasspath));
+        if (SystemUtil.getJreVersion() == 8) {
+            args.add("-Xbootclasspath/p:" + SystemUtil.join(File.pathSeparator, runtimeClasspath));
         } else {
             args.addAll(
                     Arrays.asList(
@@ -413,7 +429,7 @@ public class CheckerMain {
             args.add(quote(concatenatePaths(ppOpts)));
         }
 
-        if (PluginUtil.getJreVersion() == 8) {
+        if (SystemUtil.getJreVersion() == 8) {
             // No classes on the compilation bootclasspath will be loaded
             // during compilation, but the classes are read by the compiler
             // without loading them.  The compiler assumes that any class on
@@ -585,7 +601,7 @@ public class CheckerMain {
         final List<String> content = new ArrayList<>();
         for (final File file : files) {
             try {
-                content.addAll(PluginUtil.readFile(file));
+                content.addAll(SystemUtil.readFile(file));
             } catch (final IOException exc) {
                 throw new RuntimeException("Could not open file: " + file.getAbsolutePath(), exc);
             }
@@ -765,7 +781,7 @@ public class CheckerMain {
                     // Forward slash is used instead of File.separator because checker.jar uses / as
                     // the separator.
                     checkerClassNames.add(
-                            PluginUtil.join(
+                            SystemUtil.join(
                                     ".",
                                     name.substring(0, name.length() - ".class".length())
                                             .split("/")));
@@ -821,7 +837,7 @@ public class CheckerMain {
             }
         }
 
-        return PluginUtil.join(",", processors);
+        return SystemUtil.join(",", processors);
     }
 
     /**
