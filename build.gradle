@@ -723,6 +723,8 @@ subprojects {
                 ]
             }
 
+            maxParallelForks = Integer.MAX_VALUE
+
             if (project.name.is('checker')) {
                 dependsOn('copyJarsToDist')
                 systemProperties += [JDK_JAR: "${projectDir}/dist/jdk8.jar"]
