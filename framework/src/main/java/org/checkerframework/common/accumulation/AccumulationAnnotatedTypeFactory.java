@@ -2,11 +2,20 @@ package org.checkerframework.common.accumulation;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverAnnotatedTypeFactory;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.common.returnsreceiver.qual.This;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -17,32 +26,15 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.checkerframework.common.value.ValueCheckerUtils;
-
-/**
- * An annotated type factory for an accumulation checker.
- */
+/** An annotated type factory for an accumulation checker. */
 public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /**
-     * The canonical top and bottom annotations for this accumulation checker.
-     */
+    /** The canonical top and bottom annotations for this accumulation checker. */
     public final AnnotationMirror TOP, BOTTOM;
 
     /**
-     * The annotation that accumulates things in this accumulation checker.
-     * Must be an annotation with exactly one field named "value" whose type
-     * is a String array.
+     * The annotation that accumulates things in this accumulation checker. Must be an annotation
+     * with exactly one field named "value" whose type is a String array.
      */
     private final Class<? extends Annotation> ACC;
 
@@ -52,13 +44,14 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @param checker the checker
      * @param top the top type in the hierarchy
      * @param accumulator the accumulator type in the hierarchy. Must be an annotation with a single
-     *                    argument named "value" whose type is a String array.
+     *     argument named "value" whose type is a String array.
      * @param bot the bottom type in the hierarchy
      */
-    public AccumulationAnnotatedTypeFactory(BaseTypeChecker checker,
-                                            Class<? extends Annotation> top,
-                                            Class<? extends Annotation> accumulator,
-                                            Class<? extends Annotation> bot) {
+    public AccumulationAnnotatedTypeFactory(
+            BaseTypeChecker checker,
+            Class<? extends Annotation> top,
+            Class<? extends Annotation> accumulator,
+            Class<? extends Annotation> bot) {
         super(checker);
 
         TOP = AnnotationBuilder.fromClass(elements, top);
@@ -72,12 +65,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * Creates a new instance of the accumulator annotation that contains
-     * the elements of {@code values} in sorted order.
+     * Creates a new instance of the accumulator annotation that contains the elements of {@code
+     * values} in sorted order.
      *
      * @param values the arguments to the annotation
-     * @return an annotation mirror representing the accumulator annotation
-     * with values's arguments, or top is {@code values} is empty
+     * @return an annotation mirror representing the accumulator annotation with values's arguments,
+     *     or top is {@code values} is empty
      */
     public AnnotationMirror createAccumulatorAnnotation(final String... values) {
         if (values.length == 0) {
@@ -90,15 +83,16 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * Utility method that returns whether the return type of the given method
-     * invocation tree has an @This annotation from the Returns Receiver Checker.
+     * Utility method that returns whether the return type of the given method invocation tree has
+     * an @This annotation from the Returns Receiver Checker.
      *
      * @param tree the method invocation tree to check
      * @return whether the method being invoked returns its receiver
      */
     public boolean returnsThis(final MethodInvocationTree tree) {
         System.out.println("calling returnsThis in AATF");
-        ReturnsReceiverAnnotatedTypeFactory rrATF = getTypeFactoryOfSubchecker(ReturnsReceiverChecker.class);
+        ReturnsReceiverAnnotatedTypeFactory rrATF =
+                getTypeFactoryOfSubchecker(ReturnsReceiverChecker.class);
         ExecutableElement methodEle = TreeUtils.elementFromUse(tree);
         AnnotatedTypeMirror methodAtm = rrATF.getAnnotatedType(methodEle);
         AnnotatedTypeMirror rrType =
@@ -120,12 +114,11 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(super.createTreeAnnotator(), new AccumulationTreeAnnotator(this));
+        return new ListTreeAnnotator(
+                super.createTreeAnnotator(), new AccumulationTreeAnnotator(this));
     }
 
-    /**
-     * Handles fluent APIs using the Returns Receiver Checker.
-     */
+    /** Handles fluent APIs using the Returns Receiver Checker. */
     protected class AccumulationTreeAnnotator extends TreeAnnotator {
 
         /**
@@ -148,7 +141,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                 AnnotatedTypeMirror receiverType;
                 AnnotationMirror receiverAnno;
 
-                if (receiverTree != null && (receiverType = getAnnotatedType(receiverTree)) != null) {
+                if (receiverTree != null
+                        && (receiverType = getAnnotatedType(receiverTree)) != null) {
                     receiverAnno = receiverType.getAnnotationInHierarchy(TOP);
                 } else {
                     receiverAnno = TOP;
@@ -166,21 +160,16 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * All accumulation analyses share a similar type hierarchy. This hierarchy
-     * implements the subtyping, LUB, and GLB for that hierarchy. The lattice looks like:
+     * All accumulation analyses share a similar type hierarchy. This hierarchy implements the
+     * subtyping, LUB, and GLB for that hierarchy. The lattice looks like:
      *
-     *                           top
-     *                         /    \
-     *                      acc(x)  acc(y) ...
-     *                         \     /
-     *                        acc(x,y) ...
-     *                            |
-     *                          bottom
+     * <p>top / \ acc(x) acc(y) ... \ / acc(x,y) ... | bottom
      */
     protected class AccumulationQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         /**
          * Create the qualifier hierarchy
+         *
          * @param factory the factory
          */
         public AccumulationQualifierHierarchy(MultiGraphFactory factory) {
@@ -193,8 +182,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         }
 
         /**
-         * GLB in this type system is set union of the arguments of the two annotations, unless one of
-         * them is bottom, in which case the result is also bottom.
+         * GLB in this type system is set union of the arguments of the two annotations, unless one
+         * of them is bottom, in which case the result is also bottom.
          */
         @Override
         public AnnotationMirror greatestLowerBound(
@@ -212,8 +201,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             }
 
             if (isAccumulatorAnnotation(a1) && isAccumulatorAnnotation(a2)) {
-                Set<String> a1Val = new LinkedHashSet<>(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1));
-                Set<String> a2Val = new LinkedHashSet<>(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2));
+                Set<String> a1Val =
+                        new LinkedHashSet<>(
+                                ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1));
+                Set<String> a2Val =
+                        new LinkedHashSet<>(
+                                ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2));
                 a1Val.addAll(a2Val);
                 return createAccumulatorAnnotation(a1Val.toArray(new String[0]));
             } else {
@@ -222,11 +215,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         }
 
         /**
-         * LUB in this type system is set intersection of the arguments of the two annotations, unless
-         * one of them is bottom, in which case the result is the other annotation.
+         * LUB in this type system is set intersection of the arguments of the two annotations,
+         * unless one of them is bottom, in which case the result is the other annotation.
          */
         @Override
-        public AnnotationMirror leastUpperBound(final AnnotationMirror a1, final AnnotationMirror a2) {
+        public AnnotationMirror leastUpperBound(
+                final AnnotationMirror a1, final AnnotationMirror a2) {
             if (AnnotationUtils.areSame(a1, BOTTOM)) {
                 return a2;
             } else if (AnnotationUtils.areSame(a2, BOTTOM)) {
@@ -242,8 +236,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             }
 
             if (isAccumulatorAnnotation(a1) && isAccumulatorAnnotation(a2)) {
-                Set<String> a1Val = new LinkedHashSet<>(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1));
-                Set<String> a2Val = new LinkedHashSet<>(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2));
+                Set<String> a1Val =
+                        new LinkedHashSet<>(
+                                ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1));
+                Set<String> a2Val =
+                        new LinkedHashSet<>(
+                                ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2));
                 a1Val.retainAll(a2Val);
                 return createAccumulatorAnnotation(a1Val.toArray(new String[0]));
             } else {
@@ -270,7 +268,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                             : ValueCheckerUtils.getValueOfAnnotationWithStringArgument(subAnno);
 
             // superAnno is a ACC annotation, so compare the sets
-            return subVal.containsAll(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(superAnno));
+            return subVal.containsAll(
+                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(superAnno));
         }
     }
 }
